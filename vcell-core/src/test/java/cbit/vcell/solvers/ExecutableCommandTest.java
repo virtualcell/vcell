@@ -1,19 +1,17 @@
 package cbit.vcell.solvers;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Test;
 
-@Category(Fast.class)
+import static org.junit.jupiter.api.Assertions.*;
+
 @Tag("Fast")
 public class ExecutableCommandTest {
 	
 	private ExecutableCommand.Container ctn;
-	@Before
+	@BeforeEach
 	public void setup( ) {
 		ctn = new ExecutableCommand.Container();
 		ctn.add(new ExecutableCommand(null,"hickory","dickory","dock"));
@@ -25,26 +23,27 @@ public class ExecutableCommandTest {
 		assertTrue(ec.isMessaging());
 		assertFalse(ec.isParallel());
 		String expected = "hickory dickory dock";
-		String j = ec.getJoinedCommands().trim( );
-		assertTrue(expected.equals(j));
+		String j = ec.getJoinedCommands().trim();
+        assertEquals(expected, j);
 	}
 	
-	@Test(expected=UnsupportedOperationException.class)
+	@Test
 	public void ecFunc( ) {
-		final String sToken = "jabberwockey";
-		ExecutableCommand ec = new ExecutableCommand(null,"eenie","meenie", sToken);
-		ec.setExitCodeToken(sToken);
-		String j = ec.getJoinedCommands("minie").trim( );
-		String expected = "eenie meenie minie";
-		assertTrue(expected.equals(j));
-		ctn.add(ec);
-		
-		ExecutableCommand nap = new ExecutableCommand(null,"nap");
-		nap.setExitCodeToken("oops");
-		ctn.add(nap);
-		assertTrue(false);//should not get here
-		
-		
+		assertThrows(UnsupportedOperationException.class, () ->
+		{
+			final String sToken = "jabberwockey";
+			ExecutableCommand ec = new ExecutableCommand(null, "eenie", "meenie", sToken);
+			ec.setExitCodeToken(sToken);
+			String j = ec.getJoinedCommands("minie").trim();
+			String expected = "eenie meenie minie";
+            assertEquals(expected, j);
+			ctn.add(ec);
+
+			ExecutableCommand nap = new ExecutableCommand(null, "nap");
+			nap.setExitCodeToken("oops");
+			ctn.add(nap);
+			fail();//should not get here
+		});
 	}
 
 }

@@ -10,12 +10,12 @@
 
 package cbit.vcell.math;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import cbit.vcell.parser.Expression;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag("Fast")
 public class RowColumnResultSetTest {
@@ -43,7 +43,7 @@ public void test() {
 		r.addFunctionColumn(new FunctionColumnDescription(new Expression("1e-5*pow(sin(.3*t), 2)"),"newFunc", null, "newFunc", false));
 		//long startTime = System.currentTimeMillis();
 		r.trimRows(SAMPLING);
-		Assert.assertTrue(r.getRowCount()<SAMPLING);
+        Assertions.assertTrue(r.getRowCount() < SAMPLING);
 //		long endTime = System.currentTimeMillis();
 //		long elapsedTime = endTime - startTime;
 //		System.out.println("Elapsed Time: " + elapsedTime);
@@ -75,7 +75,7 @@ public void test() {
 //		}
 	}catch (Exception e){
 		e.printStackTrace();
-		Assert.fail(e.getMessage());
+		fail(e.getMessage());
 	}
 }
 }

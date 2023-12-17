@@ -9,14 +9,13 @@ import cbit.vcell.modeldb.BatchTester;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import org.junit.Before;
 import org.junit.jupiter.api.Tag;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.Description;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.notification.Failure;
-import org.vcell.test.Fast;
 import org.vcell.util.document.*;
 
 import java.io.FileWriter;

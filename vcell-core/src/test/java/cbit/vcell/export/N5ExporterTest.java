@@ -19,22 +19,22 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.*;
 import org.junit.jupiter.api.*;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
 import org.vcell.util.DataAccessException;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
 
-@Category(Fast.class)
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 @Tag("Fast")
 public class N5ExporterTest {
 
@@ -76,7 +76,7 @@ public class N5ExporterTest {
             "_0.simtask.xml"
     ));
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         // setup the resources folder as a temp dir
 
@@ -117,7 +117,7 @@ public class N5ExporterTest {
         PropertyLoader.setProperty(PropertyLoader.simdataCacheSizeProperty, "100000");
     }
 
-    @After
+    @AfterEach
     public void restore() throws IOException {
         // tear down the temp dir
 
@@ -216,12 +216,12 @@ public class N5ExporterTest {
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
             DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
             long[] exportDimensions = datasetAttributes.getDimensions();
-            Assert.assertArrayEquals("Testing dimension results for model " + model, controlDimensions, exportDimensions);
+            assertArrayEquals(controlDimensions, exportDimensions, "Testing dimension results for model " + model);
 
-            Assert.assertSame("Data Type of model " + model, DataType.FLOAT64, datasetAttributes.getDataType());
+            assertSame(DataType.FLOAT64, datasetAttributes.getDataType(),"Data Type of model " + model);
 
             int[] expectedBlockSize = {controlModel.getMesh().getSizeX(), controlModel.getMesh().getSizeY(), 1, controlModel.getMesh().getSizeZ(), 1};
-            Assert.assertArrayEquals("Block Size of model " + model, expectedBlockSize, datasetAttributes.getBlockSize());
+            assertArrayEquals(expectedBlockSize, datasetAttributes.getBlockSize(),"Block Size of model " + model);
         }
     }
 
@@ -246,10 +246,12 @@ public class N5ExporterTest {
                     DataBlock<?> dataBlock = n5Reader.readBlock(n5Exporter.getN5DataSetTemplatedName(model), datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
 
                     double[] exportedRawData = (double[]) dataBlock.getData();
-                    Assert.assertArrayEquals("Equal raw data of model " + model + " with species " + variables.get(i).getName() + " with type " + variables.get(i).getVariableType() + " at time " + timeSlice,
+                    assertArrayEquals(
                             controlModelController.getSimDataBlock(outputContext, this.vcDataID, variables.get(i).getName(), times[timeSlice]).getData(),
                             exportedRawData,
-                            0);
+                            0,
+                            "Equal raw data of model " + model + " with species " + variables.get(i).getName() +
+                                    " with type " + variables.get(i).getVariableType() + " at time " + timeSlice);
                 }
             }
         }
@@ -278,10 +280,11 @@ public class N5ExporterTest {
                         DataBlock<?> dataBlock = n5Reader.readBlock(n5Exporter.getN5DataSetTemplatedName(model), datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
 
                         double[] exportedData = (double[]) dataBlock.getData();
-                        Assert.assertArrayEquals("Equal data with " + compression + " compression",
+                        Assertions.assertArrayEquals(
                                 controlModelController.getSimDataBlock(outputContext, this.vcDataID, variables.get(chosenVariable).getName(), times[timeSlice]).getData(),
                                 exportedData,
-                                0);
+                                0,
+                                "Equal data with " + compression + " compression");
                     }
                 }
         }

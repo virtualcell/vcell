@@ -1,11 +1,10 @@
 package cbit.vcell.math;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Test;
 
-@Ignore
+@Disabled
 @Tag("Fast")
 public class VariableTypeTest {
 

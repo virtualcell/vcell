@@ -1,16 +1,16 @@
 package org.vcell.cli.run;
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Test;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-@Category(Fast.class)
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 @Tag("Fast")
 public class SpatialArchiveFiles {
     private final static String[] allTestFiles = new String[]{
@@ -48,6 +48,6 @@ public class SpatialArchiveFiles {
     @Test
     public void test_read_Spatial_omex_file() {
         InputStream inputStream = getSpatialTestCase(allTestFiles[0]);
-        Assert.assertNotNull(inputStream);
+        assertNotNull(inputStream);
     }
 }

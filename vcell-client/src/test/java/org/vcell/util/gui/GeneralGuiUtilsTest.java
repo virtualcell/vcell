@@ -1,15 +1,15 @@
 package org.vcell.util.gui;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Test;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.function.BiFunction;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 
 @Tag("Fast")
@@ -31,7 +31,7 @@ public class GeneralGuiUtilsTest {
         assertNull(method.apply(JDialog.class, btn));
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void ancestorTest(){
         BiFunction<Class<?>, Component, Container> buMethod =

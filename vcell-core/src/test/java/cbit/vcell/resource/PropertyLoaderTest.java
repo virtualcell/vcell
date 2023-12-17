@@ -1,13 +1,12 @@
 package cbit.vcell.resource;
 
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 @Tag("Fast")
 public class PropertyLoaderTest {
@@ -18,6 +17,6 @@ public class PropertyLoaderTest {
 			File tempDir = PropertyLoader.getSystemTemporaryDirectory();
 			System.out.println(tempDir);
 			File secondCall  = PropertyLoader.getSystemTemporaryDirectory();
-			assertTrue(tempDir == secondCall);
+            assertSame(tempDir, secondCall);
 		}
 }

@@ -10,12 +10,12 @@
 
 package cbit.vcell.simdata;
 
-import org.junit.Test;
+import cbit.vcell.util.AmplistorUtils;
 import org.junit.jupiter.api.Tag;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Test;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.util.AmplistorUtils;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("Fast")
 public class SimulationDataTest {
@@ -39,11 +39,13 @@ public class SimulationDataTest {
 	}
 	*/
 	
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void noZero(  ) {
-		KeyValue kv = new KeyValue("8675904");
-		String now = SimulationData.createCanonicalSmoldynOutputFileName(kv, 0, 0);
-		System.out.println("never see " + now);
+		assertThrows(IllegalArgumentException.class, () -> {
+			KeyValue kv = new KeyValue("8675904");
+			String now = SimulationData.createCanonicalSmoldynOutputFileName(kv, 0, 0);
+			System.out.println("never see " + now);
+		});
 	}
 	
 	

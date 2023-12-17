@@ -1,32 +1,18 @@
 package cbit.vcell.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.net.URL;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Random;
-import java.util.Scanner;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Test;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
+import java.util.*;
 
-@Ignore
+@Disabled
 @Tag("Fast")
 public class AmplistorUtilsTest {
 	

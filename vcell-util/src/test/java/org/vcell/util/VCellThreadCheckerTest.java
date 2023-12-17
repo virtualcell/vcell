@@ -1,17 +1,16 @@
 package org.vcell.util;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 
-import javax.swing.SwingUtilities;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * check VCellThreadChecker methods
@@ -24,7 +23,7 @@ public class VCellThreadCheckerTest {
 	PrintStream oldErr = null;
 	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	
-	@Before
+	@BeforeEach
 	public void setup( ) {
 		oldOut = System.out;
 		oldErr = System.err;
@@ -33,7 +32,7 @@ public class VCellThreadCheckerTest {
 		System.setErr(ps);
 	}
 	
-	@After
+	@AfterEach
 	public void tearDown( ) {
 		System.setOut(oldOut);
 		System.setErr(oldErr);
@@ -102,20 +101,18 @@ public class VCellThreadCheckerTest {
 	/**
 	 * verify suppression turns off correctly
 	 */
-	@Test(expected=IllegalStateException.class)
+	@Test
 	public void swingCheckNotSupp( ) throws InvocationTargetException, InterruptedException {
-		SwingUtilities.invokeAndWait(new Runnable() {
-			
-			@Override
-			public void run() {
-				try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
-					
-					//make sure turns off correctly
-				}
-				VCellThreadChecker.checkCpuIntensiveInvocation();
-			}
+		assertThrows(IllegalStateException.class, () -> {
+			SwingUtilities.invokeAndWait(() -> {
+                try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
+
+                    //make sure turns off correctly
+                }
+                VCellThreadChecker.checkCpuIntensiveInvocation();
+            });
+			checkQuiet();
 		});
-		checkQuiet( );
 	}
 
 }

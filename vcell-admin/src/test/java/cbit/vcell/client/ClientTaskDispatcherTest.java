@@ -1,24 +1,19 @@
 package cbit.vcell.client;
 
-import static cbit.vcell.client.task.AsynchClientTask.TASKTYPE_NONSWING_BLOCKING;
-import static cbit.vcell.client.task.AsynchClientTask.TASKTYPE_SWING_BLOCKING;
-import static cbit.vcell.client.task.AsynchClientTask.TASKTYPE_SWING_NONBLOCKING;
-import org.junit.jupiter.api.Tag;
-
-import java.awt.Component;
-import java.awt.Label;
-import java.util.Hashtable;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-@Ignore
+import java.awt.*;
+import java.util.Hashtable;
+
+import static cbit.vcell.client.task.AsynchClientTask.*;
+
+@Disabled
 @Tag("Fast")
 public class ClientTaskDispatcherTest {
 	private Hashtable<String,Object> ht  = new Hashtable<>(); 
@@ -39,9 +34,11 @@ public class ClientTaskDispatcherTest {
 		test(TASKTYPE_NONSWING_BLOCKING,TASKTYPE_SWING_BLOCKING,TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_NONBLOCKING);
 	}
 	
-	@Test( expected = RuntimeException.class)
+	@Test
 	public void sbNotLast( ) {
-		test(TASKTYPE_NONSWING_BLOCKING,TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_NONBLOCKING, TASKTYPE_NONSWING_BLOCKING);
+		Assertions.assertThrows(RuntimeException.class, () -> {
+			test(TASKTYPE_NONSWING_BLOCKING,TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_NONBLOCKING, TASKTYPE_NONSWING_BLOCKING);
+		});
 	}
 	
 	private AsynchClientTask[] create(int ... types)  {

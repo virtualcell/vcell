@@ -14,27 +14,22 @@
 
 package cbit.vcell.solvers.mb;
 
-import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import cern.colt.Arrays;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
-import org.junit.experimental.categories.Category;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 
-@Ignore
-@Category(Fast.class)
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+@Disabled
 @Tag("Fast")
 public class VH5PathTest extends H5Client {
     private static String fname  = FILE;
 	private FileFormat testFile = null;
 	private Group root = null;
 
-    @Before
+    @BeforeEach
     public void setup( ) throws Exception {
 
     		// retrieve an instance of H5File
@@ -58,7 +53,7 @@ public class VH5PathTest extends H5Client {
     		root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
     }
 
-    @After
+    @AfterEach
     public void close( ) throws Exception {
     	if (testFile != null) {
     		testFile.close();
@@ -127,20 +122,26 @@ public class VH5PathTest extends H5Client {
     }
 
 
-    @Test (expected = UnsupportedOperationException.class)
+    @Test
     public void badType () {
-		VH5TypedPath<int[]> ipath = new VH5TypedPath<int[]>(root, int[].class,"elements" ,"volume");
-		System.out.println(ipath);
-    }
+		assertThrows(UnsupportedOperationException.class, () -> {
+			VH5TypedPath<int[]> ipath = new VH5TypedPath<int[]>(root, int[].class,"elements" ,"volume");
+			System.out.println(ipath);
+		});
+	}
 
-    @Test (expected = UnsupportedOperationException.class)
+    @Test
     public void primType () {
-		VH5TypedPath<Integer> ipath = new VH5TypedPath<Integer>(root, int.class,"elements" ,"volume");
-		System.out.println(ipath);
-    }
+		assertThrows(UnsupportedOperationException.class, () -> {
+			VH5TypedPath<Integer> ipath = new VH5TypedPath<Integer>(root, int.class,"elements" ,"volume");
+			System.out.println(ipath);
+		});
+	}
 
-    @Test (expected = RuntimeException.class)
+    @Test
     public void badPath( ) {
-    	dtype("junk","yard");
+		assertThrows(RuntimeException.class, () -> {
+			dtype("junk", "yard");
+		});
     }
 }

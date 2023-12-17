@@ -1,22 +1,18 @@
 package org.vcell.util.gui;
 
-import java.awt.Component;
+import cbit.vcell.resource.ResourceUtil;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.prefs.BackingStoreException;
 
-import javax.swing.JFrame;
+@Disabled
 @Tag("Fast")
-import org.junit.Ignore;
-
-import cbit.vcell.resource.ResourceUtil;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-
-@Ignore
-@Category(Fast.class)
 public class GraphicExecutableFinderTest {
 	public static String TEST_EXE  = "MovingBoundary";
 	@Test

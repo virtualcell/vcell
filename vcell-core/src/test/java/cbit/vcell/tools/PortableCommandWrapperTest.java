@@ -1,16 +1,14 @@
 package cbit.vcell.tools;
 
-import org.junit.jupiter.api.Tag;
-import java.io.IOException;
-import java.util.Collection;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * test {@link PortableCommandWrapper}
@@ -35,18 +33,24 @@ public class PortableCommandWrapperTest {
 		PortableCommand c2 = PortableCommandWrapper.fromJson(json);
 		c2.execute();
 	}
-	
-	@Test(expected = IllegalArgumentException.class)
+
+	@Test
 	public void badPackage( ) {
-		@SuppressWarnings("unused")
-		PortableCommandWrapper shell = new PortableCommandWrapper(null);
-		System.err.println("should not print!");
+		Assertions.assertThrows(IllegalArgumentException.class, () ->
+		{
+			@SuppressWarnings("unused")
+			PortableCommandWrapper shell = new PortableCommandWrapper(null);
+			System.err.println("should not print!");
+		});
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void unset( ) {
-		PortableCommandWrapper empty = new PortableCommandWrapper();
-		System.err.println(empty.asJson() + ", should not print!");
+		Assertions.assertThrows(IllegalStateException.class, () ->
+		{
+			PortableCommandWrapper empty = new PortableCommandWrapper();
+			System.err.println(empty.asJson() + ", should not print!");
+		});
 	}
 
 	@Before

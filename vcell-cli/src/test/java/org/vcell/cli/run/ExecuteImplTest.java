@@ -4,13 +4,10 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import org.junit.jupiter.api.Tag;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Test;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
-import org.vcell.test.Fast;
 import org.vcell.util.VCellUtilityHub;
-
-import picocli.CommandLine;
 
 import java.io.File;
 import java.io.InputStream;

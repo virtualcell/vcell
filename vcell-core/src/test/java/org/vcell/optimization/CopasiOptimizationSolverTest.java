@@ -1,7 +1,6 @@
 package org.vcell.optimization;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.math.MathException;
 import cbit.vcell.modelopt.ParameterEstimationTask;
@@ -13,14 +12,11 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import com.google.common.io.Files;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Test;
 import org.vcell.optimization.jtd.OptProblem;
 import org.vcell.optimization.jtd.Vcellopt;
-import org.vcell.optimization.jtd.VcelloptStatus;
-import org.vcell.test.Fast;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgressDialogListener;
 
@@ -32,11 +28,13 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-@Category(Fast.class)
+import static org.junit.jupiter.api.Assertions.*;
+import static org.vcell.optimization.jtd.VcelloptStatus.COMPLETE;
+
 @Tag("Fast")
 public class CopasiOptimizationSolverTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void before(){
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
     }
@@ -57,7 +55,7 @@ public class CopasiOptimizationSolverTest {
         CopasiUtils.writeOptProblem(optProblemFile1, optProblem);
 
         boolean filesEqual = Files.equal(optProblemFile, optProblemFile1);
-        Assert.assertTrue("round trip files should be equal", filesEqual);
+        assertTrue(filesEqual, "round trip files should be equal");
 
         optProblemFile.delete();
         optProblemFile1.delete();
@@ -74,7 +72,7 @@ public class CopasiOptimizationSolverTest {
 
         Vcellopt results = CopasiUtils.runCopasiParameterEstimation(optProblem);
 
-        Assert.assertEquals("expected status to be complete", results.getStatus(), VcelloptStatus.COMPLETE);
+        assertEquals(results.getStatus(), COMPLETE, "expected status to be complete");
         for (Map.Entry<String, Double> fitted_param : results.getOptResultSet().getOptParameterValues().entrySet()){
             System.out.println(fitted_param.getKey()+" -> "+fitted_param.getValue());
         }
@@ -89,7 +87,7 @@ public class CopasiOptimizationSolverTest {
         CopasiOptimizationSolver copasiOptimizationSolver = new CopasiOptimizationSolver();
         OptimizationResultSet optimizationResultSet = copasiOptimizationSolver.solveLocalPython(parameterEstimationTask);
 
-        Assert.assertNotNull(optimizationResultSet);
+        assertNotNull(optimizationResultSet);
     }
 
 //    @Test

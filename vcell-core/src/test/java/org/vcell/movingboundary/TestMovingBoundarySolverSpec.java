@@ -1,14 +1,12 @@
 package org.vcell.movingboundary;
 
 import org.junit.jupiter.api.Tag;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Test;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 
-@Category(Fast.class)
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @Tag("Fast")
 public class TestMovingBoundarySolverSpec {
 

@@ -1,29 +1,18 @@
 package cbit.vcell.message.jms.test;
 
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.bouncycastle.util.Arrays;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import cbit.vcell.message.RollbackException;
-import cbit.vcell.message.SimpleMessagingDelegate;
-import cbit.vcell.message.VCMessage;
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.message.VCQueueConsumer;
+import cbit.vcell.message.*;
 import cbit.vcell.message.VCQueueConsumer.QueueListener;
 import cbit.vcell.message.jms.VCMessageJms;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.mongodb.VCMongoDbDriver;
 import cbit.vcell.resource.PropertyLoader;
-import org.junit.experimental.categories.Category;
+import org.bouncycastle.util.Arrays;
 import org.junit.jupiter.api.*;
 
-@Ignore
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+
+@Disabled
 @Tag("Fast")
 public class BlobMessageTest {
 
@@ -34,7 +23,7 @@ public class BlobMessageTest {
 	VCMongoDbDriver mongoDbDriver = null;
 	VCMessagingServiceActiveMQ messagingService = null;
 	
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		System.getProperties().put("vcell.mongodb.host","localhost");
 		System.getProperties().put("vcell.mongodb.port","27017");
@@ -51,7 +40,7 @@ public class BlobMessageTest {
 		messagingService.setConfiguration(new SimpleMessagingDelegate(), jmshost, jmsport);
 	}
 	
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		mongoDbDriver.shutdown();
 		messagingService.close();
