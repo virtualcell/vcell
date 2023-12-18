@@ -3,7 +3,7 @@ package cbit.vcell.mongodb;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.*;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 @Disabled
 @Tag("Fast")
