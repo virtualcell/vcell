@@ -70,7 +70,7 @@ public abstract class GeneralExportEventGenerator implements ExportEventGenerato
         this.eeCommander.fireExportStarted(newExportJob.getJobID(), user, exportSpecs.getVCDataIdentifier(), fileFormat);
 
         try {
-            String exportBaseURL = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty);
+            String exportBaseURL = this.getExportBaseURL();
             String exportBaseDir = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirInternalProperty);
             //		// see if we've done this before, and try to get it
             //		// for now, works only for the life of the server (eventually will be persistent)
@@ -122,6 +122,8 @@ public abstract class GeneralExportEventGenerator implements ExportEventGenerato
                                                                ClientTaskStatusSupport clientTaskStatusSupport,
                                                                boolean bSaveAsZip, String exportBaseDir, String exportBaseURL)
             throws DataAccessException, DataFormatException, IOException, ImageException, MathException;
+
+    protected abstract String getExportBaseURL();
 
     public ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL,
                                       NrrdInfo[] nrrdInfos, ExportSpecs exportSpecs, JobRequest newExportJob,

@@ -3,6 +3,7 @@ package cbit.vcell.export.server.generators;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.*;
 import cbit.vcell.export.server.events.ExportEventCommander;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import com.google.common.io.Files;
@@ -57,5 +58,10 @@ public class Hdf5ExportEventGenerator extends GeneralExportEventGenerator {
                     exportSpecs.getVCDataIdentifier(), this.getFileFormat(),
                     (new URL(exportBaseURL + downloadableHDF5File.getName())).toString(), exportSpecs);
         }
+    }
+
+    @Override
+    protected String getExportBaseURL() {
+        return PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty);
     }
 }

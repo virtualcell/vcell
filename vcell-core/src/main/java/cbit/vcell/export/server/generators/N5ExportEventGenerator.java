@@ -68,4 +68,9 @@ public class N5ExportEventGenerator extends GeneralExportEventGenerator {
         if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + n5Exporter.getN5FileNameHash());
         return this.eeCommander.fireExportCompleted(newExportJob.getJobID(), user, exportSpecs.getVCDataIdentifier(), this.getFileFormat(), url, exportSpecs);
     }
+
+    @Override
+    protected String getExportBaseURL() {
+        return PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
+    }
 }

@@ -114,7 +114,7 @@ public class PropertyLoader {
 //	public static final String nfsimExecutableProperty		= record("vcell.nfsim.executable",ValueType.EXE);
 //
 //	public static final String MOVING_BOUNDARY_EXE		= record("vcell.mb.executable",ValueType.EXE);
-	
+
 	//Comsol properties
 	public static final String comsolRootDir				= record("vcell.comsol.rootdir",ValueType.DIR);
 	public static final String comsolJarDir					= record("vcell.comsol.jardir",ValueType.DIR);
@@ -139,7 +139,7 @@ public class PropertyLoader {
 
 	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",ValueType.GEN);
 	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",ValueType.URL);
-	
+
 	// VCell special URLs
 	public static final String COPASI_WEB_URL				= record("vcell.COPASI_WEB_URL",ValueType.URL);
 	public static final String SMOLDYN_WEB_URL				= record("vcell.SMOLDYN_WEB_URL",ValueType.URL);
@@ -171,7 +171,7 @@ public class PropertyLoader {
 	public static final String BIOPAX_RSABIO65_URL			= record("vcell.BIOPAX_RSABIO65_URL",ValueType.URL);
 	public static final String BIOPAX_RKEGGR01026_URL		= record("vcell.BIOPAX_RKEGGR01026_URL",ValueType.URL);
 	public static final String COMSOL_URL					= record("vcell.COMSOL_URL",ValueType.URL);
-	
+
 	//
 	public static final String databaseThreadsProperty		= record("vcell.databaseThreads",ValueType.GEN);
 	public static final String exportdataThreadsProperty	= record("vcell.exportdataThreads",ValueType.GEN);
@@ -182,6 +182,7 @@ public class PropertyLoader {
 	public static final String simdataCacheSizeProperty		= record("vcell.simdataCacheSize",ValueType.GEN);
 
 	public static final String exportBaseURLProperty		= record("vcell.export.baseURL",ValueType.GEN);
+	public static final String s3ExportBaseURLProperty 		= record("vcell.s3.export.baseURL", ValueType.GEN);
 	public static final String exportBaseDirInternalProperty		= record("vcell.export.baseDir.internal",ValueType.DIR);
 	//public static final String exportBaseDirExternalProperty		= record("vcell.export.baseDir.external",ValueType.GEN);
 	public static final String exportMaxInMemoryLimit		= record("vcell.export.maxInMemoryLimit",ValueType.INT);
@@ -261,19 +262,19 @@ public class PropertyLoader {
 	public static final String vcellDownloadDir = record("vcell.downloadDir",ValueType.URL);
 	public static final String autoflushStandardOutAndErr = record("vcell.autoflushlog",ValueType.GEN);
 	public static final String suppressQStatStandardOutLogging = record("vcell.htc.logQStatOutput", ValueType.BOOL);
-	
+
 	public static final String nagiosMonitorPort = record("test.monitor.port", ValueType.GEN);
-	
+
 	public static final String imageJVcellPluginURL = record("vcell.imagej.plugin.url", ValueType.GEN);
 
 	public static final String webDataServerPort = record("vcelldata.web.server.port", ValueType.GEN);
 	public static final String cmdSrvcSshCmdTimeoutMS = record("vcell.ssh.cmd.cmdtimeout", ValueType.GEN);
 	public static final String cmdSrvcSshCmdRestoreTimeoutFactor = record("vcell.ssh.cmd.restoretimeout", ValueType.GEN);
-	
+
 	public static final String cliWorkingDir = record("cli.workingDir", ValueType.DIR);
 	public static final String vtkPythonDir = record("vcell.vtk.pythonDir", ValueType.DIR);
 
-	
+
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
 
 	/**
@@ -281,7 +282,7 @@ public class PropertyLoader {
 	 */
 	public static final String NATIVE_LIB_DIR = record("vcell.lib", ValueType.DIR);
 
-    private static File systemTemporaryDirectory = null;
+	private static File systemTemporaryDirectory = null;
 	private static Logger lg = LogManager.getLogger(PropertyLoader.class);
 
 	private enum ValueType {
@@ -304,11 +305,11 @@ public class PropertyLoader {
 		/**
 		 * url
 		 */
-		 URL,
+		URL,
 		/**
 		 * boolean (true or false)
 		 */
-		 BOOL
+		BOOL
 	}
 
 	/**
@@ -451,7 +452,7 @@ public class PropertyLoader {
 		}
 		return cwd;
 	}
-	
+
 	public final static File getOptionalDirectory(String propertyName) throws ConfigurationException {
 		String directoryString = getProperty(propertyName,null);
 		if (directoryString==null){
@@ -545,23 +546,23 @@ public class PropertyLoader {
 		}
 		return "";
 	}
-	
+
 	public static String getSecretValue(String secretValueProperty, String secretFileProperty) {
-        String secretValue = PropertyLoader.getProperty(secretValueProperty, null);
-        String secretFile = PropertyLoader.getProperty(secretFileProperty, null);
-        final String secret;
-        if (secretValue!=null) {
-        		secret = secretValue;
-        }else if (secretFile!=null && new File(secretFile).exists()) {
-        		try {
+		String secretValue = PropertyLoader.getProperty(secretValueProperty, null);
+		String secretFile = PropertyLoader.getProperty(secretFileProperty, null);
+		final String secret;
+		if (secretValue!=null) {
+			secret = secretValue;
+		}else if (secretFile!=null && new File(secretFile).exists()) {
+			try {
 				secret = FileUtils.readFileToString(new File(secretFile)).trim();
 			} catch (IOException e) {
 				throw new IllegalArgumentException("failed to parse "+secretFileProperty+" in "+new File(secretFile).getAbsolutePath());
 			}
-        }else {
-        		throw new IllegalArgumentException("expecting either "+secretValueProperty+" or "+secretFileProperty+" properties set");
-        }
-        return secret;
+		}else {
+			throw new IllegalArgumentException("expecting either "+secretValueProperty+" or "+secretFileProperty+" properties set");
+		}
+		return secret;
 	}
 
 	/**
@@ -573,40 +574,40 @@ public class PropertyLoader {
 		if (vt == ValueType.GEN) {
 			return;
 		}
-	    final boolean fileSet = meta.fileSet;
+		final boolean fileSet = meta.fileSet;
 		String value = configProvider.getConfigValue(name);
 		switch (vt) {
-		case GEN:
-			assert false : "don't go here";
-		return;
-		case DIR:
-		{
-			File f = new File(value);
-			if (!f.isDirectory() && !value.toLowerCase( ).equals(USE_CURRENT_WORKING_DIRECTORY)) {
-				report.append(name + " value " + value + fromFile(fileSet) + " is not a directory\n");
+			case GEN:
+				assert false : "don't go here";
+				return;
+			case DIR:
+			{
+				File f = new File(value);
+				if (!f.isDirectory() && !value.toLowerCase( ).equals(USE_CURRENT_WORKING_DIRECTORY)) {
+					report.append(name + " value " + value + fromFile(fileSet) + " is not a directory\n");
+				}
+				return;
 			}
-			return;
-		}
-		case EXE:
-		{
-			File f = new File(value);
-			if (!f.canExecute()) {
-				report.append(name + " value " + value + fromFile(fileSet) + " is not executable\n");
+			case EXE:
+			{
+				File f = new File(value);
+				if (!f.canExecute()) {
+					report.append(name + " value " + value + fromFile(fileSet) + " is not executable\n");
+				}
+				return;
 			}
-			return;
-		}
-		case INT:
-			try {
-				Long.parseLong(value);
-			} catch (NumberFormatException e) {
-				report.append(name + " value " + value + fromFile(fileSet) + " not  convertible to long integer\n");
-			}
-		case URL:
-			//not going to make trip web to verify at this point
-		case BOOL:
-			break;
-		default:
-			break;
+			case INT:
+				try {
+					Long.parseLong(value);
+				} catch (NumberFormatException e) {
+					report.append(name + " value " + value + fromFile(fileSet) + " not  convertible to long integer\n");
+				}
+			case URL:
+				//not going to make trip web to verify at this point
+			case BOOL:
+				break;
+			default:
+				break;
 		}
 	}
 }

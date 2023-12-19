@@ -4,6 +4,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.export.server.*;
 import cbit.vcell.export.server.events.ExportEventCommander;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -35,5 +36,10 @@ public class NrrdExportEventGenerator extends GeneralExportEventGenerator {
             throws DataAccessException, DataFormatException, IOException {
         NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServer, exportSpecs, fileDataContainerManager);
         return makeRemoteFile(this.getFileFormat(), exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob, fileDataContainerManager);
+    }
+
+    @Override
+    protected String getExportBaseURL() {
+        return PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty);
     }
 }
