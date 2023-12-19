@@ -14,16 +14,21 @@ import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.vcell.sbml.vcell.StructureSizeSolver;
-import org.vcell.test.Fast;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-@Category(Fast.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Tag("Fast")
 public class StructureSizeSolverTest {
 
     @Test
@@ -47,7 +52,7 @@ public class StructureSizeSolverTest {
 
         MathCompareResults results = MathDescription.testEquivalency(
                 SimulationSymbolTable.createMathSymbolTableFactory(), legacyMathDescription, newMathDescription);
-        Assert.assertTrue("results should be equivalent: "+results.toDatabaseStatus(),results.isEquivalent());
+        assertTrue(results.isEquivalent(), "results should be equivalent: " + results.toDatabaseStatus());
     }
 
     @Test
@@ -77,7 +82,7 @@ public class StructureSizeSolverTest {
 
         MathCompareResults results = MathDescription.testEquivalency(
                 SimulationSymbolTable.createMathSymbolTableFactory(), mathDescription_numeric, mathDescription_symbolic);
-        Assert.assertTrue("results should be equivalent: "+results.toDatabaseStatus(),results.isEquivalent());
+        assertTrue(results.isEquivalent(), "results should be equivalent: " + results.toDatabaseStatus());
     }
 
     enum UnitSizeInitialize {
@@ -150,16 +155,16 @@ public class StructureSizeSolverTest {
             Structure Extracellular = model.getStructure("Extraclellular");
             StructureMapping.StructureMappingParameter Size_Extracellular = geometryContext.getStructureMapping(Extracellular).getParameterFromRole(StructureMapping.ROLE_Size);
 
-            Assert.assertEquals("unexpected SurfToVol_NM", "1.0", SurfToVol_NM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Nucleus", "0.1", VolFract_Nucleus.getExpression().infix());
-            Assert.assertEquals("unexpected SurfToVol_PM", "0.263", SurfToVol_PM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Cytosol", "0.8", VolFract_Cytosol.getExpression().infix());
+            assertEquals("1.0", SurfToVol_NM.getExpression().infix(), "unexpected SurfToVol_NM");
+            assertEquals("0.1", VolFract_Nucleus.getExpression().infix(), "unexpected VolFract_Nucleus");
+            assertEquals("0.263", SurfToVol_PM.getExpression().infix(), "unexpected SurfToVol_PM");
+            assertEquals("0.8", VolFract_Cytosol.getExpression().infix(), "unexpected VolFract_Cytosol");
 
-            Assert.assertEquals("expected Size_NM exp to be initially null", null, Size_NM.getExpression());
-            Assert.assertEquals("expected Size_PM exp to be initially null", null, Size_PM.getExpression());
-            Assert.assertEquals("expected Size_Nucleus exp to initially be null", null, Size_Nucleus.getExpression());
-            Assert.assertEquals("expected Size_Cytosol exp to initially be null", null, Size_Cytosol.getExpression());
-            Assert.assertEquals("expected Size_Extracellular exp to initially be null", null, Size_Extracellular.getExpression());
+            assertEquals(null, Size_NM.getExpression(), "expected Size_NM exp to be initially null");
+            assertEquals(null, Size_PM.getExpression(), "expected Size_PM exp to be initially null");
+            assertEquals(null, Size_Nucleus.getExpression(), "expected Size_Nucleus exp to initially be null");
+            assertEquals(null, Size_Cytosol.getExpression(), "expected Size_Cytosol exp to initially be null");
+            assertEquals(null, Size_Extracellular.getExpression(), "expected Size_Extracellular exp to initially be null");
         }
 
         //
@@ -198,10 +203,10 @@ public class StructureSizeSolverTest {
             Structure Extracellular = model.getStructure("Extraclellular");
             StructureMapping.StructureMappingParameter Size_Extracellular_transformed = geometryContextTransformed.getStructureMapping(Extracellular).getParameterFromRole(StructureMapping.ROLE_Size);
 
-            Assert.assertEquals("unexpected SurfToVol_NM", "1.0", SurfToVol_NM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Nucleus", "0.1", VolFract_Nucleus.getExpression().infix());
-            Assert.assertEquals("unexpected SurfToVol_PM", "0.263", SurfToVol_PM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Cytosol", "0.8", VolFract_Cytosol.getExpression().infix());
+            assertEquals("1.0", SurfToVol_NM.getExpression().infix(), "unexpected SurfToVol_NM");
+            assertEquals("0.1", VolFract_Nucleus.getExpression().infix(), "unexpected VolFract_Nucleus");
+            assertEquals("0.263", SurfToVol_PM.getExpression().infix(), "unexpected SurfToVol_PM");
+            assertEquals("0.8", VolFract_Cytosol.getExpression().infix(), "unexpected VolFract_Cytosol");
 
             String[] symbols = new String[] {
                     "Cytosol_mapping.Size",
@@ -239,11 +244,11 @@ public class StructureSizeSolverTest {
             double expected_Size_Nucleus = 0.11111111111150196;
             double expected_Size_PM = 0.29222222227462435;
 
-            Assert.assertTrue("unexpected Size_NM", equiv(expected_Size_NM, val_Size_NM));
-            Assert.assertTrue("unexpected Size_PM, "+expected_Size_PM+" !~ "+val_Size_PM, equiv(expected_Size_PM, val_Size_PM));
-            Assert.assertTrue("unexpected Size_Nucleus, "+expected_Size_Nucleus+" !~ "+val_Size_Nucleus, equiv(expected_Size_Nucleus, val_Size_Nucleus));
-            Assert.assertTrue("unexpected Size_Cytosol, "+expected_Size_Cytosol+" !~ "+val_Size_Cytosol, equiv(expected_Size_Cytosol, val_Size_Cytosol));
-            Assert.assertTrue("unexpected Size_Extracellular, "+expected_Size_Extracellular+" !~ "+val_Size_Extracellular, equiv(expected_Size_Extracellular, val_Size_Extracellular));
+            assertTrue(equiv(expected_Size_NM, val_Size_NM), "unexpected Size_NM");
+            assertTrue(equiv(expected_Size_PM, val_Size_PM), "unexpected Size_PM, " + expected_Size_PM + " !~ " + val_Size_PM);
+            assertTrue(equiv(expected_Size_Nucleus, val_Size_Nucleus), "unexpected Size_Nucleus, " + expected_Size_Nucleus + " !~ " + val_Size_Nucleus);
+            assertTrue(equiv(expected_Size_Cytosol, val_Size_Cytosol), "unexpected Size_Cytosol, " + expected_Size_Cytosol + " !~ " + val_Size_Cytosol);
+            assertTrue(equiv(expected_Size_Extracellular, val_Size_Extracellular), "unexpected Size_Extracellular, " + expected_Size_Extracellular + " !~ " + val_Size_Extracellular);
 
             //
             // verify expected relationships between relative and absolute sizes for this model
@@ -256,10 +261,10 @@ public class StructureSizeSolverTest {
             //
             // verify relative sizes in terms of solved absolute sizes
             //
-            Assert.assertTrue("VolFract_Nucleus value doesn't match solution", equiv(val_VolFract_Nucleus, val_Size_Nucleus / (val_Size_Cytosol + val_Size_Nucleus)));
-            Assert.assertTrue("VolFract_Cytosol value doesn't match solution", equiv(val_VolFract_Cytosol, (val_Size_Cytosol + val_Size_Nucleus) / (val_Size_Extracellular + val_Size_Cytosol + val_Size_Nucleus)));
-            Assert.assertTrue("SurfToVol_NM value doesn't match solution", equiv(val_SurfToVol_NM, val_Size_NM / val_Size_Nucleus));
-            Assert.assertTrue("SurfToVol_PM value doesn't match solution", equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cytosol + val_Size_Nucleus)));
+            assertTrue(equiv(val_VolFract_Nucleus, val_Size_Nucleus / (val_Size_Cytosol + val_Size_Nucleus)), "VolFract_Nucleus value doesn't match solution");
+            assertTrue(equiv(val_VolFract_Cytosol, (val_Size_Cytosol + val_Size_Nucleus) / (val_Size_Extracellular + val_Size_Cytosol + val_Size_Nucleus)), "VolFract_Cytosol value doesn't match solution");
+            assertTrue(equiv(val_SurfToVol_NM, val_Size_NM / val_Size_Nucleus), "SurfToVol_NM value doesn't match solution");
+            assertTrue(equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cytosol + val_Size_Nucleus)), "SurfToVol_PM value doesn't match solution");
         }
     }
 
@@ -292,12 +297,12 @@ public class StructureSizeSolverTest {
             Structure Cell = model.getStructure("Cell");
             StructureMapping.StructureMappingParameter Size_Cell = geometryContext.getStructureMapping(Cell).getParameterFromRole(StructureMapping.ROLE_Size);
 
-            Assert.assertEquals("unexpected SurfToVol_PM", "1.0", SurfToVol_PM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Cell", "0.2", VolFract_Cell.getExpression().infix());
+            assertEquals("1.0", SurfToVol_PM.getExpression().infix(), "unexpected SurfToVol_PM");
+            assertEquals("0.2", VolFract_Cell.getExpression().infix(), "unexpected VolFract_Cell");
 
-            Assert.assertEquals("expected Size_PM exp to be initially null", null, Size_PM.getExpression());
-            Assert.assertEquals("expected Size_Cell exp to initially be null", null, Size_Cell.getExpression());
-            Assert.assertEquals("expected Size_MitoticCell exp to initially be null", null, Size_MitoticCell.getExpression());
+            assertEquals(null, Size_PM.getExpression(), "expected Size_PM exp to be initially null");
+            assertEquals(null, Size_Cell.getExpression(), "expected Size_Cell exp to initially be null");
+            assertEquals(null, Size_MitoticCell.getExpression(), "expected Size_MitoticCell exp to initially be null");
         }
 
         //
@@ -331,8 +336,8 @@ public class StructureSizeSolverTest {
             Structure MitoticCell = model.getStructure("MitoticCell");
             StructureMapping.StructureMappingParameter Size_MitoticCell_transformed = geometryContextTransformed.getStructureMapping(MitoticCell).getParameterFromRole(StructureMapping.ROLE_Size);
 
-            Assert.assertEquals("unexpected SurfToVol_PM", "1.0", SurfToVol_PM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Cell", "0.2", VolFract_Cell.getExpression().infix());
+            assertEquals("1.0", SurfToVol_PM.getExpression().infix(), "unexpected SurfToVol_PM");
+            assertEquals("0.2", VolFract_Cell.getExpression().infix(), "unexpected VolFract_Cell");
 
             String[] symbols = new String[]{
                     "MitoticCell_mapping.Size",
@@ -392,9 +397,9 @@ public class StructureSizeSolverTest {
             double expected_Size_PM = original_VolFract_PM * specified_MitoticCell_size * original_SurfToVol_PM / (1 - original_VolFract_PM);
 
             // verify that hand-derived solution matches computed solution
-            Assert.assertTrue("unexpected Size_PM, " + expected_Size_PM + " !~ " + val_Size_PM, equiv(expected_Size_PM, val_Size_PM));
-            Assert.assertTrue("unexpected Size_Cell, " + expected_Size_Cell + " !~ " + val_Size_Cell, equiv(expected_Size_Cell, val_Size_Cell));
-            Assert.assertTrue("unexpected Size_MitoticCell, " + expected_Size_MitoticCell + " !~ " + val_Size_MitoticCell, equiv(expected_Size_MitoticCell, val_Size_MitoticCell));
+            assertTrue(equiv(expected_Size_PM, val_Size_PM), "unexpected Size_PM, " + expected_Size_PM + " !~ " + val_Size_PM);
+            assertTrue(equiv(expected_Size_Cell, val_Size_Cell), "unexpected Size_Cell, " + expected_Size_Cell + " !~ " + val_Size_Cell);
+            assertTrue(equiv(expected_Size_MitoticCell, val_Size_MitoticCell), "unexpected Size_MitoticCell, " + expected_Size_MitoticCell + " !~ " + val_Size_MitoticCell);
 
             //
             // verify expected relationships between relative and absolute sizes for this model
@@ -405,8 +410,8 @@ public class StructureSizeSolverTest {
             //
             // verify relative sizes in terms of solved absolute sizes
             //
-            Assert.assertTrue("VolFract_Cell value doesn't match solution", equiv(val_VolFract_Cell, (val_Size_Cell) / (val_Size_MitoticCell + val_Size_Cell)));
-            Assert.assertTrue("SurfToVol_PM value doesn't match solution", equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cell)));
+            assertTrue(equiv(val_VolFract_Cell, (val_Size_Cell) / (val_Size_MitoticCell + val_Size_Cell)), "VolFract_Cell value doesn't match solution");
+            assertTrue(equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cell)), "SurfToVol_PM value doesn't match solution");
 
             // now look for algebraic loops in solution
             boolean bVerifySameSymbols = true;
@@ -418,8 +423,8 @@ public class StructureSizeSolverTest {
                     new Expression("PM_mapping.VolFraction * MitoticCell_mapping.Size * PM_mapping.SurfToVolRatio / (1 - PM_mapping.VolFraction)"),
                     Size_PM_transformed.getExpression(),
                     bVerifySameSymbols);
-            Assert.assertTrue("unexpected expression for Size_Cell: " + Size_Cell_transformed.getExpression().infix(), size_cell_equiv);
-            Assert.assertTrue("unexpected expression for Size_PM: " + Size_PM_transformed.getExpression().infix(), size_pm_equiv);
+            assertTrue(size_cell_equiv, "unexpected expression for Size_Cell: " + Size_Cell_transformed.getExpression().infix());
+            assertTrue(size_pm_equiv, "unexpected expression for Size_PM: " + Size_PM_transformed.getExpression().infix());
 
             //
             // now look at the generated math and verify that the corresponding Constants/Functions are correct
@@ -444,11 +449,11 @@ public class StructureSizeSolverTest {
             boolean mathvar_Size_PM_equiv = ExpressionUtils.functionallyEquivalent(
                     new Expression("VolFract_PM * Size_MitoticCell * SurfToVol_PM / (1 - VolFract_PM)"),
                     mathvar_Size_PM.getExpression(), bVerifySameSymbols);
-            Assert.assertTrue("mathVar_Size_MitoticCell didn't match", mathvar_Size_MitoticCell_equiv);
-            Assert.assertTrue("mathVar_VolFract_PM didn't match", mathvar_VolFract_PM_equiv);
-            Assert.assertTrue("mathvar_SurfToVol_PM value didn't match", mathvar_SurfToVol_PM_equiv);
-            Assert.assertTrue("mathvar_Size_Cell didn't match", mathvar_Size_Cell_equiv);
-            Assert.assertTrue("mathvar_Size_PM didn't match", mathvar_Size_PM_equiv);
+            assertTrue(mathvar_Size_MitoticCell_equiv, "mathVar_Size_MitoticCell didn't match");
+            assertTrue(mathvar_VolFract_PM_equiv, "mathVar_VolFract_PM didn't match");
+            assertTrue(mathvar_SurfToVol_PM_equiv, "mathvar_SurfToVol_PM value didn't match");
+            assertTrue(mathvar_Size_Cell_equiv, "mathvar_Size_Cell didn't match");
+            assertTrue(mathvar_Size_PM_equiv, "mathvar_Size_PM didn't match");
         }
     }
 
@@ -503,10 +508,10 @@ public class StructureSizeSolverTest {
             double original_SurfToVol_PM = 0.263;
             double original_VolFract_Cytosol = 0.8;
 
-            Assert.assertEquals("unexpected SurfToVol_NM", Double.toString(original_SurfToVol_NM), SurfToVol_NM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Nucleus", Double.toString(original_VolFract_Nucleus), VolFract_Nucleus.getExpression().infix());
-            Assert.assertEquals("unexpected SurfToVol_PM", Double.toString(original_SurfToVol_PM), SurfToVol_PM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Cytosol", Double.toString(original_VolFract_Cytosol), VolFract_Cytosol.getExpression().infix());
+            assertEquals(Double.toString(original_SurfToVol_NM), SurfToVol_NM.getExpression().infix(), "unexpected SurfToVol_NM");
+            assertEquals(Double.toString(original_VolFract_Nucleus), VolFract_Nucleus.getExpression().infix(), "unexpected VolFract_Nucleus");
+            assertEquals(Double.toString(original_SurfToVol_PM), SurfToVol_PM.getExpression().infix(), "unexpected SurfToVol_PM");
+            assertEquals(Double.toString(original_VolFract_Cytosol), VolFract_Cytosol.getExpression().infix(), "unexpected VolFract_Cytosol");
 
             //
             // verify expected relationships between relative and absolute sizes for this model
@@ -544,10 +549,10 @@ public class StructureSizeSolverTest {
             //
             // verify relative sizes in terms of solved absolute sizes
             //
-            Assert.assertTrue("VolFract_Nucleus value doesn't match solution", equiv(val_VolFract_Nucleus, val_Size_Nucleus / (val_Size_Cytosol + val_Size_Nucleus)));
-            Assert.assertTrue("VolFract_Cytosol value doesn't match solution", equiv(val_VolFract_Cytosol, (val_Size_Cytosol + val_Size_Nucleus) / (val_Size_Extracellular + val_Size_Cytosol + val_Size_Nucleus)));
-            Assert.assertTrue("SurfToVol_NM value doesn't match solution", equiv(val_SurfToVol_NM, val_Size_NM / val_Size_Nucleus));
-            Assert.assertTrue("SurfToVol_PM value doesn't match solution", equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cytosol + val_Size_Nucleus)));
+            assertTrue(equiv(val_VolFract_Nucleus, val_Size_Nucleus / (val_Size_Cytosol + val_Size_Nucleus)), "VolFract_Nucleus value doesn't match solution");
+            assertTrue(equiv(val_VolFract_Cytosol, (val_Size_Cytosol + val_Size_Nucleus) / (val_Size_Extracellular + val_Size_Cytosol + val_Size_Nucleus)), "VolFract_Cytosol value doesn't match solution");
+            assertTrue(equiv(val_SurfToVol_NM, val_Size_NM / val_Size_Nucleus), "SurfToVol_NM value doesn't match solution");
+            assertTrue(equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cytosol + val_Size_Nucleus)), "SurfToVol_PM value doesn't match solution");
 
             double expected_Size_Cytosol = specified_cytosol_size;
             double expected_Size_Extracellular = 0.27777777777658313;
@@ -555,11 +560,11 @@ public class StructureSizeSolverTest {
             double expected_Size_Nucleus = 0.11111111111150196;
             double expected_Size_PM = 0.29222222227462435;
 
-            Assert.assertTrue("unexpected Size_NM", equiv(expected_Size_NM, val_Size_NM));
-            Assert.assertTrue("unexpected Size_PM, "+expected_Size_PM+" !~ "+val_Size_PM, equiv(expected_Size_PM, val_Size_PM));
-            Assert.assertTrue("unexpected Size_Nucleus, "+expected_Size_Nucleus+" !~ "+val_Size_Nucleus, equiv(expected_Size_Nucleus, val_Size_Nucleus));
-            Assert.assertTrue("unexpected Size_Cytosol, "+expected_Size_Cytosol+" !~ "+val_Size_Cytosol, equiv(expected_Size_Cytosol, val_Size_Cytosol));
-            Assert.assertTrue("unexpected Size_Extracellular, "+expected_Size_Extracellular+" !~ "+val_Size_Extracellular, equiv(expected_Size_Extracellular, val_Size_Extracellular));
+            assertTrue(equiv(expected_Size_NM, val_Size_NM), "unexpected Size_NM");
+            assertTrue(equiv(expected_Size_PM, val_Size_PM), "unexpected Size_PM, " + expected_Size_PM + " !~ " + val_Size_PM);
+            assertTrue(equiv(expected_Size_Nucleus, val_Size_Nucleus), "unexpected Size_Nucleus, " + expected_Size_Nucleus + " !~ " + val_Size_Nucleus);
+            assertTrue(equiv(expected_Size_Cytosol, val_Size_Cytosol), "unexpected Size_Cytosol, " + expected_Size_Cytosol + " !~ " + val_Size_Cytosol);
+            assertTrue(equiv(expected_Size_Extracellular, val_Size_Extracellular), "unexpected Size_Extracellular, " + expected_Size_Extracellular + " !~ " + val_Size_Extracellular);
         }
     }
 
@@ -608,10 +613,10 @@ public class StructureSizeSolverTest {
             double original_SurfToVol_PM = 1.0;
             double original_VolFract_Cytosol = 0.2;
 
-            Assert.assertEquals("unexpected SurfToVol_ERM", Double.toString(original_SurfToVol_ERM), SurfToVol_ERM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_ER", Double.toString(original_VolFract_ER), VolFract_ER.getExpression().infix());
-            Assert.assertEquals("unexpected SurfToVol_PM", Double.toString(original_SurfToVol_PM), SurfToVol_PM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Cytosol", Double.toString(original_VolFract_Cytosol), VolFract_Cytosol.getExpression().infix());
+            assertEquals(Double.toString(original_SurfToVol_ERM), SurfToVol_ERM.getExpression().infix(), "unexpected SurfToVol_ERM");
+            assertEquals(Double.toString(original_VolFract_ER), VolFract_ER.getExpression().infix(), "unexpected VolFract_ER");
+            assertEquals(Double.toString(original_SurfToVol_PM), SurfToVol_PM.getExpression().infix(), "unexpected SurfToVol_PM");
+            assertEquals(Double.toString(original_VolFract_Cytosol), VolFract_Cytosol.getExpression().infix(), "unexpected VolFract_Cytosol");
 
             //
             // verify expected relationships between relative and absolute sizes for this model
@@ -654,8 +659,8 @@ public class StructureSizeSolverTest {
             //       Cytosol is the top level structure which was mapped to the cell volume domain.
             //       PM is the top level structure which was mapped to the cell / extracellular surface domain.
             //
-            Assert.assertTrue("VolFract_ER value doesn't match solution", equiv(val_VolFract_ER, val_Unit_Size_ER / (val_Unit_Size_Cytosol + val_Unit_Size_ER)));
-            Assert.assertTrue("SurfToVol_ERM value doesn't match solution", equiv(val_SurfToVol_ERM, val_Unit_Size_ERM / val_Unit_Size_ER));
+            assertTrue(equiv(val_VolFract_ER, val_Unit_Size_ER / (val_Unit_Size_Cytosol + val_Unit_Size_ER)), "VolFract_ER value doesn't match solution");
+            assertTrue(equiv(val_SurfToVol_ERM, val_Unit_Size_ERM / val_Unit_Size_ER), "SurfToVol_ERM value doesn't match solution");
 
             double expected_Unit_Size_Cytosol = 0.85;
             double expected_Unit_Size_Extracellular = 1.0;
@@ -663,11 +668,11 @@ public class StructureSizeSolverTest {
             double expected_Unit_Size_ER = 0.15;
             double expected_Unit_Size_PM = 1.0;
 
-            Assert.assertTrue("unexpected Unit_Size_ERM, "+expected_Unit_Size_ERM+" !~ "+val_Unit_Size_ERM, equiv(expected_Unit_Size_ERM, val_Unit_Size_ERM));
-            Assert.assertTrue("unexpected Unit_Size_PM, "+expected_Unit_Size_PM+" !~ "+val_Unit_Size_PM, equiv(expected_Unit_Size_PM, val_Unit_Size_PM));
-            Assert.assertTrue("unexpected Unit_Size_ER, "+expected_Unit_Size_ER+" !~ "+val_Unit_Size_ER, equiv(expected_Unit_Size_ER, val_Unit_Size_ER));
-            Assert.assertTrue("unexpected Unit_Size_Cytosol, "+expected_Unit_Size_Cytosol+" !~ "+val_Unit_Size_Cytosol, equiv(expected_Unit_Size_Cytosol, val_Unit_Size_Cytosol));
-            Assert.assertTrue("unexpected Unit_Size_Extracellular, "+expected_Unit_Size_Extracellular+" !~ "+val_Unit_Size_Extracellular, equiv(expected_Unit_Size_Extracellular, val_Unit_Size_Extracellular));
+            assertTrue(equiv(expected_Unit_Size_ERM, val_Unit_Size_ERM), "unexpected Unit_Size_ERM, " + expected_Unit_Size_ERM + " !~ " + val_Unit_Size_ERM);
+            assertTrue(equiv(expected_Unit_Size_PM, val_Unit_Size_PM), "unexpected Unit_Size_PM, " + expected_Unit_Size_PM + " !~ " + val_Unit_Size_PM);
+            assertTrue(equiv(expected_Unit_Size_ER, val_Unit_Size_ER), "unexpected Unit_Size_ER, " + expected_Unit_Size_ER + " !~ " + val_Unit_Size_ER);
+            assertTrue(equiv(expected_Unit_Size_Cytosol, val_Unit_Size_Cytosol), "unexpected Unit_Size_Cytosol, " + expected_Unit_Size_Cytosol + " !~ " + val_Unit_Size_Cytosol);
+            assertTrue(equiv(expected_Unit_Size_Extracellular, val_Unit_Size_Extracellular), "unexpected Unit_Size_Extracellular, " + expected_Unit_Size_Extracellular + " !~ " + val_Unit_Size_Extracellular);
         }
     }
 
@@ -712,10 +717,10 @@ public class StructureSizeSolverTest {
             double original_SurfToVol_PM = 1.0;
             double original_VolFract_Cytosol = 0.2;
 
-            Assert.assertEquals("unexpected SurfToVol_ERM", Double.toString(original_SurfToVol_ERM), SurfToVol_ERM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_ER", Double.toString(original_VolFract_ER), VolFract_ER.getExpression().infix());
-            Assert.assertEquals("unexpected SurfToVol_PM", Double.toString(original_SurfToVol_PM), SurfToVol_PM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Cytosol", Double.toString(original_VolFract_Cytosol), VolFract_Cytosol.getExpression().infix());
+        assertEquals(Double.toString(original_SurfToVol_ERM), SurfToVol_ERM.getExpression().infix(), "unexpected SurfToVol_ERM");
+        assertEquals(Double.toString(original_VolFract_ER), VolFract_ER.getExpression().infix(), "unexpected VolFract_ER");
+        assertEquals(Double.toString(original_SurfToVol_PM), SurfToVol_PM.getExpression().infix(), "unexpected SurfToVol_PM");
+        assertEquals(Double.toString(original_VolFract_Cytosol), VolFract_Cytosol.getExpression().infix(), "unexpected VolFract_Cytosol");
 
             //
             // verify expected relationships between relative and absolute sizes for this model
@@ -750,14 +755,14 @@ public class StructureSizeSolverTest {
             //       Cytosol is the top level structure which was mapped to the cell volume domain.
             //       PM is the top level structure which was mapped to the cell / extracellular surface domain.
             //
-            Assert.assertTrue("VolFract_ER value doesn't match solution", equiv(val_VolFract_ER, val_Unit_Size_ER / (val_Unit_Size_Cytosol + val_Unit_Size_ER)));
-            Assert.assertTrue("SurfToVol_ERM value doesn't match solution", equiv(val_SurfToVol_ERM, val_Unit_Size_ERM / ( val_Unit_Size_ER )));
+        assertTrue(equiv(val_VolFract_ER, val_Unit_Size_ER / (val_Unit_Size_Cytosol + val_Unit_Size_ER)), "VolFract_ER value doesn't match solution");
+        assertTrue(equiv(val_SurfToVol_ERM, val_Unit_Size_ERM / (val_Unit_Size_ER)), "SurfToVol_ERM value doesn't match solution");
 
-        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_Cytosol_transformed.getExpression(), new Expression("1.0 - ERM_mapping.VolFraction")));
-        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_Extracellular_transformed.getExpression(), new Expression(1.0)));
-        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_ERM_transformed.getExpression(), new Expression("ERM_mapping.VolFraction * ERM_mapping.SurfToVolRatio")));
-        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_ER_transformed.getExpression(), new Expression("ERM_mapping.VolFraction")));
-        Assert.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_PM_transformed.getExpression(), new Expression(1.0)));
+        Assertions.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_Cytosol_transformed.getExpression(), new Expression("1.0 - ERM_mapping.VolFraction")));
+        Assertions.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_Extracellular_transformed.getExpression(), new Expression(1.0)));
+        Assertions.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_ERM_transformed.getExpression(), new Expression("ERM_mapping.VolFraction * ERM_mapping.SurfToVolRatio")));
+        Assertions.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_ER_transformed.getExpression(), new Expression("ERM_mapping.VolFraction")));
+        Assertions.assertTrue(ExpressionUtils.functionallyEquivalent(Unit_Size_PM_transformed.getExpression(), new Expression(1.0)));
 
         double expected_Unit_Size_Cytosol = 0.85;
         double expected_Unit_Size_Extracellular = 1.0;
@@ -765,11 +770,11 @@ public class StructureSizeSolverTest {
             double expected_Unit_Size_ER = 0.15;
             double expected_Unit_Size_PM = 1.0;
 
-            Assert.assertTrue("unexpected Unit_Size_ERM, "+expected_Unit_Size_ERM+" !~ "+val_Unit_Size_ERM, equiv(expected_Unit_Size_ERM, val_Unit_Size_ERM));
-            Assert.assertTrue("unexpected Unit_Size_PM, "+expected_Unit_Size_PM+" !~ "+val_Unit_Size_PM, equiv(expected_Unit_Size_PM, val_Unit_Size_PM));
-            Assert.assertTrue("unexpected Unit_Size_ER, "+expected_Unit_Size_ER+" !~ "+val_Unit_Size_ER, equiv(expected_Unit_Size_ER, val_Unit_Size_ER));
-            Assert.assertTrue("unexpected Unit_Size_Cytosol, "+expected_Unit_Size_Cytosol+" !~ "+val_Unit_Size_Cytosol, equiv(expected_Unit_Size_Cytosol, val_Unit_Size_Cytosol));
-        Assert.assertTrue("unexpected Unit_Size_Extracellular, "+expected_Unit_Size_Extracellular+" !~ "+val_Unit_Size_Extracellular, equiv(expected_Unit_Size_Extracellular, val_Unit_Size_Extracellular));
+        assertTrue(equiv(expected_Unit_Size_ERM, val_Unit_Size_ERM), "unexpected Unit_Size_ERM, " + expected_Unit_Size_ERM + " !~ " + val_Unit_Size_ERM);
+        assertTrue(equiv(expected_Unit_Size_PM, val_Unit_Size_PM), "unexpected Unit_Size_PM, " + expected_Unit_Size_PM + " !~ " + val_Unit_Size_PM);
+        assertTrue(equiv(expected_Unit_Size_ER, val_Unit_Size_ER), "unexpected Unit_Size_ER, " + expected_Unit_Size_ER + " !~ " + val_Unit_Size_ER);
+        assertTrue(equiv(expected_Unit_Size_Cytosol, val_Unit_Size_Cytosol), "unexpected Unit_Size_Cytosol, " + expected_Unit_Size_Cytosol + " !~ " + val_Unit_Size_Cytosol);
+        assertTrue(equiv(expected_Unit_Size_Extracellular, val_Unit_Size_Extracellular), "unexpected Unit_Size_Extracellular, " + expected_Unit_Size_Extracellular + " !~ " + val_Unit_Size_Extracellular);
     }
 
     @Test
@@ -815,10 +820,10 @@ public class StructureSizeSolverTest {
             double original_SurfToVol_PM = 0.263;
             double original_VolFract_Cytosol = 0.8;
 
-            Assert.assertEquals("unexpected SurfToVol_NM", Double.toString(original_SurfToVol_NM), SurfToVol_NM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Nucleus", Double.toString(original_VolFract_Nucleus), VolFract_Nucleus.getExpression().infix());
-            Assert.assertEquals("unexpected SurfToVol_PM", Double.toString(original_SurfToVol_PM), SurfToVol_PM.getExpression().infix());
-            Assert.assertEquals("unexpected VolFract_Cytosol", Double.toString(original_VolFract_Cytosol), VolFract_Cytosol.getExpression().infix());
+            assertEquals(Double.toString(original_SurfToVol_NM), SurfToVol_NM.getExpression().infix(), "unexpected SurfToVol_NM");
+            assertEquals(Double.toString(original_VolFract_Nucleus), VolFract_Nucleus.getExpression().infix(), "unexpected VolFract_Nucleus");
+            assertEquals(Double.toString(original_SurfToVol_PM), SurfToVol_PM.getExpression().infix(), "unexpected SurfToVol_PM");
+            assertEquals(Double.toString(original_VolFract_Cytosol), VolFract_Cytosol.getExpression().infix(), "unexpected VolFract_Cytosol");
 
             //
             // verify expected relationships between relative and absolute sizes for this model
@@ -856,10 +861,10 @@ public class StructureSizeSolverTest {
             //
             // verify relative sizes in terms of solved absolute sizes
             //
-            Assert.assertTrue("VolFract_Nucleus value doesn't match solution", equiv(val_VolFract_Nucleus, val_Size_Nucleus / (val_Size_Cytosol + val_Size_Nucleus)));
-            Assert.assertTrue("VolFract_Cytosol value doesn't match solution", equiv(val_VolFract_Cytosol, (val_Size_Cytosol + val_Size_Nucleus) / (val_Size_Extracellular + val_Size_Cytosol + val_Size_Nucleus)));
-            Assert.assertTrue("SurfToVol_NM value doesn't match solution", equiv(val_SurfToVol_NM, val_Size_NM / val_Size_Nucleus));
-            Assert.assertTrue("SurfToVol_PM value doesn't match solution", equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cytosol + val_Size_Nucleus)));
+            assertTrue(equiv(val_VolFract_Nucleus, val_Size_Nucleus / (val_Size_Cytosol + val_Size_Nucleus)), "VolFract_Nucleus value doesn't match solution");
+            assertTrue(equiv(val_VolFract_Cytosol, (val_Size_Cytosol + val_Size_Nucleus) / (val_Size_Extracellular + val_Size_Cytosol + val_Size_Nucleus)), "VolFract_Cytosol value doesn't match solution");
+            assertTrue(equiv(val_SurfToVol_NM, val_Size_NM / val_Size_Nucleus), "SurfToVol_NM value doesn't match solution");
+            assertTrue(equiv(val_SurfToVol_PM, val_Size_PM / (val_Size_Cytosol + val_Size_Nucleus)), "SurfToVol_PM value doesn't match solution");
 
             double expected_Size_Cytosol = specified_cytosol_size;
             double expected_Size_Extracellular = 0.27777777777658313;
@@ -867,11 +872,11 @@ public class StructureSizeSolverTest {
             double expected_Size_Nucleus = 0.11111111111150196;
             double expected_Size_PM = 0.29222222227462435;
 
-            Assert.assertTrue("unexpected Size_NM", equiv(expected_Size_NM, val_Size_NM));
-            Assert.assertTrue("unexpected Size_PM, "+expected_Size_PM+" !~ "+val_Size_PM, equiv(expected_Size_PM, val_Size_PM));
-            Assert.assertTrue("unexpected Size_Nucleus, "+expected_Size_Nucleus+" !~ "+val_Size_Nucleus, equiv(expected_Size_Nucleus, val_Size_Nucleus));
-            Assert.assertTrue("unexpected Size_Cytosol, "+expected_Size_Cytosol+" !~ "+val_Size_Cytosol, equiv(expected_Size_Cytosol, val_Size_Cytosol));
-            Assert.assertTrue("unexpected Size_Extracellular, "+expected_Size_Extracellular+" !~ "+val_Size_Extracellular, equiv(expected_Size_Extracellular, val_Size_Extracellular));
+            assertTrue(equiv(expected_Size_NM, val_Size_NM), "unexpected Size_NM");
+            assertTrue(equiv(expected_Size_PM, val_Size_PM), "unexpected Size_PM, " + expected_Size_PM + " !~ " + val_Size_PM);
+            assertTrue(equiv(expected_Size_Nucleus, val_Size_Nucleus), "unexpected Size_Nucleus, " + expected_Size_Nucleus + " !~ " + val_Size_Nucleus);
+            assertTrue(equiv(expected_Size_Cytosol, val_Size_Cytosol), "unexpected Size_Cytosol, " + expected_Size_Cytosol + " !~ " + val_Size_Cytosol);
+            assertTrue(equiv(expected_Size_Extracellular, val_Size_Extracellular), "unexpected Size_Extracellular, " + expected_Size_Extracellular + " !~ " + val_Size_Extracellular);
         }
     }
 

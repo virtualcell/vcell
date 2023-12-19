@@ -4,16 +4,14 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
-import org.vcell.test.Spatial_IT;
 import org.vcell.util.VCellUtilityHub;
 
 import java.io.File;
@@ -26,16 +24,11 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@RunWith(Parameterized.class)
-@Category(Spatial_IT.class)
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+@Tag("Spatial_IT")
 public class SpatialExecTest {
-    private final String testCaseFilename;
-
-    public SpatialExecTest(String testCase){
-        this.testCaseFilename = testCase;
-    }
-
-    @BeforeClass
+    @BeforeAll
     public static void setup() throws PythonStreamException, IOException {
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         NativeLib.HDF5.load();
@@ -48,7 +41,7 @@ public class SpatialExecTest {
         CLIPythonManager.getInstance().instantiatePythonProcess();
     }
 
-    @BeforeClass
+    @AfterAll
     public static void teardown() throws Exception {
         CLIPythonManager.getInstance().closePythonProcess();
         VCellUtilityHub.shutdown();
@@ -101,7 +94,6 @@ public class SpatialExecTest {
         return faults;
     }
 
-    @Parameterized.Parameters
     public static Collection<String> testCases() {
         Set<String> modelsToFilter = new HashSet<>(blacklistedModels());
         Predicate<String> filter = (t) -> !modelsToFilter.contains(t);
@@ -109,11 +101,12 @@ public class SpatialExecTest {
         return Arrays.stream(SpatialArchiveFiles.getSpatialTestCases()).filter(filter).collect(Collectors.toList());
     }
 
-    @Test
-    public void testSpatialOmex() throws Exception {
-        SpatialExecTest.FAULT knownFault = knownFaults().get(this.testCaseFilename);
+    @ParameterizedTest
+    @MethodSource("testCases")
+    public void testSpatialOmex(String testCaseFilename) throws Exception {
+        SpatialExecTest.FAULT knownFault = knownFaults().get(testCaseFilename);
         try {
-            System.out.println("running test " + this.testCaseFilename);
+            System.out.println("running test " + testCaseFilename);
             final boolean[] bFailed = new boolean[1];
             final String[] errorMessage = new String[1];
 
@@ -150,15 +143,15 @@ public class SpatialExecTest {
                     errorMessage[0] = message;
                 }
             };
-            InputStream omexInputStream = SpatialArchiveFiles.getSpatialTestCase(this.testCaseFilename);
+            InputStream omexInputStream = SpatialArchiveFiles.getSpatialTestCase(testCaseFilename);
             Path omexFile = Files.createTempFile("Spatial_OmexFile_", "omex");
             FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
             ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
             String errMessage = (errorMessage[0] != null) ? errorMessage[0].replace("\n", " | ") : "";
-            Assert.assertFalse("failure: '" + errMessage + "'", bFailed[0]);
+            assertFalse(bFailed[0], "failure: '" + errMessage + "'");
             if (knownFault != null){
                 throw new RuntimeException("test case passed, but expected " + knownFault.name() + ", remove "
-                        + this.testCaseFilename + " from known faults");
+                        + testCaseFilename + " from known faults");
             }
 
         } catch (Exception | AssertionError e){
@@ -168,8 +161,8 @@ public class SpatialExecTest {
                 return;
             }
 
-            System.err.println("add FAULT." + fault.name() + " to " + this.testCaseFilename);
-            throw new Exception("Test error: " + this.testCaseFilename + " failed improperly", e);
+            System.err.println("add FAULT." + fault.name() + " to " + testCaseFilename);
+            throw new Exception("Test error: " + testCaseFilename + " failed improperly", e);
         }
     }
 

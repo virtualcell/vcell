@@ -1,19 +1,20 @@
 package cbit.vcell.units.parser;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
-@Category(Fast.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@Tag("Fast")
 public class UnitSymbolTest {
 
 	@Test
 	public void testUnitSymbol( ) {
-		Assert.assertEquals("uM*s^-1", new UnitSymbol("uM.s-1").getUnitSymbolAsInfix());
-		Assert.assertEquals("dimensionless", new UnitSymbol("dimensionless").getUnitSymbolAsInfix());
-		Assert.assertEquals("tbd", new UnitSymbol("tbd").getUnitSymbolAsInfix());
-		Assert.assertEquals("m^2*s*item^-1", new UnitSymbol("m2.s.item-1").getUnitSymbolAsInfix());
+		assertEquals("uM*s^-1", new UnitSymbol("uM.s-1").getUnitSymbolAsInfix());
+		assertEquals("dimensionless", new UnitSymbol("dimensionless").getUnitSymbolAsInfix());
+		assertEquals("tbd", new UnitSymbol("tbd").getUnitSymbolAsInfix());
+		assertEquals("m^2*s*item^-1", new UnitSymbol("m2.s.item-1").getUnitSymbolAsInfix());
 	}
 
 }

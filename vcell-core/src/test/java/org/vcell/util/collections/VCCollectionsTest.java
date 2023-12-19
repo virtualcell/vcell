@@ -1,26 +1,25 @@
 package org.vcell.util.collections;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.vcell.util.collections.VCCollections.Delta;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-import org.vcell.util.collections.VCCollections.Delta;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class VCCollectionsTest {
 	private List<Integer> a = new ArrayList<>();
 	private List<Integer> b = new ArrayList<>();
 	private Comparator<Integer> cmp = Comparator.naturalOrder( );
 	
-	@Before
+	@BeforeEach
 	public void setup( ) {
 		int n[] = {3,4,5};
 		for (int i : n) {
@@ -31,11 +30,11 @@ public class VCCollectionsTest {
 	
 	@Test
 	public <T> void ctest( ) {
-		ArrayList<Delta<Integer>> dt = new ArrayList<VCCollections.Delta<Integer>>( );
+		ArrayList<Delta<Integer>> dt = new ArrayList<Delta<Integer>>();
 		b.addAll(a);
 		assertTrue(VCCollections.equal(a, b, cmp, null));
 		assertTrue(VCCollections.equal(a, b, cmp, dt));
-		for (int i = 0; i < 10 ;i++) {
+		for (int i = 0; i < 10; i++) {
 			Collections.shuffle(b);
 			assertTrue(VCCollections.equal(a, b, cmp, null));
 			assertTrue(VCCollections.equal(a, b, cmp, dt));
@@ -49,9 +48,8 @@ public class VCCollectionsTest {
 //		for (Delta<Integer> d : dt) {
 //			System.out.println(d);
 //		}
-		
-		
-		
+
+
 	}
 
 }

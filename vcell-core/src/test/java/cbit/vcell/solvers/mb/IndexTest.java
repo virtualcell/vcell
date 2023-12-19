@@ -1,20 +1,20 @@
 package cbit.vcell.solvers.mb;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.vcell.vis.core.Vect3D;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-import org.vcell.vis.core.Vect3D;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * test {@link PointIndexTreeAndList} implementation
  */
-@Category(Fast.class)
+@Tag("Fast")
 public class IndexTest {
 	private static final double VALUES[] = {
 			0.3954988527,
@@ -72,10 +72,9 @@ public class IndexTest {
 		for (Vect3D v : raw) {
 			int ci = check.get(v);
 			Vect3Didx iv = pitl.index(v.x, v.y,v.z);
-			assertTrue(ci == iv.index);
+            assertEquals(ci, iv.index);
 			Vect3Didx rb = pi.lookup(ci);
-			assertTrue(iv == rb);
-
+            assertSame(iv, rb);
 		}
 	}
 

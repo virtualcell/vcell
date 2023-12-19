@@ -1,23 +1,21 @@
 package cbit.vcell.parser;
 
+import net.sourceforge.interval.ia_math.IAException;
+import net.sourceforge.interval.ia_math.RealInterval;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import net.sourceforge.interval.ia_math.IAException;
-import net.sourceforge.interval.ia_math.RealInterval;
-import org.vcell.test.Fast;
-
-@Ignore
-@Category(Fast.class)
-@RunWith(Parameterized.class)
+@Disabled
+@Tag("Fast")
 public class IntervalNarrowingTest {
 	private Expression constraint;
 	
@@ -25,7 +23,7 @@ public class IntervalNarrowingTest {
 		this.constraint = constraintExp;
 	}
 
-	@Parameterized.Parameters
+
 	public static Collection constraintExpressions() throws ExpressionException {
 		final int NUM_TRIALS = 10;
 		final int MAX_DEPTH = 3;
@@ -39,12 +37,13 @@ public class IntervalNarrowingTest {
 		return parameters;
 	}
 	
-	@Test
+	@ParameterizedTest
+	@MethodSource("constraintExpressions")
 	public void testIntervalNarrowing() throws DivideByZeroException, ExpressionException {
 		final Random random = new Random(0);
 		String symbols[] = constraint.getSymbols();
 		if (symbols==null || symbols.length<1){
-			Assert.fail("<<"+constraint.infix()+">> doesn't have any symbols in it, can't be a proper constraint, bad test case");
+            fail("<<" + constraint.infix() + ">> doesn't have any symbols in it, can't be a proper constraint, bad test case");
 		}
 		SimpleSymbolTable symbolTable = new SimpleSymbolTable(symbols);
 		constraint.bindExpression(symbolTable);
@@ -80,7 +79,7 @@ public class IntervalNarrowingTest {
 				}
 			}catch (FunctionDomainException e){
 			}catch (IAException e){
-				Assert.assertEquals("exception indicates that intersection is empty",e.getMessage().contains("intersection is empty"),true);
+				assertEquals(e.getMessage().contains("intersection is empty"), true, "exception indicates that intersection is empty");
 			}
 		}
 		if (!bInitialValueSatisfiesConstraint){
@@ -94,9 +93,9 @@ public class IntervalNarrowingTest {
 		try {
 			boolean bSatisfied = constraint.narrow(values);
 		}catch (FunctionDomainException e){
-			Assert.fail("<<"+constraint.infix()+">> "+getPoint(symbols, values)+" initial values result in FunctionDomainException, "+e.getMessage());
+            fail("<<" + constraint.infix() + ">> " + getPoint(symbols, values) + " initial values result in FunctionDomainException, " + e.getMessage());
 		}catch (IAException e){
-			Assert.fail("<<"+constraint.infix()+">> "+getPoint(symbols, values)+" initial value result in IAException, "+e.getMessage());
+            fail("<<" + constraint.infix() + ">> " + getPoint(symbols, values) + " initial value result in IAException, " + e.getMessage());
 		}
 		boolean bValuesChanged = true;
 		boolean bValuesEverChanged = false;
@@ -108,7 +107,7 @@ public class IntervalNarrowingTest {
 		while (bValuesChanged && iteration < maxIterations){
 			iteration++;
 			boolean bConstraintSatisfied = constraint.narrow(values);
-			Assert.assertEquals("<<"+constraint.infix()+">> "+getPoint(symbols,values)+" constraint not satisfied",bConstraintSatisfied,true);
+			assertEquals(bConstraintSatisfied, true, "<<" + constraint.infix() + ">> " + getPoint(symbols, values) + " constraint not satisfied");
 					
 			bValuesChanged = false;
 			System.out.print("     iteration "+iteration);
@@ -128,10 +127,10 @@ public class IntervalNarrowingTest {
 		// verify that narrowed intervals are a subset of the initial intervals
 		//
 		for (int j = 0; j < values.length; j++){
-			Assert.assertEquals("<<"+constraint.infix()+">> narrowing bounds new.low >= orig.low", values[j].lo() >= initialItervals[j].lo(), true);
-			Assert.assertEquals("<<"+constraint.infix()+">> narrowing bounds new.low <= orig.high",  values[j].lo() <= initialItervals[j].hi(), true);
-			Assert.assertEquals("<<"+constraint.infix()+">> narrowing bounds new.high >= orig.low",  values[j].hi() >= initialItervals[j].lo(), true);
-			Assert.assertEquals("<<"+constraint.infix()+">> narrowing bounds new.high <= orig.high", values[j].hi() <= initialItervals[j].hi(), true);
+			assertEquals(values[j].lo() >= initialItervals[j].lo(), true, "<<" + constraint.infix() + ">> narrowing bounds new.low >= orig.low");
+			assertEquals(values[j].lo() <= initialItervals[j].hi(), true, "<<" + constraint.infix() + ">> narrowing bounds new.low <= orig.high");
+			assertEquals(values[j].hi() >= initialItervals[j].lo(), true, "<<" + constraint.infix() + ">> narrowing bounds new.high >= orig.low");
+			assertEquals(values[j].hi() <= initialItervals[j].hi(), true, "<<" + constraint.infix() + ">> narrowing bounds new.high <= orig.high");
 
 			if (!values[j].equals(initialItervals[j])){
 				bNarrowedIsDifferent = true;
@@ -161,7 +160,7 @@ public class IntervalNarrowingTest {
 				try {
 					if (bSamplesOutsideNarrowedIntervals){
 						double result = constraint.evaluateVector(samples);
-						Assert.assertEquals("<<"+constraint.infix()+">> "+getPoint(symbols,samples)+" removed point was in solution", result==0.0, true);
+						assertEquals(result == 0.0, true, "<<" + constraint.infix() + ">> " + getPoint(symbols, samples) + " removed point was in solution");
 						successCount++;
 					}
 				}catch (FunctionDomainException e){
@@ -169,7 +168,7 @@ public class IntervalNarrowingTest {
 					functionDomainException = e;
 				}
 			}
-			Assert.assertEquals("<<"+constraint.infix()+">> only threw FunctionDomainExceptions, exception="+functionDomainException,successCount<NUM_SAMPLES,false);
+			assertEquals(successCount < NUM_SAMPLES, false, "<<" + constraint.infix() + ">> only threw FunctionDomainExceptions, exception=" + functionDomainException);
 		}
 	}
 

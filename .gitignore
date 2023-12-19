@@ -10,6 +10,8 @@
 /vfrapPaper/
 jsbml.log
 target/
+node_modules/
+.angular
 *.pyc
 *.so
 *.so.*
@@ -220,3 +222,5 @@ temp*.err
 
 
 vcell-core/src/test/resources/simdata/n5/N5ExportData/
+
+docker/swarm/zeke_env.txt
