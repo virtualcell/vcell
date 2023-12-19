@@ -1,18 +1,5 @@
 package org.vcell.vis.vtk;
 
-import cbit.vcell.resource.PropertyLoader;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.vcell.util.document.KeyValue;
-import org.vcell.vis.io.CartesianMeshFileReader;
-import org.vcell.vis.io.VCellSimFiles;
-import org.vcell.vis.mapping.vcell.CartesianMeshMapping;
-import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
-import org.vcell.vis.vcell.CartesianMesh;
-import org.vcell.vis.vismesh.thrift.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,19 +8,33 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 
-@Tag("Fast")
+import cbit.vcell.resource.PropertyLoader;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
+import org.vcell.util.document.KeyValue;
+import org.vcell.vis.io.CartesianMeshFileReader;
+import org.vcell.vis.io.VCellSimFiles;
+import org.vcell.vis.mapping.vcell.CartesianMeshMapping;
+import org.vcell.vis.mapping.vcell.CartesianMeshVtkFileWriter;
+import org.vcell.vis.vcell.CartesianMesh;
+import org.vcell.vis.vismesh.thrift.*;
+
+@Category(Fast.class)
 public class VCellDataTest {
 
-	private static String previousPythonDir = null;
+	private String previousPythonDir = null;
 
-	@BeforeAll
-	public static void setUp() {
-		previousPythonDir = PropertyLoader.getProperty(PropertyLoader.vtkPythonDir, null);
+	@Before
+	public void setUp() {
+		this.previousPythonDir = PropertyLoader.getProperty(PropertyLoader.vtkPythonDir, null);
 		PropertyLoader.setProperty(PropertyLoader.vtkPythonDir, "../pythonVtk");
 	}
 
-	@AfterAll
-	public static void tearDown() {
+	@After
+	public void tearDown() {
 		if (previousPythonDir!=null) {
 			PropertyLoader.setProperty(PropertyLoader.vtkPythonDir, previousPythonDir);
 		}

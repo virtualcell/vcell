@@ -4,16 +4,14 @@ import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwt.MalformedClaimException;
 import org.jose4j.jwt.NumericDate;
 import org.jose4j.lang.JoseException;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.vcell.auth.JWTUtils.verifyJWS;
-
-@Tag("Fast")
+@Category(Fast.class)
 public class JWTUtilsTest {
 
     @Test
@@ -28,18 +26,18 @@ public class JWTUtilsTest {
         NumericDate expirationDate = NumericDate.now();
         expirationDate.addSeconds(1);
         String token1 = JWTUtils.createToken(user, expirationDate);
-        assertTrue(verifyJWS(token1), "expect valid token");
+        Assert.assertTrue("expect valid token", JWTUtils.verifyJWS(token1));
 
         // test expiration date by setting the expiration date 31 seconds in the past (there is a 30 second tolerance)
         expirationDate = NumericDate.now();
         expirationDate.addSeconds(-31);
         String token2 = JWTUtils.createToken(user, expirationDate);
-        assertFalse(verifyJWS(token2), "expect timeout");
+        Assert.assertFalse("expect timeout", JWTUtils.verifyJWS(token2));
 
         // install a different JsonWebKey and see that both tokens are invalid
         RsaJsonWebKey rsaJsonWebKey2 = JWTUtils.createNewJsonWebKey("k2");
         JWTUtils.setRsaJsonWebKey(rsaJsonWebKey2);
-        assertFalse(verifyJWS(token1), "expect invalid token1, wrong signature");
-        assertFalse(verifyJWS(token2), "expect invalid token2, wrong signature");
+        Assert.assertFalse("expect invalid token1, wrong signature", JWTUtils.verifyJWS(token1));
+        Assert.assertFalse("expect invalid token2, wrong signature", JWTUtils.verifyJWS(token2));
     }
 }

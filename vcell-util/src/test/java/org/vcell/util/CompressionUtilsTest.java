@@ -1,25 +1,23 @@
 package org.vcell.util;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
-
 import javax.management.StringValueExp;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.vcell.util.CompressionUtils.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
-@Tag("Fast")
+import static org.junit.Assert.*;
+
+@Category(Fast.class)
 public class CompressionUtilsTest {
 
     @Test
     public void roundTripCompressionTest() throws IOException{
-        assertThrows(NullPointerException.class, () -> compress(null));
-        assertThrows(NullPointerException.class, () -> uncompress(null));
+        assertThrows(NullPointerException.class, () -> CompressionUtils.compress(null));
+        assertThrows(NullPointerException.class, () -> CompressionUtils.uncompress(null));
 
         String message = "Hello VCell!";
         byte[] encodedMessage = message.getBytes();
@@ -44,7 +42,7 @@ public class CompressionUtilsTest {
         // TODO: Confirm VCell never actually uses this behavior, and put a null check in!
         byte[] compressedNull = CompressionUtils.toCompressedSerialized(null);
         assertNotNull(compressedNull);
-        assertThrows(StreamCorruptedException.class, () -> fromSerialized(compressedNull));
+        assertThrows(StreamCorruptedException.class, () -> CompressionUtils.fromSerialized(compressedNull));
     }
 
     @Test
@@ -62,7 +60,7 @@ public class CompressionUtilsTest {
         // TODO: Confirm VCell never actually uses this behavior, and put a null check in!
         byte[] compressedNull = CompressionUtils.toCompressedSerialized(null);
         assertNotNull(compressedNull);
-        assertThrows(StreamCorruptedException.class, () -> fromSerialized(compressedNull));
+        assertThrows(StreamCorruptedException.class, () -> CompressionUtils.fromSerialized(compressedNull));
     }
 
     @Test
@@ -78,6 +76,6 @@ public class CompressionUtilsTest {
         StringValueExp messageRepresentation = new StringValueExp(text);
         byte[] compressedSerialization = CompressionUtils.toCompressedSerialized(messageRepresentation);
         byte[] rawBytesSerialization = CompressionUtils.toSerialized(messageRepresentation);
-        Assertions.assertTrue(compressedSerialization.length < rawBytesSerialization.length);
+        assertTrue(compressedSerialization.length < rawBytesSerialization.length);
     }
 }

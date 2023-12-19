@@ -46,8 +46,6 @@ public class N5Exporter implements ExportConstants {
 	private VCSimulationDataIdentifier vcDataID;
 	public String n5BucketName = "n5Data";
 
-	private User user;
-
 	public static final ArrayList<VariableType> unsupportedTypes = new ArrayList<>(Arrays.asList(
 			VariableType.MEMBRANE,
 			VariableType.VOLUME_REGION,
@@ -137,7 +135,6 @@ public class N5Exporter implements ExportConstants {
 		// make an object that ties the user to that simulation key
 		// make an object that then identifies the simulation
 		User user = new User(userName, new KeyValue(userKey));
-		this.user = user;
 
 		KeyValue simKey = new KeyValue(simKeyID);
 		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, user);
@@ -207,12 +204,8 @@ public class N5Exporter implements ExportConstants {
 	}
 
 	public String getN5FileAbsolutePath(){
-		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + getN5FilePathSuffix());
+		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + n5BucketName + "/" + this.getN5FileNameHash() + "." + N5Specs.n5Suffix);
 		return outPutDir.getAbsolutePath();
-	}
-
-	public String getN5FilePathSuffix(){
-		return n5BucketName + "/" + user.getName() + "/" + this.getN5FileNameHash() + "." + N5Specs.n5Suffix;
 	}
 
 	public String getN5FileNameHash(){

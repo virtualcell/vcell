@@ -10,14 +10,14 @@
 
 package cbit.vcell.simdata;
 
-import cbit.vcell.util.AmplistorUtils;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.document.KeyValue;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import cbit.vcell.util.AmplistorUtils;
 
-@Tag("Fast")
+@Category(Fast.class)
 public class SimulationDataTest {
 	@SuppressWarnings("unused")
 	private static int jIndexes[] = {0,2,4,7,16,32,64};
@@ -39,13 +39,11 @@ public class SimulationDataTest {
 	}
 	*/
 	
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void noZero(  ) {
-		assertThrows(IllegalArgumentException.class, () -> {
-			KeyValue kv = new KeyValue("8675904");
-			String now = SimulationData.createCanonicalSmoldynOutputFileName(kv, 0, 0);
-			System.out.println("never see " + now);
-		});
+		KeyValue kv = new KeyValue("8675904");
+		String now = SimulationData.createCanonicalSmoldynOutputFileName(kv, 0, 0);
+		System.out.println("never see " + now);
 	}
 	
 	

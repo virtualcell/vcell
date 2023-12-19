@@ -4,14 +4,16 @@ import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
+import org.vcell.test.BSTS_IT;
 import org.vcell.util.VCellUtilityHub;
 import org.vcell.util.exe.Executable;
 
@@ -28,11 +30,16 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
-@Tag("BSTS_IT")
+@RunWith(Parameterized.class)
+@Category(BSTS_IT.class)
 public class BiosimulationsExecTest {
-	@BeforeAll
+	private final String testCaseProjectID;
+
+	public BiosimulationsExecTest(String testCaseProjectID){
+		this.testCaseProjectID = testCaseProjectID;
+	}
+
+	@BeforeClass
 	public static void setup() throws PythonStreamException, IOException {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
 		NativeLib.HDF5.load();
@@ -45,7 +52,7 @@ public class BiosimulationsExecTest {
 		CLIPythonManager.getInstance().instantiatePythonProcess();
 	}
 
-	@AfterAll
+	@BeforeClass
 	public static void teardown() throws Exception {
 		CLIPythonManager.getInstance().closePythonProcess();
 		VCellUtilityHub.shutdown();
@@ -92,6 +99,7 @@ public class BiosimulationsExecTest {
 		return faults;
 	}
 
+	@Parameterized.Parameters
 	public static Collection<String> testCases() {
 		Predicate<String> projectFilter;
 		projectFilter = (t) -> true; // don't skip any for now.
@@ -134,12 +142,11 @@ public class BiosimulationsExecTest {
         }
     }
 
-	@ParameterizedTest
-	@MethodSource("testCases")
-	public void testBiosimulationsProject(String testCaseProjectID) throws Exception {
-		FAULT knownFault = knownFaults().get(testCaseProjectID);
+	@Test
+	public void testBiosimulationsProject() throws Exception {
+		FAULT knownFault = knownFaults().get(this.testCaseProjectID);
 		try {
-			System.out.println("running test " + testCaseProjectID);
+			System.out.println("running test " + this.testCaseProjectID);
 
 			Path outdirPath = Files.createTempDirectory("BiosimulationsExecTest");
 			InputStream omexInputStream = BiosimulationsFiles.getOmex(testCaseProjectID);
@@ -151,10 +158,10 @@ public class BiosimulationsExecTest {
 			Path computedH5File = outdirPath.resolve("report.h5");
 
 			String errMessage = cliRecorder.errorMessage.replace("\n", " | ");
-			assertFalse(cliRecorder.bFailed, "failure: '" + errMessage + "'");
+			Assert.assertFalse("failure: '" + errMessage + "'", cliRecorder.bFailed);
 			if (knownFault != null){
 				throw new RuntimeException("test case passed, but expected " + knownFault.name() + ", remove "
-						+ testCaseProjectID + " from known faults");
+						+ this.testCaseProjectID + " from known faults");
 			}
 
 //			// verify log file has status of 'SUCCEEDED'
@@ -173,8 +180,9 @@ public class BiosimulationsExecTest {
 					computedH5File.toAbsolutePath().toString()
 			});
 			command.start(new int[] { 0, 1 });
-			assertFalse(command.getStdoutString().contains("position"), "H5 files have significant differences: " +
-					command.getStdoutString().substring(0, 300));
+			Assert.assertFalse("H5 files have significant differences: "+
+					command.getStdoutString().substring(0,300),
+					command.getStdoutString().contains("position"));
 
 		} catch (Exception | AssertionError e){
 			FAULT fault = this.determineFault(e);
@@ -183,8 +191,8 @@ public class BiosimulationsExecTest {
 				return;
 			}
 
-			System.err.println("add FAULT." + fault.name() + " to " + testCaseProjectID);
-			throw new Exception("Test error: " + testCaseProjectID + " failed improperly", e);
+			System.err.println("add FAULT." + fault.name() + " to " + this.testCaseProjectID);
+			throw new Exception("Test error: " + this.testCaseProjectID + " failed improperly", e);
 		}
 	}
 

@@ -1,18 +1,31 @@
 package cbit.vcell.solver;
 
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.BufferedReader;
+import java.io.CharArrayReader;
+import java.io.CharArrayWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.junit.Test;
+
 import cbit.vcell.math.ProblemRequirements;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-@Tag("Fast")
+@Category(Fast.class)
 public class SolverDescriptionRegression {
 	public static final String SOLVER_SEP = "BEGIN Solver";
 	private static String[] SolverNames = { 
@@ -217,7 +230,7 @@ public class SolverDescriptionRegression {
 		TestMathDescription tmd = new TestMathDescription();
 		Collection<SolverDescription> orig = getSupportingSolverDescriptionse(tmd);
 		Collection<SolverDescription> now = SolverDescription.getSupportingSolverDescriptions(tmd);
-        assertTrue(equals(orig, now));
+		assertTrue(equals(orig,now));
 		if (!equals(orig,now)) {
 			System.err.println("mismatch " + ProblemRequirements.Explain.describe(tmd));
 		}
@@ -306,32 +319,28 @@ public class SolverDescriptionRegression {
 	
 	@Test
 	public void testDbLookups( ) {
-        assertNull(SolverDescription.fromDatabaseName(null));
+		assertTrue(SolverDescription.fromDatabaseName(null) == null);
 		for (SolverDescription sd : SolverDescription.values( )) {
-            assertSame(SolverDescription.fromDatabaseName(sd.getDatabaseName()), sd);
+			assertTrue(SolverDescription.fromDatabaseName(sd.getDatabaseName()) == sd);
 		}
-        assertSame(SolverDescription.fromDatabaseName(SolverDescription.ALTERNATE_CVODE_Description), SolverDescription.CVODE);
+		assertTrue(SolverDescription.fromDatabaseName(SolverDescription.ALTERNATE_CVODE_Description) == SolverDescription.CVODE);
 	}
 	
 	@Test
 	public void testNameLookups( ) {
-        assertNull(SolverDescription.fromDisplayLabel(null));
+		assertTrue(SolverDescription.fromDisplayLabel(null) == null);
 		for (SolverDescription sd : SolverDescription.values( )) {
-            assertSame(SolverDescription.fromDisplayLabel(sd.getDisplayLabel()), sd);
+			assertTrue(SolverDescription.fromDisplayLabel(sd.getDisplayLabel()) == sd);
 		}
 	}
 	
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void testBadDbName( ) {
-		assertThrows(IllegalArgumentException.class, () -> {
-			SolverDescription.fromDatabaseName("NoSolverHere");
-		});
+		SolverDescription.fromDatabaseName("NoSolverHere");
 	}
 	
-	@Test
+	@Test(expected = IllegalArgumentException.class)
 	public void testBadDisplayName( ) {
-		assertThrows(IllegalArgumentException.class, () ->{
-			SolverDescription.fromDisplayLabel("NoSolverHere");
-		});
+		SolverDescription.fromDisplayLabel("NoSolverHere");
 	}
 }

@@ -7,24 +7,25 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.test.SBML_IT;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
-@Tag("SBML_IT")
+@Category(SBML_IT.class)
+@RunWith(Parameterized.class)
 public class BMDB_SBMLImportTest {
 
 	private static class SBMLHighPriorityIssueException extends RuntimeException {
@@ -56,10 +57,11 @@ public class BMDB_SBMLImportTest {
 		}
 	}
 
+	private Integer biomodelsDbModelNumber;
 	private static File codeKnownProblemFile;
 	private static File csvKnownProblemFile;
 
-	@BeforeAll
+	@BeforeClass
 	public static void setup() throws IOException {
 		codeKnownProblemFile = Files.createTempFile("MathGenCompareTest","code_KnownProblems").toFile();
 		csvKnownProblemFile = Files.createTempFile("MathGenCompareTest","csv_KnownProblems").toFile();
@@ -67,10 +69,15 @@ public class BMDB_SBMLImportTest {
 		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
 	}
 
-	@AfterAll
+	@AfterClass
 	public static void teardown() {
 		System.err.println("code known problem file: "+codeKnownProblemFile.getAbsolutePath());
 		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
+	}
+
+
+	public BMDB_SBMLImportTest(Integer biomodelsDbModelNumber) {
+		this.biomodelsDbModelNumber = biomodelsDbModelNumber;
 	}
 
 	/**
@@ -199,14 +206,14 @@ public class BMDB_SBMLImportTest {
 		return faults;
 	}
 
+	@Parameterized.Parameters
 	public static Collection<Integer> testCases() {
 		return Arrays.stream(BMDB_SBML_Files.getBiomodelDB_curatedModelNumbers()).boxed()
 				.filter(n -> !slowModelSet().contains(n)).collect(Collectors.toList());
 	}
 
-	@ParameterizedTest
-	@MethodSource("testCases")
-	public void testSbmlTestSuiteImport(Integer biomodelsDbModelNumber) throws Exception{
+	@Test
+	public void testSbmlTestSuiteImport() throws Exception{
 		System.out.println("testing Biomodels DB model "+biomodelsDbModelNumber);
 		//if (knownFaults().get(biomodelsDbModelNumber) != SBMLTestSuiteTest.FAULT.REACTANT_AND_MODIFIER) { System.out.println("skipping"); return; }
 		InputStream testFileInputStream = BMDB_SBML_Files.getBiomodelsDbCuratedModel(biomodelsDbModelNumber);
@@ -223,7 +230,7 @@ public class BMDB_SBMLImportTest {
 			}
 		}catch (SBMLHighPriorityIssueException e){
 			bFailed = true;
-            Assertions.assertTrue(vcl.highPriority.size() == 1);
+			Assert.assertTrue(vcl.highPriority.size()==1);
 		}catch (Exception e) {
 			exception = e;
 			bFailed = true;
@@ -270,13 +277,13 @@ public class BMDB_SBMLImportTest {
 				csvProblemFileWriter.write(biomodelsDbModelNumber+"|"+cause+"\n");
 			}
 			if (knownFault == null) {
-				fail("Biomodel DB model " + biomodelsDbModelNumber + " expecting pass but failed, add to faults: (" + fault.name() + "): " + cause);
+				Assert.fail("Biomodel DB model " + biomodelsDbModelNumber + " expecting pass but failed, add to faults: ("+fault.name()+"): "+cause);
 			}else if (fault != knownFault){
-				fail("Biomodel DB model " + biomodelsDbModelNumber + " expecting '" + knownFault.name() + "' but failed with '" + fault.name() + "', add to faults: (" + fault.name() + "): " + cause);
+				Assert.fail("Biomodel DB model " + biomodelsDbModelNumber + " expecting '"+knownFault.name()+"' but failed with '"+fault.name()+"', add to faults: ("+fault.name()+"): "+cause);
 			}
 		}else{ // passed
 			if (knownFault != null){
-				fail("BiomodelsDB model " + biomodelsDbModelNumber + " passed, but expected fault " + knownFault.name() + ", remove from known faults");
+				Assert.fail("BiomodelsDB model "+biomodelsDbModelNumber+" passed, but expected fault "+knownFault.name()+", remove from known faults");
 			}
 		}
 	}

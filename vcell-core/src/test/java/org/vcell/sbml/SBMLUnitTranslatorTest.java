@@ -1,22 +1,29 @@
 package org.vcell.sbml;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitSystem;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.sbml.jsbml.*;
-import org.vcell.sbml.vcell.SBMLUnitTranslator;
-import ucar.units_vcell.RationalNumber;
-
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import javax.xml.stream.XMLStreamException;
 
-@Tag("Fast")
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.sbml.jsbml.ListOf;
+import org.sbml.jsbml.Model;
+import org.sbml.jsbml.SBMLDocument;
+import org.sbml.jsbml.SBMLReader;
+import org.sbml.jsbml.Unit;
+import org.sbml.jsbml.UnitDefinition;
+import org.vcell.sbml.vcell.SBMLUnitTranslator;
+
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitSystem;
+import org.vcell.test.Fast;
+import ucar.units_vcell.RationalNumber;
+
+@Category(Fast.class)
 public class SBMLUnitTranslatorTest {
 
 	public static File[] getBiomodelsCuratedSBMLFiles(){
@@ -84,7 +91,7 @@ public class SBMLUnitTranslatorTest {
 		UnitDefinition sbmlUnit_um = new SBMLReader().readSBMLFromString(sbmlUnitDefinition_um).getModel().getListOfUnitDefinitions().get("unitid");
 		VCUnitDefinition vcUnit_um = SBMLUnitTranslator.getVCUnitDefinition(sbmlUnit_um, vcUnitSystem);
 
-		assertEquals(vcUnit_um.getSymbol(), expectedUnit.getSymbol());
+		Assert.assertEquals(vcUnit_um.getSymbol(), expectedUnit.getSymbol());
 	}
 
 	@Test
@@ -95,7 +102,7 @@ public class SBMLUnitTranslatorTest {
 		UnitDefinition sbmlUnit_um2 = new SBMLReader().readSBMLFromString(sbmlUnitDefinition_um2).getModel().getListOfUnitDefinitions().get("unitid");
 		VCUnitDefinition vcUnit_um2 = SBMLUnitTranslator.getVCUnitDefinition(sbmlUnit_um2, vcUnitSystem);
 
-		assertEquals(vcUnit_um2.getSymbol(), expectedUnit.getSymbol());
+		Assert.assertEquals(vcUnit_um2.getSymbol(), expectedUnit.getSymbol());
 	}
 
 	@Test
@@ -106,7 +113,7 @@ public class SBMLUnitTranslatorTest {
 		UnitDefinition sbmlUnit_um2_per_s = new SBMLReader().readSBMLFromString(sbmlUnitDefinition_um2_per_second).getModel().getListOfUnitDefinitions().get("unitid");
 		VCUnitDefinition vcUnit_um2_per_s = SBMLUnitTranslator.getVCUnitDefinition(sbmlUnit_um2_per_s, vcUnitSystem);
 
-		assertEquals(vcUnit_um2_per_s.getSymbol(), expectedUnit.getSymbol());
+		Assert.assertEquals(vcUnit_um2_per_s.getSymbol(), expectedUnit.getSymbol());
 	}
 
 	@Test
@@ -117,7 +124,7 @@ public class SBMLUnitTranslatorTest {
 		UnitDefinition sbmlUnit = new SBMLReader().readSBMLFromString(getSbmlUnitDefinition_KMOLE).getModel().getListOfUnitDefinitions().get("unitid");
 		VCUnitDefinition vcUnit = SBMLUnitTranslator.getVCUnitDefinition(sbmlUnit, vcUnitSystem);
 
-        assertTrue(expectedUnit.isEquivalent(vcUnit), "expected=[" + expectedUnit.getSymbol() + "], parsed=[" + vcUnit.getSymbol() + "] are not equivalent");
+		Assert.assertTrue("expected=["+expectedUnit.getSymbol()+"], parsed=["+vcUnit.getSymbol()+"] are not equivalent", expectedUnit.isEquivalent(vcUnit));
 	}
 
 	@Test
@@ -128,11 +135,11 @@ public class SBMLUnitTranslatorTest {
 
 		VCUnitDefinition vcUnit = vcUnitSystem.getInstance("1");
 		UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit, sbmlLevel, sbmlVersion, vcUnitSystem);
-		assertEquals("Unit__1", unitDefn.getId());
+		Assert.assertEquals("Unit__1", unitDefn.getId());
 
 		vcUnit = vcUnitSystem.getInstance("100").raiseTo(new RationalNumber(2));
 		unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(vcUnit, sbmlLevel, sbmlVersion, vcUnitSystem);
-		assertEquals("Unit__10000", unitDefn.getId());
+		Assert.assertEquals("Unit__10000", unitDefn.getId());
 	}
 
 	@Test
@@ -142,7 +149,7 @@ public class SBMLUnitTranslatorTest {
 
 		VCUnitDefinition vcFluxUnits = vcUnitSystem.getInstance("uM.um.s-1");
 		VCUnitDefinition vcMemReactUnits = vcUnitSystem.getInstance("molecules.um-2.s-1");
-		assertFalse(vcFluxUnits.isCompatible(vcMemReactUnits), "flux and membrane units are incompatible because moles/molecules are different");
+		Assert.assertFalse("flux and membrane units are incompatible because moles/molecules are different", vcFluxUnits.isCompatible(vcMemReactUnits));
 		System.out.println("["+vcFluxUnits.getSymbol()+"] / ["+vcMemReactUnits.getSymbol()+"] = ["+vcFluxUnits.divideBy(vcMemReactUnits).getSymbol()+"]");
 //		VCUnitDefinition KMOLE_expected_units = vcFluxUnits.divideBy(vcMemReactUnits);
 //		Assert.assertTrue("KMOLE units should be equivalent to flux/membrane units", );
@@ -155,7 +162,7 @@ public class SBMLUnitTranslatorTest {
 //		Assert.assertTrue("expected=["+expectedUnit.getSymbol()+"], parsed=["+vcUnit.getSymbol()+"] are not equivalent", expectedUnit.isEquivalent(vcUnit));
 	}
 
-	@Disabled
+	@Ignore
 	@Test
 	public void testSBMLtoVCell() throws XMLStreamException, IOException, SbmlException {
 		int[] biomodelsIds = SbmlTestSuiteFiles.getBiomodelsModels();

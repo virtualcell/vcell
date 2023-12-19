@@ -1556,7 +1556,17 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         this.movingBoundarySolverOptions = mb;
     }
 
-    public void writeTimeInformation(StringBuilder sb) {                // SpringSaLaD exporting the time information
+    public void writeData(StringBuilder sb){                // SpringSaLaD exporting the time information
+        if(!(fieldSimulation.getSimulationOwner() instanceof SimulationContext)){
+            sb.append("\n");
+            return;
+        }
+        SimulationContext sc = (SimulationContext) fieldSimulation.getSimulationOwner();
+        if(sc.getApplicationType() != Application.SPRINGSALAD){
+            sb.append("\n");
+            return;
+        }
+
         // ending time is editable, starting time is non-editable, always 0
         double totalTime = getTimeBounds().getEndingTime() - getTimeBounds().getStartingTime();
         sb.append("Total time: " + totalTime);        // TODO: for langevin, initialize to 1.00E-2

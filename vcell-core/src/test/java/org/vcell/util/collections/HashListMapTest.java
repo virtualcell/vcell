@@ -1,21 +1,21 @@
 package org.vcell.util.collections;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 
-@Tag("Fast")
+@Category(Fast.class)
 public class HashListMapTest {
 
 	private HashListMap<String,Integer> testList;
 	
-	@BeforeEach
+	@Before
 	public void init( ) {
 		testList = new HashListMap<>();
 	}
@@ -31,15 +31,15 @@ public class HashListMapTest {
 		int back = 1;
 		List<Integer> values = testList.get(key);
 		for (Integer i : values) {
-            assertEquals((int) i, back++);
+			assertTrue(i == back++);
 		}
-        assertEquals(7, (int) testList.get(other).get(0));
+		assertTrue(testList.get(other).get(0) == 7);
 	}
 	@Test
 	public void nullValue( ) {
 		String key = "nv";
 		testList.put(key, null);
-        assertNull(testList.get(key).get(0));
+		assertTrue(testList.get(key).get(0) == null);
 	}
 	@Test
 	public void nullKey( ) {
@@ -51,9 +51,9 @@ public class HashListMapTest {
 		int back = 1;
 		List<Integer> values = testList.get(null);
 		for (Integer i : values) {
-            assertEquals((int) i, back++);
+			assertTrue(i == back++);
 		}
-        assertEquals(7, (int) testList.get(other).get(0));
+		assertTrue(testList.get(other).get(0) == 7);
 	}
 
 }

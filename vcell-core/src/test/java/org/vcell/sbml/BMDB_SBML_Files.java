@@ -1,7 +1,9 @@
 package org.vcell.sbml;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -9,10 +11,7 @@ import java.util.Arrays;
 import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-@Tag("Fast")
+@Category(Fast.class)
 public class BMDB_SBML_Files {
 
     public final static int[] allCuratedModels = IntStream.rangeClosed(1, 1064)
@@ -52,17 +51,15 @@ public class BMDB_SBML_Files {
         }
     }
 
-    @Test
+    @Test(expected = RuntimeException.class)
     public void test_out_of_bounds_exception() {
-        assertThrows(RuntimeException.class, () -> {
-            getBiomodelsDbCuratedModel(10000);
-        });
+        getBiomodelsDbCuratedModel(10000);
     }
 
     @Test
     public void test_read_sbmlFile() {
         InputStream inputStream = getBiomodelsDbCuratedModel(getBiomodelDB_curatedModelNumbers()[0]);
-        assertNotNull(inputStream);
+        Assert.assertTrue(inputStream != null);
     }
 
 

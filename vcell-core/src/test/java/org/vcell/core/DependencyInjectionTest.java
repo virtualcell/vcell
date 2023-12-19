@@ -5,14 +5,12 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-@Tag("Fast")
+@Category(Fast.class)
 public class DependencyInjectionTest {
     interface TestService {
         int add(int a, int b);
@@ -93,8 +91,8 @@ public class DependencyInjectionTest {
     public void testSimple() {
         Injector injector = Guice.createInjector(new TestModule());
         TestService testService = injector.getInstance(TestService.class);
-        assertEquals(3, testService.add(1, 2), "expecting to return 3");
-        assertNotNull(injector);
+        Assert.assertTrue("expecting to return 3", testService.add(1,2) == 3);
+        Assert.assertNotNull(injector);
     }
 
     @Test
@@ -102,8 +100,8 @@ public class DependencyInjectionTest {
         Injector injector = Guice.createInjector(new TestModule());
         TestService testService = injector.getInstance(TestService.class);
         TestApplication testApplication = injector.getInstance(TestApplication.class);
-        assertEquals(3, testApplication.add(1, 2), "expecting to return 3");
-        assertNotNull(injector);
+        Assert.assertTrue("expecting to return 3", testApplication.add(1,2) == 3);
+        Assert.assertNotNull(injector);
     }
 
     @Test
@@ -111,8 +109,8 @@ public class DependencyInjectionTest {
         Injector injector = Guice.createInjector(new TestModule());
         TestService testService = injector.getInstance(TestService.class);
         TestApplication testApplication = new TestApplication(new TestServiceImpl());
-        assertEquals(3, testApplication.add(1, 2), "expecting to return 3");
-        assertNotNull(injector);
+        Assert.assertTrue("expecting to return 3", testApplication.add(1,2) == 3);
+        Assert.assertNotNull(injector);
     }
 
     @Test
@@ -120,18 +118,16 @@ public class DependencyInjectionTest {
         Injector injector = Guice.createInjector(new TestModule());
         TestService testService = injector.getInstance(TestService.class);
         TestApplicationDelayedRunner testApplication = injector.getInstance(TestApplicationDelayedRunner.class);
-        assertEquals(3, testApplication.add(1, 2), "expecting to return 3");
-        assertNotNull(injector);
+        Assert.assertTrue("expecting to return 3", testApplication.add(1,2) == 3);
+        Assert.assertNotNull(injector);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testDelayedFieldInjectionFromConstructor_shouldFail() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            Injector injector = Guice.createInjector(new TestModule());
-            TestApplicationDelayedRunner testApplication = new TestApplicationDelayedRunner(null);
-            assertEquals(3, testApplication.add(1, 2), "expecting to return 3");
-            assertNotNull(injector);
-        });
+        Injector injector = Guice.createInjector(new TestModule());
+        TestApplicationDelayedRunner testApplication = new TestApplicationDelayedRunner(null);
+        Assert.assertTrue("expecting to return 3", testApplication.add(1,2) == 3);
+        Assert.assertNotNull(injector);
     }
 
     @Test
@@ -139,19 +135,17 @@ public class DependencyInjectionTest {
         Injector injector = Guice.createInjector(new TestModule());
         TestService testService = injector.getInstance(TestService.class);
         TestApplicationTransitiveRunner testApplication = injector.getInstance(TestApplicationTransitiveRunner.class);
-        assertEquals(3, testApplication.add(1, 2), "expecting to return 3");
-        assertNotNull(injector);
+        Assert.assertTrue("expecting to return 3", testApplication.add(1,2) == 3);
+        Assert.assertNotNull(injector);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testTransitiveFieldInjectionFromConstructor_shouldFail() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            Injector injector = Guice.createInjector(new TestModule());
-            TestService testService = injector.getInstance(TestService.class);
-            TestApplicationTransitiveRunner testApplication = new TestApplicationTransitiveRunner();
-            assertEquals(3, testApplication.add(1, 2), "expecting to return 3");
-            assertNotNull(injector);
-        });
+        Injector injector = Guice.createInjector(new TestModule());
+        TestService testService = injector.getInstance(TestService.class);
+        TestApplicationTransitiveRunner testApplication = new TestApplicationTransitiveRunner();
+        Assert.assertTrue("expecting to return 3", testApplication.add(1,2) == 3);
+        Assert.assertNotNull(injector);
     }
 
     @Test
@@ -159,18 +153,19 @@ public class DependencyInjectionTest {
         Injector injector = Guice.createInjector(new TestModule());
         TestService testService = injector.getInstance(TestService.class);
         TestApplicationTransitiveImplicitRunner testApplication = injector.getInstance(TestApplicationTransitiveImplicitRunner.class);
-        assertEquals(3, testApplication.add(1, 2), "expecting to return 3");
-        assertNotNull(injector);
+        Assert.assertTrue("expecting to return 3", testApplication.add(1,2) == 3);
+        Assert.assertNotNull(injector);
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void testTransitiveImplicitFieldInjectionFromConstructor_shouldFail() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            Injector injector = Guice.createInjector(new TestModule());
-            TestService testService = injector.getInstance(TestService.class);
-            TestApplicationTransitiveImplicitRunner testApplication = new TestApplicationTransitiveImplicitRunner();
-            assertEquals(3, testApplication.add(1, 2), "expecting to return 3");
-            assertNotNull(injector);
-        });
+        Injector injector = Guice.createInjector(new TestModule());
+        TestService testService = injector.getInstance(TestService.class);
+        TestApplicationTransitiveImplicitRunner testApplication = new TestApplicationTransitiveImplicitRunner();
+        Assert.assertTrue("expecting to return 3", testApplication.add(1,2) == 3);
+        Assert.assertNotNull(injector);
     }
+
+
+
 }

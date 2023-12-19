@@ -1,12 +1,13 @@
 package cbit.vcell.resource;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
-@Tag("Fast")
+@Category(Fast.class)
 public class NativeLibTest {
-	@BeforeEach
+	@Before
 	public void init( ) {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
 		ResourceUtil.init();

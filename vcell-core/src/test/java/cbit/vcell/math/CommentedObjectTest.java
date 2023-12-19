@@ -1,24 +1,23 @@
 package cbit.vcell.math;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
-@Tag("Fast")
+@Category(Fast.class)
 public class CommentedObjectTest {
 
 	@Test
 	public void equiv( ) {
 		Mock one = new Mock("Virtual", "Cell");
 		Mock two = new Mock("Virtual", "Cell");
-		assertFalse(one.equals(two));
-		Assertions.assertTrue(one.compareEqual(two));
+		Assert.assertFalse(one.equals(two));
+		Assert.assertTrue(one.compareEqual(two));
 		
 		two.setAfterComment("Reality");
-		assertFalse(one.equals(two));
-		assertFalse(one.compareEqual(two));
+		Assert.assertFalse(one.equals(two));
+		Assert.assertFalse(one.compareEqual(two));
 	}
 	
 	@SuppressWarnings("serial")

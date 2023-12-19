@@ -1,8 +1,9 @@
 package org.vcell.cli.run;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -10,7 +11,7 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 
 
-@Tag("Fast")
+@Category(Fast.class)
 public class BSTSBasedTestSuiteFiles {
 
     private final static String[] allTestFiles = new String[]{
@@ -110,7 +111,7 @@ public class BSTSBasedTestSuiteFiles {
     @Test
     public void test_read_BSTS_omex_file() {
         InputStream inputStream = getBSTSTestCase(allTestFiles[0]);
-        Assertions.assertTrue(inputStream != null);
+        Assert.assertTrue(inputStream != null);
     }
 
 }

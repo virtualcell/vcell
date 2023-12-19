@@ -9,16 +9,18 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import com.google.common.io.Files;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.PublicationMetadata;
 import org.vcell.sedml.SEDMLExporter;
+import org.vcell.test.Fast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,11 +32,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-@Tag("Fast")
+@Category(Fast.class)
+@RunWith(Parameterized.class)
 public class MathOverrideRoundTipTest {
 
+    private final String filename;
     private final boolean bDebug = true;
 
     //
@@ -44,6 +46,11 @@ public class MathOverrideRoundTipTest {
     private String previousWorkingdirPropertyValue;
     private boolean previousWriteDebugFiles;
 
+    public MathOverrideRoundTipTest(String filename) {
+        this.filename = filename;
+    }
+
+    @Parameterized.Parameters
     public static List<String> filenames() {
         return Arrays.asList(
                 "Biomodel_issue_554_r0.vcml",
@@ -56,7 +63,7 @@ public class MathOverrideRoundTipTest {
         );
     }
 
-    @BeforeEach
+    @Before
     public void setup() {
         previousWorkingdirPropertyValue = PropertyLoader.getProperty(PropertyLoader.cliWorkingDir, null);
         PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, "../vcell-cli-utils");
@@ -67,7 +74,7 @@ public class MathOverrideRoundTipTest {
         SBMLExporter.bWriteDebugFiles = bDebug;
     }
 
-    @AfterEach
+    @After
     public void teardown() {
         if (previousWorkingdirPropertyValue!=null) {
             PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, previousWorkingdirPropertyValue);
@@ -78,9 +85,8 @@ public class MathOverrideRoundTipTest {
         SBMLExporter.bWriteDebugFiles = previousWriteDebugFiles;
     }
 
-    @ParameterizedTest
-    @MethodSource("filenames")
-    public void test_General_Kinetics_Override_Roundtrip(String filename) throws Exception {
+    @Test
+    public void test_General_Kinetics_Override_Roundtrip() throws Exception {
         System.err.println("file "+filename);
         BioModel bioModel = getBioModelFromResource(filename);
         bioModel.updateAll(false);
@@ -98,7 +104,7 @@ public class MathOverrideRoundTipTest {
         SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
         List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);
 
-        Assertions.assertTrue(memoryVCLogger.highPriority.size() == 0);
+        Assert.assertTrue(memoryVCLogger.highPriority.size() == 0);
 
         File tempDir = Files.createTempDir();
         String origVcmlPath = new File(tempDir, "orig.vcml").getAbsolutePath();
@@ -112,7 +118,7 @@ public class MathOverrideRoundTipTest {
             System.err.println("wrote original and final BioModel VCML files to " + tempDir.getAbsolutePath());
         }
 
-        assertEquals(1, bioModels.size(), "expecting 1 biomodel in round trip");
+        Assert.assertEquals("expecting 1 biomodel in round trip", 1, bioModels.size());
 
         // now compare the MathOverrides
     }

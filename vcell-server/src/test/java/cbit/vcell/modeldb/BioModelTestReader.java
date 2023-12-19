@@ -4,8 +4,9 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
@@ -16,7 +17,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-@Tag("Fast")
+@Category(Fast.class)
 public class BioModelTestReader implements VCDatabaseVisitor {
 	/**
 	 * user key to use for tests

@@ -16,7 +16,7 @@ public enum SolverExecutable {
 	Hybrid_Mil_Adaptive("Hybrid_MIL_Adaptive" ),
 	Smoldyn("smoldyn" ),
 	NFSIM("NFsim"),
-	LANGEVIN("langevin"),
+	LANGEVIN("LangevinNoVis"),
 	MOVING_B("MovingBoundary")
 	;
 	

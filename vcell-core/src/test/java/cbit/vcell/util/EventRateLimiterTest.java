@@ -1,13 +1,14 @@
 package cbit.vcell.util;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import static org.junit.Assert.fail;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
-@Disabled
-@Tag("Fast")
+@Ignore
+@Category(Fast.class)
 public class EventRateLimiterTest {
 
 	@Test
@@ -25,14 +26,14 @@ public class EventRateLimiterTest {
 				}
 			}
 			if ((approvedEventCount > 67) && (approvedEventCount < 73)) {
-				System.out.println(approvedEventCount + " events approved in one minute");
+				System.out.println(String.valueOf(approvedEventCount)+ " events approved in one minute");
 				// indicate pass?
 			} else {
-				System.out.println(approvedEventCount +" events approved in one minute is out of expected bounds");
-                fail(approvedEventCount + " events approved in one minute is out of expected bounds");
+				System.out.println(String.valueOf(approvedEventCount)+" events approved in one minute is out of expected bounds");
+				fail(String.valueOf(approvedEventCount)+" events approved in one minute is out of expected bounds");
 			}
 		} catch (Exception e) {
-            fail("Exception occured: " + e.getMessage());
+			fail("Exception occured: "+e.getMessage());
 		}
 
 	}

@@ -1,17 +1,18 @@
 package cbit.vcell.parser;
-
 import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 import cbit.vcell.units.VCUnitSystem;
+/*�
+ * (C) Copyright University of Connecticut Health Center 2001.
+ * All rights reserved.
+�*/
 import net.sourceforge.interval.ia_math.RealInterval;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-@Tag("Fast")
+@Category(Fast.class)
 public class ExpressionTest {
 	public static void main(java.lang.String[] args) {
 		int num = 5000;
@@ -766,20 +767,20 @@ public static void testFlatten(int numTrials, int depth, long seed) {
 			Expression expectedFactor = test[2];
 			Expression computedFactor = ExpressionUtils.getLinearFactor(new Expression(test[0]), multiplierSymbol);
 			if (expectedFactor == null){
-				assertTrue(computedFactor == null, "expectedFactor is null, computedFactor was not null");
+				Assert.assertTrue("expectedFactor is null, computedFactor was not null", computedFactor == null);
 			}else {
-				assertTrue(computedFactor != null, "expectedFactor was '" + expectedFactor.infix() + "', computedFactor was null");
+				Assert.assertTrue("expectedFactor was '"+expectedFactor.infix()+"', computedFactor was null", computedFactor != null);
 				boolean equiv = ExpressionUtils.functionallyEquivalent(expectedFactor, computedFactor);
-				assertTrue(equiv, expectedFactor.infix() + " != " + computedFactor.infix());
+				Assert.assertTrue(expectedFactor.infix() + " != " + computedFactor.infix(), equiv);
 			}
 		}
 
-        Assertions.assertTrue(ExpressionUtils.functionallyEquivalent(
-                new Expression("((1.0E-12 * KMOLE * s1) * (1.0 / 1000.0))"),
-                ExpressionUtils.getLinearFactor(new Expression("((1.0E-12 * KMOLE * s1) * c0 * (1.0 / 1000.0))"), "c0")));
-        Assertions.assertTrue(ExpressionUtils.functionallyEquivalent(
-                new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))"),
-                ExpressionUtils.getLinearFactor(new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))*Nuc"), "Nuc")));
+		Assert.assertTrue(ExpressionUtils.functionallyEquivalent(
+				new Expression("((1.0E-12 * KMOLE * s1) * (1.0 / 1000.0))"),
+				ExpressionUtils.getLinearFactor(new Expression("((1.0E-12 * KMOLE * s1) * c0 * (1.0 / 1000.0))"),"c0")));
+		Assert.assertTrue(ExpressionUtils.functionallyEquivalent(
+				new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))"),
+				ExpressionUtils.getLinearFactor(new Expression("((0.001 * Vmax2_bleaching2 * rfB * Laser) * ((t > 1.0) && (t < 1.5)))*Nuc"),"Nuc")));
 	}
 
 	public static class FunctionalEquivTestData {
@@ -822,9 +823,9 @@ public static void testFlatten(int numTrials, int depth, long seed) {
 		for (FunctionalEquivTestData test : tests) {
 			boolean passed = ExpressionUtils.functionallyEquivalent(test.exp1, test.exp2);
 			if (test.shouldPass) {
-				assertTrue(passed, "exps should have been equivalent: exp1='" + test.exp1.infix() + "', exp2='" + test.exp2.infix() + "'");
+				Assert.assertTrue("exps should have been equivalent: exp1='" + test.exp1.infix() + "', exp2='" + test.exp2.infix() + "'", passed);
 			}else{
-				assertFalse(passed, "exps should not have been equivalent: exp1='" + test.exp1.infix() + "', exp2='" + test.exp2.infix() + "'");
+				Assert.assertFalse("exps should not have been equivalent: exp1='" + test.exp1.infix() + "', exp2='" + test.exp2.infix() + "'", passed);
 			}
 		}
 	}

@@ -14,9 +14,9 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import com.google.common.io.Files;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sedml.*;
 
@@ -24,8 +24,6 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class SEDMLExporterCommon {
 
@@ -40,6 +38,8 @@ public abstract class SEDMLExporterCommon {
 	}
 
 
+	final TestCase testCase;
+
 	private static boolean bDebug = false;
 
 	//
@@ -48,6 +48,10 @@ public abstract class SEDMLExporterCommon {
 	private static String previousInstalldirPropertyValue;
 	private static String previousWorkingdirPropertyValue;
 	private static boolean previousWriteDebugFiles;
+
+	public SEDMLExporterCommon(TestCase testCase){
+		this.testCase = testCase;
+	}
 
 	public enum FAULT {
 		EXPRESSIONS_DIFFERENT,
@@ -81,7 +85,7 @@ public abstract class SEDMLExporterCommon {
 		SIMULATION_NOT_FOUND_BY_NAME
 	};
 
-	@BeforeAll
+	@BeforeClass
 	public static void setup(){
 		previousInstalldirPropertyValue = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
@@ -92,7 +96,7 @@ public abstract class SEDMLExporterCommon {
 		SBMLExporter.bWriteDebugFiles = bDebug;
 	}
 
-	@AfterAll
+	@AfterClass
 	public static void teardown() throws IOException {
 		if (previousInstalldirPropertyValue!=null) {
 			PropertyLoader.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
@@ -122,7 +126,7 @@ public abstract class SEDMLExporterCommon {
 	abstract Map<String, SEDML_FAULT> knownSEDMLFaults();
 
 
-	void sedml_roundtrip_common(TestCase testCase) throws Exception {
+	void sedml_roundtrip_common() throws Exception {
 		String test_case_name = testCase.modelFormat+"."+testCase.filename;
 		InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(testCase.filename);
 		String vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
@@ -177,7 +181,7 @@ public abstract class SEDMLExporterCommon {
 				bAnyFailures |= bFailed;
 				if (!knownFaults().containsKey(testCase.filename)) {
 					// skip assert if the model is known to have a problem
-					assertFalse(bFailed, sedmlTaskRecord.getCSV());
+					Assert.assertFalse(sedmlTaskRecord.getCSV(), bFailed);
 				}
 			}
 			FAULT knownFault = knownFaults().get(testCase.filename);
@@ -185,7 +189,9 @@ public abstract class SEDMLExporterCommon {
 				// if in the knownFaults list, the model should fail
 				// this is how we can keep track of our list of known problems
 				// if we fix a model without removing it from the knownFaults map, then this test will fail
-                assertTrue(bAnyFailures, "expecting fault " + knownFault.name() + " in " + test_case_name + " but it passed, Please remove from SEDMLExporterTest.knownFaults()");
+				Assert.assertTrue(
+						"expecting fault "+knownFault.name()+" in "+test_case_name+" but it passed, Please remove from SEDMLExporterTest.knownFaults()",
+						bAnyFailures);
 			}
 
 			if (testCase.modelFormat == ModelFormat.VCML){
@@ -194,7 +200,7 @@ public abstract class SEDMLExporterCommon {
 			}
 			SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
 			List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);
-            Assertions.assertTrue(memoryVCLogger.highPriority.size() == 0);
+			Assert.assertTrue(memoryVCLogger.highPriority.size() == 0);
 
 			File tempDir = Files.createTempDir();
 			String origVcmlPath = new File(tempDir, "orig.vcml").getAbsolutePath();
@@ -209,7 +215,7 @@ public abstract class SEDMLExporterCommon {
 				System.err.println("wrote original and final BioModel VCML files to " + tempDir.getAbsolutePath());
 			}
 
-			assertEquals(1, bioModels.size(), "expecting 1 biomodel in round trip");
+			Assert.assertEquals("expecting 1 biomodel in round trip", 1, bioModels.size());
 			BioModel importedBioModel = bioModels.get(0);
 
 			boolean hasAnyOverrides = Arrays.stream(bioModel.getSimulations()).anyMatch(s -> s.getMathOverrides().getSize() > 0);
@@ -225,9 +231,9 @@ public abstract class SEDMLExporterCommon {
 				String simContextName = simContextToExport.getName();
 				String simName = simToExport.getName();
 				SimulationContext simContextRoundTripped = importedBioModel.getSimulationContext(simContextName);
-				assertNotNull(simContextRoundTripped, "roundtripped simulationContext not found with name '" + simContextName + "'");
+				Assert.assertNotNull("roundtripped simulationContext not found with name '"+simContextName+"'", simContextRoundTripped);
 				Simulation simRoundTripped = simContextRoundTripped.getSimulation(simName);
-				assertNotNull(simRoundTripped, "roundtripped simulation not found with name '" + simName + "'");
+				Assert.assertNotNull("roundtripped simulation not found with name '"+simName+"'", simRoundTripped);
 				boolean mathOverrideEquiv = simToExport.getMathOverrides().compareEquivalent(simRoundTripped.getMathOverrides());
 				if (!mathOverrideEquiv){
 					//
@@ -243,16 +249,16 @@ public abstract class SEDMLExporterCommon {
 							MathDescription newMathDescription = new SimulationSymbolTable(simRoundTripped, simJobIndex).getMathDescription();
 							MathCompareResults subCompareResults = MathDescription.testEquivalency(
 									SimulationSymbolTable.createMathSymbolTableFactory(), oldMathDescription, newMathDescription);
-                            assertTrue(subCompareResults.isEquivalent(), "math overrides names not equivalent for simulation '" + simName + "' " +
-                                    "in simContext '" + simContextName + "'");
+							Assert.assertTrue("math overrides names not equivalent for simulation '"+simName+"' " +
+									"in simContext '"+simContextName+"'", subCompareResults.isEquivalent());
 							mathOverrideEquiv = true;
 						}
 					}
 				}
-                assertTrue(mathOverrideEquiv, "math overrides not equivalent for simulation '" + simName + "' in simContext '" + simContextName + "'");
+				Assert.assertTrue("math overrides not equivalent for simulation '"+simName+"' in simContext '"+simContextName+"'", mathOverrideEquiv);
 			}
 
-			assertNull(knownSEDMLFaults().get(testCase.filename), "file " + test_case_name + " passed SEDML Round trip, but knownSEDMLFault was set");
+			Assert.assertNull("file "+test_case_name+" passed SEDML Round trip, but knownSEDMLFault was set", knownSEDMLFaults().get(testCase.filename));
 		}catch (Exception | AssertionError e){
 			if (e instanceof OmexPythonUtils.OmexValidationException){
 				OmexPythonUtils.OmexValidationException validationException = (OmexPythonUtils.OmexValidationException) e;

@@ -3,28 +3,39 @@ package cbit.vcell.matrix;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.vcell.test.Fast;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static cbit.vcell.matrix.RationalExpMatrix.NoSolutionExistsException;
-import static cbit.vcell.parser.ExpressionUtils.functionallyEquivalent;
-import static cbit.vcell.parser.ExpressionUtils.solveLinear;
-import static org.junit.jupiter.api.Assertions.*;
-
-@Tag("Fast")
+@Category(Fast.class)
+@RunWith(Parameterized.class)
 public class RationalExpMatrixTest {
-    public record TestCase(
-        Expression[] equations,
-        String[] vars,
-        Expression[] expectedSolutions,
-        boolean bSolutionExists
-    ) {}
+    static class TestCase {
+        final Expression[] equations;
+        final String[] vars;
+        final Expression[] expectedSolutions;
+        final boolean bSolutionExists;
+        public TestCase(Expression[] equations, String[] vars, Expression[] expectedSolutions, boolean bSolutionExists){
+            this.equations = equations;
+            this.vars = vars;
+            this.expectedSolutions = expectedSolutions;
+            this.bSolutionExists = bSolutionExists;
+        }
+    }
 
+    TestCase testCase;
 
+    public RationalExpMatrixTest(TestCase testCase){
+        this.testCase = testCase;
+    }
+
+    @Parameterized.Parameters
     public static List<TestCase> testCases() throws ExpressionException {
         return Arrays.asList(
                 new TestCase(
@@ -55,26 +66,27 @@ public class RationalExpMatrixTest {
         );
     }
 
-    @ParameterizedTest
-    @MethodSource("testCases")
-    public void solveSystem(TestCase testCase) throws MatrixException, ExpressionException, RationalExpMatrix.NoSolutionExistsException {
+    @Test
+    public void solveSystem() throws MatrixException, ExpressionException, RationalExpMatrix.NoSolutionExistsException {
         String[] vars = testCase.vars;
         Expression[] equations = testCase.equations;
         Expression[] expectedSolutions = testCase.expectedSolutions;
         if (!testCase.bSolutionExists) {
-            assertThrows(NoSolutionExistsException.class, () -> solveLinear(equations, vars));
+            Assert.assertThrows(RationalExpMatrix.NoSolutionExistsException.class,
+                    () -> ExpressionUtils.solveLinear(equations, vars));
         } else {
             Expression[] solutions = ExpressionUtils.solveLinear(equations, vars);
 
             for (int varIndex = 0; varIndex < vars.length; varIndex++) {
                 if (expectedSolutions[varIndex] == null) {
-                    assertNull(solutions[varIndex], "expecting null solution for var " + vars[varIndex]);
+                    Assert.assertNull("expecting null solution for var " + vars[varIndex], solutions[varIndex]);
                 } else {
                     if (solutions[varIndex] == null) {
-                        fail("solution was null for var " + vars[varIndex] + ", but expecting " + expectedSolutions[varIndex].infix());
+                        Assert.fail("solution was null for var " + vars[varIndex] + ", but expecting " + expectedSolutions[varIndex].infix());
                     } else {
-                        assertTrue(functionallyEquivalent(expectedSolutions[varIndex], solutions[varIndex]), "expected solution for " + vars[varIndex] +
-                                " to be " + expectedSolutions[varIndex].infix() + " but is " + solutions[varIndex].infix());
+                        Assert.assertTrue("expected solution for " + vars[varIndex] +
+                                        " to be " + expectedSolutions[varIndex].infix() + " but is " + solutions[varIndex].infix(),
+                                ExpressionUtils.functionallyEquivalent(expectedSolutions[varIndex], solutions[varIndex]));
                     }
                 }
             }

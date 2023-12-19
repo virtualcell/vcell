@@ -1,29 +1,29 @@
 package org.vcell.util;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-
-import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import javax.swing.SwingUtilities;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 /**
  * check VCellThreadChecker methods
  * @author gweatherby
  *
  */
-@Tag("Fast")
+@Category(Fast.class)
 public class VCellThreadCheckerTest {
 	PrintStream oldOut = null;
 	PrintStream oldErr = null;
 	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	
-	@BeforeEach
+	@Before
 	public void setup( ) {
 		oldOut = System.out;
 		oldErr = System.err;
@@ -32,7 +32,7 @@ public class VCellThreadCheckerTest {
 		System.setErr(ps);
 	}
 	
-	@AfterEach
+	@After
 	public void tearDown( ) {
 		System.setOut(oldOut);
 		System.setErr(oldErr);
@@ -101,18 +101,20 @@ public class VCellThreadCheckerTest {
 	/**
 	 * verify suppression turns off correctly
 	 */
-	@Test
+	@Test(expected=IllegalStateException.class)
 	public void swingCheckNotSupp( ) throws InvocationTargetException, InterruptedException {
-		assertThrows(IllegalStateException.class, () -> {
-			SwingUtilities.invokeAndWait(() -> {
-                try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
-
-                    //make sure turns off correctly
-                }
-                VCellThreadChecker.checkCpuIntensiveInvocation();
-            });
-			checkQuiet();
+		SwingUtilities.invokeAndWait(new Runnable() {
+			
+			@Override
+			public void run() {
+				try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
+					
+					//make sure turns off correctly
+				}
+				VCellThreadChecker.checkCpuIntensiveInvocation();
+			}
 		});
+		checkQuiet( );
 	}
 
 }

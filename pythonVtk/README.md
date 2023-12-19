@@ -1,1 +1,0 @@
-# VTK library for internal use by vcell for processing meshes.

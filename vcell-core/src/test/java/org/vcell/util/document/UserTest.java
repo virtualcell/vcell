@@ -1,29 +1,28 @@
 package org.vcell.util.document;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
-@Tag("Fast")
+@Category(Fast.class)
 public class UserTest {
 
 	@Test
 	public void publisherTest( ) {
 		User u = new User("schaff", testKey( ));
-        Assertions.assertTrue(u.isPublisher());
+		Assert.assertTrue(u.isPublisher());
 		u = new User("fido", testKey( ));
-		assertFalse(u.isPublisher());
+		Assert.assertFalse(u.isPublisher());
 	}
 	@Test
 	public void testAcctTest( ) {
 		User u = new User("vcelltestaccount", testKey( ));
-        Assertions.assertTrue(u.isTestAccount());
+		Assert.assertTrue(u.isTestAccount());
 		u = new User("fido", testKey( ));
-		assertFalse(u.isTestAccount());
+		Assert.assertFalse(u.isTestAccount());
 	}
 
 	private KeyValue testKey ( ) {

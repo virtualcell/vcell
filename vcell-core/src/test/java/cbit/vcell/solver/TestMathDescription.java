@@ -1,10 +1,12 @@
 package cbit.vcell.solver;
 
-import cbit.vcell.math.ProblemRequirements;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-@Tag("Fast")
+import cbit.vcell.math.ProblemRequirements;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
+
+@Category(Fast.class)
 public class TestMathDescription implements ProblemRequirements {
 
 	/* (non-Javadoc)

@@ -10,13 +10,12 @@ import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.*;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.vcell.sbml.VcmlTestSuiteFiles;
+import org.vcell.test.MathGen_IT;
 import org.vcell.util.document.Version;
 
 import java.io.*;
@@ -25,16 +24,22 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-@Tag("MathGen_IT")
+@Category(MathGen_IT.class)
+@RunWith(Parameterized.class)
 public class MathGenCompareTest {
+
+	private String filename_colon_appname;
 
 	private static String previousInstalldirPropertyValue;
 	private static File codeKnownProblemFile;
 	private static File csvKnownProblemFile;
 
-	@BeforeAll
+	public MathGenCompareTest(String filename_colon_appname){
+		this.filename_colon_appname = filename_colon_appname;
+	}
+
+
+	@BeforeClass
 	public static void setup() throws IOException {
 		previousInstalldirPropertyValue = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
@@ -45,7 +50,7 @@ public class MathGenCompareTest {
 		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
 	}
 
-	@AfterAll
+	@AfterClass
 	public static void teardown() {
 		if (previousInstalldirPropertyValue!=null) {
 			PropertyLoader.setProperty(PropertyLoader.installationRoot, previousInstalldirPropertyValue);
@@ -54,7 +59,7 @@ public class MathGenCompareTest {
 		System.err.println("csv known problem file: "+csvKnownProblemFile.getAbsolutePath());
 	}
 
-	@BeforeAll
+	@BeforeClass
 	public static void printSkippedModels() {
 		for (String filename : outOfMemoryFileSet()){
 			System.err.println("skipping - out of memory: "+filename);
@@ -293,6 +298,7 @@ public class MathGenCompareTest {
 	/**
 	 * process all tests that are available - the slow set is parsed only and not processed.
 	 */
+	@Parameterized.Parameters
 	public static Collection<String> testCases() throws XmlParseException, IOException {
 		Predicate<String> skipFilter = (t) -> !outOfMemoryFileSet().contains(t) && !largeFileSet().contains(t) && !slowFileSet().contains(t);
 		List<String> filenames = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter).collect(Collectors.toList());
@@ -326,9 +332,8 @@ public class MathGenCompareTest {
 	}
 
 
-	@ParameterizedTest
-	@MethodSource("testCases")
-	public void test_legacy_math_compare(String filename_colon_appname) throws Exception {
+	@Test
+	public void test_legacy_math_compare() throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
 		String filename = tokens[0];
 		String simContextName = filename_colon_appname.substring(filename.length()+1);
@@ -366,12 +371,13 @@ public class MathGenCompareTest {
 			}else{
 				new_simContext.updateAll(false);
 			}
-			assertFalse(bKnownMathGenerationFailure, "math generation succeeded for '" + filename_colon_appname + "', " +
-					"but expecting math generation failure, remove from knownMathGenerationFailures()");
+			Assert.assertFalse("math generation succeeded for '"+filename_colon_appname+"', " +
+					"but expecting math generation failure, remove from knownMathGenerationFailures()",
+					bKnownMathGenerationFailure);
 		} catch (Exception e){
 			e.printStackTrace();
 			if (!bKnownMathGenerationFailure){
-				fail("math generation failed for '" + filename_colon_appname + "', but expecting math to generate, add to knownMathGenerationFailures()");
+				Assert.fail("math generation failed for '"+filename_colon_appname+"', but expecting math to generate, add to knownMathGenerationFailures()");
 			}
 		}
 		MathDescription newMath = new_simContext.getMathDescription();
@@ -384,7 +390,7 @@ public class MathGenCompareTest {
 		}
 		MathCompareResults.Decision knownFault = knownLegacyFaults().get(filename_colon_appname);
 		if (results.isEquivalent() && knownFault != null){
-			fail("math equivalent for '" + filename_colon_appname + "', but expecting '" + knownFault + "', remove known fault");
+			Assert.fail("math equivalent for '"+filename_colon_appname+"', but expecting '"+knownFault+"', remove known fault");
 		}
 		if (!results.isEquivalent()){
 			// try again using non-reduced math
@@ -401,12 +407,13 @@ public class MathGenCompareTest {
 				}else{
 					new_simContext.updateAll(false);
 				}
-				assertFalse(bKnownMathGenerationFailure, "math generation succeeded for '" + filename_colon_appname + "', " +
-						"but expecting math generation failure, remove from knownMathGenerationFailures()");
+				Assert.assertFalse("math generation succeeded for '"+filename_colon_appname+"', " +
+									"but expecting math generation failure, remove from knownMathGenerationFailures()",
+							bKnownMathGenerationFailure);
 			} catch (Exception e) {
 				e.printStackTrace();
 				if (!bKnownMathGenerationFailure) {
-					fail("math generation failed for '" + filename_colon_appname + "', but expecting math to generate, add to knownMathGenerationFailures()");
+					Assert.fail("math generation failed for '" + filename_colon_appname + "', but expecting math to generate, add to knownMathGenerationFailures()");
 				}
 			}
 			newMath = new_simContext.getMathDescription();
@@ -432,22 +439,22 @@ public class MathGenCompareTest {
 							"|"+orig_biomodel.getName()+"|"+simContextName+"|"+results2.decision+"|"+cause+"\n");
 				}
 				if (knownFault == null) {
-					fail("'" + filename_colon_appname + "' expecting equivalent, " +
+					Assert.fail("'" + filename_colon_appname + "' expecting equivalent, " +
 							"computed '" + results2.decision + "', " +
 							"details: " + results2.toDatabaseStatus());
 				} else {
-                    assertTrue(knownFault == results2.decision, "'" + filename_colon_appname + "' expecting '" + knownFault + "', " +
-                            "computed '" + results2.decision + "', " +
-                            "details: " + results2.toDatabaseStatus());
+					Assert.assertTrue("'" + filename_colon_appname + "' expecting '" + knownFault + "', " +
+									"computed '" + results2.decision + "', " +
+									"details: " + results2.toDatabaseStatus(),
+							knownFault == results2.decision);
 				}
 			}
 		}
 	}
 
-	@Disabled
-	@ParameterizedTest
-	@MethodSource("testCases")
-	public void test_identity_math_compare(String filename_colon_appname) throws Exception {
+	@Test
+	@Ignore
+	public void test_identity_math_compare() throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
 		String filename = tokens[0];
 		String simContextName = filename_colon_appname.substring(filename.length() + 1);
@@ -480,13 +487,12 @@ public class MathGenCompareTest {
 		// compare identity (math against clone of itself - using the reduced model)
 		//
 		MathCompareResults identityCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), reducedMath1, reducedMath2);
-        assertTrue(identityCompareResults.isEquivalent(), "math not equivalent for '" + filename_colon_appname + "': " + identityCompareResults.toDatabaseStatus());
+		Assert.assertTrue("math not equivalent for '" + filename_colon_appname + "': " + identityCompareResults.toDatabaseStatus(), identityCompareResults.isEquivalent());
 	}
 
-	@Disabled
-	@ParameterizedTest
-	@MethodSource("testCases")
-	public void test_model_reduction_math_compare(String filename_colon_appname) throws Exception {
+	@Test
+	@Ignore
+	public void test_model_reduction_math_compare() throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
 		String filename = tokens[0];
 		String simContextName = filename_colon_appname.substring(filename.length()+1);
@@ -529,7 +535,7 @@ public class MathGenCompareTest {
 
 		MathCompareResults.Decision knownReductionFault = knownReductionFaults().get(filename_colon_appname);
 		if (reductionCompareResults.isEquivalent() && knownReductionFault != null){
-			fail("math equivalent for '" + filename_colon_appname + "', but expecting '" + knownReductionFault + "', remove known fault");
+			Assert.fail("math equivalent for '"+filename_colon_appname+"', but expecting '"+knownReductionFault+"', remove known fault");
 		}
 		if (!reductionCompareResults.isEquivalent()){
 			try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(codeKnownProblemFile, true));){
@@ -537,15 +543,17 @@ public class MathGenCompareTest {
 						+reductionCompareResults.toDatabaseStatus().substring(0, Math.min(reductionCompareResults.toDatabaseStatus().length(), 100))+"\n");
 			}
 			if (knownReductionFault == null) {
-				fail("'" + filename_colon_appname + "' expecting equivalent, " +
-						"computed '" + reductionCompareResults.decision + "', " +
+				Assert.fail("'"+filename_colon_appname+"' expecting equivalent, " +
+						"computed '"+reductionCompareResults.decision+"', " +
 						"details: " + reductionCompareResults.toDatabaseStatus());
 			}else{
-                assertTrue(knownReductionFault == reductionCompareResults.decision, "'" + filename_colon_appname + "' expecting '" + knownReductionFault + "', " +
-                        "computed '" + reductionCompareResults.decision + "', " +
-                        "details: " + reductionCompareResults.toDatabaseStatus());
+				Assert.assertTrue("'"+filename_colon_appname+"' expecting '"+knownReductionFault+"', " +
+								"computed '"+reductionCompareResults.decision+"', " +
+								"details: " + reductionCompareResults.toDatabaseStatus(),
+						knownReductionFault == reductionCompareResults.decision);
 			}
 		}
 	}
+
 
 }

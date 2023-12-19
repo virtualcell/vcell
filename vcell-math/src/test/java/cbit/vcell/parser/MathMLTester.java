@@ -13,18 +13,18 @@ package cbit.vcell.parser;
 import jscl.text.ParseException;
 import org.jmathml.ASTNode;
 import org.jmathml.MathMLReader;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.vcell.test.Fast;
 
 import java.io.IOException;
 import java.util.*;
 
-import static cbit.vcell.parser.ExpressionUtils.functionallyEquivalent;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-
-@Tag("Fast")
+@Category(Fast.class)
+@RunWith(Parameterized.class)
 public class MathMLTester {
 
 	private Expression expression;
@@ -33,6 +33,7 @@ public class MathMLTester {
 		this.expression = exp;
 	}
 
+	@Parameterized.Parameters
 	public static Collection<Expression> testCases() throws ExpressionException {
 		int depthOfExpressionTree = 2;
 		int numTests = 1500;
@@ -72,8 +73,7 @@ public class MathMLTester {
 		return expressions;
 	}
 
-	@ParameterizedTest
-	@MethodSource("testCases")
+	@Test
 	public void testMathML_SBMLSubset() throws IOException, ExpressionException {
 		if (expression.infix().contains("atan")){
 			return;
@@ -83,11 +83,10 @@ public class MathMLTester {
 		Expression expMathML = new ExpressionMathMLParser(null).fromMathML(expMathMLStr, "t");
 		boolean equiv = ExpressionUtils.functionallyEquivalent(expression, expMathML, true);
 		String msg = "not equivalent: origExp='"+expression.infix()+"', expMathML='"+expMathML.infix()+"'";
-        assertTrue(equiv, msg);
+		Assert.assertTrue(msg, equiv);
 	}
 
-	@ParameterizedTest
-	@MethodSource("testCases")
+	@Test
 	public void test_vcell_mathml_jMathML_mathml_vcell() throws IOException, ExpressionException {
 		List<String> tokensToAvoid = Arrays.asList(
 				"atan",
@@ -114,11 +113,10 @@ public class MathMLTester {
 
 		boolean equiv = ExpressionUtils.functionallyEquivalent(origExp, expMathML, true);
 		String msg = "not equivalent: origExp='"+origExp.infix()+"', expMathML='"+expMathML.infix()+"'";
-        assertTrue(equiv, msg);
+		Assert.assertTrue(msg, equiv);
 	}
 
-	@ParameterizedTest
-	@MethodSource("testCases")
+	@Test
 	public void testMathML_GeneralSubset() throws IOException, ExpressionException {
 		if (expression.infix().contains("atan")){
 			return;
@@ -128,18 +126,17 @@ public class MathMLTester {
 		Expression expMathML = new ExpressionMathMLParser(null).fromMathML(expMathMLStr, "t");
 		boolean equiv = ExpressionUtils.functionallyEquivalent(expression, expMathML, true);
 		String msg = "not equivalent: origExp='"+expression.infix()+"', expMathML='"+expMathML.infix()+"'";
-        assertTrue(equiv, msg);
+		Assert.assertTrue(msg, equiv);
 	}
 
-	@ParameterizedTest
-	@MethodSource("testCases")
+	@Test
 	public void testFlatten() throws ExpressionException {
 		Expression expFlattened = expression.flatten();
-        assertTrue(functionallyEquivalent(expression, expFlattened, false), "not equivalent: origExp='" + expression.infix() + "', expFlattened='" + expFlattened.infix() + "'");
+		Assert.assertTrue("not equivalent: origExp='"+expression.infix()+"', expFlattened='"+expFlattened.infix()+"'",
+				ExpressionUtils.functionallyEquivalent(expression, expFlattened, false));
 	}
 
-	@ParameterizedTest
-	@MethodSource("testCases")
+	@Test
 	public void testJSCLParseInfix() throws ExpressionException, ParseException {
 		List<String> tokensToAvoid = Arrays.asList(
 				"<",">","=","&","|","!"
@@ -163,18 +160,17 @@ public class MathMLTester {
 		}
 		String msg = "not equivalent: origExp='"+expression.infix()+"', expSimplified='"+roundTripExp.infix()+"', jsclInfix='"+jsclExpInfix+"'";
 		boolean equiv = ExpressionUtils.functionallyEquivalent(expression, roundTripExp, false);
-        assertTrue(equiv, msg);
+		Assert.assertTrue(msg, equiv);
 	}
 
-	@ParameterizedTest
-	@MethodSource("testCases")
+	@Test
 	public void testJSCLSimplifyInfix() {
 		Expression expSimplified = null;
 		try {
 			expSimplified = expression.simplifyJSCL(20000, true);
 		} catch (ExpressionException e) {
 			String msg = "failed to simplify '"+expression.infix()+"': "+e.getMessage();
-			fail(msg);
+			Assert.fail(msg);
 			return;
 		}
 		if (expSimplified.infix().contains("pi")){
@@ -182,7 +178,7 @@ public class MathMLTester {
 		}
 		String msg = "not equivalent: origExp='"+expression.infix()+"', expSimplified='"+expSimplified.infix()+"'";
 		boolean equiv = ExpressionUtils.functionallyEquivalent(expression, expSimplified, false);
-        assertTrue(equiv, msg);
+		Assert.assertTrue(msg, equiv);
 	}
 
 }

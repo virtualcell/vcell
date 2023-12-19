@@ -9,17 +9,18 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.test.Fast;
 import org.vcell.util.Extent;
 
 import java.io.StringBufferInputStream;
 import java.util.Random;
 
-@Tag("Fast")
+@Category(Fast.class)
 public class VCImageTest {
 
     @Test
@@ -33,14 +34,14 @@ public class VCImageTest {
         Extent extent = new Extent(5, 5, 1);
         VCImageUncompressed vcImageUncompressedFromBytes = new VCImageUncompressed(null, origUncompressedBytes, extent, nx, ny, nz);
         VCImageCompressed vcImageCompressedFromImage = new VCImageCompressed(vcImageUncompressedFromBytes);
-        Assertions.assertArrayEquals(origUncompressedBytes, vcImageUncompressedFromBytes.getPixels(), "uncompressed and original image not equal");
-        Assertions.assertArrayEquals(vcImageUncompressedFromBytes.getPixels(), vcImageCompressedFromImage.getPixels(), "round trip compression not equal");
-        Assertions.assertArrayEquals(vcImageUncompressedFromBytes.getPixelsCompressed(), vcImageCompressedFromImage.getPixelsCompressed(), "round trip uncompressed not equal");
+        Assert.assertArrayEquals("uncompressed and original image not equal", origUncompressedBytes, vcImageUncompressedFromBytes.getPixels());
+        Assert.assertArrayEquals("round trip compression not equal", vcImageUncompressedFromBytes.getPixels(), vcImageCompressedFromImage.getPixels());
+        Assert.assertArrayEquals("round trip uncompressed not equal", vcImageUncompressedFromBytes.getPixelsCompressed(), vcImageCompressedFromImage.getPixelsCompressed());
 
         VCImageCompressed vcImageCompressedFromBytes = new VCImageCompressed(null, vcImageUncompressedFromBytes.getPixelsCompressed(), extent, nx, ny, nz);
         VCImageUncompressed vcImageUncompressedFromImage = new VCImageUncompressed(vcImageCompressedFromBytes);
-        Assertions.assertArrayEquals(vcImageUncompressedFromImage.getPixels(), vcImageCompressedFromBytes.getPixels(),"round trip compression not equal");
-        Assertions.assertArrayEquals(vcImageUncompressedFromImage.getPixelsCompressed(), vcImageCompressedFromBytes.getPixelsCompressed(),"round trip uncompressed not equal");
+        Assert.assertArrayEquals("round trip compression not equal", vcImageUncompressedFromImage.getPixels(), vcImageCompressedFromBytes.getPixels());
+        Assert.assertArrayEquals("round trip uncompressed not equal", vcImageUncompressedFromImage.getPixelsCompressed(), vcImageCompressedFromBytes.getPixelsCompressed());
     }
 
     @Test
@@ -58,15 +59,15 @@ public class VCImageTest {
 
         String xmlString = XmlHelper.imageToXML(vcImageCompressedFromImage);
         VCImage vcImage = XmlHelper.XMLToImage(xmlString);
-        Assertions.assertArrayEquals(vcImage.getPixels(), vcImageCompressedFromImage.getPixels(),"uncompressed bytes not same - from compressed image");
-        Assertions.assertArrayEquals(vcImage.getPixelsCompressed(), vcImageCompressedFromImage.getPixelsCompressed(),"compressed bytes not same - from compressed image");
+        Assert.assertArrayEquals("uncompressed bytes not same - from compressed image",vcImage.getPixels(), vcImageCompressedFromImage.getPixels());
+        Assert.assertArrayEquals("compressed bytes not same - from compressed image",vcImage.getPixelsCompressed(), vcImageCompressedFromImage.getPixelsCompressed());
 
         String xmlString2 = XmlHelper.imageToXML(vcImageUncompressedFromBytes);
         VCImage vcImage2 = XmlHelper.XMLToImage(xmlString2);
-        Assertions.assertArrayEquals(vcImage2.getPixels(), vcImageUncompressedFromBytes.getPixels(),"uncompressed bytes not same - from uncompressed image");
-        Assertions.assertArrayEquals(vcImage2.getPixelsCompressed(), vcImageUncompressedFromBytes.getPixelsCompressed(),"compressed bytes not same - from uncompressed image");
+        Assert.assertArrayEquals("uncompressed bytes not same - from uncompressed image",vcImage2.getPixels(), vcImageUncompressedFromBytes.getPixels());
+        Assert.assertArrayEquals("compressed bytes not same - from uncompressed image",vcImage2.getPixelsCompressed(), vcImageUncompressedFromBytes.getPixelsCompressed());
 
-        Assertions.assertEquals(xmlString, xmlString2, "xml strings different");
+        Assert.assertEquals("xml strings different", xmlString, xmlString2);
     }
 
     @Test
@@ -95,12 +96,12 @@ public class VCImageTest {
                 SimulationSymbolTable.createMathSymbolTableFactory(),
                 bioModelSBML.getSimulationContext(0).getMathDescription(),
                 roundTripBioModel.getSimulationContext(0).getMathDescription());
-        Assertions.assertTrue(mathEquivalent.isEquivalent(),"math descriptions didn't match: "+mathEquivalent.toDatabaseStatus());
+        Assert.assertTrue("math descriptions didn't match: "+mathEquivalent.toDatabaseStatus(),mathEquivalent.isEquivalent());
 
         VCImage origImage = bioModel.getSimulationContext(0).getGeometry().getGeometrySpec().getImage();
         VCImage roundTripImage = roundTripBioModel.getSimulationContext(0).getGeometry().getGeometrySpec().getImage();
         int dimension = bioModel.getSimulationContext(0).getGeometry().getDimension();
         boolean bImageEquivalent = origImage.compareEqual(roundTripImage, dimension,true);
-        Assertions.assertTrue(bImageEquivalent,"images don't match");
+        Assert.assertTrue("images don't match",bImageEquivalent);
     }
 }

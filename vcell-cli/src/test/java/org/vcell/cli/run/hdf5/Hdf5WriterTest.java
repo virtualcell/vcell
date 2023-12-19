@@ -1,19 +1,24 @@
 package org.vcell.cli.run.hdf5;
 
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.DataSet;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import cbit.vcell.resource.NativeLib;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 import org.vcell.util.VCellUtilityHub;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.List;
 
-@Tag("Fast")
+@Category(Fast.class)
 public class Hdf5WriterTest {
 
     public static Hdf5DataContainer createExampleData() {

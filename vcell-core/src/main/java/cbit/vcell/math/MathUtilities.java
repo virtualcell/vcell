@@ -10,13 +10,14 @@
 
 package cbit.vcell.math;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.SimulationSymbolTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import org.vcell.test.Fast;
 
 /**
  * Insert the type's description here.

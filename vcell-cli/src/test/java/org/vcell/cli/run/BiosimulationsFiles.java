@@ -1,15 +1,16 @@
 package org.vcell.cli.run;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Tag;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
 
-@Tag("Fast")
+@Category(Fast.class)
 public class BiosimulationsFiles {
 
     private final static String[] allProjectIDs = new String[]{
@@ -50,13 +51,13 @@ public class BiosimulationsFiles {
     @Test
     public void test_read_omex_file() {
         InputStream inputStream = getOmex(allProjectIDs[0]);
-        Assertions.assertTrue(inputStream != null);
+        Assert.assertTrue(inputStream != null);
     }
 
     @Test
     public void test_read_H5_file() {
         InputStream inputStream = getH5(allProjectIDs[0]);
-        Assertions.assertTrue(inputStream != null);
+        Assert.assertTrue(inputStream != null);
     }
 
 }

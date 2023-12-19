@@ -9,6 +9,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
@@ -16,8 +17,10 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
 import java.beans.PropertyVetoException;
 import java.io.FileNotFoundException;
@@ -25,10 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-@Tag("Fast")
+@Category(Fast.class)
 public class ModelCountAndConcentrationTest {
 
 	@Test
@@ -40,9 +40,9 @@ public class ModelCountAndConcentrationTest {
 		SpeciesContextSpec anySpeciesContextSpec = speciesContextSpecs[0];
 		SpeciesContextSpecParameter initParmConc = anySpeciesContextSpec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 		SpeciesContextSpecParameter initParmCount = anySpeciesContextSpec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
-        assertTrue((initParmConc != null && initParmCount != null) ? true : false, "expecting non-null initial condition parameters");
-        assertTrue(initParmConc.getExpression() == null ? true : false, "expecting null expression for concentration initial condition parameter");
-        assertTrue(initParmCount.getExpression() != null ? true : false, "expecting non-null expression for count initial condition parameter");
+		Assert.assertTrue("expecting non-null initial condition parameters", (initParmConc != null && initParmCount != null) ? true : false);
+		Assert.assertTrue("expecting null expression for concentration initial condition parameter", initParmConc.getExpression() == null ? true : false);
+		Assert.assertTrue("expecting non-null expression for count initial condition parameter", initParmCount.getExpression() != null ? true : false);
 	}
     
 	@Test
@@ -54,9 +54,9 @@ public class ModelCountAndConcentrationTest {
 		SpeciesContextSpec anySpeciesContextSpec = speciesContextSpecs[0];
 		SpeciesContextSpecParameter initParmConc = anySpeciesContextSpec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 		SpeciesContextSpecParameter initParmCount = anySpeciesContextSpec.getParameterFromRole(SpeciesContextSpec.ROLE_InitialCount);
-        assertTrue((initParmConc != null && initParmCount != null) ? true : false, "expecting non-null initial condition parameters");
-        assertTrue(initParmConc.getExpression() != null ? true : false, "expecting non-null expression for concentration initial condition parameter");
-        assertTrue(initParmCount.getExpression() == null ? true : false, "expecting null expression for count initial condition parameter");
+		Assert.assertTrue("expecting non-null initial condition parameters", (initParmConc != null && initParmCount != null) ? true : false);
+		Assert.assertTrue("expecting non-null expression for concentration initial condition parameter", initParmConc.getExpression() != null ? true : false);
+		Assert.assertTrue("expecting null expression for count initial condition parameter", initParmCount.getExpression() == null ? true : false);
 	}
     
     @Test
@@ -75,7 +75,7 @@ public class ModelCountAndConcentrationTest {
         //
         MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), expectedMathDescription, stoch_app.getMathDescription());
         boolean mathMatches = mathCompareResults.isEquivalent();
-        assertTrue(mathMatches, "expecting concentration to count translation to match: reason: " + mathCompareResults.toDatabaseStatus());
+        Assert.assertTrue("expecting concentration to count translation to match: reason: "+mathCompareResults.toDatabaseStatus(), mathMatches);
 
         //
         // test that math overrides same for new concentration to count translation saved BioModel
@@ -83,7 +83,7 @@ public class ModelCountAndConcentrationTest {
         Simulation expectedSim = expected_bioModel_stoch_init_count.getSimulation(0);
         Simulation sim = bioModel_stoch_init_concentration.getSimulation(0);
         boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
-        assertTrue(overridesMatch, "expecting math overrides to be equivalent");
+        Assert.assertTrue("expecting math overrides to be equivalent", overridesMatch);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class ModelCountAndConcentrationTest {
         Simulation expectedSim = expected_bioModel_stoch_init_count.getSimulation(0);
         Simulation sim = bioModel_stoch_init_concentration.getSimulation(0);
         boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
-        assertFalse(overridesMatch, "expecting math overrides to not be equivalent");
+        Assert.assertFalse("expecting math overrides to not be equivalent", overridesMatch);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class ModelCountAndConcentrationTest {
         //
         MathCompareResults mathCompareResults = MathDescription.testEquivalency(SimulationSymbolTable.createMathSymbolTableFactory(), expectedMathDescription, stoch_app.getMathDescription());
         boolean mathMatches = mathCompareResults.isEquivalent();
-        assertTrue(mathMatches, "expecting concentration to count translation to match: reason: " + mathCompareResults.toDatabaseStatus());
+        Assert.assertTrue("expecting concentration to count translation to match: reason: "+mathCompareResults.toDatabaseStatus(), mathMatches);
 
         //
         // test that math overrides same for new concentration to count translation saved BioModel
@@ -130,7 +130,7 @@ public class ModelCountAndConcentrationTest {
         Simulation expectedSim = expected_bioModel_stoch_init_concentration.getSimulation(0);
         Simulation sim = bioModel_stoch_init_count.getSimulation(0);
         boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
-        assertTrue(overridesMatch, "expecting math overrides to be equivalent");
+        Assert.assertTrue("expecting math overrides to be equivalent", overridesMatch);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class ModelCountAndConcentrationTest {
         Simulation expectedSim = expected_bioModel_stoch_init_concentration.getSimulation(0);
         Simulation sim = bioModel_stoch_init_count.getSimulation(0);
         boolean overridesMatch = expectedSim.getMathOverrides().compareEqual(sim.getMathOverrides());
-        assertFalse(overridesMatch, "expecting math overrides to not be equivalent");
+        Assert.assertFalse("expecting math overrides to not be equivalent", overridesMatch);
     }
 
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {

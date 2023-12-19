@@ -1,11 +1,14 @@
 package org.vcell.util;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
 
-@Tag("Fast")
+@Category(Fast.class)
 public class DimensionalIndexTest {
 	
 	private static final int mX = 3;
@@ -25,41 +28,35 @@ public class DimensionalIndexTest {
 		for (int x = 0;  x < mX; x++)
 			for (int y = 0;  y < mY; y++)
 				for (int z = 0;  z < mZ; z++) {
-					final int idx = index.rollup(x, y, z);
-					assertFalse(punched[idx]);
+					final int idx = index.rollup(x,y,z);
+					assertFalse(punched[idx]); //ensure each index unique
 					punched[idx] = true;
 				}
 		for (int p = 0; p < punched.length; ++p) {
-            assertTrue(punched[p]); //ensure each index was used
+			assertTrue(punched[p]); //ensure each index was used 
 		}
 	}
 	
-	@Test
+	@Test(expected = RuntimeException.class)
 	public void badX( ) {
-		assertThrows(RuntimeException.class, () -> {
-			index.rollup(mX, 0, 0);
-		});
+		index.rollup(mX, 0,0); 
 	}
 	
-	@Test
+	@Test(expected = RuntimeException.class)
 	public void badY( ) {
-		assertThrows(RuntimeException.class, () -> {
-			index.rollup(0, mY, 0);
-		});
+		index.rollup(0, mY,0); 
 	}
 	
-	@Test
+	@Test(expected = RuntimeException.class)
 	public void badZ( ) {
-		assertThrows(RuntimeException.class, () -> {
-			index.rollup(0, 0, mZ);
-		});
+		index.rollup(0,0,mZ); 
 	}
 	
 	@Test
 	public void badZmsg( ) {
 		try {
 			index.rollup(0,0,mZ);
-			fail("should have thrown an exception");
+			Assert.fail("should have thrown an exception");
 		} catch (RuntimeException re) {
 		}
 	}

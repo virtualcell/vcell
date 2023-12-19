@@ -273,7 +273,6 @@ services:
       - mongodb_port_internal=27017
       - mongodb_database=test
       - s3ProxyPortExternal=${VCELL_S3PROXY_PORT_EXTERNAL}
-      - s3export_baseURL=${VCELL_S3_EXPORT_BASEURL}
 
       - webDataPort=${VCELL_WEB_DATA_PORT}
 
@@ -282,7 +281,6 @@ services:
       - "${VCELL_DEBUG_PORT_VCELL_DATA}:8000" # java remote debugging
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
-      - "${VCELL_N5_DATADIR_HOST}:/n5DataDir"
       - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
       - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"

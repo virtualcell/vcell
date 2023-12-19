@@ -148,7 +148,7 @@ jobs:
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
+          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="org.vcell.test.${{ matrix.test-group }}"
 
 #      - name: Setup tmate session
 #        uses: mxschmitt/action-tmate@v3
@@ -217,7 +217,7 @@ jobs:
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="Fast"
+          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="org.vcell.test.Fast"
 
       - name: Build Docker image and push with latest tag
         run: |

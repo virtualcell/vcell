@@ -1,17 +1,23 @@
 
 package cbit.vcell.solvers.mb;
 
-import cbit.vcell.solvers.mb.MovingBoundaryTypes.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 
-@Disabled
-@Tag("Fast")
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import cbit.vcell.solvers.mb.MovingBoundaryTypes.Element;
+import cbit.vcell.solvers.mb.MovingBoundaryTypes.MeshInfo;
+import cbit.vcell.solvers.mb.MovingBoundaryTypes.Plane;
+import cbit.vcell.solvers.mb.MovingBoundaryTypes.Species;
+import cbit.vcell.solvers.mb.MovingBoundaryTypes.TimeInfo;
+import org.junit.experimental.categories.Category;
+import org.vcell.test.Fast;
+
+@Ignore
+@Category(Fast.class)
 public class MovingBoundaryResultTest extends H5Client {
     private static String fname  = FILE;
 	MovingBoundaryReader mbr;
