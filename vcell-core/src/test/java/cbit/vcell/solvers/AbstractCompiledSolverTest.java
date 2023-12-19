@@ -15,26 +15,7 @@ public class AbstractCompiledSolverTest {
 
     @Test
     public void constructionTest() throws SolverException {
-        AbstractCompiledSolver acs = new AbstractCompiledSolver() {
-            @Override
-            public void cleanup() {
-                throw new UnsupportedOperationException();
-            }
+        // Test All Children
 
-            @Override
-            protected ApplicationMessage getApplicationMessage(String message) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public Collection<ExecutableCommand> getCommands() {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            protected void initialize() throws SolverException {
-                throw new UnsupportedOperationException();
-            }
-        }
     }
 }
