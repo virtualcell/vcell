@@ -1,5 +1,5 @@
 from pathlib import Path
-from biosimulations_pipeline.hdf5_compare import get_results, compare_arrays, compare_datasets
+from vcutils.biosim_pipeline.hdf5_compare import get_results, compare_arrays, compare_datasets
 
 
 def test_compare_arrays() -> None:

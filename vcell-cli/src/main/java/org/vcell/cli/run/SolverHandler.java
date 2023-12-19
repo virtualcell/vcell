@@ -82,11 +82,10 @@ public class SolverHandler {
         if (docName == null || docName.isEmpty()) {
             throw new RuntimeException("The name of the imported VCDocument is null or empty.");
         }
-        if (!(doc instanceof BioModel)) {
+        if (!(doc instanceof BioModel bioModel)) {
             throw new RuntimeException("The imported VCDocument '" + docName + "' is not a BioModel.");
         }
-        BioModel bioModel = (BioModel) doc;
-        if (bioModel.getSimulationContext(0) == null) {
+		if (bioModel.getSimulationContext(0) == null) {
             throw new RuntimeException("The imported VCDocument '" + docName + "' has no Application");
         }
         if (bioModel.getSimulation(0) == null) {
@@ -113,12 +112,11 @@ public class SolverHandler {
 			}
         }
         
-        {
+
     	// we first make a list of all the sub tasks (sub tasks themselves may be instanceof Task or another RepeatedTask)
         Set <AbstractTask> subTasks = new LinkedHashSet<> ();
         for(AbstractTask at : sedml.getTasks()) {
-        	if(!(at instanceof RepeatedTask)) continue;
-			RepeatedTask rt = (RepeatedTask)at;
+        	if(!(at instanceof RepeatedTask rt)) continue;
 			Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
 			for (Map.Entry<String, SubTask> entry : subTasksOfRepeatedTask.entrySet()) {
 				String subTaskId = entry.getKey();
@@ -194,9 +192,9 @@ public class SolverHandler {
 				}
 			}
         }
-        }
+
         
-        {
+
         // 
         // key = tasks that are used for generating some output
         //
@@ -223,17 +221,16 @@ public class SolverHandler {
         for(Map.Entry<Variable, AbstractTask> entry : variableToTaskMap.entrySet()) {
 			Variable var = entry.getKey();
 			AbstractTask task = entry.getValue();
-			if(!taskToVariableMap.containsKey(task)) {
-				List<Variable> vars = new ArrayList<> ();
-				vars.add(var);
-				taskToVariableMap.put(task, vars);
-			} else {
-				List<Variable> vars = taskToVariableMap.get(task);
-				vars.add(var);
-				taskToVariableMap.put(task, vars);
-			}
+            List<Variable> vars;
+            if(!taskToVariableMap.containsKey(task)) {
+                vars = new ArrayList<>();
+            } else {
+                vars = taskToVariableMap.get(task);
+            }
+            vars.add(var);
+            taskToVariableMap.put(task, vars);
         }
-        }
+
         
         for (Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubTasksMap.entrySet()) {
 			AbstractTask topTask = entry.getKey();
@@ -533,7 +530,7 @@ public class SolverHandler {
 						sdl = kisao;
                     }
                     if(logTaskError.contains("Process timed out")) {
-						if(bTimeoutFound == false) {        // don't repeat this for each task
+						if(!bTimeoutFound) {        // don't repeat this for each task
 							String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
 							str += "Process timed out";        // truncate the rest of the spam
                             cliLogger.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
@@ -564,7 +561,7 @@ public class SolverHandler {
 					this.nonSpatialResults.put(taskJob, nonspatialSimResults);
                 }
 
-                if(keepTempFiles == false) {
+                if(!keepTempFiles) {
 					RunUtils.removeIntermediarySimFiles(outputDirForSedml);
                 }
                 simulationJobCount++;

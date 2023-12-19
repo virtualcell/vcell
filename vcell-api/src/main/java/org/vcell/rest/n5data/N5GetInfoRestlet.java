@@ -45,16 +45,17 @@ public final class N5GetInfoRestlet extends Restlet {
 
 				switch (desiredInfo){
 					case VCellApiApplication.N5_INFO_SUPPORTED_SPECIES:
-						User user = application.getVCellUser(req.getChallengeResponse(), VCellApiApplication.AuthenticationPolicy.ignoreInvalidCredentials);
-						N5Service n5Service = new N5Service(simID, user);
-						ArrayList<String> listOfSupportedSpecies = n5Service.supportedSpecies();
-						Gson gson = new Gson();
-						response.setEntity(gson.toJson(listOfSupportedSpecies), MediaType.APPLICATION_JSON);
+//						User user = application.getVCellUser(req.getChallengeResponse(), VCellApiApplication.AuthenticationPolicy.ignoreInvalidCredentials);
+//						N5Service n5Service = new N5Service(simID, user);
+//						ArrayList<String> listOfSupportedSpecies = n5Service.supportedSpecies();
+//						Gson gson = new Gson();
+//						response.setEntity(gson.toJson(listOfSupportedSpecies), MediaType.APPLICATION_JSON);
 						return;
 					default:
-						lg.info("No information type was specified in getting N5 info");
-						response.setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-						response.setEntity("failed to specify type of N5 information request for sim ID: " + simID, MediaType.TEXT_PLAIN);
+						return;
+//						lg.info("No information type was specified in getting N5 info");
+//						response.setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+//						response.setEntity("failed to specify type of N5 information request for sim ID: " + simID, MediaType.TEXT_PLAIN);
 				}
 			} catch (Exception e) {
 				lg.error(e.getMessage(), e);

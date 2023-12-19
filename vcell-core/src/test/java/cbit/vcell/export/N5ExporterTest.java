@@ -1,4 +1,4 @@
-package simdata.n5;
+package cbit.vcell.export;
 
 
 
@@ -13,13 +13,10 @@ package simdata.n5;
     be the control.
  */
 
+import cbit.vcell.export.server.*;
 import cbit.vcell.math.MathException;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.VCData;
-import cbit.vcell.simdata.n5.N5Exporter;
+import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.janelia.saalfeldlab.n5.*;
@@ -31,9 +28,7 @@ import org.junit.experimental.categories.Category;
 import org.vcell.test.Fast;
 import org.vcell.util.DataAccessException;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
@@ -44,10 +39,10 @@ public class N5ExporterTest {
 
     private N5Reader n5Reader;
     private VCData controlModel;
-    private String dataSetName;
     private DataSetControllerImpl controlModelController;
     private  VCSimulationDataIdentifier vcDataID;
     private ArrayList<DataIdentifier> variables;
+    private N5Exporter n5Exporter;
     private static final String fourDModelID = "597714292";
     private static final String fiveDModelID = "1107466895";
     private final ArrayList<String> testModels = new ArrayList<>(Arrays.asList(
@@ -57,7 +52,9 @@ public class N5ExporterTest {
 
     private static String previousInstallRoot;
     private static String previousPrimarySimDir;
-
+    private static String previousSecondarySimDir;
+    private static String previousSecondaryInternalSimDir;
+    private static String previousSimCacheSize;
     private static String previousN5Path;
 
     public final File temporaryFolder = new File(System.getProperty("java.io.tmpdir"));
@@ -103,8 +100,20 @@ public class N5ExporterTest {
         previousPrimarySimDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, null);
         PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, temporaryFolder.getAbsolutePath());
 
+        previousSecondarySimDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirExternalProperty, null);
+        System.setProperty(PropertyLoader.secondarySimDataDirExternalProperty, temporaryFolder.getAbsolutePath());
+
+        previousSecondarySimDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirExternalProperty, null);
+        System.setProperty(PropertyLoader.secondarySimDataDirExternalProperty, temporaryFolder.getAbsolutePath());
+
         previousN5Path = PropertyLoader.getProperty(PropertyLoader.n5DataDir, null);
         PropertyLoader.setProperty(PropertyLoader.n5DataDir, n5ExportDir.getAbsolutePath());
+
+        previousSecondarySimDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, null);
+        PropertyLoader.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, "k");
+
+        previousSimCacheSize = PropertyLoader.getProperty(PropertyLoader.simdataCacheSizeProperty, null);
+        PropertyLoader.setProperty(PropertyLoader.simdataCacheSizeProperty, "100000");
     }
 
     @After
@@ -122,6 +131,17 @@ public class N5ExporterTest {
             PropertyLoader.setProperty(PropertyLoader.n5DataDir, previousN5Path);
         }
 
+        if (previousSecondarySimDir != null){
+            System.setProperty(PropertyLoader.secondarySimDataDirExternalProperty, previousSecondarySimDir);
+        }
+
+        if (previousSecondaryInternalSimDir != null){
+            System.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, previousSecondaryInternalSimDir);
+        }
+
+        if (previousSimCacheSize != null){
+            System.setProperty(PropertyLoader.simdataCacheSizeProperty, previousSimCacheSize);
+        }
 
         if (n5Reader != null){
             n5Reader.close();
@@ -129,18 +149,46 @@ public class N5ExporterTest {
 
     }
 
-    public void initalizeModel(String simKeyID, Compression compression) throws IOException, DataAccessException, MathException {
-        N5Exporter n5Exporter = new N5Exporter();
+    public void makeN5Model(N5Specs.CompressionLevel compressionLevel, int startTimeIndex, int endTimeIndex, String modelID) throws MathException, IOException, DataAccessException {
+        OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+
+        VariableSpecs variableSpecs = new VariableSpecs(variables.stream().map(di -> di.getName()).toList(), Integer.parseInt(modelID));
+        GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], 0, 0, 0);
+        N5Specs n5Specs = new N5Specs(ExportConstants.DataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, modelID);
+
+        double[] allTimes = n5Exporter.getDataSetController().getDataSetTimes(n5Exporter.getVcDataID());
+        TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, variableSpecs.getModeID());
+        ExportSpecs exportSpecs = new ExportSpecs(n5Exporter.getVcDataID(), ExportFormat.N5, variableSpecs, timeSpecs, geometrySpecs, n5Specs, "", "");
+        AltFileDataContainerManager fileDataContainerManager = new AltFileDataContainerManager();
+
+        ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, 0, exportSpecs, fileDataContainerManager);
+//        File file = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + n5Exporter.getN5FileNameHash() + ".N5");
+//        FileOutputStream fileOut = new FileOutputStream(file);
+//        BufferedOutputStream out= new BufferedOutputStream(fileOut);
+//        exportOutput.writeDataToOutputStream(out, fileDataContainerManager);
+//        out.close();
+
+        if(n5Reader != null){
+            n5Reader.close();
+        }
+        this.n5Reader = new N5FSReader(n5Exporter.getN5FileAbsolutePath());
+    }
+
+    public void initalizeModel(String simKeyID) throws IOException, DataAccessException, MathException {
+        ExportServiceImpl exportService = new ExportServiceImpl();
+        long jobId = 0;
+
+        n5Exporter = new N5Exporter(exportService);
 
         if (simKeyID.equals(fourDModelID)){
             // the test model can only support one species at this time
-            n5Exporter.initalizeDataControllers(fourDModelID, "ezequiel23", "258925427");
+            n5Exporter.initalizeDataControllers(fourDModelID, "ezequiel23", "258925427", jobId);
             this.variables = new ArrayList<>(Arrays.asList(
                     n5Exporter.getRandomDI()
             ));
         }
         else if (simKeyID.equals(fiveDModelID)){
-            n5Exporter.initalizeDataControllers(fiveDModelID, "ezequiel23", "258925427");
+            n5Exporter.initalizeDataControllers(fiveDModelID, "ezequiel23", "258925427", jobId);
             this.variables = new ArrayList<>(Arrays.asList(
                     n5Exporter.getRandomDI(),
                     n5Exporter.getRandomDI(),
@@ -152,12 +200,7 @@ public class N5ExporterTest {
         this.vcDataID = n5Exporter.getVcDataID();
         this.controlModelController = n5Exporter.getDataSetController();
 
-        n5Exporter.exportToN5(variables, compression);
-        if(n5Reader != null){
-            n5Reader.close();
-        }
-        this.n5Reader = new N5FSReader(n5Exporter.getN5FileAbsolutePath());
-        this.dataSetName = n5Exporter.getN5DatasetName();
+
     }
 
 
@@ -165,11 +208,12 @@ public class N5ExporterTest {
     public void testMetaData() throws MathException, DataAccessException, IOException {
 
         for(String model: testModels){
-            this.initalizeModel(model, new RawCompression());
+            this.initalizeModel(model);
+            this.makeN5Model(N5Specs.CompressionLevel.RAW, 0, controlModel.getDataTimes().length, model);
             //X, Y, T, Z, Channels
             long[] controlDimensions = {controlModel.getMesh().getSizeX(), controlModel.getMesh().getSizeY(), variables.size(), controlModel.getMesh().getSizeZ(), controlModel.getDataTimes().length};
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
-            DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(dataSetName);
+            DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
             long[] exportDimensions = datasetAttributes.getDimensions();
             Assert.assertArrayEquals("Testing dimension results for model " + model, controlDimensions, exportDimensions);
 
@@ -190,14 +234,15 @@ public class N5ExporterTest {
         //each block is entire XYZ, broken in time and channels
 
         for(String model: testModels){
-            this.initalizeModel(model, new RawCompression());
+            this.initalizeModel(model);
             OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
             double[] times = controlModel.getDataTimes();
+            makeN5Model(N5Specs.CompressionLevel.RAW, 0, times.length, model);
 
             for(int i = 0; i < variables.size(); i++){
                 for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
-                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(dataSetName);
-                    DataBlock<?> dataBlock = n5Reader.readBlock(dataSetName, datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
+                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
+                    DataBlock<?> dataBlock = n5Reader.readBlock(n5Exporter.getN5DataSetTemplatedName(model), datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
 
                     double[] exportedRawData = (double[]) dataBlock.getData();
                     Assert.assertArrayEquals("Equal raw data of model " + model + " with species " + variables.get(i).getName() + " with type " + variables.get(i).getVariableType() + " at time " + timeSlice,
@@ -213,25 +258,26 @@ public class N5ExporterTest {
     // and random variable, this way it doesn't take forever to test
     @Test
     public void testDataCompressionEquivelance() throws MathException, IOException, DataAccessException {
-        ArrayList<Compression> compressions = new ArrayList<>(Arrays.asList(
-                new Bzip2Compression(),
-                new GzipCompression()
+        ArrayList<N5Specs.CompressionLevel> compressions = new ArrayList<>(Arrays.asList(
+                N5Specs.CompressionLevel.BZIP,
+                N5Specs.CompressionLevel.GZIP
         ));
         Random random = new Random(5);
 
-        for (Compression compression: compressions){
+        for (N5Specs.CompressionLevel compression: compressions){
                 for(String model: testModels){
-                    this.initalizeModel(model, compression);
-                    OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+                    initalizeModel(model);
                     double[] times = controlModel.getDataTimes();
-                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(dataSetName);
+                    makeN5Model(compression, 0 , times.length, model);
+                    OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
                     for(int j = 0; j< 8; j++){
                         int timeSlice = random.nextInt(times.length);
                         int chosenVariable = random.nextInt(variables.size());
-                        DataBlock<?> dataBlock = n5Reader.readBlock(dataSetName, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
+                        DataBlock<?> dataBlock = n5Reader.readBlock(n5Exporter.getN5DataSetTemplatedName(model), datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
 
                         double[] exportedData = (double[]) dataBlock.getData();
-                        Assert.assertArrayEquals("Equal data with " + compression.getType() + " compression",
+                        Assert.assertArrayEquals("Equal data with " + compression + " compression",
                                 controlModelController.getSimDataBlock(outputContext, this.vcDataID, variables.get(chosenVariable).getName(), times[timeSlice]).getData(),
                                 exportedData,
                                 0);
@@ -240,6 +286,8 @@ public class N5ExporterTest {
         }
 
     }
+
+    // Test annotated functions, and multiple different parameters for data conversion, for multiple scans use different template file name
 
 
 }

@@ -1,43 +1,38 @@
 [tool.poetry]
-name = "vcell-cli-utils"
+name = "vcutils"
 version = "0.7.2"
-description = "Python utility package for VCell CLI Java App"
+description = "Python general utility package for VCell"
 authors = ["Virtual Cell"]
 license = "MIT"
 repository = "https://github.com/virtualcell/vcell"
-keywords = ["HDF5", "Visualization", "YAML", "Fire"]
+keywords = ["HDF5", "SBML", "VCell"]
 classifiers = [
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Science/Research',
     'License :: OSI Approved :: MIT License',
     'Topic :: Scientific/Engineering :: Bio-Informatics',
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3 :: Only",
 ]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-biosimulators_utils = "^0.1.180"
-python-libcombine = "0.2.19"
-fire = "^0.5.0"
-PyYAML = "^6.0"
-pandas = "^1.5.3"
-matplotlib = "^3.5.2"
-seaborn = "^0.12.2"
-python-libsbml-experimental = "^5.20.1"
-Deprecated = "^1.2.13"
+requests = "^2.31.0"
+pydantic = "^2.5.2"
+python-dotenv = "^1.0.0"
+typer = "^0.9.0"
+h5py = "^3.10.0"
+
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.0"
 mypy = "^1.4.1"
 
 [tool.poetry.group.dev.dependencies]
-types-deprecated = "1.2.9.2"
-types-PyYAML = "6.0.12.9"
+types-requests = "^2.31.0.10"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1999-2023 University of Connecticut Health Center
+ * Copyright (C) 1999-2011 University of Connecticut Health Center
  *
  * Licensed under the MIT License (the "License").
  * You may not use this file except in compliance with the License.
@@ -76,7 +76,8 @@ public class ExportServiceImpl implements ExportConstants, ExportService {
 			case PLY 				-> new StanfordPolyTextureExportEventGenerator(this.eeCommander, this);
 			case VTK_IMAGE 			-> new VtkImageExportEventGenerator(this.eeCommander, this);
 			case VTK_UNSTRUCT 		-> new VtkUnstructuredExportEventGenerator(this.eeCommander, this);
-			default -> throw new DataAccessException("Unknown export format requested");
+			case N5 				-> new N5ExportEventGenerator(this.eeCommander, this);
+			default 				-> throw new DataAccessException("Unknown export format requested");
 		};
 		return eeg.makeRemoteFile(outputContext, user, dataServerImpl, exportSpecs, bSaveAsZip, clientTaskStatusSupport);
 	}

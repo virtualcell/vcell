@@ -62,6 +62,9 @@ services:
           memory: 2000M
         reservations:
           memory: 1000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
   sched:
     image: "${VCELL_REPO_NAMESPACE}/vcell-sched:${VCELL_TAG}"
     environment:
@@ -269,6 +272,7 @@ services:
       - mongodb_host_internal=mongodb
       - mongodb_port_internal=27017
       - mongodb_database=test
+      - s3ProxyPortExternal=${VCELL_S3PROXY_PORT_EXTERNAL}
 
       - webDataPort=${VCELL_WEB_DATA_PORT}
 
@@ -373,48 +377,7 @@ services:
           memory: 1500M
         reservations:
           memory: 1000M
-#  web:
-#    image: "${VCELL_REPO_NAMESPACE}/vcell-web:${VCELL_TAG}"
-#    environment:
-#      - softwareVersion=${VCELL_VERSION}
-#      - serverid=${VCELL_SITE}
-#      - export_baseurl=${VCELL_EXPORT_BASEURL}
-#
-#      - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
-#
-#
-#      - dburl=${VCELL_DB_URL}
-#      - dbdriver=${VCELL_DB_DRIVER}
-#      - dbuser=${VCELL_DB_USER}
-#
-#      - webDataPort=${VCELL_WEB_DATA_PORT}
-#    ports:
-#      - "${VCELL_DEBUG_PORT_VCELL_WEB}:8000" # java remote debugging
-#      - "${VCELL_WEB_DATA_PORT}:${VCELL_WEB_DATA_PORT}"
-#    volumes:
-#      - "${VCELL_SIMDATADIR_HOST}:/simdata"
-#      - "${VCELL_SIMDATADIR_ARCHIVE_HOST}:${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}"
-#      - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
-#      - "${VCELL_EXPORTDIR_HOST}:/exportdir"
-#    secrets:
-#      - dbpswd
-#      - keystorefile_20220105
-#      - keystorepswd
-#    networks:
-#      - vcellnet
-#    deploy:
-#      mode: replicated
-#      replicas: 1
-#      resources:
-#        limits:
-#          memory: 2000M
-#        reservations:
-#          memory: 1000M
-#      placement:
-#        constraints:
-#          - node.labels.zone == INTERNAL
-
-  s3Proxy:
+  s3proxy:
     image: andrewgaul/s3proxy:sha-ba0fd6d
     environment:
       JCLOUDS_FILESYSTEM_BASEDIR: "/data"
@@ -449,7 +412,17 @@ services:
       - "${VCELL_S3PROXY_PORT_EXTERNAL}:80"
     volumes:
       - "${VCELL_N5_DATADIR_HOST}:/data:ro"
-
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          memory: 2000M
+        reservations:
+          memory: 1000M
+      placement:
+        constraints:
+          - node.labels.zone == INTERNAL
 networks:
   vcellnet:
 volumes:

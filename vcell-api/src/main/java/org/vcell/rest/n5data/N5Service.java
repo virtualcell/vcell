@@ -3,7 +3,6 @@ package org.vcell.rest.n5data;
 import cbit.vcell.math.MathException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.n5.N5Exporter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.janelia.saalfeldlab.n5.Compression;
@@ -38,21 +37,20 @@ public class N5Service {
 
 
     public void exportToN5(String[] species, Compression compression) throws IOException, DataAccessException, MathException {
-        N5Exporter n5Exporter = new N5Exporter();
-        n5Exporter.initalizeDataControllers(simID, user.getName(), user.getID().toString());
-        ArrayList<DataIdentifier> dataIdentifiers = new ArrayList<>();
-        for(String specie: species){
-            dataIdentifiers.add(n5Exporter.getSpecificDI(specie));
-        }
-        n5Exporter.exportToN5(dataIdentifiers, compression);
+//        N5Exporter n5Exporter = new N5Exporter();
+//        n5Exporter.initalizeDataControllers(simID, user.getName(), user.getID().toString());
+//        ArrayList<DataIdentifier> dataIdentifiers = new ArrayList<>();
+//        for(String specie: species){
+//            dataIdentifiers.add(n5Exporter.getSpecificDI(specie));
+//        }
+//        n5Exporter.exportToN5(dataIdentifiers, compression);
+        return;
     }
 
 
-    public ArrayList<String> supportedSpecies() throws IOException, DataAccessException {
-        N5Exporter n5Exporter = new N5Exporter();
-        n5Exporter.initalizeDataControllers(simID, user.getName(), user.getID().toString());
-        return n5Exporter.getSupportedSpecies();
-    }
+//    public ArrayList<String> supportedSpecies() throws IOException, DataAccessException {
+//
+//    }
 
 
 

@@ -1,6 +1,6 @@
 import json
 
-from vcell_pipeline.vcell_datamodels import Publication
+from vcutils.vcell_pipeline.datamodels import Publication
 
 testdata = '''
 [ 
