@@ -1,36 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--This biomodel was generated in VCML Version Alpha_Version_7.5.0_build_83.3-->
-<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.5.0_build_83.3">
+<!--This biomodel was generated in VCML Version DanDev_Version_7.0_build_99-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="DanDev_Version_7.0_build_99">
   <BioModel Name="___SpringSalad_SolverSuite">
+    <Annotation>cloned from '___SpringSalad_SolverSuite' owned by user schaff</Annotation>
     <Model Name="model">
+      <Annotation>cloned from 'model' owned by user schaff</Annotation>
       <Compound Name="s0" />
       <Compound Name="s1" />
-      <Feature Name="Extracellular" KeyValue="264492309" />
-      <Feature Name="Intracellular" KeyValue="264492307" />
-      <Membrane MembraneVoltage="Voltage_Membrane" Name="Membrane" KeyValue="264492311" />
-      <LocalizedCompound Name="s0" CompoundRef="s0" Structure="Intracellular" OverrideName="true" KeyValue="264492313">
+      <Feature Name="Extracellular" KeyValue="264839547" />
+      <Feature Name="Intracellular" KeyValue="264839549" />
+      <Membrane MembraneVoltage="Voltage_Membrane" Name="Membrane" KeyValue="264839551" />
+      <LocalizedCompound Name="MT0" CompoundRef="s0" Structure="Intracellular" OverrideName="true" KeyValue="264839553">
         <SpeciesPattern>
           <MolecularTypePattern Index="1">
             <MolecularType Name="MT0" />
-            <ComponentPattern MolecularComponent="Site0" BondType="-" />
+            <ComponentPattern MolecularComponent="Site0" ComponentStatePattern="state0" BondType="-" />
           </MolecularTypePattern>
         </SpeciesPattern>
       </LocalizedCompound>
-      <LocalizedCompound Name="s1" CompoundRef="s1" Structure="Intracellular" OverrideName="true" KeyValue="264492314">
+      <LocalizedCompound Name="MT1" CompoundRef="s1" Structure="Intracellular" OverrideName="true" KeyValue="264839554">
         <SpeciesPattern>
           <MolecularTypePattern Index="1">
             <MolecularType Name="MT1" />
-            <ComponentPattern MolecularComponent="Site0" BondType="-" />
+            <ComponentPattern MolecularComponent="Site0" ComponentStatePattern="state0" BondType="-" />
           </MolecularTypePattern>
         </SpeciesPattern>
       </LocalizedCompound>
       <RbmModelContainer>
         <MolecularTypeList>
           <MolecularType Name="MT0" AnchorAll="true">
-            <MolecularComponent Name="Site0" Index="1" />
+            <MolecularComponent Name="Site0" Index="1">
+              <AllowableState Name="state0" />
+            </MolecularComponent>
           </MolecularType>
           <MolecularType Name="MT1" AnchorAll="true">
-            <MolecularComponent Name="Site0" Index="1" />
+            <MolecularComponent Name="Site0" Index="1">
+              <AllowableState Name="state0" />
+            </MolecularComponent>
           </MolecularType>
         </MolecularTypeList>
         <RbmObservableList>
@@ -38,7 +44,7 @@
             <SpeciesPattern>
               <MolecularTypePattern Index="1">
                 <MolecularType Name="MT0" />
-                <ComponentPattern MolecularComponent="Site0" BondType="?" />
+                <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
               </MolecularTypePattern>
             </SpeciesPattern>
           </Observable>
@@ -46,19 +52,19 @@
             <SpeciesPattern>
               <MolecularTypePattern Index="1">
                 <MolecularType Name="MT1" />
-                <ComponentPattern MolecularComponent="Site0" BondType="?" />
+                <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
               </MolecularTypePattern>
             </SpeciesPattern>
           </Observable>
         </RbmObservableList>
         <ReactionRuleList>
-          <ReactionRule Name="r0" Structure="Intracellular" ReactionRuleLabel="r0" ReactionRuleReversible="false">
+          <ReactionRule Name="r0" Structure="Intracellular" ReactionRuleLabel="r0" ReactionRuleReversible="true">
             <ReactantPatternsList>
               <ReactantPattern Structure="Intracellular">
                 <SpeciesPattern>
                   <MolecularTypePattern Index="1">
                     <MolecularType Name="MT0" />
-                    <ComponentPattern MolecularComponent="Site0" BondType="-" />
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="-" />
                   </MolecularTypePattern>
                 </SpeciesPattern>
               </ReactantPattern>
@@ -66,7 +72,7 @@
                 <SpeciesPattern>
                   <MolecularTypePattern Index="1">
                     <MolecularType Name="MT1" />
-                    <ComponentPattern MolecularComponent="Site0" BondType="-" />
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="-" />
                   </MolecularTypePattern>
                 </SpeciesPattern>
               </ReactantPattern>
@@ -76,13 +82,13 @@
                 <SpeciesPattern>
                   <MolecularTypePattern Index="1">
                     <MolecularType Name="MT0" />
-                    <ComponentPattern MolecularComponent="Site0" BondType="1">
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="1">
                       <Bond MolecularTypePattern="MT1" ComponentPattern="Site0" />
                     </ComponentPattern>
                   </MolecularTypePattern>
                   <MolecularTypePattern Index="2">
                     <MolecularType Name="MT1" />
-                    <ComponentPattern MolecularComponent="Site0" BondType="1">
+                    <ComponentPattern MolecularComponent="Site0" Any="true" BondType="1">
                       <Bond MolecularTypePattern="MT0" ComponentPattern="Site0" />
                     </ComponentPattern>
                   </MolecularTypePattern>
@@ -91,18 +97,34 @@
             </ProductPatternsList>
             <Kinetics KineticsType="MassAction">
               <Parameter Name="ruleRate" Role="RuleRate" Unit="uM.s-1" />
-              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1.uM-1">1.0</Parameter>
+              <Parameter Name="Kf" Role="MassActionKf" Unit="s-1.uM-1">200.0</Parameter>
               <Parameter Name="Kr" Role="MassActionKr" Unit="s-1">0.0</Parameter>
             </Kinetics>
           </ReactionRule>
         </ReactionRuleList>
       </RbmModelContainer>
-      <Diagram Name="c1" Structure="Extracellular" />
-      <Diagram Name="m0" Structure="Membrane" />
-      <Diagram Name="c0" Structure="Intracellular" />
-      <Version Name="model" KeyValue="264492302" BranchId="264492303" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-        <Owner Name="schaff" Identifier="17" />
+      <Diagram Name="c1" Structure="Extracellular">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="MT1" LocationX="170" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r0" LocationX="93" LocationY="162" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="MT0" LocationX="14" LocationY="220" />
+      </Diagram>
+      <Diagram Name="m0" Structure="Membrane">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="MT1" LocationX="170" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r0" LocationX="93" LocationY="162" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="MT0" LocationX="14" LocationY="220" />
+      </Diagram>
+      <Diagram Name="c0" Structure="Intracellular">
+        <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="MT0(Site0!1).MT1(Site0!1)" LocationX="55" LocationY="132" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="MT1" LocationX="170" LocationY="34" />
+        <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="r0" LocationX="93" LocationY="162" />
+        <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="MT0(Site0)" LocationX="107" LocationY="196" />
+        <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="MT1(Site0)" LocationX="120" LocationY="132" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="MT0" LocationX="14" LocationY="220" />
+      </Diagram>
+      <Version Name="model" KeyValue="264839543" BranchId="264837076" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
         <GroupAccess Type="1" />
+        <Annotation>cloned from 'model' owned by user schaff</Annotation>
       </Version>
       <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
     </Model>
@@ -111,14 +133,16 @@
         <MaxStoichiometry MolecularType="MT0" Integer="100" />
         <MaxStoichiometry MolecularType="MT1" Integer="100" />
       </NetworkConstraints>
-      <Annotation />
+      <Annotation>cloned from 'Application0' owned by user schaff</Annotation>
       <Geometry Name="non-spatial365807313" Dimension="0">
+        <Annotation>cloned from 'non-spatial365807313' owned by user schaff</Annotation>
         <Extent X="10.0" Y="10.0" Z="10.0" />
         <Origin X="0.0" Y="0.0" Z="0.0" />
-        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="264492282" />
-        <Version Name="non-spatial365807313" KeyValue="264492278" BranchId="264492279" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-          <Owner Name="schaff" Identifier="17" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="264837041" />
+        <Version Name="non-spatial365807313" KeyValue="264837037" BranchId="264837038" Archived="0" Date="19-Dec-2023 14:35:25" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
           <GroupAccess Type="1" />
+          <Annotation>cloned from 'non-spatial365807313' owned by user schaff</Annotation>
         </Version>
       </Geometry>
       <GeometryContext>
@@ -133,11 +157,11 @@
         </MembraneMapping>
       </GeometryContext>
       <ReactionContext>
-        <LocalizedCompoundSpec LocalizedCompoundRef="s0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+        <LocalizedCompoundSpec LocalizedCompoundRef="MT0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
           <InitialConcentration>1.0</InitialConcentration>
           <Diffusion>0.0</Diffusion>
         </LocalizedCompoundSpec>
-        <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+        <LocalizedCompoundSpec LocalizedCompoundRef="MT1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
           <InitialConcentration>2.0</InitialConcentration>
           <Diffusion>0.0</Diffusion>
         </LocalizedCompoundSpec>
@@ -146,11 +170,16 @@
         </ReactionRuleSpecs>
       </ReactionContext>
       <MathDescription Name="Application0_generated">
+        <Annotation>cloned from 'Application0_generated' owned by user schaff</Annotation>
         <ParticleMolecularType Name="MT0">
-          <Component Name="Site0" />
+          <Component Name="Site0">
+            <AllowableState Name="state0" />
+          </Component>
         </ParticleMolecularType>
         <ParticleMolecularType Name="MT1">
-          <Component Name="Site0" />
+          <Component Name="Site0">
+            <AllowableState Name="state0" />
+          </Component>
         </ParticleMolecularType>
         <Constant Name="_F_">96485.3321</Constant>
         <Constant Name="_F_nmol_">9.64853321E-5</Constant>
@@ -158,14 +187,15 @@
         <Constant Name="_PI_">3.141592653589793</Constant>
         <Constant Name="_R_">8314.46261815</Constant>
         <Constant Name="_T_">300.0</Constant>
-        <Constant Name="Kf">1.0</Constant>
+        <Constant Name="Kf">200.0</Constant>
         <Constant Name="KMOLE">0.001660538783162726</Constant>
-        <Constant Name="s0_Count_init_uM">1.0</Constant>
-        <Constant Name="s1_Count_init_uM">2.0</Constant>
+        <Constant Name="Kr">0.0</Constant>
+        <Constant Name="MT0_Count_init_uM">1.0</Constant>
+        <Constant Name="MT1_Count_init_uM">2.0</Constant>
         <Constant Name="Size_Extracellular">5.0</Constant>
         <Constant Name="Size_Intracellular">50.0</Constant>
         <Constant Name="Size_Membrane">6.0</Constant>
-        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE,-1.0))</Constant>
+        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE, - 1.0))</Constant>
         <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
         <Constant Name="Voltage_Membrane">0.0</Constant>
         <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern0" Domain="Compartment">
@@ -196,6 +226,26 @@
             <Component Name="Site0" State="*" Bond="1" />
           </MolecularType>
         </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern5" Domain="Compartment">
+          <MolecularType Name="MT0" MatchLabel="*">
+            <Component Name="Site0" State="state0" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern6" Domain="Compartment">
+          <MolecularType Name="MT1" MatchLabel="*">
+            <Component Name="Site0" State="state0" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleObservable Name="MT0_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern5" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="MT1_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern6" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
         <VolumeParticleObservable Name="O0_MT0_tot_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
           <VolumeParticleSpeciesPatterns>
             <VolumeParticleSpeciesPattern Name="speciesPattern0" />
@@ -206,23 +256,14 @@
             <VolumeParticleSpeciesPattern Name="speciesPattern1" />
           </VolumeParticleSpeciesPatterns>
         </VolumeParticleObservable>
-        <VolumeParticleObservable Name="s0_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
-          <VolumeParticleSpeciesPatterns>
-            <VolumeParticleSpeciesPattern Name="speciesPattern2" />
-          </VolumeParticleSpeciesPatterns>
-        </VolumeParticleObservable>
-        <VolumeParticleObservable Name="s1_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
-          <VolumeParticleSpeciesPatterns>
-            <VolumeParticleSpeciesPattern Name="speciesPattern3" />
-          </VolumeParticleSpeciesPatterns>
-        </VolumeParticleObservable>
+        <Function Name="MT0" Domain="Compartment">((MT0_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
+        <Function Name="MT0_Count_initCount" Domain="Compartment">(Size_Intracellular * MT0_Count_init_uM * UnitFactor_molecules_uM_neg_1_um_neg_3)</Function>
+        <Function Name="MT1" Domain="Compartment">((MT1_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
+        <Function Name="MT1_Count_initCount" Domain="Compartment">(Size_Intracellular * MT1_Count_init_uM * UnitFactor_molecules_uM_neg_1_um_neg_3)</Function>
         <Function Name="O0_MT0_tot" Domain="Compartment">((O0_MT0_tot_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
         <Function Name="O0_MT1_tot" Domain="Compartment">((O0_MT1_tot_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
         <Function Name="P_r0_probabilityRate" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * Kf) / Size_Intracellular)</Function>
-        <Function Name="s0" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * s0_Count) / Size_Intracellular)</Function>
-        <Function Name="s0_Count_initCount" Domain="Compartment">(Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3 * s0_Count_init_uM)</Function>
-        <Function Name="s1" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * s1_Count) / Size_Intracellular)</Function>
-        <Function Name="s1_Count_initCount" Domain="Compartment">(Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3 * s1_Count_init_uM)</Function>
+        <Function Name="P_r0_reverse_probabilityRate" Domain="Compartment">Kr</Function>
         <CompartmentSubDomain Name="Compartment">
           <BoundaryType Boundary="Xm" Type="Value" />
           <BoundaryType Boundary="Xp" Type="Value" />
@@ -234,28 +275,35 @@
             <SelectedParticle Name="speciesPattern2" />
             <SelectedParticle Name="speciesPattern3" />
             <MacroscopicRateConstant>P_r0_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern2" Operation="destroy">1.0</Effect>
-            <Effect VarName="speciesPattern3" Operation="destroy">1.0</Effect>
-            <Effect VarName="speciesPattern4" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern2" Operation="destroy" />
+            <Effect VarName="speciesPattern3" Operation="destroy" />
+            <Effect VarName="speciesPattern4" Operation="create" />
           </ParticleJumpProcess>
-          <ParticleProperties Name="speciesPattern2">
+          <ParticleJumpProcess Name="r0_reverse" ProcessSymmetryFactor="1.0">
+            <SelectedParticle Name="speciesPattern4" />
+            <MacroscopicRateConstant>P_r0_reverse_probabilityRate</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern2" Operation="create" />
+            <Effect VarName="speciesPattern3" Operation="create" />
+            <Effect VarName="speciesPattern4" Operation="destroy" />
+          </ParticleJumpProcess>
+          <ParticleProperties Name="speciesPattern5">
             <ParticleInitialCount>
-              <ParticleCount>s0_Count_initCount</ParticleCount>
+              <ParticleCount>MT0_Count_initCount</ParticleCount>
               <ParticleLocationX>0.0</ParticleLocationX>
-              <ParticleLocationY>0.0</ParticleLocationY>
-              <ParticleLocationZ>0.0</ParticleLocationZ>
+              <ParticleLocationY>u</ParticleLocationY>
+              <ParticleLocationZ>u</ParticleLocationZ>
             </ParticleInitialCount>
             <ParticleDiffusion>0.0</ParticleDiffusion>
             <ParticleDriftX>0.0</ParticleDriftX>
             <ParticleDriftY>0.0</ParticleDriftY>
             <ParticleDriftZ>0.0</ParticleDriftZ>
           </ParticleProperties>
-          <ParticleProperties Name="speciesPattern3">
+          <ParticleProperties Name="speciesPattern6">
             <ParticleInitialCount>
-              <ParticleCount>s1_Count_initCount</ParticleCount>
+              <ParticleCount>MT1_Count_initCount</ParticleCount>
               <ParticleLocationX>0.0</ParticleLocationX>
-              <ParticleLocationY>0.0</ParticleLocationY>
-              <ParticleLocationZ>0.0</ParticleLocationZ>
+              <ParticleLocationY>u</ParticleLocationY>
+              <ParticleLocationZ>u</ParticleLocationZ>
             </ParticleInitialCount>
             <ParticleDiffusion>0.0</ParticleDiffusion>
             <ParticleDriftX>0.0</ParticleDriftX>
@@ -263,17 +311,18 @@
             <ParticleDriftZ>0.0</ParticleDriftZ>
           </ParticleProperties>
         </CompartmentSubDomain>
-        <Version Name="Application0_generated" KeyValue="264492293" BranchId="264492294" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-          <Owner Name="schaff" Identifier="17" />
+        <Version Name="Application0_generated" KeyValue="264839539" BranchId="264837064" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
           <GroupAccess Type="1" />
+          <Annotation>cloned from 'Application0_generated' owned by user schaff</Annotation>
         </Version>
       </MathDescription>
-      <Simulation Name="Simulation0">
+      <Simulation Name="Simulation1">
         <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="NFSim">
-          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeBound StartTime="0.0" EndTime="0.01" />
           <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
           <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
-          <OutputOptions OutputTimeStep="0.05" />
+          <OutputOptions OutputTimeStep="5.0E-4" />
           <NFSimSimulationOptions>
             <ObservableComputationOff>true</ObservableComputationOff>
             <PreventIntraBonds>false</PreventIntraBonds>
@@ -285,14 +334,15 @@
           <NumberProcessors>1</NumberProcessors>
         </SolverTaskDescription>
         <MathOverrides />
-        <Version Name="Simulation0" KeyValue="264492342" BranchId="264492343" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-          <Owner Name="schaff" Identifier="17" />
+        <Version Name="Simulation1" KeyValue="264839586" BranchId="264837127" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
           <GroupAccess Type="1" />
         </Version>
       </Simulation>
-      <Version Name="Application0" KeyValue="264492318" BranchId="264492319" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-        <Owner Name="schaff" Identifier="17" />
+      <Version Name="Application0" KeyValue="264839558" BranchId="264837092" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
         <GroupAccess Type="1" />
+        <Annotation>cloned from 'Application0' owned by user schaff</Annotation>
       </Version>
       <MicroscopeMeasurement Name="fluor">
         <ConvolutionKernel Type="ProjectionZKernel" />
@@ -303,14 +353,17 @@
         <MaxStoichiometry MolecularType="MT0" Integer="100" />
         <MaxStoichiometry MolecularType="MT1" Integer="100" />
       </NetworkConstraints>
-      <Annotation>(copied from Application0)</Annotation>
+      <Annotation>cloned from 'Copy of Application0' owned by user schaff
+(copied from Application0)</Annotation>
       <Geometry Name="non-spatial1485452307" Dimension="0">
+        <Annotation>cloned from 'non-spatial1485452307' owned by user schaff</Annotation>
         <Extent X="10.0" Y="10.0" Z="10.0" />
         <Origin X="0.0" Y="0.0" Z="0.0" />
-        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="264492287" />
-        <Version Name="non-spatial1485452307" KeyValue="264492283" BranchId="264492284" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-          <Owner Name="schaff" Identifier="17" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="264837046" />
+        <Version Name="non-spatial1485452307" KeyValue="264837042" BranchId="264837043" Archived="0" Date="19-Dec-2023 14:35:25" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
           <GroupAccess Type="1" />
+          <Annotation>cloned from 'non-spatial1485452307' owned by user schaff</Annotation>
         </Version>
       </Geometry>
       <GeometryContext>
@@ -325,11 +378,11 @@
         </MembraneMapping>
       </GeometryContext>
       <ReactionContext>
-        <LocalizedCompoundSpec LocalizedCompoundRef="s0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+        <LocalizedCompoundSpec LocalizedCompoundRef="MT0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
           <InitialConcentration>1.0</InitialConcentration>
           <Diffusion>0.0</Diffusion>
         </LocalizedCompoundSpec>
-        <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+        <LocalizedCompoundSpec LocalizedCompoundRef="MT1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
           <InitialConcentration>2.0</InitialConcentration>
           <Diffusion>0.0</Diffusion>
         </LocalizedCompoundSpec>
@@ -338,6 +391,7 @@
         </ReactionRuleSpecs>
       </ReactionContext>
       <MathDescription Name="Copy of Application0_generated">
+        <Annotation>cloned from 'Copy of Application0_generated' owned by user schaff</Annotation>
         <Constant Name="_F_">96485.3321</Constant>
         <Constant Name="_F_nmol_">9.64853321E-5</Constant>
         <Constant Name="_K_GHK_">1.0E-9</Constant>
@@ -346,22 +400,22 @@
         <Constant Name="_R_">8314.46261815</Constant>
         <Constant Name="_T_">300.0</Constant>
         <Constant Name="K_millivolts_per_volt">1000.0</Constant>
-        <Constant Name="Kf">1.0</Constant>
+        <Constant Name="Kf">200.0</Constant>
         <Constant Name="KMOLE">0.001660538783162726</Constant>
         <Constant Name="Kr">0.0</Constant>
-        <Constant Name="s0_init_uM">1.0</Constant>
-        <Constant Name="s1_init_uM">2.0</Constant>
+        <Constant Name="MT0_init_uM">1.0</Constant>
+        <Constant Name="MT1_init_uM">2.0</Constant>
         <Constant Name="s2_init_uM">0.0</Constant>
         <Constant Name="Size_Extracellular">5.0</Constant>
         <Constant Name="Size_Intracellular">50.0</Constant>
         <Constant Name="Size_Membrane">6.0</Constant>
         <Constant Name="Voltage_Membrane">0.0</Constant>
-        <VolumeVariable Name="s0" Domain="Compartment" />
-        <VolumeVariable Name="s1" Domain="Compartment" />
+        <VolumeVariable Name="MT0" Domain="Compartment" />
+        <VolumeVariable Name="MT1" Domain="Compartment" />
         <VolumeVariable Name="s2" Domain="Compartment" />
-        <Function Name="J_r0" Domain="Compartment">(((Kf * s0) * s1) - (Kr * s2))</Function>
-        <Function Name="O0_MT0_tot">(s0 + s2)</Function>
-        <Function Name="O0_MT1_tot">(s1 + s2)</Function>
+        <Function Name="J_r0_DirectHalf" Domain="Compartment">(((Kf * MT0) * MT1) - (Kr * s2))</Function>
+        <Function Name="O0_MT0_tot">(MT0 + s2)</Function>
+        <Function Name="O0_MT1_tot">(MT1 + s2)</Function>
         <CompartmentSubDomain Name="Compartment">
           <BoundaryType Boundary="Xm" Type="Value" />
           <BoundaryType Boundary="Xp" Type="Value" />
@@ -369,42 +423,44 @@
           <BoundaryType Boundary="Yp" Type="Value" />
           <BoundaryType Boundary="Zm" Type="Value" />
           <BoundaryType Boundary="Zp" Type="Value" />
-          <OdeEquation Name="s0" SolutionType="Unknown">
-            <Rate>- J_r0</Rate>
-            <Initial>s0_init_uM</Initial>
+          <OdeEquation Name="MT0" SolutionType="Unknown">
+            <Rate>- J_r0_DirectHalf</Rate>
+            <Initial>MT0_init_uM</Initial>
           </OdeEquation>
-          <OdeEquation Name="s1" SolutionType="Unknown">
-            <Rate>- J_r0</Rate>
-            <Initial>s1_init_uM</Initial>
+          <OdeEquation Name="MT1" SolutionType="Unknown">
+            <Rate>- J_r0_DirectHalf</Rate>
+            <Initial>MT1_init_uM</Initial>
           </OdeEquation>
           <OdeEquation Name="s2" SolutionType="Unknown">
-            <Rate>J_r0</Rate>
+            <Rate>J_r0_DirectHalf</Rate>
             <Initial>s2_init_uM</Initial>
           </OdeEquation>
         </CompartmentSubDomain>
-        <Version Name="Copy of Application0_generated" KeyValue="264492296" BranchId="264492297" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-          <Owner Name="schaff" Identifier="17" />
+        <Version Name="Copy of Application0_generated" KeyValue="264837066" BranchId="264837067" Archived="0" Date="19-Dec-2023 14:35:26" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
           <GroupAccess Type="1" />
+          <Annotation>cloned from 'Copy of Application0_generated' owned by user schaff</Annotation>
         </Version>
       </MathDescription>
-      <Simulation Name="Simulation1">
+      <Simulation Name="Simulation5">
         <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
-          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeBound StartTime="0.0" EndTime="0.01" />
           <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
           <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
           <OutputOptions KeepEvery="1" KeepAtMost="1000" />
           <NumberProcessors>1</NumberProcessors>
         </SolverTaskDescription>
         <MathOverrides />
-        <Version Name="Simulation1" KeyValue="264492345" BranchId="264492346" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-          <Owner Name="schaff" Identifier="17" />
+        <Version Name="Simulation5" KeyValue="264837129" BranchId="264837130" Archived="0" Date="19-Dec-2023 14:35:27" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
           <GroupAccess Type="1" />
         </Version>
       </Simulation>
-      <Version Name="Copy of Application0" KeyValue="264492326" BranchId="264492327" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-        <Owner Name="schaff" Identifier="17" />
+      <Version Name="Copy of Application0" KeyValue="264839565" BranchId="264837100" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
         <GroupAccess Type="1" />
-        <Annotation>(copied from Application0)</Annotation>
+        <Annotation>cloned from 'Copy of Application0' owned by user schaff
+(copied from Application0)</Annotation>
       </Version>
       <MicroscopeMeasurement Name="fluor">
         <ConvolutionKernel Type="ProjectionZKernel" />
@@ -415,14 +471,17 @@
         <MaxStoichiometry MolecularType="MT0" Integer="100" />
         <MaxStoichiometry MolecularType="MT1" Integer="100" />
       </NetworkConstraints>
-      <Annotation>(copied from Application0)</Annotation>
+      <Annotation>cloned from 'Copy of Application0 1' owned by user schaff
+(copied from Application0)</Annotation>
       <Geometry Name="non-spatial979808265" Dimension="0">
+        <Annotation>cloned from 'non-spatial979808265' owned by user schaff</Annotation>
         <Extent X="10.0" Y="10.0" Z="10.0" />
         <Origin X="0.0" Y="0.0" Z="0.0" />
-        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="264492292" />
-        <Version Name="non-spatial979808265" KeyValue="264492288" BranchId="264492289" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-          <Owner Name="schaff" Identifier="17" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="264837051" />
+        <Version Name="non-spatial979808265" KeyValue="264837047" BranchId="264837048" Archived="0" Date="19-Dec-2023 14:35:25" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
           <GroupAccess Type="1" />
+          <Annotation>cloned from 'non-spatial979808265' owned by user schaff</Annotation>
         </Version>
       </Geometry>
       <GeometryContext>
@@ -437,11 +496,11 @@
         </MembraneMapping>
       </GeometryContext>
       <ReactionContext>
-        <LocalizedCompoundSpec LocalizedCompoundRef="s0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+        <LocalizedCompoundSpec LocalizedCompoundRef="MT0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
           <InitialConcentration>1.0</InitialConcentration>
           <Diffusion>0.0</Diffusion>
         </LocalizedCompoundSpec>
-        <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+        <LocalizedCompoundSpec LocalizedCompoundRef="MT1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
           <InitialConcentration>2.0</InitialConcentration>
           <Diffusion>0.0</Diffusion>
         </LocalizedCompoundSpec>
@@ -450,38 +509,39 @@
         </ReactionRuleSpecs>
       </ReactionContext>
       <MathDescription Name="Copy of Application0 1_generated">
+        <Annotation>cloned from 'Copy of Application0 1_generated' owned by user schaff</Annotation>
         <Constant Name="_F_">96485.3321</Constant>
         <Constant Name="_F_nmol_">9.64853321E-5</Constant>
         <Constant Name="_N_pmol_">6.02214179E11</Constant>
         <Constant Name="_PI_">3.141592653589793</Constant>
         <Constant Name="_R_">8314.46261815</Constant>
         <Constant Name="_T_">300.0</Constant>
-        <Constant Name="Kf">1.0</Constant>
+        <Constant Name="Kf">200.0</Constant>
         <Constant Name="KMOLE">0.001660538783162726</Constant>
         <Constant Name="Kr">0.0</Constant>
-        <Constant Name="s0_Count_init_uM">1.0</Constant>
-        <Constant Name="s1_Count_init_uM">2.0</Constant>
+        <Constant Name="MT0_Count_init_uM">1.0</Constant>
+        <Constant Name="MT1_Count_init_uM">2.0</Constant>
         <Constant Name="s2_Count_init_uM">0.0</Constant>
         <Constant Name="Size_Extracellular">5.0</Constant>
         <Constant Name="Size_Intracellular">50.0</Constant>
         <Constant Name="Size_Membrane">6.0</Constant>
-        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE,-1.0))</Constant>
+        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE, - 1.0))</Constant>
         <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
         <Constant Name="Voltage_Membrane">0.0</Constant>
-        <StochasticVolumeVariable Name="s0_Count" />
-        <StochasticVolumeVariable Name="s1_Count" />
+        <StochasticVolumeVariable Name="MT0_Count" />
+        <StochasticVolumeVariable Name="MT1_Count" />
         <StochasticVolumeVariable Name="s2_Count" />
-        <Function Name="J_r0" Domain="Compartment">(((Kf * s0) * s1) - (Kr * s2))</Function>
-        <Function Name="O0_MT0_tot" Domain="Compartment">(s0 + s2)</Function>
+        <Function Name="J_r0_DirectHalf" Domain="Compartment">(((Kf * MT0) * MT1) - (Kr * s2))</Function>
+        <Function Name="MT0" Domain="Compartment">((MT0_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
+        <Function Name="MT0_Count_initCount" Domain="Compartment">(Size_Intracellular * MT0_Count_init_uM * UnitFactor_molecules_uM_neg_1_um_neg_3)</Function>
+        <Function Name="MT1" Domain="Compartment">((MT1_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
+        <Function Name="MT1_Count_initCount" Domain="Compartment">(Size_Intracellular * MT1_Count_init_uM * UnitFactor_molecules_uM_neg_1_um_neg_3)</Function>
+        <Function Name="O0_MT0_tot" Domain="Compartment">(MT0 + s2)</Function>
         <Function Name="O0_MT0_tot_Count" Domain="Compartment">(O0_MT0_tot * Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3)</Function>
-        <Function Name="O0_MT1_tot" Domain="Compartment">(s1 + s2)</Function>
+        <Function Name="O0_MT1_tot" Domain="Compartment">(MT1 + s2)</Function>
         <Function Name="O0_MT1_tot_Count" Domain="Compartment">(O0_MT1_tot * Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3)</Function>
-        <Function Name="P_r0_probabilityRate" Domain="Compartment">(Kf * s0_Count * s1_Count * UnitFactor_molecules_uM_neg_1_um_neg_3 * UnitFactor_uM_um3_molecules_neg_1 * UnitFactor_uM_um3_molecules_neg_1 / Size_Intracellular)</Function>
-        <Function Name="P_r0_reverse_probabilityRate" Domain="Compartment">(Kr * s2_Count * UnitFactor_molecules_uM_neg_1_um_neg_3 * UnitFactor_uM_um3_molecules_neg_1)</Function>
-        <Function Name="s0" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * s0_Count) / Size_Intracellular)</Function>
-        <Function Name="s0_Count_initCount" Domain="Compartment">(Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3 * s0_Count_init_uM)</Function>
-        <Function Name="s1" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * s1_Count) / Size_Intracellular)</Function>
-        <Function Name="s1_Count_initCount" Domain="Compartment">(Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3 * s1_Count_init_uM)</Function>
+        <Function Name="P_r0_DirectHalf_probabilityRate" Domain="Compartment">(Kf * MT0_Count * MT1_Count * UnitFactor_molecules_uM_neg_1_um_neg_3 * UnitFactor_uM_um3_molecules_neg_1 * UnitFactor_uM_um3_molecules_neg_1 / Size_Intracellular)</Function>
+        <Function Name="P_r0_DirectHalf_reverse_probabilityRate" Domain="Compartment">(Kr * s2_Count * UnitFactor_molecules_uM_neg_1_um_neg_3 * UnitFactor_uM_um3_molecules_neg_1)</Function>
         <Function Name="s2" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * s2_Count) / Size_Intracellular)</Function>
         <Function Name="s2_Count_initCount" Domain="Compartment">(Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3 * s2_Count_init_uM)</Function>
         <CompartmentSubDomain Name="Compartment">
@@ -491,103 +551,113 @@
           <BoundaryType Boundary="Yp" Type="Value" />
           <BoundaryType Boundary="Zm" Type="Value" />
           <BoundaryType Boundary="Zp" Type="Value" />
-          <VariableInitialCount Name="s0_Count">s0_Count_initCount</VariableInitialCount>
-          <VariableInitialCount Name="s1_Count">s1_Count_initCount</VariableInitialCount>
+          <VariableInitialCount Name="MT0_Count">MT0_Count_initCount</VariableInitialCount>
+          <VariableInitialCount Name="MT1_Count">MT1_Count_initCount</VariableInitialCount>
           <VariableInitialCount Name="s2_Count">s2_Count_initCount</VariableInitialCount>
-          <JumpProcess Name="r0">
-            <ProbabilityRate>P_r0_probabilityRate</ProbabilityRate>
-            <Effect VarName="s0_Count" Operation="inc">-1.0</Effect>
-            <Effect VarName="s1_Count" Operation="inc">-1.0</Effect>
+          <JumpProcess Name="r0_DirectHalf">
+            <ProbabilityRate>P_r0_DirectHalf_probabilityRate</ProbabilityRate>
+            <Effect VarName="MT0_Count" Operation="inc">-1.0</Effect>
+            <Effect VarName="MT1_Count" Operation="inc">-1.0</Effect>
             <Effect VarName="s2_Count" Operation="inc">1.0</Effect>
           </JumpProcess>
-          <JumpProcess Name="r0_reverse">
-            <ProbabilityRate>P_r0_reverse_probabilityRate</ProbabilityRate>
-            <Effect VarName="s0_Count" Operation="inc">1.0</Effect>
-            <Effect VarName="s1_Count" Operation="inc">1.0</Effect>
+          <JumpProcess Name="r0_DirectHalf_reverse">
+            <ProbabilityRate>P_r0_DirectHalf_reverse_probabilityRate</ProbabilityRate>
+            <Effect VarName="MT0_Count" Operation="inc">1.0</Effect>
+            <Effect VarName="MT1_Count" Operation="inc">1.0</Effect>
             <Effect VarName="s2_Count" Operation="inc">-1.0</Effect>
           </JumpProcess>
         </CompartmentSubDomain>
-        <Version Name="Copy of Application0 1_generated" KeyValue="264492299" BranchId="264492300" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-          <Owner Name="schaff" Identifier="17" />
+        <Version Name="Copy of Application0 1_generated" KeyValue="264837069" BranchId="264837070" Archived="0" Date="19-Dec-2023 14:35:26" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
           <GroupAccess Type="1" />
+          <Annotation>cloned from 'Copy of Application0 1_generated' owned by user schaff</Annotation>
         </Version>
       </MathDescription>
-      <Simulation Name="Simulation2">
+      <Simulation Name="Simulation6">
         <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Gibson (Next Reaction Stochastic Method)">
-          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeBound StartTime="0.0" EndTime="0.01" />
           <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
           <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-8" />
           <StochSimOptions UseCustomSeed="false" NumberOfTrial="1" Histogram="false" />
-          <OutputOptions OutputTimeStep="0.05" />
+          <OutputOptions OutputTimeStep="5.0E-4" />
           <NumberProcessors>1</NumberProcessors>
         </SolverTaskDescription>
         <MathOverrides />
-        <Version Name="Simulation2" KeyValue="264492348" BranchId="264492349" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-          <Owner Name="schaff" Identifier="17" />
+        <Version Name="Simulation6" KeyValue="264837132" BranchId="264837133" Archived="0" Date="19-Dec-2023 14:35:27" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
           <GroupAccess Type="1" />
         </Version>
       </Simulation>
-      <Version Name="Copy of Application0 1" KeyValue="264492334" BranchId="264492335" Archived="0" Date="14-Dec-2023 00:36:12" FromVersionable="false">
-        <Owner Name="schaff" Identifier="17" />
+      <Version Name="Copy of Application0 1" KeyValue="264839572" BranchId="264837108" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
         <GroupAccess Type="1" />
-        <Annotation>(copied from Application0)</Annotation>
+        <Annotation>cloned from 'Copy of Application0 1' owned by user schaff
+(copied from Application0)</Annotation>
       </Version>
       <MicroscopeMeasurement Name="fluor">
         <ConvolutionKernel Type="ProjectionZKernel" />
       </MicroscopeMeasurement>
     </SimulationSpec>
-    <SimulationSpec Name="Application1" Stochastic="false" UseConcentration="true" SpringSaLaD="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.0010403160765672962">
+    <SimulationSpec Name="Application2" Stochastic="false" UseConcentration="true" SpringSaLaD="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="5.201580382836481E-4">
       <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500">
         <MaxStoichiometry MolecularType="MT0" Integer="100" />
         <MaxStoichiometry MolecularType="MT1" Integer="100" />
       </NetworkConstraints>
       <Annotation />
-      <Geometry Name="Geometry2" Dimension="3">
+      <Geometry Name="spatial1186592510" Dimension="3">
         <Extent X="0.1" Y="0.1" Z="0.1" />
         <Origin X="0.0" Y="0.0" Z="0.0" />
-        <SubVolume Name="Instracellular" Handle="1" Type="Analytical">
-          <AnalyticExpression>(z &gt; 0.09)</AnalyticExpression>
+        <SubVolume Name="Intracellular" Handle="0" Type="Analytical" KeyValue="264837056">
+          <AnalyticExpression>(z &lt; 0.09)</AnalyticExpression>
         </SubVolume>
-        <SubVolume Name="Extracellular" Handle="0" Type="Analytical">
-          <AnalyticExpression>1.0</AnalyticExpression>
+        <SubVolume Name="Extracellular" Handle="1" Type="Analytical" KeyValue="264837057">
+          <AnalyticExpression>0.1</AnalyticExpression>
         </SubVolume>
-        <SurfaceClass Name="Extracellular_Instracellular_membrane" SubVolume1Ref="Extracellular" SubVolume2Ref="Instracellular" />
+        <SurfaceClass Name="Extracellular_Intracellular_membrane" SubVolume1Ref="Extracellular" SubVolume2Ref="Intracellular" KeyValue="264837058" />
         <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
-          <VolumeRegion Name="Extracellular0" RegionID="0" SubVolume="Extracellular" Size="8.949999999999999E-4" Unit="um3" />
-          <VolumeRegion Name="Instracellular1" RegionID="1" SubVolume="Instracellular" Size="1.0499999999999999E-4" Unit="um3" />
-          <MembraneRegion Name="membrane_Extracellular0_Instracellular1" VolumeRegion1="Instracellular1" VolumeRegion2="Extracellular0" Size="0.009999999999999827" Unit="um2" />
+          <VolumeRegion Name="Intracellular0" RegionID="0" SubVolume="Intracellular" Size="8.949999999999999E-4" Unit="um3" />
+          <VolumeRegion Name="Extracellular1" RegionID="1" SubVolume="Extracellular" Size="1.0499999999999999E-4" Unit="um3" />
+          <MembraneRegion Name="membrane_Intracellular0_Extracellular1" VolumeRegion1="Extracellular1" VolumeRegion2="Intracellular0" Size="0.009999999999999827" Unit="um2" />
         </SurfaceDescription>
+        <Version Name="spatial1186592510" KeyValue="264837052" BranchId="264837053" Archived="0" Date="19-Dec-2023 14:35:26" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
       </Geometry>
       <GeometryContext>
         <FeatureMapping Feature="Extracellular" GeometryClass="Extracellular" SubVolume="Extracellular" Size="50000.0" VolumePerUnitVolume="1.0">
           <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
         </FeatureMapping>
-        <FeatureMapping Feature="Intracellular" GeometryClass="Instracellular" SubVolume="Instracellular" Size="50000.0" VolumePerUnitVolume="1.0">
+        <FeatureMapping Feature="Intracellular" GeometryClass="Intracellular" SubVolume="Intracellular" Size="50000.0" VolumePerUnitVolume="1.0">
           <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
         </FeatureMapping>
-        <MembraneMapping Membrane="Membrane" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="Extracellular_Instracellular_membrane">
+        <MembraneMapping Membrane="Membrane" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="Extracellular_Intracellular_membrane">
           <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
         </MembraneMapping>
       </GeometryContext>
       <ReactionContext>
-        <LocalizedCompoundSpec LocalizedCompoundRef="s0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
-          <InitialConcentration>0.0</InitialConcentration>
+        <LocalizedCompoundSpec LocalizedCompoundRef="MT0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.2E-6</InitialConcentration>
           <SiteAttributesSpec SiteRef="Site0" MoleculeRef="MT0" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="RED" />
         </LocalizedCompoundSpec>
-        <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
-          <InitialConcentration>0.0</InitialConcentration>
+        <LocalizedCompoundSpec LocalizedCompoundRef="MT1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0E-6</InitialConcentration>
           <SiteAttributesSpec SiteRef="Site0" MoleculeRef="MT1" SiteLocationRef="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" SiteRadius="1.0" SiteDiffusion="1.0" SiteColor="RED" />
         </LocalizedCompoundSpec>
         <ReactionRuleSpecs>
           <ReactionRuleSpec ReactionRuleRef="r0" ReactionRuleMapping="included" SubType="Binding" BondLength="1.0" />
         </ReactionRuleSpecs>
       </ReactionContext>
-      <MathDescription Name="Application1_generated">
+      <MathDescription Name="Application2_generated">
         <LangevinParticleMolecularType Name="MT0">
-          <Component Name="Site0" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" NamedColor="RED" />
+          <Component Name="Site0" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" NamedColor="RED">
+            <AllowableState Name="state0" />
+          </Component>
         </LangevinParticleMolecularType>
         <LangevinParticleMolecularType Name="MT1">
-          <Component Name="Site0" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" NamedColor="RED" />
+          <Component Name="Site0" Radius="1.0" DiffusionRate="1.0" Location="Intracellular" SiteCoordX="0.0" SiteCoordY="0.0" SiteCoordZ="0.0" NamedColor="BLUE">
+            <AllowableState Name="state0" />
+          </Component>
         </LangevinParticleMolecularType>
         <Constant Name="_F_">96485.3321</Constant>
         <Constant Name="_F_nmol_">9.64853321E-5</Constant>
@@ -595,37 +665,38 @@
         <Constant Name="_PI_">3.141592653589793</Constant>
         <Constant Name="_R_">8314.46261815</Constant>
         <Constant Name="_T_">300.0</Constant>
-        <Constant Name="Kf">1.0</Constant>
+        <Constant Name="Kf">200.0</Constant>
         <Constant Name="KMOLE">0.001660538783162726</Constant>
-        <Constant Name="s0_Count_init_uM">0.0</Constant>
-        <Constant Name="s1_Count_init_uM">0.0</Constant>
+        <Constant Name="Kr">0.0</Constant>
+        <Constant Name="MT0_Count_init_uM">1.2E-6</Constant>
+        <Constant Name="MT1_Count_init_uM">1.0E-6</Constant>
         <Constant Name="Size_Extracellular">50000.0</Constant>
         <Constant Name="Size_Intracellular">50000.0</Constant>
         <Constant Name="Size_Membrane">6563.0</Constant>
-        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE,-1.0))</Constant>
+        <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE, - 1.0))</Constant>
         <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
         <Constant Name="Voltage_Membrane">0.0</Constant>
-        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern0" Domain="Instracellular">
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern0" Domain="Intracellular">
           <MolecularType Name="MT0" MatchLabel="*">
             <Component Name="Site0" State="*" Bond="?" />
           </MolecularType>
         </VolumeParticleSpeciesPattern>
-        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern1" Domain="Instracellular">
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern1" Domain="Intracellular">
           <MolecularType Name="MT1" MatchLabel="*">
             <Component Name="Site0" State="*" Bond="?" />
           </MolecularType>
         </VolumeParticleSpeciesPattern>
-        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern2" Domain="Instracellular">
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern2" Domain="Intracellular">
           <MolecularType Name="MT0" MatchLabel="*">
             <Component Name="Site0" State="*" Bond="-" />
           </MolecularType>
         </VolumeParticleSpeciesPattern>
-        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern3" Domain="Instracellular">
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern3" Domain="Intracellular">
           <MolecularType Name="MT1" MatchLabel="*">
             <Component Name="Site0" State="*" Bond="-" />
           </MolecularType>
         </VolumeParticleSpeciesPattern>
-        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern4" Domain="Instracellular">
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern4" Domain="Intracellular">
           <MolecularType Name="MT0" MatchLabel="*">
             <Component Name="Site0" State="*" Bond="1" />
           </MolecularType>
@@ -633,34 +704,45 @@
             <Component Name="Site0" State="*" Bond="1" />
           </MolecularType>
         </VolumeParticleSpeciesPattern>
-        <VolumeParticleObservable Name="O0_MT0_tot_Count" Domain="Instracellular" MolecularType="Molecules" SequenceType="Multimolecular">
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern5" Domain="Intracellular">
+          <MolecularType Name="MT0" MatchLabel="*">
+            <Component Name="Site0" State="state0" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleSpeciesPattern Location="Intracellular" Name="speciesPattern6" Domain="Intracellular">
+          <MolecularType Name="MT1" MatchLabel="*">
+            <Component Name="Site0" State="state0" Bond="-" />
+          </MolecularType>
+        </VolumeParticleSpeciesPattern>
+        <VolumeParticleObservable Name="MT0_Count" Domain="Intracellular" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern5" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="MT1_Count" Domain="Intracellular" MolecularType="Species" SequenceType="Multimolecular">
+          <VolumeParticleSpeciesPatterns>
+            <VolumeParticleSpeciesPattern Name="speciesPattern6" />
+          </VolumeParticleSpeciesPatterns>
+        </VolumeParticleObservable>
+        <VolumeParticleObservable Name="O0_MT0_tot_Count" Domain="Intracellular" MolecularType="Molecules" SequenceType="Multimolecular">
           <VolumeParticleSpeciesPatterns>
             <VolumeParticleSpeciesPattern Name="speciesPattern0" />
           </VolumeParticleSpeciesPatterns>
         </VolumeParticleObservable>
-        <VolumeParticleObservable Name="O0_MT1_tot_Count" Domain="Instracellular" MolecularType="Molecules" SequenceType="Multimolecular">
+        <VolumeParticleObservable Name="O0_MT1_tot_Count" Domain="Intracellular" MolecularType="Molecules" SequenceType="Multimolecular">
           <VolumeParticleSpeciesPatterns>
             <VolumeParticleSpeciesPattern Name="speciesPattern1" />
           </VolumeParticleSpeciesPatterns>
         </VolumeParticleObservable>
-        <VolumeParticleObservable Name="s0_Count" Domain="Instracellular" MolecularType="Species" SequenceType="Multimolecular">
-          <VolumeParticleSpeciesPatterns>
-            <VolumeParticleSpeciesPattern Name="speciesPattern2" />
-          </VolumeParticleSpeciesPatterns>
-        </VolumeParticleObservable>
-        <VolumeParticleObservable Name="s1_Count" Domain="Instracellular" MolecularType="Species" SequenceType="Multimolecular">
-          <VolumeParticleSpeciesPatterns>
-            <VolumeParticleSpeciesPattern Name="speciesPattern3" />
-          </VolumeParticleSpeciesPatterns>
-        </VolumeParticleObservable>
-        <Function Name="O0_MT0_tot" Domain="Instracellular">((O0_MT0_tot_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
-        <Function Name="O0_MT1_tot" Domain="Instracellular">((O0_MT1_tot_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
-        <Function Name="P_r0_probabilityRate" Domain="Instracellular">Kf</Function>
-        <Function Name="s0" Domain="Instracellular">((UnitFactor_uM_um3_molecules_neg_1 * s0_Count) / Size_Intracellular)</Function>
-        <Function Name="s0_Count_initCount" Domain="Instracellular">(Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3 * s0_Count_init_uM)</Function>
-        <Function Name="s1" Domain="Instracellular">((UnitFactor_uM_um3_molecules_neg_1 * s1_Count) / Size_Intracellular)</Function>
-        <Function Name="s1_Count_initCount" Domain="Instracellular">(Size_Intracellular * UnitFactor_molecules_uM_neg_1_um_neg_3 * s1_Count_init_uM)</Function>
-        <CompartmentSubDomain Name="Instracellular">
+        <Function Name="MT0" Domain="Intracellular">((MT0_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
+        <Function Name="MT0_Count_initCount" Domain="Intracellular">(Size_Intracellular * MT0_Count_init_uM * UnitFactor_molecules_uM_neg_1_um_neg_3)</Function>
+        <Function Name="MT1" Domain="Intracellular">((MT1_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
+        <Function Name="MT1_Count_initCount" Domain="Intracellular">(Size_Intracellular * MT1_Count_init_uM * UnitFactor_molecules_uM_neg_1_um_neg_3)</Function>
+        <Function Name="O0_MT0_tot" Domain="Intracellular">((O0_MT0_tot_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
+        <Function Name="O0_MT1_tot" Domain="Intracellular">((O0_MT1_tot_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_Intracellular)</Function>
+        <Function Name="P_r0_probabilityRate" Domain="Intracellular">Kf</Function>
+        <Function Name="P_r0_reverse_probabilityRate" Domain="Intracellular">Kr</Function>
+        <CompartmentSubDomain Name="Intracellular">
           <BoundaryType Boundary="Xm" Type="Flux" />
           <BoundaryType Boundary="Xp" Type="Flux" />
           <BoundaryType Boundary="Ym" Type="Flux" />
@@ -671,13 +753,20 @@
             <SelectedParticle Name="speciesPattern2" />
             <SelectedParticle Name="speciesPattern3" />
             <MacroscopicRateConstant>P_r0_probabilityRate</MacroscopicRateConstant>
-            <Effect VarName="speciesPattern2" Operation="destroy">1.0</Effect>
-            <Effect VarName="speciesPattern3" Operation="destroy">1.0</Effect>
-            <Effect VarName="speciesPattern4" Operation="create">1.0</Effect>
+            <Effect VarName="speciesPattern2" Operation="destroy" />
+            <Effect VarName="speciesPattern3" Operation="destroy" />
+            <Effect VarName="speciesPattern4" Operation="create" />
           </LangevinParticleJumpProcess>
-          <ParticleProperties Name="speciesPattern2">
+          <LangevinParticleJumpProcess Name="r0_reverse" Subtype="Binding" BondLength="1.0" ProcessSymmetryFactor="1.0">
+            <SelectedParticle Name="speciesPattern4" />
+            <MacroscopicRateConstant>P_r0_reverse_probabilityRate</MacroscopicRateConstant>
+            <Effect VarName="speciesPattern2" Operation="create" />
+            <Effect VarName="speciesPattern3" Operation="create" />
+            <Effect VarName="speciesPattern4" Operation="destroy" />
+          </LangevinParticleJumpProcess>
+          <ParticleProperties Name="speciesPattern5">
             <ParticleInitialCount>
-              <ParticleCount>s0_Count_initCount</ParticleCount>
+              <ParticleCount>MT0_Count_initCount</ParticleCount>
               <ParticleLocationX>0.0</ParticleLocationX>
               <ParticleLocationY>0.0</ParticleLocationY>
               <ParticleLocationZ>0.0</ParticleLocationZ>
@@ -687,9 +776,9 @@
             <ParticleDriftY>0.0</ParticleDriftY>
             <ParticleDriftZ>0.0</ParticleDriftZ>
           </ParticleProperties>
-          <ParticleProperties Name="speciesPattern3">
+          <ParticleProperties Name="speciesPattern6">
             <ParticleInitialCount>
-              <ParticleCount>s1_Count_initCount</ParticleCount>
+              <ParticleCount>MT1_Count_initCount</ParticleCount>
               <ParticleLocationX>0.0</ParticleLocationX>
               <ParticleLocationY>0.0</ParticleLocationY>
               <ParticleLocationZ>0.0</ParticleLocationZ>
@@ -708,7 +797,7 @@
           <BoundaryType Boundary="Zm" Type="Flux" />
           <BoundaryType Boundary="Zp" Type="Flux" />
         </CompartmentSubDomain>
-        <MembraneSubDomain Name="Extracellular_Instracellular_membrane" InsideCompartment="Extracellular" OutsideCompartment="Instracellular">
+        <MembraneSubDomain Name="Extracellular_Intracellular_membrane" InsideCompartment="Extracellular" OutsideCompartment="Intracellular">
           <BoundaryType Boundary="Xm" Type="Value" />
           <BoundaryType Boundary="Xp" Type="Value" />
           <BoundaryType Boundary="Ym" Type="Value" />
@@ -716,13 +805,17 @@
           <BoundaryType Boundary="Zm" Type="Value" />
           <BoundaryType Boundary="Zp" Type="Value" />
         </MembraneSubDomain>
+        <Version Name="Application2_generated" KeyValue="264839541" BranchId="264837073" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
       </MathDescription>
-      <Simulation Name="Simulation3">
+      <Simulation Name="Simulation4">
         <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Langevin">
-          <TimeBound StartTime="0.0" EndTime="1.0" />
-          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <TimeBound StartTime="0.0" EndTime="0.01" />
+          <TimeStep DefaultTime="1.0E-8" MinTime="1.0E-8" MaxTime="1.0" />
           <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
-          <OutputOptions OutputTimeStep="0.05" />
+          <OutputOptions OutputTimeStep="1.0E-4" />
           <LangevinSimulationOptions>
             <NumOfTrials>1</NumOfTrials>
             <IntervalSpring>1.0E-9</IntervalSpring>
@@ -734,23 +827,27 @@
         <MeshSpecification>
           <Size X="51" Y="51" Z="51" />
         </MeshSpecification>
+        <Version Name="Simulation4" KeyValue="264839588" BranchId="264837136" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+          <Owner Name="danv" Identifier="26766043" />
+          <GroupAccess Type="1" />
+        </Version>
       </Simulation>
       <SpatialObjects>
-        <SpatialObject Name="vobj_Extracellular0" Type="Volume" subVolume="Extracellular" regionId="0">
+        <SpatialObject Name="vobj_Intracellular0" Type="Volume" subVolume="Intracellular" regionId="0">
           <QuantityCategoryList>
             <QuantityCategory Name="VolumeCentroid" Enabled="false" />
             <QuantityCategory Name="InteriorVelocity" Enabled="false" />
             <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
           </QuantityCategoryList>
         </SpatialObject>
-        <SpatialObject Name="vobj_Instracellular1" Type="Volume" subVolume="Instracellular" regionId="1">
+        <SpatialObject Name="vobj_Extracellular1" Type="Volume" subVolume="Extracellular" regionId="1">
           <QuantityCategoryList>
             <QuantityCategory Name="VolumeCentroid" Enabled="false" />
             <QuantityCategory Name="InteriorVelocity" Enabled="false" />
             <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
           </QuantityCategoryList>
         </SpatialObject>
-        <SpatialObject Name="sobj_Instracellular1_Extracellular0" Type="Surface" subVolumeInside="Instracellular" regionIdInside="1" subVolumeOutside="Extracellular" regionIdOutside="0">
+        <SpatialObject Name="sobj_Extracellular1_Intracellular0" Type="Surface" subVolumeInside="Extracellular" regionIdInside="1" subVolumeOutside="Intracellular" regionIdOutside="0">
           <QuantityCategoryList>
             <QuantityCategory Name="SurfaceNormal" Enabled="false" />
             <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
@@ -760,13 +857,18 @@
           </QuantityCategoryList>
         </SpatialObject>
       </SpatialObjects>
+      <Version Name="Application2" KeyValue="264839579" BranchId="264837116" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+        <Owner Name="danv" Identifier="26766043" />
+        <GroupAccess Type="1" />
+      </Version>
       <MicroscopeMeasurement Name="fluor">
         <ConvolutionKernel Type="ProjectionZKernel" />
       </MicroscopeMeasurement>
     </SimulationSpec>
-    <Version Name="___SpringSalad_SolverSuite" KeyValue="264492351" BranchId="264492352" Archived="0" Date="14-Dec-2023 00:36:13" FromVersionable="false">
-      <Owner Name="schaff" Identifier="17" />
+    <Version Name="___SpringSalad_SolverSuite" KeyValue="264839590" BranchId="264837139" Archived="0" Date="19-Dec-2023 15:30:10" FromVersionable="false">
+      <Owner Name="danv" Identifier="26766043" />
       <GroupAccess Type="1" />
+      <Annotation>cloned from '___SpringSalad_SolverSuite' owned by user schaff</Annotation>
     </Version>
     <pathwayModel>
       <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
