@@ -184,6 +184,7 @@ public class N5ExporterTest {
             // the test model can only support one species at this time
             n5Exporter.initalizeDataControllers(fourDModelID, "ezequiel23", "258925427", jobId);
             this.variables = new ArrayList<>(Arrays.asList(
+                    n5Exporter.getRandomDI(),
                     n5Exporter.getRandomDI()
             ));
         }
