@@ -41,7 +41,7 @@ public class N5Exporter implements ExportConstants {
 
 	private ExportServiceImpl exportServiceImpl = null;
 
-	private DataSetControllerImpl dataSetController;
+	public DataSetControllerImpl dataSetController;
 
 	private VCSimulationDataIdentifier vcDataID;
 	public String n5BucketName = "n5Data";
@@ -50,14 +50,11 @@ public class N5Exporter implements ExportConstants {
 
 	public static final ArrayList<VariableType> unsupportedTypes = new ArrayList<>(Arrays.asList(
 			VariableType.MEMBRANE,
-			VariableType.VOLUME_REGION,
-			VariableType.MEMBRANE_REGION,
 			VariableType.UNKNOWN,
 			VariableType.POINT_VARIABLE,
 			VariableType.NONSPATIAL,
 			VariableType.CONTOUR,
-			VariableType.CONTOUR_REGION,
-			VariableType.POSTPROCESSING
+			VariableType.CONTOUR_REGION
 	));
 
 	private VCData vcData;
@@ -146,7 +143,7 @@ public class N5Exporter implements ExportConstants {
 		// Point a data controller to the directory where the sim data is and use the vcdID to retrieve information regarding the sim, need to ask about what size this should be
 		Cachetable cachetable = new Cachetable(10 * Cachetable.minute, Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.simdataCacheSizeProperty)));
 		File primaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
-		File secodaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty));
+		File secodaryDir = new File(PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, ""));
 		this.dataSetController = new DataSetControllerImpl(cachetable, primaryDir, secodaryDir);
 
 		// get dataset identifier from the simulation
@@ -166,18 +163,6 @@ public class N5Exporter implements ExportConstants {
 
 	public DataSetControllerImpl getDataSetController() {
 		return dataSetController;
-	}
-
-
-
-	public DataIdentifier getRandomDI() throws IOException, DataAccessException {
-		ArrayList<DataIdentifier> list = new ArrayList<>(Arrays.asList(dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), vcDataID)));
-		Random random = new Random();
-		DataIdentifier df = list.remove(random.nextInt(list.size()));
-		while (unsupportedTypes.contains(df.getVariableType())){
-			df = list.remove(random.nextInt(list.size()));
-		}
-		return df;
 	}
 
 	public DataIdentifier getSpecificDI(String diName) throws IOException, DataAccessException {
