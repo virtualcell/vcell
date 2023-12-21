@@ -13,16 +13,13 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
-import org.vcell.test.SBML_IT;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.InputStream;
@@ -34,22 +31,17 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Category(SBML_IT.class)
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Tag("SBML_IT")
 public class SBMLTestSuiteTest {
-	private Integer testCase;
-
-	public SBMLTestSuiteTest(Integer testCase) {
-		this.testCase = testCase;
-	}
-
-	@BeforeClass
+	@BeforeAll
 	public static void before() {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
 		Logger.getLogger(SBMLExporter.class).addAppender(new ConsoleAppender());
 	}
 
-	@Parameterized.Parameters
 	public static Collection<Integer> testCases() {
 		HashMap<Integer,FAULT> faults = new HashMap();
 		faults.put(22, FAULT.NONINTEGER_STOICH);
@@ -627,8 +619,9 @@ public class SBMLTestSuiteTest {
 
 
 
-	@Test
-	public void testSbmlTestSuiteImport() throws Exception{
+	@ParameterizedTest
+	@MethodSource("testCases")
+	public void testSbmlTestSuiteImport(Integer testCase) throws Exception{
 		HashMap<Integer,FAULT> faults = new HashMap();
 		faults.put(22, FAULT.NONINTEGER_STOICH);
 
@@ -651,7 +644,7 @@ public class SBMLTestSuiteTest {
 			MathDescription mathDesc = bioModel.getSimulationContext(0).getMathDescription();
 			Optional<VolVariable> volVariable = mathDesc.getVariableList().stream()
 					.filter(var -> var instanceof VolVariable).map(var -> (VolVariable)var).findAny();
-			if (!volVariable.isPresent()){
+			if (volVariable.isEmpty()){
 				System.err.println("SKIPPING SIMULATION, Math has no Variables, nothing to solve");
 				return;
 			}
@@ -674,17 +667,18 @@ public class SBMLTestSuiteTest {
 			if (!bEquiv){
 				System.err.println(SBMLResults.toCSV(expectedCSV,computedResults));
 			}
-			Assert.assertTrue("testCase "+testCase+" not within tolerance", bEquiv);
+            assertTrue(bEquiv, "testCase " + testCase + " not within tolerance");
 			System.err.println("<< SIMULATIONS MATCH >>");
 		}catch (Exception e){
 			System.err.println("unexpected exception in test case "+testCase);
 			throw e;
 		}
-		Assert.assertArrayEquals("testCase "+testCase+" failed", new String[0], vcl.highPriority.toArray());
+		assertArrayEquals(new String[0], vcl.highPriority.toArray(), "testCase "+testCase+" failed");
 	}
 
-	@Test
-	public void roundTripVerify() throws XMLStreamException, SbmlException, VCLoggerException, MappingException {
+	@ParameterizedTest
+	@MethodSource("testCases")
+	public void roundTripVerify(Integer testCase) throws XMLStreamException, SbmlException, VCLoggerException, MappingException {
 		System.out.println("testCase "+testCase);
 		InputStream testFileInputStream = SbmlTestSuiteFiles.getSbmlTestCase(testCase);
 		boolean bValidateSBML = true;

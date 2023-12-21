@@ -1,15 +1,15 @@
 package cbit.vcell.util;
 
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.vcell.util.SkipCommentLineNumberReader;
+
 import java.io.Reader;
 import java.io.StringReader;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
-import org.vcell.util.SkipCommentLineNumberReader;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class SkipCommentLineReaderTest {
 	private static final String UNCOMMENTED_TEXT = "Mary\nhad\na\nlittle\nlamb\n";
 	private static final String COMMENTED_TEXT_1 = "Mary\nhad\n#did she?\na\nlittle\nlamb\n";
@@ -21,7 +21,7 @@ public class SkipCommentLineReaderTest {
 			while (sclnr.ready() && standard.ready()) {
 				String line_file = sclnr.readLine();
 				String line_standard = standard.readLine();
-				Assert.assertEquals(line_file,line_standard);
+                assertEquals(line_file, line_standard);
 				//Assert.assertEquals(sclnr.getLineNumber(), standard.getLineNumber());
 			}
 		}

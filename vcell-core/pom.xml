@@ -78,9 +78,13 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -252,6 +256,10 @@
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>junit</groupId>
+					<artifactId>junit</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -415,11 +423,23 @@
 									<goals>
 										<goal>wget</goal>
 									</goals>
-<!-- This will download resource to {HomeDir}\.m2\repository\.cache\download-maven-plugin then extract to <outputDirectory>-->
+									<!-- This will download resource to {HomeDir}\.m2\repository\.cache\download-maven-plugin then extract to <outputDirectory>-->
 									<configuration>
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.40/win64.zip</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-langevin-win64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-windows-latest</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<outputFileName>langevin_x64.exe</outputFileName>
 									</configuration>
 								</execution>
 							</executions>
@@ -460,6 +480,36 @@
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.43/mac64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-langevin-mac64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-macos-latest</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+										<outputFileName>langevin_x64</outputFileName>
+									</configuration>
+								</execution>
+							</executions>
+						</plugin>
+						<plugin>
+							<artifactId>maven-antrun-plugin</artifactId>
+							<version>3.1.0</version>
+							<executions>
+								<execution>
+									<id>chmod-langevin-mac64</id>
+									<phase>process-test-resources</phase>
+									<goals>
+										<goal>run</goal>
+									</goals>
+									<configuration>
+										<target>
+											<chmod file="${project.build.directory}/../../localsolvers/mac64/langevin_x64" perm="755"/>
+										</target>
 									</configuration>
 								</execution>
 							</executions>
@@ -540,6 +590,72 @@
 										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.43/mac64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-langevin-win64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-windows-latest</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<outputFileName>langevin_x64.exe</outputFileName>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-langevin-mac64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-macos-latest</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+										<outputFileName>langevin_x64</outputFileName>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-langevin-linux</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-ubuntu-latest</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
+										<outputFileName>langevin_x64</outputFileName>
+									</configuration>
+								</execution>
+							</executions>
+						</plugin>
+						<plugin>
+							<artifactId>maven-antrun-plugin</artifactId>
+							<version>3.1.0</version>
+							<executions>
+								<execution>
+									<id>chmod-langevin-mac64</id>
+									<phase>process-test-resources</phase>
+									<goals>
+										<goal>run</goal>
+									</goals>
+									<configuration>
+										<target>
+											<chmod file="${project.build.directory}/../../localsolvers/mac64/langevin_x64" perm="755"/>
+										</target>
+									</configuration>
+								</execution>
+								<execution>
+									<id>chmod-langevin-linux64</id>
+									<phase>process-test-resources</phase>
+									<goals>
+										<goal>run</goal>
+									</goals>
+									<configuration>
+										<target>
+											<chmod file="${project.build.directory}/../../localsolvers/linux64/langevin_x64" perm="755"/>
+										</target>
 									</configuration>
 								</execution>
 							</executions>

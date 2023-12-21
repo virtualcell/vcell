@@ -1,24 +1,22 @@
 package cbit.vcell.message.server.htc;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Random;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Test;
-
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import java.util.Random;
+
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Test {@link HtcJobID#compareEqual(org.vcell.util.Matchable)},
  * {@link HtcJobID#equals(Object)} and {@link HtcJobID#hashCode()}
  */
-@Category(Fast.class)
+@Tag("Fast")
 public class JobIdTest {
 
 	Random r = new Random( );
@@ -40,30 +38,30 @@ public class JobIdTest {
 		long n = r.nextLong();
 		HtcJobID x = gen(n,bt,null);
 		HtcJobID y = gen(n,bt,null);
-		assertTrue(x.equals(y));
-		assertTrue(x.compareEqual(y));
-		assertTrue(x.hashCode( ) == y.hashCode());
+        Assertions.assertEquals(x, y);
+        Assertions.assertTrue(x.compareEqual(y));
+        Assertions.assertEquals(x.hashCode(), y.hashCode());
 		String server = randomServer( );
 		x = gen(n,bt,server);
 		y = gen(n,bt,server);
-		assertTrue(x.equals(y));
-		assertTrue(x.compareEqual(y));
-		assertTrue(x.hashCode( ) == y.hashCode());
+        Assertions.assertEquals(x, y);
+        Assertions.assertTrue(x.compareEqual(y));
+        Assertions.assertEquals(x.hashCode(), y.hashCode());
 	}
 
 	private void sysDiff(BatchSystemType bt) {
 		long n = r.nextLong();
-		HtcJobID x = gen(n,bt,null);
-		HtcJobID y = gen(n + 1,bt,null);
-		assertFalse(x.equals(y));
-		assertFalse(x.compareEqual(y));
+		HtcJobID x = gen(n, bt, null);
+		HtcJobID y = gen(n + 1, bt, null);
+        assertNotEquals(x, y);
+		Assertions.assertFalse(x.compareEqual(y));
 
-		String serverx = randomServer( );
-		String servery = randomServer( );
-		x = gen(n,bt,serverx);
-		y = gen(n + 1,bt,servery);
-		assertFalse(x.equals(y));
-		assertFalse(x.compareEqual(y));
+		String serverx = randomServer();
+		String servery = randomServer();
+		x = gen(n, bt, serverx);
+		y = gen(n + 1, bt, servery);
+        assertNotEquals(x, y);
+		Assertions.assertFalse(x.compareEqual(y));
 	}
 
 	@Test
@@ -96,25 +94,25 @@ public class JobIdTest {
 	@Test
 	public void diffBatch( ) {
 		long n = r.nextLong();
-		HtcJobID x = gen(n,BatchSystemType.SGE,null);
-		HtcJobID y = gen(n,BatchSystemType.PBS,null);
-		HtcJobID z = gen(n,BatchSystemType.SLURM,null);
-		assertFalse(x.equals(y));
-		assertFalse(x.compareEqual(y));
-		assertFalse(x.equals(z));
-		assertFalse(x.compareEqual(z));
-		assertFalse(y.equals(z));
-		assertFalse(y.compareEqual(z));
+		HtcJobID x = gen(n, BatchSystemType.SGE, null);
+		HtcJobID y = gen(n, BatchSystemType.PBS, null);
+		HtcJobID z = gen(n, BatchSystemType.SLURM, null);
+        assertNotEquals(x, y);
+		Assertions.assertFalse(x.compareEqual(y));
+        assertNotEquals(x, z);
+		Assertions.assertFalse(x.compareEqual(z));
+        assertNotEquals(y, z);
+		Assertions.assertFalse(y.compareEqual(z));
 
-		String server = randomServer( );
-		x = gen(n,BatchSystemType.SGE,server);
-		y = gen(n,BatchSystemType.PBS,server);
-		z = gen(n,BatchSystemType.SLURM,server);
-		assertFalse(x.equals(y));
-		assertFalse(x.compareEqual(y));
-		assertFalse(x.equals(z));
-		assertFalse(x.compareEqual(z));
-		assertFalse(y.equals(z));
-		assertFalse(y.compareEqual(z));
+		String server = randomServer();
+		x = gen(n, BatchSystemType.SGE, server);
+		y = gen(n, BatchSystemType.PBS, server);
+		z = gen(n, BatchSystemType.SLURM, server);
+        assertNotEquals(x, y);
+		Assertions.assertFalse(x.compareEqual(y));
+        assertNotEquals(x, z);
+		Assertions.assertFalse(x.compareEqual(z));
+        assertNotEquals(y, z);
+		Assertions.assertFalse(y.compareEqual(z));
 	}
 }

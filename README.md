@@ -68,7 +68,7 @@ poetry install
 
 #### Test Java and Python
 ```bash
-mvn test -Dgroups=org.vcell.test.Fast
+mvn test -Dgroups="Fast"
 
 INSTALL_DIR=$(pwd)
 cd ${INSTALL_DIR}/pythonCopasiOpt/vcell-opt

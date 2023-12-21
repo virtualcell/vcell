@@ -1,14 +1,15 @@
 package org.vcell.util;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Category(Fast.class)
+
+@Tag("Fast")
 public class StackTraceUtilsTest {
 
     private void eenie(){
@@ -75,7 +76,7 @@ public class StackTraceUtilsTest {
             layer1();
         } catch(Exception e){
             String causalChainString = StackTraceUtils.getCausalChain(e);
-            assertEquals("Dummy exception 1 caused by Dummy exception 2 caused by Dummy exception 3", causalChainString);
+            assertEquals(causalChainString, "Dummy exception 1 caused by Dummy exception 2 caused by Dummy exception 3");
         }
     }
 }

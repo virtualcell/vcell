@@ -1,19 +1,19 @@
 package org.vcell.util.collections;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-@Category(Fast.class)
+@Tag("Fast")
 public class CircularListTest {
 	
 	
 	private CircularList<Integer> list;
 	
-	@Before
+	@BeforeEach
 	public void setup( ) {
 		list = new CircularList<>(5);
 	}
@@ -30,10 +30,10 @@ public class CircularListTest {
 	}
 	
 	private void validate(Integer ...values) {
-		assertTrue(values.length == list.size());
+        assertEquals(values.length, list.size());
 		int index  = 0;
 		for (Integer i : list) {
-			assertTrue(values[index++] == i);
+            assertSame(values[index++], i);
 		}
 	}
 	

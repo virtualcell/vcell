@@ -1,12 +1,11 @@
 package cbit.vcell.resource;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-@Ignore
-@Category(Fast.class)
+@Disabled
+@Tag("Fast")
 public class LicenseTest {
 	
 	@Test

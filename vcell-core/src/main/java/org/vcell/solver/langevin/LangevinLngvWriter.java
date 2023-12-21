@@ -1,13 +1,10 @@
 package org.vcell.solver.langevin;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.model.Structure;
 import org.vcell.util.Pair;
 
 import cbit.vcell.geometry.Geometry;
@@ -95,7 +92,7 @@ public class LangevinLngvWriter {
 //	static HashSet<BondSites> reactionReactantBondSites = new HashSet<BondSites>();
 
 	// main work being done here
-	public static String writeLangevinLngv(Simulation simulation, long randomSeed, LangevinSimulationOptions langevinSimulationOptions) throws SolverException, DivideByZeroException, ExpressionException {
+	public static String writeLangevinLngv(Simulation simulation, long randomSeed) throws SolverException, DivideByZeroException, ExpressionException {
 		try {
 			System.out.println("VCML ORIGINAL .... START\n"+simulation.getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
 		} catch (MathException e1) {
@@ -149,7 +146,7 @@ public class LangevinLngvWriter {
 		/* ********* WRITE THE SPATIAL INFORMATION **********/
 		sb.append("*** " + SPATIAL_INFORMATION + " ***");
 		sb.append("\n");
-		geometrySpec.writeData(sb);
+		writeSpatialInformation(geometrySpec, sb);
 		sb.append("\n");
 
 		/* ******* WRITE THE SPECIES INFORMATION ***********/
@@ -259,8 +256,11 @@ public class LangevinLngvWriter {
 	}
 	
 	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
+		if(!simulation.getSimulationOwner().getMathDescription().isLangevin()) {
+			throw new RuntimeException("Langevin Math expected.");
+		}
 		// general stuff is in solver task description
-		simulation.getSolverTaskDescription().writeData(sb);
+		simulation.getSolverTaskDescription().writeTimeInformation(sb);
 		
 		// for fast simulation for a simple transition state model, select the following time simulation options: 
 		// - ending:				0.01	(langevin: total time)
@@ -398,16 +398,24 @@ public class LangevinLngvWriter {
 					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(0);
 			Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern> elementTwo = 
 					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(1);
-			
+			String nameOne = "Any_State";
+			String nameTwo = "Any_State";
+			if(elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition() != null) {
+				nameOne = elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName();
+			}
+			if(elementTwo.getValue().getComponentStatePattern().getParticleComponentStateDefinition() != null) {
+				nameTwo = elementTwo.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName();
+			}
+
 			// finally write the BINDING_REACTIONS block for each binding reaction
 			sb.append("'").append(lpjpDirect.getName()).append("'       ");
 			sb.append("'").append(elementOne.getKey().getMolecularType().getName()).append("' : '")
 				.append(elementOne.getValue().getMolecularComponent().getName()).append("' : '")
-				.append(elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName());
+				.append(nameOne);
 				sb.append("'  +  '");
 			sb.append(elementTwo.getKey().getMolecularType().getName()).append("' : '")
 				.append(elementTwo.getValue().getMolecularComponent().getName()).append("' : '")
-				.append(elementTwo.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName());
+				.append(nameTwo);
 			
 			sb.append("'  kon  ").append(onRate);
 			sb.append("  koff ").append(offRate);
@@ -908,6 +916,70 @@ public class LangevinLngvWriter {
 		return;
 	}
 
+	public static void writeSpatialInformation(GeometrySpec geometrySpec, StringBuilder sb) {    // SpringSaLaD exporting the time information
+        if (geometrySpec.getDimension() != 3) {
+            throw new RuntimeException("SpringSaLaD requires 3D geometry");
+        }
+        double Lz_intra = 0.09;
+		double Lz_extra = 0.01;
+        for (SubVolume subVolume : geometrySpec.getSubVolumes()) {
+            if (subVolume instanceof AnalyticSubVolume analyticSubvolume) {
+                if (analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Intracellular))) {
+                    var expression = analyticSubvolume.getExpression();
+                    String exp = expression.infix();
+                    StringTokenizer st = new StringTokenizer(exp, "() ", false);
+                    while (st.hasMoreTokens()) {
+                        String token = st.nextToken();
+                        if (!"z".contentEquals(token)) {
+                            throw new RuntimeException("Expected 'z' in expression.");
+                        }
+                        token = st.nextToken();
+                        if (!"<".contentEquals(token)) {
+                            throw new RuntimeException("Expected '<' in expression.");
+                        }
+                        token = st.nextToken();
+                        try {
+                            Lz_intra = Double.valueOf(token);
+                        } catch (NumberFormatException e) {
+                            throw new RuntimeException("Expected a 'double' number.");
+                        }
+                    }
+
+                } else if (analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Extracellular))) {
+                    var expression = analyticSubvolume.getExpression();
+                    if (!expression.isNumeric()) {
+                        throw new RuntimeException("Numeric expression expected.");
+                    }
+                    String exp = expression.infix();
+                    if (!Double.toString(geometrySpec.getExtent().getZ()).contentEquals(exp)) {
+                        throw new RuntimeException("Extent on 'z' must match the analytic subvolume size.");
+                    }
+                } else {
+                    throw new RuntimeException("Unexpected SubVolume encountered.");
+                }
+            } else {
+                throw new RuntimeException("SpringSaLaD requires Analytic geometry");
+            }
+        }
+		Lz_extra = geometrySpec.getExtent().getZ() - Lz_intra;
+
+		sb.append("L_x: " + geometrySpec.getExtent().getX());        // 0.1
+        sb.append("\n");
+        sb.append("L_y: " + geometrySpec.getExtent().getY());
+        sb.append("\n");
+        sb.append("L_z_out: " + Lz_extra);		// 0.01
+        sb.append("\n");
+        sb.append("L_z_in: " + Lz_intra);		// 0.09
+        sb.append("\n");
+        sb.append("Partition Nx: 10");			// TODO: make number of partitions on each axes part of Langevin Simulations Options
+        sb.append("\n");
+        sb.append("Partition Ny: 10");
+        sb.append("\n");
+        sb.append("Partition Nz: 10");
+        sb.append("\n");
+        return;
+    }
+
 	public static void writeMoleculeCounters(StringBuilder sb) {
 		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
 			if(SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
@@ -940,6 +1012,9 @@ public class LangevinLngvWriter {
 		for (Map.Entry<LangevinParticleJumpProcess,SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
 			if(lpjp.getSubtype() == ReactionRuleSpec.Subtype.BINDING) {
+				if(lpjp.getName().endsWith("_reverse")) {
+					continue;
+				}
 				sb.append("'").append(lpjp.getName()).append("' : ")
 						.append("Counted");
 				sb.append("\n");

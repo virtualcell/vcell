@@ -1,24 +1,17 @@
 package org.vcell.sbml;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.sedml.ModelFormat;
-import org.vcell.test.SEDML_VCML_IT;
 
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@RunWith(Parameterized.class)
-@Category({SEDML_VCML_IT.class})
+@Tag("SEDML_VCML_IT")
 public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
-
-	public SEDMLExporterVCMLTest(TestCase testCase){
-		super(testCase);
-	}
 
 	static Set<String> slowTestSet(){
 		Set<String> slowModels = new HashSet<>();
@@ -59,7 +52,6 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 	}
 
 
-	@Parameterized.Parameters
 	public static Collection<TestCase> testCases() {
 		Predicate<String> skipFilter_VCML = (t) ->
 				!outOfMemorySet().contains(t) &&
@@ -81,12 +73,13 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 //		);
 	}
 
-	@Test
-	public void test_sedml_roundtrip() throws Exception {
+	@ParameterizedTest
+	@MethodSource("testCases")
+	public void test_sedml_roundtrip(TestCase testCase) throws Exception {
 		if (knownFaults().containsKey(testCase.filename)) {
 			return; // skip known faults
 		}
-		sedml_roundtrip_common();
+		sedml_roundtrip_common(testCase);
 	}
 
 }

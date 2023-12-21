@@ -182,6 +182,7 @@ public class PropertyLoader {
 	public static final String simdataCacheSizeProperty		= record("vcell.simdataCacheSize",ValueType.GEN);
 
 	public static final String exportBaseURLProperty		= record("vcell.export.baseURL",ValueType.GEN);
+	public static final String s3ExportBaseURLProperty 		= record("vcell.s3.export.baseURL", ValueType.GEN);
 	public static final String exportBaseDirInternalProperty		= record("vcell.export.baseDir.internal",ValueType.DIR);
 	//public static final String exportBaseDirExternalProperty		= record("vcell.export.baseDir.external",ValueType.GEN);
 	public static final String exportMaxInMemoryLimit		= record("vcell.export.maxInMemoryLimit",ValueType.INT);

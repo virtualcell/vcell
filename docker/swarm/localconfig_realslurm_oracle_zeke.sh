@@ -49,11 +49,13 @@ case $VCELL_SITE in
 	ALPHA)
 		_site_port_offset=2
 		_applicationId="1471-8022-1038-5554"
+		VCELL_S3_EXPORT_BASEURL=http://localhost
 		;;
 	TEST)
 		_site_port_offset=3
 		# VCELL_API_PORT_EXTERNAL=8081
 		_applicationId="1471-8022-1038-5555"
+		VCELL_S3_EXPORT_BASEURL=http://localhost
 		;;
 	TEST2)
 		_site_port_offset=4
@@ -192,9 +194,10 @@ VCELL_SIMDATADIR_ARCHIVE_EXTERNAL=/share/apps/vcell12/users
 VCELL_SIMDATADIR_ARCHIVE_INTERNAL=/share/apps/vcell12/users
 VCELL_SIMDATADIR_ARCHIVE_HOST=/media/zeke/DiskDrive/Home/Work/CCAM/TempStorage/users
 VCELL_SIMDATADIR_EXTERNAL=/share/apps/vcell3/users
-VCELL_SIMDATADIR_HOST=/media/zeke/DiskDrive/Home/Work/CCAM/TempStorage/users
+VCELL_SIMDATADIR_HOST=~/Mnts/RemoteVolumes/VCell05/users
 VCELL_SIMDATADIR_SECONDARY_EXTERNAL=/share/apps/vcell3/users
-VCELL_SIMDATADIR_SECONDARY_HOST=~/Mnts/RemoteVolumes/VCell05/users
+VCELL_S3_EXPORT_BASEURL=$VCELL_S3_EXPORT_BASEURL
+VCELL_SIMDATADIR_SECONDARY_HOST=/media/zeke/DiskDrive/Home/Work/CCAM/TempStorage/users
 VCELL_SIMDATADIR_PARALLEL_EXTERNAL=/share/apps/vcell3parallel
 
 VCELL_SITE_CAMEL=${_site_camel}

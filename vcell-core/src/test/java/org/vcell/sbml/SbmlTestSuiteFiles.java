@@ -1,11 +1,13 @@
 package org.vcell.sbml;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.vcell.test.Fast;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -13,8 +15,10 @@ import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@Category(Fast.class)
+
+@Tag("Fast")
 public class SbmlTestSuiteFiles {
 
     private final static int[] allTestCases = IntStream.rangeClosed(1, 1821).toArray();
@@ -82,27 +86,29 @@ public class SbmlTestSuiteFiles {
         }
     }
 
-    @Test(expected = RuntimeException.class)
-    public void test_out_of_bounds_exception() throws URISyntaxException {
-        getSbmlTestCase(10000);
+    @Test
+    public void test_out_of_bounds_exception() {
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            getSbmlTestCase(10000);
+        });
     }
 
     @Test
     public void test_read_sbmlFile() throws URISyntaxException {
         InputStream inputStream = getSbmlTestCase(getSbmlTestSuiteCases()[0]);
-        Assert.assertTrue(inputStream != null);
+        assertNotNull(inputStream);
     }
 
     @Test
     public void test_read_settings() throws FileNotFoundException {
         String textContent = getSbmlTestCaseSettingsAsText(getSbmlTestSuiteCases()[0]);
-        Assert.assertTrue(textContent != null);
+        assertNotNull(textContent);
     }
 
     @Test
     public void test_read_results() throws FileNotFoundException {
         String textContent = getSbmlTestCaseResultsAsCSV(getSbmlTestSuiteCases()[0]);
-        Assert.assertTrue(textContent != null);
+        assertNotNull(textContent);
     }
 
 
