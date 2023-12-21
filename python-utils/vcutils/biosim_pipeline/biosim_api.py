@@ -4,6 +4,7 @@ import os
 from typing import BinaryIO, Union
 
 import requests
+from requests import Response
 from pydantic import BaseModel
 
 from vcutils.biosim_pipeline.data_manager import DataManager
@@ -14,64 +15,60 @@ class _SimulationRunApiRequest(BaseModel):
     name: str  # what does this correspond to?
     simulator: str
     simulatorVersion: str
-    maxTime: int   # in minutes
+    maxTime: int  # in minutes
     # email: Optional[str] = None
     # cpus: Optional[int] = None
     # memory: Optional[int] = None (in GB)
 
 
 def check_run_status(simulation_run: SimulationRun) -> str:
-    getrun = requests.get("https://api.biosimulations.org/runs/" + simulation_run.simulation_id)
-    getrun_dict = getrun.json()
-    result = getrun_dict['status']
+    """
+    This function retrieves the status of a simulation run sent to RunBiosimulations
+    """
+    base_url = str(os.environ.get('API_BASE_URL'))
+    get_run: Response = requests.get(f"{base_url}/runs/" + simulation_run.simulation_id)
+    get_run_dict: dict = get_run.json()
+    result: str = get_run_dict['status']
     return result
 
 
-def run_project(
-        source_omex: SourceOmex,
-        simulator: Simulator,
-        data_manager: DataManager) -> None:
+def run_project(source_omex: SourceOmex, simulator: Simulator, data_manager: DataManager) -> None:
     """
-    This function runs the project on biosimulations.
+    This function runs the project on RunBiosimulations.
     """
-    runAPI = str(os.environ.get('API_BASE_URL')) + '/runs'
-    runAppBaseUrl = str(os.environ.get('RUN_APP_BASE_URL'))
+    run_api: str = str(os.environ.get('API_BASE_URL')) + '/runs'
+    run_app_base_url: str = str(os.environ.get('RUN_APP_BASE_URL'))
 
-    simulation_run_request = _SimulationRunApiRequest(
+    simulation_run_request: _SimulationRunApiRequest = _SimulationRunApiRequest(
         name=source_omex.project_id,
         simulator=simulator,
         simulatorVersion='latest',
         maxTime=600,
     )
 
-    print(source_omex.omex_file)
-    with open(source_omex.omex_file, 'rb') as omex_file_handle:
-        multipart_form_data: dict[str, Union[tuple[str, BinaryIO],  tuple[None, str]]] = {
+    print(source_omex.omex_file_path)
+    with open(source_omex.omex_file_path, 'rb') as omex_file_handle:
+        multipart_form_data: dict[str, Union[tuple[str, BinaryIO], tuple[None, str]]] = {
             'file': (source_omex.project_id + '.omex', omex_file_handle),
             'simulationRun': (None, simulation_run_request.json()),
         }
-        req = requests.post(runAPI, files=multipart_form_data)
+        req = requests.post(run_api, files=multipart_form_data)
         req.raise_for_status()
         res = req.json()
 
-    simulation_id = res["id"]
-    """
-    simulator: Simulator
-    simulator_version: str
-    simulation_id: str
-    project_id: str
-    status: Optional[str] = "Unknown"
-    """
+    simulator_version: str = res['simulatorVersion']
+    simulation_id: str = res["id"]
+    status: str = res['status']
     data_manager.write_run(SimulationRun(
-        simulator=simulator,
-        simulator_version=res['simulatorVersion'],
-        simulation_id=simulation_id,
-        project_id=source_omex.project_id,
-        status=res['status']
+        simulator=simulator,  # simulator: Simulator
+        simulator_version=simulator_version,  # simulator_version: str
+        simulation_id=simulation_id,  # simulation_id: str
+        project_id=source_omex.project_id,  # project_id: str
+        status=status  # status: Optional[str] = "Unknown"
     ))
 
     print("Ran " + source_omex.project_id + " on biosimulations with simulation id: " + simulation_id)
-    print("View:", runAppBaseUrl + "/runs/" + simulation_id)
+    print("View:", run_app_base_url + "/runs/" + simulation_id)
 
 
 def publish_project(data_manager: DataManager, run: SimulationRun, overwrite: bool = False) -> None:
@@ -93,10 +90,11 @@ def publish_project(data_manager: DataManager, run: SimulationRun, overwrite: bo
         "Authorization": f"{token}"
     }
     print(run.project_id, "publishing")
-    getproj = requests.get("https://api.biosimulations.org/projects/" + run.project_id, headers=headers)
-    if getproj.status_code == 404:
+    base_url = str(os.environ.get('API_BASE_URL'))
+    get_proj: Response = requests.get(f"{base_url}/projects/" + run.project_id, headers=headers)
+    if get_proj.status_code == 404:
         req = requests.post(
-            "https://api.biosimulations.org/projects/" + run.project_id,
+            f"{base_url}/projects/" + run.project_id,
             json=simulation_publish_data, headers=headers)
         req.raise_for_status()
         data_manager.write_project(BiosimulationsProject(
@@ -105,7 +103,7 @@ def publish_project(data_manager: DataManager, run: SimulationRun, overwrite: bo
         ))
     elif overwrite:
         req = requests.put(
-            "https://api.biosimulations.org/projects/" + run.project_id,
+            f"{base_url}/projects/" + run.project_id,
             json=simulation_publish_data, headers=headers)
         req.raise_for_status()
         data_manager.write_project(BiosimulationsProject(
@@ -136,3 +134,16 @@ def get_token() -> str:
     return token
 
 
+def get_projects(*args: str) -> list[dict]:
+    base_url: str = str(os.environ.get('API_BASE_URL'))
+    project_query: str = f'{base_url}/projects/'
+    projects: list[dict] = requests.get(project_query).json()
+    if len(args) < 1:
+        return projects
+    arg_set = set(args)
+    projects_to_pull: list[dict] = []
+    for project in projects:
+        project_id: str = project["id"]
+        if project_id not in arg_set:
+            continue
+        projects_to_pull.append(project)

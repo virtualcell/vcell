@@ -75,7 +75,7 @@ class DataManager(object):
                 continue
             omex_file = self.omex_src_dir / str(omex_file_name)
             project_id = _get_project_name(omex_file)
-            source_omex_archives.append(SourceOmex(omex_file=omex_file, project_id=project_id))
+            source_omex_archives.append(SourceOmex(omex_file_path=omex_file, project_id=project_id))
         return source_omex_archives
 
     def write_run(self, simulation_run: SimulationRun) -> None:

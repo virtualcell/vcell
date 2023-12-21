@@ -11,12 +11,12 @@ class BiosimulationsProject(BaseModel):
 
 
 class Simulator(str, Enum):
-    tellurium = "tellurium",
-    copasi = "copasi",
-    amici = "amici",
-    vcell = "vcell",
-    pysces = "pysces",
-    libsbmlsim = "libsbmlsim"
+    tellurium: str = "tellurium",
+    copasi: str = "copasi",
+    amici: str = "amici",
+    vcell: str = "vcell",
+    pysces: str = "pysces",
+    libsbmlsim: str = "libsbmlsim"
 
 
 class SimulationRun(BaseModel):
@@ -29,7 +29,7 @@ class SimulationRun(BaseModel):
 
 class SourceOmex(BaseModel):
     project_id: str
-    omex_file: Path
+    omex_file_path: Path
 
 
 class SimulatorComparison(BaseModel):
