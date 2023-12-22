@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.IOException;
 
 import cbit.vcell.math.MathException;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SolverException;
@@ -34,7 +34,7 @@ public class AdamsMoultonFiveSolver extends AdamsSolver {
  * @param valueVectorCount int
  * @param temporaryVectorCount int
  */
-public AdamsMoultonFiveSolver(SimulationTask simTask, File directory)  throws SolverException {
+public AdamsMoultonFiveSolver(StandardSimulationTask simTask, File directory)  throws SolverException {
 	super(simTask, directory, 2, 5);
 }
 protected void initialize() throws SolverException {

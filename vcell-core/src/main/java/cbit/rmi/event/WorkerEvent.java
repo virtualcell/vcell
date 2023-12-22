@@ -12,9 +12,9 @@ package cbit.rmi.event;
 
 import org.vcell.util.document.User;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.server.HtcJobID;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -69,11 +69,11 @@ public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0,
 //	this(eventType0, source, simJob.getVCDataIdentifier().getVcSimID(), simJob.getJobIndex(), hostName0, 0, progress0, timePoint0, message);
 //}
 //
-public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, Double progress0, Double timePoint0, SimulationMessage message) {
+public WorkerEvent(int eventType0, Object source, StandardSimulationTask simTask, String hostName0, Double progress0, Double timePoint0, SimulationMessage message) {
 	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), progress0, timePoint0, message);
 }
 
-public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, SimulationMessage message) {
+public WorkerEvent(int eventType0, Object source, StandardSimulationTask simTask, String hostName0, SimulationMessage message) {
 	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), null, null, message);
 }
 
@@ -180,7 +180,7 @@ public boolean isIntendedFor(User user){
 /**
  * Insert the method's description here.
  * Creation date: (12/31/2003 12:56:45 PM)
- * @return cbit.vcell.solver.SimulationInfo
+ * @return cbit.vcell.solver.simulation.SimulationInfo
  */
 public VCSimulationDataIdentifier getVCSimulationDataIdentifier() {
 	return new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);

@@ -36,7 +36,7 @@ import cbit.vcell.math.MathSymbolTableFactory;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.xml.merge.XmlTreeDiff;

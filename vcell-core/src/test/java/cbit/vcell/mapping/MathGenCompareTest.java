@@ -6,7 +6,7 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;

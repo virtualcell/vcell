@@ -22,6 +22,9 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.optimization.ProfileData;
@@ -65,7 +68,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics.KineticsParameter;
@@ -713,7 +716,7 @@ public class FRAPStudy implements Matchable{
 		}
 		
 		int jobIndex = 0;
-		SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
+		StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
 		SolverUtilities.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 		//if we need to check steady state, do the following two lines
 		if(bCheckSteadyState)
@@ -773,7 +776,7 @@ public class FRAPStudy implements Matchable{
 			}
 			
 			int jobIndex = 0;
-			SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
+			StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
 			//if we need to check steady state, do the following two lines
 			if(bCheckSteadyState)
 			{

@@ -29,12 +29,12 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -62,7 +62,7 @@ public abstract class DefaultODESolver extends AbstractJavaSolver implements ODE
     private transient RateSensitivity rateSensitivity = null;
     private transient Jacobian jacobian = null;
 
-    public DefaultODESolver(SimulationTask simTask, File directory, int valueVectorCount) throws SolverException{
+    public DefaultODESolver(StandardSimulationTask simTask, File directory, int valueVectorCount) throws SolverException{
         super(simTask, directory);
         if(simTask.getSimulation().isSpatial()){
             throw new SolverException("Cannot use DefaultODESolver on spatial simulation");

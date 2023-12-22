@@ -14,7 +14,7 @@ import org.vcell.solver.comsol.service.ComsolService;
 import org.vcell.solver.comsol.service.ComsolServiceFactory;
 import org.vcell.vis.vismesh.thrift.VisMesh;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData.SolverDataType;
@@ -32,7 +32,7 @@ public class ComsolSolver extends AbstractSolver {
 	private double progress = 0.0;
 	private double time = 0.0;
 
-	public ComsolSolver(SimulationTask simTask, File directory) throws SolverException {
+	public ComsolSolver(StandardSimulationTask simTask, File directory) throws SolverException {
 		super(simTask, directory);
 	}
 

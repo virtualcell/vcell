@@ -23,7 +23,7 @@ import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.ClientRequestManager.CallAction;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)

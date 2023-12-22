@@ -12,7 +12,7 @@ package cbit.vcell.solver.ode;
 
 import java.io.File;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.SolverException;
 /**
  * Insert the class' description here.
@@ -29,7 +29,7 @@ public abstract class RungeKuttaSolver extends DefaultODESolver {
  * @param valueVectorCount int
  * @param temporaryVectorCount int
  */
-public RungeKuttaSolver(SimulationTask simTask, File directory, int valueVectorCount, int workArrayCount)  throws SolverException {
+public RungeKuttaSolver(StandardSimulationTask simTask, File directory, int valueVectorCount, int workArrayCount)  throws SolverException {
 	super(simTask, directory, valueVectorCount);
 	fieldWorkArrayCount = workArrayCount;
 }

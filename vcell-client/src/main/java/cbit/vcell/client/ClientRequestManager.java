@@ -56,7 +56,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
-import com.google.gson.stream.JsonWriter;
 import cbit.vcell.export.server.N5Specs;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.GsonBuilder;
@@ -205,8 +204,8 @@ import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.simdata.VtkManager;
 import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.test.MathTestingUtilities;

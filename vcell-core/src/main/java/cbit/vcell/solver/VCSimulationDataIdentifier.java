@@ -10,6 +10,8 @@
 
 package cbit.vcell.solver;
 
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
 

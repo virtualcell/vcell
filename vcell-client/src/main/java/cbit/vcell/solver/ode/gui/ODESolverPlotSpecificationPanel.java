@@ -23,11 +23,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Vector;
 
-import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -40,7 +37,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 
-import org.sbml.jsbml.UnitDefinition;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.gui.CollapsiblePanel;
 
@@ -60,11 +56,9 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.DataSymbolMetadata;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
-import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
-import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.solver.simulation.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.simulation.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.util.ColumnDescription;
-import ncsa.hdf.object.HObject;
 
 /**
  * Insert the type's description here.  What we want to do with this

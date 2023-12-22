@@ -14,10 +14,10 @@ import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 import org.vcell.vmicro.workflow.data.LocalWorkspace;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -66,7 +66,7 @@ public class RunSimulation2DOp {
 			ClientTaskStatusSupport progressListener) throws Exception{
 
 			int jobIndex = 0;
-			SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, null),0);
+			StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(sim,jobIndex, null),0);
 			SolverUtilities.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 			
 			FVSolverStandalone fvSolver = new FVSolverStandalone(simTask,simulationDataDir,false);		

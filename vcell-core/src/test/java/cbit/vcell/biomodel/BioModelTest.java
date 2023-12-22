@@ -17,7 +17,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelTest;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (11/14/00 5:56:27 PM)

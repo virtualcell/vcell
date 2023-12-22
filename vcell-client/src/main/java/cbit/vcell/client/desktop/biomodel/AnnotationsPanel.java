@@ -79,9 +79,7 @@ import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.BioModelCellRenderer;
-import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
@@ -89,7 +87,6 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 /**

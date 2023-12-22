@@ -20,7 +20,7 @@ import org.vcell.solver.nfsim.NFSimSolver;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.ode.AdamsMoultonFiveSolver;
@@ -49,7 +49,7 @@ public class SolverFactory {
  */
 	
 	private interface Maker {
-		Solver make(SimulationTask task, File userDir, File parallelWorkingDirectory, boolean messaging) throws SolverException;
+		Solver make(StandardSimulationTask task, File userDir, File parallelWorkingDirectory, boolean messaging) throws SolverException;
 	}
 	
 	private static final Map<SolverDescription,Maker> FACTORY = new HashMap<SolverDescription, SolverFactory.Maker>( );
@@ -62,7 +62,7 @@ public class SolverFactory {
 			FACTORY.put(SolverDescription.VCellPetsc, fv); 
 			Maker chomboMaker = new Maker(){
 				@Override
-				public Solver make(SimulationTask t, File userDir, File parallelWorkingDir, boolean m) throws SolverException {
+				public Solver make(StandardSimulationTask t, File userDir, File parallelWorkingDir, boolean m) throws SolverException {
 					if (t.getSimulation().getSolverTaskDescription().isParallel()){
 						File workingDir = parallelWorkingDir;
 						File destinationDirectory = userDir;
@@ -96,13 +96,13 @@ public class SolverFactory {
 		FACTORY.put(SolverDescription.Comsol, (t,d,pwd,m) -> new ComsolSolver(t, d) ); 
 	}
 	
-public static Solver createSolver(File userDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
+public static Solver createSolver(File userDir, StandardSimulationTask simTask, boolean bMessaging) throws SolverException {
 	{
 		return createSolver(userDir, null, simTask, bMessaging);
 	}
 }
 
-public static Solver createSolver(File userDir, File parallelDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
+public static Solver createSolver(File userDir, File parallelDir, StandardSimulationTask simTask, boolean bMessaging) throws SolverException {
 	SolverDescription solverDescription = simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription();
 
 	File simTaskFile = new File(userDir,simTask.getSimulationJobID()+"_"+simTask.getTaskID()+".simtask.xml");

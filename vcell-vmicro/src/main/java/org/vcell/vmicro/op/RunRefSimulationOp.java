@@ -6,6 +6,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -33,10 +36,8 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.ImageSubVolume;
-import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.SurfaceClass;
 import cbit.vcell.mapping.FeatureMapping;
@@ -44,7 +45,7 @@ import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
@@ -52,9 +53,7 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.server.SolverStatus;
-import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 
 public class RunRefSimulationOp {
@@ -140,7 +139,7 @@ public class RunRefSimulationOp {
 			}
 			
 			int jobIndex = 0;
-			SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
+			StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
 			SolverUtilities.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 			
 			//if we need to check steady state, do the following two lines

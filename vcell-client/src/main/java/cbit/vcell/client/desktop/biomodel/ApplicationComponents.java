@@ -13,8 +13,6 @@ import java.awt.Component;
 import java.util.*;
 import java.util.Map.Entry;
 
-import org.vcell.util.BeanUtils;
-
 import cbit.vcell.client.BioModelWindowManager;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -22,7 +20,7 @@ import cbit.vcell.client.ClientSimManager;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * Insert the type's description here.

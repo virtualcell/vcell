@@ -24,12 +24,12 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.NonspatialStochHybridOptions;
 import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
@@ -63,7 +63,7 @@ public class HybridSolver extends SimpleCompiledSolver {
 	private int integratorType = EMIntegrator;
 
 
-public HybridSolver(SimulationTask simTask, java.io.File directory, int type, boolean b_Msging) throws cbit.vcell.solver.SolverException {
+public HybridSolver(StandardSimulationTask simTask, java.io.File directory, int type, boolean b_Msging) throws cbit.vcell.solver.SolverException {
 	super(simTask, directory, b_Msging);
 	integratorType = type;
 }

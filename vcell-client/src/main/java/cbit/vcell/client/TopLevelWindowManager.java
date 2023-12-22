@@ -61,8 +61,8 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.simdata.DataEvent;
 import cbit.vcell.simdata.DataListener;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 /**

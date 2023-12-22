@@ -14,7 +14,8 @@ import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.math.*;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.*;
-import jscl.math.function.Exp;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
@@ -22,7 +23,6 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext.ContextType;
 
 import java.util.*;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -504,7 +504,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
      * Insert the method's description here.
      * Creation date: (9/30/2004 8:48:43 PM)
      *
-     * @return cbit.vcell.solver.Simulation
+     * @return cbit.vcell.solver.simulation.Simulation
      */
     public Simulation getSimulation(){
         return simulation;
@@ -818,9 +818,9 @@ public class MathOverrides implements Matchable, java.io.Serializable {
      * Insert the method's description here.
      * Creation date: (9/30/2004 8:48:43 PM)
      *
-     * @param newSimulation cbit.vcell.solver.Simulation
+     * @param newSimulation cbit.vcell.solver.simulation.Simulation
      */
-    void setSimulation(Simulation newSimulation){
+    public void setSimulation(Simulation newSimulation){
         simulation = newSimulation;
     }
 
@@ -833,7 +833,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
         return (vector);
     }
 
-    void updateFromMathDescription(boolean bTransformUnits){
+    public void updateFromMathDescription(boolean bTransformUnits){
         MathDescription mathDescription = getSimulation().getMathDescription();
         //
         // get list of names of constants in this math

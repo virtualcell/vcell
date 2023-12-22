@@ -12,10 +12,10 @@ package cbit.vcell.solver.ode;
 import java.io.File;
 import java.io.IOException;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.UserStopException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -41,7 +41,7 @@ public abstract class AbstractJavaSolver extends AbstractSolver {
 /**
  * AbstractIntegrator constructor comment.
  */
-public AbstractJavaSolver(SimulationTask simTask, File directory) throws SolverException {
+public AbstractJavaSolver(StandardSimulationTask simTask, File directory) throws SolverException {
 	super(simTask, directory);
 }
 

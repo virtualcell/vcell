@@ -18,6 +18,10 @@ import java.io.StringWriter;
 import javax.xml.stream.XMLStreamException;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import org.jdom.CDATA;
 import org.jdom.Element;
 import org.sbml.jsbml.SBMLException;
@@ -37,7 +41,7 @@ import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.opt.Constraint;
@@ -222,7 +226,7 @@ public class OptXmlWriter {
 			objectiveFunctionElement.addContent(modelElement);
 			
 			Simulation tempSim = new Simulation(pdeObjectiveFunction.getMathDescription(), null);
-			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(tempSim, 0); 
+			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(tempSim, 0);
 			//
 			// write data/model variable mappings
 			//
@@ -392,7 +396,7 @@ public class OptXmlWriter {
 			} catch (Exception e) {
 				throw new SolverException(e.getMessage(), e);
 			}	
-			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, pdeObjectiveFunction.getFieldDataIDSs()),0);
+			StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(simulation, 0, pdeObjectiveFunction.getFieldDataIDSs()),0);
 			
 			StringWriter simulationInputStringWriter = new StringWriter();
 			FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(new PrintWriter(simulationInputStringWriter,true), simTask, resampledGeometry, pdeObjectiveFunction.getWorkingDirectory());		

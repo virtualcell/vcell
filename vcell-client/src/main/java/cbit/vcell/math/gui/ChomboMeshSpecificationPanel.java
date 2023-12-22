@@ -30,7 +30,7 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.vcell.geometry.ChomboGeometryException;
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 public class ChomboMeshSpecificationPanel extends CollapsiblePanel {
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();

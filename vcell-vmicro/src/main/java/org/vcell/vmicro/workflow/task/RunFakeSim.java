@@ -9,7 +9,7 @@ import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 public class RunFakeSim extends Task {
 	

@@ -9,6 +9,8 @@
  */
 
 package cbit.vcell.biomodel;
+import cbit.vcell.solver.simulation.Simulation;
+
 import java.util.Hashtable;
 /**
  * Insert the type's description here.
@@ -23,7 +25,7 @@ public class VCellNames {
 		hash.put(cbit.vcell.biomodel.BioModel.class, "BioModel");
 		hash.put(cbit.vcell.mapping.SimulationContext.class, "Application");
 		hash.put(cbit.vcell.model.Model.class, "Physiology");
-		hash.put(cbit.vcell.solver.Simulation.class, "Simulation");
+		hash.put(Simulation.class, "Simulation");
 	};
 
 /**

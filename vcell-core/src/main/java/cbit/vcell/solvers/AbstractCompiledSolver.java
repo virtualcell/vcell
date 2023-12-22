@@ -10,12 +10,13 @@
 
 package cbit.vcell.solvers;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solver.simulation.Simulation;
 import org.vcell.util.document.User;
 
 import java.io.*;
@@ -46,7 +47,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     /**
      * AbstractPDESolver constructor comment.
      */
-    public AbstractCompiledSolver(SimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
+    public AbstractCompiledSolver(StandardSimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
         super(simTask, directory);
         this.bMessaging = bMessaging;
         setCurrentTime(simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());

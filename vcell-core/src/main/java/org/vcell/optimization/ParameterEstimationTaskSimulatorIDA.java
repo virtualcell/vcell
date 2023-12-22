@@ -4,6 +4,10 @@ import java.util.Random;
 import java.util.Vector;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.User;
@@ -13,7 +17,7 @@ import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.RowColumnResultSet;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSpec;
@@ -44,7 +48,7 @@ public class ParameterEstimationTaskSimulatorIDA {
 		for (int i = 0; i < paramNames.length; i++){
 			mathOverrides.putConstant(new Constant(paramNames[i],new Expression(paramValues[i])));
 		}
-		SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
+		StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(simulation, 0, null),0);
 		IDASolverStandalone idaSolver = new IDASolverStandalone(simTask, ResourceUtil.getLocalSimDir("temp"), false);
 		idaSolver.runSolver();	//startSolver();
 		try {

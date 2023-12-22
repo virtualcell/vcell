@@ -2,6 +2,8 @@ package cbit.vcell.solver;
 
 import java.util.TreeMap;
 
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import org.vcell.util.document.SimulationVersion;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;

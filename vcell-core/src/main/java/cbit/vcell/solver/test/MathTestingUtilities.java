@@ -14,7 +14,7 @@ package cbit.vcell.solver.test;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.vcell.util.*;
 import org.vcell.util.document.VCDocument;
 
@@ -68,8 +68,8 @@ import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.SensVariable;
 import cbit.vcell.solvers.CartesianMesh;

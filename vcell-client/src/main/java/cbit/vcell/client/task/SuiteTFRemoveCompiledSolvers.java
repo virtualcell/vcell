@@ -16,7 +16,7 @@ import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import edu.uchc.connjur.wb.LineStringBuilder;
 

@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.SimDataConstants;
@@ -34,7 +34,7 @@ public class AvgStochMultiTrial  implements PortableCommand{
 	@Override
 	public int execute() {
 		try {
-			SimulationTask simTask = XmlHelper.XMLToSimTask(xmlSimTask);
+			StandardSimulationTask simTask = XmlHelper.XMLToSimTask(xmlSimTask);
 			String s = avgAll(simTask, new File(primaryUserDirInternal));
 			String allAvgIDA = ResourceUtil.forceUnixPath(new File(primaryUserDirInternal ,simTask.getSimulationJobID()+SimDataConstants.IDA_DATA_EXTENSION).toString());
 			FileUtils.write(new File(allAvgIDA), s, Charset.forName(StandardCharsets.UTF_8.name()));
@@ -50,7 +50,7 @@ public class AvgStochMultiTrial  implements PortableCommand{
 		return exc;
 	}
 
-	public static String avgAll(SimulationTask simTask, File primaryUserDirInternal) throws Exception{
+	public static String avgAll(StandardSimulationTask simTask, File primaryUserDirInternal) throws Exception{
 		String idaSlurmRoot = simTask.getSimulationJobID()+SimDataConstants.IDA_DATA_EXTENSION;
 		Exception lastError = null;
 		int doCnt = 0;

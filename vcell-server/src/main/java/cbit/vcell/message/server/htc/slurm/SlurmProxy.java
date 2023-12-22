@@ -18,7 +18,7 @@ import cbit.vcell.message.server.htc.HtcException;
 import cbit.vcell.message.server.htc.HtcJobNotFoundException;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
@@ -421,7 +421,7 @@ public class SlurmProxy extends HtcProxy {
 		
 	}
 
-	SbatchSolverComponents generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
+	SbatchSolverComponents generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, StandardSimulationTask simTask) {
 		final boolean isParallel = ncpus > 1;
 
 		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
@@ -552,8 +552,8 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 
-	private void sendFailMsgScript(SimulationTask simTask, LineStringBuilder lsb, String jmshost_sim_external,
-			String jmsport_sim_external, String jmsuser, String jmspswd) {
+	private void sendFailMsgScript(StandardSimulationTask simTask, LineStringBuilder lsb, String jmshost_sim_external,
+                                   String jmsport_sim_external, String jmsuser, String jmspswd) {
 		lsb.write("#BEGIN---------SlurmProxy.generateScript():sendFailureMsg----------");
 		lsb.write("sendFailureMsg() {");
 		lsb.write("  echo ${container_prefix} " +
@@ -810,7 +810,7 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException {
+	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, StandardSimulationTask simTask, File primaryUserDirExternal) throws ExecutableException {
 		try {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);

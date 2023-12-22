@@ -272,7 +272,7 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 
 /**
  * This method was created in VisualAge.
- * @param simInfo cbit.vcell.solver.SimulationInfo
+ * @param simInfo cbit.vcell.solver.simulation.SimulationInfo
  * @exception org.vcell.util.DataAccessException The exception description.
  * @throws RemoteProxyException 
  */

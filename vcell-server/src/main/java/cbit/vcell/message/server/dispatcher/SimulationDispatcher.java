@@ -33,7 +33,7 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.*;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import com.google.gson.Gson;
 import com.google.inject.Guice;

@@ -41,7 +41,7 @@ import cbit.vcell.server.SimulationDocumentLink;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.SimulationMetadata;
+import cbit.vcell.solver.simulation.SimulationMetadata;
 
 /**
  * Insert the type's description here.

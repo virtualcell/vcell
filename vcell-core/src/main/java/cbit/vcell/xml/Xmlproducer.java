@@ -255,7 +255,7 @@ import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.NonspatialStochHybridOptions;
 import cbit.vcell.solver.NonspatialStochSimOptions;
 import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SundialsPdeSolverOptions;
@@ -1652,7 +1652,7 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	
 	//Add Simulations to the simulationSpec
 	if (bioModel!=null){
-		cbit.vcell.solver.Simulation simulations[] = bioModel.getSimulations(param);
+		Simulation simulations[] = bioModel.getSimulations(param);
 		for (int i=0;simulations!=null && i<simulations.length;i++){
 			simulationcontext.addContent(getXML(simulations[i]));
 		}
@@ -3630,7 +3630,7 @@ public Element getXML(MathModel param) throws XmlParseException{
 	}
 	
 	//Add Simulations
-	cbit.vcell.solver.Simulation[] arraysim = param.getSimulations();
+	Simulation[] arraysim = param.getSimulations();
 	if (arraysim != null) {
 		for (int i=0 ; i< arraysim.length ; i++) {
 			mathmodel.addContent( getXML(arraysim[i]) );
@@ -4789,7 +4789,7 @@ private Element getXML(NonspatialStochSimOptions stochOpts, NonspatialStochHybri
  * This method returns a XML representation of a Simulation object.
  * Creation date: (3/2/2001 10:42:35 PM)
  * @return Element
- * @param param cbit.vcell.solver.Simulation
+ * @param param cbit.vcell.solver.simulation.Simulation
  */
 Element getXML(Simulation param) {
 	Element simulationElement = new Element(XMLTags.SimulationTag);

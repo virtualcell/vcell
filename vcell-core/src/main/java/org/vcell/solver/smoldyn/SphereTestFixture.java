@@ -15,7 +15,7 @@ import cbit.vcell.geometry.concept.ThreeSpacePointImmutable;
 import cbit.vcell.geometry.surface.IcoSphere;
 import cbit.vcell.geometry.surface.Polygon;
 import cbit.vcell.geometry.surface.Triangle;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 /**
  * class to replace Virtual Cell tessellation of surface with spherical.

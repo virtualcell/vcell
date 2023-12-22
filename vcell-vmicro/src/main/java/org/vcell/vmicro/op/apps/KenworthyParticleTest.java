@@ -33,7 +33,7 @@ import org.vcell.vmicro.workflow.data.OptModelKenworthyUniformDisk3P;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.math.CSV;
 import cbit.vcell.math.RowColumnResultSet;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 public class KenworthyParticleTest {
 

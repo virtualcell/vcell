@@ -1,6 +1,6 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.solver.SimulationModelInfo;
+import cbit.vcell.solver.simulation.SimulationModelInfo;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
 

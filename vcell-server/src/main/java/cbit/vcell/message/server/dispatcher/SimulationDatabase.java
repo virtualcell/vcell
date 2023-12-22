@@ -20,8 +20,8 @@ import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.StateInfo;
 import cbit.vcell.server.UpdateSynchronizationException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 
 public interface SimulationDatabase {
 

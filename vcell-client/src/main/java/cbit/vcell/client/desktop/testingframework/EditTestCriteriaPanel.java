@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.desktop.testingframework;
 
+import cbit.vcell.solver.simulation.SimulationInfo;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
 
@@ -19,7 +20,7 @@ import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.numericstest.TestCriteriaNewBioModel;
 import cbit.vcell.numericstest.TestCriteriaNewMathModel;
-import cbit.vcell.solver.SimulationInfo;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/20/2004 1:55:07 PM)
@@ -284,10 +285,10 @@ private org.vcell.util.document.BioModelInfo getbioModelInfo() {
 }
 /**
  * Return the bmAppSimInfo property value.
- * @return cbit.vcell.solver.SimulationInfo
+ * @return cbit.vcell.solver.simulation.SimulationInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.SimulationInfo getbmAppSimInfo() {
+private SimulationInfo getbmAppSimInfo() {
 	// user code begin {1}
 	// user code end
 	return ivjbmAppSimInfo;
@@ -428,7 +429,7 @@ private MathModelInfo getReferenceMathModelInfo() {
 	return fieldReferenceMathModelInfo;
 }
 /**
- * Gets the referenceSimInfo property (cbit.vcell.solver.SimulationInfo) value.
+ * Gets the referenceSimInfo property (cbit.vcell.solver.simulation.SimulationInfo) value.
  * @return The referenceSimInfo property value.
  * @see #setReferenceSimInfo
  */
@@ -906,7 +907,7 @@ private void setbioModelInfo(BioModelInfo newValue) {
 }
 /**
  * Set the bmAppSimInfo to a new value.
- * @param newValue cbit.vcell.solver.SimulationInfo
+ * @param newValue cbit.vcell.solver.simulation.SimulationInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setbmAppSimInfo(SimulationInfo newValue) {
@@ -957,7 +958,7 @@ public void setReferenceMathModelInfo(MathModelInfo referenceMathModelInfo) {
 	firePropertyChange("referenceMathModelInfo", oldValue, referenceMathModelInfo);
 }
 /**
- * Sets the referenceSimInfo property (cbit.vcell.solver.SimulationInfo) value.
+ * Sets the referenceSimInfo property (cbit.vcell.solver.simulation.SimulationInfo) value.
  * @param referenceSimInfo The new value for the property.
  * @see #getReferenceSimInfo
  */

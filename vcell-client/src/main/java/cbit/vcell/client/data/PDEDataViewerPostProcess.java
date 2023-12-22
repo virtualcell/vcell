@@ -64,8 +64,8 @@ import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationModelInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 

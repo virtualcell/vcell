@@ -20,7 +20,7 @@ import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 /**
  * Insert the type's description here.

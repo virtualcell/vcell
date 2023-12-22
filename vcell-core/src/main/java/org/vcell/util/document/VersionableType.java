@@ -25,7 +25,7 @@ public class VersionableType implements java.io.Serializable {
 	public static final VersionableType MathDescription		= new VersionableType(2,"MathDescription", "cbit.vcell.math.MathDescription",false);
 	public static final VersionableType Model				= new VersionableType(3,"Physiology", "cbit.vcell.model.Model",false);
 	public static final VersionableType SimulationContext	= new VersionableType(5,"SimulationSpecification", "cbit.vcell.mapping.SimulationContext",false);
-	public static final VersionableType Simulation			= new VersionableType(6,"Simulation", "cbit.vcell.solver.Simulation",false);
+	public static final VersionableType Simulation			= new VersionableType(6,"Simulation", "cbit.vcell.solver.simulation.Simulation",false);
 	public static final VersionableType BioModelMetaData	= new VersionableType(7,"BioModel", "cbit.vcell.biomodel.BioModelMetaData",true);
 	public static final VersionableType MathModelMetaData	= new VersionableType(8,"MathModel", "cbit.vcell.mathmodel.MathModelMetaData",true);
 /**

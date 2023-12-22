@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.SolverException;
 
@@ -16,7 +16,7 @@ import cbit.vcell.solver.SolverException;
 public abstract class SimpleCompiledSolver extends AbstractCompiledSolver {
 
 
-	public SimpleCompiledSolver(SimulationTask simTask, File directory, boolean bMsging) throws SolverException {
+	public SimpleCompiledSolver(StandardSimulationTask simTask, File directory, boolean bMsging) throws SolverException {
 		super(simTask, directory, bMsging);
 	}
 

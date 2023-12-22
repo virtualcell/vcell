@@ -17,7 +17,7 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.SolverDescription;
 
 

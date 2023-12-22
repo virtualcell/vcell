@@ -13,7 +13,6 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
-import cbit.vcell.modeldb.BioModelDbDriver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
@@ -50,8 +49,8 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.StateInfo;
 import cbit.vcell.server.UpdateSynchronizationException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SimulationMessagePersistent;

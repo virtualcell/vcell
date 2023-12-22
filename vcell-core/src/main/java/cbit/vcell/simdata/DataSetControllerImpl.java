@@ -38,6 +38,7 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputTimeSeriesOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
@@ -3872,7 +3873,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			} catch (IOException e) {
 				throw new RuntimeException(e.getMessage(), e);
 			}
-		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
+		} else {  // assume vcdID instanceof cbit.vcell.solver.simulation.SimulationInfo or a test adapter
 			VCMongoMessage.sendTrace("DataSetControllerImpl.getVCData("+vcdID.getID()+") : creating new SimulationData : <<BEGIN>>");
 			SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
 			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()),simDataAmplistorInfo);

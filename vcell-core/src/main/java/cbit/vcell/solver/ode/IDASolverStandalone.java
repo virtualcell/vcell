@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
@@ -28,7 +28,7 @@ import cbit.vcell.solvers.MathExecutable;
  */
 public class IDASolverStandalone extends SundialsSolver {
 
-public IDASolverStandalone(SimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
+public IDASolverStandalone(StandardSimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
 	super(simTask, directory, bMessaging);
 }
 /**

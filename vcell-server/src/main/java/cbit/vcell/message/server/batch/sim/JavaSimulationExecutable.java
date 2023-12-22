@@ -17,7 +17,7 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ManageUtils;
 import cbit.vcell.message.server.ServerMessagingDelegate;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SolverException;
@@ -37,7 +37,7 @@ public class JavaSimulationExecutable  {
 	String[] arguments = null;
 	
 	private boolean bProgress = true;	
-	private SimulationTask simulationTask = null;
+	private StandardSimulationTask simulationTask = null;
 	private Solver solver = null;
 	private long lastMsgTimeStamp = 0;
 

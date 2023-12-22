@@ -13,7 +13,7 @@ package cbit.vcell.solvers;
 import java.io.File;
 import java.util.Vector;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.ode.CVodeSolverStandalone;
@@ -33,12 +33,12 @@ public class CombinedSundialsSolver extends SimpleCompiledSolver implements ODES
 
 /**
  * LSFSolver constructor comment.
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  * @param directory java.io.File
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public CombinedSundialsSolver(SimulationTask simTask, File directory, boolean bMessaging) throws cbit.vcell.solver.SolverException {
+public CombinedSundialsSolver(StandardSimulationTask simTask, File directory, boolean bMessaging) throws cbit.vcell.solver.SolverException {
 	super(simTask, directory, bMessaging);
 	if (simTask.getSimulation().getMathDescription().hasFastSystems()) {
 		realSolver = new IDASolverStandalone(simTask, directory, bMessaging);

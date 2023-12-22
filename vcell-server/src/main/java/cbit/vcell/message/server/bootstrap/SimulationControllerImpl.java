@@ -43,7 +43,7 @@ import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngine;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimpleJobStatus;
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
@@ -51,8 +51,8 @@ import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.SimulationTaskID;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -116,7 +116,7 @@ public SimulationDatabase getSimulationDatabase(){
  * Insert the method's description here.
  * Creation date: (6/28/01 1:19:54 PM)
  * @return cbit.vcell.solvers.SolverController
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  * @throws RemoteException 
  * @throws JMSException 
  * @throws AuthenticationException 
@@ -126,7 +126,7 @@ public SimulationDatabase getSimulationDatabase(){
  * @throws SolverException 
  * @throws ConfigurationException 
  */
-private LocalSolverController createNewSolverController(SimulationTask simTask) throws FileNotFoundException, DataAccessException, AuthenticationException, SQLException, ConfigurationException, SolverException  {
+private LocalSolverController createNewSolverController(StandardSimulationTask simTask) throws FileNotFoundException, DataAccessException, AuthenticationException, SQLException, ConfigurationException, SolverException  {
 	//
 	// either no appropriate slave server or THIS IS A SLAVE SERVER (can't pass the buck).
 	//
@@ -173,7 +173,7 @@ protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
  * @throws SQLException 
  * @throws FileNotFoundException 
  */
-LocalSolverController getOrCreateSolverController(SimulationTask simTask) throws FileNotFoundException, ConfigurationException, DataAccessException, AuthenticationException, SQLException, SolverException  {
+LocalSolverController getOrCreateSolverController(StandardSimulationTask simTask) throws FileNotFoundException, ConfigurationException, DataAccessException, AuthenticationException, SQLException, SolverException  {
 	Simulation simulation = simTask.getSimulation();
 	VCSimulationIdentifier vcSimID = simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 	if (vcSimID == null){
@@ -263,7 +263,7 @@ public void removeSimulationJobStatusListener(SimulationJobStatusListener listen
 }
 
 private void onSimJobQueue_SimulationTask(VCMessage vcMessage) {
-	SimulationTask simTask = null;
+	StandardSimulationTask simTask = null;
 	try {
 		
 		SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);

@@ -17,15 +17,15 @@ import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingConstants;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellQueue;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 
 public class SimulationTaskMessage {
-	private SimulationTask simTask = null;
+	private StandardSimulationTask simTask = null;
 
-public SimulationTaskMessage(SimulationTask simTask0) {
+public SimulationTaskMessage(StandardSimulationTask simTask0) {
 	super();
 	simTask = simTask0;
 }
@@ -34,7 +34,7 @@ public SimulationTaskMessage(VCMessage message) throws XmlParseException {
 	parse(message);
 }
 
-public SimulationTask getSimulationTask() {
+public StandardSimulationTask getSimulationTask() {
 	return simTask;
 }
 

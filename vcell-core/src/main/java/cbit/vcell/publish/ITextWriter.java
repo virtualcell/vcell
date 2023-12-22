@@ -128,7 +128,7 @@ import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.units.VCUnitDefinition;

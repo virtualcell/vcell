@@ -18,18 +18,16 @@ import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.server.SolverFileWriter;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.StringTokenizer;
 
-import org.apache.commons.io.FileUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
@@ -56,7 +54,7 @@ public class NFSimFileWriter extends SolverFileWriter
 //	private RandomDataGenerator dist = new RandomDataGenerator();
 	
 	
-public NFSimFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessaging) 
+public NFSimFileWriter(PrintWriter pw, StandardSimulationTask simTask, boolean bMessaging)
 {
 	super(pw, simTask, bMessaging);
 	

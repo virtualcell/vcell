@@ -19,8 +19,8 @@ import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.title.TitleChanger;
 import cbit.vcell.client.title.TitleEvent;
 import cbit.vcell.client.title.TitleListener;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 public class SimulationWindow implements TitleChanger {
@@ -50,7 +50,7 @@ public class SimulationWindow implements TitleChanger {
  * Insert the method's description here.
  * Creation date: (7/20/2004 11:38:49 AM)
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  * @param simOwner cbit.vcell.document.SimulationOwner
  * @param dataViewer cbit.vcell.client.data.DataViewer
  */
@@ -118,7 +118,7 @@ public SimulationOwner getSimOwner() {
 /**
  * Insert the method's description here.
  * Creation date: (7/16/2004 5:16:51 PM)
- * @return cbit.vcell.solver.Simulation
+ * @return cbit.vcell.solver.simulation.Simulation
  */
 public Simulation getSimulation() {
 	return simulation;
@@ -137,7 +137,7 @@ public VCSimulationIdentifier getVcSimulationIdentifier() {
 /**
  * Insert the method's description here.
  * Creation date: (7/16/2004 5:16:51 PM)
- * @param newSimulation cbit.vcell.solver.Simulation
+ * @param newSimulation cbit.vcell.solver.simulation.Simulation
  */
 public void resetSimulation(Simulation newSimulation) {
 	if (getSimulation() != null) {
@@ -162,7 +162,7 @@ private void setSimOwner(SimulationOwner newSimOwner) {
 /**
  * Insert the method's description here.
  * Creation date: (7/16/2004 5:16:51 PM)
- * @param newSimulation cbit.vcell.solver.Simulation
+ * @param newSimulation cbit.vcell.solver.simulation.Simulation
  */
 private void setSimulation(Simulation newSimulation) {
 	simulation = newSimulation;

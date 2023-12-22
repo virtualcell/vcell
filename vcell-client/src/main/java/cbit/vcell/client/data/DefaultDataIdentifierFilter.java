@@ -11,8 +11,8 @@ import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataSymbolMetadata;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
-import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
+import cbit.vcell.solver.simulation.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.simulation.SimulationModelInfo.ModelCategoryType;
 
 public class  DefaultDataIdentifierFilter implements DataIdentifierFilter{
 	private boolean bPostProcessingMode = false;

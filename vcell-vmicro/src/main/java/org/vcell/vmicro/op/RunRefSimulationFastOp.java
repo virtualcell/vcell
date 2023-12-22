@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -51,7 +54,7 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
@@ -377,7 +380,7 @@ public class RunRefSimulationFastOp {
 			}
 			
 			int jobIndex = 0;
-			SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
+			StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(sim,jobIndex, fieldDataIdentifierSpecs),0);
 			SolverUtilities.prepareSolverExecutable(sim.getSolverTaskDescription().getSolverDescription());
 			
 			//if we need to check steady state, do the following two lines

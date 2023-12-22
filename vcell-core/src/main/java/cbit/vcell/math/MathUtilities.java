@@ -11,7 +11,7 @@
 package cbit.vcell.math;
 
 import cbit.vcell.parser.*;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

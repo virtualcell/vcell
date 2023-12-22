@@ -13,7 +13,7 @@ import cbit.vcell.math.VCML;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 public class RefinementRoi implements Serializable, Matchable {
 	public enum RoiType

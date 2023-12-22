@@ -129,10 +129,10 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationModelInfo;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationModelInfo;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 
 @SuppressWarnings("serial")
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{

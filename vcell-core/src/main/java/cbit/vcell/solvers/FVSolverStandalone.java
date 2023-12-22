@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Vector;
 
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.document.SimResampleInfoProvider;
@@ -34,7 +33,7 @@ import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.math.Variable;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
@@ -42,13 +41,12 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 
@@ -78,11 +76,11 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
     public static final int HESM_THROW_EXCEPTION = 1;
     public static final int HESM_OVERWRITE_AND_CONTINUE = 2;
 
-    public FVSolverStandalone(SimulationTask simTask, File userDir, boolean bMsging) throws SolverException{
+    public FVSolverStandalone(StandardSimulationTask simTask, File userDir, boolean bMsging) throws SolverException{
         this(simTask, userDir, userDir, bMsging);
     }
 
-    public FVSolverStandalone(SimulationTask simTask, File userDir, File destinationDirectory, boolean bMsging) throws SolverException{
+    public FVSolverStandalone(StandardSimulationTask simTask, File userDir, File destinationDirectory, boolean bMsging) throws SolverException{
         super(simTask, userDir, bMsging);
         String nullMessageFormat = "`%s` value is unexpectedly null";
         SolverDescription sd = FVSolverStandalone.getSolverDescription(simTask, nullMessageFormat);
@@ -98,9 +96,9 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
 
     }
 
-    private static SolverDescription getSolverDescription(SimulationTask simTask, String nullMessageFormat) throws SolverException{
+    private static SolverDescription getSolverDescription(StandardSimulationTask simTask, String nullMessageFormat) throws SolverException{
         if(simTask == null)
-            throw new NullPointerException(String.format(nullMessageFormat, SimulationTask.class.getName()));
+            throw new NullPointerException(String.format(nullMessageFormat, StandardSimulationTask.class.getName()));
         Simulation sim = simTask.getSimulation();
         if(sim == null) throw new NullPointerException(String.format(nullMessageFormat, Simulation.class.getName()));
         if(!sim.isSpatial()){

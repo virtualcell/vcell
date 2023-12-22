@@ -64,7 +64,7 @@ import cbit.vcell.simdata.DataInfoProvider;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataSymbolMetadata;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.simulation.SimulationModelInfo.DataSymbolMetadataResolver;
 
 /**
  * Insert the type's description here.

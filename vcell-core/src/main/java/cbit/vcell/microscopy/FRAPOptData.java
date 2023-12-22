@@ -34,7 +34,7 @@ import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.VCSimulationDataIdentifier;

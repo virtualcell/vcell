@@ -43,12 +43,9 @@ import org.vcell.sybil.models.miriam.MIRIAMRef;
 import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.sybil.models.miriam.MIRIAMizer;
 import org.vcell.sybil.models.miriam.RefGroup;
-import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
 import org.vcell.util.document.Identifiable;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
 import cbit.vcell.biomodel.meta.registry.Registry;
 import cbit.vcell.biomodel.meta.registry.Registry.Entry;
 import cbit.vcell.mapping.ReactionSpec;
@@ -59,9 +56,8 @@ import cbit.vcell.model.RbmObservable;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 @SuppressWarnings("serial")
 public class VCMetaDataMiriamManager implements MiriamManager, Serializable {

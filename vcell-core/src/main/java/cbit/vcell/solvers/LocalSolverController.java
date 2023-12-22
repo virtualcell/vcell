@@ -20,9 +20,9 @@ import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.WorkerEvent;
 import cbit.rmi.event.WorkerEventListener;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.server.VCellConnection;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -53,7 +53,7 @@ public class LocalSolverController implements SolverListener {
  * @exception java.rmi.RemoteException The exception description.
  * @throws SolverException 
  */
-public LocalSolverController(VCellConnection vcellConnection, SimulationTask simTask, File dataDirectory) throws SolverException {
+public LocalSolverController(VCellConnection vcellConnection, StandardSimulationTask simTask, File dataDirectory) throws SolverException {
 	this.vcConn = vcellConnection;
 	solverControllerImpl = new SolverControllerImpl(vcellConnection, simTask, dataDirectory);
 	solverControllerImpl.getSolver().addSolverListener(this);
@@ -114,7 +114,7 @@ public double getProgress() throws DataAccessException {
 /**
  * getMathDescriptionVCML method comment.
  */
-public SimulationTask getSimulationTask() throws DataAccessException {
+public StandardSimulationTask getSimulationTask() throws DataAccessException {
 	try {
 		return solverControllerImpl.getSimulationTask();
 	}catch (Throwable e){
@@ -164,7 +164,7 @@ public void solverAborted(SolverEvent event) {
 		if (lg.isTraceEnabled()) lg.trace("LocalSolverController Caught solverAborted("+event.getSource().toString()+",error='"+event.getSimulationMessage()+"')");
 		SimulationJob simJob = getSimulationTask().getSimulationJob();
 		if (serialParameterScanJobIndex >= 0) {
-			SimulationTask newSimTask = new SimulationTask(new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
+			StandardSimulationTask newSimTask = new StandardSimulationTask(new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_FAILURE, this, newSimTask, hostname, event.getSimulationMessage()));
 		} else {
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_FAILURE, this, getSimulationTask(), hostname, event.getSimulationMessage()));
@@ -184,7 +184,7 @@ public void solverFinished(SolverEvent event) {
 		if (lg.isTraceEnabled()) lg.trace("LocalSolverController Caught solverFinished("+event.getSource().toString()+")");
 		SimulationJob simJob = getSimulationTask().getSimulationJob();
 		if (serialParameterScanJobIndex >= 0) {
-			SimulationTask newSimTask = new SimulationTask(new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
+			StandardSimulationTask newSimTask = new StandardSimulationTask(new SimulationJob(simJob.getSimulation(), serialParameterScanJobIndex, simJob.getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, newSimTask, hostname, new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));
 		} else {
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, getSimulationTask(), hostname, new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));	
@@ -220,7 +220,7 @@ public void solverProgress(SolverEvent event) {
 		// don't log progress and data events
 		if (System.currentTimeMillis() - timeOfLastProgressMessage > 1000 * getMessagingInterval()) {
 			if (serialParameterScanJobIndex >= 0) {
-				SimulationTask newSimTask = new SimulationTask(new SimulationJob(getSimulationTask().getSimulation(), serialParameterScanJobIndex, getSimulationTask().getSimulationJob().getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
+				StandardSimulationTask newSimTask = new StandardSimulationTask(new SimulationJob(getSimulationTask().getSimulation(), serialParameterScanJobIndex, getSimulationTask().getSimulationJob().getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
 				fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_PROGRESS, this, newSimTask, hostname, new Double(event.getProgress()), new Double(event.getTimePoint()), event.getSimulationMessage()));
 				if (event.getProgress() >= 1) {
 					fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, newSimTask, hostname, new Double(event.getProgress()), new Double(event.getTimePoint()), SimulationMessage.MESSAGE_JOB_COMPLETED));
@@ -244,7 +244,7 @@ public void solverStarting(SolverEvent event) {
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalSolverController Caught solverStarting("+event.getSource().toString()+")");
 		if (serialParameterScanJobIndex >= 0) {
-			SimulationTask newSimTask = new SimulationTask(new SimulationJob(getSimulationTask().getSimulation(), serialParameterScanJobIndex, getSimulationTask().getSimulationJob().getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
+			StandardSimulationTask newSimTask = new StandardSimulationTask(new SimulationJob(getSimulationTask().getSimulation(), serialParameterScanJobIndex, getSimulationTask().getSimulationJob().getFieldDataIdentifierSpecs()),getSimulationTask().getTaskID());
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, newSimTask, hostname, event.getSimulationMessage()));
 		} else {
 			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, getSimulationTask(), hostname, event.getSimulationMessage()));

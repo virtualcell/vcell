@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.solver;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 

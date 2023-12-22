@@ -38,8 +38,8 @@ import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MathOverrides.Element;
 import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.SolverTaskDescription;
 
 /**

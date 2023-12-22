@@ -33,8 +33,6 @@ import cbit.vcell.geometry.GeometryOwner;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.InconsistentDomainException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
@@ -48,7 +46,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.OutputFunctionContext;
-import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationOwner;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)

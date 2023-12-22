@@ -11,7 +11,7 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.matlab.MatlabOdeFileCoder;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 @SuppressWarnings("serial")
 public class MatlabExtensionFilter extends SelectorExtensionFilter {

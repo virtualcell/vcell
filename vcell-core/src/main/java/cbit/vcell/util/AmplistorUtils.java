@@ -44,7 +44,7 @@ import org.vcell.util.document.KeyValue;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 public class AmplistorUtils {
 	private final static Logger lg = LogManager.getLogger(AmplistorUtils.class);

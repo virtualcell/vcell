@@ -35,8 +35,8 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.VtkManager;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.xml.merge.XmlTreeDiff;
 import cbit.xml.merge.gui.TMLPanel;
 /**
@@ -247,7 +247,7 @@ void revertToSaved(DocumentWindowManager documentWindowManager);
  * Insert the method's description here.
  * Creation date: (6/2/2004 2:23:41 AM)
  * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  */
 SimulationStatus runSimulation(SimulationInfo simInfo, int numSimulationScanJobs) throws DataAccessException;
 
@@ -256,7 +256,7 @@ SimulationStatus runSimulation(SimulationInfo simInfo, int numSimulationScanJobs
  * Insert the method's description here.
  * Creation date: (6/2/2004 2:23:41 AM)
  * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  */
 void runSimulations(ClientSimManager clientSimManager, Simulation[] simulations);
 
@@ -320,7 +320,7 @@ public void startExport(
  * Insert the method's description here.
  * Creation date: (6/2/2004 2:23:41 AM)
  * @param documentWindowManager cbit.vcell.client.DocumentWindowManager
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  */
 void stopSimulations(ClientSimManager clientSimManager, Simulation[] simulations);
 

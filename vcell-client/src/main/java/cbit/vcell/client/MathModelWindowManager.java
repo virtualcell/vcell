@@ -36,8 +36,8 @@ import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataEvent;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 /**

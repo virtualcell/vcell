@@ -6,7 +6,7 @@ import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.*;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -16,6 +16,8 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -243,7 +245,7 @@ public class SpringSaLaDGoodReactionsTest {
 		File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());	
 
 		SimulationJob simJob = new SimulationJob(simulation, 0, null);
-		SimulationTask simTask = new SimulationTask(simJob, 0);
+		StandardSimulationTask simTask = new StandardSimulationTask(simJob, 0);
 		
 		
 		SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();

@@ -55,7 +55,7 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 
 @SuppressWarnings("serial")

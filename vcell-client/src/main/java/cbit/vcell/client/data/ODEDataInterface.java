@@ -7,8 +7,8 @@ import org.vcell.util.ObjectNotFoundException;
 
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
-import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
+import cbit.vcell.solver.simulation.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.simulation.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.util.ColumnDescription;
 
 public interface ODEDataInterface {

@@ -14,7 +14,7 @@ import java.util.Hashtable;
 import java.util.Map.Entry;
 import java.util.Vector;
 
-import cbit.vcell.solver.SimulationModelInfo;
+import cbit.vcell.solver.simulation.SimulationModelInfo;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;

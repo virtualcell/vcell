@@ -37,7 +37,7 @@ import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationStatus;
@@ -51,8 +51,8 @@ import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SolverStatus;
@@ -113,7 +113,7 @@ public class HybridSolverTester {
 				sim.getSolverTaskDescription().getSmoldynSimulationOptions().setRandomSeed(new Integer(startTrialNo + i));
 				//create sim job
 				int jobIndex = startTrialNo + i;
-				SimulationTask simTask = new SimulationTask(new SimulationJob(sim,jobIndex, null),0);
+				StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(sim,jobIndex, null),0);
 				/*
 				 * When you want to run the multiple trials on local uncomment the line below.
 				 */

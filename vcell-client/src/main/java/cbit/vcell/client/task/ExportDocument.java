@@ -40,11 +40,11 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.matlab.MatlabOdeFileCoder;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.OutputFunctionContext;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
 
 /**
@@ -354,7 +354,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					//-----
 					String baseExportFileName = (scanCount==1?null:exportFile.getPath().substring(0, exportFile.getPath().indexOf(".")));
 					for(int i=0; i<scanCount; i++){
-						SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null),0);
+						StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(selectedSim, i, null),0);
 						// Need to export each parameter scan into a separate file
 						File localExportFile = (scanCount==1?exportFile:new File(baseExportFileName + "_" + i + SMOLDYN_INPUT_FILE_EXTENSION));
 						FileCloseHelper localCloseThis = new FileCloseHelper(localExportFile);

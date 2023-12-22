@@ -78,8 +78,8 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.OutputFunctionContext;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 
 @SuppressWarnings("serial")
 public class OutputFunctionsPanel extends DocumentEditorSubPanel {

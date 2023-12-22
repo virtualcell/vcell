@@ -5,7 +5,7 @@ import cbit.vcell.biomodel.BioModelTransforms;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;

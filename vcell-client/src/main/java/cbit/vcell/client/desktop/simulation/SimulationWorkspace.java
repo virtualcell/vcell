@@ -27,6 +27,9 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import edu.uchc.connjur.spectrumtranslator.CodeUtil;
 import org.vcell.chombo.ChomboMeshValidator;
 import org.vcell.chombo.ChomboMeshValidator.ChomboMeshRecommendation;
@@ -131,7 +134,7 @@ public static String checkCompatibility(SimulationOwner simOwner, Simulation sim
  * Insert the method's description here.
  * Creation date: (5/11/2004 2:57:10 PM)
  * @return boolean
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  */
 private static boolean checkSimulationParameters(Simulation simulation, Component parent,boolean bCheckLimits) {
 	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
@@ -174,7 +177,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 						"     "+Simulation.MAX_LIMIT_NON_SPATIAL_TIMEPOINTS + " for compartmental simulations\n" + 
 						"     "+Simulation.MAX_LIMIT_SPATIAL_TIMEPOINTS + " for spatial simulations\n"+
 						"suggested saving timepoints limits are:\n" + 
-						"     "+Simulation.WARNING_NON_SPATIAL_TIMEPOINTS + " for compartmental simulations\n" + 
+						"     "+ Simulation.WARNING_NON_SPATIAL_TIMEPOINTS + " for compartmental simulations\n" +
 						"     "+Simulation.WARNING_SPATIAL_TIMEPOINTS + " for spatial simulations\n"+
 						"Try saving fewer timepoints\n"+
 						"If you need to exceed the quota, please contact us";
@@ -556,7 +559,7 @@ public ClientSimManager getClientSimManager() {
  * Insert the method's description here.
  * Creation date: (6/12/2001 10:09:25 AM)
  * @return boolean
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  */
 private static long getExpectedNumTimePoints(Simulation simulation) {
 	return simulation.getSolverTaskDescription().getExpectedNumTimePoints();
@@ -853,7 +856,7 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
 
 
 /**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
+ * Sets the simulations property (cbit.vcell.solver.simulation.Simulation[]) value.
  * @param simulations The new value for the property.
  * @see #getSimulations
  */

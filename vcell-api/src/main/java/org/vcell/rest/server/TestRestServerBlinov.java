@@ -37,7 +37,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import freemarker.template.Configuration;

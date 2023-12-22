@@ -37,7 +37,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 /**
  * This type was created in VisualAge.
  */

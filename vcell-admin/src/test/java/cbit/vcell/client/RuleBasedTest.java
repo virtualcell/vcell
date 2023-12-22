@@ -9,7 +9,7 @@ import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.simdata.ODEDataBlock;
@@ -18,6 +18,8 @@ import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import com.google.gson.Gson;
@@ -128,7 +130,7 @@ public class RuleBasedTest {
 		srcSimContext.refreshMathDescription(new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
 	
 		//Create non-spatialStoch, ODE and RuleBased sims
-		Simulation nonspatialStochAppNewSim = 
+		Simulation nonspatialStochAppNewSim =
 				srcSimContext.addNewSimulation(STOCH_SIM_NAME/*SimulationOwner.DEFAULT_SIM_NAME_PREFIX*/,new MathMappingCallbackTaskAdapter(null),networkGenerationRequirements);
 
 		Simulation newODEAppNewSim = 
@@ -284,7 +286,7 @@ public class RuleBasedTest {
 				versSimulation = new TempSimulation(newSimulation, false);
 //				printout(ruleBasedTestDir.getAbsolutePath());
 				destDir = new File(baseDirectory,timeSeriesMultitrialData.datasetName);
-				SimulationTask simTask = new SimulationTask(new SimulationJob(versSimulation, 0, null),0);
+				StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(versSimulation, 0, null),0);
 				Solver solver = ClientSimManager.createQuickRunSolver(destDir, simTask);
 				solver.startSolver();
 		

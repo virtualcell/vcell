@@ -20,13 +20,13 @@ import org.vcell.util.ConfigurationException;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathUtilities;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.ode.ODEStateVariable;
 import cbit.vcell.solver.ode.SensStateVariable;
@@ -49,13 +49,13 @@ public abstract class AbstractSolver implements Solver, SimDataConstants {
 	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
 	private File saveDirectory = null;
 	private boolean saveEnabled = true;
-	protected final SimulationTask simTask;
+	protected final StandardSimulationTask simTask;
 	public static boolean bMakeUserDirs = true;
 
 /**
  * AbstractSolver constructor comment.
  */
-public AbstractSolver(SimulationTask simTask, File directory) throws SolverException {
+public AbstractSolver(StandardSimulationTask simTask, File directory) throws SolverException {
 
 	this.simTask = simTask;
 	if (!directory.exists() && !simTask.getSimulation().getSolverTaskDescription().isParallel()){

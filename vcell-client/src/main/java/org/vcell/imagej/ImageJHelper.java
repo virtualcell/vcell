@@ -27,7 +27,7 @@ import cbit.vcell.math.Constant;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.SimulationStatus;
@@ -40,6 +40,10 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationModelInfo;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.vcell.xml.XMLSource;
@@ -2037,7 +2041,7 @@ public class ImageJHelper {
 		public void respondIdentifiers(HttpServletResponse response,String simName,Long cachekey) throws Exception{
     		respond(response, createXML(getIJVarInfos(simName, cachekey, jobCount)));
 		}
-		public BitSet getDomainMask(DataIdentifier di,SimulationModelInfo simulationModelInfo) {
+		public BitSet getDomainMask(DataIdentifier di, SimulationModelInfo simulationModelInfo) {
 //			SimulationModelInfo simulationModelInfo = new SimulationWorkspaceModelInfo(simOwner, argSimulationName);
 			final CartesianMesh cartesianMesh = pdeDataContext.getCartesianMesh();
 			double[] originalData = new double[cartesianMesh.getISize().getXYZ()];
@@ -2983,7 +2987,7 @@ public class ImageJHelper {
 				    	}
 				    	SolverUtilities.prepareSolverExecutable(solverDescription);	
 				    	// create solver from SolverFactory
-				    	SimulationTask simTask = new SimulationTask(new SimulationJob(finalSim, 0, null),0);
+				    	StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(finalSim, 0, null),0);
 //					    	VCSimulationDataIdentifier vcSimulationDataIdentifier = simTask.getSimulationJob().getVCDataIdentifier();
 				    	final File localSimDataDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
 				    	File[] files = localSimDataDir.listFiles();

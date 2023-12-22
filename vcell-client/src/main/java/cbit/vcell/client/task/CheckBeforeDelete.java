@@ -11,7 +11,6 @@
 package cbit.vcell.client.task;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.TreeSet;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
@@ -22,16 +21,13 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.task.CheckBeforeDelete.LOW_PRECISION_SAVE;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 
 /**
  * Insert the type's description here.

@@ -31,13 +31,13 @@ import cbit.vcell.math.VarIniCount;
 import cbit.vcell.math.Variable;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -64,14 +64,14 @@ public class NetCDFWriter {
 	private final static Logger lg = LogManager.getLogger(NetCDFWriter.class);
 
 	private String filename = null;
-	private SimulationTask simTask = null;
+	private StandardSimulationTask simTask = null;
 	// to store variables and their orders in the reactions. It is set to global in this
 	// class, since it is useful in a few functions and we don't want to calculate it 
 	// again and again. it is calculated in function getReactionRateLaws.
 	private Hashtable<String,Integer>[]  varInProbOrderHash = null;
 	private boolean bMessaging;
 
-	public NetCDFWriter(SimulationTask simTask, String fn, boolean argMessaging)
+	public NetCDFWriter(StandardSimulationTask simTask, String fn, boolean argMessaging)
 	{
 		this.simTask = simTask;
 		filename = fn;

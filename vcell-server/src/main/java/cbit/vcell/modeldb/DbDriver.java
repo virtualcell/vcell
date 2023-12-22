@@ -38,7 +38,6 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.pub.Publication;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -121,7 +120,7 @@ import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.MathOverrides.Element;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 

@@ -10,7 +10,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.*;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;

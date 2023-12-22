@@ -9,7 +9,7 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;

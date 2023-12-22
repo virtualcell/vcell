@@ -34,7 +34,7 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 /**
  * This type was created in VisualAge.
  */

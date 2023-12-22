@@ -161,10 +161,10 @@ import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationModelInfo;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationModelInfo;
+import cbit.vcell.solver.simulation.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -2010,7 +2010,7 @@ private PDEPlotControlPanel getPDEPlotControlPanel1() {
 
 
 /**
- * Gets the simulation property (cbit.vcell.solver.Simulation) value.
+ * Gets the simulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @return The simulation property value.
  * @see #setSimulation
  */
@@ -2267,7 +2267,7 @@ public void setSimNameSimDataID(ExportSpecs.SimNameSimDataID simNameSimDataID){
 	getPDEExportPanel1().setPdeDataContext(getPdeDataContext(),simNameSimDataID);
 }
 /**
- * Sets the simulation property (cbit.vcell.solver.Simulation) value.
+ * Sets the simulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @param simulation The new value for the property.
  * @see #getSimulation
  */

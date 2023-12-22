@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,7 +25,7 @@ import java.util.TreeMap;
 
 import org.vcell.util.exe.ExecutableException;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.OutputTimeSpec;
@@ -47,8 +46,8 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
  */
 public class NFSimSolver extends SimpleCompiledSolver {
 
-	public NFSimSolver(SimulationTask simTask, java.io.File directory,
-			boolean bMsging) throws SolverException {
+	public NFSimSolver(StandardSimulationTask simTask, java.io.File directory,
+                       boolean bMsging) throws SolverException {
 		super(simTask, directory, bMsging);
 	}
 

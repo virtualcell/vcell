@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
@@ -547,7 +549,7 @@ public class MathModel implements VCDocument, SimulationOwner, Matchable, Vetoab
 
 
     /**
-     * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
+     * Sets the simulations property (cbit.vcell.solver.simulation.Simulation[]) value.
      *
      * @param simulations The new value for the property.
      * @throws java.beans.PropertyVetoException The exception description.

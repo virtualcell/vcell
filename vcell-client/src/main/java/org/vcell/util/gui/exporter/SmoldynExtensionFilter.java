@@ -13,9 +13,9 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.messaging.server.StandardSimulationTask;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 @SuppressWarnings("serial")
 public class SmoldynExtensionFilter extends SelectorExtensionFilter{
 	/**
@@ -68,7 +68,7 @@ public class SmoldynExtensionFilter extends SelectorExtensionFilter{
 				String baseExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf("."));
 				for(int i=0; i<scanCount; i++)
 				{
-					SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null),0);
+					StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(selectedSim, i, null),0);
 					// Need to export each parameter scan into a separate file
 					String newExportFileName = baseExportFileName + "_" + i + SMOLDYN_INPUT_FILE_EXTENSION;
 					exportFile = new File(newExportFileName);
@@ -81,7 +81,7 @@ public class SmoldynExtensionFilter extends SelectorExtensionFilter{
 			}
 			else if(scanCount == 1)// regular simulation, no parameter scan
 			{
-				SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, 0, null),0);
+				StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(selectedSim, 0, null),0);
 				// export the simulation to the selected file
 				PrintWriter pw = new PrintWriter(exportFile);
 				SmoldynFileWriter smf = new SmoldynFileWriter(pw, true, null, simTask, false);

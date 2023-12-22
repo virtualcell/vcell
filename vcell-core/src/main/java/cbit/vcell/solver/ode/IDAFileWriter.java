@@ -28,13 +28,13 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)
@@ -44,12 +44,12 @@ public class IDAFileWriter extends OdeFileWriter {
 /**
  * OdeFileCoder constructor comment.
  */
-public IDAFileWriter(PrintWriter pw, SimulationTask simTask) {
+public IDAFileWriter(PrintWriter pw, StandardSimulationTask simTask) {
 	this(pw, simTask, false);
 }
 
 
-public IDAFileWriter(PrintWriter pw, SimulationTask simTask, boolean bUseMessaging) {
+public IDAFileWriter(PrintWriter pw, StandardSimulationTask simTask, boolean bUseMessaging) {
 	super(pw, simTask, bUseMessaging);
 }
 /**

@@ -15,7 +15,7 @@ import org.vcell.util.document.BioModelChildSummary.MathType;
 import cbit.vcell.desktop.Annotation;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)

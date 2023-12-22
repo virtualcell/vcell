@@ -27,7 +27,6 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.db.ConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -35,7 +34,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.util.AmplistorUtils;
 
 

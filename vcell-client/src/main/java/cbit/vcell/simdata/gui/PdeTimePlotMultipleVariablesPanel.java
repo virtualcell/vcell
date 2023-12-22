@@ -58,8 +58,8 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationModelInfo.DataSymbolMetadataResolver;
 
 public class PdeTimePlotMultipleVariablesPanel extends JPanel {
 	private TSJobResultsNoStats tsJobResultsNoStats = null;

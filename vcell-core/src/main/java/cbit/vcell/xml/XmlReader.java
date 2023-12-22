@@ -17,6 +17,8 @@ import java.util.function.Consumer;
 
 import cbit.vcell.model.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
@@ -40,7 +42,6 @@ import org.vcell.pathway.persistence.PathwayReaderBiopax3;
 import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.persistence.RelationshipReader;
-import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.Coordinate;
@@ -261,7 +262,6 @@ import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ParserException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
@@ -6507,7 +6507,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * Creation date: (5/22/2001 10:51:23 AM)
      *
      * @param param      org.jdom.Element
-     * @param simulation cbit.vcell.solver.Simulation
+     * @param simulation cbit.vcell.solver.simulation.Simulation
      * @return cbit.vcell.solver.SolverTaskDescription
      */
     private SolverTaskDescription getSolverTaskDescription(Element param, Simulation simulation) throws XmlParseException{

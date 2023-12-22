@@ -117,13 +117,13 @@ protected boolean compareEqual0(Equation equ) {
 /**
  * Insert the method's description here.
  * Creation date: (10/10/2002 10:31:03 AM)
- * @param sim cbit.vcell.solver.Simulation
+ * @param sim cbit.vcell.solver.simulation.Simulation
  */
 abstract void flatten(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException;
 /**
  * Insert the method's description here.
  * Creation date: (10/10/2002 10:31:03 AM)
- * @param sim cbit.vcell.solver.Simulation
+ * @param sim cbit.vcell.solver.simulation.Simulation
  */
 final void flatten0(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws ExpressionException, MathException {
 
@@ -146,7 +146,7 @@ public abstract Vector<Expression> getExpressions(MathDescription mathDesc);
 /**
  * Insert the method's description here.
  * Creation date: (10/10/2002 10:31:03 AM)
- * @param sim cbit.vcell.solver.Simulation
+ * @param sim cbit.vcell.solver.simulation.Simulation
  */
 public final static Expression getFlattenedExpression(MathSymbolTable simSymbolTable, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
 	if (exp == null){

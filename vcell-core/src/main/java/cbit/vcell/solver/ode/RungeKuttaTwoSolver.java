@@ -12,7 +12,7 @@ package cbit.vcell.solver.ode;
 
 import java.io.File;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.SolverException;
 /**
@@ -27,7 +27,7 @@ public class RungeKuttaTwoSolver extends RungeKuttaSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param numVectors int
  */
-public RungeKuttaTwoSolver(SimulationTask simTask, File directory) throws SolverException {
+public RungeKuttaTwoSolver(StandardSimulationTask simTask, File directory) throws SolverException {
 	super(simTask, directory, 2, 2);
 }
 /**

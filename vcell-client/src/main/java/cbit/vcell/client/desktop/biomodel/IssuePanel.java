@@ -51,14 +51,11 @@ import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.GeometryContext.UnmappedGeometryClass;
 import cbit.vcell.mapping.MicroscopeMeasurement;
-import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.NetworkTransformer;
 import cbit.vcell.mapping.RateRule;
-import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleCombo;
 import cbit.vcell.mapping.ReactionSpec.ReactionCombo;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SimulationContext.SimulationContextNameScope;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
@@ -76,8 +73,8 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationOwner;
 
 @SuppressWarnings("serial")
 public class IssuePanel extends DocumentEditorSubPanel {

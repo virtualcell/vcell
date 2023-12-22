@@ -76,7 +76,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -88,8 +88,8 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.solver.SolverUtilities;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -1679,7 +1679,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 		if (comsolSimFiles.simTaskXMLFile!=null){
 			try {
 				String xmlString = FileUtils.readFileToString(comsolSimFiles.simTaskXMLFile);
-				SimulationTask simTask = XmlHelper.XMLToSimTask(xmlString);
+				StandardSimulationTask simTask = XmlHelper.XMLToSimTask(xmlString);
 				Enumeration<Variable> variablesEnum = simTask.getSimulation().getMathDescription().getVariables();
 				while (variablesEnum.hasMoreElements()){
 					Variable var = variablesEnum.nextElement();
@@ -2442,7 +2442,7 @@ public ChomboFiles getChomboFiles() throws IOException, XmlParseException, Expre
 		throw new RuntimeException("Chombo dataset mission .simtask.xml file, please rerun");
 	}
 	String xmlString = FileUtils.readFileToString(simtaskFile);
-	SimulationTask simTask = XmlHelper.XMLToSimTask(xmlString);
+	StandardSimulationTask simTask = XmlHelper.XMLToSimTask(xmlString);
 	if (!simTask.getSimulation().getSolverTaskDescription().getChomboSolverSpec().isSaveChomboOutput()
 			&& !simTask.getSimulation().getSolverTaskDescription().isParallel()){
 		throw new RuntimeException("Export of Chombo simulations to VTK requires chombo data, select 'Chombo' data format in simulation solver options and rerun simulation.");

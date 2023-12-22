@@ -28,19 +28,16 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
-import cbit.plot.SingleXPlot2D;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.ODEDataManager;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -63,7 +60,7 @@ public class ODETimePlotMultipleScansPanel extends JPanel {
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:30:45 PM)
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  */
 public ODETimePlotMultipleScansPanel(String[] varnames, Simulation arg_simulation, DataManager arg_dataManager,String xVarColumnName) {

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import cbit.vcell.solver.simulation.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.Compare;
@@ -216,7 +218,7 @@ public class OutputFunctionContext implements ScopedSymbolTable, Matchable, Seri
 							}
 							// check with flattened expression to find out the variable type of the new expression
 							Function flattenedFunction = new Function(function.getName(), newexp, function.getDomain());
-							newFuncType = SimulationSymbolTable.getFunctionVariableType(flattenedFunction, getSimulationOwner().getMathDescription(), symbols, varTypes, true);			
+							newFuncType = SimulationSymbolTable.getFunctionVariableType(flattenedFunction, getSimulationOwner().getMathDescription(), symbols, varTypes, true);
 						}
 						AnnotatedFunction newFunc = new AnnotatedFunction(function.getName(), function.getExpression(), function.getDomain(), "", newFuncType, FunctionCategory.OUTPUTFUNCTION);
 						newFuncList.add(newFunc);

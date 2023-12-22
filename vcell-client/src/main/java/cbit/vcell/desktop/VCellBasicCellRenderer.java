@@ -33,8 +33,8 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
  
 public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
 	public static class VCDocumentInfoNode {

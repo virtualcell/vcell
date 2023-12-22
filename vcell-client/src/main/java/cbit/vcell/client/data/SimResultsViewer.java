@@ -56,7 +56,7 @@ import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.ODEDataManager;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -246,7 +246,7 @@ private javax.swing.JPanel getParamChoicesPanel() {
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:36:17 PM)
- * @return cbit.vcell.solver.Simulation
+ * @return cbit.vcell.solver.simulation.Simulation
  */
 private Simulation getSimulation() {
 	return simulation;
@@ -452,7 +452,7 @@ private void setParamChoicesPanel(javax.swing.JPanel newParamChoicesPanel) {
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:36:17 PM)
- * @param newSimulation cbit.vcell.solver.Simulation
+ * @param newSimulation cbit.vcell.solver.simulation.Simulation
  */
 private void setSimulation(Simulation newSimulation) {
 	simulation = newSimulation;

@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 
 public class ChomboFiles {

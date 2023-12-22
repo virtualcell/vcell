@@ -10,7 +10,7 @@
 
 package cbit.vcell.server;
 
-import cbit.vcell.solver.SimulationMetadata;
+import cbit.vcell.solver.simulation.SimulationMetadata;
 
 /**
  * Insert the type's description here.

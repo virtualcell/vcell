@@ -9,7 +9,6 @@
  */
 
 package cbit.plot.gui;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -17,27 +16,20 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ListIterator;
-import java.util.Vector;
 
-import javax.swing.ButtonGroup;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
 import javax.swing.KeyStroke;
-import javax.swing.table.DefaultTableModel;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.NonEditableDefaultTableModel;
 import org.vcell.util.gui.ScrollTable;
-import org.vcell.util.gui.SimpleUserMessage;
 import org.vcell.util.gui.SpecialtyTableRenderer;
 
 import com.google.common.io.Files;
@@ -47,11 +39,9 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.Hdf5Utils;
-import cbit.vcell.simdata.Hdf5Utils.HDF5WriteHelper;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
 import javax.swing.JLabel;

@@ -14,14 +14,13 @@ import java.beans.PropertyVetoException;
 import java.util.Collection;
 import java.util.Objects;
 
+import cbit.vcell.solver.simulation.Simulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.TimeInterval;
 import org.vcell.util.*;
 
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFunctionDefinitions;
