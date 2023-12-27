@@ -2,6 +2,7 @@ package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import io.quarkus.logging.Log;
+import io.quarkus.security.PermissionsAllowed;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -60,7 +61,7 @@ public class PublicationResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @RolesAllowed("admin")
+    @RolesAllowed("curator")
     @SecurityRequirement(name = "openId", scopes = {"roles"})
     @Operation(operationId = "createPublication", summary = "Create publication")
     public Long add(Publication publication) {
@@ -81,7 +82,7 @@ public class PublicationResource {
 
     @DELETE
     @Path("{id}")
-    @RolesAllowed("admin")
+    @RolesAllowed("curator")
     @SecurityRequirement(name = "openId", scopes = {"roles"})
     @Operation(operationId = "deletePublication", summary = "Delete publication")
     public void delete(@PathParam("id") Long publicationID) {
