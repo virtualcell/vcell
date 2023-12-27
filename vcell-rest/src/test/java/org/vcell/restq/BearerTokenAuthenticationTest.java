@@ -11,18 +11,6 @@ public class BearerTokenAuthenticationTest {
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @Test
-    public void testAdminAccess() {
-        RestAssured.given().auth().oauth2(getAccessToken("alice"))
-                .when().get("/api/admin")
-                .then()
-                .statusCode(200);
-        RestAssured.given().auth().oauth2(getAccessToken("bob"))
-                .when().get("/api/admin")
-                .then()
-                .statusCode(403);
-    }
-
-    @Test
     public void testUserAccess() {
         RestAssured.given().auth().oauth2(getAccessToken("alice"))
                 .when().get("/api/users/me")

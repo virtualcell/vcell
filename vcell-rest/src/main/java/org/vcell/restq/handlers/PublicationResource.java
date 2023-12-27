@@ -2,7 +2,6 @@ package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import io.quarkus.logging.Log;
-import io.quarkus.security.PermissionsAllowed;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -19,7 +18,6 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import java.security.Permission;
 import java.sql.SQLException;
 
 @Path("/api/publications")
@@ -62,7 +60,7 @@ public class PublicationResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("curator")
-    @SecurityRequirement(name = "openId", scopes = {"roles"})
+//    @SecurityRequirement(name = "openId", scopes = {"roles"})
     @Operation(operationId = "createPublication", summary = "Create publication")
     public Long add(Publication publication) {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
@@ -83,7 +81,7 @@ public class PublicationResource {
     @DELETE
     @Path("{id}")
     @RolesAllowed("curator")
-    @SecurityRequirement(name = "openId", scopes = {"roles"})
+//    @SecurityRequirement(name = "openId", scopes = {"roles"})
     @Operation(operationId = "deletePublication", summary = "Delete publication")
     public void delete(@PathParam("id") Long publicationID) {
         User vcellUser = AuthUtils.PUBLICATION_USER;

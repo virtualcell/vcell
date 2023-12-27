@@ -15,46 +15,6 @@ info:
 servers:
 - url: http://localhost:9000
 paths:
-  /api/admin:
-    get:
-      tags:
-      - Admin Resource
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: string
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - admin
-  /api/auth/code-flow:
-    get:
-      tags:
-      - Auth Resource
-      summary: Get access token using authorization code flow
-      operationId: codeExchange
-      parameters:
-      - name: code
-        in: query
-        schema:
-          type: string
-      - name: redirectURL
-        in: query
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthCodeResponse'
   /api/publications:
     get:
       tags:
@@ -88,8 +48,13 @@ paths:
               schema:
                 format: int64
                 type: integer
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
-      - openId: []
+      - openId:
+        - curator
   /api/publications/{id}:
     get:
       tags:
@@ -125,8 +90,13 @@ paths:
       responses:
         "204":
           description: No Content
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
-      - openId: []
+      - openId:
+        - curator
   /api/users/me:
     get:
       tags:
@@ -138,24 +108,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
 components:
   schemas:
-    AuthCodeResponse:
-      type: object
-      properties:
-        access_token:
-          type: string
-        id_token:
-          type: string
-        refresh_token:
-          type: string
     BiomodelRef:
       type: object
       properties:
@@ -234,10 +195,22 @@ components:
     User:
       type: object
       properties:
-        userName:
+        principal_name:
           type: string
+        roles:
+          type: array
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            type: string
+        credentials:
+          type: array
+          items:
+            type: string
   securitySchemes:
     openId:
       type: openIdConnect
       description: Authentication
-      openIdConnectUrl: https://localhost:8543/realms/quarkus/.well-known/openid-configuration
+      openIdConnectUrl: https://dev-dzhx7i2db3x3kkvq.us.auth0.com/.well-known/openid-configuration
