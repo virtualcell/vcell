@@ -1,0 +1,49 @@
+<h1>Publication List</h1>
+<input matInput (keyup)="applyFilterTarget($event.target)" placeholder="Filter">
+<!--<form>-->
+<!--  <mat-form-field class="filter">-->
+<!--    <input matInput placeholder="Filter" #filter (keyup)="applyFilter(filter.value)">-->
+<!--    <button mat-icon-button matSuffix *ngIf="filter.value" aria-label="Clear"-->
+<!--            (click)="filter.value=''; applyFilter(filter.value)">-->
+<!--      <mat-icon>clear</mat-icon>-->
+<!--    </button>-->
+<!--  </mat-form-field>-->
+<!--</form>-->
+<mat-table [dataSource]="publications" matSort>
+  <ng-container matColumnDef="pubKey">
+    <mat-header-cell *matHeaderCellDef mat-sort-header> PubKey</mat-header-cell>
+    <mat-cell *matCellDef="let row"> {{ row.pubKey }}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="title">
+    <mat-header-cell *matHeaderCellDef mat-sort-header> Title</mat-header-cell>
+    <mat-cell *matCellDef="let row"> {{ row.title }}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="authors">
+    <mat-header-cell *matHeaderCellDef mat-sort-header> Authors</mat-header-cell>
+    <mat-cell *matCellDef="let row"> {{ row.authors }}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="year">
+    <mat-header-cell *matHeaderCellDef mat-sort-header> Year</mat-header-cell>
+    <mat-cell *matCellDef="let row"> {{ row.year }}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="citation">
+    <mat-header-cell *matHeaderCellDef mat-sort-header> Citation</mat-header-cell>
+    <mat-cell *matCellDef="let row"> {{ row.citation }}</mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="edit">
+    <mat-header-cell *matHeaderCellDef> Edit</mat-header-cell>
+    <mat-cell *matCellDef="let row">
+      <button mat-raised-button (click)="onEdit(row)">Edit</button>
+    </mat-cell>
+  </ng-container>
+  <ng-container matColumnDef="delete">
+    <mat-header-cell *matHeaderCellDef> Delete</mat-header-cell>
+    <mat-cell *matCellDef="let row">
+      <button mat-raised-button (click)="onDelete(row)">Delete</button>
+    </mat-cell>
+  </ng-container>
+  <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>
+<mat-paginator [pageSizeOptions]="[20]" showFirstLastButtons></mat-paginator>
+<button (click)="onSave()">Save</button>

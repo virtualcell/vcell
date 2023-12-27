@@ -25,7 +25,7 @@
             <a routerLink="/" class="nav-link">Home</a>
           </li>
           <li class="nav-item" *ngIf="auth.isAuthenticated$ | async">
-            <a routerLink="external-api" class="nav-link">External API</a>
+            <a routerLink="publications" class="nav-link">Publications</a>
           </li>
           <li class="nav-item" *ngIf="auth.isAuthenticated$ | async">
             <button
