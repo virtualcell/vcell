@@ -1,9 +1,6 @@
 .github/workflows/python.yml
 .gitignore
 README.md
-docs/AdminResourceApi.md
-docs/AuthCodeResponse.md
-docs/AuthResourceApi.md
 docs/BiomodelRef.md
 docs/MathmodelRef.md
 docs/Publication.md
@@ -15,8 +12,6 @@ test/__init__.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py
-vcell_client/api/admin_resource_api.py
-vcell_client/api/auth_resource_api.py
 vcell_client/api/publication_resource_api.py
 vcell_client/api/users_resource_api.py
 vcell_client/api_client.py
@@ -24,7 +19,6 @@ vcell_client/api_response.py
 vcell_client/configuration.py
 vcell_client/exceptions.py
 vcell_client/models/__init__.py
-vcell_client/models/auth_code_response.py
 vcell_client/models/biomodel_ref.py
 vcell_client/models/mathmodel_ref.py
 vcell_client/models/publication.py

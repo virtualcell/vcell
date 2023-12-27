@@ -15,7 +15,6 @@
 
 
 # import models into model package
-from vcell_client.models.auth_code_response import AuthCodeResponse
 from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.publication import Publication

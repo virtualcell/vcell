@@ -1,4 +1,3 @@
-export * from './auth-code-response';
 export * from './biomodel-ref';
 export * from './mathmodel-ref';
 export * from './publication';

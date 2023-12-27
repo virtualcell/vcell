@@ -18,8 +18,6 @@
 __version__ = "1.0.0"
 
 # import apis into sdk package
-from vcell_client.api.admin_resource_api import AdminResourceApi
-from vcell_client.api.auth_resource_api import AuthResourceApi
 from vcell_client.api.publication_resource_api import PublicationResourceApi
 from vcell_client.api.users_resource_api import UsersResourceApi
 
@@ -35,7 +33,6 @@ from vcell_client.exceptions import ApiAttributeError
 from vcell_client.exceptions import ApiException
 
 # import models into sdk package
-from vcell_client.models.auth_code_response import AuthCodeResponse
 from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.publication import Publication

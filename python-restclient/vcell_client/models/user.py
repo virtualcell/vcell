@@ -21,7 +21,6 @@ import json
 
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictStr
-from pydantic import Field
 try:
     from typing import Self
 except ImportError:
@@ -31,8 +30,11 @@ class User(BaseModel):
     """
     User
     """ # noqa: E501
-    user_name: Optional[StrictStr] = Field(default=None, alias="userName")
-    __properties: ClassVar[List[str]] = ["userName"]
+    principal_name: Optional[StrictStr] = None
+    roles: Optional[List[StrictStr]] = None
+    attributes: Optional[List[StrictStr]] = None
+    credentials: Optional[List[StrictStr]] = None
+    __properties: ClassVar[List[str]] = ["principal_name", "roles", "attributes", "credentials"]
 
     model_config = {
         "populate_by_name": True,
@@ -87,7 +89,10 @@ class User(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in User) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "userName": obj.get("userName")
+            "principal_name": obj.get("principal_name"),
+            "roles": obj.get("roles"),
+            "attributes": obj.get("attributes"),
+            "credentials": obj.get("credentials")
         })
         return _obj
 

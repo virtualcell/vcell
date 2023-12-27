@@ -7,7 +7,10 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**userName** | **String** |  |  [optional] |
+|**principalName** | **String** |  |  [optional] |
+|**roles** | **List&lt;String&gt;** |  |  [optional] |
+|**attributes** | **List&lt;String&gt;** |  |  [optional] |
+|**credentials** | **List&lt;String&gt;** |  |  [optional] |
 
 
 

@@ -4,7 +4,10 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**user_name** | **str** |  | [optional] 
+**principal_name** | **str** |  | [optional] 
+**roles** | **List[str]** |  | [optional] 
+**attributes** | **List[str]** |  | [optional] 
+**credentials** | **List[str]** |  | [optional] 
 
 ## Example
 

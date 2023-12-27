@@ -1,12 +1,7 @@
 .gitignore
-.openapi-generator-ignore
 README.md
 api.module.ts
-api/admin-resource.service.ts
-api/admin-resource.serviceInterface.ts
 api/api.ts
-api/auth-resource.service.ts
-api/auth-resource.serviceInterface.ts
 api/publication-resource.service.ts
 api/publication-resource.serviceInterface.ts
 api/users-resource.service.ts
@@ -15,7 +10,6 @@ configuration.ts
 encoder.ts
 git_push.sh
 index.ts
-model/auth-code-response.ts
 model/biomodel-ref.ts
 model/mathmodel-ref.ts
 model/models.ts

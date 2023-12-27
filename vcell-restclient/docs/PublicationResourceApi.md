@@ -79,6 +79,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## createPublicationWithHttpInfo
 
@@ -147,6 +149,8 @@ ApiResponse<**Long**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## deletePublication
@@ -212,6 +216,8 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## deletePublicationWithHttpInfo
 
@@ -279,6 +285,8 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## getPublicationById

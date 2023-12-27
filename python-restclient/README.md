@@ -71,14 +71,16 @@ configuration = vcell_client.Configuration(
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = vcell_client.AdminResourceApi(api_client)
+    api_instance = vcell_client.PublicationResourceApi(api_client)
+    publication = vcell_client.Publication() # Publication |  (optional)
 
     try:
-        api_response = api_instance.api_admin_get()
-        print("The response of AdminResourceApi->api_admin_get:\n")
+        # Create publication
+        api_response = api_instance.create_publication(publication=publication)
+        print("The response of PublicationResourceApi->create_publication:\n")
         pprint(api_response)
     except ApiException as e:
-        print("Exception when calling AdminResourceApi->api_admin_get: %s\n" % e)
+        print("Exception when calling PublicationResourceApi->create_publication: %s\n" % e)
 
 ```
 
@@ -88,8 +90,6 @@ All URIs are relative to *http://localhost:9000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AdminResourceApi* | [**api_admin_get**](docs/AdminResourceApi.md#api_admin_get) | **GET** /api/admin | 
-*AuthResourceApi* | [**code_exchange**](docs/AuthResourceApi.md#code_exchange) | **GET** /api/auth/code-flow | Get access token using authorization code flow
 *PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
@@ -99,7 +99,6 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
- - [AuthCodeResponse](docs/AuthCodeResponse.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)

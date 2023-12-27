@@ -12,6 +12,9 @@
 
 
 export interface User { 
-    userName?: string;
+    principal_name?: string;
+    roles?: Array<string>;
+    attributes?: Array<string>;
+    credentials?: Array<string>;
 }
 

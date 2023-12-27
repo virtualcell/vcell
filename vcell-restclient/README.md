@@ -75,20 +75,21 @@ Please follow the [installation](#installation) instruction and execute the foll
 
 import org.vcell.restclient.*;
 import org.vcell.restclient.model.*;
-import org.vcell.restclient.api.AdminResourceApi;
+import org.vcell.restclient.api.PublicationResourceApi;
 
-public class AdminResourceApiExample {
+public class PublicationResourceApiExample {
 
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         // Configure clients using the `defaultClient` object, such as
         // overriding the host and port, timeout, etc.
-        AdminResourceApi apiInstance = new AdminResourceApi(defaultClient);
+        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
+        Publication publication = new Publication(); // Publication | 
         try {
-            String result = apiInstance.apiAdminGet();
+            Long result = apiInstance.createPublication(publication);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling AdminResourceApi#apiAdminGet");
+            System.err.println("Exception when calling PublicationResourceApi#createPublication");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -105,10 +106,6 @@ All URIs are relative to *http://localhost:9000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*AdminResourceApi* | [**apiAdminGet**](docs/AdminResourceApi.md#apiAdminGet) | **GET** /api/admin | 
-*AdminResourceApi* | [**apiAdminGetWithHttpInfo**](docs/AdminResourceApi.md#apiAdminGetWithHttpInfo) | **GET** /api/admin | 
-*AuthResourceApi* | [**codeExchange**](docs/AuthResourceApi.md#codeExchange) | **GET** /api/auth/code-flow | Get access token using authorization code flow
-*AuthResourceApi* | [**codeExchangeWithHttpInfo**](docs/AuthResourceApi.md#codeExchangeWithHttpInfo) | **GET** /api/auth/code-flow | Get access token using authorization code flow
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/publications | Create publication
 *PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/publications | Create publication
 *PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/publications/{id} | Delete publication
@@ -123,7 +120,6 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
- - [AuthCodeResponse](docs/AuthCodeResponse.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
