@@ -33,7 +33,7 @@ docker run --rm -v ${parentDir}:/vcell \
 ${generatorCliImage} generate \
     -g typescript-angular \
     -i /vcell/tools/openapi.yaml \
-    -o /vcell/vcell-admin-ng/src/app/core/modules/openapi \
+    -o /vcell/webapp-ng/src/app/core/modules/openapi \
     -c /vcell/tools/typescript-angular-config.yaml
 
 
