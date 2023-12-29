@@ -15,7 +15,7 @@ const routes: Routes = [
   {
     path: 'publications',
     component: PublicationListComponent,
-    // canActivate: [AuthGuard],
+    canActivate: [AuthGuard],
   },
   {
     path: 'error',

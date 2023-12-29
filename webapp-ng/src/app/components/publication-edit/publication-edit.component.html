@@ -1,0 +1,64 @@
+<div class="publication-edit-container">
+    <div class="text-center">
+        <h3 *ngIf="publication.pubKey; else newPublication">{{ "Edit Publication, key=" + publication.pubKey }}</h3>
+        <ng-template #newPublication><h3>New Publication</h3></ng-template>
+    </div>
+    <form>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="title">Title:</label></div>
+            <div class="col"><input type="text" id="title" [(ngModel)]="publication.title" name="title"></div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="authors">Authors:</label></div>
+            <div class="col"><input type="text" id="authors" [ngModel]="publication.authors.join(',')" 
+                (ngModelChange)="publication.authors = $event.split(',')" name="authors">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="year">Year:</label></div>
+            <div class="col"><input type="number" id="year" [(ngModel)]="publication.year" name="year"></div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="citation">Citation:</label></div>
+            <div class="col"><textarea id="citation" [(ngModel)]="publication.citation" name="citation"></textarea></div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="pubmedid">Pubmed ID:</label></div>
+            <div class="col"><input type="text" id="pubmedid" [(ngModel)]="publication.pubmedid" name="pubmedid"></div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="doi">DOI:</label></div>
+            <div class="col"><input type="text" id="doi" [(ngModel)]="publication.doi" name="doi"></div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="endnoteid">Endnote ID:</label></div>
+            <div class="col"><input type="number" id="endnoteid" [(ngModel)]="publication.endnoteid" name="endnoteid"></div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="url">URL:</label></div>
+            <div class="col"><input type="text" id="url" [(ngModel)]="publication.url" name="url"></div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="wittid">Witt ID:</label></div>
+            <div class="col"><input type="number" id="wittid" [(ngModel)]="publication.wittid" name="wittid"></div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="biomodelRefs">Biomodel IDs:</label></div>
+            <div class="col"><textarea type="text" id="biomodelRefs" [ngModel]="publication.biomodelRefs?.join(',')" 
+                (ngModelChange)="publication.biomodelRefs = $event.split(',')" name="biomodelRefs"></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="mathmodelRefs">Mathmodel IDs:</label></div>
+            <div class="col"><textarea type="text" id="mathmodelRefs" [ngModel]="publication.mathmodelRefs?.join(',')" 
+                (ngModelChange)="publication.mathmodelRefs = $event.split(',')" name="mathmodelRefs"></textarea>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col" style="text-align: right;"><label for="date">Date:</label></div>
+            <div class="col"><input type="date" id="date" [(ngModel)]="publication.date" name="date"></div>
+        </div>
+      <button type="button" (click)="onSave()">Save</button>
+      <button type="button" (click)="onCancel()">Cancel</button>
+    </form>
+  </div>

@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {PublicationResourceService} from '../../core/modules/openapi';
+import {Publication, PublicationResourceService} from '../../core/modules/openapi';
 import {Observable, Subject} from 'rxjs';
 import {map, switchMap, tap} from 'rxjs/operators';
 
@@ -14,18 +14,18 @@ export class PublicationService {
   constructor(private pub_api: PublicationResourceService) {
   }
 
-  getPublicationList() {
+  getPublicationList(): Observable<Publication[]> {
     return this.refreshNeeded.pipe(
       switchMap(() => this.pub_api.getPublications()),
       map((data) => data)
     )
   }
 
-  getPublicationById(id: number) {
+  getPublicationById(id: number): Observable<Publication> {
     return this.pub_api.getPublicationById(id);
   }
 
-  createPublication(publication: any) : Observable<number> {
+  createPublication(publication: Publication) : Observable<number> {
     return this.pub_api.createPublication(publication).pipe(
       tap(() => this.refreshNeeded.next())
     )
@@ -33,6 +33,12 @@ export class PublicationService {
 
   deletePublication(id: number) : Observable<number> {
     return this.pub_api.deletePublication(id).pipe(
+      tap(() => this.refreshNeeded.next())
+    )
+  }
+
+  updatePublication(publication: Publication) : Observable<Publication> {
+    return this.pub_api.updatePublication(publication).pipe(
       tap(() => this.refreshNeeded.next())
     )
   }
