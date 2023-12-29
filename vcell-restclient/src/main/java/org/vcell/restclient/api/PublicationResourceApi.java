@@ -366,4 +366,77 @@ public class PublicationResourceApi {
     }
     return localVarRequestBuilder;
   }
+  /**
+   * Create publication
+   * 
+   * @param publication  (optional)
+   * @return Publication
+   * @throws ApiException if fails to make API call
+   */
+  public Publication updatePublication(Publication publication) throws ApiException {
+    ApiResponse<Publication> localVarResponse = updatePublicationWithHttpInfo(publication);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Create publication
+   * 
+   * @param publication  (optional)
+   * @return ApiResponse&lt;Publication&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Publication> updatePublicationWithHttpInfo(Publication publication) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = updatePublicationRequestBuilder(publication);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("updatePublication", localVarResponse);
+        }
+        return new ApiResponse<Publication>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Publication>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder updatePublicationRequestBuilder(Publication publication) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/publications";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(publication);
+      localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
 }

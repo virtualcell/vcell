@@ -94,6 +94,7 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/publications | Get all publications
+*PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/publications | Create publication
 *UsersResourceApi* | [**api_users_me_get**](docs/UsersResourceApi.md#api_users_me_get) | **GET** /api/users/me | 
 
 

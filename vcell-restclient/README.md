@@ -114,6 +114,8 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationByIdWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**getPublications**](docs/PublicationResourceApi.md#getPublications) | **GET** /api/publications | Get all publications
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/publications | Get all publications
+*PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/publications | Create publication
+*PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/publications | Create publication
 *UsersResourceApi* | [**apiUsersMeGet**](docs/UsersResourceApi.md#apiUsersMeGet) | **GET** /api/users/me | 
 *UsersResourceApi* | [**apiUsersMeGetWithHttpInfo**](docs/UsersResourceApi.md#apiUsersMeGetWithHttpInfo) | **GET** /api/users/me | 
 

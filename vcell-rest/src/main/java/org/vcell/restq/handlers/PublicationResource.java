@@ -8,7 +8,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.vcell.restq.auth.AuthUtils;
 import org.vcell.restq.db.PublicationService;
 import org.vcell.restq.models.Publication;
@@ -60,7 +59,6 @@ public class PublicationResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("curator")
-//    @SecurityRequirement(name = "openId", scopes = {"roles"})
     @Operation(operationId = "createPublication", summary = "Create publication")
     public Long add(Publication publication) {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
@@ -78,10 +76,29 @@ public class PublicationResource {
     }
 
 
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("curator")
+    @Operation(operationId = "updatePublication", summary = "Create publication")
+    public Publication update(Publication publication) {
+        Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
+        User vcellUser = AuthUtils.PUBLICATION_USER;
+        try {
+            Publication pub = publicationService.updatePublication(publication, vcellUser);
+            return pub;
+        } catch (PermissionException ee) {
+            Log.error(ee);
+            throw new RuntimeException("not authorized", ee);
+        } catch (DataAccessException | SQLException e) {
+            Log.error(e);
+            throw new RuntimeException("failed to add publication to VCell Database : " + e.getMessage(), e);
+        }
+    }
+
+
     @DELETE
     @Path("{id}")
     @RolesAllowed("curator")
-//    @SecurityRequirement(name = "openId", scopes = {"roles"})
     @Operation(operationId = "deletePublication", summary = "Delete publication")
     public void delete(@PathParam("id") Long publicationID) {
         User vcellUser = AuthUtils.PUBLICATION_USER;

@@ -60,4 +60,8 @@ public class PublicationService {
 		return Arrays.stream(publicationReps).map(Publication::fromPublicationRef).toArray(Publication[]::new);
 	}
 
+	public Publication updatePublication(Publication publication, User vcellUser) throws SQLException, DataAccessException {
+		KeyValue pubKey = savePublication(publication, vcellUser);
+		return getPublication(pubKey, vcellUser);
+	}
 }

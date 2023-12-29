@@ -30,6 +30,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Publication'
+    put:
+      tags:
+      - Publication Resource
+      summary: Create publication
+      operationId: updatePublication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Publication'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - curator
     post:
       tags:
       - Publication Resource

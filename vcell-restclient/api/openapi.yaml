@@ -57,6 +57,32 @@ paths:
       - Publication Resource
       x-content-type: application/json
       x-accepts: application/json
+    put:
+      operationId: updatePublication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Publication'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+          description: OK
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - curator
+      summary: Create publication
+      tags:
+      - Publication Resource
+      x-content-type: application/json
+      x-accepts: application/json
   /api/publications/{id}:
     delete:
       operationId: deletePublication

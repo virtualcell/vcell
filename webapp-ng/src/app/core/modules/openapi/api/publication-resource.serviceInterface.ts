@@ -51,4 +51,11 @@ export interface PublicationResourceServiceInterface {
      */
     getPublications(extraHttpRequestParams?: any): Observable<Array<Publication>>;
 
+    /**
+     * Create publication
+     * 
+     * @param publication 
+     */
+    updatePublication(publication?: Publication, extraHttpRequestParams?: any): Observable<Publication>;
+
 }

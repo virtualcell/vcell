@@ -12,6 +12,8 @@ All URIs are relative to *http://localhost:9000*
 | [**getPublicationByIdWithHttpInfo**](PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/publications/{id} | Get publication by ID |
 | [**getPublications**](PublicationResourceApi.md#getPublications) | **GET** /api/publications | Get all publications |
 | [**getPublicationsWithHttpInfo**](PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/publications | Get all publications |
+| [**updatePublication**](PublicationResourceApi.md#updatePublication) | **PUT** /api/publications | Create publication |
+| [**updatePublicationWithHttpInfo**](PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/publications | Create publication |
 
 
 
@@ -539,4 +541,142 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+
+
+## updatePublication
+
+> Publication updatePublication(publication)
+
+Create publication
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.PublicationResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("http://localhost:9000");
+        
+
+        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
+        Publication publication = new Publication(); // Publication | 
+        try {
+            Publication result = apiInstance.updatePublication(publication);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PublicationResourceApi#updatePublication");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **publication** | [**Publication**](Publication.md)|  | [optional] |
+
+### Return type
+
+[**Publication**](Publication.md)
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
+
+## updatePublicationWithHttpInfo
+
+> ApiResponse<Publication> updatePublication updatePublicationWithHttpInfo(publication)
+
+Create publication
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.PublicationResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("http://localhost:9000");
+        
+
+        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
+        Publication publication = new Publication(); // Publication | 
+        try {
+            ApiResponse<Publication> response = apiInstance.updatePublicationWithHttpInfo(publication);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PublicationResourceApi#updatePublication");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **publication** | [**Publication**](Publication.md)|  | [optional] |
+
+### Return type
+
+ApiResponse<[**Publication**](Publication.md)>
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
