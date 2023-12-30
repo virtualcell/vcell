@@ -46,7 +46,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     webDataPort="webDataPort-not-set"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
-    keystore=/run/secrets/keystorefile_20220105 \
+    keystore=/run/secrets/keystorefile \
     keystorepswdfile=/run/secrets/keystorepswd
     
 
