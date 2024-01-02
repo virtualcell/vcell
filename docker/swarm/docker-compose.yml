@@ -45,7 +45,7 @@ services:
       - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"
       - "${VCELL_EXPORTDIR_HOST}:/exportdir"
     secrets:
-      - keystorefile_20220105
+      - keystorefile
       - keystorepswd
       - dbpswd
       - jmspswd
@@ -289,7 +289,7 @@ services:
     secrets:
       - dbpswd
       - jmspswd
-      - keystorefile_20220105
+      - keystorefile
       - keystorepswd
     networks:
       - vcellnet
@@ -437,8 +437,8 @@ secrets:
   jmsrestpswd:
     file: ${VCELL_SECRETS_DIR}/jmsrestpswd.txt
   keystorepswd:
-    file: ${VCELL_SECRETS_DIR}/vcellapi-beta-keystorepswd.txt
-  keystorefile_20220105:
-    file: ${VCELL_SECRETS_DIR}/vcellapi-beta_20220105.jks
+    file: ${VCELL_SECRETS_DIR}/keystorepswd.txt
+  keystorefile:
+    file: ${VCELL_SECRETS_DIR}/keystore.jks
   batchuserkeyfile:
     file: ${VCELL_SECRETS_DIR}/schaff_rsa
