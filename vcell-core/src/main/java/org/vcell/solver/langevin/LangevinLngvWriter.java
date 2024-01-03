@@ -860,8 +860,8 @@ public class LangevinLngvWriter {
 				throw new RuntimeException("Initial concentration must be a number");
 			}
 
-			// TODO: verify if the molecule is flat or not; for now we assume it is "flat" on YZ axis projection
-			boolean is2D = true;		// the x-coordinate is the same for all the sites
+			// TODO: is2D seems to always be false in the original SS, even for membrane molecules. Not sure what it actually means
+			boolean is2D = false;		// the x-coordinate is the same for all the sites
 
 			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() + 
 					" Number " + scount + 
