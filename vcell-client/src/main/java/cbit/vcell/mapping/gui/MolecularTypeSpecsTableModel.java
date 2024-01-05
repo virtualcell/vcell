@@ -54,16 +54,16 @@ import cbit.vcell.parser.Expression;
 public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularComponentPattern> implements java.beans.PropertyChangeListener {
 
 	// TODO: sas is null for molecules added late (after the application is created)
-	// TODO: add is2D flag here (and to SiteAttributesSpec) - membrane sites may have it set to true, for compartment sites is always false
-	// TODO: saving a model with a membrane species fails, see model aaa-SS-membrane, see issue #1097
+	// TODO: add is2D flag here as a checkbox (var is SpeciesContextSpec) - membrane species may have it set to true, for compartment species is always false
+	// TODO: math is wrong for a model with a membrane species, saving model fails, see model aaa-SS-membrane, see issue #1097
 
 	private enum ColumnType {
 		COLUMN_SITE("Site"),
 		COLUMN_MOLECULE("Molecule"),
 		COLUMN_STRUCTURE("Location"),
 		COLUMN_STATE("Initial State"),
-		COLUMN_RADIUS("Radius"),
-		COLUMN_DIFFUSION("Diffusion Rate");
+		COLUMN_RADIUS("Radius (nm)"),
+		COLUMN_DIFFUSION("Diffusion Rate (um^2/s)");
 			
 		public final String label;
 		private ColumnType(String label){
