@@ -1936,10 +1936,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         }
     }
 
-    void setIs2D(boolean is2D) {
+    public void setIs2D(boolean is2D) {
         this.is2D = is2D;
     }
-    boolean getIs2D() {
+    public boolean getIs2D() {
         return this.is2D;
     }
 
