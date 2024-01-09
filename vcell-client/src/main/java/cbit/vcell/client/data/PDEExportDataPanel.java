@@ -44,6 +44,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
+import cbit.vcell.export.server.*;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
@@ -67,18 +68,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.export.server.ExportConstants;
-import cbit.vcell.export.server.ExportFormat;
-import cbit.vcell.export.server.ExportServiceImpl;
-import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
-import cbit.vcell.export.server.FormatSpecificSpecs;
-import cbit.vcell.export.server.GeometrySpecs;
-import cbit.vcell.export.server.ImageSpecs;
-import cbit.vcell.export.server.MovieSpecs;
-import cbit.vcell.export.server.PLYSpecs;
-import cbit.vcell.export.server.TimeSpecs;
-import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
@@ -153,6 +143,8 @@ public class PDEExportDataPanel extends JPanel implements ExportConstants {
 	private SpatialSelection[] spatialSelectionsVolume = null;
 	private SpatialSelection[] spatialSelectionsMembrane = null;
 	private int viewZoom;
+
+	private Simulation simulation;
 	
 	private boolean isSmoldyn = false;
 	
@@ -696,17 +688,22 @@ private ExportSpecs getExportSpecs() {
 	for (int i = 0; i < selections.length; i++) {
 		selections[i] = (SpatialSelection)selectionsArr[i];
 	}
+	SimulationContext sc = (SimulationContext) getSimulation().getSimulationOwner();
+	ExportMetaData exportMetaData = new ExportMetaData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName());
+	exportMetaData.setTimeRange(String.valueOf(timeSpecs.getAllTimes()[timeSpecs.getBeginTimeIndex()]), String.valueOf(timeSpecs.getAllTimes()[timeSpecs.getEndTimeIndex()]));
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
-	return new ExportSpecs(
-		getPdeDataContext().getVCDataIdentifier(),
-		getExportSettings1().getSelectedFormat(),
-		variableSpecs,
-		timeSpecs,
-		geometrySpecs,
-		getExportSettings1().getFormatSpecificSpecs(),
-		dataInfoProvider.getSimulationModelInfo().getSimulationName(),
-		dataInfoProvider.getSimulationModelInfo().getContextName()
+	ExportSpecs exportSpecs = new ExportSpecs(
+			getPdeDataContext().getVCDataIdentifier(),
+			getExportSettings1().getSelectedFormat(),
+			variableSpecs,
+			timeSpecs,
+			geometrySpecs,
+			getExportSettings1().getFormatSpecificSpecs(),
+			dataInfoProvider.getSimulationModelInfo().getSimulationName(),
+			dataInfoProvider.getSimulationModelInfo().getContextName()
 	);
+	exportSpecs.setExportMetaData(exportMetaData);
+	return exportSpecs;
 }
 
 private ExportSpecs.SimulationSelector createSimulationSelector(){
@@ -2545,5 +2542,13 @@ private void updateTimes(double[] times) {
 
 	public void setSolverTaskDescription(SolverTaskDescription solverDescription) {
 		isSmoldyn = solverDescription.getSolverDescription().equals(SolverDescription.Smoldyn);
+	}
+
+	public void setSimulation(Simulation simulation){
+		this.simulation = simulation;
+	}
+
+	public Simulation getSimulation(){
+		return simulation;
 	}
 }
