@@ -69,6 +69,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.solver.*;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -160,14 +162,7 @@ import cbit.vcell.simdata.gui.PDEDataContextPanel.RecodeDataForDomainInfo;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.MembraneElement;
 import cbit.vcell.solvers.MeshDisplayAdapter;
@@ -320,7 +315,6 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 	private JMenuItem snapShotMenuItem;
 	
 	private Simulation fieldSimulation = null;
-
 	// labels for local sim log file location
 	private JPanel buttonsAndLabelsPanel = null;
 	private JPanel locationLabelsPanel = null;
@@ -444,6 +438,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 				
 				if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals(PDEDataContext.PROP_PDE_DATA_CONTEXT))) { 
 					getPDEDataContextPanel1().setPdeDataContext(getPdeDataContext());
+					getPDEExportPanel1().setSimulation(getSimulation());
 					getPDEExportPanel1().setPdeDataContext(getPdeDataContext(),
 							(getSimulation()==null?null:new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null)));
 					CartesianMesh cartesianMesh = (getPdeDataContext() != null?getPdeDataContext().getCartesianMesh():null);
@@ -579,6 +574,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					getPDEPlotControlPanel1().setDataInfoProvider(dataInfoProvider);
 					getPDEDataContextPanel1().setDataInfoProvider(dataInfoProvider);
 					getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
+					getPDEExportPanel1().setSimulation(getSimulation());
 					if(getSimulationModelInfo() != null && getSimulationModelInfo().getDataSymbolMetadataResolver().getUniqueFilterCategories() != null){
 						getPDEPlotControlPanel1().setDataIdentifierFilter(new DefaultDataIdentifierFilter(getSimulationModelInfo().getDataSymbolMetadataResolver()));
 					}
@@ -2079,7 +2075,8 @@ private void initConnections() throws java.lang.Exception {
 	getPDEExportPanel1().setNormalAxis(getPDEDataContextPanel1().getNormalAxis());
 	getPDEExportPanel1().setDisplayAdapterService(getPDEDataContextPanel1().getdisplayAdapterService1());
 	getPDEExportPanel1().setDataViewerManager(this.getDataViewerManager());
-	
+	getPDEExportPanel1().setSimulation(getSimulation());
+
 	getPDEDataContextPanel1().getdisplayAdapterService1().addPropertyChangeListener(ivjEventHandler);
 
 	updateMetadata();
@@ -2133,6 +2130,7 @@ private void setupDataInfoProvider() throws Exception{
 	if (getPdeDataContext() != null && getSimulationModelInfo() != null){
 		getPDEDataContextPanel1().setDataInfoProvider(new DataInfoProvider(getPdeDataContext(),getSimulationModelInfo()));
 		getPDEExportPanel1().setDataInfoProvider(getPDEDataContextPanel1().getDataInfoProvider());
+		getPDEExportPanel1().setSimulation(getSimulation());
 		if(getSimulationModelInfo() instanceof SimulationWorkspaceModelInfo && ((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getDataSymbolMetadataResolver().getUniqueFilterCategories() != null){
 			DefaultDataIdentifierFilter newFilter = new DefaultDataIdentifierFilter(((SimulationWorkspaceModelInfo)getSimulationModelInfo()).getDataSymbolMetadataResolver());
 			if(ivjJTabbedPane1.getTabCount()< 4){
@@ -3443,7 +3441,4 @@ private boolean errorAutoAllTimes(boolean bPPInfo,Boolean bVarMatch,boolean isFi
 //AsynchClientTask[] varChangeTasks = getVariableChangeTasks();
 //ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), creatAllTasks(varChangeTasks));
 //
-
-
-
 }
