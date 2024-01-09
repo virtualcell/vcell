@@ -9,6 +9,7 @@
  */
 
 package cbit.rmi.event;
+import cbit.vcell.export.server.ExportMetaData;
 import org.vcell.api.common.events.ExportEventRepresentation;
 import org.vcell.api.common.events.ExportTimeSpecs;
 import org.vcell.api.common.events.ExportVariableSpecs;
@@ -33,6 +34,8 @@ public class ExportEvent extends MessageEvent {
 	private final String dataIdString;
 	private final TimeSpecs timeSpecs;
 	private final VariableSpecs variableSpecs;
+
+	private ExportMetaData exportMetaData = null;
 	
 	public ExportEvent(Object source, long jobID, User user, 
 			VCDataIdentifier vcDataId, int argEventType, 
@@ -214,4 +217,13 @@ public static ExportEvent fromJsonRep(Object eventSource, ExportEventRepresentat
 		timeSpecs, variableSpecs);
 	return event;
 }
+
+public void setExportMetaData(ExportMetaData exportMetaData){
+	this.exportMetaData = exportMetaData;
+}
+
+public ExportMetaData getExportMetaData(){
+	return exportMetaData;
+}
+
 }
