@@ -778,7 +778,11 @@ public class LangevinLngvWriter {
 							}
 							rates = new Pair<> (rates.one, decayRate);
 						} else {
-							throw new RuntimeException("Variable missing in the variables map");
+							if(var == null) {
+								throw new RuntimeException("Variable in the variables map is 'null'");
+							} else {
+								throw new RuntimeException("Variable '" + var.getName() + "' missing in the variables map");
+							}
 						}
 						creationDecayVariableMap.put(var, rates);
 					}
@@ -860,14 +864,11 @@ public class LangevinLngvWriter {
 				throw new RuntimeException("Initial concentration must be a number");
 			}
 
-			// TODO: is2D seems to always be false in the original SS, even for membrane molecules. Not sure what it actually means
-			boolean is2D = false;		// the x-coordinate is the same for all the sites
-
-			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() + 
+			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() +
 					" Number " + scount + 
 					// number of site types and number of sites is the same for the vcell implementation of springsalad
 					" Site_Types " + lpmt.getComponentList().size() + " Total"  + "_Sites " + lpmt.getComponentList().size() + 
-					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + is2D);
+					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + lpmt.getIs2D());
 			sb.append("\n");
 			sb.append("{");
 			sb.append("\n");

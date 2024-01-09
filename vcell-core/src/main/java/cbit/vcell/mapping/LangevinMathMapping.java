@@ -99,10 +99,6 @@ import jscl.text.ParseException;
  */
 public class LangevinMathMapping extends AbstractStochMathMapping {
 
-/**
- * @param model cbit.vcell.model.Model
- * @param geometry cbit.vcell.geometry.Geometry
- */
 protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
 	super(simContext, callback, networkGenerationRequirements);
 }
@@ -1153,6 +1149,10 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			Map<MolecularComponentPattern, LangevinParticleMolecularComponent> mcToLpmc = new LinkedHashMap<> ();
 			LangevinParticleMolecularType particleMolecularType = new LangevinParticleMolecularType(molecularType.getName());
 			SpeciesContextSpec scs = molecularTypeToSpeciesContextSpecMap.get(molecularType);	// scs may be null for Sink and Source
+			if(scs != null) {
+				boolean is2D = scs.getIs2D();
+				particleMolecularType.setIs2D(is2D);
+			}
 			for (MolecularComponent molecularComponent : molecularType.getComponentList()) {
 				String pmcName = molecularComponent.getName();
 				String pmcId = particleMolecularType.getName() + "_" + molecularComponent.getName();
