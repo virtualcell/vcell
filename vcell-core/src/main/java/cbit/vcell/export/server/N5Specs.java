@@ -13,10 +13,8 @@ package cbit.vcell.export.server;
 import cbit.vcell.math.MathException;
 import cbit.vcell.simdata.VCData;
 import org.janelia.saalfeldlab.n5.*;
-import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -111,7 +109,7 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 
 		try {
 			n5FSWriter.setAttributes(datasetPath, metaData);
-		} catch (IOException e) {
+		} catch (N5Exception e) {
 			throw new RuntimeException(e);
 		}
 
