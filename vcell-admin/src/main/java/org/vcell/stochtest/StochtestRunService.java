@@ -105,7 +105,7 @@ public class StochtestRunService {
 	    if (stochtestRun!=null){
 	    	String networkGenProbs = null;
 	    	try {
-		    	User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
+		    	User user = new User(PropertyLoader.ADMINISTRATOR_USERID, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 		    	ServerDocumentManager serverDocumentManager = new ServerDocumentManager(this.dbServerImpl);
 		    	biomodelXML = serverDocumentManager.getBioModelXML(new QueryHashtable(), user, stochtestRun.stochtest.biomodelRef, true);
 		    	BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(biomodelXML));

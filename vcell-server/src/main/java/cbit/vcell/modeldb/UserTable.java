@@ -88,7 +88,7 @@ public final static String getCreateAdministratorUserSQL() {
 	String sql = "INSERT INTO "+UserTable.table.getTableName()+
 			" VALUES ( "+
 			PropertyLoader.ADMINISTRATOR_ID+","+
-			"'"+PropertyLoader.ADMINISTRATOR_ACCOUNT+"'"+","+
+			"'"+PropertyLoader.ADMINISTRATOR_USERID +"'"+","+
 			"'"+password+"'"+","+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
@@ -102,6 +102,19 @@ public final static String getCreateTestUserSQL(KeyFactory keyFactory) {
 	String sql = "INSERT INTO "+UserTable.table.getTableName()+
 			" VALUES ( "+keyFactory.nextSEQ()+","+
 			"'"+PropertyLoader.TESTACCOUNT_USERID+"'"+","+
+			"'"+password+"'"+","+
+			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
+			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
+			"CURRENT_TIMESTAMP,"+"'"+(new UserLoginInfo.DigestedPassword(""+password)).getString()+"'"+
+			" )";
+	return sql;
+}
+
+public final static String getCreateVCellSupportUserSQL(KeyFactory keyFactory) {
+	long password = System.currentTimeMillis();
+	String sql = "INSERT INTO "+UserTable.table.getTableName()+
+			" VALUES ( "+keyFactory.nextSEQ()+","+
+			"'"+PropertyLoader.VCELL_SUPPORT_USERID +"'"+","+
 			"'"+password+"'"+","+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+
 			"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+"'empty',"+

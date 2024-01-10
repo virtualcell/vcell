@@ -683,7 +683,7 @@ public class MathVerifier {
 
     public MathGenerationResults testMathGeneration(KeyValue simContextKey) throws SQLException, DataAccessException, XmlParseException, MappingException, MathException, MatrixException, ExpressionException, ModelException, PropertyVetoException{
 
-        User adminUser = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
+        User adminUser = new User(PropertyLoader.ADMINISTRATOR_USERID, new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 
         if(lg.isTraceEnabled()) lg.trace("Testing SimContext with key '" + simContextKey + "'");
         // get biomodel refs
@@ -1122,7 +1122,7 @@ public class MathVerifier {
         final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
 
-        User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
+        User user = new User(PropertyLoader.ADMINISTRATOR_USERID, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
         for(KeyValue bioModelKey : bioModelKeys){
             BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user, bioModelKey);
             if(lg.isTraceEnabled()) lg.trace("Testing bioModel with key '" + bioModelKey + "'");
@@ -1377,7 +1377,7 @@ public class MathVerifier {
         calendar.set(2002, java.util.Calendar.JANUARY, 1);
         final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
-        User user = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
+        User user = new User(PropertyLoader.ADMINISTRATOR_USERID, new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
         for(KeyValue simContextKey : simContextKeys){
             if(lg.isTraceEnabled()) lg.trace("Testing SimContext with key '" + simContextKey + "'");
             // get biomodel refs

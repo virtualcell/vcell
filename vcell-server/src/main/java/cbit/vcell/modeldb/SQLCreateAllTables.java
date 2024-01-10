@@ -180,6 +180,8 @@ private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFa
 							s.executeUpdate(cbit.vcell.modeldb.UserTable.getCreateVoidUserSQL());
 							// Add test user
 							s.executeUpdate(cbit.vcell.modeldb.UserTable.getCreateTestUserSQL(keyFactory));
+							// Add VCellSupport user
+							s.executeUpdate(cbit.vcell.modeldb.UserTable.getCreateVCellSupportUserSQL(keyFactory));
 							// Add PRIVATE group
 							s.executeUpdate(cbit.vcell.modeldb.GroupTable.getCreateGroupPrivateSQL(keyFactory.getNewKey(con)));
 							// Add PUBLIC group
@@ -420,6 +422,8 @@ public static void writeScript(DatabaseSyntax dbSyntax, boolean bootstrapData, W
 		scriptWriter.write(UserTable.getCreateAdministratorUserSQL() + ";\n");
 		// Add test user
 		scriptWriter.write(UserTable.getCreateTestUserSQL(bootstrapKeyFactory) + ";\n");
+		// Add VCellSupport user
+		scriptWriter.write(UserTable.getCreateVCellSupportUserSQL(bootstrapKeyFactory) + ";\n");
 		try {
 			// Add PRIVATE group
 			scriptWriter.write(GroupTable.getCreateGroupPrivateSQL(bootstrapKeyFactory.getNewKey(bootstrapConnection)) + ";\n");

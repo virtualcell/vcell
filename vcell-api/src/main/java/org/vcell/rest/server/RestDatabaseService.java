@@ -30,7 +30,6 @@ import cbit.vcell.xml.XmlParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.representation.ByteArrayRepresentation;
-import org.restlet.representation.FileRepresentation;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.common.BiomodelOMEXResource;
 import org.vcell.rest.common.OverrideRepresentation;
@@ -650,7 +649,7 @@ public class RestDatabaseService {
 			//
 			// try to determine if the current credentials are insufficient, try to fetch BioModel again with administrator privilege.
 			//
-			User adminUser = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
+			User adminUser = new User(PropertyLoader.ADMINISTRATOR_USERID,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 			BioModelRep[] allBioModelReps = databaseServerImpl.getBioModelReps(adminUser, conditionsBuffer.toString(), null, startRow, 1);
 			if (allBioModelReps!=null && allBioModelReps.length>=0){
 				throw new PermissionException("insufficient privilege to retrive BioModel "+bioModelID);
