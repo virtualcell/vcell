@@ -20,7 +20,6 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import com.google.errorprone.annotations.Var;
 import org.janelia.saalfeldlab.n5.*;
 import org.junit.After;
 import org.junit.Assert;
