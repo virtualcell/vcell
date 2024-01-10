@@ -94,8 +94,8 @@
 		<!-- NB: Disable javadoc doclint -->
 		<doclint>none</doclint>
 
-		<activemq-broker.version>5.15.9</activemq-broker.version>
-		<activemq-client.version>5.15.9</activemq-client.version>
+		<activemq-broker.version>5.18.3</activemq-broker.version>
+		<activemq-client.version>5.18.3</activemq-client.version>
 		<axis.version>1.4</axis.version>
 		<axis-wsdl4j.version>1.2</axis-wsdl4j.version>
 		<bio-formats.version>6.7.0</bio-formats.version>
@@ -169,9 +169,10 @@
 		<sesame-rio-api.version>2.9.0</sesame-rio-api.version>
 		<sesame-rio-rdfxml.version>2.9.0</sesame-rio-rdfxml.version>
 		<sesame-rio-n3.version>2.9.0</sesame-rio-n3.version>
-		<slf4j-api.version>1.7.30</slf4j-api.version>
+		<slf4j-api.version>2.0.9</slf4j-api.version>
 		<sshj.version>0.35.0</sshj.version>
 		<xercesImpl.version>2.8.0</xercesImpl.version>
+		<xstream.version>1.4.20</xstream.version>
 		<xom.version>1.2.5</xom.version>
 	</properties>
 
