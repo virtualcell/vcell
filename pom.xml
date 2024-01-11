@@ -152,6 +152,7 @@
 		<log4j-api.version>2.22.1</log4j-api.version>
 		<log4j-core.version>2.22.1</log4j-core.version>
 		<log4j-jul.version>2.22.1</log4j-jul.version>
+		<log4j2-jboss-logmanager.version>1.1.2.Final</log4j2-jboss-logmanager.version>
 		<log4j-layout-template-json.version>2.22.1</log4j-layout-template-json.version>
 		<lz4.version>1.8.0</lz4.version>
 		<mongo-java-driver.version>3.12.11</mongo-java-driver.version>
