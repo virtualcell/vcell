@@ -56,7 +56,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
-import com.google.gson.stream.JsonWriter;
+import cbit.vcell.client.data.ExportDataRepresentation;
+import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.N5Specs;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.GsonBuilder;
@@ -2814,30 +2815,53 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	public static String EXPORT_METADATA_FILENAME = "exportMetaData.json";
 
 	private static void updateExportMetaData(final ExportEvent exportEvent){
+		String globalJobIDs = "globalJobIDs";
+		String formatJobIDs = "formatJobIDs";
 		try{
 			if(ResourceUtil.getVcellHome() != null){
+				HumanReadableExportData humanReadableExportData = exportEvent.getHumanReadableData();
+				ExportDataRepresentation exportDataRepresentation;
+
 				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
 				HashMap<String, Object> jsonHashMap = new HashMap<>();
-				jsonHashMap.put("jobIDs", new ArrayList<String>());
+				jsonHashMap.put(globalJobIDs, new ArrayList<String>());
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 				Type type = new TypeToken<HashMap<String, Object>>() {}.getType();
+				HashMap<String, Object> formatExportData = new HashMap<>();
+				formatExportData.put(formatJobIDs, new ArrayList<String>());
+
 				if (jsonFile.exists()){
 
-					jsonHashMap = gson.fromJson(new FileReader(jsonFile.getAbsolutePath()), type);
+					HashMap<String, Object> tmpJsonHashMap = gson.fromJson(new FileReader(jsonFile.getAbsolutePath()), type);
+					jsonHashMap = tmpJsonHashMap.get(globalJobIDs) == null ? jsonHashMap: tmpJsonHashMap;
+					HashMap<String, Object> tmpHashMap = (HashMap<String, Object>) jsonHashMap.get(exportEvent.getFormat());
+					formatExportData = tmpHashMap == null ? formatExportData: tmpHashMap;
 				}
-				HashMap<String, String> exportMetaData = new HashMap<>();
-				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				Date date = new Date();
-				exportMetaData.put("format", exportEvent.getFormat());
-				exportMetaData.put("exportDate", dateFormat.format(date));
-				exportMetaData.put("uri", exportEvent.getLocation());
-				exportMetaData.put("jobID", String.valueOf(exportEvent.getJobID()));
-				exportMetaData.put("dataID", exportEvent.getDataIdString());
 
-				jsonHashMap.put(String.valueOf(exportEvent.getJobID()), exportMetaData);
-				ArrayList<String> header = (ArrayList<String>) jsonHashMap.get("jobIDs");
-				header.add(String.valueOf(exportEvent.getJobID()));
-				jsonHashMap.put("jobIDs", header);
+				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				double[] exportTimes = exportEvent.getTimeSpecs().getAllTimes();
+				formatExportData.put(String.valueOf(exportEvent.getJobID()), new HashMap<>(){{
+					put("exportDate", dateFormat.format(new Date()));
+					put("uri", exportEvent.getLocation());
+					put("jobID", String.valueOf(exportEvent.getJobID()));
+					put("dataID", exportEvent.getDataIdString());
+					put("simulationName", humanReadableExportData.SimulationName);
+					put("applicationName", humanReadableExportData.ApplicationName);
+					put("biomodelName", humanReadableExportData.BiomodelsName);
+					put("variables", exportEvent.getVariableSpecs().getVariableNames());
+					put("Start/End Time", exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()]);
+				}
+				});
+				ArrayList<String> formatHeader = (ArrayList<String>) formatExportData.get(formatJobIDs);
+				formatHeader.add(String.valueOf(exportEvent.getJobID()));
+				formatExportData.put(formatJobIDs, formatHeader);
+
+				jsonHashMap.put(String.valueOf(exportEvent.getJobID()), formatExportData);
+
+				ArrayList<String> header = (ArrayList<String>) jsonHashMap.get(globalJobIDs);
+				header.add(String.valueOf(exportEvent.getJobID()) + "," + exportEvent.getFormat());
+				jsonHashMap.put(globalJobIDs, header);
+
 				String json = gson.toJson(jsonHashMap, type);
 				FileWriter jsonFileWriter = new FileWriter(jsonFile);
 				jsonFileWriter.write(json);
