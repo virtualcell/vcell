@@ -37,7 +37,7 @@ public class ExportSpecs implements Serializable {
 	private String simulatioName;
 	private String contextName;
 
-	private ExportMetaData exportMetaData;
+	private HumanReadableExportData humanReadableExportData;
 
 	public static ExportParamScanInfo getParamScanInfo(Simulation simulation, int selectedParamScanJobIndex){
 		int scanCount = simulation.getScanCount();
@@ -299,11 +299,11 @@ public class ExportSpecs implements Serializable {
 		System.arraycopy(specialColors, 0, displayAdapterService.getSpecialColors(), 0,specialColors.length);
 	}
 
-	public void setExportMetaData(ExportMetaData exportMetaData){
-		this.exportMetaData = exportMetaData;
+	public void setExportMetaData(HumanReadableExportData humanReadableExportData){
+		this.humanReadableExportData = humanReadableExportData;
 	}
 
-	public ExportMetaData getExportMetaData(){
-		return exportMetaData;
+	public HumanReadableExportData getExportMetaData(){
+		return humanReadableExportData;
 	}
 }

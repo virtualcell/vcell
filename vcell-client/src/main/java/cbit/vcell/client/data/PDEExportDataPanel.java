@@ -689,8 +689,7 @@ private ExportSpecs getExportSpecs() {
 		selections[i] = (SpatialSelection)selectionsArr[i];
 	}
 	SimulationContext sc = (SimulationContext) getSimulation().getSimulationOwner();
-	ExportMetaData exportMetaData = new ExportMetaData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName());
-	exportMetaData.setTimeRange(String.valueOf(timeSpecs.getAllTimes()[timeSpecs.getBeginTimeIndex()]), String.valueOf(timeSpecs.getAllTimes()[timeSpecs.getEndTimeIndex()]));
+	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName());
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
 	ExportSpecs exportSpecs = new ExportSpecs(
 			getPdeDataContext().getVCDataIdentifier(),
@@ -702,7 +701,7 @@ private ExportSpecs getExportSpecs() {
 			dataInfoProvider.getSimulationModelInfo().getSimulationName(),
 			dataInfoProvider.getSimulationModelInfo().getContextName()
 	);
-	exportSpecs.setExportMetaData(exportMetaData);
+	exportSpecs.setExportMetaData(humanReadableExportData);
 	return exportSpecs;
 }
 
