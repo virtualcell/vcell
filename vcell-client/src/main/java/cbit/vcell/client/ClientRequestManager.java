@@ -2755,6 +2755,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new ArrayList<>(), new HashMap<>());
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+				// put lock
 				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
 				RandomAccessFile randomAccessFile = new RandomAccessFile(jsonFile, "rw");
 				FileChannel fileChannel = randomAccessFile.getChannel();
@@ -2767,46 +2768,49 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				double[] exportTimes = exportEvent.getTimeSpecs().getAllTimes();
 
 
-				// put lock
-
 				if (jsonFile.exists()){
 					String stringJSON = new String(Files.readAllBytes(jsonFile.toPath()));
-					exportDataRepresentation = stringJSON.isEmpty() ? exportDataRepresentation : gson.fromJson(stringJSON, ExportDataRepresentation.class);
+					exportDataRepresentation = stringJSON.isEmpty() ?
+							exportDataRepresentation : gson.fromJson(stringJSON, ExportDataRepresentation.class);
 				}
 
-				FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
-						exportDataRepresentation.formatData.get(exportFormat) : new FormatExportDataRepresentation(new HashMap<>(), new ArrayList<>());
+				int sizeOfList = exportDataRepresentation.globalJobIDs.size();
+				int startOfSearch = sizeOfList > 201 ? sizeOfList - 201 : 0;
+				// only write new data, checking the last 100 elements in the stack
+				if (!exportDataRepresentation.globalJobIDs.subList(startOfSearch, sizeOfList - 1).contains(stringJobID)){
+					FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
+							exportDataRepresentation.formatData.get(exportFormat) : new FormatExportDataRepresentation(new HashMap<>(), new ArrayList<>());
 
-				SimlationExportDataRepresentation simlationExportDataRepresentation = new SimlationExportDataRepresentation(
-						dateFormat.format(new Date()),
-						exportEvent.getLocation(),
-						stringJobID,
-						exportEvent.getDataIdString(),
-						humanReadableExportData.SimulationName,
-						humanReadableExportData.ApplicationName,
-						humanReadableExportData.BiomodelsName,
-						exportEvent.getVariableSpecs().toString(),
-						exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()]
-				);
+					SimlationExportDataRepresentation simlationExportDataRepresentation = new SimlationExportDataRepresentation(
+							dateFormat.format(new Date()),
+							exportEvent.getLocation(),
+							stringJobID,
+							exportEvent.getDataIdString(),
+							humanReadableExportData.SimulationName,
+							humanReadableExportData.ApplicationName,
+							humanReadableExportData.BiomodelsName,
+							exportEvent.getVariableSpecs().toString(),
+							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()]
+					);
 
-				formatData.simulationDataMap.put(stringJobID, simlationExportDataRepresentation);
-				formatData.formatJobIDs.add(stringJobID);
+					formatData.simulationDataMap.put(stringJobID, simlationExportDataRepresentation);
+					formatData.formatJobIDs.add(stringJobID);
 
-				exportDataRepresentation.formatData.put(exportFormat, formatData);
-				exportDataRepresentation.globalJobIDs.add(stringJobID + "," + exportFormat);
+					exportDataRepresentation.formatData.put(exportFormat, formatData);
+					exportDataRepresentation.globalJobIDs.add(stringJobID + "," + exportFormat);
 
 
-				String json = gson.toJson(exportDataRepresentation, ExportDataRepresentation.class);
-				FileWriter jsonFileWriter = new FileWriter(jsonFile);
-				jsonFileWriter.write(json);
+					String json = gson.toJson(exportDataRepresentation, ExportDataRepresentation.class);
+					FileWriter jsonFileWriter = new FileWriter(jsonFile);
+					jsonFileWriter.write(json);
 
-				jsonFileWriter.close();
+					jsonFileWriter.close();
+				}
+
+				// close file lock
 				fileLock.close();
 				fileChannel.close();
 				randomAccessFile.close();
-
-				// close file lock
-
 			}
 		}
 		catch (Exception e){
