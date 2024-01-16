@@ -2550,7 +2550,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				final boolean[] bFlagArr = new boolean[] { false };
 				final ByteArrayOutputStream[] baosArr = new ByteArrayOutputStream[1];
 				final HttpGet[] httpGetArr = new HttpGet[1];
-//			final ImageJConnection[] imagejConnetArr = new ImageJConnection[1];
 				// Start download of exported file in separate thread that is interruptible
 				// (apache HTTPClient)
 				Thread interruptible = new Thread(new Runnable() {
@@ -2574,8 +2573,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 								long size = entity.getContentLength();
 								InputStream instream = entity.getContent();
 								try {
-//								URLConnection connection = new URL(evt.getLocation()).openConnection();
-//							    Thread.sleep(60000);
 									if (size > 0) {
 										baosArr[0] = new ByteArrayOutputStream((int) size);
 									} else {
@@ -2590,7 +2587,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						} catch (Exception e) {
 							excArr[0] = e;
 						} finally {
-//					    if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
 							if (response != null) {
 								try {
 									response.close();
@@ -2615,7 +2611,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						if (httpGetArr[0] != null) {
 							httpGetArr[0].abort();
 						}
-//					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
 						throw UserCancelException.CANCEL_GENERIC;
 					}
 					try {
@@ -2624,7 +2619,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						if (httpGetArr[0] != null) {
 							httpGetArr[0].abort();
 						}
-//					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
 						if (getClientTaskStatusSupport() != null && getClientTaskStatusSupport().isInterrupted()) {
 							throw UserCancelException.CANCEL_GENERIC;
 						}
@@ -2633,14 +2627,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				if (excArr[0] != null) {// download failed
 					throw excArr[0];
 				}
-//			//-------------------------
-//			String filePart = new URL(evt.getLocation()).getFile();
-//			File f = new File("c:/temp/exportdir",filePart);
-//			FileInputStream fis = new FileInputStream(f);
-//			baosArr[0] = new ByteArrayOutputStream();
-//			IOUtils.copy(fis, baosArr[0]);
-//			fis.close();
-//			//------------------------------
 				//
 				// finished downloading, either save to file or send to ImageJ directly
 				//
@@ -2648,45 +2634,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					// save for file save operations
 					hashTable.put(BYTES_KEY, baosArr[0].toByteArray());
 				}
-//		    else{
-//		    	//Send to ImageJ directly
-////		    	int response = DialogUtils.showComponentOKCancelDialog(requester, new JLabel("Open ImageJ->File->Export->VCellUtil... to begin data transefer"), "Sending data to ImageJ...");
-////		    	if(response != JOptionPane.OK_OPTION){
-////		    		throw UserCancelException.CANCEL_GENERIC;
-////		    	}
-//		    	//NRRD format send to ImageJ
-//		    	if(getClientTaskStatusSupport() != null){
-//		    		getClientTaskStatusSupport().setMessage("unpacking data...");
-//		    	}
-//		    	ByteArrayInputStream bais = new ByteArrayInputStream( baosArr[0].toByteArray());
-//		    	ZipInputStream zis = null;
-//		    	BufferedInputStream bis = null;
-//		    	try{
-//			    	zis = new ZipInputStream(bais);
-//			    	ZipEntry entry = zis.getNextEntry();
-////			    	System.out.println("zipfile entry name="+entry.getName()+"zipfile entry size="+entry.getSize());
-////					    	File tempf = new File("C:\\temp\\tempf.nrrd");
-////					    	FileOutputStream fos = new FileOutputStream(tempf);
-////					    	byte[] mybuf = new byte[1000];
-////					    	int numread = 0;
-////					    	while((numread = zis.read(mybuf)) != -1){
-////					    		fos.write(mybuf, 0, numread);
-////					    	}
-////					    	fos.close();
-//			    	TimeSpecs timeSpecs = evt.getTimeSpecs();
-//			    	double[] timePoints = new double[timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1];
-//			    	for (int tp = timeSpecs.getBeginTimeIndex(); tp <= timeSpecs.getEndTimeIndex(); tp++){
-//			    		timePoints[tp-timeSpecs.getBeginTimeIndex()] = timeSpecs.getAllTimes()[tp];
-//			    	}
-//			    	imagejConnetArr[0] = new ImageJConnection(ImageJHelper.ExternalCommunicator.IMAGEJ);//doesn't open connection until later
-//			    	bis = new BufferedInputStream(zis);
-//			    	ImageJHelper.vcellSendNRRD(requester,bis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'",timePoints,evt.getVariableSpecs().getVariableNames());
-//		    	}finally{
-//		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}
-//		    		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
-//		    	}
-//		    	throw UserCancelException.CANCEL_GENERIC;//finished, exit all further tasks
-//		    }
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("selecting file to save",
