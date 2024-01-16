@@ -56,7 +56,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
-import cbit.vcell.client.data.ExportDataRepresentation;
+import cbit.vcell.client.data.*;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.N5Specs;
 import com.google.gson.reflect.TypeToken;
@@ -119,8 +119,6 @@ import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
-import cbit.vcell.client.data.DataViewerController;
-import cbit.vcell.client.data.MergedDatasetViewerController;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.AsynchMessageManager;
@@ -2815,57 +2813,56 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	public static String EXPORT_METADATA_FILENAME = "exportMetaData.json";
 
 	private static void updateExportMetaData(final ExportEvent exportEvent){
-		String globalJobIDs = "globalJobIDs";
-		String formatJobIDs = "formatJobIDs";
 		try{
 			if(ResourceUtil.getVcellHome() != null){
-				HumanReadableExportData humanReadableExportData = exportEvent.getHumanReadableData();
-				ExportDataRepresentation exportDataRepresentation;
-
+				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new ArrayList<>(), new HashMap<>());
 				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
-				HashMap<String, Object> jsonHashMap = new HashMap<>();
-				jsonHashMap.put(globalJobIDs, new ArrayList<String>());
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
-				Type type = new TypeToken<HashMap<String, Object>>() {}.getType();
-				HashMap<String, Object> formatExportData = new HashMap<>();
-				formatExportData.put(formatJobIDs, new ArrayList<String>());
 
-				if (jsonFile.exists()){
 
-					HashMap<String, Object> tmpJsonHashMap = gson.fromJson(new FileReader(jsonFile.getAbsolutePath()), type);
-					jsonHashMap = tmpJsonHashMap.get(globalJobIDs) == null ? jsonHashMap: tmpJsonHashMap;
-					HashMap<String, Object> tmpHashMap = (HashMap<String, Object>) jsonHashMap.get(exportEvent.getFormat());
-					formatExportData = tmpHashMap == null ? formatExportData: tmpHashMap;
-				}
-
+				String stringJobID = String.valueOf(exportEvent.getJobID());
+				String exportFormat = exportEvent.getFormat();
+				HumanReadableExportData humanReadableExportData = exportEvent.getHumanReadableData();
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				double[] exportTimes = exportEvent.getTimeSpecs().getAllTimes();
-				formatExportData.put(String.valueOf(exportEvent.getJobID()), new HashMap<>(){{
-					put("exportDate", dateFormat.format(new Date()));
-					put("uri", exportEvent.getLocation());
-					put("jobID", String.valueOf(exportEvent.getJobID()));
-					put("dataID", exportEvent.getDataIdString());
-					put("simulationName", humanReadableExportData.SimulationName);
-					put("applicationName", humanReadableExportData.ApplicationName);
-					put("biomodelName", humanReadableExportData.BiomodelsName);
-					put("variables", exportEvent.getVariableSpecs().getVariableNames());
-					put("Start/End Time", exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()]);
+
+
+				// put lock
+
+				if (jsonFile.exists()){
+					String stringJSON = new String(Files.readAllBytes(jsonFile.toPath()));
+					exportDataRepresentation = gson.fromJson(stringJSON, ExportDataRepresentation.class);
 				}
-				});
-				ArrayList<String> formatHeader = (ArrayList<String>) formatExportData.get(formatJobIDs);
-				formatHeader.add(String.valueOf(exportEvent.getJobID()));
-				formatExportData.put(formatJobIDs, formatHeader);
 
-				jsonHashMap.put(String.valueOf(exportEvent.getJobID()), formatExportData);
+				FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
+						exportDataRepresentation.formatData.get(exportFormat) : new FormatExportDataRepresentation(new HashMap<>(), new ArrayList<>());
 
-				ArrayList<String> header = (ArrayList<String>) jsonHashMap.get(globalJobIDs);
-				header.add(String.valueOf(exportEvent.getJobID()) + "," + exportEvent.getFormat());
-				jsonHashMap.put(globalJobIDs, header);
+				SimlationExportDataRepresentation simlationExportDataRepresentation = new SimlationExportDataRepresentation(
+						dateFormat.format(new Date()),
+						exportEvent.getLocation(),
+						stringJobID,
+						exportEvent.getDataIdString(),
+						humanReadableExportData.SimulationName,
+						humanReadableExportData.ApplicationName,
+						humanReadableExportData.BiomodelsName,
+						exportEvent.getVariableSpecs().toString(),
+						exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()]
+				);
 
-				String json = gson.toJson(jsonHashMap, type);
+				formatData.simulationDataMap.put(stringJobID, simlationExportDataRepresentation);
+				formatData.formatJobIDs.add(stringJobID);
+
+				exportDataRepresentation.formatData.put(exportFormat, formatData);
+				exportDataRepresentation.globalJobIDs.add(stringJobID + "," + exportFormat);
+
+
+				String json = gson.toJson(exportDataRepresentation, ExportDataRepresentation.class);
 				FileWriter jsonFileWriter = new FileWriter(jsonFile);
 				jsonFileWriter.write(json);
 				jsonFileWriter.close();
+
+				// close file lock
+
 			}
 		}
 		catch (Exception e){
