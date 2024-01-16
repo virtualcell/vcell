@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Type;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
@@ -2816,9 +2818,12 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		try{
 			if(ResourceUtil.getVcellHome() != null){
 				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new ArrayList<>(), new HashMap<>());
-				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
+				FileOutputStream fileOutputStream = new FileOutputStream(jsonFile);
+				FileChannel fileChannel = fileOutputStream.getChannel();
+				FileLock fileLock = fileChannel.lock();
 
 				String stringJobID = String.valueOf(exportEvent.getJobID());
 				String exportFormat = exportEvent.getFormat();
@@ -2831,7 +2836,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 				if (jsonFile.exists()){
 					String stringJSON = new String(Files.readAllBytes(jsonFile.toPath()));
-					exportDataRepresentation = gson.fromJson(stringJSON, ExportDataRepresentation.class);
+					exportDataRepresentation = stringJSON.isEmpty() ? exportDataRepresentation : gson.fromJson(stringJSON, ExportDataRepresentation.class);
 				}
 
 				FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
@@ -2859,7 +2864,11 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				String json = gson.toJson(exportDataRepresentation, ExportDataRepresentation.class);
 				FileWriter jsonFileWriter = new FileWriter(jsonFile);
 				jsonFileWriter.write(json);
+
 				jsonFileWriter.close();
+				fileLock.close();
+				fileChannel.close();
+				fileOutputStream.close();
 
 				// close file lock
 
