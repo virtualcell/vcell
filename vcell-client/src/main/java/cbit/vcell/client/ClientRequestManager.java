@@ -24,19 +24,7 @@ import java.awt.image.DataBufferUShort;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -2768,8 +2756,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
-				FileOutputStream fileOutputStream = new FileOutputStream(jsonFile);
-				FileChannel fileChannel = fileOutputStream.getChannel();
+				RandomAccessFile randomAccessFile = new RandomAccessFile(jsonFile, "rw");
+				FileChannel fileChannel = randomAccessFile.getChannel();
 				FileLock fileLock = fileChannel.lock();
 
 				String stringJobID = String.valueOf(exportEvent.getJobID());
@@ -2815,7 +2803,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				jsonFileWriter.close();
 				fileLock.close();
 				fileChannel.close();
-				fileOutputStream.close();
+				randomAccessFile.close();
 
 				// close file lock
 
