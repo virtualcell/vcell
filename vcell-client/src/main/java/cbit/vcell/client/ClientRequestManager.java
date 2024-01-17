@@ -25,7 +25,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.*;
-import java.lang.reflect.Type;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
@@ -49,7 +48,6 @@ import javax.swing.filechooser.FileFilter;
 import cbit.vcell.client.data.*;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.N5Specs;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
@@ -2779,10 +2777,10 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				int startOfSearch = sizeOfList > 201 ? sizeOfList - 201 : 0;
 				// only write new data, checking the last 200 elements in the stack
 				if (!exportDataRepresentation.globalJobIDs.subList(startOfSearch, sizeOfList - 1).contains(globalID)){
-					FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
-							exportDataRepresentation.formatData.get(exportFormat) : new FormatExportDataRepresentation(new HashMap<>(), new ArrayList<>());
+					ExportDataRepresentation.FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
+							exportDataRepresentation.formatData.get(exportFormat) : new ExportDataRepresentation.FormatExportDataRepresentation(new HashMap<>(), new ArrayList<>());
 
-					SimlationExportDataRepresentation simlationExportDataRepresentation = new SimlationExportDataRepresentation(
+					ExportDataRepresentation.SimulationExportDataRepresentation simulationExportDataRepresentation = new ExportDataRepresentation.SimulationExportDataRepresentation(
 							dateFormat.format(new Date()),
 							exportEvent.getLocation(),
 							stringJobID,
@@ -2794,7 +2792,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()]
 					);
 
-					formatData.simulationDataMap.put(stringJobID, simlationExportDataRepresentation);
+					formatData.simulationDataMap.put(stringJobID, simulationExportDataRepresentation);
 					formatData.formatJobIDs.add(stringJobID);
 
 					exportDataRepresentation.formatData.put(exportFormat, formatData);
