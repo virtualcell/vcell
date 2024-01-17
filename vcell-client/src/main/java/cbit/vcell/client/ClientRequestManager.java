@@ -2763,6 +2763,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 				String stringJobID = String.valueOf(exportEvent.getJobID());
 				String exportFormat = exportEvent.getFormat();
+				String globalID = stringJobID + "," + exportFormat;
 				HumanReadableExportData humanReadableExportData = exportEvent.getHumanReadableData();
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				double[] exportTimes = exportEvent.getTimeSpecs().getAllTimes();
@@ -2777,7 +2778,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				int sizeOfList = exportDataRepresentation.globalJobIDs.size();
 				int startOfSearch = sizeOfList > 201 ? sizeOfList - 201 : 0;
 				// only write new data, checking the last 100 elements in the stack
-				if (!exportDataRepresentation.globalJobIDs.subList(startOfSearch, sizeOfList - 1).contains(stringJobID)){
+				if (!exportDataRepresentation.globalJobIDs.subList(startOfSearch, sizeOfList - 1).contains(globalID)){
 					FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
 							exportDataRepresentation.formatData.get(exportFormat) : new FormatExportDataRepresentation(new HashMap<>(), new ArrayList<>());
 
@@ -2797,7 +2798,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					formatData.formatJobIDs.add(stringJobID);
 
 					exportDataRepresentation.formatData.put(exportFormat, formatData);
-					exportDataRepresentation.globalJobIDs.add(stringJobID + "," + exportFormat);
+					exportDataRepresentation.globalJobIDs.add(globalID);
 
 
 					String json = gson.toJson(exportDataRepresentation, ExportDataRepresentation.class);
