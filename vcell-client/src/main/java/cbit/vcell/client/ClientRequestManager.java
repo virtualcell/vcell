@@ -2777,7 +2777,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 				int sizeOfList = exportDataRepresentation.globalJobIDs.size();
 				int startOfSearch = sizeOfList > 201 ? sizeOfList - 201 : 0;
-				// only write new data, checking the last 100 elements in the stack
+				// only write new data, checking the last 200 elements in the stack
 				if (!exportDataRepresentation.globalJobIDs.subList(startOfSearch, sizeOfList - 1).contains(globalID)){
 					FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
 							exportDataRepresentation.formatData.get(exportFormat) : new FormatExportDataRepresentation(new HashMap<>(), new ArrayList<>());
@@ -2790,7 +2790,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							humanReadableExportData.SimulationName,
 							humanReadableExportData.ApplicationName,
 							humanReadableExportData.BiomodelsName,
-							exportEvent.getVariableSpecs().toString(),
+                            Arrays.toString(exportEvent.getVariableSpecs().getVariableNames()),
 							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()]
 					);
 
