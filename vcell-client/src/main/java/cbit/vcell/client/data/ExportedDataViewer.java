@@ -1,28 +1,15 @@
 package cbit.vcell.client.data;
 
 import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
-import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.client.desktop.simulation.SimulationWindow;
-import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
-import scala.util.parsing.combinator.testing.Str;
 
 import javax.swing.*;
-import javax.swing.event.TableColumnModelListener;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -30,9 +17,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileReader;
-import java.lang.reflect.Type;
-import java.util.*;
+import java.nio.file.Files;
 import java.util.List;
 
 public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener {
@@ -58,9 +43,9 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         scrollPane.setPreferredSize(new Dimension(400, 400));
         scrollPane.setMinimumSize(new Dimension(400, 400));
 
-        JLabel jLabel = new JLabel("Most recent exports. This list can be volatile so ensure that important export metadata is saved elsewhere.");
+        JLabel jLabel = new JLabel("Most recent exports. This list is volatile so save important metadata elsewhere.");
         refresh = new JButton("Refresh List");
-        copyButton = new JButton("Copy");
+        copyButton = new JButton("Copy Export Link");
 
         JPanel topBar = new JPanel();
         topBar.setLayout(new FlowLayout());
@@ -78,15 +63,17 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     public void updateTableModel(){
         try{
-            HashMap <String, Object> jsonData = getJsonData();
+            ExportDataRepresentation jsonData = getJsonData();
             if (jsonData != null){
-                List<String> set = (ArrayList<String>) jsonData.get("jobIDs");
-                String lastElement = tableModel.getRowCount() == 0 ? null: tableModel.exportMetaData.get(tableModel.exportMetaData.size() - 1).jobID;
-                for(int i = set.size() - 1; i > -1; i--){
-                    if(lastElement != null && lastElement.equals(set.get(i))){
+                List<String> globalJobIDs = jsonData.globalJobIDs;
+                String lastElement = tableModel.getRowCount() == 0 ? null: tableModel.tableData.get(tableModel.tableData.size() - 1).jobID;
+                for(int i = globalJobIDs.size() - 1; i > -1; i--){
+                    // first index is JobID, second is data format
+                    String[] tokens = globalJobIDs.get(i).split(",");
+                    if(lastElement != null && lastElement.equals(tokens[0])){
                         break;
                     }
-                    addRowFromJson(jsonData, set.get(i));
+                    addRowFromJson(tokens[0], tokens[1], jsonData);
                 }
             }
             tableModel.refreshData();
@@ -98,31 +85,33 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     /* Reason for this function is the for loop order, it matters when doing efficient updating by checking end of row. */
     public void initalizeTableData(){
-        HashMap<String, Object> jsonData = getJsonData();
+        ExportDataRepresentation jsonData = getJsonData();
         if (jsonData != null){
-            List<String> set = (ArrayList<String>) jsonData.get("jobIDs");
-            for (String s : set) {
-                addRowFromJson(jsonData, s);
+            List<String> globalJobIDs = jsonData.globalJobIDs;
+            for (String s : globalJobIDs) {
+                String[] tokens = s.split(",");
+                addRowFromJson(tokens[0], tokens[1], jsonData);
             }
         }
         tableModel.refreshData();
     }
 
-    private void addRowFromJson(HashMap<String, Object> jsonData, String s){
-        Map<String, String> addedRow = (Map<String, String>) jsonData.get(s);
-        ExportedDataTableModel.ExportMetaData newRow = new ExportedDataTableModel.ExportMetaData(addedRow.get("jobID"), addedRow.get("dataID"), addedRow.get("exportDate"), addedRow.get("format"), addedRow.get("uri"));
+    private void addRowFromJson(String jobID, String dataFormat, ExportDataRepresentation jsonData){
+        ExportDataRepresentation.SimulationExportDataRepresentation simData = jsonData.formatData.get(dataFormat).simulationDataMap.get(jobID);
+        ExportedDataTableModel.TableData newRow = new ExportedDataTableModel.TableData(
+                simData.jobID, simData.dataID, simData.exportDate, dataFormat, simData.uri,
+                simData.biomodelName, simData.startAndEndTime, simData.applicationName, simData.simulationName, simData.variables
+        );
         tableModel.addRow(newRow);
     }
 
-    public HashMap<String, Object> getJsonData(){
+    public ExportDataRepresentation getJsonData(){
         try{
             File jsonFile = new File(ResourceUtil.getVcellHome(), ClientRequestManager.EXPORT_METADATA_FILENAME);
-            if (jsonFile.exists() && jsonFile.length() != 0){
-                HashMap<String, Object> jsonHashMap;
+            String jsonString = new String(Files.readAllBytes(jsonFile.toPath()));
+            if (jsonFile.exists() && !jsonString.isEmpty()){
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                Type type = new TypeToken<HashMap<String, Object>>() {}.getType();
-                jsonHashMap = gson.fromJson(new FileReader(jsonFile.getAbsolutePath()), type);
-                return jsonHashMap;
+                return gson.fromJson(jsonString, ExportDataRepresentation.class);
             }
             return null;
         }
@@ -153,10 +142,10 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             updateTableModel();
         } else if (e.getSource().equals(copyButton)) {
             int row = editorScrollTable.getSelectedRow();
-            int column = editorScrollTable.getSelectedColumn();
+            ExportedDataTableModel.TableData tableData = tableModel.getRowData(row);
 
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(new StringSelection( (String) editorScrollTable.getValueAt(row, column)), null);
+            clipboard.setContents(new StringSelection(tableData.link), null);
         }
     }
 
