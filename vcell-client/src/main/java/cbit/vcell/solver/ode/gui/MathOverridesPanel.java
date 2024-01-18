@@ -28,8 +28,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 
-import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.gui.ScopedExpression;
@@ -75,14 +73,23 @@ public class MathOverridesPanel extends JPanel {
 
     class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener {
         public void actionPerformed(java.awt.event.ActionEvent e) {
-            if (e.getSource() == MathOverridesPanel.this.getJMenuItemCopy())
-                connEtoC4(e);
-            if (e.getSource() == MathOverridesPanel.this.getJMenuItemCopyAll())
-                connEtoC5(e);
-            if (e.getSource() == MathOverridesPanel.this.getJMenuItemPaste())
-                connEtoC10(e);
-            if (e.getSource() == MathOverridesPanel.this.getJMenuItemPasteAll())
-                connEtoC11(e);
+            try{
+                if (e.getSource() == MathOverridesPanel.this.getJMenuItemCopy())
+                    MathOverridesPanel.this.copyCells(getJMenuItemCopy().getActionCommand());
+
+                if (e.getSource() == MathOverridesPanel.this.getJMenuItemCopyAll())
+                    MathOverridesPanel.this.copyCells(getJMenuItemCopyAll().getActionCommand());
+
+                if (e.getSource() == MathOverridesPanel.this.getJMenuItemPaste())
+                    connEtoC10(e);
+
+                if (e.getSource() == MathOverridesPanel.this.getJMenuItemPasteAll())
+                    MathOverridesPanel.this.jMenuItemPaste_ActionPerformed(e);
+            }
+            catch (Throwable ivjExc){
+                handleException(ivjExc);
+            }
+
         }
 
         ;
@@ -104,16 +111,27 @@ public class MathOverridesPanel extends JPanel {
 
         public void mousePressed(java.awt.event.MouseEvent e) {
             if (e.getSource() == MathOverridesPanel.this.getJTableFixed())
-                connEtoC3(e);
+                try {
+                    MathOverridesPanel.this.showPopupMenu(e);
+                } catch (Throwable ivjExc) {
+                    handleException(ivjExc);
+                }
         }
 
         ;
 
         public void mouseReleased(java.awt.event.MouseEvent e) {
-            if (e.getSource() == MathOverridesPanel.this.getJTableFixed())
-                connEtoC8(e);
-            if (e.getSource() == MathOverridesPanel.this.getJTableFixed())
-                connEtoC9(e);
+            try{
+                if (e.getSource() == MathOverridesPanel.this.getJTableFixed())
+                    MathOverridesPanel.this.jTableFixed_MouseReleased(e);
+
+                if (e.getSource() == MathOverridesPanel.this.getJTableFixed())
+                    MathOverridesPanel.this.showPopupMenu(e);
+            }
+            catch (Throwable ivjExc){
+                handleException(ivjExc);
+            }
+
         }
 
         ;
@@ -121,8 +139,24 @@ public class MathOverridesPanel extends JPanel {
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             if (evt.getSource() == MathOverridesPanel.this && (evt.getPropertyName().equals("mathOverrides")))
                 connPtoP6SetTarget();
+            /* Set the source from the target */
             if (evt.getSource() == MathOverridesPanel.this.getMathOverridesTableModel() && (evt.getPropertyName().equals("mathOverrides")))
-                connPtoP6SetSource();
+                try {
+                    if (ivjConnPtoP6Aligning == false) {
+                        // user code begin {1}
+                        // user code end
+                        ivjConnPtoP6Aligning = true;
+                        MathOverridesPanel.this.setMathOverrides(getMathOverridesTableModel().getMathOverrides());
+                        // user code begin {2}
+                        // user code end
+                        ivjConnPtoP6Aligning = false;
+                    }
+                } catch (Throwable ivjExc) {
+                    ivjConnPtoP6Aligning = false;
+                    // user code begin {3}
+                    // user code end
+                    handleException(ivjExc);
+                }
             if (evt.getSource() == MathOverridesPanel.this && (evt.getPropertyName().equals("editable")))
                 connEtoC1(evt);
         }
@@ -175,231 +209,6 @@ public class MathOverridesPanel extends JPanel {
             // user code begin {2}
             // user code end
         } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    /**
-     * connEtoC11:  (JMenuItemPasteAll.action.actionPerformed(java.awt.event.ActionEvent) --> MathOverridesPanel.jMenuItemPaste_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
-     *
-     * @param arg1 java.awt.event.ActionEvent
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC11(java.awt.event.ActionEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.jMenuItemPaste_ActionPerformed(arg1);
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    /**
-     * connEtoC2:  (MathOverridesPanel.initialize() --> MathOverridesPanel.controlKeys()V)
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC2() {
-        try {
-            // user code begin {1}
-            // user code end
-            this.controlKeys();
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    /**
-     * connEtoC3:  (JTableFixed.mouse.mousePressed(java.awt.event.MouseEvent) --> MathOverridesPanel.showPopupMenu(Ljava.awt.event.MouseEvent;)V)
-     *
-     * @param arg1 java.awt.event.MouseEvent
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC3(java.awt.event.MouseEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.showPopupMenu(arg1);
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    /**
-     * connEtoC4:  (JMenuItemCopy.action.actionPerformed(java.awt.event.ActionEvent) --> MathOverridesPanel.copyCells(Ljava.lang.String;)V)
-     *
-     * @param arg1 java.awt.event.ActionEvent
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC4(java.awt.event.ActionEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.copyCells(getJMenuItemCopy().getActionCommand());
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    /**
-     * connEtoC5:  (JMenuItemCopyAll.action.actionPerformed(java.awt.event.ActionEvent) --> MathOverridesPanel.copyCells(Ljava.lang.String;)V)
-     *
-     * @param arg1 java.awt.event.ActionEvent
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC5(java.awt.event.ActionEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.copyCells(getJMenuItemCopyAll().getActionCommand());
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-    /**
-     * connEtoC8:  (JTableFixed.mouse.mouseReleased(java.awt.event.MouseEvent) --> MathOverridesPanel.jTableFixed_MouseReleased(Ljava.awt.event.MouseEvent;)V)
-     *
-     * @param arg1 java.awt.event.MouseEvent
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC8(java.awt.event.MouseEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.jTableFixed_MouseReleased(arg1);
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    /**
-     * connEtoC9:  (JTableFixed.mouse.mouseReleased(java.awt.event.MouseEvent) --> MathOverridesPanel.showPopupMenu(Ljava.awt.event.MouseEvent;)V)
-     *
-     * @param arg1 java.awt.event.MouseEvent
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC9(java.awt.event.MouseEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.showPopupMenu(arg1);
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    /**
-     * connEtoM1:  (MathOverridesPanel.initialize() --> JTableFixed.setDefaultRenderer(Ljava.lang.Class;Ljavax.swing.table.TableCellRenderer;)V)
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoM1() {
-        try {
-            // user code begin {1}
-            // user code end
-            getJTableFixed().setDefaultRenderer(String.class, getMathOverridesTableCellRenderer1());
-            getJTableFixed().setDefaultRenderer(ScopedExpression.class, getMathOverridesTableCellRenderer1());
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-    /**
-     * connPtoP1SetTarget:  (MathOverridesTableModel.this <--> MathOverridesTableCellRenderer1.mathOverridesTableModel)
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connPtoP1SetTarget() {
-        /* Set the target from the source */
-        try {
-            getMathOverridesTableCellRenderer1().setMathOverridesTableModel(getMathOverridesTableModel());
-            // user code begin {1}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    /**
-     * connPtoP5SetTarget:  (MathOverridesTableModel.this <--> Table.model)
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connPtoP5SetTarget() {
-        /* Set the target from the source */
-        try {
-            getJTableFixed().setModel(getMathOverridesTableModel());
-            getJTableFixed().createDefaultColumnsFromModel();
-            getJTableFixed().setDefaultEditor(ScopedExpression.class, new TableCellEditorAutoCompletion(getJTableFixed()));
-            // user code begin {1}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-    /**
-     * connPtoP6SetSource:  (MathOverridesPanel.mathOverrides <--> MathOverridesTableModel.mathOverrides)
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connPtoP6SetSource() {
-        /* Set the source from the target */
-        try {
-            if (ivjConnPtoP6Aligning == false) {
-                // user code begin {1}
-                // user code end
-                ivjConnPtoP6Aligning = true;
-                this.setMathOverrides(getMathOverridesTableModel().getMathOverrides());
-                // user code begin {2}
-                // user code end
-                ivjConnPtoP6Aligning = false;
-            }
-        } catch (java.lang.Throwable ivjExc) {
-            ivjConnPtoP6Aligning = false;
             // user code begin {3}
             // user code end
             handleException(ivjExc);
@@ -795,9 +604,18 @@ public class MathOverridesPanel extends JPanel {
         getJTableFixed().addMouseListener(ivjEventHandler);
         getJMenuItemPaste().addActionListener(ivjEventHandler);
         getJMenuItemPasteAll().addActionListener(ivjEventHandler);
-        connPtoP5SetTarget();
+        /* Set the target from the source */
+        try {
+            getJTableFixed().setModel(getMathOverridesTableModel());
+            getJTableFixed().createDefaultColumnsFromModel();
+            getJTableFixed().setDefaultEditor(ScopedExpression.class, new TableCellEditorAutoCompletion(getJTableFixed()));
+            getMathOverridesTableCellRenderer1().setMathOverridesTableModel(getMathOverridesTableModel());
+        } catch (Throwable ivjExc) {
+            // user code begin {3}
+            // user code end
+            handleException(ivjExc);
+        }
         connPtoP6SetTarget();
-        connPtoP1SetTarget();
     }
 
     /**
@@ -848,8 +666,29 @@ public class MathOverridesPanel extends JPanel {
             add(removeUnusedButton, gridBagConstraints);
 
             initConnections();
-            connEtoM1();
-            connEtoC2();
+            try {
+                // user code begin {1}
+                // user code end
+                getJTableFixed().setDefaultRenderer(String.class, getMathOverridesTableCellRenderer1());
+                getJTableFixed().setDefaultRenderer(ScopedExpression.class, getMathOverridesTableCellRenderer1());
+                // user code begin {2}
+                // user code end
+            } catch (Throwable ivjExc) {
+                // user code begin {3}
+                // user code end
+                handleException(ivjExc);
+            }
+            try {
+                // user code begin {1}
+                // user code end
+                this.controlKeys();
+                // user code begin {2}
+                // user code end
+            } catch (Throwable ivjExc) {
+                // user code begin {3}
+                // user code end
+                handleException(ivjExc);
+            }
         } catch (java.lang.Throwable ivjExc) {
             handleException(ivjExc);
         }
