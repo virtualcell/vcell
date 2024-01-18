@@ -455,6 +455,7 @@ public class SlurmProxy extends HtcProxy {
 		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
 		String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
 		String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
+		String slurm_singularity_module_name = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
 		String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
 		String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
 		File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
@@ -481,7 +482,7 @@ public class SlurmProxy extends HtcProxy {
 		slurmInitSingularity(singularityLSB, primaryDataDirExternal, Optional.of(secondaryDataDirExternal), htclogdir_external, softwareVersion,
 				slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
 				slurm_local_singularity_dir, simDataDirArchiveExternal, simDataDirArchiveInternal, slurm_singularity_central_filepath,
-				environmentVars);
+				slurm_singularity_module_name, environmentVars);
 
 		LineStringBuilder sendFailMsgLSB = new LineStringBuilder();
 		sendFailMsgScript(simTask, sendFailMsgLSB, jmshost_sim_external, jmsport_sim_external, jmsuser, jmspswd);
@@ -676,7 +677,7 @@ public class SlurmProxy extends HtcProxy {
 			String slurm_singularity_local_image_filepath, String slurm_tmpdir,
 			String slurm_central_singularity_dir, String slurm_local_singularity_dir,
 			String simDataDirArchiveExternal, String simDataDirArchiveInternal,
-			File slurm_singularity_central_filepath, String[] environmentVars) {
+			File slurm_singularity_central_filepath, String singularity_module_name, String[] environmentVars) {
 		lsb.write("#BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------");
 		lsb.write("set -x");
 		lsb.newline();
@@ -690,7 +691,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("echo `hostname`\n");
 		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
 		lsb.write("source /usr/share/Modules/init/bash\n");
-		lsb.write("module load singularity\n");
+		lsb.write("module load "+singularity_module_name+"\n");
 		
 		lsb.write("echo \"job running on host `hostname -f`\"");
 		lsb.newline();
@@ -761,7 +762,7 @@ public class SlurmProxy extends HtcProxy {
 				"--bind "+slurm_tmpdir+":/solvertmp " +
 				"$localSingularityImage "+singularityEnvironmentVars+" \"");
 		lsb.write("else");
-		lsb.write("    echo \"Required singularity command not found (module load singularity/2.4.2) \"");
+		lsb.write("    echo \"Required singularity command not found (maybe 'module load "+singularity_module_name+"' command didn't work) \"");
 		lsb.write("    exit 1");
 //		StringBuffer dockerEnvironmentVars = new StringBuffer();
 //		for (String envVar : environmentVars) {
@@ -1086,6 +1087,7 @@ public class SlurmProxy extends HtcProxy {
 			String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
 			String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
 			String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
+			String slurm_singularity_module_name = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
 			String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
 			String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
 			File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
@@ -1106,7 +1108,7 @@ public class SlurmProxy extends HtcProxy {
 			slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), Optional.empty(), htclogdir_external, softwareVersion,
 					slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
 					slurm_local_singularity_dir, simDataDirArchiveExternal, simDataDirArchiveInternal,
-					slurm_singularity_central_filepath, environmentVars);
+					slurm_singularity_central_filepath, slurm_singularity_module_name, environmentVars);
 
 			lsb.write("   cmd_prefix=\"$container_prefix\"");
 			lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
