@@ -26,7 +26,15 @@
        popd
        ./localconfig_realslurm_oracle_zeke.sh TEST localhost:5000/virtualcell dev_zeke 7.5.0 1234 ./zeke_env.txt
        ```
-   3. Connect back to VPN and get containers running
+   3. After connecting to VPN
+      ```bash
+      sudo mount -t cifs -o username=evalencia,workgroup=CAM //cfs05.cam.uchc.edu/vcell/ ~/Mnts/RemoteVolumes/VCell05
+      ```
+   4. Get containers running
       ```bash
       docker compose -f docker-compose-small.yml --env-file=zeke_env.txt up
+      ```
+   5. Remove mount
+      ```bash
+      sudo umount ~/Mnts/RemoteVolumes/VCell05
       ```
