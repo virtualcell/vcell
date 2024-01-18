@@ -690,7 +690,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("echo `hostname`\n");
 		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
 		lsb.write("source /usr/share/Modules/init/bash\n");
-		lsb.write("module load singularity\n");
+		lsb.write("module load singularity/vcell-3.10.0\n");
 		
 		lsb.write("echo \"job running on host `hostname -f`\"");
 		lsb.newline();
