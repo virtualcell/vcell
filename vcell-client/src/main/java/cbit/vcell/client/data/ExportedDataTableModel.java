@@ -15,8 +15,10 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         add("Sim Name");
         add("Time Slice");
         add("Variables");
-        add("Date Exported");
         add("Format");
+        add("Default Parameters");
+        add("Set Parameters");
+        add("Date Exported");
     }};
 
     public List<TableData> tableData = new ArrayList<>();
@@ -58,6 +60,12 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         } else if (columnIndex == header.indexOf("Format")) {
             return data.format;
         }
+        else if (columnIndex == header.indexOf("Default Parameters")) {
+            return data.defaultParameters;
+        }
+        else if (columnIndex == header.indexOf("Set Parameters")) {
+            return data.setParameters;
+        }
         return null;
     }
 
@@ -94,9 +102,12 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         public String appName = null;
         public String simName = null;
         public String variables = null;
+        public ArrayList<String> defaultParameters = null;
+        public ArrayList<String> setParameters = null;
 
         public TableData(String jobID, String simID, String dateExported, String format, String link,
-                         String bioModelName, String timeSlice, String appName, String simName, String variables){
+                         String bioModelName, String timeSlice, String appName, String simName, String variables,
+                         ArrayList<String> defaultParameters, ArrayList<String> setParameters){
             this.jobID = jobID;
             this.simID = simID;
             this.dateExported = dateExported;
@@ -107,6 +118,8 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
             this.appName = appName;
             this.simName = simName;
             this.variables = variables;
+            this.defaultParameters = defaultParameters;
+            this.setParameters = setParameters;
         }
     }
 

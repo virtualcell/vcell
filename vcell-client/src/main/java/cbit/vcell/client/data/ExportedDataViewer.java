@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 
 import javax.swing.*;
@@ -37,6 +38,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         tableModel = new ExportedDataTableModel(editorScrollTable);
 
         editorScrollTable.setModel(tableModel);
+        editorScrollTable.setRowHeight(30);
 
         scrollPane = new JScrollPane(editorScrollTable);
         scrollPane.setSize(400, 400);
@@ -100,7 +102,8 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         ExportDataRepresentation.SimulationExportDataRepresentation simData = jsonData.formatData.get(dataFormat).simulationDataMap.get(jobID);
         ExportedDataTableModel.TableData newRow = new ExportedDataTableModel.TableData(
                 simData.jobID, simData.dataID, simData.exportDate, dataFormat, simData.uri,
-                simData.biomodelName, simData.startAndEndTime, simData.applicationName, simData.simulationName, simData.variables
+                simData.biomodelName, simData.startAndEndTime, simData.applicationName, simData.simulationName, simData.variables,
+                simData.defaultParameterValues, simData.setParameterValues
         );
         tableModel.addRow(newRow);
     }

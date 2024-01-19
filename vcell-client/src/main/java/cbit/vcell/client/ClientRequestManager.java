@@ -2785,11 +2785,13 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							exportEvent.getLocation(),
 							stringJobID,
 							exportEvent.getDataIdString(),
-							humanReadableExportData.SimulationName,
-							humanReadableExportData.ApplicationName,
-							humanReadableExportData.BiomodelsName,
+							humanReadableExportData.simulationName,
+							humanReadableExportData.applicationName,
+							humanReadableExportData.biomodelName,
                             Arrays.toString(exportEvent.getVariableSpecs().getVariableNames()),
-							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()]
+							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()],
+							humanReadableExportData.defaultParameterValues,
+							humanReadableExportData.setParameterValues
 					);
 
 					formatData.simulationDataMap.put(stringJobID, simulationExportDataRepresentation);

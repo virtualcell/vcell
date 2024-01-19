@@ -21,10 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Hashtable;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
@@ -45,6 +42,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import cbit.vcell.export.server.*;
+import cbit.vcell.solver.*;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.LocalVCDataIdentifier;
@@ -85,9 +83,6 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * This type was created in VisualAge.
@@ -689,10 +684,23 @@ private ExportSpecs getExportSpecs() {
 		selections[i] = (SpatialSelection)selectionsArr[i];
 	}
 	SimulationContext sc = (SimulationContext) getSimulation().getSimulationOwner();
-	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName());
+	MathOverrides mathOverrides = getSimulation().getMathOverrides();
+
+	String[] filteredConstants = mathOverrides.getFilteredConstantNames();
+	ArrayList<String> defaultParameterValues = new ArrayList<>();
+	ArrayList<String> setParameterValues = new ArrayList<>();
+	VCDataIdentifier vcDataIdentifier = getPdeDataContext().getVCDataIdentifier();
+	if (vcDataIdentifier instanceof VCSimulationDataIdentifier){
+        for (String filteredConstant : filteredConstants) {
+            defaultParameterValues.add(filteredConstant + ":" + mathOverrides.getDefaultExpression(filteredConstant).infix());
+            setParameterValues.add(filteredConstant + ":" + mathOverrides.getActualExpression(filteredConstant, ((VCSimulationDataIdentifier) vcDataIdentifier).getJobIndex()).infix());
+        }
+	}
+	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
+			defaultParameterValues, setParameterValues);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
 	ExportSpecs exportSpecs = new ExportSpecs(
-			getPdeDataContext().getVCDataIdentifier(),
+			vcDataIdentifier,
 			getExportSettings1().getSelectedFormat(),
 			variableSpecs,
 			timeSpecs,

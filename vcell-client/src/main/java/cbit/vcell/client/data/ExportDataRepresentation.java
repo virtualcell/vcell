@@ -33,7 +33,12 @@ public class ExportDataRepresentation {
         public String variables;
         public String startAndEndTime;
 
-        public SimulationExportDataRepresentation(String exportDate, String uri, String jobID, String dataID, String simulationName, String applicationName, String biomodelName, String variables, String startAndEndTime){
+        public ArrayList<String> defaultParameterValues;
+        public ArrayList<String> setParameterValues;
+
+        public SimulationExportDataRepresentation(String exportDate, String uri, String jobID, String dataID, String simulationName,
+                                                  String applicationName, String biomodelName, String variables, String startAndEndTime,
+                                                  ArrayList<String> defaultParameterValues, ArrayList<String> setParameterValues){
             this.exportDate = exportDate;
             this.uri = uri;
             this.jobID = jobID;
@@ -43,6 +48,8 @@ public class ExportDataRepresentation {
             this.biomodelName = biomodelName;
             this.variables = variables;
             this.startAndEndTime = startAndEndTime;
+            this.defaultParameterValues = defaultParameterValues;
+            this.setParameterValues = setParameterValues;
         }
     }
 

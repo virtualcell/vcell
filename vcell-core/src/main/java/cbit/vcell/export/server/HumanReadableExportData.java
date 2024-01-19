@@ -1,26 +1,29 @@
 package cbit.vcell.export.server;
 
 import org.vcell.api.common.events.ExportHumanReadableDataSpec;
-import org.vcell.api.common.events.ExportTimeSpecs;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class HumanReadableExportData implements Serializable {
-    public final String SimulationName;
-    public final String BiomodelsName;
-    public final String ApplicationName;
-    public HumanReadableExportData(String simulationName, String applicationName, String biomodelsName){
-        SimulationName = simulationName;
-        ApplicationName = applicationName;
-        BiomodelsName = biomodelsName;
+    public final String simulationName;
+    public final String biomodelName;
+    public final String applicationName;
+    public ArrayList<String> defaultParameterValues;
+    public ArrayList<String> setParameterValues;
+    public HumanReadableExportData(String simulationName, String applicationName, String biomodelName,
+                                   ArrayList<String> defaultParameterValues, ArrayList<String> setParameterValues){
+        this.simulationName = simulationName;
+        this.applicationName = applicationName;
+        this.biomodelName = biomodelName;
+        this.defaultParameterValues = defaultParameterValues;
+        this.setParameterValues = setParameterValues;
     }
 
     public ExportHumanReadableDataSpec toJsonRep() {
-        ExportHumanReadableDataSpec rep = new ExportHumanReadableDataSpec(BiomodelsName, ApplicationName, SimulationName);
-        return rep;
+        return new ExportHumanReadableDataSpec(biomodelName, applicationName, simulationName, defaultParameterValues, setParameterValues);
     }
     public static HumanReadableExportData fromJsonRep(ExportHumanReadableDataSpec rep) {
-        HumanReadableExportData humanReadableExportData = new HumanReadableExportData(rep.simulationName, rep.applicationName, rep.bioModelName);
-        return humanReadableExportData;
+        return new HumanReadableExportData(rep.simulationName, rep.applicationName, rep.bioModelName, rep.defaultParameterValues, rep.setParameterValues);
     }
 }
