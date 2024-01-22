@@ -101,7 +101,7 @@ public class N5Exporter implements ExportConstants {
 		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
 		HashMap<String, Object> additionalMetaData = new HashMap<>();
 
-		String dataSetName = getN5DataSetTemplatedName(n5Specs.dataSetName);
+		String dataSetName = n5Specs.dataSetName;
 
 		n5FSWriter.createDataset(dataSetName, datasetAttributes);
 		N5Specs.imageJMetaData(n5FSWriter, dataSetName, vcData, numVariables, additionalMetaData);
@@ -202,10 +202,6 @@ public class N5Exporter implements ExportConstants {
 
 	public String getN5FileNameHash(){
 		return actualHash(vcDataID.getDataKey().toString(), String.valueOf(vcDataID.getJobIndex()));
-	}
-
-	public String getN5DataSetTemplatedName(String nonTemplatedName){
-		return nonTemplatedName + "_" + vcDataID.getJobIndex();
 	}
 
 	public static String getN5FileNameHash(String simID, String jobID){
