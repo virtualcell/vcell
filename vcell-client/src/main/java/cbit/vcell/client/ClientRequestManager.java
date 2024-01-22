@@ -2780,6 +2780,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					ExportDataRepresentation.FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
 							exportDataRepresentation.formatData.get(exportFormat) : new ExportDataRepresentation.FormatExportDataRepresentation(new HashMap<>(), new ArrayList<>());
 
+
 					ExportDataRepresentation.SimulationExportDataRepresentation simulationExportDataRepresentation = new ExportDataRepresentation.SimulationExportDataRepresentation(
 							dateFormat.format(new Date()),
 							exportEvent.getLocation(),
@@ -2791,7 +2792,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
                             Arrays.toString(exportEvent.getVariableSpecs().getVariableNames()),
 							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()],
 							humanReadableExportData.defaultParameterValues,
-							humanReadableExportData.setParameterValues
+							humanReadableExportData.setParameterValues,
+							humanReadableExportData.serverSavedFileName
 					);
 
 					formatData.simulationDataMap.put(stringJobID, simulationExportDataRepresentation);

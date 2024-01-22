@@ -696,8 +696,11 @@ private ExportSpecs getExportSpecs() {
             setParameterValues.add(filteredConstant + ":" + mathOverrides.getActualExpression(filteredConstant, ((VCSimulationDataIdentifier) vcDataIdentifier).getJobIndex()).infix());
         }
 	}
+
+	String serverSavedFileName = getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs ? ((N5Specs) getExportSettings1().getFormatSpecificSpecs()).dataSetName : "";
+
 	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
-			defaultParameterValues, setParameterValues);
+			defaultParameterValues, setParameterValues, serverSavedFileName);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
 	ExportSpecs exportSpecs = new ExportSpecs(
 			vcDataIdentifier,
