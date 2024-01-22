@@ -1239,9 +1239,8 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			SubDomain sd = mathDesc.getSubDomain(gc.getName());
 			Domain d = new Domain(sd);
 
-//			speciesContextSpecs.get
+			// TODO: other useful code
 //			Structure structures[] = getSimulationContext().getGeometryContext().getModel().getStructures();
-//			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structures[i]);
 //			GeometryClass[] geometryClass = getSimulationContext().getGeometryContext().getGeometry().getGeometryClasses();
 //			Structure[] mappedStructures = getSimulationContext().getGeometryContext().getStructuresFromGeometryClass(geometryClass[i]);
 
