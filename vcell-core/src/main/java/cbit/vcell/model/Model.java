@@ -83,6 +83,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
     public static final String PROPERTY_NAME_SPECIES_CONTEXTS = "speciesContexts";
     private static final String PROPERTY_NAME_SPECIES = "species";
     public static final String PROPERTY_NAME_MODEL_ENTITY_NAME = "modelEntityName";
+    public static final String PROPERTY_NAME_SPECIES_CONTEXT_SPECIES_PATTERN = "speciesContextSpeciesPattern";
 
     public static final String PROPERTY_NAME_RATERULEVARIABLES = "rateruleVariables";
 
@@ -3302,6 +3303,7 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                 fieldDiagrams[i].renameNode((String) evt.getOldValue(), (String) evt.getNewValue());
             }
         }
+
         if(evt.getSource() instanceof ReactionStep && evt.getPropertyName().equals("name")){
             for(int i = 0; i < fieldDiagrams.length; i++){
                 fieldDiagrams[i].renameNode((String) evt.getOldValue(), (String) evt.getNewValue());
@@ -3356,6 +3358,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                     throw new RuntimeException(e.getMessage(), e);
                 }
             }
+        }
+        if(evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals(PROPERTY_NAME_SPECIES_CONTEXTS)) {
+            firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXT_SPECIES_PATTERN, evt.getOldValue(), evt.getNewValue());
         }
 
         if((evt.getSource() instanceof ModelParameter ||

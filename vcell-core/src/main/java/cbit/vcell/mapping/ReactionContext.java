@@ -289,6 +289,9 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST)){
 		refreshAll();
 	}
+	if(evt.getSource().equals(getModel()) && evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXT_SPECIES_PATTERN)) {
+		refreshSpeciesContextSpecsSpeciesPatterns();	// only for springsalad, because we care about the sites (site attributes spec, internal link spec)
+	}
 	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)){
 		;	// do nothing
 	}
@@ -612,6 +615,13 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 			throw new MappingException(e.getMessage(), e);
 		}
 	}
+	if(Application.SPRINGSALAD == simContext.getApplicationType()) {
+		for(SpeciesContextSpec scs : fieldSpeciesContextSpecs) {
+			scs.initializeForSpringSaLaD(null);
+		}
+	}
+}
+private void refreshSpeciesContextSpecsSpeciesPatterns() {
 	if(Application.SPRINGSALAD == simContext.getApplicationType()) {
 		for(SpeciesContextSpec scs : fieldSpeciesContextSpecs) {
 			scs.initializeForSpringSaLaD(null);
