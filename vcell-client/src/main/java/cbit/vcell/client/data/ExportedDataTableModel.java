@@ -9,16 +9,26 @@ import java.util.List;
 
 public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTableModel.TableData>{
 
+    public static final String bioModelCol = "BM Name";
+    public static final String appNameCol = "App Name";
+    public static final String simNameCol = "Sim Name";
+    public static final String timeSliceCol = "Time Slice";
+    public static final String variablesCol = "Variables";
+    public static final String formatCol = "Format";
+    public static final String defaultParametersCol = "Default Parameters";
+    public static final String setParametersCol = "Set Parameters";
+    public static final String dateExportedCol = "Date Exported";
+
     public static final ArrayList<String> header = new ArrayList<>(){{
-        add("BM Name");
-        add("App Name");
-        add("Sim Name");
-        add("Time Slice");
-        add("Variables");
-        add("Format");
-        add("Default Parameters");
-        add("Set Parameters");
-        add("Date Exported");
+        add(bioModelCol);
+        add(appNameCol);
+        add(simNameCol);
+        add(timeSliceCol);
+        add(variablesCol);
+        add(formatCol);
+        add(defaultParametersCol);
+        add(setParametersCol);
+        add(dateExportedCol);
     }};
 
     public List<TableData> tableData = new ArrayList<>();
@@ -45,25 +55,25 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         TableData data = getValueAt(rowIndex);
-        if (columnIndex == header.indexOf("App Name")){
+        if (columnIndex == header.indexOf(appNameCol)){
             return data.appName;
-        } else if (columnIndex == header.indexOf("BM Name")) {
+        } else if (columnIndex == header.indexOf(bioModelCol)) {
             return data.bioModelName;
-        } else if (columnIndex == header.indexOf("Sim Name")) {
+        } else if (columnIndex == header.indexOf(simNameCol)) {
             return data.simName;
-        } else if (columnIndex == header.indexOf("Time Slice")) {
+        } else if (columnIndex == header.indexOf(timeSliceCol)) {
             return  data.timeSlice;
-        } else if (columnIndex == header.indexOf("Variables")) {
+        } else if (columnIndex == header.indexOf(variablesCol)) {
             return data.variables;
-        } else if (columnIndex == header.indexOf("Date Exported")) {
+        } else if (columnIndex == header.indexOf(dateExportedCol)) {
             return data.dateExported;
-        } else if (columnIndex == header.indexOf("Format")) {
+        } else if (columnIndex == header.indexOf(formatCol)) {
             return data.format;
         }
-        else if (columnIndex == header.indexOf("Default Parameters")) {
+        else if (columnIndex == header.indexOf(defaultParametersCol)) {
             return data.defaultParameters;
         }
-        else if (columnIndex == header.indexOf("Set Parameters")) {
+        else if (columnIndex == header.indexOf(setParametersCol)) {
             return data.setParameters;
         }
         return null;
