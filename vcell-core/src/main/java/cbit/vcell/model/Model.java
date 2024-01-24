@@ -3359,7 +3359,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                 }
             }
         }
-        if(evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals(PROPERTY_NAME_SPECIES_CONTEXTS)) {
+
+        if(evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals(SpeciesContext.PROPERTY_NAME_SPECIES_PATTERN_CHANGED)) {
+            System.out.println("Model: SpeciesContext test event: " + evt.getPropertyName());
             firePropertyChange(PROPERTY_NAME_SPECIES_CONTEXT_SPECIES_PATTERN, evt.getOldValue(), evt.getNewValue());
         }
 
