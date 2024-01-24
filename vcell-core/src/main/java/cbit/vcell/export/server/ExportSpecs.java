@@ -303,7 +303,7 @@ public class ExportSpecs implements Serializable {
 		this.humanReadableExportData = humanReadableExportData;
 	}
 
-	public HumanReadableExportData getExportMetaData(){
+	public HumanReadableExportData getHumanReadableExportData(){
 		return humanReadableExportData;
 	}
 }

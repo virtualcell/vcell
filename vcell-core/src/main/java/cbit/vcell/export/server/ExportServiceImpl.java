@@ -104,7 +104,7 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 	ExportEvent event = new ExportEvent(
 			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE, 
 			format, location, null, timeSpecs, varSpecs);
-    event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getExportMetaData() : null);
+    event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
 	fireExportEvent(event);
 	return event;
 }
