@@ -24,20 +24,9 @@ import java.awt.image.DataBufferUShort;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.lang.reflect.Type;
+import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
@@ -56,9 +45,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
-import com.google.gson.stream.JsonWriter;
+import cbit.vcell.client.data.*;
+import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.N5Specs;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
@@ -118,8 +107,6 @@ import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
-import cbit.vcell.client.data.DataViewerController;
-import cbit.vcell.client.data.MergedDatasetViewerController;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.AsynchMessageManager;
@@ -2549,7 +2536,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				final boolean[] bFlagArr = new boolean[] { false };
 				final ByteArrayOutputStream[] baosArr = new ByteArrayOutputStream[1];
 				final HttpGet[] httpGetArr = new HttpGet[1];
-//			final ImageJConnection[] imagejConnetArr = new ImageJConnection[1];
 				// Start download of exported file in separate thread that is interruptible
 				// (apache HTTPClient)
 				Thread interruptible = new Thread(new Runnable() {
@@ -2573,8 +2559,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 								long size = entity.getContentLength();
 								InputStream instream = entity.getContent();
 								try {
-//								URLConnection connection = new URL(evt.getLocation()).openConnection();
-//							    Thread.sleep(60000);
 									if (size > 0) {
 										baosArr[0] = new ByteArrayOutputStream((int) size);
 									} else {
@@ -2589,7 +2573,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						} catch (Exception e) {
 							excArr[0] = e;
 						} finally {
-//					    if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
 							if (response != null) {
 								try {
 									response.close();
@@ -2614,7 +2597,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						if (httpGetArr[0] != null) {
 							httpGetArr[0].abort();
 						}
-//					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
 						throw UserCancelException.CANCEL_GENERIC;
 					}
 					try {
@@ -2623,7 +2605,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						if (httpGetArr[0] != null) {
 							httpGetArr[0].abort();
 						}
-//					if(imagejConnetArr[0] != null){imagejConnetArr[0].closeConnection();}
 						if (getClientTaskStatusSupport() != null && getClientTaskStatusSupport().isInterrupted()) {
 							throw UserCancelException.CANCEL_GENERIC;
 						}
@@ -2632,14 +2613,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				if (excArr[0] != null) {// download failed
 					throw excArr[0];
 				}
-//			//-------------------------
-//			String filePart = new URL(evt.getLocation()).getFile();
-//			File f = new File("c:/temp/exportdir",filePart);
-//			FileInputStream fis = new FileInputStream(f);
-//			baosArr[0] = new ByteArrayOutputStream();
-//			IOUtils.copy(fis, baosArr[0]);
-//			fis.close();
-//			//------------------------------
 				//
 				// finished downloading, either save to file or send to ImageJ directly
 				//
@@ -2647,45 +2620,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					// save for file save operations
 					hashTable.put(BYTES_KEY, baosArr[0].toByteArray());
 				}
-//		    else{
-//		    	//Send to ImageJ directly
-////		    	int response = DialogUtils.showComponentOKCancelDialog(requester, new JLabel("Open ImageJ->File->Export->VCellUtil... to begin data transefer"), "Sending data to ImageJ...");
-////		    	if(response != JOptionPane.OK_OPTION){
-////		    		throw UserCancelException.CANCEL_GENERIC;
-////		    	}
-//		    	//NRRD format send to ImageJ
-//		    	if(getClientTaskStatusSupport() != null){
-//		    		getClientTaskStatusSupport().setMessage("unpacking data...");
-//		    	}
-//		    	ByteArrayInputStream bais = new ByteArrayInputStream( baosArr[0].toByteArray());
-//		    	ZipInputStream zis = null;
-//		    	BufferedInputStream bis = null;
-//		    	try{
-//			    	zis = new ZipInputStream(bais);
-//			    	ZipEntry entry = zis.getNextEntry();
-////			    	System.out.println("zipfile entry name="+entry.getName()+"zipfile entry size="+entry.getSize());
-////					    	File tempf = new File("C:\\temp\\tempf.nrrd");
-////					    	FileOutputStream fos = new FileOutputStream(tempf);
-////					    	byte[] mybuf = new byte[1000];
-////					    	int numread = 0;
-////					    	while((numread = zis.read(mybuf)) != -1){
-////					    		fos.write(mybuf, 0, numread);
-////					    	}
-////					    	fos.close();
-//			    	TimeSpecs timeSpecs = evt.getTimeSpecs();
-//			    	double[] timePoints = new double[timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1];
-//			    	for (int tp = timeSpecs.getBeginTimeIndex(); tp <= timeSpecs.getEndTimeIndex(); tp++){
-//			    		timePoints[tp-timeSpecs.getBeginTimeIndex()] = timeSpecs.getAllTimes()[tp];
-//			    	}
-//			    	imagejConnetArr[0] = new ImageJConnection(ImageJHelper.ExternalCommunicator.IMAGEJ);//doesn't open connection until later
-//			    	bis = new BufferedInputStream(zis);
-//			    	ImageJHelper.vcellSendNRRD(requester,bis,getClientTaskStatusSupport(),imagejConnetArr[0],"VCell exported data '"+entry.getName()+"'",timePoints,evt.getVariableSpecs().getVariableNames());
-//		    	}finally{
-//		    		if(zis != null){try{zis.closeEntry();zis.close();}catch(Exception e){e.printStackTrace();}}
-//		    		if(bis != null){try{bis.close();}catch(Exception e){e.printStackTrace();}}
-//		    	}
-//		    	throw UserCancelException.CANCEL_GENERIC;//finished, exit all further tasks
-//		    }
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("selecting file to save",
@@ -2816,32 +2750,70 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	private static void updateExportMetaData(final ExportEvent exportEvent){
 		try{
 			if(ResourceUtil.getVcellHome() != null){
-				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
-				HashMap<String, Object> jsonHashMap = new HashMap<>();
-				jsonHashMap.put("jobIDs", new ArrayList<String>());
+				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new ArrayList<>(), new HashMap<>());
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
-				Type type = new TypeToken<HashMap<String, Object>>() {}.getType();
-				if (jsonFile.exists()){
 
-					jsonHashMap = gson.fromJson(new FileReader(jsonFile.getAbsolutePath()), type);
-				}
-				HashMap<String, String> exportMetaData = new HashMap<>();
+				// put lock
+				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
+				RandomAccessFile randomAccessFile = new RandomAccessFile(jsonFile, "rw");
+				FileChannel fileChannel = randomAccessFile.getChannel();
+				FileLock fileLock = fileChannel.lock();
+
+				String stringJobID = String.valueOf(exportEvent.getJobID());
+				String exportFormat = exportEvent.getFormat();
+				String globalID = stringJobID + "," + exportFormat;
+				HumanReadableExportData humanReadableExportData = exportEvent.getHumanReadableData();
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				Date date = new Date();
-				exportMetaData.put("format", exportEvent.getFormat());
-				exportMetaData.put("exportDate", dateFormat.format(date));
-				exportMetaData.put("uri", exportEvent.getLocation());
-				exportMetaData.put("jobID", String.valueOf(exportEvent.getJobID()));
-				exportMetaData.put("dataID", exportEvent.getDataIdString());
+				double[] exportTimes = exportEvent.getTimeSpecs().getAllTimes();
 
-				jsonHashMap.put(String.valueOf(exportEvent.getJobID()), exportMetaData);
-				ArrayList<String> header = (ArrayList<String>) jsonHashMap.get("jobIDs");
-				header.add(String.valueOf(exportEvent.getJobID()));
-				jsonHashMap.put("jobIDs", header);
-				String json = gson.toJson(jsonHashMap, type);
-				FileWriter jsonFileWriter = new FileWriter(jsonFile);
-				jsonFileWriter.write(json);
-				jsonFileWriter.close();
+
+				if (jsonFile.exists()){
+					String stringJSON = new String(Files.readAllBytes(jsonFile.toPath()));
+					exportDataRepresentation = stringJSON.isEmpty() ?
+							exportDataRepresentation : gson.fromJson(stringJSON, ExportDataRepresentation.class);
+				}
+
+				int sizeOfList = exportDataRepresentation.globalJobIDs.size();
+				int startOfSearch = sizeOfList > 200 ? sizeOfList - 200 : 0;
+				// only write new data, checking the last 200 elements in the stack
+				if (!exportDataRepresentation.globalJobIDs.subList(startOfSearch, sizeOfList).contains(globalID)){
+					ExportDataRepresentation.FormatExportDataRepresentation formatData = exportDataRepresentation.formatData.containsKey(exportFormat) ?
+							exportDataRepresentation.formatData.get(exportFormat) : new ExportDataRepresentation.FormatExportDataRepresentation(new HashMap<>(), new ArrayList<>());
+
+
+					ExportDataRepresentation.SimulationExportDataRepresentation simulationExportDataRepresentation = new ExportDataRepresentation.SimulationExportDataRepresentation(
+							dateFormat.format(new Date()),
+							exportEvent.getLocation(),
+							stringJobID,
+							exportEvent.getDataIdString(),
+							humanReadableExportData.simulationName,
+							humanReadableExportData.applicationName,
+							humanReadableExportData.biomodelName,
+                            Arrays.toString(exportEvent.getVariableSpecs().getVariableNames()),
+							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()],
+							humanReadableExportData.defaultParameterValues,
+							humanReadableExportData.setParameterValues,
+							humanReadableExportData.serverSavedFileName
+					);
+
+					formatData.simulationDataMap.put(stringJobID, simulationExportDataRepresentation);
+					formatData.formatJobIDs.add(stringJobID);
+
+					exportDataRepresentation.formatData.put(exportFormat, formatData);
+					exportDataRepresentation.globalJobIDs.add(globalID);
+
+
+					String json = gson.toJson(exportDataRepresentation, ExportDataRepresentation.class);
+					FileWriter jsonFileWriter = new FileWriter(jsonFile);
+					jsonFileWriter.write(json);
+
+					jsonFileWriter.close();
+				}
+
+				// close file lock
+				fileLock.close();
+				fileChannel.close();
+				randomAccessFile.close();
 			}
 		}
 		catch (Exception e){
