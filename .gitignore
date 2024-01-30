@@ -154,6 +154,10 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# JetBrains Tools
+.idea*
+.run*
+
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
