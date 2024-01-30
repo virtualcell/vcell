@@ -16,7 +16,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -105,6 +104,7 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 	ExportEvent event = new ExportEvent(
 			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE, 
 			format, location, null, timeSpecs, varSpecs);
+    event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
 	fireExportEvent(event);
 	return event;
 }

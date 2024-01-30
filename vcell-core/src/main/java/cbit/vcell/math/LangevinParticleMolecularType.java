@@ -16,7 +16,8 @@ import org.vcell.util.Pair;
 
 @SuppressWarnings("serial")
 public class LangevinParticleMolecularType extends ParticleMolecularType {
-	
+
+	private boolean is2D = false;
 	private Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = new LinkedHashSet<> ();
 	
 	
@@ -43,6 +44,7 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 		if (getComponentList().size() == 0 && getAnchorList().size() == 0) {
 			buffer.append(" "+VCML.EndBlock+"\n");
 		} else {
+			buffer.append("\n        " + VCML.Is2D + "  " + getIs2D());
 			if(internalLinkSpec.size() > 0) {
 				buffer.append("\n        " + VCML.Links + "  " + VCML.BeginBlock);
 				for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : internalLinkSpec) {
@@ -73,6 +75,10 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 			token = tokens.nextToken();
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
 				break;
+			}
+			if(token.equalsIgnoreCase(VCML.Is2D)) {
+				token = tokens.nextToken();
+				setIs2D(Boolean.getBoolean(token));
 			}
 			if (token.equalsIgnoreCase(VCML.Links)) {
 				token = tokens.nextToken();
@@ -124,5 +130,11 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 	public void setInternalLinkSpec(Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec) {
 		this.internalLinkSpec = internalLinkSpec;
 	}
-	
+
+	public boolean getIs2D() {
+		return is2D;
+	}
+	public void setIs2D(boolean is2D) {
+		this.is2D = is2D;
+	}
 }

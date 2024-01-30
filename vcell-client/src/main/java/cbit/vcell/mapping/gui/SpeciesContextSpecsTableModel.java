@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
+import cbit.vcell.model.Membrane;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Displayable;
 import org.vcell.util.gui.GuiUtils;
@@ -65,6 +66,7 @@ public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesCo
 		COLUMN_SPECIESCONTEXT("Species"),
 		COLUMN_STRUCTURE("Structure"),
 		COLUMN_DEPICTION("Depiction"),
+		COLUMN_IS2D("Is 2D"),
 		COLUMN_CLAMPED("Clamped"),
 		COLUMN_RULES("Rules"),
 		COLUMN_INITIAL("Initial Condition"),
@@ -142,6 +144,7 @@ public Class<?> getColumnClass(int column) {
 		case COLUMN_RULES:{
 			return RulesProvenance.class;
 		}
+		case COLUMN_IS2D:
 		case COLUMN_CLAMPED:
 		case COLUMN_WELLMIXED:
 		case COLUMN_FORCECONTINUOUS:{
@@ -163,21 +166,36 @@ public String getColumnName(int columnIndex){
 }
 
 private void refreshColumns(){
+	SimulationContext simContext = getSimulationContext();
 	columns.clear();
 	columns.addAll(Arrays.asList(ColumnType.values())); // initialize to all columns
-	if (getSimulationContext() == null || !getSimulationContext().isStoch()){
+	if(simContext == null) {
+		columns.remove(ColumnType.COLUMN_IS2D);
+		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
+		columns.remove(ColumnType.COLUMN_WELLMIXED);
+		columns.remove(ColumnType.COLUMN_DIFFUSION);
+		columns.remove(ColumnType.COLUMN_CLAMPED);
+		columns.remove(ColumnType.COLUMN_RULES);
+		return;
+	}
+	if(!simContext.getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
+		columns.remove(ColumnType.COLUMN_IS2D);
+	}
+	if (!simContext.isStoch()){
 		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
 	}
-	if (getSimulationContext() == null || getSimulationContext().getGeometry().getDimension() == 0){
+	if (simContext.getGeometry().getDimension() == 0){
+		columns.remove(ColumnType.COLUMN_IS2D);
 		columns.remove(ColumnType.COLUMN_WELLMIXED);
 		columns.remove(ColumnType.COLUMN_DIFFUSION);
 	}
-	if (getSimulationContext() == null || getSimulationContext().isRuleBased()) {
+	if (simContext.isRuleBased()) {
 		// the NFSim simulator used for rule-based doesn't accept clamped or force continuous
+		columns.remove(ColumnType.COLUMN_IS2D);
 		columns.remove(ColumnType.COLUMN_CLAMPED);
 		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
 	}
-	if (getSimulationContext() == null || getSimulationContext().getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
+	if (simContext.getApplicationType().equals(SimulationContext.Application.SPRINGSALAD)) {
 		columns.remove(ColumnType.COLUMN_DIFFUSION);
 		columns.remove(ColumnType.COLUMN_FORCECONTINUOUS);
 		columns.remove(ColumnType.COLUMN_WELLMIXED);
@@ -225,8 +243,11 @@ public Object getValueAt(int row, int col) {
 			case COLUMN_DEPICTION:{
 				return scSpec.getSpeciesContext().getSpeciesPattern();
 			}
+			case COLUMN_IS2D: {
+				return scSpec.getIs2D();
+			}
 			case COLUMN_CLAMPED:{
-				return new Boolean(scSpec.isConstant());
+				return scSpec.isConstant();
 			}
 			case COLUMN_RULES:{
 				return null;
@@ -251,7 +272,7 @@ public Object getValueAt(int row, int col) {
 				}
 			}
 			case COLUMN_FORCECONTINUOUS:{
-				return new Boolean(scSpec.isForceContinuous());
+				return scSpec.isForceContinuous();
 			}
 			default:{
 				return null;
@@ -281,6 +302,16 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return false;
 		}
 		case COLUMN_DEPICTION:{
+			return false;
+		}
+		case COLUMN_IS2D:{
+			if(!bEditable) {
+				return false;
+			}
+			Structure structure = speciesContextSpec.getSpeciesContext().getStructure();
+			if(structure instanceof Membrane) {
+				return true;
+			}
 			return false;
 		}
 		case COLUMN_CLAMPED:{
@@ -528,6 +559,16 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	SpeciesContextSpec scSpec = getValueAt(rowIndex);
 	ColumnType columnType = columns.get(columnIndex);
 	switch (columnType){
+		case COLUMN_IS2D: {
+			boolean is2D = ((Boolean)aValue).booleanValue();
+			if(is2D) {
+				scSpec.setIs2D(true);
+			} else {
+				scSpec.setIs2D(false);
+			}
+			fireTableRowsUpdated(rowIndex,rowIndex);
+			break;
+		}
 		case COLUMN_CLAMPED:{
 			boolean bFixed = ((Boolean)aValue).booleanValue();
 			if (bFixed){
@@ -659,9 +700,18 @@ public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean
 						return name2.compareToIgnoreCase(name1);
 					}
 				}
+				case COLUMN_IS2D: {
+					Boolean bIs2D1 = speciesContextSpec1.getIs2D();
+					Boolean bIs2D2 = speciesContextSpec2.getIs2D();
+					if (ascending){
+						return bIs2D1.compareTo(bIs2D2);
+					}else{
+						return bIs2D2.compareTo(bIs2D1);
+					}
+				}
 				case COLUMN_CLAMPED : {
-					Boolean bClamped1 = new Boolean(speciesContextSpec1.isConstant());
-					Boolean bClamped2 = new Boolean(speciesContextSpec2.isConstant());
+					Boolean bClamped1 = speciesContextSpec1.isConstant();
+					Boolean bClamped2 = speciesContextSpec2.isConstant();
 					if (ascending){
 						return bClamped1.compareTo(bClamped2);
 					}else{
@@ -669,8 +719,8 @@ public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean
 					}
 				}
 				case COLUMN_FORCECONTINUOUS : {
-					Boolean bForceContinuous1 = new Boolean(speciesContextSpec1.isForceContinuous());
-					Boolean bForceContinuous2 = new Boolean(speciesContextSpec2.isForceContinuous());
+					Boolean bForceContinuous1 = speciesContextSpec1.isForceContinuous();
+					Boolean bForceContinuous2 = speciesContextSpec2.isForceContinuous();
 					if (ascending){
 						return bForceContinuous1.compareTo(bForceContinuous2);
 					}else{
@@ -678,8 +728,8 @@ public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean
 					}
 				}
 				case COLUMN_WELLMIXED : {
-					Boolean bWellMixed1 = new Boolean(speciesContextSpec1.isWellMixed());
-					Boolean bWellMixed2 = new Boolean(speciesContextSpec2.isWellMixed());
+					Boolean bWellMixed1 = speciesContextSpec1.isWellMixed();
+					Boolean bWellMixed2 = speciesContextSpec2.isWellMixed();
 					if (ascending){
 						return bWellMixed1.compareTo(bWellMixed2);
 					}else{

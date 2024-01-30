@@ -630,7 +630,7 @@ public class XMLTags {
 	public final static String MassConservationModelReductionTag = "MassConservationModelReduction";
 	public final static String ApplicationComponents = "AppComponents";
 	public static final String ApplicationSpecificFlagsTag = "ApplicationSpecificFlags";
-	
+
 	public final static String MembraneRandomVariableTag = "MembraneRandomVariable";
 	public final static String VolumeRandomVariableTag = "VolumeRandomVariable";
 	public final static String RandomVariableSeedTag = "IntegerSeed";
@@ -741,10 +741,11 @@ public class XMLTags {
 	
 	// langevin (springsalad) math (see VCML.java)
 	public static final String LangevinParticleMolecularTypeTag = "LangevinParticleMolecularType";
-	public final static String LangevinParticleJumpProcessTag = "LangevinParticleJumpProcess";
+	public final static String LangevinParticleJumpProcessTag   = "LangevinParticleJumpProcess";
 	public final static String LangevinParticleJumpProcessSubtypeTag			 = "Subtype";
 	public final static String LangevinParticleJumpProcessTransitionConditionTag = "TransitionCondition";
 	public final static String LangevinParticleJumpProcessBondLengthTag			 = "BondLength";
+    public static final String ParticleMolecularTypeIs2DTag             = "Is2D";
 	public final static String ParticleMolecularTypeLinksTag			= "Link";
 	public final static String LangevinParticleMolecularComponentOneTag = "One";	// one (left) part of the link
 	public final static String LangevinParticleMolecularComponentTwoTag = "Two";	// two (right) part of the link

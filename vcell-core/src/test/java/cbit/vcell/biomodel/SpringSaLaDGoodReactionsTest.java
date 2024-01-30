@@ -52,7 +52,7 @@ public class SpringSaLaDGoodReactionsTest {
 	
 	private static final String reactionTestString = "'r0' ::     'MT0' : 'Site1' : 'state0' --> 'state1'  Rate 50.0  Condition Free";
 	private static final String L_x = "L_x: 0.1";
-	private static final String molecule = "MOLECULE: \"MT0\" Intracellular Number 10 Site_Types 2 Total_Sites 2 Total_Links 1 is2D true";
+	private static final String molecule = "MOLECULE: \"MT0\" Intracellular Number 10 Site_Types 2 Total_Sites 2 Total_Links 1 is2D false";
 	private static final String analyticExpressionIntra = "(z < 0.09)";
 
 	private static String previousInstallDir = null;

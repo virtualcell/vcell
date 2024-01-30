@@ -106,6 +106,7 @@ public abstract class AbstractStochMathMapping extends AbstractMathMapping {
 				// species initial values (either function or constant)
 				//
 				for (int i = 0; i < speciesContextSpecs.length; i++){
+
 					SpeciesContextSpec.SpeciesContextSpecParameter initParam = null;//can be concentration or amount
 					Expression iniExp = null;
 					StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContextSpecs[i].getSpeciesContext().getStructure());

@@ -443,8 +443,17 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     private Boolean bWellMixed = DEFAULT_WELL_MIXED;
     private Boolean bForceContinuous = DEFAULT_FORCECONTINUOUS;
 
-    private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();            // SpringSaLaD
+    // SpringSaLaD specific entities
+    private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
     private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<>();
+    // is2D flag, used by the solver for collision / overlapping calculations, exact meaning uncertain
+    // membrane species may have it set to true, for compartment species is always false
+    // for now we have it hardcoded to false and non-editable
+    // TODO: slowly add it to export and persistence, eventually make it editable for membrane species
+    // Obs: it's really an attribute of a MolecularTypePattern, or even better of a so called "MolecularTypePatternSpec",
+    //      but since all species in SS are single molecule by design it's okay to have it here
+    // TODO: add getIs2DSQL() and readIs2DSQL(), similar to getSiteAttributesSQL(), readSiteAttributesSQL
+    private boolean is2D = false;
 
     protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
     private SpeciesContextSpecParameter[] fieldParameters = null;
@@ -1927,6 +1936,12 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         }
     }
 
+    public void setIs2D(boolean is2D) {
+        this.is2D = is2D;
+    }
+    public boolean getIs2D() {
+        return this.is2D;
+    }
 
     /**
      * This method was created by a SmartGuide.

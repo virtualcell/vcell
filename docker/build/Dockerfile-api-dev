@@ -73,7 +73,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
-    keystore=/run/secrets/keystorefile_20220105 \
+    keystore=/run/secrets/keystorefile \
     keystorepswdfile=/run/secrets/keystorepswd
 
 EXPOSE 8080

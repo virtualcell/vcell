@@ -520,7 +520,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridy = 5;
 		gbc.anchor = GridBagConstraints.SOUTH;
 		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(new JLabel(" X: "), gbc);
+		sitesPanel.add(new JLabel(" X (nm) "), gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
@@ -536,7 +536,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridy = 5;
 		gbc.anchor = GridBagConstraints.SOUTH;
 		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(new JLabel(" Y: "), gbc);
+		sitesPanel.add(new JLabel(" Y (nm) "), gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
@@ -552,7 +552,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridy = 5;
 		gbc.anchor = GridBagConstraints.SOUTH;
 		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(new JLabel(" Z: "), gbc);
+		sitesPanel.add(new JLabel(" Z (nm) "), gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 5;

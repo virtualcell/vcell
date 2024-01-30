@@ -63,7 +63,8 @@ public class SpeciesContext implements Cacheable, Matchable, Relatable, Editable
 
 	private String speciesPatternString = null;
 
-	public static final String PROPERTY_NAME_SPECIES_PATTERN = "speciesPattern";
+	public static final String PROPERTY_NAME_SPECIES_PATTERN = "speciesPattern";	// fired with an empty sp, not very useful
+	public static final String PROPERTY_NAME_SPECIES_PATTERN_CHANGED = "speciesPatternChanged";
 	
 	// store SBML unit for speciesContext from SBML species.
 //	private transient VCUnitDefinition sbmlSpeciesUnit = null;

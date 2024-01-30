@@ -140,8 +140,8 @@
 		</dependency>
 		<dependency>
 		  <groupId>org.apache.logging.log4j</groupId>
-		  <artifactId>log4j-slf4j-impl</artifactId>
-		  <version>${log4j-slf4j-impl.version}</version>
+		  <artifactId>log4j-slf4j2-impl</artifactId>
+		  <version>${log4j-slf4j2-impl.version}</version>
 		  <scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -149,20 +149,20 @@
 			<artifactId>log4j-layout-template-json</artifactId>
 			<version>${log4j-layout-template-json.version}</version>
 		</dependency>
-<dependency>
-  <groupId>javax.xml.bind</groupId>
-  <artifactId>jaxb-api</artifactId>
-  <version>${jaxb-api.version}</version>
-</dependency>
-<dependency>
-  <groupId>com.sun.xml.bind</groupId>
-  <artifactId>jaxb-core</artifactId>
-  <version>${jaxb-core.version}</version>
-</dependency>
-<dependency>
-  <groupId>com.sun.xml.bind</groupId>
-  <artifactId>jaxb-impl</artifactId>
-  <version>${jaxb-impl.version}</version>
-</dependency>
+		<dependency>
+		  <groupId>javax.xml.bind</groupId>
+		  <artifactId>jaxb-api</artifactId>
+		  <version>${jaxb-api.version}</version>
+		</dependency>
+		<dependency>
+		  <groupId>com.sun.xml.bind</groupId>
+		  <artifactId>jaxb-core</artifactId>
+		  <version>${jaxb-core.version}</version>
+		</dependency>
+		<dependency>
+		  <groupId>com.sun.xml.bind</groupId>
+		  <artifactId>jaxb-impl</artifactId>
+		  <version>${jaxb-impl.version}</version>
+		</dependency>
 	</dependencies>
 </project>

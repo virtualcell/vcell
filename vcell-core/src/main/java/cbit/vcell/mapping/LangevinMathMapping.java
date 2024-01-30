@@ -99,10 +99,6 @@ import jscl.text.ParseException;
  */
 public class LangevinMathMapping extends AbstractStochMathMapping {
 
-/**
- * @param model cbit.vcell.model.Model
- * @param geometry cbit.vcell.geometry.Geometry
- */
 protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
 	super(simContext, callback, networkGenerationRequirements);
 }
@@ -1100,7 +1096,8 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 				}else{
 					particleObservableType = ParticleObservable.ObservableType.Species; 
 				}
-				ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observableCountParameter, geometryClass),domain,particleObservableType);
+				Domain d = new Domain(geometryClass);
+				ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(observableCountParameter, geometryClass),d,particleObservableType);
 
 				switch (rbmObservable.getSequence()){
 					case Multimolecular:{
@@ -1131,7 +1128,8 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			if (mathMappingParameter instanceof SpeciesCountParameter){
 				SpeciesCountParameter speciesCountParameter = (SpeciesCountParameter)mathMappingParameter;
 				ParticleObservable.ObservableType particleObservableType = ParticleObservable.ObservableType.Species;
-				ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(speciesCountParameter, geometryClass),domain,particleObservableType);
+				Domain d = new Domain(geometryClass);
+				ParticleObservable particleObservable = new VolumeParticleObservable(getMathSymbol(speciesCountParameter, geometryClass),d,particleObservableType);
 				particleObservable.setSequence(Sequence.Multimolecular);
 				SpeciesPattern speciesPattern = speciesCountParameter.getSpeciesContext().getSpeciesPattern();
 				VolumeParticleSpeciesPattern vpsp = speciesPatternMap.get(speciesPattern);
@@ -1153,6 +1151,10 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 			Map<MolecularComponentPattern, LangevinParticleMolecularComponent> mcToLpmc = new LinkedHashMap<> ();
 			LangevinParticleMolecularType particleMolecularType = new LangevinParticleMolecularType(molecularType.getName());
 			SpeciesContextSpec scs = molecularTypeToSpeciesContextSpecMap.get(molecularType);	// scs may be null for Sink and Source
+			if(scs != null) {
+				boolean is2D = scs.getIs2D();
+				particleMolecularType.setIs2D(is2D);
+			}
 			for (MolecularComponent molecularComponent : molecularType.getComponentList()) {
 				String pmcName = molecularComponent.getName();
 				String pmcId = particleMolecularType.getName() + "_" + molecularComponent.getName();
@@ -1231,7 +1233,18 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		HashMap<SpeciesPattern,VolumeParticleSpeciesPattern> speciesPatternMap = new HashMap<SpeciesPattern, VolumeParticleSpeciesPattern>();
 		String speciesPatternName = "speciesPattern0";
 		for (SpeciesPattern speciesPattern : speciesPatternStructureMap.keySet()) {
-			VolumeParticleSpeciesPattern volumeParticleSpeciesPattern = new VolumeParticleSpeciesPattern(speciesPatternName,domain,speciesPatternStructureMap.get(speciesPattern).getName());
+			Structure structure = speciesPatternStructureMap.get(speciesPattern);
+			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
+			GeometryClass gc = sm.getGeometryClass();
+			SubDomain sd = mathDesc.getSubDomain(gc.getName());
+			Domain d = new Domain(sd);
+
+			// TODO: other useful code
+//			Structure structures[] = getSimulationContext().getGeometryContext().getModel().getStructures();
+//			GeometryClass[] geometryClass = getSimulationContext().getGeometryContext().getGeometry().getGeometryClasses();
+//			Structure[] mappedStructures = getSimulationContext().getGeometryContext().getStructuresFromGeometryClass(geometryClass[i]);
+
+			VolumeParticleSpeciesPattern volumeParticleSpeciesPattern = new VolumeParticleSpeciesPattern(speciesPatternName, d, structure.getName());
 			
 			for (MolecularTypePattern molecularTypePattern : speciesPattern.getMolecularTypePatterns()){
 				ParticleMolecularType particleMolecularType = mathDesc.getParticleMolecularType(molecularTypePattern.getMolecularType().getName());
@@ -1393,8 +1406,10 @@ protected void refreshVariables() throws MappingException {
 			throw new MappingException(e.getMessage());
 		}
 		//we always add variables, all species are independent variables, no matter they are constant or not.
-		String countMathSymbol = getMathSymbol(spCountParm, getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass());
-		scm.setVariable(new VolumeParticleVariable(countMathSymbol,defaultDomain));
+		GeometryClass gc = getSimulationContext().getGeometryContext().getStructureMapping(scs.getSpeciesContext().getStructure()).getGeometryClass();
+		String countMathSymbol = getMathSymbol(spCountParm, gc);
+		Domain d = new Domain(gc);
+		scm.setVariable(new VolumeParticleVariable(countMathSymbol,d));
 		mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
 	}
 	
