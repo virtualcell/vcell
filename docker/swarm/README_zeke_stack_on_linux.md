@@ -34,7 +34,13 @@
       ```bash
       docker compose -f docker-compose-small.yml --env-file=zeke_env.txt up
       ```
-   5. Remove mount
+
+5. Terminate session
+   1. Stop all docker containers running
+      ```bash
+        docker stop $(docker ps -a -q)
+      ```
+   2. Remove mount
       ```bash
       sudo umount ~/Mnts/RemoteVolumes/VCell05
       ```
