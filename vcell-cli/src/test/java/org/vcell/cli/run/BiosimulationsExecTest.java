@@ -173,8 +173,9 @@ public class BiosimulationsExecTest {
 					computedH5File.toAbsolutePath().toString()
 			});
 			command.start(new int[] { 0, 1 });
-			assertFalse(command.getStdoutString().contains("position"), "H5 files have significant differences: " +
-					command.getStdoutString().substring(0, 300));
+			String stdOutString = command.getStdoutString();
+			assertFalse(stdOutString.contains("position"), "H5 files have significant differences: " +
+					stdOutString.substring(0, Math.min(300, stdOutString.length())));
 
 		} catch (Exception | AssertionError e){
 			FAULT fault = this.determineFault(e);
