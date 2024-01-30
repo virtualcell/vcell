@@ -361,17 +361,18 @@ services:
         limits:
           memory: 512M
   s3Proxy:
-    image: andrewgaul/s3proxy:sha-ba0fd6d
+    image: andrewgaul/s3proxy:sha-10469f40c0b27a091fde70ee065bd6ee1c945bca
     environment:
       JCLOUDS_FILESYSTEM_BASEDIR: "/data"
       JCLOUDS_PROVIDER: "filesystem"
       JCLOUDS_REGIONS: "site2-low"
       S3PROXY_AUTHORIZATION: "none"
 
-      LOG_LEVEL: "info"
+      LOG_LEVEL: info
       S3PROXY_ENDPOINT: "http://0.0.0.0:80"
       S3PROXY_VIRTUALHOST: ""
-      S3PROXY_KEYSTORE_PATH: "keystore.jks"
+      S3PROXY_SECURE_ENDPOINT: "https://0.0.0.0:443"
+      S3PROXY_KEYSTORE_PATH: "/keystore/keystore.jks"
       S3PROXY_KEYSTORE_PASSWORD: "password"
       S3PROXY_CORS_ALLOW_ALL: "false"
       S3PROXY_CORS_ALLOW_ORIGINS: ""
@@ -392,9 +393,13 @@ services:
       JCLOUDS_KEYSTONE_SCOPE: ""
       JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME: ""
     ports:
-      - "127.0.0.1:${VCELL_S3PROXY_PORT_EXTERNAL}:80"
+      - "127.0.0.1:${VCELL_S3PROXY_PORT_EXTERNAL}:443"
+      - "127.0.0.1:80:80"
     volumes:
       - "${VCELL_N5_DATADIR_HOST}:/data:ro"
+      - "/media/zeke/DiskDrive/Home/Work/CCAM/TempStorage/keystore:/keystore"
+    secrets:
+      - keystorefile
     deploy:
       mode: replicated
       replicas: 1
