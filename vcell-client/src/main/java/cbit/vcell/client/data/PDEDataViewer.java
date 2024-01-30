@@ -162,7 +162,6 @@ import cbit.vcell.simdata.gui.PDEDataContextPanel.RecodeDataForDomainInfo;
 import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.simulation.SimulationModelInfo;
