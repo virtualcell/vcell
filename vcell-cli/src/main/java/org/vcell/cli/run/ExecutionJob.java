@@ -88,8 +88,8 @@ public class ExecutionJob {
 
         // Unpack the Omex Archive
         try { // It's unlikely, but if we get errors here they're fatal.
-            this.sedmlPath2d3d = Paths.get(outputDir, "temp");
             this.omexHandler = new OmexHandler(inputFilePath, outputDir);
+            this.sedmlPath2d3d = Paths.get(outputDir, "temp");
             this.omexHandler.extractOmex();
             this.sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
         } catch (IOException e){
@@ -99,7 +99,7 @@ public class ExecutionJob {
             logger.error(error);
             throw new RuntimeException(error, e);
         } catch (Exception e) { 
-            omexHandler.deleteExtractedOmex();
+            if (omexHandler != null) omexHandler.deleteExtractedOmex();
             String error = e.getMessage() + ", error for archive " + inputFilePath;
             this.cliRecorder.writeErrorList(bioModelBaseName);
             this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "unknown error with the archive file");
