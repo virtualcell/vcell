@@ -174,6 +174,7 @@ services:
       - slurm_tmpdir=${VCELL_SLURM_TMPDIR}
       - slurm_local_singularity_dir=${VCELL_SLURM_LOCAL_SINGULARITY_DIR}
       - slurm_central_singularity_dir=${VCELL_SLURM_CENTRAL_SINGULARITY_DIR}
+      - slurm_singularity_module_name=${VCELL_SLURM_SINGULARITY_MODULE_NAME}
       - simdatadir_archive_internal=${VCELL_SIMDATADIR_ARCHIVE_INTERNAL}
       - simdatadir_archive_external=${VCELL_SIMDATADIR_ARCHIVE_EXTERNAL}
 

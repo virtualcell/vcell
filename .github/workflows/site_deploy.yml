@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: checkout tag
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: setup global environment variables
@@ -50,7 +50,7 @@ jobs:
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Test"" >> $GITHUB_ENV;\
         else echo "Unknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; fi; fi; fi
     - name: setup ssh-agent
-      uses: webfactory/ssh-agent@v0.5.3
+      uses: webfactory/ssh-agent@v0.8.0
       with:
         ssh-private-key: ${{ secrets.VC_KEY }}
     - name: get installer secrets
@@ -77,7 +77,7 @@ jobs:
         scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}
         scp docker/swarm/variables ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/variables_$VCELL_TAG
     - name: upload variables
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: variables
         path: docker/swarm/variables
@@ -91,7 +91,7 @@ jobs:
         ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
     - name: upload generated installers
       if: ${{ github.event.inputs.server_only != 'true' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: installers
         path: docker/swarm/generated_installers
@@ -142,7 +142,7 @@ jobs:
         fi
     - name: update generated installers
       if: ${{ github.event.inputs.server_only != 'true' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: installers
         path: installers
@@ -157,7 +157,7 @@ jobs:
     needs: notarize
     steps:
     - name: checkout tag
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: retrieve installers and variables
@@ -172,7 +172,7 @@ jobs:
         mkdir ../docker/swarm/generated_installers
         mv * ../docker/swarm/generated_installers
     - name: setup ssh-agent
-      uses: webfactory/ssh-agent@v0.5.3
+      uses: webfactory/ssh-agent@v0.8.0
       with:
         ssh-private-key: ${{ secrets.VC_KEY }}
     - name: retrieve config file
