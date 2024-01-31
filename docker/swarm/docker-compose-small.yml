@@ -369,11 +369,11 @@ services:
       S3PROXY_AUTHORIZATION: "none"
 
       LOG_LEVEL: info
-      S3PROXY_ENDPOINT: "http://0.0.0.0:80"
+#      S3PROXY_ENDPOINT: "http://0.0.0.0:80"
       S3PROXY_VIRTUALHOST: ""
       S3PROXY_SECURE_ENDPOINT: "https://0.0.0.0:443"
-      S3PROXY_KEYSTORE_PATH: "/keystore/keystore.jks"
-      S3PROXY_KEYSTORE_PASSWORD: "password"
+      S3PROXY_KEYSTORE_PATH: "/run/secrets/keystorefile"
+#      S3PROXY_KEYSTORE_PASSWORD: $(cat /run/secrets/keystorepswd)
       S3PROXY_CORS_ALLOW_ALL: "false"
       S3PROXY_CORS_ALLOW_ORIGINS: ""
       S3PROXY_CORS_ALLOW_METHODS: ""
@@ -394,12 +394,15 @@ services:
       JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME: ""
     ports:
       - "127.0.0.1:${VCELL_S3PROXY_PORT_EXTERNAL}:443"
-      - "127.0.0.1:80:80"
     volumes:
       - "${VCELL_N5_DATADIR_HOST}:/data:ro"
-      - "/media/zeke/DiskDrive/Home/Work/CCAM/TempStorage/keystore:/keystore"
+#    env_file: /run/secrets/keystoreenvpswd
+#    entrypoint: "/run/secrets/s3StartScript"
+    entrypoint: ["sh", "-c", "export S3PROXY_KEYSTORE_PASSWORD=$(cat /run/secrets/keystorepswd) && echo $S3PROXY_KEYSTORE_PASSWORD && /opt/s3proxy/run-docker-container.sh"]
+#    command: sh -c "echo S3PROXY_KEYSTORE_PASSWORD=$(cat /run/secrets/keystorepswd) >> /etc/environment"
     secrets:
       - keystorefile
+      - keystorepswd
     deploy:
       mode: replicated
       replicas: 1
