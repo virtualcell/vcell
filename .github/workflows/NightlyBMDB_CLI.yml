@@ -163,7 +163,7 @@ jobs:
           fi
 
       - name: Upload failures
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: set_${{ matrix.sets }}.report
           path: ${{ github.workspace }}/errors.report
@@ -241,7 +241,7 @@ jobs:
           fi
 
       - name: Upload failures
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: set_${{ matrix.sets }}.report
           path: ${{ github.workspace }}/errors.report

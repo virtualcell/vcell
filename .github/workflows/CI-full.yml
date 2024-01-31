@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Get the VCell version from tags
       id: version
       run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
@@ -23,7 +23,7 @@ jobs:
         echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
         echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV
     - name: setup ssh-agent
-      uses: webfactory/ssh-agent@v0.5.3
+      uses: webfactory/ssh-agent@v0.8.0
       with:
         ssh-private-key: ${{ secrets.VC_KEY }}
     - name: get installer secrets

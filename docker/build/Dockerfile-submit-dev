@@ -73,6 +73,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     slurm_tmpdir="slurm-tmpdir-not-set" \
     slurm_local_singularity_dir="slurm_local_singularity_dir-not-set" \
     slurm_central_singularity_dir="slurm_central_singularity_dir-not-set" \
+    slurm_singularity_module_name="slurm_singularity_module_name-not-set" \
     jmsblob_minsize=100000 \
     vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
     vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
@@ -124,6 +125,7 @@ ENTRYPOINT java \
 	-Dvcell.slurm.tmpdir="${slurm_tmpdir}" \
 	-Dvcell.slurm.local.singularity.dir="${slurm_local_singularity_dir}" \
 	-Dvcell.slurm.central.singularity.dir="${slurm_central_singularity_dir}" \
+	-Dvcell.slurm.singularity.module.name="${slurm_singularity_module_name}" \
 	-Dvcell.batch.singularity.image="${batch_singularity_imagefile}" \
 	-Dvcell.opt.singularity.image="${opt_singularity_imagefile}" \
 	-Dvcell.batch.docker.name="${docker_name}" \
