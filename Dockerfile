@@ -10,13 +10,12 @@ RUN $JAVA_HOME/bin/jlink \
          --output /javaruntime
 
 # Define base image and copy in jlink created minimal Java 17 environment
-FROM python:3.9.7-slim
+FROM ubuntu:jammy
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 # now we have Java 17 and Python 3.9
-
 ARG SIMULATOR_VERSION="7.5.0.11"
 ARG MAX_JAVA_MEM=0
 # Make sure you don't sap all of docker's memory when you set this.
@@ -47,8 +46,11 @@ LABEL \
     about.tags="rule-based modeling,kinetic modeling,dynamical simulation,systems biology,BNGL,SED-ML,COMBINE,OMEX" \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
-RUN apt-get -y update
-RUN apt-get install -y --no-install-recommends curl dnsutils apt-utils libfreetype6 fontconfig fonts-dejavu
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt -y update && apt install -y software-properties-common
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt install -y --no-install-recommends curl python3.9-full python3-pip build-essential dnsutils \
+    apt-utils libfreetype6 fontconfig fonts-dejavu
 
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
