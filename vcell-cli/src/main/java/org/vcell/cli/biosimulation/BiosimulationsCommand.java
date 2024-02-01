@@ -8,6 +8,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.run.ExecuteImpl;
+import org.vcell.cli.trace.Tracer;
 import org.vcell.util.exe.Executable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -94,7 +95,15 @@ public class BiosimulationsCommand implements Callable<Integer> {
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
                 ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliRecorder);
-                return 0; // Does this prevent finally?
+                if (Tracer.hasErrors()){
+                    if (!bQuiet) {
+                        logger.error("Errors occurred during execution");
+                        Tracer.reportErrors(bDebug);
+                    }
+                    return 1;
+                }else {
+                    return 0;
+                }
             } finally {
                 try {
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
@@ -104,7 +113,10 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 logger.debug("Finished all execution.");
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            if (!bQuiet) {
+                Tracer.reportErrors(bDebug);
+                logger.error(e.getMessage(), e);
+            }
             return 1;
         }
     }

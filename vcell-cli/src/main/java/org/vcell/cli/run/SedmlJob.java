@@ -12,6 +12,8 @@ import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.cli.run.hdf5.Hdf5DataExtractor;
+import org.vcell.cli.trace.Span;
+import org.vcell.cli.trace.Tracer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 
@@ -106,7 +108,9 @@ public class SedmlJob {
         final String SAFE_UNIX_FILE_SEPARATOR = "/";
         logger.info("Initializing SED-ML document...");
 
+        Span span = null;
         try {
+            span = Tracer.startSpan(Span.ContextType.PROCESSING_SEDML, "preProcessDoc", null);
             SedML sedmlFromOmex, sedmlFromPython;
             String[] sedmlNameSplit;
             
@@ -187,10 +191,15 @@ public class SedmlJob {
         } catch (Exception e) {
             String prefix = "SED-ML processing for " + this.SEDML_LOCATION + " failed with error: ";
             this.logDocumentError = prefix + e.getMessage();
+            Tracer.failure(e, prefix);
             this.reportProblem(e);
             this.somethingFailed = somethingDidFail();
             PythonCalls.updateSedmlDocStatusYml(this.SEDML_LOCATION, Status.FAILED, this.RESULTS_DIRECTORY_PATH);
             return false;
+        } finally {
+            if (span != null) {
+                span.close();
+            }
         }
         return true;
     }
@@ -219,10 +228,17 @@ public class SedmlJob {
 
         this.runSimulations(solverHandler, externalDocInfo);
         this.recordRunDetails(solverHandler);
+        Span span = null;
         try {
+            span = Tracer.startSpan(Span.ContextType.PROCESSING_SIMULATION_OUTPUTS, "processOutputs", null);
             this.processOutputs(solverHandler, masterHdf5File);
         } catch (Exception e){ // TODO: Make more Fine grain
+            Tracer.failure(e, "Error processing outputs");
             logger.warn("Outputs could not be processed.", e);
+        } finally {
+            if (span != null) {
+                span.close();
+            }
         }
         return this.evaluateResults();
     }
@@ -233,7 +249,9 @@ public class SedmlJob {
          * - we send both the whole OMEX file and the extracted SEDML file path
          * - XmlHelper code uses two types of resolvers to handle absolute or relative paths
          */
+        Span span = null;
         try {
+            span = Tracer.startSpan(Span.ContextType.SIMULATIONS_RUN, "runSimulations", null);
             String str = "Building solvers and starting simulation of all tasks... ";
             logger.info(str);
             this.logDocumentMessage += str;
@@ -244,6 +262,7 @@ public class SedmlJob {
         } catch (Exception e) {
             Throwable currentTierOfException = e;
             StringBuilder errorMessage = new StringBuilder();
+            Tracer.failure(e, errorMessage.toString());
             this.somethingFailed = somethingDidFail();
             while (currentTierOfException != null && !currentTierOfException.equals(currentTierOfException.getCause())){
                 errorMessage.append(currentTierOfException.getMessage());
@@ -252,6 +271,10 @@ public class SedmlJob {
             this.logDocumentError = errorMessage.toString();        // probably the hash is empty
             logger.error(errorMessage.toString(), e);
             // still possible to have some data in the hash, from some task that was successful - that would be partial success
+        } finally {
+            if (span != null) {
+                span.close();
+            }
         }
 
         this.recordRunDetails(solverHandler);
@@ -266,6 +289,7 @@ public class SedmlJob {
             if (solverHandler.nonSpatialResults.containsValue(null) || solverHandler.spatialResults.containsValue(null)) {        // some tasks failed, but not all
                 this.somethingFailed = somethingDidFail();
                 this.logDocumentMessage += "Failed to execute one or more tasks. ";
+                Tracer.failure(new Exception("Failed to execute one or more tasks in " + this.sedmlName), "Failed to execute one or more tasks in " + this.sedmlName);
                 logger.info("Failed to execute one or more tasks in " + this.sedmlName);
             }
 
@@ -301,6 +325,7 @@ public class SedmlJob {
                 this.reportProblem(e);
                 org.apache.commons.io.FileUtils.deleteDirectory(this.PLOTS_DIRECTORY);    // removing temp path generated from python
             } catch (IOException ioe){
+                Tracer.failure(ioe, "Deletion of " + this.PLOTS_DIRECTORY.getName() + " failed");
                 logger.warn("Deletion of " + this.PLOTS_DIRECTORY.getName() + " failed", ioe);
             }
             logger.warn(this.logDocumentError);
@@ -338,6 +363,7 @@ public class SedmlJob {
         }
         if (csvReports.isEmpty() || csvReports.containsValue(null)) {
             this.somethingFailed = somethingDidFail();
+            Tracer.failure(new Exception("Failed to generate one or more reports"), "Failed to generate one or more reports");
             String msg = "Failed to generate one or more reports. ";
             this.logDocumentMessage += msg;
         } else {
