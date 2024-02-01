@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.IOException;
 
 import cbit.vcell.math.MathException;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.SolverException;
@@ -38,7 +38,7 @@ public class RungeKuttaFehlbergSolver extends RungeKuttaSolver {
 	private static double[] c = { 16.0/135.0, 0.0, 6656.0/12825.0, 28561.0/56430.0, -9.0/50.0, 2.0/55.0 };
 	private static double[] e = { -1.0/360.0,  0.0, 128.0/4275.0, 2197.0/75240.0, -1.0/50.0, -2.0/55.0 };
 
-public RungeKuttaFehlbergSolver(SimulationTask simTask, File directory) throws SolverException {
+public RungeKuttaFehlbergSolver(StandardSimulationTask simTask, File directory) throws SolverException {
 	super(simTask, directory, 3, 6);
 }
 public double calculateErrorTerm(int i) {

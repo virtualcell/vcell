@@ -15,7 +15,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
-import org.vcell.util.BeanUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 
@@ -43,7 +42,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 /**
  * Insert the type's description here.

@@ -33,7 +33,7 @@ public class MergedDatasetViewer extends DataViewer {
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:30:45 PM)
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  * @param vcDataManager cbit.vcell.client.server.VCDataManager
  */
 public MergedDatasetViewer(DataManager argDataManager) throws DataAccessException {

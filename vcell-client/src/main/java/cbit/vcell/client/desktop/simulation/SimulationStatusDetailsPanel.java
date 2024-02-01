@@ -15,7 +15,7 @@ import java.awt.BorderLayout;
 import org.vcell.util.gui.DateRenderer;
 import org.vcell.util.gui.ScrollTable;
 
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 /**
  * Insert the type's description here.

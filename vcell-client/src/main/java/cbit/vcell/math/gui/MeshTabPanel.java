@@ -20,7 +20,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.geometry.ChomboGeometryException;
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
 
 /**

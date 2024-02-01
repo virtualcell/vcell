@@ -10,7 +10,7 @@
 
 package cbit.vcell.solver.server;
 
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationJob;
 
 /**
  * Any kind of a solver.  Its implementors implement specific

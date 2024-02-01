@@ -40,7 +40,7 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.NFsimSimulationOptions;
 import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
@@ -774,7 +774,7 @@ private MathOverridesPanel getMathOverridesPanel1() {
 
 
 /**
- * Gets the simulation property (cbit.vcell.solver.Simulation) value.
+ * Gets the simulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @return The simulation property value.
  * @see #setSimulation
  */
@@ -1163,7 +1163,7 @@ private void refreshDisplay() {
 
 
 /**
- * Sets the simulation property (cbit.vcell.solver.Simulation) value.
+ * Sets the simulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @param newValue The new value for the property.
  * @see #getSimulation
  */

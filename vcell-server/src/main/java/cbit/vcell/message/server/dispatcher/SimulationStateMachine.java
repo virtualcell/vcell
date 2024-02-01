@@ -24,7 +24,7 @@ import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.HtcProxy.MemLimitResults;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.RunningStateInfo;
@@ -34,8 +34,8 @@ import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.SimulationQueueEntryStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.UpdateSynchronizationException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -480,7 +480,7 @@ public class SimulationStateMachine {
 			//'powerUsers' (previously called 'special1') assigned to users by request to allow long running sims
 			isPowerUser = isPowerUser && Arrays.asList(myUser.getMySpecials()).contains(User.SPECIAL_CLAIM.powerUsers);
 		}
-		SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID,null,isPowerUser);
+		StandardSimulationTask simulationTask = new StandardSimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID,null,isPowerUser);
 
 		double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
 		//SimulationStateMachine ultimately instantiated from {vcellroot}/docker/build/Dockerfile-sched-dev by way of cbit.vcell.message.server.dispatcher.SimulationDispatcher

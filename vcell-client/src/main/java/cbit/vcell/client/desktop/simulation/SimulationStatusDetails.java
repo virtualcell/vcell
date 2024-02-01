@@ -13,7 +13,7 @@ import javax.swing.JProgressBar;
 
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 /**
  * Insert the type's description here.

@@ -26,10 +26,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 
 import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
@@ -42,7 +39,7 @@ import cbit.plot.Plot2D;
 import cbit.plot.SingleXPlot2D;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.DataSymbolMetadata;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.simulation.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.

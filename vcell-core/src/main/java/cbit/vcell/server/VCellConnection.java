@@ -63,8 +63,8 @@ DataSetController getDataSetController() throws DataAccessException, RemoteProxy
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.solvers.MathController
- * @param simulationInfo cbit.vcell.solver.SimulationInfo
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulationInfo cbit.vcell.solver.simulation.SimulationInfo
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  * @exception java.rmi.RemoteException The exception description.
  */
 public SimulationController getSimulationController() throws RemoteProxyException;

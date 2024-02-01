@@ -11,10 +11,10 @@ import org.vcell.solver.nfsim.NFsimXMLWriter;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.NFsimSimulationOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 
 @SuppressWarnings("serial")
 public class NfsimExtensionFilter extends SelectorExtensionFilter {
@@ -34,7 +34,7 @@ public class NfsimExtensionFilter extends SelectorExtensionFilter {
 		SimulationContext simContexts[] = bioModel.getSimulationContexts();
 		Simulation selectedSim = simulationContext.getSimulations(0);
 		//Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
-		SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, 0, null),0);
+		StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(selectedSim, 0, null),0);
 		long randomSeed = 0;	// a fixed seed will allow us to run reproducible simulations
 		//long randomSeed = System.currentTimeMillis();
 		NFsimSimulationOptions nfsimSimulationOptions = new NFsimSimulationOptions();

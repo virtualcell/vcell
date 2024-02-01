@@ -51,7 +51,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)

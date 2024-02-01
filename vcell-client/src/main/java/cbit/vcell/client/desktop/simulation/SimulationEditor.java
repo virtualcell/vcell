@@ -18,14 +18,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import cbit.vcell.solver.simulation.Simulation;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
 import cbit.vcell.math.gui.MeshTabPanel;
 import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SimulationOwner.UnitInfo;
+import cbit.vcell.solver.simulation.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationOwner.UnitInfo;
 import cbit.vcell.solver.ode.gui.MathOverridesPanel;
 import cbit.vcell.solver.ode.gui.SolverTaskDescriptionAdvancedPanel;
 /**
@@ -68,11 +68,11 @@ private void connEtoC1() {
 }
 
 /**
- * Gets the clonedSimulation property (cbit.vcell.solver.Simulation) value.
+ * Gets the clonedSimulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @return The clonedSimulation property value.
  * @see #setClonedSimulation
  */
-public cbit.vcell.solver.Simulation getClonedSimulation() {
+public Simulation getClonedSimulation() {
 	return fieldClonedSimulation;
 }
 
@@ -292,12 +292,12 @@ public void prepareToEdit(Simulation simulation, Component parent) throws Chombo
 
 
 /**
- * Sets the clonedSimulation property (cbit.vcell.solver.Simulation) value.
+ * Sets the clonedSimulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @param clonedSimulation The new value for the property.
  * @see #getClonedSimulation
  */
-private void setClonedSimulation(cbit.vcell.solver.Simulation clonedSimulation) {
-	cbit.vcell.solver.Simulation oldValue = fieldClonedSimulation;
+private void setClonedSimulation(Simulation clonedSimulation) {
+	Simulation oldValue = fieldClonedSimulation;
 	fieldClonedSimulation = clonedSimulation;
 	firePropertyChange("clonedSimulation", oldValue, clonedSimulation);
 }

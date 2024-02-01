@@ -19,13 +19,15 @@ import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationModelInfo;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;

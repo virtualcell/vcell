@@ -43,7 +43,6 @@ import org.vcell.sybil.models.miriam.MIRIAMRef.URNParseFailureException;
 import org.vcell.util.Compare;
 import org.vcell.util.Displayable;
 import org.vcell.util.document.Identifiable;
-import org.openrdf.model.Resource;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.biomodel.BioModel;
@@ -59,7 +58,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.xml.XMLTags;
 
 /**

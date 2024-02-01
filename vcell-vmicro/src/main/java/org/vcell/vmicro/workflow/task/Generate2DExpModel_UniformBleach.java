@@ -12,7 +12,7 @@ import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 public class Generate2DExpModel_UniformBleach extends Task {
 	

@@ -26,7 +26,7 @@ import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEvent;
 import cbit.vcell.biomodel.meta.VCMetaData.AnnotationEventListener;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 /**
  * Insert the type's description here.

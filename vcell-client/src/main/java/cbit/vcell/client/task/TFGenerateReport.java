@@ -19,7 +19,7 @@ import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationInfo;
 /**
  * Insert the type's description here.
  * Creation date: (11/17/2004 2:08:09 PM)

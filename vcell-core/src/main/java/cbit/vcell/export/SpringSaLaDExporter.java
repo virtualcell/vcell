@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.Pair;
 
@@ -38,16 +36,14 @@ import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 public class SpringSaLaDExporter {
 	

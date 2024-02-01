@@ -83,6 +83,9 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionMembrane;
 import cbit.vcell.simdata.SpatialSelectionVolume;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * This type was created in VisualAge.

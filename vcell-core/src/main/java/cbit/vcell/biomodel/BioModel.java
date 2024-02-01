@@ -55,7 +55,7 @@ import cbit.vcell.model.Structure.SpringStructureEnum;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 /**
  * Insert the type's description here.
@@ -686,7 +686,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     }
 
     /**
-     * Gets the simulations property (cbit.vcell.solver.Simulation[]) value.
+     * Gets the simulations property (cbit.vcell.solver.simulation.Simulation[]) value.
      *
      * @return The simulations property value.
      * @see #setSimulations
@@ -697,7 +697,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 
 
     /**
-     * Gets the simulations index property (cbit.vcell.solver.Simulation) value.
+     * Gets the simulations index property (cbit.vcell.solver.simulation.Simulation) value.
      *
      * @param index The index value into the property array.
      * @return The simulations property value.
@@ -713,7 +713,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * Creation date: (1/17/01 12:59:40 PM)
      *
      * @param simulationContext cbit.vcell.mapping.SimulationContext
-     * @return cbit.vcell.solver.Simulation[]
+     * @return cbit.vcell.solver.simulation.Simulation[]
      */
     public Simulation[] getSimulations(SimulationContext simulationContext){
         if(simulationContext == null){
@@ -1062,7 +1062,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 
 
     /**
-     * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
+     * Sets the simulations property (cbit.vcell.solver.simulation.Simulation[]) value.
      *
      * @param simulations The new value for the property.
      * @throws java.beans.PropertyVetoException The exception description.

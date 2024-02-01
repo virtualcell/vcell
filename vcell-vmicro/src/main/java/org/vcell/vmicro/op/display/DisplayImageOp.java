@@ -38,7 +38,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.simdata.SpatialSelectionVolume;
 import cbit.vcell.simdata.gui.CurveValueProvider;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.simulation.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class DisplayImageOp {

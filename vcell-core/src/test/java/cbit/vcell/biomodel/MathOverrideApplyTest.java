@@ -3,7 +3,7 @@ package cbit.vcell.biomodel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;

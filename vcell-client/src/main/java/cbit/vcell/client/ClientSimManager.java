@@ -61,7 +61,7 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.DataSetController;
@@ -75,10 +75,10 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.DataProcessingInstructions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
@@ -617,7 +617,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 			File smoldynExe = exes[0];
 	
 			Simulation simulation = new TempSimulation(originalSimulation, false);
-			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
+			StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(simulation, 0, null),0);
 			File inputFile = new File(ResourceUtil.getLocalSimDir(User.tempUser.getName()), simTask.getSimulationJobID() + SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION);
 			inputFile.deleteOnExit();
 			PrintWriter pw = new PrintWriter(inputFile);
@@ -711,7 +711,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			simulation.gatherIssues(issueContext, issueList);
 			DocumentValidUtil.checkIssuesForErrors(issueList);
 
-			SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, 0, null),0);
+			StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(simulation, 0, null),0);
 			Solver solver = createQuickRunSolver(localSimDataDir, simTask);
 			if (solver == null) {
 				throw new RuntimeException("null solver");
@@ -913,7 +913,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 								@Override
 								public void run() {
 									try {
-										SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, scanNum, null), 0);
+										StandardSimulationTask simTask = new StandardSimulationTask(new SimulationJob(simulation, scanNum, null), 0);
 										Solver solver = createQuickRunSolver(localSimDataDir, simTask);
 										solver.startSolver();
 										while(true) {
@@ -974,7 +974,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 }
 
 
-public static Solver createQuickRunSolver(File directory, SimulationTask simTask) throws SolverException, IOException {
+public static Solver createQuickRunSolver(File directory, StandardSimulationTask simTask) throws SolverException, IOException {
 	SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");

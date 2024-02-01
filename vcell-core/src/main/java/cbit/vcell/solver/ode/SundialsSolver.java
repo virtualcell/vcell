@@ -21,7 +21,6 @@ import java.util.Vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
@@ -35,14 +34,14 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -63,7 +62,7 @@ public abstract class SundialsSolver extends SimpleCompiledSolver implements ODE
 /**
  * IDASolver constructor comment.
  */
-public SundialsSolver(SimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
+public SundialsSolver(StandardSimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
 	super(simTask, directory, bMessaging);
 	if (simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use SundialsSolver on spatial simulation");

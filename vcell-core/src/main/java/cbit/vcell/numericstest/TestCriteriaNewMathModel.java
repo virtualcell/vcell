@@ -11,7 +11,7 @@
 package cbit.vcell.numericstest;
 import org.vcell.util.document.MathModelInfo;
 
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 /**
  * Insert the type's description here.
@@ -25,7 +25,7 @@ public class TestCriteriaNewMathModel extends TestCriteriaNew {
 /**
  * TestCriteriaNewMathModel constructor comment.
  * @param argTcritKey java.math.BigDecimal
- * @param argSimInfo cbit.vcell.solver.SimulationInfo
+ * @param argSimInfo cbit.vcell.solver.simulation.SimulationInfo
  * @param argMaxRelError java.lang.Double
  * @param argMaxAbsError java.lang.Double
  * @param argVariableComparisonSummary cbit.vcell.solver.test.VariableComparisonSummary[]

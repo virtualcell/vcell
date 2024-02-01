@@ -10,7 +10,7 @@
 
 package cbit.vcell.solver;
 import cbit.vcell.math.VCML;
-import cbit.vcell.solver.SimulationOwner.UnitInfo;
+import cbit.vcell.solver.simulation.SimulationOwner.UnitInfo;
 
 /**
  * Insert the type's description here.

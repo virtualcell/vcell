@@ -9,7 +9,7 @@ import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -166,7 +166,7 @@ public class RunUtils {
         // A ton of initialization
         int jobIndex = vcellSimJob.getJobIndex();
         User user = new User(userDir.getName(), null);
-        cbit.vcell.solver.Simulation vcellSim = vcellSimJob.getSimulation();
+        cbit.vcell.solver.simulation.Simulation vcellSim = vcellSimJob.getSimulation();
         ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 
     	SimulationContext simContext = (SimulationContext)vcellSim.getSimulationOwner();
@@ -623,8 +623,8 @@ public class RunUtils {
     }
 
     private static ExportSpecs getExportSpecs(OutputContext outputContext, User user, DataServerImpl dataServerImpl, VCSimulationDataIdentifier vcId,
-                                       DataSetControllerImpl dsControllerImpl, cbit.vcell.solver.Simulation vcellSim, int jobIndex,
-                                       VCSimulationIdentifier vcSimID, SimulationContext simContext) throws DataAccessException {
+                                              DataSetControllerImpl dsControllerImpl, cbit.vcell.solver.simulation.Simulation vcellSim, int jobIndex,
+                                              VCSimulationIdentifier vcSimID, SimulationContext simContext) throws DataAccessException {
 
         PDEDataContext pdeDataContext = new ServerPDEDataContext(outputContext, user, dataServerImpl, vcId);
         List<String> variableNames = RunUtils.getListOfVariableNames(pdeDataContext.getDataIdentifiers());

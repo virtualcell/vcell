@@ -24,10 +24,10 @@ import cbit.vcell.math.Function;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
@@ -48,7 +48,7 @@ public class GibsonSolver extends SimpleCompiledSolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 
-public GibsonSolver(SimulationTask simTask, java.io.File directory, boolean bMessaging) throws SolverException {
+public GibsonSolver(StandardSimulationTask simTask, java.io.File directory, boolean bMessaging) throws SolverException {
 	super(simTask, directory, bMessaging);
 }
 

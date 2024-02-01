@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver;
 
+import cbit.vcell.solver.simulation.Simulation;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
 

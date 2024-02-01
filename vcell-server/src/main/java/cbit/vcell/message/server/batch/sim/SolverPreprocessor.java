@@ -16,13 +16,13 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.ServerMessagingDelegate;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.mongodb.VCMongoMessage.ServiceName;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.SimulationData.SimDataAmplistorInfo;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverListener;
@@ -53,7 +53,7 @@ public class SolverPreprocessor  {
 	 * @param args an array of command-line arguments
 	 * @throws VCMessagingException 
 	 */
-	public static void sendFailureAndExit(HTCSolver htcSolver, SimulationTask simTask, String hostName, SimulationMessage simMessage) throws VCMessagingException{
+	public static void sendFailureAndExit(HTCSolver htcSolver, StandardSimulationTask simTask, String hostName, SimulationMessage simMessage) throws VCMessagingException{
 		VCMessagingService service = new VCMessagingServiceActiveMQ();
 		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
 		int jmsport = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
@@ -99,7 +99,7 @@ public class SolverPreprocessor  {
 			
 			//
 			File simulationFile = new File(args[0]);
-			final SimulationTask simTask = XmlHelper.XMLToSimTask(FileUtils.readFileToString(simulationFile));
+			final StandardSimulationTask simTask = XmlHelper.XMLToSimTask(FileUtils.readFileToString(simulationFile));
 			if (parallelDirectory != null){
 				// simulation task needs to be written to the "parallel directory" (a temporary directory) here (it is local to the cluster).
 				FileUtils.copyFile(simulationFile, new File(parallelDirectory,simulationFile.getName()));
@@ -222,7 +222,7 @@ public class SolverPreprocessor  {
 	}
 
 
-	private static void recoverLastSimulationData(SimulationTask simTask,File userDir, Logger lg){
+	private static void recoverLastSimulationData(StandardSimulationTask simTask, File userDir, Logger lg){
 		SimulationData.SimDataAmplistorInfo simDataAmplistorInfo = AmplistorUtils.getSimDataAmplistorInfoFromPropertyLoader();
 		if(simDataAmplistorInfo != null){
 			try{

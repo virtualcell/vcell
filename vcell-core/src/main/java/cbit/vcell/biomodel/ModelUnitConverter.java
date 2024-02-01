@@ -7,7 +7,6 @@ import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;

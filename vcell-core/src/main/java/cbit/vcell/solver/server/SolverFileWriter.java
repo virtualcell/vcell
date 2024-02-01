@@ -15,7 +15,7 @@ import org.jdom.Element;
 
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 /**
  * Insert the type's description here.
@@ -25,7 +25,7 @@ import cbit.vcell.resource.PropertyLoader;
 public abstract class SolverFileWriter {
 	protected PrintWriter printWriter = null;
 	protected boolean bUseMessaging = true;
-	protected final SimulationTask simTask;
+	protected final StandardSimulationTask simTask;
 	
 	protected enum SolverInputFileKeyword {
 		JMS_PARAM_BEGIN("jms"),
@@ -47,7 +47,7 @@ public abstract class SolverFileWriter {
 /**
  * OdeFileCoder constructor comment.
  */
-public SolverFileWriter(PrintWriter pw, SimulationTask simTask, boolean messaging) {
+public SolverFileWriter(PrintWriter pw, StandardSimulationTask simTask, boolean messaging) {
 	printWriter = pw;
 	this.simTask = simTask;
 	bUseMessaging = messaging;
@@ -141,7 +141,7 @@ protected Element xmlJMSParameters () {
 	return jms; 
 }
 
-public SimulationTask getSimulationTask()
+public StandardSimulationTask getSimulationTask()
 {
 	return simTask;
 }

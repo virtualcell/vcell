@@ -18,7 +18,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.vcell.util.ExceptionInterpreter;
 
 import cbit.vcell.math.MathException;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
@@ -47,7 +47,7 @@ public class SmoldynSolver extends SimpleCompiledSolver {
 		
 	}
 
-public SmoldynSolver(SimulationTask simTask, java.io.File directory, boolean bMsging) throws SolverException {
+public SmoldynSolver(StandardSimulationTask simTask, java.io.File directory, boolean bMsging) throws SolverException {
 	super(simTask, directory, bMsging);
 }
 

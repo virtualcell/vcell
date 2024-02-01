@@ -19,7 +19,7 @@ import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.*;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.*;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;
 import cbit.vcell.xml.*;
 import org.apache.commons.io.FilenameUtils;

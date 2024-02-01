@@ -22,6 +22,8 @@ import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.biomodel.meta.VCID;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import org.vcell.model.rbm.NetworkConstraints;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.*;
@@ -1230,8 +1232,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
      * Insert the method's description here.
      * Creation date: (5/7/2004 1:41:57 PM)
      *
-     * @param allSimulations cbit.vcell.solver.Simulation[]
-     * @return cbit.vcell.solver.Simulation[]
+     * @param allSimulations cbit.vcell.solver.simulation.Simulation[]
+     * @return cbit.vcell.solver.simulation.Simulation[]
      */
     private Simulation[] extractLocalSimulations(Simulation[] allSimulations){
         ArrayList<Simulation> list = new ArrayList<Simulation>();

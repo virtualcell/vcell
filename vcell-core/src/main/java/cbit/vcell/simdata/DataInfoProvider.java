@@ -2,7 +2,7 @@ package cbit.vcell.simdata;
 
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.solver.SimulationModelInfo;
+import cbit.vcell.solver.simulation.SimulationModelInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

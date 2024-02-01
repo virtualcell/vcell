@@ -25,7 +25,7 @@ import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFact
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.VCellConnection;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;

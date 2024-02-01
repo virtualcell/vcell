@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 import org.vcell.util.exe.Executable;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SolverEvent;
@@ -34,9 +34,9 @@ import cbit.vcell.xml.XmlParseException;
 public abstract class HTCSolver extends AbstractSolver {
 	protected AbstractSolver realSolver = null;
 	protected ArrayList<String> cmdArguments = new ArrayList<String>();
-	protected SimulationTask simulationTask = null;
+	protected StandardSimulationTask simulationTask = null;
 
-public HTCSolver(SimulationTask simTask, File userDirectory, File parallelDirectory) throws SolverException {
+public HTCSolver(StandardSimulationTask simTask, File userDirectory, File parallelDirectory) throws SolverException {
 	super(simTask, userDirectory);
 	simulationTask = simTask;
 	if (!simTask.getSimulation().getSolverTaskDescription().getSolverDescription().isJavaSolver()) {

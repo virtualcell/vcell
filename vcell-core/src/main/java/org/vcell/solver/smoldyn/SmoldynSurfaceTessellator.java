@@ -43,11 +43,11 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.MembraneSubDomain;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleVariable;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.render.Vect3d;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SolverFileWriter;
 import cbit.vcell.solvers.MembraneElement;
@@ -167,7 +167,7 @@ public class SmoldynSurfaceTessellator extends SolverFileWriter {
 		}
 	}
 
-	public SmoldynSurfaceTessellator(PrintWriter pw, SimulationTask simTask, boolean messaging) {
+	public SmoldynSurfaceTessellator(PrintWriter pw, StandardSimulationTask simTask, boolean messaging) {
 		super(pw, simTask, messaging);
 		simulation = simTask.getSimulation();
 		mathDesc = simulation.getMathDescription();

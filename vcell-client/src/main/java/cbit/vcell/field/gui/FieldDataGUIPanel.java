@@ -78,7 +78,7 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class FieldDataGUIPanel extends JPanel{

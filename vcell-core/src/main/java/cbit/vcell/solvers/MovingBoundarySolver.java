@@ -18,7 +18,7 @@ import org.vcell.util.ISize;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
@@ -48,7 +48,7 @@ public class MovingBoundarySolver extends SimpleCompiledSolver {
  * @param simID java.lang.String
  * @param clientProxy cbit.vcell.solvers.ClientProxy
  */
-public MovingBoundarySolver (SimulationTask simTask, File dir, boolean bMsging) throws SolverException {
+public MovingBoundarySolver (StandardSimulationTask simTask, File dir, boolean bMsging) throws SolverException {
 	super(simTask, dir, bMsging);
 	if (! simTask.getSimulation().isSpatial()) {
 		throw new SolverException("Cannot use MovingBoundary on non-spatial simulation");
@@ -82,7 +82,7 @@ public void cleanup() {
  * Insert the method's description here.
  * Creation date: (2/2/2004 5:31:41 PM)
  * @return cbit.vcell.simdata.AnnotatedFunction[]
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  */
 //@Override
 //public Vector<AnnotatedFunction> createFunctionList() {

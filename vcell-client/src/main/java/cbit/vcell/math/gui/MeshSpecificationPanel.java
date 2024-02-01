@@ -33,7 +33,7 @@ import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 /**
  * Insert the type's description here.

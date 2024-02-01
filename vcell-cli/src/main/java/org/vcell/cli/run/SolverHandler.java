@@ -6,7 +6,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.math.FunctionColumnDescription;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
@@ -17,6 +17,9 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import cbit.vcell.solver.stoch.GibsonSolver;
 import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
@@ -396,15 +399,15 @@ public class SolverHandler {
 
 					AbstractTask task = tempSimulationToTaskMap.get(tempSimulationJob.getTempSimulation());
 
-					SimulationTask simTask;
-					String kisao = "null";
-					ODESolverResultSet odeSolverResultSet = null;
-					SolverTaskDescription std = null;
-					SolverDescription sd = null;
-					int solverStatus = SolverStatus.SOLVER_READY;
+                StandardSimulationTask simTask;
+                String kisao = "null";
+				ODESolverResultSet odeSolverResultSet = null;
+				SolverTaskDescription std = null;
+				SolverDescription sd = null;
+				int solverStatus = SolverStatus.SOLVER_READY;
 
-					Simulation sim = tempSimulationJob.getSimulation();
-					simTask = new SimulationTask(tempSimulationJob, 0);
+				Simulation sim = tempSimulationJob.getSimulation();
+				simTask = new StandardSimulationTask(tempSimulationJob, 0);
 					Span sim_span = null;
 					try {
 						sim_span = Tracer.startSpan(Span.ContextType.SIMULATION_RUN, sim.getName(), Map.of("simName", sim.getName()));

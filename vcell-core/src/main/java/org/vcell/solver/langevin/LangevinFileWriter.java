@@ -12,33 +12,8 @@ package org.vcell.solver.langevin;
 
 import java.io.PrintWriter;
 
-import org.apache.commons.io.output.WriterOutputStream;
-import org.jdom.Element;
-
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.server.SolverFileWriter;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.StringTokenizer;
-
-import org.apache.commons.io.FileUtils;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.ODEDataBlock;
-import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.ODESimData;
-import cbit.vcell.util.ColumnDescription;
 
 /**
  * The function reads model information from simulation and
@@ -48,7 +23,7 @@ public class LangevinFileWriter extends SolverFileWriter
 {
 	private long randomSeed = 0; //value assigned in the constructor
 	
-public LangevinFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessaging) 
+public LangevinFileWriter(PrintWriter pw, StandardSimulationTask simTask, boolean bMessaging)
 {
 	super(pw, simTask, bMessaging);
 }

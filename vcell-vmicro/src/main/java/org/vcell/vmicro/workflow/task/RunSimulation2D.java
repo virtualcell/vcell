@@ -10,7 +10,7 @@ import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
 import cbit.vcell.VirtualMicroscopy.FloatImage;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 public class RunSimulation2D extends Task {
 	

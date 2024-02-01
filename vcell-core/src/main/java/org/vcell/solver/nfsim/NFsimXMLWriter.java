@@ -44,11 +44,11 @@ import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
 import cbit.vcell.math.ParticleSpeciesPattern;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolumeParticleSpeciesPattern;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.NFsimSimulationOptions;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 //import org.jdom.output.Format;
 import cbit.vcell.xml.XMLTags;
@@ -264,15 +264,15 @@ public class NFsimXMLWriter {
 	static HashSet<BondSites> reactionProductBondSites = new HashSet<BondSites>();
 	static HashSet<BondSites> reactionReactantBondSites = new HashSet<BondSites>();
 
-	public static Element writeNFsimXML(SimulationTask origSimTask, long randomSeed, NFsimSimulationOptions nfsimSimulationOptions, boolean bUseLocationMarks) throws SolverException {
+	public static Element writeNFsimXML(StandardSimulationTask origSimTask, long randomSeed, NFsimSimulationOptions nfsimSimulationOptions, boolean bUseLocationMarks) throws SolverException {
 		try {
 			System.out.println("VCML ORIGINAL .... START\n"+origSimTask.getSimulation().getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
 		} catch (MathException e1) {
 			lg.error(e1);
 		}
-		SimulationTask clonedSimTask = null;
+		StandardSimulationTask clonedSimTask = null;
 		try {
-			clonedSimTask = (SimulationTask) BeanUtils.cloneSerializable(origSimTask);
+			clonedSimTask = (StandardSimulationTask) BeanUtils.cloneSerializable(origSimTask);
 		}catch (Exception eee){
 			throw new SolverException("failed to clone mathDescription while preparing NFSim input: "+eee.getMessage(), eee);
 		}

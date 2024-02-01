@@ -12,6 +12,7 @@ package cbit.vcell.modeldb;
 import java.util.Arrays;
 import java.util.List;
 
+import cbit.vcell.solver.simulation.Simulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
@@ -77,7 +78,7 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
 															(org.vcell.util.document.KeyValue) valueData[1], 
 															version, dbSyntax));
 	}else if (vTable instanceof SimulationTable) {
-		sb.append(((SimulationTable) vTable).getSQLValueList(	(cbit.vcell.solver.Simulation) valueData[0], 
+		sb.append(((SimulationTable) vTable).getSQLValueList(	(Simulation) valueData[0],
 															(org.vcell.util.document.KeyValue) valueData[1], 
 															version, dbSyntax));
 	}else if (vTable instanceof BioModelTable) {
@@ -161,7 +162,7 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
 	VC_MATH			MathDescription		cbit.vcell.math.MathDescription			N			MathModelMetaData,BioModelMetaData->SimulationContext
 	VC_MODEL		Model				cbit.vcell.model.Model					N			BioModelMetaData
 	VC_SIMCONTEXT	SimulationContext	cbit.vcell.mapping.SimulationContext	N			BioModelMetaData
-	VC_SIMULATION	Simulation			cbit.vcell.solver.Simulation			N			BioModelMetaData,MathModelMetaData
+	VC_SIMULATION	Simulation			cbit.vcell.solver.simulation.Simulation			N			BioModelMetaData,MathModelMetaData
 	VC_BIOMODEL		BioModelMetaData	cbit.vcell.biomodel.BioModelMetaData	Y			-
 	VC_MATHMODEL	MathModelMetaData	cbit.vcell.mathmodel.MathModelMetaData	Y			-
 

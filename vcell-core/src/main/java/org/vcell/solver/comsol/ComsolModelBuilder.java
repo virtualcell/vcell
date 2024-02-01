@@ -54,8 +54,8 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 

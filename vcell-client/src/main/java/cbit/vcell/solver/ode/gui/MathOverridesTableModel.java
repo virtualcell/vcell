@@ -30,7 +30,7 @@ import cbit.vcell.solver.ConstantArraySpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.MathOverridesEvent;
 import cbit.vcell.solver.MathOverridesListener;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 /**
  * Insert the type's description here.
  * Creation date: (10/22/2000 11:46:26 AM)

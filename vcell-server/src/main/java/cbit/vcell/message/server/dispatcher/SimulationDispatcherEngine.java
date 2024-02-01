@@ -29,8 +29,8 @@ import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.UpdateSynchronizationException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 

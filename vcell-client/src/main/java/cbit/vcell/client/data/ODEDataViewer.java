@@ -9,8 +9,6 @@
  */
 
 package cbit.vcell.client.data;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Hashtable;
 
@@ -35,9 +33,8 @@ import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.solver.DataSymbolMetadata;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationModelInfo;
-import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
 import cbit.vcell.solver.ode.gui.OutputSpeciesResultsPanel;
@@ -233,7 +230,7 @@ private PlotPane getPlotPane1() {
 
 
 /**
- * Gets the simulation property (cbit.vcell.solver.Simulation) value.
+ * Gets the simulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @return The simulation property value.
  * @see #setSimulation
  */
@@ -388,7 +385,7 @@ public void setNFSimMolecularConfigurations(NFSimMolecularConfigurations nFSimMo
 }
 
 /**
- * Sets the simulation property (cbit.vcell.solver.Simulation) value.
+ * Sets the simulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @param simulation The new value for the property.
  * @see #getSimulation
  */

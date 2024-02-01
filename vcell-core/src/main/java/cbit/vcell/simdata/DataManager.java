@@ -51,7 +51,7 @@ double[] getDataSetTimes() throws DataAccessException;
 
 
 /**
- * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
+ * Gets the simulationInfo property (cbit.vcell.solver.simulation.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
 VCDataIdentifier getVCDataIdentifier();

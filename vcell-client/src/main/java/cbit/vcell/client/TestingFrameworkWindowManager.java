@@ -134,9 +134,9 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -1763,8 +1763,8 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
 // * Insert the method's description here.
 // * Creation date: (11/23/2004 1:53:11 PM)
 // * @return java.lang.String[]
-// * @param sim1 cbit.vcell.solver.Simulation
-// * @param sim2 cbit.vcell.solver.Simulation
+// * @param sim1 cbit.vcell.solver.simulation.Simulation
+// * @param sim2 cbit.vcell.solver.simulation.Simulation
 // */
 //private VariablePair[] getVariableNamesToCompare(BioModel testBioModel,SimulationSymbolTable testSymboltable, SimulationSymbolTable refSymbolTable){
 //	Vector<VariablePair> variablePairs = new Vector<VariablePair>();
@@ -2618,8 +2618,8 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
      * Insert the method's description here.
      * Creation date: (11/13/2004 1:52:50 PM)
      *
-     * @param sims cbit.vcell.solver.Simulation[]
-     * @return cbit.vcell.solver.SimulationInfo
+     * @param sims cbit.vcell.solver.simulation.Simulation[]
+     * @return cbit.vcell.solver.simulation.SimulationInfo
      */
     private SimulationInfo selectSimInfoPrivate(Simulation[] sims) {
 

@@ -9,7 +9,7 @@ import org.vcell.util.IssueContext;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
-import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationOwner;
 
 public class DocumentValidUtil {
 

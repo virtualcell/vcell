@@ -93,7 +93,7 @@ import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.math.VolumeRandomVariable;
 import cbit.vcell.math.VolumeRegionEquation;
 import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -112,8 +112,8 @@ import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
@@ -254,16 +254,16 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
         SMOLDYN_STEP_MULTIPLIER,
     }
 
-    public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File workingDir){    // for optimization only, no messaging
+    public FiniteVolumeFileWriter(PrintWriter pw, StandardSimulationTask simTask, Geometry geo, File workingDir){    // for optimization only, no messaging
         this(pw, simTask, geo, workingDir, false);
         bInlineVCG = true;
     }
 
-    public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File workingDir, boolean arg_bMessaging){
+    public FiniteVolumeFileWriter(PrintWriter pw, StandardSimulationTask simTask, Geometry geo, File workingDir, boolean arg_bMessaging){
         this(pw, simTask, geo, workingDir, workingDir, arg_bMessaging);
     }
 
-    public FiniteVolumeFileWriter(PrintWriter pw, SimulationTask simTask, Geometry geo, File workingDir, File destinationDirectory, boolean arg_bMessaging){
+    public FiniteVolumeFileWriter(PrintWriter pw, StandardSimulationTask simTask, Geometry geo, File workingDir, File destinationDirectory, boolean arg_bMessaging){
         super(pw, simTask, arg_bMessaging);
         resampledGeometry = geo;
         this.workingDirectory = workingDir;
@@ -857,7 +857,7 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
         }
     }
 
-    public static String replaceVolumeVariable(SimulationTask simTask, MembraneSubDomain msd, Expression exp) throws MathException, ExpressionException{
+    public static String replaceVolumeVariable(StandardSimulationTask simTask, MembraneSubDomain msd, Expression exp) throws MathException, ExpressionException{
         Expression fluxExpr = new Expression(exp);
         String symbols[] = exp.getSymbols();
         String flux = null;

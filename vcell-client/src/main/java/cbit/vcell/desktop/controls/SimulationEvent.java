@@ -10,7 +10,7 @@
 
 package cbit.vcell.desktop.controls;
 
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationInfo;
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.SimulationListener interface.
  */

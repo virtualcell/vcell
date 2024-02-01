@@ -36,8 +36,8 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
 import cbit.vcell.geometry.gui.GeometryViewer;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import cbit.vcell.solver.ode.gui.SimulationSummaryPanel;
 /**
  * Insert the type's description here.

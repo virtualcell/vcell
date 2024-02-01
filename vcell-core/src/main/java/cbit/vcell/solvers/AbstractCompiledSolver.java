@@ -10,30 +10,26 @@
 
 package cbit.vcell.solvers;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solver.simulation.Simulation;
 import org.vcell.util.document.User;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Vector;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Insert the type's description here.
  * Creation date: (6/26/2001 3:18:18 PM)
- *
- * @author: Ion Moraru
  */
 public abstract class AbstractCompiledSolver extends AbstractSolver implements java.beans.PropertyChangeListener {
     /**
@@ -46,14 +42,14 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     protected final static String DATA_PREFIX = "data:";
     protected final static String PROGRESS_PREFIX = "progress:";
     protected final static String SEPARATOR = ":";
-    protected boolean bMessaging = true;
+    protected boolean bMessaging;
 
     /**
      * AbstractPDESolver constructor comment.
      */
-    public AbstractCompiledSolver(SimulationTask simTask, File directory, boolean bMsging) throws SolverException {
+    public AbstractCompiledSolver(StandardSimulationTask simTask, File directory, boolean bMessaging) throws SolverException {
         super(simTask, directory);
-        bMessaging = bMsging;
+        this.bMessaging = bMessaging;
         setCurrentTime(simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
     }
 
@@ -113,13 +109,12 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     public void propertyChange(java.beans.PropertyChangeEvent event) {
         if (event.getSource() == getMathExecutable() && event.getPropertyName().equals("applicationMessage")) {
             String messageString = (String) event.getNewValue();
-            if (messageString == null || messageString.length() == 0) {
+            if (messageString == null || messageString.isEmpty()) {
                 return;
             }
             ApplicationMessage appMessage = getApplicationMessage(messageString);
             if (appMessage == null) {
                 if (lg.isWarnEnabled()) lg.warn("AbstractCompiledSolver: Unexpected Message '" + messageString + "'");
-                return;
             } else {
                 switch (appMessage.getMessageType()) {
                     case ApplicationMessage.PROGRESS_MESSAGE: {
@@ -196,96 +191,144 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     }
 
     private void checkLinuxSharedLibs() throws IOException, InterruptedException {
-        if (OperatingSystemInfo.getInstance().isLinux()) {
-            File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
-            File mySolverLinkDir = new File(localSimDir, simTask.getSimKey().toString() + ResourceUtil.LOCAL_SOLVER_LIB_LINK_SUFFIX);
-            if (mySolverLinkDir.exists()) {
-                File[] temp = mySolverLinkDir.listFiles();
-                for (int i = 0; i < temp.length; i++) {
-                    temp[i].delete();
-                }
-            } else {
-                mySolverLinkDir.mkdir();
-            }
-            SolverDescription mySolverDescription = getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription();
-            File localSolverPath = SolverUtilities.getExes(mySolverDescription)[0];
-            Path linkSolver = createSymbolicLink(mySolverLinkDir, localSolverPath.getName(), localSolverPath);
-            final String LD_LIB_PATH = "LD_LIBRARY_PATH";
-            String newLD_LIB_PATH = mySolverLinkDir.getAbsolutePath();
-            File solversDir = ResourceUtil.getLocalSolversDirectory();
-//		System.out.println("-----reading solverdir libs "+solversDir.getAbsolutePath());
-            ArrayList<File> tempAL = new ArrayList<File>();
-            File[] temp = solversDir.listFiles();
-            for (int i = 0; i < temp.length; i++) {
-                if (temp[i].getName().startsWith("lib") && temp[i].isFile() && temp[i].length() != 0 && !Files.isSymbolicLink(temp[i].toPath())) {
-                    tempAL.add(temp[i]);
-//                    System.out.println(temp[i].getName());
-                }
-            }
-            File[] libzipSolverFiles = (File[]) tempAL.toArray(new File[0]);
-            ProcessBuilder pb = new ProcessBuilder("ldd", linkSolver.toString());
-            pb.redirectErrorStream(true);
-            Process p = pb.start();
-            int ioByte = -1;
-            StringBuffer sb = new StringBuffer();
-            while ((ioByte = p.getInputStream().read()) != -1) {
-                sb.append((char) ioByte);
-            }
-            p.waitFor();
-//			System.out.println("-----ldd output:\n"+sb.toString());
-            
-            //Try to save output to file for cli without interfering with further processing
-            File stdOutFile = new File(String.valueOf(Paths.get(System.getProperty("user.dir"))), "stdOut.txt");
-            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(stdOutFile))){
-            	bos.write(sb.toString().getBytes());
-            }catch(Exception e) {
-            	lg.error(e.getMessage(), e);
-            }
-            
-            java.io.BufferedReader br = new java.io.BufferedReader(new java.io.StringReader(sb.toString()));
-            String line = null;
-//			System.out.println("-----reading ldd:");
-            while ((line = br.readLine()) != null) {
-//				System.out.println(line);
-                java.util.StringTokenizer libInfo = new java.util.StringTokenizer(line, " \t");
-                if (libInfo.countTokens() == 4) {// "libname => libpath offset"  -or- "libname => not found"
-                    String libName = libInfo.nextToken();
-                    String ptr = libInfo.nextToken();
-                    String libPath = libInfo.nextToken();
-                    String aux = libInfo.nextToken();
-                    if (libPath.equals("not") && aux.equals("found")) {
-                        boolean bMatch = false;
-                        for (int i = 0; i < libzipSolverFiles.length; i++) {
-                            if (libzipSolverFiles[i].getName().startsWith(libName) && libzipSolverFiles[i].length() != 0) {
-                                //System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" "+org.apache.commons.lang3.StringUtils.getJaroWinklerDistance("libhdf5.so",libName));
-//								System.out.println(libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
-                                createSymbolicLink(mySolverLinkDir, libName, libzipSolverFiles[i]);
-                                bMatch = true;
-                                break;
-                            }
-                        }
-                        if (!bMatch) {
-                            for (int i = 0; i < libzipSolverFiles.length; i++) {
-                                int index = libName.indexOf(".so");
-                                if (index != -1) {
-                                    String matchName = libName.substring(0, index + 3);
-                                    if (libzipSolverFiles[i].getName().startsWith(matchName) && libzipSolverFiles[i].length() != 0) {
-//										System.out.println("ALTERNATE  "+libName+" "+ptr+" "+libPath+" "+aux+" match="+libzipSolverFiles[i]);
-                                        createSymbolicLink(mySolverLinkDir, libName, libzipSolverFiles[i]);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        if (OperatingSystemInfo.getInstance().isMac()) {
+            lg.trace(String.format("Setting env var `%s` to: \"%s\"", "HDF5_DISABLE_VERSION_CHECK", "1"));
+            getMathExecutable().addEnvironmentVariable("HDF5_DISABLE_VERSION_CHECK", "1");
+            return;
+        }
+        if (!OperatingSystemInfo.getInstance().isLinux()) return;
 
-//		System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
-            getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);
-        }else if (OperatingSystemInfo.getInstance().isMac()) {
-    		getMathExecutable().addEnvironmentVariable("HDF5_DISABLE_VERSION_CHECK", "1");
-    	}
+        // Delete remnants of last run (or create a fresh link directory)
+        File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
+        File mySolverLinkDir = new File(localSimDir, simTask.getSimKey().toString() + ResourceUtil.LOCAL_SOLVER_LIB_LINK_SUFFIX);
+        if (!mySolverLinkDir.exists()) {
+            boolean ignored = mySolverLinkDir.mkdir();
+        }
+        File[] temp = mySolverLinkDir.listFiles();
+        if (temp == null) throw new NullPointerException();
+        for (File file : temp) {
+            boolean ignored = file.delete();
+        }
+
+        // Prepare for Linkage
+        SolverDescription mySolverDescription = getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription();
+        File localSolverPath = SolverUtilities.getExes(mySolverDescription)[0];
+
+        // Perform linkage
+        this.linkAllDependenciesOf(localSolverPath, localSolverPath.getParentFile(), mySolverLinkDir);
+        lg.trace(String.format("Setting env var `%s` to: \"%s\"", "LD_LIBRARY_PATH", mySolverLinkDir.getAbsolutePath()));
+        getMathExecutable().addEnvironmentVariable("LD_LIBRARY_PATH", mySolverLinkDir.getAbsolutePath());
+
+    }
+
+    private void linkAllDependenciesOf(File dependency, File sourceDirectory, File targetLinkDirectory) throws IOException, InterruptedException {
+        File[] directoryContents = sourceDirectory.listFiles();
+        if (directoryContents == null) throw new NullPointerException();
+        Set<File> allPotentialDependencies = Stream.of(directoryContents)
+                .filter(AbstractCompiledSolver::isDependency).collect(Collectors.toSet());
+        Map<String, File> dependencyToFileMapping = new HashMap<>();
+        for (File dep : allPotentialDependencies){
+            dependencyToFileMapping.put(dep.getName(), dep);
+        }
+        Map<String, String> setOfDepsToLink = this.getDependenciesNeeded(dependency, dependencyToFileMapping, new HashSet<>());
+
+        for (String depName : setOfDepsToLink.keySet()){
+            Path ignored = AbstractCompiledSolver.createSymbolicLink(targetLinkDirectory, depName, dependencyToFileMapping.get(setOfDepsToLink.get(depName)));
+        }
+    }
+
+    private Map<String, String> getDependenciesNeeded(String startingDependencyName, Map<String, File> availableDependencies,
+                                              Set<String> alreadyProcessedDependencies) throws IOException, InterruptedException {
+        if (availableDependencies.containsKey(startingDependencyName)) {
+            return this.getDependenciesNeeded(
+                    availableDependencies.get(startingDependencyName), availableDependencies, alreadyProcessedDependencies);
+        } else {
+            lg.warn("Warning: exact dependency not found by name; trying to stitch together an alternative.");
+            for (String alternate : availableDependencies.keySet()){
+                if (!startingDependencyName.startsWith(alternate)) continue;
+                Path stichedPath = Paths.get(availableDependencies.get(alternate).getParent(), startingDependencyName);
+                lg.info("Alternative found; attempting to link stitched dependency.");
+                return this.getDependenciesNeeded(stichedPath.toFile(), availableDependencies, alreadyProcessedDependencies);
+            }
+            throw new RuntimeException("No alternatives possible for missing dependency: `" + startingDependencyName + "`");
+        }
+    }
+
+    private Map<String, String> getDependenciesNeeded(File startingDependency, Map<String, File> availableDependencies,
+                                              Set<String> alreadyProcessedDependencies) throws IOException, InterruptedException {
+        Map<String, String> dependenciesNeeded = new HashMap<>();
+        File dependency;
+        if (availableDependencies.containsKey(startingDependency.getName())){
+            dependency = availableDependencies.get(startingDependency.getName());
+        } else { // Determine alternative options
+            int locationOfExtension = startingDependency.getName().indexOf(".so");
+            if (locationOfExtension == -1) throw new RuntimeException("Dependency " + startingDependency.getName() + " not found in available dependencies");
+            lg.warn("Warning: exact dependency not found by name; searching for inexact match...");
+            String shortName = startingDependency.getName().substring(0, locationOfExtension + 3);
+            String dependencyToAdd = this.getEntryStartingWith(shortName, availableDependencies.keySet());
+            if (dependencyToAdd == null) throw new RuntimeException("No alternatives possible for missing dependency: `" + startingDependency.getName() + "`");
+            lg.info("Alternative successfully found; preparing to link.");
+            dependency = availableDependencies.get(dependencyToAdd);
+            alreadyProcessedDependencies.add(startingDependency.getName());
+        }
+        if (alreadyProcessedDependencies.contains(dependency.getName())) return new HashMap<>(); // Already done
+        dependenciesNeeded.put(startingDependency.getName(), dependency.getName());
+        String lddRawResults = AbstractCompiledSolver.getLddResult(dependency);
+
+        //Try to save output to file for cli without interfering with further processing
+        File stdOutFile = new File(String.valueOf(Paths.get(System.getProperty("user.dir"))), "stdOut.txt");
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(stdOutFile))){
+            bos.write(lddRawResults.getBytes());
+        } catch(Exception e) {
+            lg.error(e.getMessage(), e);
+        }
+
+        // Begin Parsing
+        try (BufferedReader br = new BufferedReader(new StringReader(lddRawResults))) {
+            for (String line = br.readLine(); line != null; line = br.readLine()){
+                StringTokenizer libInfo = new StringTokenizer(line, " \t");
+                if (libInfo.countTokens() != 4) continue; // We do not care about these
+                // If we have 4 tokens, we have one of two cases: 
+                //  >> Case 1: <lib_name>,"=>",<lib_path>,<offset>
+                //  >> Case 2: <lib_name>,"=>","not","found" (<-- this is the case we want to identify!)
+                String libName = libInfo.nextToken();
+                String ignored = libInfo.nextToken(); // "=>"
+                String libPath = libInfo.nextToken();
+                String aux = libInfo.nextToken();
+
+                if (!libPath.equals("not") || !aux.equals("found")) continue; // We only care about Case 2
+                dependenciesNeeded.putAll(this.getDependenciesNeeded(
+                        libName, availableDependencies, alreadyProcessedDependencies));
+
+            }
+        }
+        alreadyProcessedDependencies.add(dependency.getName());
+        return dependenciesNeeded;
+    }
+
+    private static String getLddResult(File solverToResolve) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder("ldd", solverToResolve.toPath().toString());
+        pb.redirectErrorStream(true);
+        Process p = pb.start();
+        StringBuilder sb = new StringBuilder();
+        // Can we pull inputStream outside the for-loop?
+        for (int ioByte = p.getInputStream().read(); ioByte != -1; ioByte = p.getInputStream().read()){
+            sb.append((char) ioByte);
+        }
+        p.waitFor();
+        return sb.toString();
+    }
+
+    private static boolean isDependency(File potentialDependency){
+        return potentialDependency.isFile()
+                && potentialDependency.length() != 0
+                && !Files.isSymbolicLink(potentialDependency.toPath())
+                && !potentialDependency.getName().startsWith(".");
+    }
+
+    private String getEntryStartingWith(String shortName, Set<String> candidates){
+        for (String candidate : candidates) if (candidate.startsWith(shortName)) return candidate;
+        return null;
     }
 
     /**
@@ -317,11 +360,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     public synchronized final void startSolver() {
         if (!(fieldThread != null && fieldThread.isAlive())) {
             setMathExecutable(null);
-            fieldThread = new Thread() {
-                public void run() {
-                    runSolver();
-                }
-            };
+            fieldThread = new Thread(this::runSolver);
             fieldThread.setName("Compiled Solver (" + getClass().getName() + ")");
             fieldThread.start();
         }

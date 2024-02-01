@@ -31,8 +31,8 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.VtkManager;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.xml.merge.XmlTreeDiff;
 import cbit.xml.merge.gui.TMLPanel;
 

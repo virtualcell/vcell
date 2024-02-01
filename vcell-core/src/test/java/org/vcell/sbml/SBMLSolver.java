@@ -2,13 +2,15 @@ package org.vcell.sbml;
 
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.SolverFactory;
 import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.solver.stoch.GibsonSolver;
 import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
@@ -44,7 +46,7 @@ public class SBMLSolver {
         tempSimulation.setSimulationOwner(simulation.getSimulationOwner());
         TempSimulationJob tempSimulationJob = new TempSimulationJob(tempSimulation, 0, null);
 
-        SimulationTask simTask = new SimulationTask(tempSimulationJob, 0);
+        StandardSimulationTask simTask = new StandardSimulationTask(tempSimulationJob, 0);
         AbstractCompiledSolver solver = (AbstractCompiledSolver) SolverFactory.createSolver(workingDir, simTask, false);
         solver.runSolver();
 

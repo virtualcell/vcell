@@ -23,7 +23,7 @@ import cbit.vcell.message.server.batch.opt.OptimizationBatchServer;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.message.server.htc.slurm.SlurmProxy;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
@@ -184,7 +184,7 @@ private static class PostProcessingChores {
  * @param simTask
  * @return PostProcessingChores
  */
-private PostProcessingChores choresFor(SimulationTask simTask) {
+private PostProcessingChores choresFor(StandardSimulationTask simTask) {
 	String userDir = "/" + simTask.getUserName();
 	String primaryInternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
 	String primaryExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
@@ -283,7 +283,7 @@ private static Hashtable<String,MonitorJobInfo> getMonitorJobs(){
 	lg.info("removed "+theseJobsAreDone.size()+" jobs, left with "+result.size());
 	return result;
 }
-private void addMonitorJob(long slurmJobID,SimulationTask simTask,boolean bDelete) {
+private void addMonitorJob(long slurmJobID, StandardSimulationTask simTask, boolean bDelete) {
 	try {
 		MonitorJobInfo newJobInfo = null;
 		if(bDelete) {
@@ -446,7 +446,7 @@ private void initQueueConsumer() {
 
 		@Override
 		public void onQueueMessage(VCMessage vcMessage, VCMessageSession session) throws RollbackException {
-			SimulationTask simTask = null;
+			StandardSimulationTask simTask = null;
 			try {
 				SimulationTaskMessage simTaskMessage = new SimulationTaskMessage(vcMessage);
 				simTask = simTaskMessage.getSimulationTask();
@@ -500,7 +500,7 @@ private void initQueueConsumer() {
 	vcMessagingService_int.addMessageConsumer(queueConsumer);
 }
 
-private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, PostProcessingChores chores) throws XmlParseException, IOException, SolverException, ExecutableException {
+private HtcJobID submit2PBS(StandardSimulationTask simTask, HtcProxy clonedHtcProxy, PostProcessingChores chores) throws XmlParseException, IOException, SolverException, ExecutableException {
 
 	HtcJobID jobid = null;
 	File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));

@@ -14,7 +14,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.OdeEquation;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:44 PM)

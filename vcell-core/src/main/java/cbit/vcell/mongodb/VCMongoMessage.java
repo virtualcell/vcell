@@ -23,7 +23,7 @@ import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.SimulationExecutionStatus;
 import cbit.vcell.server.SimulationExecutionStatusPersistent;
@@ -31,7 +31,7 @@ import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationQueueEntryStatus;
 import cbit.vcell.server.SimulationQueueEntryStatusPersistent;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -556,7 +556,7 @@ public final class VCMongoMessage {
 		}
 	}
 
-	public static void sendPBSWorkerMessage(SimulationTask simulationTask, HtcJobID htcJobID, String htcWorkerMsg) {
+	public static void sendPBSWorkerMessage(StandardSimulationTask simulationTask, HtcJobID htcJobID, String htcWorkerMsg) {
 		if (!enabled){
 			return;
 		}
@@ -814,7 +814,7 @@ public final class VCMongoMessage {
 		}
 	}
 		
-	private static void addObject(Document dbObject, SimulationTask simulationTask){
+	private static void addObject(Document dbObject, StandardSimulationTask simulationTask){
 		dbObject.put(MongoMessage_simId,simulationTask.getSimulationJob().getVCDataIdentifier().getSimulationKey().toString());
 		dbObject.put(MongoMessage_jobIndex, simulationTask.getSimulationJob().getJobIndex());
 		dbObject.put(MongoMessage_taskId, simulationTask.getTaskID());

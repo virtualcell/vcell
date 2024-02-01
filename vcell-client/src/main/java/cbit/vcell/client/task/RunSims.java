@@ -36,10 +36,10 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 /**
  * Insert the type's description here.

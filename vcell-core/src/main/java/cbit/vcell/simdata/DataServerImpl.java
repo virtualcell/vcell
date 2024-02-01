@@ -53,7 +53,7 @@ public DataServerImpl (DataSetControllerImpl dsControllerImpl, ExportServiceImpl
 /**
  * Insert the method's description here.
  * Creation date: (8/5/2001 10:29:59 PM)
- * @param simInfo cbit.vcell.solver.SimulationInfo
+ * @param simInfo cbit.vcell.solver.simulation.SimulationInfo
  */
 private void checkReadAccess(User user, VCDataIdentifier vcdID) throws PermissionException {
 //	//
@@ -74,7 +74,7 @@ private void checkReadAccess(User user, VCDataIdentifier vcdID) throws Permissio
 /**
  * Insert the method's description here.
  * Creation date: (8/5/2001 10:29:59 PM)
- * @param simInfo cbit.vcell.solver.SimulationInfo
+ * @param simInfo cbit.vcell.solver.simulation.SimulationInfo
  */
 private void checkWriteAccess(User user, VCDataIdentifier vcdID) throws PermissionException {
 	//

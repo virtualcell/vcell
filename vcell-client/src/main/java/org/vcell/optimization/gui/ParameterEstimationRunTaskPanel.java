@@ -37,7 +37,7 @@ import cbit.vcell.opt.*;
 import cbit.vcell.opt.CopasiOptimizationMethod.CopasiOptimizationMethodType;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

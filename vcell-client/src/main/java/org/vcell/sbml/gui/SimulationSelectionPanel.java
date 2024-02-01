@@ -16,7 +16,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 /**
  * Insert the type's description here.
@@ -24,7 +24,7 @@ import cbit.vcell.solver.Simulation;
  * @author: Anuradha Lakshminarayana
  */
 public class SimulationSelectionPanel extends JPanel {
-	private cbit.vcell.solver.Simulation[] fieldSimulations = null;
+	private Simulation[] fieldSimulations = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private javax.swing.DefaultListModel ivjdefaultListModel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -34,7 +34,7 @@ public class SimulationSelectionPanel extends JPanel {
 	private javax.swing.JPanel ivjSimulationsListPanel = null;
 	private javax.swing.JPanel ivjSimulationSummaryPanel = null;
 	private cbit.vcell.solver.ode.gui.SimulationSummaryPanel ivjsimSummaryPanel = null;
-	private cbit.vcell.solver.Simulation fieldSelectedSimulation = null;
+	private Simulation fieldSelectedSimulation = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -213,11 +213,11 @@ private javax.swing.DefaultListModel getdefaultListModel() {
 
 
 /**
- * Gets the selectedSimulation property (cbit.vcell.solver.Simulation) value.
+ * Gets the selectedSimulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @return The selectedSimulation property value.
  * @see #setSelectedSimulation
  */
-public cbit.vcell.solver.Simulation getSelectedSimulation() {
+public Simulation getSelectedSimulation() {
 	return fieldSelectedSimulation;
 }
 
@@ -287,22 +287,22 @@ private cbit.vcell.solver.ode.gui.SimulationSummaryPanel getsimSummaryPanel() {
 
 
 /**
- * Gets the simulations property (cbit.vcell.solver.Simulation[]) value.
+ * Gets the simulations property (cbit.vcell.solver.simulation.Simulation[]) value.
  * @return The simulations property value.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation[] getSimulations() {
+public Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
 
 /**
- * Gets the simulations index property (cbit.vcell.solver.Simulation) value.
+ * Gets the simulations index property (cbit.vcell.solver.simulation.Simulation) value.
  * @return The simulations property value.
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation getSimulations(int index) {
+public Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
@@ -487,12 +487,12 @@ public static void main(java.lang.String[] args) {
 
 
 /**
- * Sets the selectedSimulation property (cbit.vcell.solver.Simulation) value.
+ * Sets the selectedSimulation property (cbit.vcell.solver.simulation.Simulation) value.
  * @param selectedSimulation The new value for the property.
  * @see #getSelectedSimulation
  */
-public void setSelectedSimulation(cbit.vcell.solver.Simulation selectedSimulation) {
-	cbit.vcell.solver.Simulation oldValue = fieldSelectedSimulation;
+public void setSelectedSimulation(Simulation selectedSimulation) {
+	Simulation oldValue = fieldSelectedSimulation;
 	fieldSelectedSimulation = selectedSimulation;
 	firePropertyChange("selectedSimulation", oldValue, selectedSimulation);
 }
@@ -523,25 +523,25 @@ private void setsimListSelectionModel(javax.swing.ListSelectionModel newValue) {
 }
 
 /**
- * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
+ * Sets the simulations property (cbit.vcell.solver.simulation.Simulation[]) value.
  * @param simulations The new value for the property.
  * @see #getSimulations
  */
-public void setSimulations(cbit.vcell.solver.Simulation[] simulations) {
-	cbit.vcell.solver.Simulation[] oldValue = fieldSimulations;
+public void setSimulations(Simulation[] simulations) {
+	Simulation[] oldValue = fieldSimulations;
 	fieldSimulations = simulations;
 	firePropertyChange("simulations", oldValue, simulations);
 }
 
 
 /**
- * Sets the simulations index property (cbit.vcell.solver.Simulation[]) value.
+ * Sets the simulations index property (cbit.vcell.solver.simulation.Simulation[]) value.
  * @param index The index value into the property array.
  * @param simulations The new value for the property.
  * @see #getSimulations
  */
-public void setSimulations(int index, cbit.vcell.solver.Simulation simulations) {
-	cbit.vcell.solver.Simulation oldValue = fieldSimulations[index];
+public void setSimulations(int index, Simulation simulations) {
+	Simulation oldValue = fieldSimulations[index];
 	fieldSimulations[index] = simulations;
 	if (oldValue != null && !oldValue.equals(simulations)) {
 		firePropertyChange("simulations", null, fieldSimulations);

@@ -82,7 +82,7 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -99,9 +99,9 @@ import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.DataProcessingInstructions;
 import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationJob;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SmoldynSimulationOptions;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
@@ -203,7 +203,7 @@ public class SmoldynFileWriter extends SolverFileWriter {
     private String baseFileName = null;
     private static final Logger lg = LogManager.getLogger(SmoldynFileWriter.class);
 
-    public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, SimulationTask simTask, boolean bMessaging){
+    public SmoldynFileWriter(PrintWriter pw, boolean bGraphic, String baseName, StandardSimulationTask simTask, boolean bMessaging){
         super(pw, simTask, bMessaging);
         this.bGraphicOpenGL = bGraphic;
         baseFileName = baseName;

@@ -13,7 +13,7 @@ package cbit.vcell.solver.ode;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
@@ -27,7 +27,7 @@ import cbit.vcell.solvers.MathExecutable;
  */
 public class CVodeSolverStandalone extends SundialsSolver {
 
-	public CVodeSolverStandalone(SimulationTask simTask, java.io.File directory, boolean bMessaging) throws SolverException {
+	public CVodeSolverStandalone(StandardSimulationTask simTask, java.io.File directory, boolean bMessaging) throws SolverException {
 		super(simTask, directory, bMessaging);
 	}
 	/**

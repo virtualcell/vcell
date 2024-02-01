@@ -27,8 +27,7 @@ import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.xml.XmlHelper;
 
 @SuppressWarnings("serial")

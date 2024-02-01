@@ -13,7 +13,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationInfo;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/20/2005 1:55:06 PM)
@@ -33,7 +35,7 @@ public SimulationStatusHash() {
 /**
  * Insert the method's description here.
  * Creation date: (6/7/2004 12:55:18 PM)
- * @param simulations cbit.vcell.solver.Simulation[]
+ * @param simulations cbit.vcell.solver.simulation.Simulation[]
  */
 public void changeSimulationInstances(Simulation[] newSimulations) {
 	if (newSimulations == null) {
@@ -57,8 +59,8 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
 					//
 					// if simulations have the same "authoritative simulation identifier" then use this status
 					//
-					cbit.vcell.solver.SimulationInfo oldSimInfo = sim.getSimulationInfo();
-					cbit.vcell.solver.SimulationInfo newSimInfo = newSimulations[i].getSimulationInfo();
+					SimulationInfo oldSimInfo = sim.getSimulationInfo();
+					SimulationInfo newSimInfo = newSimulations[i].getSimulationInfo();
 					if (oldSimInfo!=null && newSimInfo!=null && oldSimInfo.getAuthoritativeVCSimulationIdentifier().equals(newSimInfo.getAuthoritativeVCSimulationIdentifier())){
 						//
 						// same "job id" ... same status
@@ -84,7 +86,7 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
  * Insert the method's description here.
  * Creation date: (4/20/2005 1:57:02 PM)
  * @return cbit.vcell.solver.ode.gui.SimulationStatus
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  */
 public SimulationStatus getSimulationStatus(Simulation simulation) {
 	return hash.get(simulation);
@@ -94,7 +96,7 @@ public SimulationStatus getSimulationStatus(Simulation simulation) {
 /**
  * Insert the method's description here.
  * Creation date: (4/20/2005 1:57:34 PM)
- * @param simulation cbit.vcell.solver.Simulation
+ * @param simulation cbit.vcell.solver.simulation.Simulation
  * @param simStatus cbit.vcell.solver.ode.gui.SimulationStatus
  */
 public void setSimulationStatus(Simulation simulation, SimulationStatus simStatus) {

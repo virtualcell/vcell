@@ -12,7 +12,7 @@ package cbit.vcell.solvers;
 import java.io.File;
 import java.util.Date;
 
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.server.Solver;
 import cbit.vcell.solver.server.SolverListener;
@@ -27,7 +27,7 @@ public class SolverControllerImpl {
 	private VCellConnection vcConn = null;
 	private SolverListener solverListener = null;
 	
-	private SimulationTask simulationTask = null;
+	private StandardSimulationTask simulationTask = null;
 	private Solver solver = null;
 	private File directory = null;
 	private Date startDate = null;
@@ -40,7 +40,7 @@ public class SolverControllerImpl {
  * @param directory java.lang.String
  * @param simIdentifier java.lang.String
  */
-public SolverControllerImpl (VCellConnection argVCellConnection, SimulationTask simulationTask, java.io.File directory) throws cbit.vcell.solver.SolverException {
+public SolverControllerImpl (VCellConnection argVCellConnection, StandardSimulationTask simulationTask, java.io.File directory) throws cbit.vcell.solver.SolverException {
 	this.simulationTask = simulationTask;
 	this.directory = directory;
 	this.vcConn = argVCellConnection;
@@ -64,7 +64,7 @@ public Date getEndDate() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.math.MathDescription
  */
-public SimulationTask getSimulationTask() {
+public StandardSimulationTask getSimulationTask() {
 	return simulationTask;
 }
 

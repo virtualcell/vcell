@@ -24,14 +24,14 @@ import cbit.vcell.math.MathFormatException;
 import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.VarIniCondition;
 import cbit.vcell.math.VarIniCount;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SolverFileWriter;
@@ -52,13 +52,13 @@ public class StochFileWriter extends SolverFileWriter
 /**
  * StochFileWriter constructor comment.
  */
-public StochFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessaging) 
+public StochFileWriter(PrintWriter pw, StandardSimulationTask simTask, boolean bMessaging)
 {
 	super(pw, simTask, bMessaging);
 	isMultiTrialNonHisto = StochFileWriter.isStochMultiTrial(simTask);
 }
 
-public static boolean isStochMultiTrial(SimulationTask simTask) {
+public static boolean isStochMultiTrial(StandardSimulationTask simTask) {
 	return 	simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getSolverDescription() == SolverDescription.StochGibson &&
 			simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt() != null &&
 			!simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getStochOpt().isHistogram() &&

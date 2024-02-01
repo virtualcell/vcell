@@ -10,7 +10,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimulationJobStatusPersistent;
 import cbit.vcell.server.SimulationJobStatusPersistent.SchedulerStatus;
 import cbit.vcell.server.SimulationStatusPersistent;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import org.vcell.db.ConnectionFactory;

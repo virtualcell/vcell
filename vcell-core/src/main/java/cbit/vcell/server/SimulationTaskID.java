@@ -2,9 +2,9 @@ package cbit.vcell.server;
 
 import org.vcell.util.document.KeyValue;
 
-import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.messaging.server.StandardSimulationTask;
+import cbit.vcell.solver.simulation.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationJob;
 
 public class SimulationTaskID {
 	public final KeyValue simKey;
@@ -15,7 +15,7 @@ public class SimulationTaskID {
 		this.jobIndex = jobIndex;
 		this.taskID = taskID;
 	}
-	public SimulationTaskID(SimulationTask simTask){
+	public SimulationTaskID(StandardSimulationTask simTask){
 		this.simKey = simTask.getSimulation().getKey();
 		this.jobIndex = simTask.getSimulationJob().getJobIndex();
 		this.taskID = simTask.getTaskID();

@@ -36,7 +36,7 @@ import cbit.vcell.numericstest.TestCriteriaNewBioModel;
 import cbit.vcell.numericstest.TestCriteriaNewMathModel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.simulation.SimulationInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 /**
  * Insert the type's description here.

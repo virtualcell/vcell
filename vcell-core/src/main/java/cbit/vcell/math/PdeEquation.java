@@ -192,7 +192,7 @@ public boolean compareEqual(Matchable object) {
 /**
  * Insert the method's description here.
  * Creation date: (10/10/2002 10:41:10 AM)
- * @param simSymbolTable cbit.vcell.solver.Simulation
+ * @param simSymbolTable cbit.vcell.solver.simulation.Simulation
  */
 void flatten(MathSymbolTable simSymbolTable, boolean bRoundCoefficients) throws cbit.vcell.parser.ExpressionException, MathException {
 	super.flatten0(simSymbolTable,bRoundCoefficients);

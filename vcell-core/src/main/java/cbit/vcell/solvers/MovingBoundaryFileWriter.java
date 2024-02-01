@@ -39,7 +39,7 @@ import cbit.vcell.math.VariableType.VariableDomain;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTable;
@@ -47,8 +47,8 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
@@ -75,7 +75,7 @@ public class MovingBoundaryFileWriter extends SolverFileWriter {
      */
     private Element problem;
 
-    public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask, Geometry resampledGeometry, boolean arg_bMessaging, String outputPrefix,
+    public MovingBoundaryFileWriter(PrintWriter pw, StandardSimulationTask simTask, Geometry resampledGeometry, boolean arg_bMessaging, String outputPrefix,
                                     MovingBoundarySolverSpec mbss){
         super(pw, simTask, arg_bMessaging);
 
@@ -86,7 +86,7 @@ public class MovingBoundaryFileWriter extends SolverFileWriter {
         solverSpec = mbss;
     }
 
-    public MovingBoundaryFileWriter(PrintWriter pw, SimulationTask simTask, Geometry resampledGeometry, boolean arg_bMessaging, String outputPrefix){
+    public MovingBoundaryFileWriter(PrintWriter pw, StandardSimulationTask simTask, Geometry resampledGeometry, boolean arg_bMessaging, String outputPrefix){
         this(pw, simTask, resampledGeometry, arg_bMessaging, outputPrefix, new MovingBoundarySolverSpec());
     }
 
@@ -144,7 +144,7 @@ public class MovingBoundaryFileWriter extends SolverFileWriter {
     //
 //	XML producer - here all the work is done
 //
-    public Element writeMovingBoundaryXML(SimulationTask simTask) throws SolverException{
+    public Element writeMovingBoundaryXML(StandardSimulationTask simTask) throws SolverException{
         try {
             int subdomainsWithPdeEquations = subdomainsSanityCheck();
             if(subdomainsWithPdeEquations != 1){

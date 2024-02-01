@@ -29,7 +29,7 @@ import cbit.vcell.opt.SpatialReferenceData;
 import cbit.vcell.opt.Weights;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 /**
  * Fitting utilities 
  */

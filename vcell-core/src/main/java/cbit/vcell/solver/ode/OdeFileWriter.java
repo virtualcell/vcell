@@ -29,7 +29,7 @@ import cbit.vcell.math.ParameterVariable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.StandardSimulationTask;
 import cbit.vcell.parser.Discontinuity;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -39,8 +39,8 @@ import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
+import cbit.vcell.solver.simulation.Simulation;
+import cbit.vcell.solver.simulation.SimulationSymbolTable;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
@@ -60,7 +60,7 @@ public abstract class OdeFileWriter extends SolverFileWriter {
 /**
  * OdeFileCoder constructor comment.
  */
-public OdeFileWriter(PrintWriter pw, SimulationTask simTask, boolean messaging) {
+public OdeFileWriter(PrintWriter pw, StandardSimulationTask simTask, boolean messaging) {
 	super(pw, simTask, messaging);
 }
 

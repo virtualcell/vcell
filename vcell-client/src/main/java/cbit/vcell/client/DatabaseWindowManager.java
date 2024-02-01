@@ -90,7 +90,7 @@ import cbit.vcell.desktop.VCDocumentDbTreePanel;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.simulation.SimulationOwner;
 import cbit.vcell.xml.ExternalDocInfo;
 import cbit.xml.merge.XmlTreeDiff;
 

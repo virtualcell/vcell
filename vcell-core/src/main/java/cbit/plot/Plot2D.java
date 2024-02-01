@@ -19,7 +19,7 @@ import org.vcell.util.Range;
 
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
+import cbit.vcell.solver.simulation.SimulationModelInfo.DataSymbolMetadataResolver;
 /**
  * Insert the type's description here.
  * Creation date: (2/8/2001 12:43:18 PM)

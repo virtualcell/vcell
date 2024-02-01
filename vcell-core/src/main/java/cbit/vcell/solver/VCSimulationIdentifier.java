@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.solver;
+
+import cbit.vcell.solver.simulation.Simulation;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/24/2004 10:55:36 AM)

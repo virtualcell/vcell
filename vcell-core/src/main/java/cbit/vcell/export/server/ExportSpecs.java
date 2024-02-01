@@ -12,7 +12,7 @@ package cbit.vcell.export.server;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -256,7 +256,7 @@ public class ExportSpecs implements Serializable {
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (4/1/2001 7:20:40 PM)
-	 * @return cbit.vcell.solver.SimulationInfo
+	 * @return cbit.vcell.solver.simulation.SimulationInfo
 	 */
 	public org.vcell.util.document.VCDataIdentifier getVCDataIdentifier() {
 		return vcDataIdentifier;

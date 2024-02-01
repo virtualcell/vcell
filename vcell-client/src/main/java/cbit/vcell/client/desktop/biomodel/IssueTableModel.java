@@ -66,7 +66,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.OutputFunctionContext.OutputFunctionIssueSource;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 
 @SuppressWarnings("serial")
 public class IssueTableModel extends VCellSortTableModel<Issue> implements IssueEventListener {

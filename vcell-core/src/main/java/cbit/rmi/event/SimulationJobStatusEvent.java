@@ -26,7 +26,7 @@ import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.SimulationJobStatus.SimulationQueueID;
 import cbit.vcell.server.SimulationQueueEntryStatus;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.simulation.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SimulationMessage.DetailedState;
