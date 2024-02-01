@@ -41,21 +41,23 @@ case $VCELL_SITE in
 	REL)
 		_site_port_offset=0
 		_applicationId="1471-8022-1038-5553"
+		VCELL_S3_EXPORT_BASEURL=https://vcellapi.cam.uchc.edu
 		;;
 	BETA)
 		_site_port_offset=1
 		_applicationId="1471-8022-1038-5552"
+		VCELL_S3_EXPORT_BASEURL=https://vcellapi-beta.cam.uchc.edu
 		;;
 	ALPHA)
 		_site_port_offset=2
 		_applicationId="1471-8022-1038-5554"
-		VCELL_S3_EXPORT_BASEURL=http://localhost
+		VCELL_S3_EXPORT_BASEURL=https://vcellapi-beta.cam.uchc.edu
 		;;
 	TEST)
 		_site_port_offset=3
 		# VCELL_API_PORT_EXTERNAL=8081
 		_applicationId="1471-8022-1038-5555"
-		VCELL_S3_EXPORT_BASEURL=http://localhost
+		VCELL_S3_EXPORT_BASEURL=https://localhost
 		;;
 	TEST2)
 		_site_port_offset=4
