@@ -46,7 +46,7 @@ public class CVodeSolverStandalone extends SundialsSolver {
 		PrintWriter pw = null;
 		try {
 			pw = new java.io.PrintWriter(inputFilename);
-			CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, simTask, bMessaging);
+			CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(pw, simTask, useMessaging);
 			cvodeFileWriter.write();
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("CVODE solver could not generate input file: " + e.getMessage())));

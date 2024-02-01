@@ -52,7 +52,7 @@ public class SolverFactory {
 		Solver make(SimulationTask task, File userDir, File parallelWorkingDirectory, boolean messaging) throws SolverException;
 	}
 	
-	private static final Map<SolverDescription,Maker> FACTORY = new HashMap<SolverDescription, SolverFactory.Maker>( );
+	private static final Map<SolverDescription,Maker> FACTORY = new HashMap<>();
 	static {
 		{  //finite volume Java solvers
 			Maker fv = (t,d,pwd,m) -> new FVSolverStandalone(t, d, m);
@@ -60,20 +60,13 @@ public class SolverFactory {
 			FACTORY.put(SolverDescription.FiniteVolume, fv); 
 			FACTORY.put(SolverDescription.SundialsPDE, fv); 
 			FACTORY.put(SolverDescription.VCellPetsc, fv); 
-			Maker chomboMaker = new Maker(){
-				@Override
-				public Solver make(SimulationTask t, File userDir, File parallelWorkingDir, boolean m) throws SolverException {
-					if (t.getSimulation().getSolverTaskDescription().isParallel()){
-						File workingDir = parallelWorkingDir;
-						File destinationDirectory = userDir;
-						return new FVSolverStandalone(t,workingDir,destinationDirectory,m);
-					}else{
-						File workingDir = userDir;
-						File destinationDirectory = userDir;
-						return new FVSolverStandalone(t,workingDir,destinationDirectory,m);
-					}
-				}
-			};
+			Maker chomboMaker = (t, userDir, parallelWorkingDir, m) -> {
+                if (t.getSimulation().getSolverTaskDescription().isParallel()){
+                    return new FVSolverStandalone(t, parallelWorkingDir, userDir, m);
+                } else {
+                    return new FVSolverStandalone(t, userDir, userDir, m);
+                }
+            };
 			FACTORY.put(SolverDescription.Chombo, chomboMaker); 
 		}
 
@@ -97,9 +90,7 @@ public class SolverFactory {
 	}
 	
 public static Solver createSolver(File userDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
-	{
-		return createSolver(userDir, null, simTask, bMessaging);
-	}
+	return SolverFactory.createSolver(userDir, null, simTask, bMessaging);
 }
 
 public static Solver createSolver(File userDir, File parallelDir, SimulationTask simTask, boolean bMessaging) throws SolverException {
@@ -120,8 +111,7 @@ public static Solver createSolver(File userDir, File parallelDir, SimulationTask
 	}
 	Maker maker = FACTORY.get(solverDescription);
 	if (maker != null) {
-		Solver s = maker.make(simTask, userDir, parallelDir, bMessaging); 
-		return s;
+        return maker.make(simTask, userDir, parallelDir, bMessaging);
 	}
 	throw new SolverException("Unknown solver: " + solverDescription);
 }

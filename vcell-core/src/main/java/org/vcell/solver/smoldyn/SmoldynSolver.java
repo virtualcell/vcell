@@ -122,7 +122,7 @@ protected void initialize() throws SolverException
 			StringWriter stringWriter = new StringWriter();
 			PrintWriter pw2 = new PrintWriter(stringWriter);
 			
-			SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw2, false, getBaseName(), simTask, bMessaging);
+			SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw2, false, getBaseName(), simTask, useMessaging);
 			stFileWriter.write();
 			
 			String fileContents = stringWriter.getBuffer().toString();
@@ -132,7 +132,7 @@ protected void initialize() throws SolverException
 			//
 			// for linux or macos, no translation is necessary.
 			//
-			SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simTask, bMessaging);
+			SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simTask, useMessaging);
 			stFileWriter.write();			
 		}
 	} catch (Exception e) {

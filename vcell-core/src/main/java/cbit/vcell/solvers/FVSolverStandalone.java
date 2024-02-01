@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Vector;
 
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.document.SimResampleInfoProvider;
@@ -48,7 +47,6 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 
@@ -311,7 +309,7 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
             PrintWriter pw = null;
             try {
                 pw = new PrintWriter(new FileWriter(fvinputFile));
-                new FiniteVolumeFileWriter(pw, simTask, getResampledGeometry(), getSaveDirectory(), destinationDirectory, bMessaging).write();
+                new FiniteVolumeFileWriter(pw, simTask, getResampledGeometry(), getSaveDirectory(), destinationDirectory, useMessaging).write();
             } finally {
                 if(pw != null){
                     pw.close();

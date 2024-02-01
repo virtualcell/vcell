@@ -45,17 +45,16 @@ import cbit.vcell.solver.server.SolverStatus;
 public abstract class AbstractSolver implements Solver, SimDataConstants {
 	public static final Logger lg = LogManager.getLogger(AbstractSolver.class);
 
-	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
+	private final javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
-	private File saveDirectory = null;
-	private boolean saveEnabled = true;
-	protected final SimulationTask simTask;
+	private final File saveDirectory;
+    protected final SimulationTask simTask;
 	public static boolean bMakeUserDirs = true;
 
 /**
  * AbstractSolver constructor comment.
  */
-public AbstractSolver(SimulationTask simTask, File directory) throws SolverException {
+public AbstractSolver(SimulationTask simTask, File directory) {
 
 	this.simTask = simTask;
 	if (!directory.exists() && !simTask.getSimulation().getSolverTaskDescription().isParallel()){
@@ -199,7 +198,7 @@ protected void fireSolverStopped() {
 	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_STOPPED, SimulationMessage.solverStopped("stopped by user"), getProgress(), getCurrentTime(), null);
 	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
+	Object[] listeners = this.listenerList.getListenerList();
 	// Process the listeners last to first, notifying
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {
@@ -214,7 +213,7 @@ protected void fireSolverStopped() {
  * get name for solver files, without extension 
  */
 protected final String getBaseName() {
-	return new File(getSaveDirectory(), simTask.getSimulationJob().getSimulationJobID()).getPath();
+	return new File(getSaveDirectory(), this.simTask.getSimulationJob().getSimulationJobID()).getPath();
 }
 
 
@@ -229,9 +228,8 @@ protected abstract void initialize() throws SolverException;
 /**
  * This method was created by a SmartGuide.
  * @return double[]
- * @param identifier java.lang.String
  */
-public Expression getFunctionSensitivity(Expression funcExpr, Constant constant, StateVariable stateVariables[]) throws ExpressionException {
+public Expression getFunctionSensitivity(Expression funcExpr, Constant constant, StateVariable[] stateVariables) throws ExpressionException {
 	if (stateVariables==null || stateVariables.length == 0) {
 		return null;
 	}
@@ -245,43 +243,37 @@ public Expression getFunctionSensitivity(Expression funcExpr, Constant constant,
 	//
 	// collect the explicit term
 	//
-	SimulationSymbolTable simSymbolTable = simTask.getSimulationJob().getSimulationSymbolTable();
+	SimulationSymbolTable simSymbolTable = this.simTask.getSimulationJob().getSimulationSymbolTable();
 	
 	Expression sensFuncExp = funcExpr.differentiate(constant.getName());
 	sensFuncExp.bindExpression(simSymbolTable);
 	sensFuncExp = sensFuncExp.flatten();
-	
-	for (int i = 0; i < stateVariables.length; i++) {
-		if (stateVariables[i] instanceof ODEStateVariable) {
-			ODEStateVariable sv = (ODEStateVariable) stateVariables[i];
-			VolVariable volVar = (VolVariable) sv.getVariable();
-			//
-			// get corresponding sensitivity state variable
-			//
-			SensStateVariable sensStateVariable = null;
-			for (int j = 0; j < stateVariables.length; j++){
-				if (stateVariables[j] instanceof SensStateVariable && 
-					((SensVariable)((SensStateVariable)stateVariables[j]).getVariable()).getVolVariable().getName().equals(volVar.getName()) &&
-					((SensStateVariable)stateVariables[j]).getParameter().getName().equals(constant.getName())){
-					sensStateVariable = (SensStateVariable)stateVariables[j];
-				}	
-			}
-			if (sensStateVariable == null){
-				System.out.println("sens of "+volVar.getName()+" wrt "+constant.getName()+" is not found");
-				return null;
-			}
 
-			//
-			// get coefficient of proportionality   (e.g.  A = total + b*B + c*C ... gives dA/dK = b*dB/dK + c*dC/dK)
-			//
-			Expression coeffExpression = funcExpr.differentiate(volVar.getName());
-			coeffExpression.bindExpression(simSymbolTable);
-			coeffExpression = MathUtilities.substituteFunctions(coeffExpression,simSymbolTable);
-			coeffExpression.bindExpression(simSymbolTable);
-			coeffExpression = coeffExpression.flatten();
-			sensFuncExp = Expression.add(sensFuncExp,Expression.mult(coeffExpression,new Expression(sensStateVariable.getVariable().getName())));
+    for (StateVariable stateVariable : stateVariables) {
+        if (!(stateVariable instanceof ODEStateVariable sv)) continue;
+		VolVariable volVar = (VolVariable) sv.getVariable();
+		// get corresponding sensitivity state variable
+		SensStateVariable sensStateVariable = null;
+		for (StateVariable variable : stateVariables) {
+			if (!(variable instanceof SensStateVariable ssVariable)) continue;
+			SensVariable sensVar = (SensVariable) ssVariable.getVariable();
+			if (!sensVar.getVolVariable().getName().equals(volVar.getName())
+					|| !ssVariable.getParameter().getName().equals(constant.getName())) continue;
+			sensStateVariable = ssVariable;
 		}
-	}
+		if (sensStateVariable == null) {
+			System.out.println("sens of " + volVar.getName() + " wrt " + constant.getName() + " is not found");
+			return null;
+		}
+
+		// get coefficient of proportionality   (e.g.  A = total + b*B + c*C ... gives dA/dK = b*dB/dK + c*dC/dK)
+		Expression coeffExpression = funcExpr.differentiate(volVar.getName());
+		coeffExpression.bindExpression(simSymbolTable);
+		coeffExpression = MathUtilities.substituteFunctions(coeffExpression, simSymbolTable);
+		coeffExpression.bindExpression(simSymbolTable);
+		coeffExpression = coeffExpression.flatten();
+		sensFuncExp = Expression.add(sensFuncExp, Expression.mult(coeffExpression, new Expression(sensStateVariable.getVariable().getName())));
+    }
 
 	return new Expression(sensFuncExp);
 }
@@ -302,7 +294,7 @@ public int getJobIndex() {
  * @return int
  */
 public int getTaskID() {
-	return simTask.getTaskID();
+	return this.simTask.getTaskID();
 }
 
 
@@ -320,7 +312,7 @@ public abstract double getProgress();
  * @return java.io.File
  */
 protected final java.io.File getSaveDirectory() {
-	return saveDirectory;
+	return this.saveDirectory;
 }
 
 
@@ -329,7 +321,7 @@ protected final java.io.File getSaveDirectory() {
  * @return The running property value.
  */
 public final SolverStatus getSolverStatus() {
-	return (fieldSolverStatus);
+	return (this.fieldSolverStatus);
 }
 
 
@@ -339,7 +331,8 @@ public final SolverStatus getSolverStatus() {
  * @return boolean
  */
 public final boolean isSaveEnabled() {
-	return saveEnabled;
+    boolean saveEnabled = true;
+    return saveEnabled;
 }
 
 
@@ -349,7 +342,7 @@ public final boolean isSaveEnabled() {
  * @param listener cbit.vcell.solver.SolverListener
  */
 public synchronized void removeSolverListener(SolverListener listener) {
-	listenerList.remove(SolverListener.class, listener);
+    this.listenerList.remove(SolverListener.class, listener);
 }
 
 
@@ -358,12 +351,12 @@ public synchronized void removeSolverListener(SolverListener listener) {
  * @return The running property value.
  */
 protected final void setSolverStatus(SolverStatus solverStatus) {
-	fieldSolverStatus = solverStatus;
+    this.fieldSolverStatus = solverStatus;
 }
 
 
 public SimulationJob getSimulationJob() {
-	return simTask.getSimulationJob();
+	return this.simTask.getSimulationJob();
 }
 
 /**

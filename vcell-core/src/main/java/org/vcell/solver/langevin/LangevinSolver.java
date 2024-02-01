@@ -10,32 +10,16 @@
 
 package org.vcell.solver.langevin;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-
-import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.NFsimSimulationOptions;
-import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.ApplicationMessage;
@@ -124,7 +108,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 
 		try (PrintWriter pw = new PrintWriter(inputFilename)) {
 			// here we create the langevin input file (and any other file / directory that may be needed)
-			LangevinFileWriter stFileWriter = new LangevinFileWriter(pw, simTask, bMessaging);
+			LangevinFileWriter stFileWriter = new LangevinFileWriter(pw, simTask, useMessaging);
 			stFileWriter.write();
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,

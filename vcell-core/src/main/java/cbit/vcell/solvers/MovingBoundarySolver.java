@@ -162,7 +162,7 @@ protected void initialize() throws SolverException {
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 
 	try (PrintWriter pw = new PrintWriter(inputFilename)) {
-		MovingBoundaryFileWriter mbfw = new MovingBoundaryFileWriter(pw, simTask, resampledGeometry, bMessaging, getBaseName()) ;
+		MovingBoundaryFileWriter mbfw = new MovingBoundaryFileWriter(pw, simTask, resampledGeometry, useMessaging, getBaseName()) ;
 		mbfw.write();
 	} catch (Exception e) {
 		throw new SolverException("Can't open input file "+ inputFilename, e);

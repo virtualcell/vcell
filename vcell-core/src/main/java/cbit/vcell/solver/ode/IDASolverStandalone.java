@@ -46,7 +46,7 @@ protected void initialize() throws SolverException {
 	PrintWriter pw = null;
 	try {
 		pw = new PrintWriter(inputFilename);
-		IDAFileWriter idaFileWriter = new IDAFileWriter(pw, simTask, bMessaging);
+		IDAFileWriter idaFileWriter = new IDAFileWriter(pw, simTask, useMessaging);
 		idaFileWriter.write();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));

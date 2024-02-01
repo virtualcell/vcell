@@ -46,14 +46,14 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     protected final static String DATA_PREFIX = "data:";
     protected final static String PROGRESS_PREFIX = "progress:";
     protected final static String SEPARATOR = ":";
-    protected boolean bMessaging = true;
+    protected boolean useMessaging;
 
     /**
      * AbstractPDESolver constructor comment.
      */
-    public AbstractCompiledSolver(SimulationTask simTask, File directory, boolean bMsging) throws SolverException {
+    public AbstractCompiledSolver(SimulationTask simTask, File directory, boolean useMessaging) throws SolverException {
         super(simTask, directory);
-        bMessaging = bMsging;
+        this.useMessaging = useMessaging;
         setCurrentTime(simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
     }
 
@@ -79,7 +79,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
      * @return double
      */
     public double getCurrentTime() {
-        return currentTime;
+        return this.currentTime;
     }
 
     /**
@@ -89,7 +89,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
      * @return cbit.vcell.solvers.MathExecutable
      */
     public MathExecutable getMathExecutable() {
-        return mathExecutable;
+        return this.mathExecutable;
     }
 
     /**
@@ -99,11 +99,11 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
      * @return double
      */
     public double getProgress() {
-        Simulation simulation = simTask.getSimulationJob().getSimulation();
+        Simulation simulation = this.simTask.getSimulationJob().getSimulation();
         TimeBounds timeBounds = simulation.getSolverTaskDescription().getTimeBounds();
         double startTime = timeBounds.getStartingTime();
         double endTime = timeBounds.getEndingTime();
-        return (currentTime - startTime) / (endTime - startTime);
+        return (this.currentTime - startTime) / (endTime - startTime);
     }
 
     /**
@@ -113,7 +113,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     public void propertyChange(java.beans.PropertyChangeEvent event) {
         if (event.getSource() == getMathExecutable() && event.getPropertyName().equals("applicationMessage")) {
             String messageString = (String) event.getNewValue();
-            if (messageString == null || messageString.length() == 0) {
+            if (messageString == null || messageString.isEmpty()) {
                 return;
             }
             ApplicationMessage appMessage = getApplicationMessage(messageString);
@@ -156,7 +156,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
      */
     public void runSolver() {
         try {
-            setCurrentTime(simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
+            setCurrentTime(this.simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
             setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, SimulationMessage.MESSAGE_SOLVER_STARTING_INIT));
             // fireSolverStarting("initializing");
             // depends on solver; the initialize() method in actual solver will fire detailed messages
@@ -295,7 +295,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
      * @param newCurrentTime double
      */
     protected void setCurrentTime(double newCurrentTime) {
-        currentTime = newCurrentTime;
+        this.currentTime = newCurrentTime;
     }
 
     /**
@@ -305,23 +305,19 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
      * @param newMathExecutable cbit.vcell.solvers.MathExecutable
      */
     protected void setMathExecutable(MathExecutable newMathExecutable) {
-        if (mathExecutable != null) {
-            mathExecutable.removePropertyChangeListener(this);
+        if (this.mathExecutable != null) {
+            this.mathExecutable.removePropertyChangeListener(this);
         }
         if (newMathExecutable != null) {
             newMathExecutable.addPropertyChangeListener(this);
         }
-        mathExecutable = newMathExecutable;
+        this.mathExecutable = newMathExecutable;
     }
 
     public synchronized final void startSolver() {
         if (!(fieldThread != null && fieldThread.isAlive())) {
             setMathExecutable(null);
-            fieldThread = new Thread() {
-                public void run() {
-                    runSolver();
-                }
-            };
+            fieldThread = new Thread(this::runSolver);
             fieldThread.setName("Compiled Solver (" + getClass().getName() + ")");
             fieldThread.start();
         }

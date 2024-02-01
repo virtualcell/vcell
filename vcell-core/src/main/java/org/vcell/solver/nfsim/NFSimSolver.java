@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -104,7 +103,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
 
 		try (PrintWriter pw = new PrintWriter(inputFilename)) {
-			NFSimFileWriter stFileWriter = new NFSimFileWriter(pw, simTask, bMessaging);
+			NFSimFileWriter stFileWriter = new NFSimFileWriter(pw, simTask, useMessaging);
 			stFileWriter.write();
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,

@@ -325,7 +325,7 @@ protected void initialize() throws SolverException
 	//
 	if (lg.isTraceEnabled()) lg.trace("HybridSolver.initialize() baseName = " + getBaseName());
 	//
-	NetCDFWriter ncWriter = new NetCDFWriter(simTask,inputFilename, bMessaging);
+	NetCDFWriter ncWriter = new NetCDFWriter(simTask,inputFilename, useMessaging);
 	try {
 		ncWriter.initialize();
 	} catch (Exception e) {
