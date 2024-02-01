@@ -172,7 +172,7 @@ public class BiosimulationsExecTest {
 					expectedH5File.toAbsolutePath().toString(),
 					computedH5File.toAbsolutePath().toString()
 			});
-			command.start(new int[] { 0, 1 });
+			command.start(0, 1);
 			assertFalse(command.getStdoutString().contains("position"), "H5 files have significant differences: " +
 					command.getStdoutString().substring(0, 300));
 

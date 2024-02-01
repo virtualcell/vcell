@@ -424,13 +424,13 @@ private synchronized void setStatus(org.vcell.util.exe.ExecutableStatus newStatu
 }
 
 public final void start() throws org.vcell.util.exe.ExecutableException {
-	start(new int[] { 0 });
+	start(0);
 }
 
 /**
  * This method was created in VisualAge.
  */
-public final void start(int[] expectedReturnCodes) throws org.vcell.util.exe.ExecutableException {
+public final void start(int... expectedReturnCodes) throws org.vcell.util.exe.ExecutableException {
 
     setStatus(ExecutableStatus.RUNNING);
     try {

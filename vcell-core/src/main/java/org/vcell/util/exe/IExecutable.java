@@ -19,7 +19,7 @@ public interface IExecutable {
 	 * @param expectedReturnCodes
 	 * @throws org.vcell.util.exe.ExecutableException if fails, or return code not in expectedReturnCodes
 	 */
-	public void start(int[] expectedReturnCodes)
+	public void start(int... expectedReturnCodes)
 			throws org.vcell.util.exe.ExecutableException;
 
 	/**

@@ -151,7 +151,7 @@ public class PythonSupport {
 		}
 		IExecutable exe = new Executable(cmd);
 		try {
-			exe.start( new int[] { 0 });
+			exe.start(0);
 			System.out.println("Exit value: " + exe.getExitValue());
 			System.out.println("stdout=\""+exe.getStdoutString()+"\"");
 			System.out.println("stderr=\""+exe.getStderrString()+"\"");
@@ -181,7 +181,7 @@ public class PythonSupport {
 		IExecutable exe = new Executable(cmd);
 		try {
 			System.out.println("checking package "+pythonPackage.condaName);
-			exe.start( new int[] { 0 });
+			exe.start(0);
 			System.out.println("Exit value: " + exe.getExitValue());
 			System.out.println(exe.getStdoutString());
 			System.out.println(exe.getStderrString());
