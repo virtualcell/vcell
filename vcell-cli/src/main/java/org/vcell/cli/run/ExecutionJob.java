@@ -26,9 +26,9 @@ public class ExecutionJob {
 
     private final static Logger logger = LogManager.getLogger(ExecutionJob.class);
 
-    private long startTime, endTime; 
+    private long startTime;
     private boolean bExactMatchOnly, bSmallMeshOverride, bKeepTempFiles;
-    private StringBuilder logOmexMessage;
+    private final StringBuilder logOmexMessage;
     private String inputFilePath, bioModelBaseName, outputBaseDir, outputDir;
     private boolean anySedmlDocumentHasSucceeded = false;    // set to true if at least one sedml document run is successful
     private boolean anySedmlDocumentHasFailed = false;       // set to true if at least one sedml document run fails
@@ -45,7 +45,7 @@ public class ExecutionJob {
      * 
      * @param inputFile the omex archive to execute
      * @param rootOutputDir the top-level directory for all output material
-     * @param cliRecorder recorder objecte used for CLI applications
+     * @param cliRecorder recorder object used for CLI applications
      * @param bKeepTempFiles whether temp files shouldn't be deleted, or should.
      * @param bExactMatchOnly enforces a KISAO match, with no substitution
      * @param bEncapsulateOutput whether to provide a sub-folder for outputs (needed for batch jobs)
@@ -67,13 +67,12 @@ public class ExecutionJob {
     }
 
     private ExecutionJob(){
-        this.logOmexMessage = new StringBuilder("");
+        this.logOmexMessage = new StringBuilder();
     }
 
     /**
-     * Run the neexed steps to prepare an archive for execution.
-     * 
-     * Follow up call: `executeArchive()`
+     * Run the needed steps to prepare an archive for execution.
+     * Follow-up call: `executeArchive()`
      * 
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues.
@@ -113,14 +112,13 @@ public class ExecutionJob {
 
     /**
      * Run solvers on all the models in the archive.
-     * 
+     * <p>
      * Called after: `preprocessArchive()`
      * Called before: `postProcessArchive()`
-     * 
-     * @throws InterruptedException if there is an issue with accessing data
+     *
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
-     * @throws IOException if there are system I/O issues
-     * @throws ExecutionException if an execution specfic error occurs
+     * @throws HDF5Exception If an HDF5 specific error occurs
+     * @throws ExecutionException if an execution specific error occurs
      */
     public void executeArchive() throws HDF5Exception, PythonStreamException, ExecutionException {
         try {
@@ -156,20 +154,20 @@ public class ExecutionJob {
 
     /**
      * Clean up and analyze the results of the archive's execution
-     * 
+     * <p>
      * Called after: `executeArchive()`
      * 
      * @throws InterruptedException if there is an issue with accessing data
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues
      */
-    public void postProcessessArchive() throws InterruptedException, PythonStreamException, IOException {
+    public void postProcessesArchive() throws InterruptedException, PythonStreamException, IOException {
         omexHandler.deleteExtractedOmex();
 
-        this.endTime = System.currentTimeMillis();
-        long elapsedTime = this.endTime - this.startTime;
+        long endTime = System.currentTimeMillis();
+        long elapsedTime = endTime - this.startTime;
         int duration = (int) Math.ceil(elapsedTime / 1000.0);
-        logger.info("Omex " + inputFile.getName() + " processing completed (" + Integer.toString(duration) + "s)");
+        logger.info("Omex " + inputFile.getName() + " processing completed (" + duration + "s)");
         //
         // failure if at least one of the documents in the omex archive fails
         //

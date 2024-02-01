@@ -161,10 +161,10 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.e
 			throw new Exception(getErrorString());
 		}
 	} catch (Exception e) {
-		String processName = (command != null && command.length > 0) ? '"' +command[0] + '"' : "<unknown>";
-		logger.error(String.format("Command %s ecountered a problem: ", processName)+": "+e.getMessage(), e);
+		String processName = (this.command != null && this.command.length > 0) ? '"' + this.command[0] + '"' : "<unknown>";
+		logger.error(String.format("Command %s encountered a problem: ", processName)+": "+e.getMessage(), e);
 		if (getStatus().isError()) {
-			// process failed and we relay the exception thrown on error status finish above
+			// the process failed, so we relay the exception thrown on error status finish above
 			throw new ExecutableException(e.getMessage() + "\n\n(" + getCommand() + ")", e);
 		} else {
 			//something really unexpected happened, update status and log it before relaying...
@@ -191,12 +191,12 @@ public void finalize() {
  * @return java.lang.String
  */
 public String getCommand() {
-	StringBuffer commandLine = new StringBuffer();
-	for (int i = 0; i < command.length; i ++) {
+	StringBuilder commandLine = new StringBuilder();
+	for (int i = 0; i < this.command.length; i ++) {
 		if (i > 0) {
 			commandLine.append(" ");
 		}		
-		commandLine.append(TokenMangler.getEscapedPathName(command[i]));		
+		commandLine.append(TokenMangler.getEscapedPathName(this.command[i]));
 	}
 	return commandLine.toString();
 }
@@ -364,10 +364,10 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2002 4:34:39 PM)
- * @param newCommand java.lang.String
+ * @param command java.lang.String
  */
-private void setCommand(String[] newCommand) {
-	command = newCommand;
+private void setCommand(String[] command) {
+	this.command = command;
 }
 
 

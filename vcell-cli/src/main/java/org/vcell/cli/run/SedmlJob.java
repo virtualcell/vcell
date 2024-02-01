@@ -133,8 +133,7 @@ public class SedmlJob {
             }
             
             for(AbstractTask at : sedmlFromOmex.getTasks()) {
-                if(at instanceof RepeatedTask) {
-                    RepeatedTask rt = (RepeatedTask)at;
+                if(at instanceof RepeatedTask rt) {
                     List<SetValue> changes = rt.getChanges();
                     if(changes != null && !changes.isEmpty()) {
                         this.hasScans = true;
@@ -332,8 +331,6 @@ public class SedmlJob {
             return false;
         }
 
-        //Files.copy(new File(outDirForCurrentSedml,"reports.h5").toPath(),Paths.get(this.resultsDirPath,"reports.h5"));
-
         // archiving result files
         logger.info("Archiving result files");
         RunUtils.zipResFiles(new File(this.RESULTS_DIRECTORY_PATH));
@@ -376,13 +373,12 @@ public class SedmlJob {
         PythonCalls.genPlotsPseudoSedml(this.SEDML_LOCATION, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML.toString());    // generate the plots
         // We assume if no exception is returned that the plots pass
         for (Output output : this.sedml.getOutputs()){
-            if (!(output instanceof Plot2D)) continue;
-            Plot2D plot = (Plot2D) output;
+            if (!(output instanceof Plot2D plot)) continue;
             PythonCalls.updatePlotStatusYml(this.SEDML_LOCATION, plot.getId(), Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
         }
     }
 
-    private void generateHDF5(SolverHandler solverHandler, Hdf5DataContainer masterHdf5File) throws IOException {
+    private void generateHDF5(SolverHandler solverHandler, Hdf5DataContainer masterHdf5File){
         this.logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 

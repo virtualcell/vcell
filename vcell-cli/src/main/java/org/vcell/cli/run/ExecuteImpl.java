@@ -225,7 +225,7 @@ public class ExecuteImpl {
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
         requestedExecution.preprocessArchive();
         requestedExecution.executeArchive();
-        requestedExecution.postProcessessArchive();
+        requestedExecution.postProcessesArchive();
     }
 
     private static boolean somethingDidFail(){

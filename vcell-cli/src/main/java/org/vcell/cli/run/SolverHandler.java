@@ -321,9 +321,9 @@ public class SolverHandler {
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
         
-        List<BioModel> bioModelList = null;
-        String docName = null;
-        List<TempSimulation> tempSims = null;
+        List<BioModel> bioModelList;
+        String docName;
+        List<TempSimulation> tempSims;
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
 		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
         try {
