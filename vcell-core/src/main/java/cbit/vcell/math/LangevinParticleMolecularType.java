@@ -79,6 +79,7 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 			if(token.equalsIgnoreCase(VCML.Is2D)) {
 				token = tokens.nextToken();
 				setIs2D(Boolean.getBoolean(token));
+				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.Links)) {
 				token = tokens.nextToken();
