@@ -122,7 +122,7 @@ protected void fireSolverFinished() {
 	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVEREVENT_FINISHED, getProgress(), getCurrentTime(), null);
 	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
+	Object[] listeners = this.listenerList.getListenerList();
 	// Process the listeners last to first, notifying
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {
@@ -141,7 +141,7 @@ protected void fireSolverPrinted(double timepoint) {
 	SolverEvent event = new SolverEvent(this, SolverEvent.SOLVER_PRINTED, SimulationMessage.solverPrinted(timepoint), getProgress(), timepoint, null);
 	VCMongoMessage.sendSolverEvent(event);
 	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
+	Object[] listeners = this.listenerList.getListenerList();
 	// Process the listeners last to first, notifying
 	// those that are interested in this event
 	for (int i = listeners.length-2; i>=0; i-=2) {

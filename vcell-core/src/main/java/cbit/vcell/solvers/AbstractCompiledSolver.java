@@ -51,7 +51,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     /**
      * AbstractPDESolver constructor comment.
      */
-    public AbstractCompiledSolver(SimulationTask simTask, File directory, boolean useMessaging) throws SolverException {
+    public AbstractCompiledSolver(SimulationTask simTask, File directory, boolean useMessaging) {
         super(simTask, directory);
         this.useMessaging = useMessaging;
         setCurrentTime(simTask.getSimulationJob().getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime());
