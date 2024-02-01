@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
+import org.vcell.cli.trace.Span;
+import org.vcell.cli.trace.Tracer;
 import org.vcell.util.FileUtils;
 
 import java.io.File;
@@ -18,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class ExecuteImpl {
     
@@ -54,7 +57,9 @@ public class ExecuteImpl {
                 String inputFileName = inputFile.getName();
                 System.out.println("\n\n");
                 logger.info("Processing " + inputFileName + "(" + inputFile + ")");
+                Span span = null;
                 try {
+                    span = Tracer.startSpan(Span.ContextType.OMEX_EXECUTE, inputFileName, Map.of("filename", inputFileName));
                     if (inputFileName.endsWith("vcml"))
                         singleExecVcml(inputFile, outputDir, cliLogger);
                     if (inputFileName.endsWith("omex"))
@@ -62,10 +67,16 @@ public class ExecuteImpl {
                                 bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
                 } catch (ExecutionException | RuntimeException | HDF5Exception e){
                     logger.error("Error caught executing batch mode", e);
+                    Tracer.failure(e, "Error caught executing batch mode");
                     failedFiles.add(inputFileName);
                 } catch (Exception e){
+                    Tracer.failure(e, "Error caught executing batch mode");
                     failedFiles.add(inputFileName);
                     throw e;
+                } finally {
+                    if (span != null) {
+                        span.close();
+                    }
                 }
             }
             if (failedFiles.isEmpty()){
@@ -130,8 +141,20 @@ public class ExecuteImpl {
         final boolean bEncapsulateOutput = false;
         final boolean bSmallMeshOverride = false;
 
-        ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
-                bEncapsulateOutput, bSmallMeshOverride);
+        Span span = null;
+        try {
+            span = Tracer.startSpan(Span.ContextType.OMEX_EXECUTE, inputFile.getName(), Map.of("filename", inputFile.getName()));
+            ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                    bEncapsulateOutput, bSmallMeshOverride);
+        } catch (Exception e) {
+            Tracer.failure(e, "error message");
+            throw e;
+        } finally {
+            if (span != null) {
+                span.close();
+            }
+        }
+
     }
 
     @Deprecated
@@ -152,6 +175,7 @@ public class ExecuteImpl {
             if (!vcmlFile.getParentFile().getCanonicalPath().contains(outDirForCurrentVcml.getCanonicalPath()))
                 RunUtils.removeAndMakeDirs(outDirForCurrentVcml);
         } catch (Exception e) {
+            Tracer.failure(e, "Error caught while preparing output directory");
             logger.error("Error in creating required directories: " + e.getMessage(), e);
             somethingFailed = somethingDidFail();
         }
@@ -167,15 +191,19 @@ public class ExecuteImpl {
                 PythonCalls.transposeVcmlCsv(CSVFilePath);
             }
         } catch (IOException e) {
+            Tracer.failure(e, "IOException while processing VCML " + vcmlFile.getName());
             logger.error("IOException while processing VCML " + vcmlFile.getName(), e);
             somethingFailed = somethingDidFail();
         } catch (ExpressionException e) {
+            Tracer.failure(e, "ExpressionException while processing VCML " + vcmlFile.getName());
             logger.error("InterruptedException while creating results CSV from VCML " + vcmlFile.getName(), e);
             somethingFailed = somethingDidFail();
         } catch (InterruptedException e) {
+            Tracer.failure(e, "InterruptedException while processing VCML " + vcmlFile.getName());
             logger.error("InterruptedException while transposing CSV from VCML " + vcmlFile.getName(), e);
             somethingFailed = somethingDidFail();
         } catch (Exception e) {
+            Tracer.failure(e, "Unexpected exception while processing VCML " + vcmlFile.getName());
             String errorMessage = String.format("Unexpected exception while transposing CSV from VCML <%s>\n%s", vcmlFile.getName(), e.toString());
             logger.error(errorMessage, e);
             somethingFailed = somethingDidFail();
