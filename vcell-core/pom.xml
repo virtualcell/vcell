@@ -656,7 +656,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.40/linux64.tgz</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.44-dev2/linux64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
 									</configuration>
