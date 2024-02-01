@@ -72,7 +72,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	
 	private JTextField linkLengthField = null;
 	private JButton addLinkButton = null;
-
+	private JButton deleteLinkButton = null;
 	//
 	// TODO: make it possible to use right click menu to delete links
 	//
@@ -122,6 +122,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				changeLinkLength();
 			} else if(source == addLinkButton) {
 				addLinkActionPerformed();
+				refreshSiteLinksList();
+			} else if(source == deleteLinkButton) {
+				deleteLinkActionPerformed();
 				refreshSiteLinksList();
 			} else if(source == getSiteColorComboBox()) {
 				updateSiteColor();
@@ -203,6 +206,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 		linkLengthField.addActionListener(eventHandler);
 		addLinkButton.addActionListener(eventHandler);
+		deleteLinkButton.addActionListener(eventHandler);
 		
 		getSiteColorComboBox().addActionListener(eventHandler);
 		
@@ -231,10 +235,12 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			siteLinksList.setCellRenderer(siteLinksCellRenderer);
 			linkLengthField = new JTextField("");
 			addLinkButton = new JButton("Add Link");
+			deleteLinkButton = new JButton("Delete Link");
 			siteXField.setEditable(false);
 			siteYField.setEditable(false);
 			siteZField.setEditable(false);
 			linkLengthField.setEditable(false);
+			deleteLinkButton.setEnabled(false);
 		
 		// ------------------------------------------- The 2 group boxes --------------------------
 		JPanel thePanel = new JPanel();
@@ -585,7 +591,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.gridwidth = 2;
+		gbc.gridwidth = 3;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
@@ -603,6 +609,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridx = 1;
 		gbc.gridy = 1;
 		gbc.weightx = 1.0;
+		gbc.gridwidth = 2;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
 		linksPanel.add(linkLengthField, gbc);
@@ -613,7 +620,14 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		linksPanel.add(addLinkButton, gbc);
-		
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		linksPanel.add(deleteLinkButton, gbc);
+
 		getMolecularTypeSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
 		getMolecularTypeSpecsTable().setDefaultRenderer(Structure.class, structuresTableCellRenderer);	// The Structures combobox cell renderer
 		
@@ -768,6 +782,12 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			addLinkButton.setEnabled(false);
 			refreshSiteLinksList();
 		}
+		if(!siteLinksListModel.isEmpty() && siteLinksList.getSelectedValue() != null) {	// there are links we can delete
+			deleteLinkButton.setEnabled(true);
+		} else {
+			deleteLinkButton.setEnabled(false);
+		}
+
 		if(bNonNullMolecularComponentPattern) {
 			SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
 			siteXField.setEditable(true);
@@ -875,22 +895,30 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			fieldSpeciesContextSpec.getInternalLinkSet().add(mils);
 			return;
 		} else {
-			
 			return;
 		}
 	}
-	
+	private void deleteLinkActionPerformed() {
+
+		MolecularInternalLinkSpec selectedValue = siteLinksList.getSelectedValue();
+		if(selectedValue != null) {
+			fieldSpeciesContextSpec.getInternalLinkSet().remove(selectedValue);
+		}
+		return;
+	}
+
 	private void showLinkLength(MolecularInternalLinkSpec selectedValue) {
 		if(selectedValue == null) {
 			System.out.println("showLinkLength: SelectedValue is null");
+			deleteLinkButton.setEnabled(false);
 			linkLengthField.setEditable(false);
 			linkLengthField.setText(null);
 			return;		// nothing selected
 		}
 		System.out.println("showLinkLength(): Selected row is '" + siteLinksList.getSelectedIndex() + "'");
+		deleteLinkButton.setEnabled(true);
 		linkLengthField.setEditable(false);		// make it editable here, for now it's a derived value only
 		linkLengthField.setText(selectedValue.getLinkLength()+"");
 	};
 
 }
-
