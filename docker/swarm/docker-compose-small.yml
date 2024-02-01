@@ -367,12 +367,12 @@ services:
       JCLOUDS_PROVIDER: "filesystem"
       JCLOUDS_REGIONS: "site2-low"
       S3PROXY_AUTHORIZATION: "none"
+      S3PROXY_KEYSTORE_PATH: "/run/secrets/keystorefile"
 
       LOG_LEVEL: info
-#      S3PROXY_ENDPOINT: "http://0.0.0.0:80"
+      S3PROXY_ENDPOINT: "http://0.0.0.0:80"
       S3PROXY_VIRTUALHOST: ""
       S3PROXY_SECURE_ENDPOINT: "https://0.0.0.0:443"
-      S3PROXY_KEYSTORE_PATH: "/run/secrets/keystorefile"
 #      S3PROXY_KEYSTORE_PASSWORD: $(cat /run/secrets/keystorepswd)
       S3PROXY_CORS_ALLOW_ALL: "false"
       S3PROXY_CORS_ALLOW_ORIGINS: ""
@@ -396,10 +396,7 @@ services:
       - "127.0.0.1:${VCELL_S3PROXY_PORT_EXTERNAL}:443"
     volumes:
       - "${VCELL_N5_DATADIR_HOST}:/data:ro"
-#    env_file: /run/secrets/keystoreenvpswd
-#    entrypoint: "/run/secrets/s3StartScript"
-    entrypoint: ["sh", "-c", "export S3PROXY_KEYSTORE_PASSWORD=$(cat /run/secrets/keystorepswd) && echo $S3PROXY_KEYSTORE_PASSWORD && /opt/s3proxy/run-docker-container.sh"]
-#    command: sh -c "echo S3PROXY_KEYSTORE_PASSWORD=$(cat /run/secrets/keystorepswd) >> /etc/environment"
+    entrypoint: ["sh", "-c", "export S3PROXY_KEYSTORE_PASSWORD=$(cat /run/secrets/keystorepswd); /opt/s3proxy/run-docker-container.sh"]
     secrets:
       - keystorefile
       - keystorepswd
@@ -426,6 +423,6 @@ secrets:
   keystorepswd:
     file: ${VCELL_SECRETS_DIR}/keystorepswd.txt
   keystorefile:
-    file: ${VCELL_SECRETS_DIR}/keystore.jks
+    file: ${VCELL_SECRETS_DIR}/testpass.jks
   batchuserkeyfile:
     file: ${VCELL_SECRETS_DIR}/id_rsa.pub
