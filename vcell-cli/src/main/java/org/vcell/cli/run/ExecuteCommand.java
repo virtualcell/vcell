@@ -11,6 +11,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.Callable;
 
 @Command(name = "execute", description = "run .vcml or .omex files via Python API")
@@ -25,53 +26,53 @@ public class ExecuteCommand implements Callable<Integer> {
     private File outputFilePath;
 
     @Option(names = {"--writeLogFiles"}, defaultValue = "false")
-    private boolean bWriteLogFiles = false;
+    private boolean shouldWriteLogFiles = false;
 
     @Option(names = {"--keepTempFiles"}, defaultValue = "false")
-    private boolean bKeepTempFiles = false;
+    private boolean shouldKeepTempFiles = false;
 
     @Option(names = {"--exactMatchOnly"}, defaultValue = "false")
-    private boolean bExactMatchOnly = false;
+    private boolean shouldEnforceExactMatchOnly = false;
 
     @Option(names = "--keepFlushingLogs", defaultValue = "false")
-    private boolean bKeepFlushingLogs = false;
+    private boolean shouldKeepFlushingLogs = false;
 
     @Option(names = "--small-mesh", defaultValue = "false", description = "force spatial simulations to have a very small mesh to make execution faster")
-    private boolean bSmallMeshOverride = false;
+    private boolean shouldEngageSmallMeshOverride = false;
 
     @Option(names = {"--encapsulateOutput"}, defaultValue = "true", description =
         "VCell will encapsulate output results in a sub directory when executing with a single input archive; has no effect when providing an input directory")
-    private boolean bEncapsulateOutput = true;
+    private boolean shouldEncapsulateOutput = true;
 
     @Option(names = {"--timeout_ms"}, defaultValue = "600000", description = "executable wall clock timeout in milliseconds")
     // timeout for compiled solver running long jobs; default 10 minutes
     private long EXECUTABLE_MAX_WALLCLOCK_MILLIS = 10 * 60 * 1000;
 
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
-    private boolean help = false;
+    private boolean shouldDisplayHelp = false;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
-    private boolean bDebug = false;
+    private boolean shouldEngageDebugMode = false;
 
     @Option(names = {"-q", "--quiet"}, description = "suppress all console output")
-    private boolean bQuiet = false;
+    private boolean shouldEngageQuietMode = false;
 
 
     public Integer call() {
-        CLIRecorder cliLogger;
+        CLIRecorder cliRecorder;
         try {
             Level logLevel;
-            if (!bQuiet && bDebug) {
+            if (!shouldEngageQuietMode && shouldEngageDebugMode) {
                 logLevel = Level.DEBUG;
-            } else if (bQuiet) {
+            } else if (shouldEngageQuietMode) {
                 logLevel = Level.OFF;
             } else {
                 logLevel = logger.getLevel();
             }
 
             // CLILogger will throw an exception if our output dir isn't valid.
-            boolean shouldFlush = this.bKeepFlushingLogs || this.bDebug;
-            cliLogger = new CLIRecorder(this.outputFilePath, this.bWriteLogFiles, shouldFlush);
+            boolean shouldFlush = this.shouldKeepFlushingLogs || this.shouldEngageDebugMode;
+            cliRecorder = new CLIRecorder(this.outputFilePath, this.shouldWriteLogFiles, shouldFlush);
             
             LoggerContext config = (LoggerContext)(LogManager.getContext(false));
             config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
@@ -93,14 +94,14 @@ public class ExecuteCommand implements Callable<Integer> {
                             Help\t: %b
                             Debug\t: %b
                             Quiet\t: %b""",
-                inputFilePath.getAbsolutePath(), outputFilePath.getAbsolutePath(), bWriteLogFiles,
-                    bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, 
-                    EXECUTABLE_MAX_WALLCLOCK_MILLIS, help, bDebug, bQuiet
+                inputFilePath.getAbsolutePath(), outputFilePath.getAbsolutePath(), shouldWriteLogFiles,
+                    shouldKeepTempFiles, shouldEnforceExactMatchOnly, shouldEncapsulateOutput,
+                    EXECUTABLE_MAX_WALLCLOCK_MILLIS, shouldDisplayHelp, shouldEngageDebugMode, shouldEngageQuietMode
             );
             logger.trace(trace_args);
 
             logger.debug("Validating CLI arguments");
-            if (bDebug && bQuiet) {
+            if (shouldEngageDebugMode && shouldEngageQuietMode) {
                 System.err.println("cannot specify both debug and quiet, try --help for usage");
                 return 1;
             }
@@ -111,30 +112,38 @@ public class ExecuteCommand implements Callable<Integer> {
             Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
             logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
-                logger.debug("Batch mode requested");
-                ExecuteImpl.batchMode(inputFilePath, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly,
-                        bSmallMeshOverride);
+                return launchBatchMode(cliRecorder);
             } else {
-                logger.debug("Single mode requested");
-                File archiveToProcess = inputFilePath;
-
-                if (archiveToProcess.getName().endsWith("vcml")) {
-                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, cliLogger);
-                } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleMode(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly,
-                            bEncapsulateOutput, bSmallMeshOverride);
-                }
+                return launchSingleMode(cliRecorder);
             }
-
-            
-            CLIPythonManager.getInstance().closePythonProcess();
-            // WARNING: Python needs re-instantiation once the above line is called!
-            return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
             org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
             return 1;
         } finally {
+            try {
+                CLIPythonManager.getInstance().closePythonProcess();
+                // WARNING: Python needs re-instantiation once the above line is called!
+            } catch (IOException e){
+                logger.error("Unable to properly close Python Process:", e);
+            }
             logger.debug("Completed all execution");
+        }
+    }
+
+    public Integer launchBatchMode(CLIRecorder recorder) throws IOException {
+        logger.debug("Batch mode requested");
+        return ExecuteImpl.batchMode(inputFilePath, outputFilePath, recorder, shouldKeepTempFiles, shouldEnforceExactMatchOnly,
+                shouldEngageSmallMeshOverride);
+    }
+
+    public Integer launchSingleMode(CLIRecorder recorder) throws Exception {
+        logger.debug("Single mode requested");
+
+        if (inputFilePath.getName().endsWith("vcml")) {
+            return ExecuteImpl.singleExecVcml(inputFilePath, outputFilePath, recorder);
+        } else { // archiveToProcess.getName().endsWith("omex")
+            return ExecuteImpl.singleMode(inputFilePath, outputFilePath, recorder, shouldKeepTempFiles, shouldEnforceExactMatchOnly,
+                    shouldEncapsulateOutput, shouldEngageSmallMeshOverride);
         }
     }
 }

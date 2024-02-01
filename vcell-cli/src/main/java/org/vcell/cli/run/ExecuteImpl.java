@@ -23,7 +23,7 @@ public class ExecuteImpl {
     
     private final static Logger logger = LogManager.getLogger(ExecuteImpl.class);
 
-    public static void batchMode(File dirOfArchivesToProcess, File outputDir, CLIRecordable cliLogger,
+    public static Integer batchMode(File dirOfArchivesToProcess, File outputDir, CLIRecordable cliLogger,
                                  boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride
                                 ) throws IOException {
         FilenameFilter filter = (f, name) -> name.endsWith(".omex") || name.endsWith(".vcml");
@@ -51,15 +51,22 @@ public class ExecuteImpl {
         }
         try {
             for (File inputFile : inputFiles) {
+
                 String inputFileName = inputFile.getName();
                 System.out.println("\n\n");
                 logger.info("Processing " + inputFileName + "(" + inputFile + ")");
                 try {
+                    Integer returnCode;
                     if (inputFileName.endsWith("vcml"))
-                        singleExecVcml(inputFile, outputDir, cliLogger);
-                    if (inputFileName.endsWith("omex"))
-                        runSingleExecOmex(inputFile, outputDir, cliLogger,
-                                bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
+                        returnCode = singleExecVcml(inputFile, outputDir, cliLogger);
+                    else if (inputFileName.endsWith("omex"))
+                        returnCode = runSingleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
+                    else {
+                        throw new RuntimeException("Archive type incompatible with current version of VCell");
+                    }
+                    if (returnCode != 0){
+                        throw new ExecutionException("Execution returned a non-zero error code: <" + returnCode + ">");
+                    }
                 } catch (ExecutionException | RuntimeException | HDF5Exception e){
                     logger.error("Error caught executing batch mode", e);
                     failedFiles.add(inputFileName);
@@ -70,8 +77,9 @@ public class ExecuteImpl {
             }
             if (failedFiles.isEmpty()){
                 logger.info("Execution finished with no failures");
-                return;
+                return 0;
             }
+
         } catch (Exception e) {
             StringBuilder failedFileString = new StringBuilder();
             logger.fatal("Fatal error caught executing batch mode (ending execution)", e);
@@ -84,26 +92,39 @@ public class ExecuteImpl {
         }
 
         // We had failures.
+        Integer errorCount = failedFiles.size();
         StringBuilder failedFileString = new StringBuilder();
         for (String f : failedFiles){
             failedFileString.append(String.format("\t- %s\n", f));
         }
         String errString = "Execution finished, but the following file(s) failed:\n" + failedFileString;
         logger.error(errString);
+        return errorCount; // Number of failed archives = error code.
     }
 
-    private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bKeepTempFiles,
+    private static Integer runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bKeepTempFiles,
                                           boolean bExactMatchOnly, boolean bSmallMeshOverride)
             throws IOException, ExecutionException, PythonStreamException, HDF5Exception, InterruptedException {
         String bioModelBaseName = inputFile.getName().substring(0, inputFile.getName().indexOf(".")); // ".omex"??
         Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
         final boolean bEncapsulateOutput = true;
 
-        singleExecOmex(inputFile, outputDir, cliLogger,
-                bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        try {
+            singleExecOmex(inputFile, outputDir, cliLogger,
+                    bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        } catch (ExecutionException | RuntimeException | HDF5Exception e){
+            logger.error("Execution finished, but " + inputFile.getName()
+                    + " failed with the following problem:", e);
+            return 1;
+        } catch (Exception e){
+            logger.fatal("Unexpected error encountered while running VCell:", e);
+            throw e;
+        }
+        logger.info("Execution finished with no failures");
+        return 0;
     }
 
-    public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
+    public static Integer singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride
     ) throws Exception {
         // Build statuses
@@ -120,27 +141,37 @@ public class ExecuteImpl {
 
         PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
-                bEncapsulateOutput, bSmallMeshOverride);
+        try {
+            ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                    bEncapsulateOutput, bSmallMeshOverride);
+        } catch (ExecutionException | RuntimeException | HDF5Exception e){
+            logger.error("Execution finished, but " + inputFile.getName()
+                    + " failed with the following problem:", e);
+            return 1;
+        } catch (Exception e){
+            logger.fatal("Unexpected error encountered while running VCell:", e);
+            throw e;
+        }
+        logger.info("Execution finished with no failures");
+        return 0;
     }
 
-    public static void singleMode(File inputFile, File outputDir, CLIRecordable cliLogger) throws Exception {
+    public static Integer singleMode(File inputFile, File outputDir, CLIRecordable cliLogger) throws Exception {
         final boolean bKeepTempFiles = false;
         final boolean bExactMatchOnly = false;
         final boolean bEncapsulateOutput = false;
         final boolean bSmallMeshOverride = false;
 
-        ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+        return ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
                 bEncapsulateOutput, bSmallMeshOverride);
     }
 
     @Deprecated
-    public static void singleExecVcml(File vcmlFile, File outputDir, CLIRecordable cliLogger) {
+    public static Integer singleExecVcml(File vcmlFile, File outputDir, CLIRecordable cliLogger) {
         logger.warn("Using deprecated function to execute vcml");
         logger.debug("Executing VCML file " + vcmlFile);
 
         // from here on, we need to collect errors, since some subtasks may succeed while other do not
-        boolean somethingFailed = false;
         HashMap<String, ODESolverResultSet> resultsHash;
 
         String vcmlName = vcmlFile.getAbsolutePath().substring(vcmlFile.getAbsolutePath().lastIndexOf(File.separator) + 1);
@@ -153,7 +184,7 @@ public class ExecuteImpl {
                 RunUtils.removeAndMakeDirs(outDirForCurrentVcml);
         } catch (Exception e) {
             logger.error("Error in creating required directories: " + e.getMessage(), e);
-            somethingFailed = somethingDidFail();
+            return -1;
         }
 
         // Run solvers and make reports; all failures/exceptions are being caught
@@ -166,27 +197,21 @@ public class ExecuteImpl {
                 RunUtils.createCSVFromODEResultSet(resultsHash.get(simName), new File(CSVFilePath));
                 PythonCalls.transposeVcmlCsv(CSVFilePath);
             }
+            logger.debug("Finished executing VCML file: " + vcmlFile);
+            return 0;
         } catch (IOException e) {
             logger.error("IOException while processing VCML " + vcmlFile.getName(), e);
-            somethingFailed = somethingDidFail();
         } catch (ExpressionException e) {
             logger.error("InterruptedException while creating results CSV from VCML " + vcmlFile.getName(), e);
-            somethingFailed = somethingDidFail();
         } catch (InterruptedException e) {
             logger.error("InterruptedException while transposing CSV from VCML " + vcmlFile.getName(), e);
-            somethingFailed = somethingDidFail();
         } catch (Exception e) {
-            String errorMessage = String.format("Unexpected exception while transposing CSV from VCML <%s>\n%s", vcmlFile.getName(), e.toString());
+            String errorMessage = String.format("Unexpected exception while transposing CSV from VCML <%s>\n%s", vcmlFile.getName(), e);
             logger.error(errorMessage, e);
-            somethingFailed = somethingDidFail();
         }
-
-        logger.debug("Finished executing VCML file: " + vcmlFile);
-        if (somethingFailed) {
-            RuntimeException e = new RuntimeException("One or more errors encountered while executing VCML " + vcmlFile.getName());
-            logger.error(e.getMessage(), e);
-            throw e;
-        }
+        RuntimeException e = new RuntimeException("One or more errors encountered while executing VCML " + vcmlFile.getName());
+        logger.error(e.getMessage(), e);
+        return 1;
     }
 
     private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
@@ -198,12 +223,5 @@ public class ExecuteImpl {
         requestedExecution.preprocessArchive();
         requestedExecution.executeArchive();
         requestedExecution.postProcessessArchive();
-    }
-
-    private static boolean somethingDidFail(){
-        StackTraceElement elem = new Exception().getStackTrace()[1];
-        
-        logger.debug(String.format("Something failed in %s @ line %d", elem.getClassName(), elem.getLineNumber()));
-        return true;
     }
 }

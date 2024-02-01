@@ -27,30 +27,30 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private File OUT_DIR;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
-    private boolean bDebug = false;
+    private boolean shouldEngageDebugMode = false;
 
     @Option(names = {"-q", "--quiet"}, description = "suppress all console output")
-    private boolean bQuiet = false;
+    private boolean shouldEngageQuietMode = false;
 
     @Option(names = {"-v", "--version"}, description = "show program's version number and exit")
-    private boolean bVersion = false;
+    private boolean shouldDisplayVersion = false;
 
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
-    private boolean help;
+    private boolean shouldDisplayHelp;
 
     public Integer call() {
-        CLIRecorder cliRecorder = null;
+        CLIRecorder cliRecorder;
         int returnCode;
         
-        if ((returnCode = this.noFurtherActionNeeded(bQuiet, bDebug, bVersion)) != -1)
+        if ((returnCode = this.noFurtherActionNeeded(shouldEngageQuietMode, shouldEngageDebugMode, shouldDisplayVersion)) != -1)
             return returnCode;
         
         try {
             cliRecorder = new CLIRecorder(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
             Level logLevel = logger.getLevel();
-            if (!bQuiet && bDebug) {
+            if (!shouldEngageQuietMode && shouldEngageDebugMode) {
                 logLevel = Level.DEBUG;
-            } else if (bQuiet) {
+            } else if (shouldEngageQuietMode) {
                 logLevel = Level.OFF;
             }
             LoggerContext config = (LoggerContext)(LogManager.getContext(false));
@@ -61,9 +61,15 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.debug("Biosimulations mode requested");
 
             String trace_args =  String.format(
-                "Arguments:\nArchive\t: \"%s\"\nOut Dir\t: \"%s\"\nDebug\t: %b\n" +
-                    "Quiet\t: %b\nVersion\t: %b\nHelp\t: %b",
-                ARCHIVE.getAbsolutePath(), OUT_DIR.getAbsolutePath(), bDebug, bQuiet, bVersion, help
+                    """
+                            Arguments:
+                            Archive\t: "%s"
+                            Out Dir\t: "%s"
+                            Debug\t: %b
+                            Quiet\t: %b
+                            Version\t: %b
+                            Help\t: %b""",
+                ARCHIVE.getAbsolutePath(), OUT_DIR.getAbsolutePath(), shouldEngageDebugMode, shouldEngageQuietMode, shouldDisplayVersion, shouldDisplayHelp
             );
 
             logger.trace(trace_args);
@@ -93,8 +99,9 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliRecorder);
-                return 0; // Does this prevent finally?
+                returnCode = ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliRecorder);
+                if (returnCode != 0) logger.error("Error during execution (error code: " + returnCode + ")");
+                return returnCode;
             } finally {
                 try {
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
@@ -105,7 +112,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            return 1;
+            return -1;
         }
     }
 
