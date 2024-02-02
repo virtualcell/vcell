@@ -536,7 +536,8 @@ private static Set<String> getAutoCompletionWords() {
 		autoCompletionWords.add(VCML.ParticleDriftZ);
 		autoCompletionWords.add(VCML.Subtype);		
 		autoCompletionWords.add(VCML.TransitionCondition);		
-		autoCompletionWords.add(VCML.BondLength);		
+		autoCompletionWords.add(VCML.BondLength);
+		autoCompletionWords.add(VCML.Is2D);
 		autoCompletionWords.add(VCML.Links);		
 		autoCompletionWords.add(VCML.LinkSeparator);		
 		autoCompletionWords.add(VCML.ParticleComponentRadius);		
@@ -850,6 +851,7 @@ public static Set<String> getkeywords() {
 		keywords.add(VCML.TransitionCondition);
 		keywords.add(VCML.BondLength);
 		keywords.add(VCML.Links);
+		keywords.add(VCML.Is2D);
 		keywords.add(VCML.ParticleComponentRadius);
 		keywords.add(VCML.ParticleComponentDiffusionRate);
 		keywords.add(VCML.ParticleComponentLocation);

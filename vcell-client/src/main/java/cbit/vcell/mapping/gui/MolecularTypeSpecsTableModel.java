@@ -17,8 +17,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -33,34 +31,20 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.util.Displayable;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
-import cbit.gui.ScopedExpression;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.MolecularInternalLinkSpec;
-import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.ColumnType;
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel.RulesProvenance;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -68,15 +52,18 @@ import cbit.vcell.parser.SymbolTableEntry;
  */
 @SuppressWarnings("serial")
 public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularComponentPattern> implements java.beans.PropertyChangeListener {
-	
+
+	// TODO: sas is null for molecules added late (after the application is created)
+	// TODO: add is2D flag here as a checkbox (var is SpeciesContextSpec) - membrane species may have it set to true, for compartment species is always false
+	// TODO: math is wrong for a model with a membrane species, saving model fails, see model aaa-SS-membrane, see issue #1097
 
 	private enum ColumnType {
 		COLUMN_SITE("Site"),
 		COLUMN_MOLECULE("Molecule"),
 		COLUMN_STRUCTURE("Location"),
 		COLUMN_STATE("Initial State"),
-		COLUMN_RADIUS("Radius"),
-		COLUMN_DIFFUSION("Diffusion Rate");
+		COLUMN_RADIUS("Radius (nm)"),
+		COLUMN_DIFFUSION("Diffusion Rate (um^2/s)");
 			
 		public final String label;
 		private ColumnType(String label){

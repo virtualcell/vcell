@@ -398,16 +398,24 @@ public class LangevinLngvWriter {
 					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(0);
 			Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern> elementTwo = 
 					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(1);
-			
+			String nameOne = "Any_State";
+			String nameTwo = "Any_State";
+			if(elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition() != null) {
+				nameOne = elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName();
+			}
+			if(elementTwo.getValue().getComponentStatePattern().getParticleComponentStateDefinition() != null) {
+				nameTwo = elementTwo.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName();
+			}
+
 			// finally write the BINDING_REACTIONS block for each binding reaction
 			sb.append("'").append(lpjpDirect.getName()).append("'       ");
 			sb.append("'").append(elementOne.getKey().getMolecularType().getName()).append("' : '")
 				.append(elementOne.getValue().getMolecularComponent().getName()).append("' : '")
-				.append(elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName());
+				.append(nameOne);
 				sb.append("'  +  '");
 			sb.append(elementTwo.getKey().getMolecularType().getName()).append("' : '")
 				.append(elementTwo.getValue().getMolecularComponent().getName()).append("' : '")
-				.append(elementTwo.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName());
+				.append(nameTwo);
 			
 			sb.append("'  kon  ").append(onRate);
 			sb.append("  koff ").append(offRate);
@@ -770,7 +778,11 @@ public class LangevinLngvWriter {
 							}
 							rates = new Pair<> (rates.one, decayRate);
 						} else {
-							throw new RuntimeException("Variable missing in the variables map");
+							if(var == null) {
+								throw new RuntimeException("Variable in the variables map is 'null'");
+							} else {
+								throw new RuntimeException("Variable '" + var.getName() + "' missing in the variables map");
+							}
 						}
 						creationDecayVariableMap.put(var, rates);
 					}
@@ -852,14 +864,11 @@ public class LangevinLngvWriter {
 				throw new RuntimeException("Initial concentration must be a number");
 			}
 
-			// TODO: verify if the molecule is flat or not; for now we assume it is "flat" on YZ axis projection
-			boolean is2D = true;		// the x-coordinate is the same for all the sites
-
-			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() + 
+			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() +
 					" Number " + scount + 
 					// number of site types and number of sites is the same for the vcell implementation of springsalad
 					" Site_Types " + lpmt.getComponentList().size() + " Total"  + "_Sites " + lpmt.getComponentList().size() + 
-					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + is2D);
+					" Total_Links " + lpmt.getInternalLinkSpec().size() + " is2D " + lpmt.getIs2D());
 			sb.append("\n");
 			sb.append("{");
 			sb.append("\n");
@@ -1004,6 +1013,9 @@ public class LangevinLngvWriter {
 		for (Map.Entry<LangevinParticleJumpProcess,SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
 			if(lpjp.getSubtype() == ReactionRuleSpec.Subtype.BINDING) {
+				if(lpjp.getName().endsWith("_reverse")) {
+					continue;
+				}
 				sb.append("'").append(lpjp.getName()).append("' : ")
 						.append("Counted");
 				sb.append("\n");

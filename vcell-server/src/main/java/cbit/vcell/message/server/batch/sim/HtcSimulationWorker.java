@@ -671,6 +671,7 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.vcellbatch_docker_name,
 		PropertyLoader.slurm_local_singularity_dir,
 		PropertyLoader.slurm_central_singularity_dir,
+		PropertyLoader.slurm_singularity_module_name,
 		PropertyLoader.slurm_reservation,
 		PropertyLoader.slurm_qos,
 		PropertyLoader.slurm_partition_pu,

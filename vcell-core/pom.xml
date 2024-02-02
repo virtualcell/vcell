@@ -656,8 +656,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.40/linux64.tgz</url>
-										<unpack>true</unpack>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.44-dev2/linux64.tgz</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
 									</configuration>
 								</execution>
@@ -741,7 +740,7 @@
 									</configuration>
 								</execution>
 								<execution>
-									<id>chmod-langevin-linux64</id>
+									<id>process-solvers-linux64</id>
 									<phase>process-test-resources</phase>
 									<goals>
 										<goal>run</goal>
@@ -749,6 +748,13 @@
 									<configuration>
 										<target>
 											<chmod file="${project.build.directory}/../../localsolvers/linux64/langevin_x64" perm="755"/>
+											<exec executable="tar">
+												<arg value="xzfh"/>
+												<arg value="${project.build.directory}/../../localsolvers/linux64/linux64.tgz"/>
+												<arg value="-C"/>
+												<arg value="${project.build.directory}/../../localsolvers/linux64"/>
+											</exec>
+											<delete file="${project.build.directory}/../../localsolvers/linux64/linux64.tgz"/>
 										</target>
 									</configuration>
 								</execution>

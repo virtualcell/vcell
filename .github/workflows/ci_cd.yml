@@ -15,7 +15,7 @@ env:
 jobs:
   CI-Build:
     name: CI-build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v3
@@ -84,7 +84,7 @@ jobs:
         if: ${{ failure() }}
 
   CI-Test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         test-group: [Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT, Quarkus]
@@ -162,11 +162,11 @@ jobs:
 
   CD:
     name: CD
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: ${{ github.event_name == 'release' }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4

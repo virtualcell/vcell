@@ -97,6 +97,7 @@ public class PropertyLoader {
 	public static final String slurm_tmpdir					= record("vcell.slurm.tmpdir",ValueType.GEN);
 	public static final String slurm_local_singularity_dir	= record("vcell.slurm.local.singularity.dir",ValueType.GEN);
 	public static final String slurm_central_singularity_dir= record("vcell.slurm.central.singularity.dir",ValueType.GEN);
+	public static final String slurm_singularity_module_name= record("vcell.slurm.singularity.module.name",ValueType.GEN);
 	public static final String sgeModulePath				= record("vcell.htc.sge.module",ValueType.GEN);
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
 	public static final String MPI_HOME_INTERNAL		        = record("vcell.htc.mpi.home",ValueType.DIR);

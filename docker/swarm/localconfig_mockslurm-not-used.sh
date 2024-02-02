@@ -38,18 +38,22 @@ case $VCELL_SITE in
 	REL)
 		_site_port_offset=0
 		_applicationId="1471-8022-1038-5553"
+    VCELL_S3_EXPORT_BASEURL=https://vcellapi.cam.uchc.edu
 		;;
 	BETA)
 		_site_port_offset=1
 		_applicationId="1471-8022-1038-5552"
+		VCELL_S3_EXPORT_BASEURL=https://vcellapi-beta.cam.uchc.edu
 		;;
 	ALPHA)
 		_site_port_offset=2
 		_applicationId="1471-8022-1038-5554"
+		VCELL_S3_EXPORT_BASEURL=https://vcellapi-beta.cam.uchc.edu
 		;;
 	TEST)
 		_site_port_offset=3
 		_applicationId="1471-8022-1038-5555"
+		VCELL_S3_EXPORT_BASEURL=https://localhost
 		;;
 	TEST2)
 		_site_port_offset=4
@@ -161,6 +165,7 @@ VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL=$VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL
 VCELL_REPO_NAMESPACE=$VCELL_REPO_NAMESPACE
 VCELL_SECRETS_DIR=${HOME}/vcellkeys
 VCELL_S3PROXY_PORT_EXTERNAL=$VCELL_S3PROXY_PORT_EXTERNAL
+VCELL_S3_EXPORT_BASEURL=$VCELL_S3_EXPORT_BASEURL
 VCELL_N5_DATADIR_HOST=/share/apps/vcell3/n5
 VCELL_SIMDATADIR_EXTERNAL=${VCELL_DEPLOY_ROOT_DIR}/users
 VCELL_SIMDATADIR_HOST=${VCELL_DEPLOY_ROOT_DIR}/users

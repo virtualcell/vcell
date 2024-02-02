@@ -41,7 +41,7 @@ public class N5Exporter implements ExportConstants {
 
 	private ExportServiceImpl exportServiceImpl = null;
 
-	private DataSetControllerImpl dataSetController;
+	public DataSetControllerImpl dataSetController;
 
 	private VCSimulationDataIdentifier vcDataID;
 	public String n5BucketName = "n5Data";
@@ -50,14 +50,11 @@ public class N5Exporter implements ExportConstants {
 
 	public static final ArrayList<VariableType> unsupportedTypes = new ArrayList<>(Arrays.asList(
 			VariableType.MEMBRANE,
-			VariableType.VOLUME_REGION,
-			VariableType.MEMBRANE_REGION,
 			VariableType.UNKNOWN,
 			VariableType.POINT_VARIABLE,
 			VariableType.NONSPATIAL,
 			VariableType.CONTOUR,
-			VariableType.CONTOUR_REGION,
-			VariableType.POSTPROCESSING
+			VariableType.CONTOUR_REGION
 	));
 
 	private VCData vcData;
@@ -104,7 +101,7 @@ public class N5Exporter implements ExportConstants {
 		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
 		HashMap<String, Object> additionalMetaData = new HashMap<>();
 
-		String dataSetName = getN5DataSetTemplatedName(n5Specs.dataSetName);
+		String dataSetName = n5Specs.dataSetName;
 
 		n5FSWriter.createDataset(dataSetName, datasetAttributes);
 		N5Specs.imageJMetaData(n5FSWriter, dataSetName, vcData, numVariables, additionalMetaData);
@@ -168,18 +165,6 @@ public class N5Exporter implements ExportConstants {
 		return dataSetController;
 	}
 
-
-
-	public DataIdentifier getRandomDI() throws IOException, DataAccessException {
-		ArrayList<DataIdentifier> list = new ArrayList<>(Arrays.asList(dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), vcDataID)));
-		Random random = new Random();
-		DataIdentifier df = list.remove(random.nextInt(list.size()));
-		while (unsupportedTypes.contains(df.getVariableType())){
-			df = list.remove(random.nextInt(list.size()));
-		}
-		return df;
-	}
-
 	public DataIdentifier getSpecificDI(String diName) throws IOException, DataAccessException {
 		ArrayList<DataIdentifier> list = new ArrayList<>(Arrays.asList(dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), vcDataID)));
 		for(DataIdentifier dataIdentifier: list){
@@ -217,10 +202,6 @@ public class N5Exporter implements ExportConstants {
 
 	public String getN5FileNameHash(){
 		return actualHash(vcDataID.getDataKey().toString(), String.valueOf(vcDataID.getJobIndex()));
-	}
-
-	public String getN5DataSetTemplatedName(String nonTemplatedName){
-		return nonTemplatedName + "_" + vcDataID.getJobIndex();
 	}
 
 	public static String getN5FileNameHash(String simID, String jobID){

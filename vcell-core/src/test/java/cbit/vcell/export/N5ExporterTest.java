@@ -15,6 +15,7 @@ package cbit.vcell.export;
 
 import cbit.vcell.export.server.*;
 import cbit.vcell.math.MathException;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -45,11 +46,13 @@ public class N5ExporterTest {
     private ArrayList<DataIdentifier> variables;
     private N5Exporter n5Exporter;
     private static final String fourDModelID = "597714292";
-    private static final String fiveDModelID = "1107466895";
+    private static final String fiveDModelID = "1136922340";
     private final ArrayList<String> testModels = new ArrayList<>(Arrays.asList(
             fourDModelID, //FRAP Tutorial in VCell, has no Z axis
             fiveDModelID //PH-GFP Tutorial in VCell
     ));
+
+    private ArrayList<DataIdentifier> dataIdentifiers;
 
     private static String previousInstallRoot;
     private static String previousPrimarySimDir;
@@ -184,17 +187,23 @@ public class N5ExporterTest {
         if (simKeyID.equals(fourDModelID)){
             // the test model can only support one species at this time
             n5Exporter.initalizeDataControllers(fourDModelID, "ezequiel23", "258925427", jobId);
+            dataIdentifiers = new ArrayList<>(Arrays.asList(n5Exporter.dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), n5Exporter.getVcDataID())));
             this.variables = new ArrayList<>(Arrays.asList(
-                    n5Exporter.getRandomDI()
+                    getRandomDISpecificVariable(VariableType.VOLUME),
+                    getRandomDISpecificVariable(VariableType.VOLUME_REGION),
+                    getRandomDISpecificVariable(VariableType.MEMBRANE_REGION),
+                    getRandomDI()
             ));
         }
         else if (simKeyID.equals(fiveDModelID)){
             n5Exporter.initalizeDataControllers(fiveDModelID, "ezequiel23", "258925427", jobId);
+            dataIdentifiers = new ArrayList<>(Arrays.asList(n5Exporter.dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), n5Exporter.getVcDataID())));
             this.variables = new ArrayList<>(Arrays.asList(
-                    n5Exporter.getRandomDI(),
-                    n5Exporter.getRandomDI(),
-                    n5Exporter.getRandomDI(),
-                    n5Exporter.getRandomDI()
+                    getRandomDISpecificVariable(VariableType.VOLUME),
+                    getRandomDISpecificVariable(VariableType.POSTPROCESSING),
+                    getRandomDISpecificVariable(VariableType.VOLUME_REGION),
+                    getRandomDISpecificVariable(VariableType.MEMBRANE_REGION),
+                    getRandomDI()
             ));
         }
         this.controlModel = n5Exporter.getVCData();
@@ -214,7 +223,7 @@ public class N5ExporterTest {
             //X, Y, T, Z, Channels
             long[] controlDimensions = {controlModel.getMesh().getSizeX(), controlModel.getMesh().getSizeY(), variables.size(), controlModel.getMesh().getSizeZ(), controlModel.getDataTimes().length};
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
-            DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
+            DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
             long[] exportDimensions = datasetAttributes.getDimensions();
             assertArrayEquals(controlDimensions, exportDimensions, "Testing dimension results for model " + model);
 
@@ -242,8 +251,8 @@ public class N5ExporterTest {
 
             for(int i = 0; i < variables.size(); i++){
                 for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
-                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
-                    DataBlock<?> dataBlock = n5Reader.readBlock(n5Exporter.getN5DataSetTemplatedName(model), datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
+                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
+                    DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
 
                     double[] exportedRawData = (double[]) dataBlock.getData();
                     assertArrayEquals(
@@ -273,11 +282,11 @@ public class N5ExporterTest {
                     double[] times = controlModel.getDataTimes();
                     makeN5Model(compression, 0 , times.length, model);
                     OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(n5Exporter.getN5DataSetTemplatedName(model));
+                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
                     for(int j = 0; j< 8; j++){
                         int timeSlice = random.nextInt(times.length);
                         int chosenVariable = random.nextInt(variables.size());
-                        DataBlock<?> dataBlock = n5Reader.readBlock(n5Exporter.getN5DataSetTemplatedName(model), datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
+                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
 
                         double[] exportedData = (double[]) dataBlock.getData();
                         Assertions.assertArrayEquals(
@@ -289,6 +298,25 @@ public class N5ExporterTest {
                 }
         }
 
+    }
+
+    public DataIdentifier getRandomDI() throws IOException, DataAccessException {
+        Random random = new Random();
+        DataIdentifier df = dataIdentifiers.remove(random.nextInt(dataIdentifiers.size()));
+        while (N5Exporter.unsupportedTypes.contains(df.getVariableType())){
+            df = dataIdentifiers.remove(random.nextInt(dataIdentifiers.size()));
+        }
+        return df;
+    }
+
+    public DataIdentifier getRandomDISpecificVariable(VariableType variableType){
+        for(DataIdentifier dataIdentifier: dataIdentifiers){
+            if(dataIdentifier.getVariableType().equals(variableType)){
+                dataIdentifiers.remove(dataIdentifier);
+                return dataIdentifier;
+            }
+        }
+        return null;
     }
 
     // Test annotated functions, and multiple different parameters for data conversion, for multiple scans use different template file name

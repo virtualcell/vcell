@@ -930,6 +930,7 @@ private void updateShape() {
 							fieldSpeciesContext.setSpeciesPattern(sp);
 						}
 						fieldSpeciesContext.getSpeciesPattern().addMolecularTypePattern(molecularTypePattern);
+						fieldSpeciesContext.firePropertyChange(SpeciesContext.PROPERTY_NAME_SPECIES_PATTERN_CHANGED, null, fieldSpeciesContext);
 					}
 				});
 			}
