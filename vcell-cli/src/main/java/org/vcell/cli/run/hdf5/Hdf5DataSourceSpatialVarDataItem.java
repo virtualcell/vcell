@@ -32,6 +32,7 @@ public class Hdf5DataSourceSpatialVarDataItem {
     public final File hdf5File;
     public final double outputStartTime;
     public final int outputNumberOfPoints;
+    private final String vcellVarId;
 
     public int[] timebounds;
     public double[] times;
@@ -59,7 +60,9 @@ public class Hdf5DataSourceSpatialVarDataItem {
         this.hdf5File = hdf5File;
         this.outputStartTime = outputStartTime;
         this.outputNumberOfPoints = outputNumberOfPoints;
+        this.vcellVarId = vcellVarId;
         this.parseMetadata();
+        this.fillMissingTimeDimensions();
     }
 
     /**
@@ -89,6 +92,10 @@ public class Hdf5DataSourceSpatialVarDataItem {
             }
             this.varToDatasetPathMap = new LinkedHashMap<>();
             Map<String, Node> entrySubsets = topLevelGroup.getChildren();
+            if (!this.sedmlVariable.getName().equals("t") && !entrySubsets.containsKey(this.sedmlVariable.getName())){
+                throw new RuntimeException(String.format("Output data in file `%s` does not contain results needed for sedml variable `%s`",
+                        this.hdf5File.getName(), this.sedmlVariable.getName()));
+            }
             for (Map.Entry<String, Node> groupEntry : entrySubsets.entrySet()) {
                 if (groupEntry.getValue() instanceof Dataset jhdfDataset) {
                     if (jhdfDataset.getName().equals("TIMEBOUNDS")) {
@@ -109,5 +116,10 @@ public class Hdf5DataSourceSpatialVarDataItem {
                 }
             }
         }
+    }
+
+    private void fillMissingTimeDimensions(){
+        if (this.spaceTimeDimensions != null || !this.vcellVarId.equals("t")) return;
+        this.spaceTimeDimensions = new int[]{1, this.times.length};
     }
 }

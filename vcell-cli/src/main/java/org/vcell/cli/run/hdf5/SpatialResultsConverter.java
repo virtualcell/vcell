@@ -97,12 +97,12 @@ public class SpatialResultsConverter {
                             Hdf5DataSourceSpatialVarDataItem job = new Hdf5DataSourceSpatialVarDataItem(
                                     report, dataset, var, jobIndex, spatialH5File,
                                     outputStartTime, outputNumberOfPoints, vcellVarId);
+                            if (job.spaceTimeDimensions == null){
+                                throw new RuntimeException("Unable to find dimensionality data for " + vcellVarId);
+                            }
                             hdf5DataSourceSpatial.varDataItems.add(job);
                             hdf5DataSourceSpatial.scanBounds = scanBounds;
                             hdf5DataSourceSpatial.scanParameterNames = scanParamNames;
-                            if (job.spaceTimeDimensions == null && vcellVarId.equals("t")){
-                                job.spaceTimeDimensions = new int[]{1, job.times.length};
-                            }
                         }
                         jobIndex++;
                     }
