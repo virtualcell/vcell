@@ -34,7 +34,8 @@ public class VcmlOmexConverter {
 									  ModelFormat modelFormat,
 									  boolean bWriteLogFiles,
 									  boolean bValidateOmex,
-									  boolean bSkipUnsupportedApps)
+									  boolean bSkipUnsupportedApps,
+									  boolean bAddPublicationInfo)
 			throws SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
 
 		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
@@ -57,6 +58,7 @@ public class VcmlOmexConverter {
 				simulationExportFilter,
 				modelFormat,
 				sedmlEventLog,
+				bAddPublicationInfo,
 				bSkipUnsupportedApps,
 				bHasPython,
 				bValidateOmex);
@@ -75,7 +77,8 @@ public class VcmlOmexConverter {
 
 
 	public static void convertFilesNoDatabase(File inputDir, File outputDir, ModelFormat modelFormat,
-											  boolean bWriteLogFiles, boolean bValidateOmex, boolean bSkipUnsupportedApps)
+											  boolean bWriteLogFiles, boolean bValidateOmex,
+											  boolean bSkipUnsupportedApps, boolean bAddPublicationInfo)
 			throws IOException {
 		// Start
 		if (inputDir == null || !inputDir.isDirectory()) throw new RuntimeException("expecting inputFilePath to be an existing directory");
@@ -105,6 +108,7 @@ public class VcmlOmexConverter {
 						simulationExportFilter,
 						modelFormat,
 						sedmlEventLog,
+						bAddPublicationInfo,
 						bSkipUnsupportedApps,
 						bHasPython,
 						bValidateOmex);

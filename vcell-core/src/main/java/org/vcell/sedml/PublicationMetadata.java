@@ -2,6 +2,7 @@ package org.vcell.sedml;
 
 import com.google.gson.Gson;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.vcell.util.document.KeyValue;
@@ -9,7 +10,9 @@ import org.vcell.util.document.PublicationInfo;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class PublicationMetadata {
     public final PublicationInfo publicationInfo;
@@ -50,128 +53,64 @@ public class PublicationMetadata {
         String abstractText = null;
         String compactJournal = null;
         String firstAuthorsLastName = null;
-        Integer year = null;
+        int year = 0;
 
-        String[] citationLines = retrieveRISCitationFromPaperpile(publicationInfo);
-        HashMap<String, String> citationFieldsRIS = extractCitationRIS(citationLines);
-
-        if (citationFieldsRIS.containsKey("AB")) {
-            abstractText = citationFieldsRIS.get("AB");
+        String[] citationLines = new String[0];
+        try {
+            citationLines = retrieveRISCitationFromPubmed(publicationInfo);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
-        if (citationFieldsRIS.containsKey("T2")) {
-            compactJournal = citationFieldsRIS.get("T2");
+
+        // AB  - Phospholipase C-γ1 (PLC-γ1) is a receptor-proximal ...
+        Optional<String> abstractEntry = Arrays.stream(citationLines).filter(line -> line.startsWith("AB  - ")).findFirst();
+        if (abstractEntry.isPresent()) {
+            abstractText = abstractEntry.get().replace("AB  - ","").trim();
+        }
+
+        // J2  - J Biol Chem
+        Optional<String> journalEntry = Arrays.stream(citationLines).filter(line -> line.startsWith("J2  - ")).findFirst();
+        if (journalEntry.isPresent()) {
+            compactJournal = journalEntry.get().replace("J2  - ","").trim();
             // replace all spaces, tabs, commas, periods, semicolons with empty string
             compactJournal = compactJournal.replaceAll("[\\s,.;]", "");
         }
-        if (citationFieldsRIS.containsKey("PY")) {
-            year = Integer.parseInt(citationFieldsRIS.get("PY"));
+
+        // Y1  - 2022/05/
+        Optional<String> yearEntry = Arrays.stream(citationLines).filter(line -> line.startsWith("Y1  - ")).findFirst();
+        if (yearEntry.isPresent()) {
+            year = Integer.parseInt(yearEntry.get().replace("Y1  - ","").split("/")[0].trim());
         }
-        if (citationFieldsRIS.containsKey("AU")) {
-            firstAuthorsLastName = citationFieldsRIS.get("AU").split(",")[0];
+
+        // AU  - Nosbisch, Jamie L
+        Optional<String> firstAuthorEntry = Arrays.stream(citationLines).filter(line -> line.startsWith("AU  - ")).findFirst();
+        if (firstAuthorEntry.isPresent()) {
+            firstAuthorsLastName = firstAuthorEntry.get().replace("AU  - ","").split(",")[0].trim();
         }
         return new PublicationMetadata(publicationInfo, abstractText, compactJournal, firstAuthorsLastName, year);
     }
 
-    private static String[] retrieveRISCitationFromPaperpile(PublicationInfo publicationInfo) throws IOException {
+    private static String[] retrieveRISCitationFromPubmed(PublicationInfo publicationInfo) throws IOException, InterruptedException {
+        Thread.sleep(500); // to avoid rate limiting
+
         //
         // retrieve citation in RIS format from a PMID (Pubmed ID) from Paperpile API
         //
-        // curl -X POST -H 'Content-Type: application/json' \
-        //    -d '{"fromIds": true, "input": "34765087", "targetFormat": "Ris"}' \
-        //    https://api.paperpile.com/api/public/convert
+        // curl -H 'Content-Type: plain/text' -X GET 'https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pubmed/?format=ris&id=35367415'
         //
-        URL url = new URL("https://api.paperpile.com/api/public/convert");
-        String payloadJson = "{\"fromIds\": true, \"input\": \"" + publicationInfo.getPubmedid() + "\", \"targetFormat\": \"Ris\"}";
-        PostMethod postMethod = new PostMethod(url.toString());
-        postMethod.addRequestHeader("Content-Type", "application/json");
-        postMethod.setRequestEntity(new StringRequestEntity(payloadJson, "application/json", "UTF-8"));
+        URL url = new URL("https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pubmed/?format=ris&id=" + publicationInfo.getPubmedid());
+        GetMethod getMethod = new GetMethod(url.toString());
+        getMethod.addRequestHeader("Content-Type", "text/plain");
 
         HttpClient httpClient = new HttpClient();
-        httpClient.executeMethod(postMethod);
-        String responseString = postMethod.getResponseBodyAsString();
-
-        // parse response
-        Gson gson = new Gson();
-        PaperpileResponse paperpileResponse = gson.fromJson(responseString, PaperpileResponse.class);
-        if (paperpileResponse.error != null && paperpileResponse.error.length() > 0) {
-            throw new IOException("Paperpile API returned error: " + paperpileResponse.error);
+        httpClient.executeMethod(getMethod);
+        if (getMethod.getStatusCode() != 200) {
+            throw new IOException("Failed to retrieve citation from Pubmed: " + getMethod.getStatusText());
         }
+        String responseString = getMethod.getResponseBodyAsString();
 
         // extract citation in RIS format (lines of text)
-        String risCitation = paperpileResponse.output;
-        String[] citationLines = risCitation.split("\n");
-        return citationLines;
-    }
-
-    static HashMap<String, String> extractCitationRIS(String[] citationLines) {
-        /**
-         * Example citation in RIS format:
-         *
-         * TY  - JOUR
-         * AU  - Nosbisch, Jamie L
-         * AU  - Bear, James E
-         * AU  - Haugh, Jason M
-         * AD  - Biomathematics Graduate Program, North Carolina State University, Raleigh,
-         *       North Carolina, USA.; <<clipped>>
-         * TI  - A kinetic model of phospholipase C-γ1 linking structure-based insights to
-         *       dynamics of enzyme autoinhibition and activation
-         * T2  - J. Biol. Chem.
-         * VL  - 298
-         * IS  - 5
-         * SP  - 101886
-         * PY  - 2022
-         * DA  - 2022/5
-         * PB  - Elsevier BV
-         * AB  - Phospholipase C-γ1 (PLC-γ1) is a receptor-proximal enzyme that promotes
-         *       signal transduction through PKC in mammalian cells. Because of the
-         *       <<clipped>>
-         *       membrane-proximal enzymes.
-         * SN  - 0021-9258
-         * DO  - 10.1016/j.jbc.2022.101886
-         * C2  - PMC9097458
-         * UR  - http://dx.doi.org/10.1016/j.jbc.2022.101886
-         * UR  - https://www.ncbi.nlm.nih.gov/pubmed/35367415
-         * UR  - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9097458
-         * KW  - mathematical model
-         * KW  - phosphoinositide
-         * KW  - phospholipase C
-         * KW  - protein kinase C
-         * KW  - receptor tyrosine kinase
-         * ER  -
-         */
-        String currentLabel = null;
-        String currentContent = "";
-        HashMap<String, String> citationFields = new HashMap<>();
-        for (String line : citationLines) {
-            if (line.startsWith("ER")) {
-                // end of record
-                break;
-            }
-            if (line.startsWith("  ")) {
-                // continuation of previous line
-                currentContent += " "+line.substring(6);
-            } else {
-                // new line
-                if (currentLabel != null) {
-                    // save previous line but choose the first one (e.g. if multiple authors)
-                    if (!citationFields.containsKey(currentLabel)) {
-                        citationFields.put(currentLabel, currentContent);
-                    }
-                }
-                // start new line
-                currentLabel = line.substring(0, 2);
-                currentContent = line.substring(6);
-            }
-        }
-        return citationFields;
-    }
-
-    private static class PaperpileResponse {
-        public String output;
-        public String token;
-        public String[] tags;
-        public Boolean withErrors;
-        public String error;
+        return responseString.split("\n");
     }
 
 }

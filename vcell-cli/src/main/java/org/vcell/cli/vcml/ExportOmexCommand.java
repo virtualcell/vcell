@@ -26,13 +26,16 @@ public class ExportOmexCommand implements Callable<Integer> {
     private File outputFilePath;
 
     @Option(names = { "--skipUnsupportedApps" }, defaultValue = "false", description = "skip unsupported applications (e.g. electrical in SBML)")
-    private boolean bSkipUnsupportedApps = false;
+    private boolean bSkipUnsupportedApps;
+
+    @Option(names = { "--add-publication-info" }, defaultValue = "false", description = "retrieve published abstract and citation from pubmed")
+    private boolean bAddPublicationInfo;
 
     @Option(names = { "--writeLogFiles" }, defaultValue = "false")
     private boolean bWriteLogFiles;
 
-    @Option(names = {"-d", "--debug"}, description = "full application debug mode")
-    private boolean bDebug = false;
+    @Option(names = {"-d", "--debug"}, defaultValue = "false", description = "full application debug mode")
+    private boolean bDebug;
 
     @Option(names = "--validate")
     boolean bValidateOmex;
@@ -48,7 +51,7 @@ public class ExportOmexCommand implements Callable<Integer> {
         try {
             logger.debug("Beginning export");
             VcmlOmexConverter.convertOneFile(
-                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
+                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps, bAddPublicationInfo);
             return 0;
         } catch (Exception e) {
             e.printStackTrace();

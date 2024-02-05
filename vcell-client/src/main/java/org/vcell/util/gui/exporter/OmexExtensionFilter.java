@@ -3,11 +3,12 @@ package org.vcell.util.gui.exporter;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.sedml.PublicationMetadata;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.PublicationInfo;
 
 import java.io.File;
 import java.util.Map;
@@ -16,6 +17,7 @@ import java.util.function.Predicate;
 
 @SuppressWarnings("serial")
 public class OmexExtensionFilter extends SedmlExtensionFilter {
+	private static Logger logger = LogManager.getLogger(OmexExtensionFilter.class);
 	private static final String FNAMES = ".omex";
 
 	public OmexExtensionFilter() {
@@ -39,7 +41,7 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 					try {
 						publicationInfo = Optional.of(PublicationMetadata.fromPublicationInfoAndWeb(bioModelInfo.getPublicationInfos()[0]));
 					}catch (Exception e){
-						e.printStackTrace();
+						logger.warn("failed to extract publication info from web", e);
 						publicationInfo = Optional.of(PublicationMetadata.fromPublicationInfo(bioModelInfo.getPublicationInfos()[0]));
 					}
 				}

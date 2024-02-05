@@ -1399,6 +1399,7 @@ public class SEDMLExporter {
 													  Predicate<Simulation> simulationExportFilter,
 													  ModelFormat modelFormat,
 													  SEDMLEventLog eventLogWriter,
+													  boolean bAddPublicationInfo,
 													  boolean bSkipUnsupportedApps,
 													  boolean bHasPython,
 													  boolean bValidate
@@ -1433,7 +1434,11 @@ public class SEDMLExporter {
 
 		Optional<PublicationMetadata> publicationMetadata = Optional.empty();
 		if (bioModelInfo!=null && bioModelInfo.getPublicationInfos()!=null && bioModelInfo.getPublicationInfos().length>0) {
-			publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfo(bioModelInfo.getPublicationInfos()[0]));
+			if (bAddPublicationInfo) {
+				publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfoAndWeb(bioModelInfo.getPublicationInfos()[0]));
+			}else{
+				publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfo(bioModelInfo.getPublicationInfos()[0]));
+			}
 		}
 
 		boolean bCreateOmexArchive = true;
