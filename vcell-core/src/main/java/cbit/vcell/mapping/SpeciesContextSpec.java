@@ -783,6 +783,32 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             return false;
         }
 
+        if(internalLinkSet.size() != scs.internalLinkSet.size()) {
+            return false;
+        }
+        for(MolecularInternalLinkSpec ourMils : internalLinkSet) {
+            // TODO: obviously this is wrong during save, all the instances are new
+            if(!scs.internalLinkSet.contains(ourMils)) {
+                return false;
+            }
+        }
+
+        if(siteAttributesMap.size() != scs.siteAttributesMap.size()) {
+            return false;
+        }
+        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+            MolecularComponentPattern ourMcp = entry.getKey();
+            SiteAttributesSpec ourSas = entry.getValue();
+            // TODO: same here, can't compare instances
+            if(!scs.siteAttributesMap.containsKey(ourMcp)) {
+                return false;
+            }
+            SiteAttributesSpec theirSas = scs.siteAttributesMap.get(ourMcp);
+            if(!ourSas.compareEqual(theirSas)) {
+                return false;
+            }
+        }
+
         return true;
     }
 
