@@ -346,6 +346,14 @@ public class SimulationContextDbDriver extends DbDriver {
                                 boolean bForceContinuous = (value == 1) ? true : false;
                                 scs.setForceContinuous(bForceContinuous);
                             }
+                            if(internalLinkSetString != null) {
+                                Set<MolecularInternalLinkSpec> ilSet = SpeciesContextSpecTable.readInternalLinksSQL(scs, internalLinkSetString);
+                                scs.setInternalLinkSet(ilSet);
+                            }
+                            if(siteAttributesMapString != null) {
+                                Map<MolecularComponentPattern, SiteAttributesSpec> saMap = SpeciesContextSpecTable.readSiteAttributesSQL(scs, siteAttributesMapString);
+                                scs.setSiteAttributesMap(saMap);
+                            }
                         } catch(Exception e){
                             throw new DataAccessException("Error setting SpeciesContextSpec info for SimulationContext:" + simContext.getVersion().getName() + " id=" + simContextKey);
                         }
