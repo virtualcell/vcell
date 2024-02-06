@@ -397,7 +397,7 @@ services:
       - "127.0.0.1:${VCELL_S3PROXY_PORT_EXTERNAL}:80"
     volumes:
       - "${VCELL_N5_DATADIR_HOST}:/data:ro"
-    entrypoint: ["sh", "-c", 'export S3PROXY_KEYSTORE_PASSWORD=$(cat /run/secrets/keystorepswd); /opt/s3proxy/run-docker-container.sh']
+    entrypoint: ['sh', '-c', 'export S3PROXY_KEYSTORE_PASSWORD=$$(cat /run/secrets/keystorepswd); /opt/s3proxy/run-docker-container.sh']
     secrets:
       - keystorefile
       - keystorepswd
