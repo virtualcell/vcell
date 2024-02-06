@@ -99,11 +99,10 @@ public class LangevinLngvWriter {
 			e1.printStackTrace();
 		}
 		
-		SimulationOwner so = simulation.getSimulationOwner();
 		Geometry geometry = simulation.getMathDescription().getGeometry();
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();
 
-		if(!so.getMathDescription().isLangevin()) {
+		if(!simulation.getMathDescription().isLangevin()) {
 			throw new RuntimeException("Math description must be langevin");
 		}
 
@@ -256,7 +255,7 @@ public class LangevinLngvWriter {
 	}
 	
 	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
-		if(!simulation.getSimulationOwner().getMathDescription().isLangevin()) {
+		if(!simulation.getMathDescription().isLangevin()) {
 			throw new RuntimeException("Langevin Math expected.");
 		}
 		// general stuff is in solver task description
