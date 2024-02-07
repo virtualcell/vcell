@@ -5,8 +5,8 @@ import requests
 from pydantic import BaseModel
 
 from vcutils.common.api_utils import download_file
-from .citation import getCitation, CitationInfo, getSuggestedProjectName
-from .datamodels import Publication
+from vcutils.vcell_pipeline.citation import getCitation, CitationInfo, getSuggestedProjectName
+from vcutils.vcell_pipeline.datamodels import Publication
 
 
 class ExportStatus(BaseModel):
@@ -26,14 +26,14 @@ def write_log(entry: ExportStatus, log_path: Path) -> None:
 def download_published_omex(api_base_url: str, out_dir: Path) -> None:
     log_path = Path(out_dir, "export.log")
 
-    response = requests.get(f"{api_base_url}/publication", headers={'Accept': 'application/json'}, verify=False)
+    response = requests.get(f"{api_base_url}/publication", headers={'Accept': 'application/json'}, verify=True, timeout=600)
     publication_json = response.json()
     pubs = [Publication(**jsonDict) for jsonDict in publication_json]
 
     for pub in pubs:
         if len(pub.biomodelReferences) == 0:
             continue
-
+        print(f"Processing {pub.pubKey}, title: {pub.title}, year: {pub.year}, bimodels: {pub.biomodelReferences}")
         bmKey = pub.biomodelReferences[0].bmKey
         pubmedId: Optional[str] = pub.pubmedid
         citationInfo: Optional[CitationInfo] = None

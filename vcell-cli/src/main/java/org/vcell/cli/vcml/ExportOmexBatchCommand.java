@@ -4,6 +4,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.vcell.cli.trace.Tracer;
 import org.vcell.sedml.ModelFormat;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -35,7 +36,10 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     boolean bWriteLogFiles = false;
 
     @Option(names = { "--skipUnsupportedApps" }, defaultValue = "false", description = "skip unsupported applications (e.g. electrical in SBML)")
-    private boolean bSkipUnsupportedApps = false;
+    boolean bSkipUnsupportedApps = false;
+
+    @Option(names = { "--add-publication-info" }, defaultValue = "false", description = "retrieve published abstract and citation from pubmed")
+    boolean bAddPublicationInfo = false;
 
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
@@ -58,14 +62,18 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
                 throw new RuntimeException("outputFilePath '" + outputFilePath + "' is not a 'valid directory'");
 
             VcmlOmexConverter.convertFilesNoDatabase(
-                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps);
+                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps, bAddPublicationInfo);
 
-            return 0;
+            return Tracer.hasErrors() ? 1 : 0;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         } finally {
             logger.debug("Batch export completed");
+            if (Tracer.hasErrors()){
+                logger.error("Errors encountered during batch export");
+                Tracer.reportErrors(false);
+            }
         }
     }
 

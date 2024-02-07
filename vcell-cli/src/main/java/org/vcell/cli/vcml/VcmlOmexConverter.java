@@ -8,6 +8,8 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.cli.trace.Span;
+import org.vcell.cli.trace.Tracer;
 import org.vcell.sbml.OmexPythonUtils;
 import org.vcell.sedml.*;
 import org.vcell.util.document.BioModelInfo;
@@ -34,7 +36,8 @@ public class VcmlOmexConverter {
 									  ModelFormat modelFormat,
 									  boolean bWriteLogFiles,
 									  boolean bValidateOmex,
-									  boolean bSkipUnsupportedApps)
+									  boolean bSkipUnsupportedApps,
+									  boolean bAddPublicationInfo)
 			throws SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
 
 		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
@@ -57,6 +60,7 @@ public class VcmlOmexConverter {
 				simulationExportFilter,
 				modelFormat,
 				sedmlEventLog,
+				bAddPublicationInfo,
 				bSkipUnsupportedApps,
 				bHasPython,
 				bValidateOmex);
@@ -75,7 +79,8 @@ public class VcmlOmexConverter {
 
 
 	public static void convertFilesNoDatabase(File inputDir, File outputDir, ModelFormat modelFormat,
-											  boolean bWriteLogFiles, boolean bValidateOmex, boolean bSkipUnsupportedApps)
+											  boolean bWriteLogFiles, boolean bValidateOmex,
+											  boolean bSkipUnsupportedApps, boolean bAddPublicationInfo)
 			throws IOException {
 		// Start
 		if (inputDir == null || !inputDir.isDirectory()) throw new RuntimeException("expecting inputFilePath to be an existing directory");
@@ -96,6 +101,7 @@ public class VcmlOmexConverter {
 			logger.info(" ============== start: " + inputFileName);
 				Predicate<Simulation> simulationExportFilter = simulation -> true;
 				BioModelInfo bioModelInfo = null;
+			Span omexExportSpan = Tracer.startSpan(Span.ContextType.OMEX_EXPORT, "convertOneFile for "+inputFileName, null);
 			try {
 				boolean bHasPython = true;
 				List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
@@ -105,6 +111,7 @@ public class VcmlOmexConverter {
 						simulationExportFilter,
 						modelFormat,
 						sedmlEventLog,
+						bAddPublicationInfo,
 						bSkipUnsupportedApps,
 						bHasPython,
 						bValidateOmex);
@@ -119,9 +126,12 @@ public class VcmlOmexConverter {
 					logger.error(msg);
 					throw new RuntimeException(msg);
 				}
-			} catch (SEDMLExporter.SEDMLExportException | OmexPythonUtils.OmexValidationException e) {
+			} catch (Exception e) {
+				Tracer.failure(e, "Failed converting VCML to OMEX archive for `" + inputFileName + "`");
 				logger.error("Failed converting VCML to OMEX archive for `" + inputFileName + "`", e);
-			}
+			} finally {
+                omexExportSpan.close();
+            }
 		}
 		logger.debug("Completed conversion of files in `" + inputDir + "`");
 	}

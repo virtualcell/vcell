@@ -23,12 +23,12 @@ class Publication(BaseModel):
     title: str
     authors: list[str]
     year: int
-    citation: Optional[str]
-    pubmedid: Optional[str]
-    doi: Optional[str]
-    endnoteid: Optional[str]
-    url: Optional[str]
-    wittid: Optional[str]
+    citation: Optional[str] = None
+    pubmedid: Optional[str] = None
+    doi: Optional[str] = None
+    endnoteid: Optional[str] = None
+    url: Optional[str] = None
+    wittid: Optional[str] = None
     biomodelReferences: list[BiomodelReference]
     mathmodelReferences: list[MathmodelReference]
     date: str
