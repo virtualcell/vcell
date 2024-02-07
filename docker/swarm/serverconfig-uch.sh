@@ -39,7 +39,7 @@ case $VCELL_SITE in
 	REL)
 		_site_port_offset=0
 		VCELL_API_HOST_EXTERNAL=vcellapi.cam.uchc.edu
-		VCELL_S3_EXPORT_BASEURL=http://vcellapi.cam.uchc.edu
+		VCELL_S3_EXPORT_BASEURL=https://vcellapi.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		VCELL_DEBUG_PORT_BASE=5000
 		_applicationId="1471-8022-1038-5553"
@@ -47,6 +47,7 @@ case $VCELL_SITE in
 	BETA)
 		_site_port_offset=1
 		VCELL_API_HOST_EXTERNAL=http://vcellapi.cam.uchc.edu
+		VCELL_S3_EXPORT_BASEURL=https://vcellapi.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		VCELL_DEBUG_PORT_BASE=5010
 		_applicationId="1471-8022-1038-5552"
@@ -54,7 +55,7 @@ case $VCELL_SITE in
 	ALPHA)
 		_site_port_offset=2
 		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
-		VCELL_S3_EXPORT_BASEURL=http://vcellapi-beta.cam.uchc.edu
+		VCELL_S3_EXPORT_BASEURL=https://vcellapi-beta.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=8080
 		VCELL_DEBUG_PORT_BASE=5020
 		_applicationId="1471-8022-1038-5554"
@@ -63,6 +64,7 @@ case $VCELL_SITE in
 		_site_port_offset=3
 		# VCELL_API_PORT_EXTERNAL=8081
 		VCELL_API_HOST_EXTERNAL=http://vcellapi-test.cam.uchc.edu
+		VCELL_S3_EXPORT_BASEURL=https://vcellapi-test.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		VCELL_DEBUG_PORT_BASE=5030
 		_applicationId="1471-8022-1038-5555"
