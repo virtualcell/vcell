@@ -955,7 +955,9 @@ public class LangevinLngvWriter {
                         throw new RuntimeException("Extent on 'z' must match the analytic subvolume size.");
                     }
                 } else {
-                    throw new RuntimeException("Unexpected SubVolume encountered.");
+                    throw new RuntimeException("Unexpected SubVolume '"+analyticSubvolume.getName()+"' encountered, Geometry SubVolumes must be" +
+							" '"+Structure.SpringStructureEnum.Intracellular+"' " +
+							"or '"+Structure.SpringStructureEnum.Extracellular+"' for SpringSalad applications.");
                 }
             } else {
                 throw new RuntimeException("SpringSaLaD requires Analytic geometry");
