@@ -21,7 +21,11 @@ class _SimulationRunApiRequest(BaseModel):
 
 
 def check_run_status(simulation_run: SimulationRun) -> str:
-    getrun = requests.get("https://api.biosimulations.org/runs/" + simulation_run.simulation_id)
+    api_base_url = os.environ.get('API_BASE_URL')
+    assert(api_base_url is not None)
+    getrun = requests.get(api_base_url + "/runs/" + simulation_run.simulation_id)
+    if getrun.status_code == 404:
+        return "not found"
     getrun_dict = getrun.json()
     result = getrun_dict['status']
     return result
@@ -75,6 +79,7 @@ def run_project(
 
 
 def publish_project(data_manager: DataManager, run: SimulationRun, overwrite: bool = False) -> None:
+    api_base_url = os.environ.get('API_BASE_URL')
     if run.status != "SUCCEEDED":
         print(run.project_id, "did not succeed - or status needs to be updated. status is", run.status)
         return
@@ -93,10 +98,10 @@ def publish_project(data_manager: DataManager, run: SimulationRun, overwrite: bo
         "Authorization": f"{token}"
     }
     print(run.project_id, "publishing")
-    getproj = requests.get("https://api.biosimulations.org/projects/" + run.project_id, headers=headers)
+    getproj = requests.get(f"{api_base_url}/projects/" + run.project_id, headers=headers)
     if getproj.status_code == 404:
         req = requests.post(
-            "https://api.biosimulations.org/projects/" + run.project_id,
+            f"{api_base_url}/projects/" + run.project_id,
             json=simulation_publish_data, headers=headers)
         req.raise_for_status()
         data_manager.write_project(BiosimulationsProject(
@@ -105,7 +110,7 @@ def publish_project(data_manager: DataManager, run: SimulationRun, overwrite: bo
         ))
     elif overwrite:
         req = requests.put(
-            "https://api.biosimulations.org/projects/" + run.project_id,
+            f"{api_base_url}/projects/" + run.project_id,
             json=simulation_publish_data, headers=headers)
         req.raise_for_status()
         data_manager.write_project(BiosimulationsProject(

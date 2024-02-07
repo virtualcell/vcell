@@ -69,7 +69,7 @@ def download_runs(
 ) -> None:
     load_dotenv()
     data_manager = DataManager(omex_src_dir=omex_src_dir, out_dir=out_dir)
-
+    api_base_url = os.environ.get('API_BASE_URL')
     runs: list[SimulationRun] = data_manager.read_run_requests()
 
     for run in runs:
@@ -88,7 +88,7 @@ def download_runs(
             continue
 
         try:
-            download_file(url="https://api.biosimulations.org/results/" + run.simulation_id + "/download",
+            download_file(url=f"{api_base_url}/results/" + run.simulation_id + "/download",
                           out_file=Path(simdir / "results.zip"))
         except urllib.error.HTTPError as e:
             print("Failure:", e)

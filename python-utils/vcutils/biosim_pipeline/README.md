@@ -18,8 +18,8 @@ CLIENT_ID=<<auth-provider-client-id>>
 CLIENT_SECRET=<<auth-provider-client-secret>>
 AUTH_HOST=auth.biosimulations.org
 AUTH_AUDIENCE=api.biosimulations.org
-API_BASE_URL=https://api.biosimulations.org
-RUN_APP_BASE_URL=https://run.biosimulations.org
+API_BASE_URL=https://api.biosimulations.org|dev
+RUN_APP_BASE_URL=https://run.biosimulations.org|dev
 
 OMEX_SOURCE_DIR=<<path-to-source-omex-files>>
 OMEX_OUTPUT_DIR=<<path-to-output-artifacts>>

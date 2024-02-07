@@ -13,16 +13,17 @@ def downloadSimulationRun(
         base_filename: str = typer.Argument(help="", show_default=False),
         run_id: str = typer.Argument(help="SimulationRun ID", show_default=False)
 ) -> None:
-    r = requests.get(f'https://api.biosimulations.org/runs/{run_id}/download', allow_redirects=True)
+    api_base_url = os.environ.get('API_BASE_URL')
+    r = requests.get(f'{api_base_url}/runs/{run_id}/download', allow_redirects=True)
     with open(f'{base_filename}.spec.omex', 'wb') as f:
         f.write(r.content)
-    r = requests.get(f'https://api.biosimulations.org/logs/{run_id}', allow_redirects=True)
+    r = requests.get(f'{api_base_url}/logs/{run_id}', allow_redirects=True)
     with open(f'{base_filename}.logs.json', 'wb') as f:
         f.write(r.content)
-    r = requests.get(f'https://api.biosimulations.org/results/{run_id}?includeData=true', allow_redirects=True)
+    r = requests.get(f'{api_base_url}/results/{run_id}?includeData=true', allow_redirects=True)
     with open(f'{base_filename}.outputs.json', 'wb') as f:
         f.write(r.content)
-    r = requests.get(f'https://api.biosimulations.org/results/{run_id}/download')
+    r = requests.get(f'{api_base_url}/results/{run_id}/download')
     with open(f'{base_filename}.results.zip', 'wb') as f:
         f.write(r.content)
     with ZipFile(f'{base_filename}.results.zip', 'r') as zip_ref:
