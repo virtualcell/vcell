@@ -1409,7 +1409,7 @@ public class SEDMLExporter {
 		String vcmlName = FilenameUtils.getBaseName(vcmlFilePath.getName());		// platform independent, strips extension too
 		Optional<File> jsonReportFile = Optional.of(Paths.get(
 				outputDir.getAbsolutePath(), "json_reports" ,vcmlName + ".json").toFile());
-
+		File omexOutputFile = Paths.get(outputDir.getAbsolutePath(), vcmlName + ".omex").toFile();
 		eventLogWriter.writeEntry(vcmlName);
 
 		// Create biomodel
@@ -1443,7 +1443,7 @@ public class SEDMLExporter {
 
 		boolean bCreateOmexArchive = true;
 		return writeBioModel(
-				bioModel, publicationMetadata, jsonReportFile, outputDir, simulationExportFilter, simContextExportFilter,
+				bioModel, publicationMetadata, jsonReportFile, omexOutputFile, simulationExportFilter, simContextExportFilter,
 				modelFormat, eventLogWriter, bHasPython, bValidate, bCreateOmexArchive);
 	}
 
