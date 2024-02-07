@@ -745,11 +745,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
      */
     public boolean compareEqual(Matchable object){
 
-        SpeciesContextSpec scs = null;
         if(!(object instanceof SpeciesContextSpec)){
             return false;
         }
-        scs = (SpeciesContextSpec) object;
+        SpeciesContextSpec scs = (SpeciesContextSpec) object;   // we know it's not null
 
         if(!Compare.isEqual(speciesContext, scs.speciesContext)){
             return false;
@@ -783,36 +782,48 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             return false;
         }
 
-        // TODO: redo this in a separate branch since the current one has been hijacked by persistence fix
-//        if(internalLinkSet.size() != scs.internalLinkSet.size()) {
-//            return false;
-//        }
-//        for(MolecularInternalLinkSpec ourMils : internalLinkSet) {
-//            // TODO: obviously this is wrong during save, all the instances are new
-//            if(!scs.internalLinkSet.contains(ourMils)) {
-//                return false;
-//            }
-//        }
-//
-//        if(siteAttributesMap.size() != scs.siteAttributesMap.size()) {
-//            return false;
-//        }
-//        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
-//            MolecularComponentPattern ourMcp = entry.getKey();
-//            SiteAttributesSpec ourSas = entry.getValue();
-//            // TODO: same here, can't compare instances
-//            if(!scs.siteAttributesMap.containsKey(ourMcp)) {
-//                return false;
-//            }
-//            SiteAttributesSpec theirSas = scs.siteAttributesMap.get(ourMcp);
-//            if(!ourSas.compareEqual(theirSas)) {
-//                return false;
-//            }
-//        }
+        if(internalLinkSet.size() != scs.internalLinkSet.size()) {      // springsalad MolecularInternalLinkSpec set
+            return false;
+        }
+        for(MolecularInternalLinkSpec ourMils : internalLinkSet) {
+            if (!containsIsomorph(ourMils, scs.internalLinkSet)) {
+                return false;
+            }
+        }
+
+        if(siteAttributesMap.size() != scs.siteAttributesMap.size()) {  // springsalad SiteAttributesSpec map
+            return false;
+        }
+        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+            if (!containsIsomorph(entry, siteAttributesMap)) {
+                return false;
+            }
+        }
 
         return true;
     }
 
+    private static boolean containsIsomorph(MolecularInternalLinkSpec ourMils, Set<MolecularInternalLinkSpec> theirMilsSet) {
+        for(MolecularInternalLinkSpec theirMils : theirMilsSet) {
+            if(ourMils.compareEqual(theirMils)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private static boolean containsIsomorph(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> ourEntry, Map<MolecularComponentPattern, SiteAttributesSpec> theirSasMap) {
+        MolecularComponentPattern ourMcp = ourEntry.getKey();
+        SiteAttributesSpec ourSas = ourEntry.getValue();
+        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> theirEntry : theirSasMap.entrySet()) {
+            MolecularComponentPattern theirMcp = theirEntry.getKey();
+            SiteAttributesSpec theirSas = theirEntry.getValue();
+            if(ourMcp.compareEqual(theirMcp) && ourSas.compareEqual(theirSas)) {
+                // note that for the mcp we only compare the bond type, not the bond (which is mtp attribute)
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * The firePropertyChange method was generated to support the propertyChange field.
@@ -2216,4 +2227,5 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public String getDisplayType(){
         return typeName;
     }
+
 }
