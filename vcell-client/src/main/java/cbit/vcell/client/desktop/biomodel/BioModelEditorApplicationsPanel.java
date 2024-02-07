@@ -356,8 +356,9 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				appsPopupMenu.add(appNewDeterministicApp);
 				appsPopupMenu.add(appNewStochApp);
 				appsPopupMenu.add(appNewRulebasedApp);
-				String enableSpringSaLaD = PropertyLoader.getProperty(PropertyLoader.enableSpringSaLaD, "false");
-				if("true".equals(enableSpringSaLaD)) {
+				boolean enableSpringSaLaD = PropertyLoader.getBooleanProperty(PropertyLoader.enableSpringSaLaD,
+						PropertyLoader.enableSpringSalad_default_value);
+				if (enableSpringSaLaD) {
 					appsPopupMenu.add(appNewSpringSaLaDApp);
 				}
 				// user code begin {1}

@@ -277,6 +277,7 @@ public class PropertyLoader {
 
 	
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
+	public static final boolean enableSpringSalad_default_value=true;
 
 	/**
 	 * native library directory, server side
