@@ -818,6 +818,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             MolecularComponentPattern theirMcp = theirEntry.getKey();
             SiteAttributesSpec theirSas = theirEntry.getValue();
             if(ourMcp.compareEqual(theirMcp) && ourSas.compareEqual(theirSas)) {
+                // note that for the mcp we only compare the bond type, not the bond (which is mtp attribute)
                 return true;
             }
         }

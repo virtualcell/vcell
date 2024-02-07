@@ -191,12 +191,19 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		if (!(obj instanceof MolecularInternalLinkSpec)) {
 			return false;
 		}
-		MolecularInternalLinkSpec candidate = (MolecularInternalLinkSpec)obj;
-		if(fieldSpeciesContextSpec != candidate.getSpeciesContextSpec()) {
+		MolecularInternalLinkSpec theirMils = (MolecularInternalLinkSpec)obj;
+
+		// we skip compareEqual for the SpeciesContextSpec, otherwise we end up in an infinite loop !!!
+		// we just compare the SpeciesContext (which is perfectly legit from a springsalad perspective,
+		// where we can only have one SpeciesContext object for each Molecule)
+		if(!fieldSpeciesContextSpec.getSpeciesContext().compareEqual(theirMils.getSpeciesContextSpec().getSpeciesContext())) {
 			return false;
 		}
-		if((fieldMolecularComponentPatternOne == candidate.fieldMolecularComponentPatternOne) && 
-				(fieldMolecularComponentPatternTwo == candidate.fieldMolecularComponentPatternTwo)) {
+		// note that while the link is scalar, not vector, we order one and two by the position of the
+		// MolecularComponent in the MolecularType definition
+		// hence, no need to also compare thisOne with that.Two (I hope, at least)
+		if((fieldMolecularComponentPatternOne.compareEqual(theirMils.fieldMolecularComponentPatternOne)) &&
+				(fieldMolecularComponentPatternTwo.compareEqual(theirMils.fieldMolecularComponentPatternTwo))) {
 			return true;
 		}
 		return false;
