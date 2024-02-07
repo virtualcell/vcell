@@ -922,47 +922,45 @@ public class LangevinLngvWriter {
         }
         double Lz_intra = 0.09;
 		double Lz_extra = 0.01;
-        for (SubVolume subVolume : geometrySpec.getSubVolumes()) {
-            if (subVolume instanceof AnalyticSubVolume analyticSubvolume) {
-                if (analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Intracellular))) {
-                    var expression = analyticSubvolume.getExpression();
-                    String exp = expression.infix();
-                    StringTokenizer st = new StringTokenizer(exp, "() ", false);
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        if (!"z".contentEquals(token)) {
-                            throw new RuntimeException("Expected 'z' in expression.");
-                        }
-                        token = st.nextToken();
-                        if (!"<".contentEquals(token)) {
-                            throw new RuntimeException("Expected '<' in expression.");
-                        }
-                        token = st.nextToken();
-                        try {
-                            Lz_intra = Double.valueOf(token);
-                        } catch (NumberFormatException e) {
-                            throw new RuntimeException("Expected a 'double' number.");
-                        }
-                    }
+		// test for the presence of the required subvolumes
+		String subvolume_err_msg = "SpringSaLaD requires an Analytic Geometry with 2 SubVolumes, " +
+				"the first one must be named '"+Structure.SpringStructureEnum.Intracellular+"' " +
+				"and the second one named '"+Structure.SpringStructureEnum.Extracellular+"'.";
+		if (geometrySpec.getNumSubVolumes()!=2
+				|| !(geometrySpec.getSubVolumes(0) instanceof AnalyticSubVolume intracellularSubVolume)
+				|| !(geometrySpec.getSubVolumes(1) instanceof AnalyticSubVolume extracellularSubVolume)
+				|| !(geometrySpec.getSubVolumes(0).getName().equals(Structure.SpringStructureEnum.Intracellular.name()))
+				|| !(geometrySpec.getSubVolumes(1).getName().equals(Structure.SpringStructureEnum.Extracellular.name()))) {
+			throw new RuntimeException(subvolume_err_msg);
+		}
 
-                } else if (analyticSubvolume.getName().equals(String.valueOf(Structure.SpringStructureEnum.Extracellular))) {
-                    var expression = analyticSubvolume.getExpression();
-                    if (!expression.isNumeric()) {
-                        throw new RuntimeException("Numeric expression expected.");
-                    }
-                    String exp = expression.infix();
-                    if (!Double.toString(geometrySpec.getExtent().getZ()).contentEquals(exp)) {
-                        throw new RuntimeException("Extent on 'z' must match the analytic subvolume size.");
-                    }
-                } else {
-                    throw new RuntimeException("Unexpected SubVolume '"+analyticSubvolume.getName()+"' encountered, Geometry SubVolumes must be" +
-							" '"+Structure.SpringStructureEnum.Intracellular+"' " +
-							"or '"+Structure.SpringStructureEnum.Extracellular+"' for SpringSalad applications.");
-                }
-            } else {
-                throw new RuntimeException("SpringSaLaD requires Analytic geometry");
-            }
-        }
+        // test Intracellular for expression of the form "z < number"
+		{
+			var expression = intracellularSubVolume.getExpression();
+			boolean bValidExpression = expression.isRelational()
+					&& expression.extractTopLevelTerm().getOperator().equals("<")
+					&& expression.extractTopLevelTerm().getOperands()[0].isIdentifier()
+					&& expression.extractTopLevelTerm().getOperands()[0].infix().equals("z")
+					&& expression.extractTopLevelTerm().getOperands()[1].isNumeric();
+			if (!bValidExpression) {
+				throw new RuntimeException("Expecting expression for Geometry SubVolume " +
+						"'" + Structure.SpringStructureEnum.Intracellular + "' to be of form " +
+						"'z < number' (e.g. z < 0.09)), " +
+						"found '" + expression.infix() + "'");
+			}
+		}
+
+		// test Extracellular for expression 1.0
+		{
+			var expression = extracellularSubVolume.getExpression();
+			boolean bValidExpression = expression.isNumeric() && expression.compareEqual(new Expression(1.0));
+			if (!bValidExpression) {
+				throw new RuntimeException("Expecting expression for Geometry SubVolume " +
+						"'" + Structure.SpringStructureEnum.Extracellular + "' to be '1.0', " +
+						"found '" + expression.infix() + "'");
+			}
+		}
+
 		Lz_extra = geometrySpec.getExtent().getZ() - Lz_intra;
 
 		sb.append("L_x: " + geometrySpec.getExtent().getX());        // 0.1
