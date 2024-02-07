@@ -4,6 +4,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.vcell.cli.trace.Tracer;
 import org.vcell.sedml.ModelFormat;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -63,12 +64,16 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
             VcmlOmexConverter.convertFilesNoDatabase(
                     inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps, bAddPublicationInfo);
 
-            return 0;
+            return Tracer.hasErrors() ? 1 : 0;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         } finally {
             logger.debug("Batch export completed");
+            if (Tracer.hasErrors()){
+                logger.error("Errors encountered during batch export");
+                Tracer.reportErrors(false);
+            }
         }
     }
 
