@@ -66,6 +66,7 @@ public class N5Exporter implements ExportConstants {
 
 	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws MathException, DataAccessException, IOException {
 		double[] allTimes = vcData.getDataTimes();
+		TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
 		// output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
 
 		// With Dex's dataset ID get the data block during the first time instance t
@@ -90,8 +91,8 @@ public class N5Exporter implements ExportConstants {
 	//        DexDataIdentifier.getVariableType();
 
 		int numVariables = species.size();
-		int numTimes = exportSpecs.getTimeSpecs().getEndTimeIndex() - exportSpecs.getTimeSpecs().getBeginTimeIndex();
-		long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numVariables, vcData.getMesh().getSizeZ(), numTimes};
+		int numTimes = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex(); //end index is an actual index within the array and not representative of length
+		long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numVariables, vcData.getMesh().getSizeZ(), numTimes + 1};
 		// 51X, 51Y, 1Z, 1C, 2T
 		int[] blockSize = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), 1, vcData.getMesh().getSizeZ(), 1};
 
@@ -110,15 +111,15 @@ public class N5Exporter implements ExportConstants {
 		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
 			//place to add tracking, each variable can be measured in tracking
 			double varFrac = (double) variableIndex / numVariables;
-			for (int timeIndex=exportSpecs.getTimeSpecs().getBeginTimeIndex(); timeIndex < exportSpecs.getTimeSpecs().getEndTimeIndex(); timeIndex++){
+			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 				//another place to add tracking, each time index can be used to determine how much has been exported
 				// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
 				double[] data = this.dataSetController.getSimDataBlock(outputContext, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
 				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, timeIndex}, data);
 				n5FSWriter.writeBlock(dataSetName, datasetAttributes, doubleArrayDataBlock);
 				if(timeIndex % 5 == 0){
-					double timeFrac = (double) timeIndex / exportSpecs.getTimeSpecs().getEndTimeIndex();
-					double progress = (varFrac + timeFrac) / (numVariables + exportSpecs.getTimeSpecs().getEndTimeIndex());
+					double timeFrac = (double) timeIndex / timeSpecs.getEndTimeIndex();
+					double progress = (varFrac + timeFrac) / (numVariables + timeSpecs.getEndTimeIndex());
 					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
 				}
 			}

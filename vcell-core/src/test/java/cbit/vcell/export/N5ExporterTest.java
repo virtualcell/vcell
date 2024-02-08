@@ -219,7 +219,7 @@ public class N5ExporterTest {
 
         for(String model: testModels){
             this.initalizeModel(model);
-            this.makeN5Model(N5Specs.CompressionLevel.RAW, 0, controlModel.getDataTimes().length, model);
+            this.makeN5Model(N5Specs.CompressionLevel.RAW, 0, controlModel.getDataTimes().length - 1, model);
             //X, Y, T, Z, Channels
             long[] controlDimensions = {controlModel.getMesh().getSizeX(), controlModel.getMesh().getSizeY(), variables.size(), controlModel.getMesh().getSizeZ(), controlModel.getDataTimes().length};
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
@@ -247,7 +247,8 @@ public class N5ExporterTest {
             this.initalizeModel(model);
             OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
             double[] times = controlModel.getDataTimes();
-            makeN5Model(N5Specs.CompressionLevel.RAW, 0, times.length, model);
+            int endTimeIndex = times.length - 1;
+            makeN5Model(N5Specs.CompressionLevel.RAW, 0, endTimeIndex, model);
 
             for(int i = 0; i < variables.size(); i++){
                 for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
@@ -280,11 +281,12 @@ public class N5ExporterTest {
                 for(String model: testModels){
                     initalizeModel(model);
                     double[] times = controlModel.getDataTimes();
-                    makeN5Model(compression, 0 , times.length, model);
+                    int endTimeIndex = times.length - 1;
+                    makeN5Model(compression, 0 , endTimeIndex, model);
                     OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
                     DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
                     for(int j = 0; j< 8; j++){
-                        int timeSlice = random.nextInt(times.length);
+                        int timeSlice = random.nextInt(endTimeIndex);
                         int chosenVariable = random.nextInt(variables.size());
                         DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
 
