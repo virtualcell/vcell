@@ -16,6 +16,9 @@
         <Logger name="org.sbml.jsbml" level="info" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
+        <Logger name = "io.jhdf" level="warn" additivity="false">
+            <AppenderRef ref="console"/>
+        </Logger>
         <Root level="info">
             <AppenderRef ref="console"/>
         </Root>

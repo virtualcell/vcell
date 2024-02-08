@@ -53,7 +53,7 @@ public class NonspatialResultsConverter {
                     AbstractTask baseTask = NonspatialResultsConverter.getBaseTask(topLevelTask, sedml); // if !RepeatedTask, baseTask == topLevelTask
                     
                     // from the task we get the sbml model
-                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(((Task)baseTask).getSimulationReference());
+                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
 
                     if (!(sedmlSim instanceof UniformTimeCourse)){
                         logger.error("only uniform time course simulations are supported");

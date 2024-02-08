@@ -82,7 +82,7 @@ public class Hdf5DataSourceSpatialVarDataItem {
     }
 
     private void parseMetadata() {
-        lg.info("Fetching metadata");
+        lg.debug("Fetching metadata");
         try (io.jhdf.HdfFile jhdfFile = new io.jhdf.HdfFile(Paths.get(this.hdf5File.toURI()))) {
             Map<String, Node> children = jhdfFile.getChildren();
             Map.Entry<String, Node> topLevelTaskEntry = children.entrySet().stream().findFirst().get();
