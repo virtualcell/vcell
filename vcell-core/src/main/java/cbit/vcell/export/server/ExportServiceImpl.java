@@ -313,9 +313,9 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case N5:
-					long jobID = ((VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier()).getJobIndex();
-					n5Exporter.initalizeDataControllers(exportSpecs.getVCDataIdentifier().getDataKey().toString() ,user.getName(), user.getID().toString(), jobID);
+					n5Exporter.initalizeDataControllers(user, dataServerImpl,  (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier());
 					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
+
 					String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
 					String uri = url  + ":" + PropertyLoader.getRequiredProperty(PropertyLoader.s3ProxyExternalPort) + "/" + n5Exporter.getN5FilePathSuffix();
 					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), uri, exportOutput, exportSpecs, newExportJob);

@@ -89,7 +89,7 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	}
 
 
-	public static void imageJMetaData(N5FSWriter n5FSWriter, String datasetPath, VCData vcData, int numChannels, HashMap<String, Object> additionalMetData) throws MathException, DataAccessException {
+	public static void imageJMetaData(N5FSWriter n5FSWriter, String datasetPath, int numChannels, int zSlices, int timeLength, HashMap<String, Object> additionalMetData) throws MathException, DataAccessException {
 		HashMap<String, Object> metaData = new HashMap<>();
 		metaData.put("name", "TestName");
 		metaData.put("fps", 0.0);
@@ -101,8 +101,8 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 		metaData.put("yOrigin", 0.0);
 		metaData.put("zOrigin", 0.0);
 		metaData.put("numChannels", numChannels); //
-		metaData.put("numSlices", vcData.getMesh().getSizeZ());
-		metaData.put("numFrames", vcData.getDataTimes().length);
+		metaData.put("numSlices", zSlices);
+		metaData.put("numFrames", timeLength);
 		metaData.put("type", 2); //https://imagej.nih.gov/ij/developer/api/ij/ij/ImagePlus.html#getType() Grayscale with float types
 		metaData.put("unit", "uM"); //https://imagej.nih.gov/ij/developer/api/ij/ij/measure/Calibration.html#getUnit()
 		metaData.put("properties", additionalMetData);
