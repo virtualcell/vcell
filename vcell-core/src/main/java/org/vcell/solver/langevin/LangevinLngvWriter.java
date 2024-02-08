@@ -920,8 +920,7 @@ public class LangevinLngvWriter {
         if (geometrySpec.getDimension() != 3) {
             throw new RuntimeException("SpringSaLaD requires 3D geometry");
         }
-        double Lz_intra = 0.09;
-		double Lz_extra = 0.01;
+        Double membrane_z;
 		// test for the presence of the required subvolumes
 		String subvolume_err_msg = "SpringSaLaD requires an Analytic Geometry with 2 SubVolumes, " +
 				"the first one must be named '"+Structure.SpringStructureEnum.Intracellular+"' " +
@@ -942,7 +941,13 @@ public class LangevinLngvWriter {
 					&& expression.extractTopLevelTerm().getOperands()[0].isIdentifier()
 					&& expression.extractTopLevelTerm().getOperands()[0].infix().equals("z")
 					&& expression.extractTopLevelTerm().getOperands()[1].isNumeric();
-			if (!bValidExpression) {
+			if (bValidExpression) {
+				try {
+					membrane_z = expression.extractTopLevelTerm().getOperands()[1].evaluateConstant();
+				} catch (ExpressionException e) {
+					throw new RuntimeException("unexpected failure retrieving numeric value from Intracellular expression", e);
+				}
+			} else {
 				throw new RuntimeException("Expecting expression for Geometry SubVolume " +
 						"'" + Structure.SpringStructureEnum.Intracellular + "' to be of form " +
 						"'z < number' (e.g. z < 0.09)), " +
@@ -961,7 +966,10 @@ public class LangevinLngvWriter {
 			}
 		}
 
-		Lz_extra = geometrySpec.getExtent().getZ() - Lz_intra;
+		double min_Z = geometrySpec.getOrigin().getZ();
+		double max_Z = min_Z + geometrySpec.getExtent().getZ();
+		double Lz_extra = max_Z - membrane_z;
+		double Lz_intra = membrane_z - min_Z;
 
 		sb.append("L_x: " + geometrySpec.getExtent().getX());        // 0.1
         sb.append("\n");
@@ -977,7 +985,6 @@ public class LangevinLngvWriter {
         sb.append("\n");
         sb.append("Partition Nz: 10");
         sb.append("\n");
-        return;
     }
 
 	public static void writeMoleculeCounters(StringBuilder sb) {
