@@ -235,6 +235,39 @@ public class N5ExporterTest {
     }
 
     @Test
+    public void testRandomTimeSlices() throws MathException, IOException, DataAccessException {
+        for (String model: testModels){
+            initalizeModel(model);
+            for (int k=0; k<8; k++){ //try 8 randomly chosen time slice combinations
+                double[] times = controlModel.getDataTimes();
+                Random random = new Random();
+                int startTimeIndex = random.nextInt(0, times.length);
+                int endTimeIndex = random.nextInt(startTimeIndex, times.length);
+                OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+
+                makeN5Model(N5Specs.CompressionLevel.RAW, startTimeIndex, endTimeIndex, model);
+                DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
+                long attributesTimeSize = startTimeIndex + (datasetAttributes.getDimensions()[4] - 1); //minus 1 since we are already starting at startTimeIndex
+
+                for (int i = 0; i < variables.size(); i++){
+                    for(int timeSlice = startTimeIndex; timeSlice <= attributesTimeSize; timeSlice++){
+                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
+
+                        double[] exportedRawData = (double[]) dataBlock.getData();
+                        assertArrayEquals(
+                                controlModelController.getSimDataBlock(outputContext, this.vcDataID, variables.get(i).getName(), times[timeSlice]).getData(),
+                                exportedRawData,
+                                0,
+                                "Equal raw data of model " + model + " with species " + variables.get(i).getName() +
+                                        " with type " + variables.get(i).getVariableType() + " at time " + timeSlice);
+                    }
+                }
+
+            }
+        }
+    }
+
+    @Test
     public void testRawDataEquivelance() throws IOException, DataAccessException, MathException {
         // Is the histogram over entire slice of an image result in the same for both parties
         // is it the same for some random region of space in the slice for the intensities should be the same
