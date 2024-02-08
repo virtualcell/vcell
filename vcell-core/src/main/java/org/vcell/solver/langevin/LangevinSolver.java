@@ -10,37 +10,23 @@
 
 package org.vcell.solver.langevin;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-
-import org.vcell.util.exe.ExecutableException;
-
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.NFsimSimulationOptions;
-import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
 import cbit.vcell.solvers.SimpleCompiledSolver;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 
 /**
  * Langevin solver
@@ -48,11 +34,14 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
  */
 public class LangevinSolver extends SimpleCompiledSolver {
 
+	/**
+	 * LangevinNoVis01 output file names
+	 */
+
 	private String logFileString = null;	// logfile name as it appears in argument list
 											// it is the value of getLogFilename(), but it's set late
 	
-	public LangevinSolver(SimulationTask simTask, java.io.File directory,
-			boolean bMsging) throws SolverException {
+	public LangevinSolver(SimulationTask simTask, File directory, boolean bMsging) throws SolverException {
 		super(simTask, directory, bMsging);
 	}
 
@@ -61,7 +50,16 @@ public class LangevinSolver extends SimpleCompiledSolver {
 	 * AM)
 	 */
 	public void cleanup() {
-	}
+		String vcdataid = simTask.getSimulationJob().getSimulationJobID();
+		Path langevinOutputPath = Paths.get(getSaveDirectory().getAbsolutePath(), vcdataid+".langevinI_FOLDER", "data", "Run0");
+		Path idaFile = Paths.get(getSaveDirectory().getAbsolutePath(),vcdataid+".ida");
+        try {
+            LangevinPostprocessor.writeIdaFile(langevinOutputPath, idaFile);
+        } catch (IOException e) {
+            throw new RuntimeException("failed to write tabular data extracted from simulation results", e);
+        }
+    }
+
 
 	/**
 	 * show progress. Creation date: (7/13/2006 9:00:41 AM)
@@ -138,8 +136,8 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		String outputFilename = getOutputFilename();
 		try {
 			lg = new PrintWriter(logFilename);
-			String shortOutputFilename = outputFilename.substring(1 + outputFilename.lastIndexOf("\\"));
-			lg.println(IDA_DATA_IDENTIFIER + "\n" + shortOutputFilename);
+			String shortOutputFilename = new File(outputFilename).getName();
+			lg.println(IDA_DATA_IDENTIFIER + "\n" + IDA_DATA_FORMAT_ID + "\n" + shortOutputFilename);
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
 					SimulationMessage.solverAborted("Could not generate log file: " + e.getMessage())));

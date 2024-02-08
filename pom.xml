@@ -105,7 +105,7 @@
 		<commons-codec.version>1.11</commons-codec.version>
 		<commons-compress.version>1.21</commons-compress.version>
 		<commons-configuration2.version>2.9.0</commons-configuration2.version>
-		<commons-csv.version>1.7</commons-csv.version>
+		<commons-csv.version>1.10.0</commons-csv.version>
 		<commons-discovery.version>0.5</commons-discovery.version>
 		<commons-io.version>2.4</commons-io.version>
 		<commons-lang.version>2.6</commons-lang.version>
