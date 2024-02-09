@@ -160,7 +160,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             geometrySpec.setOrigin(new org.vcell.util.Origin(0, 0, 0));
             geometrySpec.setExtent(new org.vcell.util.Extent(0.1, 0.1, 0.1));
             geometrySpec.addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Intracellular.columnName, new cbit.vcell.parser.Expression("z<0.09")));
-            geometrySpec.addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Extracellular.columnName, new cbit.vcell.parser.Expression("0.1;")));
+            geometrySpec.addSubVolume(new AnalyticSubVolume(SpringStructureEnum.Extracellular.columnName, new cbit.vcell.parser.Expression(1.0)));
             cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geometry.getGeometrySurfaceDescription());
 
             SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);

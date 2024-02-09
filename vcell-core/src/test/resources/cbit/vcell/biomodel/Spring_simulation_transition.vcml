@@ -9,7 +9,7 @@
         <AnalyticExpression>(z &lt; 0.09)</AnalyticExpression>
       </SubVolume>
       <SubVolume Name="Extracellular" Handle="1" Type="Analytical" KeyValue="264097646">
-        <AnalyticExpression>0.1</AnalyticExpression>
+        <AnalyticExpression>1.0</AnalyticExpression>
       </SubVolume>
       <SurfaceClass Name="Extracellular_Intracellular_membrane" SubVolume1Ref="Extracellular" SubVolume2Ref="Intracellular" KeyValue="264097647" />
       <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">

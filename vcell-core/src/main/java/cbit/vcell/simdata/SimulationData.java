@@ -10,72 +10,12 @@
 
 package cbit.vcell.simdata;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.Vector;
-import java.util.zip.ZipEntry;
-
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.FileUtils;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.VCAssert;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.SimResampleInfoProvider;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.vis.io.ChomboFiles;
-import org.vcell.vis.io.ComsolSimFiles;
-import org.vcell.vis.io.MovingBoundarySimFiles;
-import org.vcell.vis.io.VCellSimFiles;
-
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.FieldFunctionDefinition;
-import cbit.vcell.math.FilamentSubDomain;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.InsideVariable;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.MembraneSubDomain;
-import cbit.vcell.math.OutsideVariable;
-import cbit.vcell.math.PointSubDomain;
-import cbit.vcell.math.ReservedMathSymbolEntries;
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.Variable;
+import cbit.vcell.math.*;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.math.VolVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.Expression;
@@ -87,12 +27,7 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePoi
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.CartesianMeshChombo;
@@ -103,9 +38,25 @@ import cbit.vcell.util.AmplistorUtils;
 import cbit.vcell.util.AmplistorUtils.AmplistorCredential;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-/**
- * This type was created in VisualAge.
- */
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+import org.vcell.vis.io.ChomboFiles;
+import org.vcell.vis.io.ComsolSimFiles;
+import org.vcell.vis.io.MovingBoundarySimFiles;
+import org.vcell.vis.io.VCellSimFiles;
+
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.zip.ZipEntry;
+
+
 public class SimulationData extends VCData {
 	public enum SolverDataType
 	{
@@ -357,14 +308,6 @@ public class SimulationData extends VCData {
 	private Vector<AnnotatedFunction> annotatedFunctionList = new Vector<AnnotatedFunction>();
 	private Vector<DataSetIdentifier> dataSetIdentifierList = new Vector<DataSetIdentifier>();
 
-	/**
-	 * LangevinNoVis01 output file names
-	 */
-	private final String full_count_header = "FullCountData.csv";
-	private final String full_state_count_header = "FullStateCountData.csv";
-	private final String full_bond_count_header = "FullBondData.csv";
-	private final String site_property_data_header = "SitePropertyData.csv";
-	private final String clusters_time_header = "Clusters_Time_.csv";
 	private long logFileLastModified = 0;
 	private long logFileLength = 0;
 	// we check first job functions file for user defined functions in the parameter scan,
@@ -399,9 +342,9 @@ public class SimulationData extends VCData {
 			return amplistorCredential;
 		}
 	}
-/**
- * SimResults constructor comment.
- */
+
+
+
 public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir,SimDataAmplistorInfo simDataAmplistorInfo) throws IOException, DataAccessException {
 	VCMongoMessage.sendTrace("SimulationData.SimulationData() <<ENTER>>");
 	amplistorHelper = new AmplistorHelper(argVCDataID, primaryUserDir, secondaryUserDir,simDataAmplistorInfo);
@@ -420,22 +363,7 @@ private void checkSelfReference(AnnotatedFunction function) throws ExpressionExc
 	}
 }
 
-public static VCDataIdentifier createScanFriendlyVCDataID(VCDataIdentifier inVCDID){
-	VCDataIdentifier outVCDID = inVCDID;
-	if (inVCDID instanceof VCSimulationDataIdentifier) {
-		VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)inVCDID;
-		if (vcSimDataID.getJobIndex() == 0) {
-			outVCDID = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcSimDataID);
-		}
-	}
-	return outVCDID;
-}
 
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:28:51 PM)
- * @param function cbit.vcell.math.Function
- */
 private synchronized void addFunctionToList(AnnotatedFunction function) throws ExpressionException {
 	// throw exception if already in list (with same name and different expression)
 	for (int i=0;i<annotatedFunctionList.size();i++){
@@ -514,14 +442,7 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
 	return simpleFunction;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (1/19/00 11:52:22 AM)
- * @return long
- * @param dataType int
- * @param timepoint double
- * @exception org.vcell.util.DataAccessException The exception description.
- */
+
 public synchronized long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException {
 	switch (dataType) {
 		case PDE_DATA:
@@ -549,12 +470,7 @@ public synchronized long getDataBlockTimeStamp(int dataType, double timepoint) t
 	}
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 4:44:52 PM)
- * @return cbit.vcell.simdata.DataSetIdentifier
- * @param identifier java.lang.String
- */
+
 private DataSetIdentifier getDataSetIdentifier(String identifier) {
 	String varName = Variable.getNameFromCombinedIdentifier(identifier);
 	for (int i = 0; i < dataSetIdentifierList.size();i ++){
@@ -570,10 +486,9 @@ public synchronized double[] getDataTimesPostProcess(OutputContext outputContext
 	refreshDataProcessingOutputInfo(outputContext);
 	return dataProcessingOutputInfo.getVariableTimePoints();
 }
-/**
- * This method was created in VisualAge.
- * @return double[]
- */
+
+
+
 public synchronized double[] getDataTimes() throws DataAccessException {
 
 	if (getIsODEData()){ // this will refresh log file; enough for PDE's (refresh method rebuilds time array)
@@ -611,12 +526,7 @@ public synchronized double[] getDataTimes() throws DataAccessException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:34:51 PM)
- * @return cbit.vcell.parser.SymbolTableEntry
- * @param identifier java.lang.String
- */
+
 public SymbolTableEntry getEntry(String identifier) {
 	SymbolTableEntry entry = null;
 
@@ -644,12 +554,6 @@ public SymbolTableEntry getEntry(String identifier) {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 5:16:06 PM)
- * @return cbit.vcell.math.Function
- * @param name java.lang.String
- */
 public AnnotatedFunction getFunction(OutputContext outputContext,String identifier) {
 	try {
 		getFunctionDataIdentifiers(outputContext);
@@ -669,10 +573,6 @@ public AnnotatedFunction getFunction(OutputContext outputContext,String identifi
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/2/2004 10:14:40 AM)
- */
 private void getFunctionDataIdentifiers(OutputContext outputContext) throws DataAccessException, FileNotFoundException, IOException {
 	//
 	// add function names to VarName list that is returned
@@ -694,12 +594,6 @@ private void getFunctionDataIdentifiers(OutputContext outputContext) throws Data
 
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 5:16:06 PM)
- * @return cbit.vcell.math.Function
- * @param name java.lang.String
- */
 public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 	try {
 		getFunctionDataIdentifiers(outputContext);
@@ -719,12 +613,6 @@ public AnnotatedFunction[] getFunctions(OutputContext outputContext) {
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.io.File
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
 private synchronized File getFirstJobFunctionsFile() throws FileNotFoundException {
 	if (!(vcDataId instanceof VCSimulationDataIdentifier)) {
 		return getJobFunctionsFile();
@@ -749,22 +637,14 @@ private synchronized File getJobFunctionsFile() throws FileNotFoundException {
 	}
 }
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- */
+
+
 public synchronized boolean getIsODEData() throws DataAccessException {
 	refreshLogFile();
 	return isODEData;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/25/2004 10:58:18 AM)
- * @return long
- * @param time double
- */
 private long getLastModified(File pdeFile, File zipFile) throws IOException {
 	if (zipFile == null) {
 		return pdeFile.lastModified();
@@ -781,13 +661,6 @@ private long getLastModified(File pdeFile, File zipFile) throws IOException {
 	return lastModified;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return java.io.File
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
 public File getLogFilePrivate() throws FileNotFoundException {
 	File logFile = getLogFile();
 	VCMongoMessage.sendTrace("SimulationData.getLogFile() <<ENTER>> calling logFile.exists()");
@@ -800,12 +673,6 @@ public File getLogFilePrivate() throws FileNotFoundException {
 	}
 }
 
-/**
- * This method was created in VisualAge.
- * @return java.io.File
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
 private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundException {
 	File meshMetricsFile = amplistorHelper.getMeshMetricsFile();
 	VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> calling meshMetricsFile.exists()");
@@ -816,12 +683,7 @@ private synchronized File getMembraneMeshMetricsFile() throws FileNotFoundExcept
 	VCMongoMessage.sendTrace("SimulationData.getMembraneMeshMetricsFile() <<ENTER>> file not found");
 	return null;
 }
-/**
- * This method was created in VisualAge.
- * @return java.io.File
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
+
 private synchronized File getSubdomainFilePrivate() throws FileNotFoundException {
 	File subdomainFile = getSubdomainFile();
 	VCMongoMessage.sendTrace("SimulationData.getSubdomainFile() <<ENTER>> calling subdomain.exists()");
@@ -866,22 +728,13 @@ private CartesianMesh createPostProcessingMesh(String varName,OutputContext outp
 	}
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.solvers.CartesianMesh
- */
+
 public synchronized CartesianMesh getMesh() throws DataAccessException, MathException {
 	refreshMeshFile();
 	return mesh;
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.io.File
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
 private synchronized File getMeshFile() throws FileNotFoundException {
 	VCMongoMessage.sendTrace("SimulationData.getMeshFile() <<BEGIN>>");
 	File meshFile = amplistorHelper.getMeshFile(false);
@@ -899,31 +752,10 @@ private synchronized File getMeshFile() throws FileNotFoundException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/14/00 2:28:47 PM)
- * @return cbit.vcell.simdata.ODEDataBlock
- */
 public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, IOException {
-	ODESimData odeSimData = null;
-	File file = null;
-	//TODO: Implement conversion here
-
-	// Check if Langevin solver is being run by checking if correct log file exists
-	String[] localSimDirFiles = amplistorHelper.userDirectory.list();
-	String localSimDirPath = amplistorHelper.userDirectory.getPath();
-	if (localSimDirFiles != null) {
-		for (String f : localSimDirFiles) {
-			if (f.endsWith(LANGEVIN_INPUT_FILE_EXTENSION) && f.contains(vcDataId.getID())) {
-				writeIdaFile(localSimDirPath + "\\" + vcDataId.getID() + ".langevinI_FOLDER\\data\\Run0\\", localSimDirPath, vcDataId.getID());
-				break;
-			}
-		}
-	}
-
-	file = getODEDataFile();
-
+	File file = getODEDataFile();
 	long lastModified = file.lastModified();
+	ODESimData odeSimData = null;
 	try {
 
 		if (odeIdentifier.equals(ODE_DATA_IDENTIFIER)) {
@@ -968,192 +800,20 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 	return new ODEDataBlock(odeDataInfo, odeSimData);
 }
 
-	/**
-	 * Converts Langevin's output to a singular .IDA file in dir
-	 * @param dataDir : The path to the folder which contains LangevinNoVis01's output files
-	 * @param localSimDir: The path to the temp folder which contains logs and outputs
-	 * @param vcDataId : The current simulation Job ID
-	 */
-	public void writeIdaFile(String dataDir, String localSimDir, String vcDataId) throws IOException {
-//		int cluster_time = 0;
-		// Initialize .ida file
-		String path = Paths.get(localSimDir, vcDataId + LANGEVIN_OUTPUT_FILE_EXTENSION).toString();
-		FileWriter writer = new FileWriter(path, false);
 
-		// Create a list with all the paths of all wanted csv files
-		String[] paths = new String[]{dataDir + full_bond_count_header, dataDir + full_count_header,dataDir + full_state_count_header, dataDir + site_property_data_header, dataDir + clusters_time_header};
-		ArrayList<String> data = new ArrayList<>();
-
-		// ArrayList that stores an arrayList for each file in paths
-		ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
-
-		// Loop through the path list
-		for (int i = 0; i < paths.length; i++) {
-
-			data = readToArray(paths[i], i==0);
-
-			if (data.size() > 0) { // Only add to list if there is data in the file
-				list.add(data);
-			} else {
-				System.out.println("No data in file: " + paths[i]);
-			}
-		}
-		// Loop through the rows by using the length we found
-		for (int i = 0; i < list.get(0).size(); i++) {
-
-			// Loop through each array for that line and get the value at that row
-			for (ArrayList<String> arrays : list) {
-				writer.write(arrays.get(i));
-			}
-			writer.write("\n");
-		}
-		writer.close();
-	}
-
-	/**
-	 * @param path: path to the csv file that will be parsed and returned as an array of values
-	 * @param isFirst: Wether or not this is the first of many files you are going to parse using this method
-	 * @return Arraylist of Strings where each value corresponds with a row of data at a time step
-	 * @throws FileNotFoundException
-	 */
-	public ArrayList<String> readToArray(String path, boolean isFirst) throws FileNotFoundException {
-		boolean firstLine = true;
-		int lineNum = 0;
-		String headerLead = null;
-		ArrayList<String> list = new ArrayList<>();
-		boolean seq = false;
-
-		if (path.endsWith(clusters_time_header)) {
-			list = readClustersToArray(path);
-			return list;
-		}
-
-		try (Scanner scanner = new Scanner(new File(path))) {
-			while (scanner.hasNextLine()) {
-				// Returns one line with each column value being seperated by a ","
-				String line = scanner.nextLine();
-
-				// Special treatment for this file
-				if (path.endsWith(site_property_data_header)) {
-					// Get the headers from the first line of the file
-					if (firstLine) {
-						String[] words = line.split(",");
-						// The headerLead that will accompany the actual headers
-						headerLead = words[1] + "_Site" + words[3] + "_" + words[5] + "_";
-						firstLine = false;
-						continue; // Continue as you are not going to add this line on its own
-					}
-					lineNum++;
-
-					// Add the header leads to the actual headers (free, bound, etc)
-					if (lineNum == 1) {
-						// Index at , to ignore first column of data (time)
-						line = line.substring(line.indexOf(",")+1);
-						String[] items = line.split(",");
-						line = "";
-						for (String item : items) {
-							line += headerLead + item + ":"; // remove space befo and add : after
-						}
-					} else {
-						// Get rid of the time column by splitting the sentences and removing first word
-						line = line.substring(line.indexOf(",") + 1);
-					}
-					line = line.replace(" ", "").replace(",", "\t");
-					// If blank line, initiate seq mode which starts to append incoming lines onto already made list lines from index 0
-					if (line.equals("")) {
-						seq = true;
-						firstLine = true;
-						lineNum = 0;
-					} else if (seq) {
-						list.set(lineNum - 1, list.get(lineNum - 1) + line);
-					} else {
-						list.add(line);
-					}
-				} else {
-					lineNum += 1;
-					if (!isFirst) {
-						// Get rid of the time aspect on files that are no the isFirst
-						line = line.substring(line.indexOf(",") + 1);
-
-					} else if (lineNum==1){ //IsFirst and lineNum == 1
-						line = "t:" + line.substring(line.indexOf(",") + 1);
-					}
-					if (lineNum == 1) {
-						line = cleanString(line, true);
-					}
-					line = cleanString(line, false);
-					list.add(line);
-				}
-			}
-			return list;
-		}
-	}
-
-	public String cleanString(String line, boolean Num1) {
-		// clean differently based on if the line is part of a header or just numeric data
-		if (Num1) {
-			line = line.trim().replace(" : ", "_").replace(": ", ":").replace(" ", "_").replace(",", ":");
-		} else {
-			line = line.replace(",", "\t");
-		}
-		return line;
-	}
-
-	public ArrayList<String> readClustersToArray(String path) throws FileNotFoundException {
-		
-		File full = new File(path);
-		File dir = new File(full.getParent());
-		ArrayList<String> array = new ArrayList<>();
-
-		String[] file_paths = dir.list();
-		for (String f: file_paths) {
-			if (f.contains("Clusters_Time_")) {
-				try(Scanner scanner = new Scanner(new File(dir, f))) {
-					while (scanner.hasNextLine()) {
-						String line = scanner.nextLine();
-						line = line.replace(",",":");
-						int index = line.indexOf(":");
-						if (!(line.equals(""))) {
-							if (array.size() < 1) {
-								array.add(line.substring(0, index).replace(" ", "_")); //
-								array.add(line.substring(index + 1).trim());
-							} else {
-								array.add(line.substring(index + 1));
-								break;
-							}
-						}
-					}
-				}
-			}
-		}
-		return array;
-	}
-
-/**
- * This method was created in VisualAge.
- * @return File
- */
 private synchronized File getODEDataFile() throws DataAccessException {
 	refreshLogFile();
 	if (dataFilenames == null) {
 		throw new DataAccessException("ODE data filename not read from logfile");
 	}
 	File odeFile = amplistorHelper.getFile(dataFilenames[0]);
-
-	if (odeFile.getName().contains("complete. Elapsed time:")) { // Langevin's log file does not really function normally so just check if it is that case by seeing the contents of the log
-		return new File(amplistorHelper.userDirectory, vcDataId.getID() + ".ida");
-	} else if (odeFile.exists()) {
+	if (odeFile.exists()) {
 		return odeFile;
 	}
 	throw new DataAccessException("no results are available yet, please wait and try again...");
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.ParticleDataBlock
- * @param double time
- */
 public synchronized ParticleDataBlock getParticleDataBlock(double time) throws DataAccessException, IOException {
 	refreshLogFile();
 	File particleFile = getParticleDataFile(time);
@@ -1171,21 +831,11 @@ public synchronized ParticleDataBlock getParticleDataBlock(double time) throws D
 		return particleDataBlock;
 	}
 
-/**
- * This method was created in VisualAge.
- * @return boolean
- */
 public synchronized boolean getParticleDataExists() throws DataAccessException {
 	refreshLogFile();
 	return particleDataExists;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return File
- * @param time double
- */
 private synchronized File getParticleDataFile(double time) throws DataAccessException {
 	Integer index = pdeDataMap.get(time);
 	if (index != null) {
@@ -1207,10 +857,7 @@ private synchronized File getParticleDataFile(double time) throws DataAccessExce
 	*/
 }
 
-/**
- * build {@link #pdeDataMap}
- * @throws DataAccessException
- */
+
 private synchronized void indexPDEdataTimes( ) throws DataAccessException {
 	VCAssert.assertFalse(isODEData, "PDE only");
 	final int dataLength = dataFilenames.length;
@@ -1234,11 +881,6 @@ private synchronized void indexPDEdataTimes( ) throws DataAccessException {
 }
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- * @param time double
- */
 private synchronized File getPDEDataFile(double time) throws DataAccessException {
 	//
 	// take a snapshot in time
@@ -1252,11 +894,6 @@ private synchronized File getPDEDataFile(double time) throws DataAccessException
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- * @param time double
- */
 private synchronized DataSet getPDEDataSet(File pdeFile, double time) throws DataAccessException {
 	DataSet dataSet = new DataSet();
 	File zipFile = null;
@@ -1276,12 +913,6 @@ private synchronized DataSet getPDEDataSet(File pdeFile, double time) throws Dat
 	return dataSet;
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- * @param time double
- */
 private synchronized File getPDEDataZipFile(double time) throws DataAccessException {
 	//
 	// take a snapshot in time
@@ -1320,10 +951,6 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 	return null;
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.SimResultsInfo
- */
 public synchronized VCDataIdentifier getResultsInfoObject() {
 	return vcDataId;
 }
@@ -1341,12 +968,7 @@ private double extractClosestPostProcessTime(double vcellTimePoint){
 	}
 	return closestPostProcessTimePoint;
 }
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataBlock
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
+
 public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, String varName, double time) throws DataAccessException, IOException {
 	refreshLogFile();
 	try {
@@ -1409,12 +1031,6 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 	}
 }
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataBlock
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
 synchronized double[][][] getSimDataTimeSeries0(
 		OutputContext outputContext,
 		String varNames[],
@@ -1571,19 +1187,10 @@ synchronized double[][][] getSimDataTimeSeries0(
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return long
- */
 public synchronized long getSizeInBytes() {
 	return SizeInBytes;
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.String[]
- */
 public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputContext outputContext) throws IOException, DataAccessException {
 	// Is this zip format?
 	boolean bIsChombo = false;
@@ -1741,10 +1348,6 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers(OutputCont
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.solvers.CartesianMesh
- */
 synchronized int[] getVolumeSize() throws IOException, DataAccessException {
 
 	/*
@@ -1769,10 +1372,6 @@ synchronized int[] getVolumeSize() throws IOException, DataAccessException {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/15/2004 11:48:25 AM)
- */
 private void readFunctions(OutputContext outputContext) throws FileNotFoundException, IOException {
 
 	File firstJobFunctionsFile = getFirstJobFunctionsFile();
@@ -1810,9 +1409,6 @@ private void readFunctions(OutputContext outputContext) throws FileNotFoundExcep
 }
 
 
-/**
- * This method was created by a SmartGuide.
- */
 private synchronized void readLog(File logFile) throws FileNotFoundException, DataAccessException, IOException {
 	VCMongoMessage.sendTrace("SimulationData.readLog() <<ENTER>>");
 	if (logFile.exists()){
@@ -1920,7 +1516,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 				String filename = st.nextToken();
 				String time = st.nextToken();
 				dataFilenames[index] = (new File(filename)).getName();
-				dataTimes[index] = (new Double(time)).doubleValue();
+				dataTimes[index] = Double.parseDouble(time);
 				index++;
 			}
 		}
@@ -1975,7 +1571,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 			}
 				time = st.nextToken();
 			chomboFileIterationIndices[index] = Integer.parseInt(iteration);
-			dataTimes[index] = (new Double(time)).doubleValue();
+			dataTimes[index] = Double.parseDouble(time);
 			dataFilenames[index] = (new File(filename)).getName();
 			index++;
 		}
@@ -1996,10 +1592,6 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 }
 
 
-/**
- * This method was created in VisualAge.
- * @param logFile java.io.File
- */
 private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) throws Exception {
 	if (meshFile.exists()){
 		long lastModified = meshFile.lastModified();
@@ -2010,7 +1602,7 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 			meshFileLastModified = lastModified;
 		}
 	}else{
-		//throw new FileNotFoundException("mesh file "+meshFile.getPath()+" not found");
+		throw new FileNotFoundException("mesh file "+meshFile.getPath()+" not found");
 	}
 
 	//
@@ -2059,11 +1651,6 @@ public boolean isComsol() throws FileNotFoundException{
 	return !amplistorHelper.isNonSpatial() && getMeshFile().getName().endsWith(SimDataConstants.COMSOL_OUTPUT_EXTENSION);
 }
 
-
-
-/**
- * This method was created in VisualAge.
- */
 private synchronized void refreshLogFile() throws DataAccessException {
 	VCMongoMessage.sendTrace("SimulationData.refreshLogFile() <<ENTER>>");
 	//
@@ -2080,10 +1667,6 @@ private synchronized void refreshLogFile() throws DataAccessException {
 	VCMongoMessage.sendTrace("SimulationData.refreshLogFile() <<EXIT>>");
 }
 
-
-/**
- * This method was created in VisualAge.
- */
 private synchronized void refreshMeshFile() throws DataAccessException, MathException {
 	//
 	// (re)read the log file if necessary
@@ -2100,125 +1683,6 @@ private synchronized void refreshMeshFile() throws DataAccessException, MathExce
 	}
 }
 
-
-/**
- * This method was created in VisualAge.
- */
-public synchronized void removeAllResults() throws DataAccessException {
-	File logFile = null;
-	try {
-		logFile = getLogFilePrivate();
-	}catch (FileNotFoundException e){
-	}
-	File meshFile = null;
-	try {
-		meshFile = getMeshFile();
-	}catch (FileNotFoundException e){
-	}
-
-	removeAllResults(logFile,meshFile);
-}
-
-/**
- * This method was created in VisualAge.
- */
-private synchronized void removeAllResults(File logFile, File meshFile) {
-	//
-	// remove data files
-	//
-	double[] times = null;
-	try {
-		times = getDataTimes();
-	} catch (DataAccessException exc) {
-		lg.error("failed to getDataTimes(): " + exc.getMessage());
-	}
-	//
-	// if ODE, remove .ode
-	//
-	if (isODEData){
-		File odeFile = null;
-		try {
-			odeFile = getODEDataFile();
-		}catch (DataAccessException e){
-			lg.error("failed to remove .ode file: " + e.getMessage());
-		}
-		if (odeFile!=null && odeFile.exists()){
-			odeFile.delete();
-		}
-	}else{
-		//
-		// must be PDE
-		//
-		// remove data files and particle files (if they exist)
-		//
-		if (times!=null){
-			for (int i = 0; i < times.length; i++) {
-				File zipFile = null;
-				try {
-					zipFile = getPDEDataZipFile(times[i]);
-				} catch (DataAccessException exc) {
-					lg.error("failed to remove .zip file " + exc.getMessage());
-				}
-				if (zipFile != null && zipFile.exists()) {
-					zipFile.delete();
-				}
-				File dataFile = null;
-				try {
-					dataFile = getPDEDataFile(times[i]);
-				} catch (DataAccessException exc) {
-					lg.error("failed to remove .sim file " + exc.getMessage());
-				}
-				if (dataFile!=null && dataFile.exists()){
-					dataFile.delete();
-				}
-				File particleFile = null;
-				try {
-					particleFile = getParticleDataFile(times[i]);
-				} catch (DataAccessException exc) {
-					lg.error("failed to remove .particle file " + exc.getMessage());
-				}
-				if (particleFile!=null && particleFile.exists()){
-					particleFile.delete();
-				}
-			}
-		}
-	}
-	//
-	// remove log file
-	//
-	if (logFile!=null){
-		if (logFile.exists()){
-			logFile.delete();
-		}
-	}
-	//
-	// remove mesh file
-	//
-	if (meshFile!=null){
-		if (meshFile.exists()){
-			meshFile.delete();
-		}
-	}
-	//
-	// clear cached info
-	//
-	dataFilenames = null;
-	zipFilenames = null;
-	dataTimes = null;
-	chomboFileIterationIndices = null;
-	annotatedFunctionList.removeAllElements();
-	mesh = null;
-	logFileLastModified = 0;
-	logFileLength = 0;
-	meshFileLastModified = 0;
-}
-
-
-/**
- * FieldDataIdentifier constructor comment.
- */
-
-
 public static String createCanonicalSimFilePathName(KeyValue fieldDataKey,int timeIndex,int jobIndex,boolean isOldStyle){
 	return
 		createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
@@ -2230,12 +1694,6 @@ public static String createCanonicalSimFilePathName(KeyValue fieldDataKey,int ti
 
 public static String createCanonicalSimTaskXMLFilePathName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
 	return createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+"_"+jobIndex+SimDataConstants.SIMTASKXML_EXTENSION;
-}
-
-public static String createCanonicalFieldDataLogFileName(KeyValue fieldDataKey){
-	return
-	createSimIDWithJobIndex(fieldDataKey,0,false)+
-	SimDataConstants.LOGFILE_EXTENSION;
 }
 
 public static String createCanonicalFieldFunctionSyntax(String externalDataIdentifierName,String varName,double beginTime,String extDataIdVariableTypeName){
@@ -2561,13 +2019,6 @@ public VCDataIdentifier getVcDataId() {
 		return data == null ? null : new SimDataBlock(pdeDataInfo,data,variableType);
 	}
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (10/3/00 2:48:55 PM)
-	 * @return cbit.vcell.simdata.PDEVariableType
-	 * @param mesh cbit.vcell.solvers.CartesianMesh
-	 * @param dataLength int
-	 */
 	public static final VariableType getVariableTypeFromLength(CartesianMesh mesh, int dataLength) {
 		VariableType result = null;
 		if (mesh.getDataLength(VariableType.VOLUME) == dataLength) {
@@ -2586,11 +2037,7 @@ public VCDataIdentifier getVcDataId() {
 		return result;
 	}
 
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (9/21/2006 2:51:03 PM)
-	 * @return java.lang.String
-	 */
+
 	public static String getDefaultFieldDataFileNameForSimulation(FieldFunctionArguments fieldFuncArgs) throws ExpressionException {
 		return fieldFuncArgs.getUniqueID() + SimDataConstants.FIELDDATARESAMP_EXTENSION;
 	}
