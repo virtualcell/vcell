@@ -571,7 +571,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.43/mac64.tgz</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.44-dev3/mac64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 									</configuration>
@@ -680,7 +680,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.43/mac64.tgz</url>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/v0.0.44-dev3/mac64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 									</configuration>
