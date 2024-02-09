@@ -20,12 +20,19 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.CartesianMesh;
 import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.jupiter.api.*;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -40,11 +47,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 public class N5ExporterTest {
 
     private N5Reader n5Reader;
-    private VCData controlModel;
-    private DataSetControllerImpl controlModelController;
+    private DataServerImpl dataServer;
     private  VCSimulationDataIdentifier vcDataID;
     private ArrayList<DataIdentifier> variables;
     private N5Exporter n5Exporter;
+    private User testUser;
+    private CartesianMesh modelMesh;
+    private double[] times;
+    private static final int simulationJobId = 0;
     private static final String fourDModelID = "597714292";
     private static final String fiveDModelID = "1136922340";
     private final ArrayList<String> testModels = new ArrayList<>(Arrays.asList(
@@ -118,6 +128,18 @@ public class N5ExporterTest {
 
         previousSimCacheSize = PropertyLoader.getProperty(PropertyLoader.simdataCacheSizeProperty, null);
         PropertyLoader.setProperty(PropertyLoader.simdataCacheSizeProperty, "100000");
+
+        ExportServiceImpl exportService = new ExportServiceImpl();
+
+        Cachetable cachetable = new Cachetable(10 * Cachetable.minute, Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.simdataCacheSizeProperty)));
+        File primaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
+        File secodaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty));
+        DataSetControllerImpl dataSetController = new DataSetControllerImpl(cachetable, primaryDir, secodaryDir);
+        DataServerImpl dataServer = new DataServerImpl(dataSetController, exportService);
+
+        testUser = new User("ezequiel23", new KeyValue("258925427"));
+        n5Exporter = new N5Exporter(exportService);
+        this.dataServer = dataServer;
     }
 
     @AfterEach
@@ -160,17 +182,12 @@ public class N5ExporterTest {
         GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], 0, 0, 0);
         N5Specs n5Specs = new N5Specs(ExportConstants.DataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, modelID);
 
-        double[] allTimes = n5Exporter.getDataSetController().getDataSetTimes(n5Exporter.getVcDataID());
+        double[] allTimes = dataServer.getDataSetTimes(testUser,n5Exporter.getVcDataID());
         TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, variableSpecs.getModeID());
         ExportSpecs exportSpecs = new ExportSpecs(n5Exporter.getVcDataID(), ExportFormat.N5, variableSpecs, timeSpecs, geometrySpecs, n5Specs, "", "");
         FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
 
         ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, 0, exportSpecs, fileDataContainerManager);
-//        File file = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + n5Exporter.getN5FileNameHash() + ".N5");
-//        FileOutputStream fileOut = new FileOutputStream(file);
-//        BufferedOutputStream out= new BufferedOutputStream(fileOut);
-//        exportOutput.writeDataToOutputStream(out, fileDataContainerManager);
-//        out.close();
 
         if(n5Reader != null){
             n5Reader.close();
@@ -179,15 +196,16 @@ public class N5ExporterTest {
     }
 
     public void initalizeModel(String simKeyID) throws IOException, DataAccessException, MathException {
-        ExportServiceImpl exportService = new ExportServiceImpl();
-        long jobId = 0;
+        VCSimulationIdentifier vcSimulationIdentifier = simKeyID.equals(fourDModelID) ? new VCSimulationIdentifier(new KeyValue(fourDModelID), testUser) :
+                new VCSimulationIdentifier(new KeyValue(fiveDModelID), testUser);
+        vcDataID = new VCSimulationDataIdentifier(vcSimulationIdentifier, simulationJobId);
+        n5Exporter.initalizeDataControllers(testUser, dataServer, vcDataID);
+        dataIdentifiers = new ArrayList<>(Arrays.asList(dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), testUser, vcDataID)));
 
-        n5Exporter = new N5Exporter(exportService);
-
+        modelMesh = dataServer.getMesh(testUser, vcDataID);
+        times = dataServer.getDataSetTimes(testUser, vcDataID);
         if (simKeyID.equals(fourDModelID)){
             // the test model can only support one species at this time
-            n5Exporter.initalizeDataControllers(fourDModelID, "ezequiel23", "258925427", jobId);
-            dataIdentifiers = new ArrayList<>(Arrays.asList(n5Exporter.dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), n5Exporter.getVcDataID())));
             this.variables = new ArrayList<>(Arrays.asList(
                     getRandomDISpecificVariable(VariableType.VOLUME),
                     getRandomDISpecificVariable(VariableType.VOLUME_REGION),
@@ -196,8 +214,6 @@ public class N5ExporterTest {
             ));
         }
         else if (simKeyID.equals(fiveDModelID)){
-            n5Exporter.initalizeDataControllers(fiveDModelID, "ezequiel23", "258925427", jobId);
-            dataIdentifiers = new ArrayList<>(Arrays.asList(n5Exporter.dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), n5Exporter.getVcDataID())));
             this.variables = new ArrayList<>(Arrays.asList(
                     getRandomDISpecificVariable(VariableType.VOLUME),
                     getRandomDISpecificVariable(VariableType.POSTPROCESSING),
@@ -206,11 +222,6 @@ public class N5ExporterTest {
                     getRandomDI()
             ));
         }
-        this.controlModel = n5Exporter.getVCData();
-        this.vcDataID = n5Exporter.getVcDataID();
-        this.controlModelController = n5Exporter.getDataSetController();
-
-
     }
 
 
@@ -219,9 +230,9 @@ public class N5ExporterTest {
 
         for(String model: testModels){
             this.initalizeModel(model);
-            this.makeN5Model(N5Specs.CompressionLevel.RAW, 0, controlModel.getDataTimes().length, model);
+            this.makeN5Model(N5Specs.CompressionLevel.RAW, 0, times.length - 1, model);
             //X, Y, T, Z, Channels
-            long[] controlDimensions = {controlModel.getMesh().getSizeX(), controlModel.getMesh().getSizeY(), variables.size(), controlModel.getMesh().getSizeZ(), controlModel.getDataTimes().length};
+            long[] controlDimensions = {modelMesh.getSizeX(), modelMesh.getSizeY(), variables.size(), modelMesh.getSizeZ(), times.length};
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
             DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
             long[] exportDimensions = datasetAttributes.getDimensions();
@@ -229,8 +240,40 @@ public class N5ExporterTest {
 
             assertSame(DataType.FLOAT64, datasetAttributes.getDataType(),"Data Type of model " + model);
 
-            int[] expectedBlockSize = {controlModel.getMesh().getSizeX(), controlModel.getMesh().getSizeY(), 1, controlModel.getMesh().getSizeZ(), 1};
+            int[] expectedBlockSize = {modelMesh.getSizeX(), modelMesh.getSizeY(), 1, modelMesh.getSizeZ(), 1};
             assertArrayEquals(expectedBlockSize, datasetAttributes.getBlockSize(),"Block Size of model " + model);
+        }
+    }
+
+    @Test
+    public void testRandomTimeSlices() throws MathException, IOException, DataAccessException {
+        for (String model: testModels){
+            initalizeModel(model);
+            for (int k=0; k<8; k++){ //try 8 randomly chosen time slice combinations
+                Random random = new Random();
+                int startTimeIndex = random.nextInt(0, times.length);
+                int endTimeIndex = random.nextInt(startTimeIndex, times.length);
+                OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+
+                makeN5Model(N5Specs.CompressionLevel.RAW, startTimeIndex, endTimeIndex, model);
+                DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
+                long attributesTimeSize = startTimeIndex + (datasetAttributes.getDimensions()[4] - 1); //minus 1 since we are already starting at startTimeIndex
+
+                for (int i = 0; i < variables.size(); i++){
+                    for(int timeSlice = startTimeIndex; timeSlice <= attributesTimeSize; timeSlice++){
+                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
+
+                        double[] exportedRawData = (double[]) dataBlock.getData();
+                        assertArrayEquals(
+                                dataServer.getSimDataBlock(outputContext, testUser, this.vcDataID, variables.get(i).getName(), times[timeSlice]).getData(),
+                                exportedRawData,
+                                0,
+                                "Equal raw data of model " + model + " with species " + variables.get(i).getName() +
+                                        " with type " + variables.get(i).getVariableType() + " at time " + timeSlice);
+                    }
+                }
+
+            }
         }
     }
 
@@ -246,8 +289,8 @@ public class N5ExporterTest {
         for(String model: testModels){
             this.initalizeModel(model);
             OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-            double[] times = controlModel.getDataTimes();
-            makeN5Model(N5Specs.CompressionLevel.RAW, 0, times.length, model);
+            int endTimeIndex = times.length - 1;
+            makeN5Model(N5Specs.CompressionLevel.RAW, 0, endTimeIndex, model);
 
             for(int i = 0; i < variables.size(); i++){
                 for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
@@ -256,7 +299,7 @@ public class N5ExporterTest {
 
                     double[] exportedRawData = (double[]) dataBlock.getData();
                     assertArrayEquals(
-                            controlModelController.getSimDataBlock(outputContext, this.vcDataID, variables.get(i).getName(), times[timeSlice]).getData(),
+                            dataServer.getSimDataBlock(outputContext, testUser, this.vcDataID, variables.get(i).getName(), times[timeSlice]).getData(),
                             exportedRawData,
                             0,
                             "Equal raw data of model " + model + " with species " + variables.get(i).getName() +
@@ -279,18 +322,18 @@ public class N5ExporterTest {
         for (N5Specs.CompressionLevel compression: compressions){
                 for(String model: testModels){
                     initalizeModel(model);
-                    double[] times = controlModel.getDataTimes();
-                    makeN5Model(compression, 0 , times.length, model);
+                    int endTimeIndex = times.length - 1;
+                    makeN5Model(compression, 0 , endTimeIndex, model);
                     OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
                     DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
                     for(int j = 0; j< 8; j++){
-                        int timeSlice = random.nextInt(times.length);
+                        int timeSlice = random.nextInt(endTimeIndex);
                         int chosenVariable = random.nextInt(variables.size());
                         DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
 
                         double[] exportedData = (double[]) dataBlock.getData();
                         Assertions.assertArrayEquals(
-                                controlModelController.getSimDataBlock(outputContext, this.vcDataID, variables.get(chosenVariable).getName(), times[timeSlice]).getData(),
+                                dataServer.getSimDataBlock(outputContext, testUser, this.vcDataID, variables.get(chosenVariable).getName(), times[timeSlice]).getData(),
                                 exportedData,
                                 0,
                                 "Equal data with " + compression + " compression");

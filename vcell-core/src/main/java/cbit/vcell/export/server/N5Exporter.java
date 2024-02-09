@@ -17,6 +17,7 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solvers.CartesianMesh;
 import com.google.gson.GsonBuilder;
 import edu.uchc.connjur.wb.ExecutionTrace;
 import org.apache.commons.codec.binary.Hex;
@@ -41,7 +42,7 @@ public class N5Exporter implements ExportConstants {
 
 	private ExportServiceImpl exportServiceImpl = null;
 
-	public DataSetControllerImpl dataSetController;
+	private DataServerImpl dataServer;
 
 	private VCSimulationDataIdentifier vcDataID;
 	public String n5BucketName = "n5Data";
@@ -57,15 +58,14 @@ public class N5Exporter implements ExportConstants {
 			VariableType.CONTOUR_REGION
 	));
 
-	private VCData vcData;
-
 
 	public N5Exporter(ExportServiceImpl exportServiceImpl) {
 	this.exportServiceImpl = exportServiceImpl;
 }
 
 	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws MathException, DataAccessException, IOException {
-		double[] allTimes = vcData.getDataTimes();
+		double[] allTimes = dataServer.getDataSetTimes(user, vcDataID);
+		TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
 		// output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
 
 		// With Dex's dataset ID get the data block during the first time instance t
@@ -90,10 +90,11 @@ public class N5Exporter implements ExportConstants {
 	//        DexDataIdentifier.getVariableType();
 
 		int numVariables = species.size();
-		int numTimes = exportSpecs.getTimeSpecs().getEndTimeIndex() - exportSpecs.getTimeSpecs().getBeginTimeIndex();
-		long[] dimensions = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), numVariables, vcData.getMesh().getSizeZ(), numTimes};
+		CartesianMesh mesh = dataServer.getMesh(user, vcDataID);
+		int numTimes = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex(); //end index is an actual index within the array and not representative of length
+		long[] dimensions = {mesh.getSizeX(), mesh.getSizeY(), numVariables, mesh.getSizeZ(), numTimes + 1};
 		// 51X, 51Y, 1Z, 1C, 2T
-		int[] blockSize = {vcData.getMesh().getSizeX(), vcData.getMesh().getSizeY(), 1, vcData.getMesh().getSizeZ(), 1};
+		int[] blockSize = {mesh.getSizeX(), mesh.getSizeY(), 1, mesh.getSizeZ(), 1};
 
 
 		// rewrite so that it still results in a tmp file does not raise File already exists error
@@ -104,21 +105,19 @@ public class N5Exporter implements ExportConstants {
 		String dataSetName = n5Specs.dataSetName;
 
 		n5FSWriter.createDataset(dataSetName, datasetAttributes);
-		N5Specs.imageJMetaData(n5FSWriter, dataSetName, vcData, numVariables, additionalMetaData);
+		N5Specs.imageJMetaData(n5FSWriter, dataSetName, numVariables, mesh.getSizeZ(), allTimes.length, additionalMetaData);
 
 
 		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
 			//place to add tracking, each variable can be measured in tracking
-			double varFrac = (double) variableIndex / numVariables;
-			for (int timeIndex=exportSpecs.getTimeSpecs().getBeginTimeIndex(); timeIndex < exportSpecs.getTimeSpecs().getEndTimeIndex(); timeIndex++){
+			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 				//another place to add tracking, each time index can be used to determine how much has been exported
 				// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
-				double[] data = this.dataSetController.getSimDataBlock(outputContext, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
+				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
 				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, timeIndex}, data);
 				n5FSWriter.writeBlock(dataSetName, datasetAttributes, doubleArrayDataBlock);
-				if(timeIndex % 5 == 0){
-					double timeFrac = (double) timeIndex / exportSpecs.getTimeSpecs().getEndTimeIndex();
-					double progress = (varFrac + timeFrac) / (numVariables + exportSpecs.getTimeSpecs().getEndTimeIndex());
+				if(timeIndex % 3 == 0){
+					double progress = (double) (variableIndex + (timeIndex - timeSpecs.getBeginTimeIndex())) / (numVariables + numTimes);
 					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
 				}
 			}
@@ -128,45 +127,24 @@ public class N5Exporter implements ExportConstants {
 		return exportOutput;
 	}
 
-	public void initalizeDataControllers(String simKeyID, String userName, String userKey, long jobIndex) throws IOException, DataAccessException {
+	public void initalizeDataControllers(User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) throws IOException, DataAccessException {
 		// Set my user ID associated with VC database
 		// set simulation key
 		// make an object that ties the user to that simulation key
 		// make an object that then identifies the simulation
-		User user = new User(userName, new KeyValue(userKey));
 		this.user = user;
-
-		KeyValue simKey = new KeyValue(simKeyID);
-		VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, user);
-		this.vcDataID = new VCSimulationDataIdentifier(vcSimID, (int)jobIndex);
-
-		// Point a data controller to the directory where the sim data is and use the vcdID to retrieve information regarding the sim, need to ask about what size this should be
-		Cachetable cachetable = new Cachetable(10 * Cachetable.minute, Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.simdataCacheSizeProperty)));
-		File primaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
-		File secodaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty));
-		this.dataSetController = new DataSetControllerImpl(cachetable, primaryDir, secodaryDir);
-
-		// get dataset identifier from the simulation
-
-		this.vcData = this.dataSetController.getVCData(vcDataID);
+		this.vcDataID = vcSimulationDataIdentifier;
+		this.dataServer = dataServer;
 	}
 
 	public void initalizeDataControllers(){
 
 	}
 
-	public VCData getVCData(){
-		return vcData;
-	}
-
 	public VCSimulationDataIdentifier getVcDataID(){return vcDataID;}
 
-	public DataSetControllerImpl getDataSetController() {
-		return dataSetController;
-	}
-
 	public DataIdentifier getSpecificDI(String diName) throws IOException, DataAccessException {
-		ArrayList<DataIdentifier> list = new ArrayList<>(Arrays.asList(dataSetController.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), vcDataID)));
+		ArrayList<DataIdentifier> list = new ArrayList<>(Arrays.asList(dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), user, vcDataID)));
 		for(DataIdentifier dataIdentifier: list){
 			if(dataIdentifier.getName().equals(diName)){
 				list.remove(dataIdentifier);
@@ -174,21 +152,6 @@ public class N5Exporter implements ExportConstants {
 			}
 		}
 		return null;
-	}
-
-	public ArrayList<String> getSupportedSpecies() throws IOException, DataAccessException {
-		OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-		DataIdentifier[] dataSetIdentifiers = this.vcData.getVarAndFunctionDataIdentifiers(outputContext);
-
-		ArrayList<String> supportedSpecies = new ArrayList<>();
-
-		for(DataIdentifier specie: dataSetIdentifiers){
-			if(!unsupportedTypes.contains(specie.getVariableType())){
-				supportedSpecies.add(specie.getName());
-			}
-		}
-
-		return supportedSpecies;
 	}
 
 	public String getN5FileAbsolutePath(){

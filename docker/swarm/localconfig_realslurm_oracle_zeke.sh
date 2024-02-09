@@ -57,7 +57,7 @@ case $VCELL_SITE in
 		_site_port_offset=3
 		# VCELL_API_PORT_EXTERNAL=8081
 		_applicationId="1471-8022-1038-5555"
-		VCELL_S3_EXPORT_BASEURL=https://localhost
+		VCELL_S3_EXPORT_BASEURL=http://localhost
 		;;
 	TEST2)
 		_site_port_offset=4
