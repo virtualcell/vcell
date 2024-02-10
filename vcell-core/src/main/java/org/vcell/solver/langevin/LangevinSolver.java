@@ -161,7 +161,6 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		//                broker_port=8165
 		//                broker_username=msg_user
 		//                broker_password=msg_pswd
-		//                compute_hostname=localhost  // should determine hostname live during execution.
 		//                vc_username=vcell_user
 		//                simKey=12334483837
 		//                taskID=0
@@ -170,7 +169,6 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		pw.println("broker_port="+jmsrestport);
 		pw.println("broker_username="+jmsUser);
 		pw.println("broker_password="+jmsPassword);
-		pw.println("compute_hostname=unspecified_host_in_config_file");
 		pw.println("vc_username="+simulation.getVersion().getOwner().getName());
 		pw.println("simKey="+simulation.getVersion().getVersionKey());
 		pw.println("taskID="+simTask.getTaskID());
