@@ -531,7 +531,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-windows-latest</url>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.2.0/langevin-windows-latest</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
 										<outputFileName>langevin_x64.exe</outputFileName>
 									</configuration>
@@ -583,7 +583,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-macos-latest</url>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.2.0/langevin-macos-latest</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
@@ -692,7 +692,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-windows-latest</url>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.2.0/langevin-windows-latest</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
 										<outputFileName>langevin_x64.exe</outputFileName>
 									</configuration>
@@ -704,7 +704,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-macos-latest</url>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.2.0/langevin-macos-latest</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
@@ -716,7 +716,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.1.2/langevin-ubuntu-latest</url>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/1.2.0/langevin-ubuntu-latest</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
