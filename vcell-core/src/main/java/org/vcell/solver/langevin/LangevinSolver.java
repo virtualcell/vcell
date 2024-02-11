@@ -167,8 +167,8 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		//                jobIndex=0
 		pw.println("broker_host="+jmshost);
 		pw.println("broker_port="+jmsrestport);
-		pw.println("broker_username="+jmsUser);
-		pw.println("broker_password="+jmsPassword);
+		pw.println("broker_username="+"admin");
+		pw.println("broker_password="+"admin");
 		pw.println("vc_username="+simulation.getVersion().getOwner().getName());
 		pw.println("simKey="+simulation.getVersion().getVersionKey());
 		pw.println("taskID="+simTask.getTaskID());
