@@ -2,14 +2,20 @@ import socket
 import webbrowser
 from contextlib import closing
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from typing import Optional
 from urllib import parse
 
 from IPython.core.display_functions import display
+from pydantic import BaseModel, StrictStr
 from requests_oauth2client import OAuth2Client, AuthorizationRequest, AuthorizationResponse, BearerToken
 
-from vcell_client import AuthCodeResponse
 from vcell_client.api_client import ApiClient, Configuration
 
+
+class AuthCodeResponse(BaseModel):
+    access_token: Optional[StrictStr] = None
+    id_token: Optional[StrictStr] = None
+    refresh_token: Optional[StrictStr] = None
 
 class OAuthHttpServer(HTTPServer):
     def __init__(self, *args, **kwargs):
