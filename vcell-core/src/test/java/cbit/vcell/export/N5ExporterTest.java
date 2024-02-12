@@ -261,7 +261,7 @@ public class N5ExporterTest {
 
                 for (int i = 0; i < variables.size(); i++){
                     for(int timeSlice = startTimeIndex; timeSlice <= attributesTimeSize; timeSlice++){
-                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
+                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice - startTimeIndex});
 
                         double[] exportedRawData = (double[]) dataBlock.getData();
                         assertArrayEquals(
