@@ -22,8 +22,6 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
@@ -48,14 +46,6 @@ public class LangevinSolver extends SimpleCompiledSolver {
 	 * AM)
 	 */
 	public void cleanup() {
-		String vcdataid = simTask.getSimulationJob().getSimulationJobID();
-		Path langevinOutputPath = Paths.get(getSaveDirectory().getAbsolutePath(), vcdataid+".langevinI_FOLDER", "data", "Run0");
-		Path idaFile = Paths.get(getSaveDirectory().getAbsolutePath(),vcdataid+".ida");
-        try {
-            LangevinPostprocessor.writeIdaFile(langevinOutputPath, idaFile);
-        } catch (IOException e) {
-            throw new RuntimeException("failed to write tabular data extracted from simulation results", e);
-        }
     }
 
 
