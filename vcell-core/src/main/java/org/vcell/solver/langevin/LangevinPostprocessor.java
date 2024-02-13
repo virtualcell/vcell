@@ -28,13 +28,16 @@ public class LangevinPostprocessor {
     public static void writeIdaFile(Path langevinOutputDir, Path idaFile) throws IOException {
 //		int cluster_time = 0;
         // Initialize .ida file
+        FileReader fullBondDataReader = null;
+        FileReader fullCountDataReader = null;
+        FileReader fullStateCountDataReader = null;
 
-        try (FileReader fullBondDataReader = new FileReader(new File(langevinOutputDir.toFile(), FULL_BOND_DATA_CSV));
-             FileReader fullCountDataReader = new FileReader(new File(langevinOutputDir.toFile(), FULL_COUNT_DATA_CSV));
-             FileReader fullStateCountDataReader = new FileReader(new File(langevinOutputDir.toFile(), FULL_STATE_COUNT_DATA_CSV));
-             //FileReader sitePropertyDataReader = new FileReader(langevinOutputDir + SITE_PROPERTY_DATA_CSV);
-             //FileReader clustersTimeReader = new FileReader(langevinOutputDir + "Clusters_Time_.csv")
-        ) {
+        try {
+            fullBondDataReader = new FileReader(new File(langevinOutputDir.toFile(), FULL_BOND_DATA_CSV));
+            fullCountDataReader = new FileReader(new File(langevinOutputDir.toFile(), FULL_COUNT_DATA_CSV));
+            fullStateCountDataReader = new FileReader(new File(langevinOutputDir.toFile(), FULL_STATE_COUNT_DATA_CSV));
+            //FileReader sitePropertyDataReader = new FileReader(langevinOutputDir + SITE_PROPERTY_DATA_CSV);
+            //FileReader clustersTimeReader = new FileReader(langevinOutputDir + "Clusters_Time_.csv")
 
             CSVParser fullBondData = CSVFormat.DEFAULT.withFirstRecordAsHeader().withTrailingDelimiter().withTrim().parse(fullBondDataReader);
             CSVParser fullCountData = CSVFormat.DEFAULT.withFirstRecordAsHeader().withTrailingDelimiter().withTrim().parse(fullCountDataReader);
@@ -113,6 +116,16 @@ public class LangevinPostprocessor {
                     csvPrinter.println(); // end line
                 }
                 csvPrinter.flush();
+            }
+        } finally {
+            if(fullBondDataReader != null) {
+                fullBondDataReader.close();
+            }
+            if(fullCountDataReader != null) {
+                fullCountDataReader.close();
+            }
+            if(fullStateCountDataReader != null) {
+                fullStateCountDataReader.close();
             }
         }
     }
