@@ -2960,7 +2960,9 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		VCSimulationIdentifier vcSimulationIdentifier = simulation.getSimulationInfo()
 				.getAuthoritativeVCSimulationIdentifier();
 		final VCDataIdentifier vcdataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
-		DataManager dataManager = getDataManager(outputContext, vcdataIdentifier, simulation.isSpatial());
+		boolean isSpatialData = simulation.isSpatial()
+				&& simulation.getSolverTaskDescription().getLangevinSimulationOptions() == null;
+		DataManager dataManager = getDataManager(outputContext, vcdataIdentifier, isSpatialData);
 		return new SimResultsViewerController(dataManager, simulation);
 	}
 
