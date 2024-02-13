@@ -172,6 +172,18 @@
 		<xercesImpl.version>2.8.0</xercesImpl.version>
 		<xstream.version>1.4.20</xstream.version>
 		<xom.version>1.2.5</xom.version>
+
+		<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+		<!-- Note: for containerized HPC/singularity solvers - see Dockerfile-batch-dev  -->
+		<!--       - vcell solvers from ghcr.io/virtualcell/vcell-solvers:v0.0.42-dev3   -->
+		<!--       - langevin solver from 'solvers-langevin-linux.version'               -->
+		<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+		<solvers-vcell-mac.version>v0.0.44-dev4</solvers-vcell-mac.version>
+		<solvers-vcell-windows.version>v0.0.40</solvers-vcell-windows.version>
+		<solvers-vcell-linux.version>v0.0.44-dev4</solvers-vcell-linux.version>
+		<solvers-langevin-mac.version>1.2.5</solvers-langevin-mac.version>
+		<solvers-langevin-windows.version>1.2.5</solvers-langevin-windows.version>
+		<solvers-langevin-linux.version>1.2.5</solvers-langevin-linux.version>
 	</properties>
 
 

@@ -10,37 +10,6 @@
 
 package cbit.vcell.client;
 
-import java.awt.Dimension;
-import java.awt.Window;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.EventObject;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.Scanner;
-import java.util.Vector;
-
-import org.vcell.util.gui.GeneralGuiUtils;
-import org.vcell.solver.langevin.LangevinSolver;
-import org.vcell.solver.smoldyn.SmoldynFileWriter;
-import org.vcell.solver.smoldyn.SmoldynSolver;
-import org.vcell.util.*;
-import org.vcell.util.document.DocumentValidUtil;
-import org.vcell.util.document.LocalVCDataIdentifier;
-import org.vcell.util.document.User;
-import org.vcell.util.gui.DialogUtils;
-
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.client.data.DataViewerController;
@@ -66,33 +35,25 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.simdata.DataManager;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.ODEDataManager;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VCDataManager;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.DataProcessingInstructions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.TempSimulation;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.simdata.*;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
-import cbit.vcell.solver.server.SimulationMessage;
-import cbit.vcell.solver.server.Solver;
-import cbit.vcell.solver.server.SolverEvent;
-import cbit.vcell.solver.server.SolverFactory;
-import cbit.vcell.solver.server.SolverListener;
-import cbit.vcell.solver.server.SolverStatus;
+import cbit.vcell.solver.server.*;
 import cbit.vcell.util.ColumnDescription;
+import org.vcell.solver.smoldyn.SmoldynFileWriter;
+import org.vcell.solver.smoldyn.SmoldynSolver;
+import org.vcell.util.*;
+import org.vcell.util.document.DocumentValidUtil;
+import org.vcell.util.document.LocalVCDataIdentifier;
+import org.vcell.util.document.User;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
+
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.*;
+import java.util.*;
 
 /**
  * Insert the type's description here.
@@ -758,9 +719,6 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			solver.startSolver();
 
 			int sleepInterval = 500;
-			if(solver instanceof LangevinSolver) {
-				sleepInterval = 2000;
-			}
 			while (true) {
 				try {
 					Thread.sleep(sleepInterval); 
@@ -792,56 +750,6 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 						break;
 					}
 					if(solverStatus.getStatus() == SolverStatus.SOLVER_RUNNING) {
-						if(solver instanceof LangevinSolver) {
-							//
-							// TODO: it may (theoretically) be possible that a logfile exists from a previous run
-							// in which case there may be a brief interval where we display a Progress: 100% spurious result
-							// We should delete the log file for our run id early, right after initializing the solver
-							// in the call to createQuickRunSolver() above (or right after the call?)
-							//
-							getClientTaskStatusSupport().setMessage("Running... Progress: ");
-							LangevinSolver ls = (LangevinSolver)solver;
-							String logFileName = ls.getLogFileString();
-							if(logFileName == null) {
-								getClientTaskStatusSupport().setProgress(0);
-								continue;
-							}
-							File logFile = new File(logFileName);
-							if(!logFile.exists()) {
-								getClientTaskStatusSupport().setProgress(0);
-								continue;
-							}
-							BufferedReader br = null;
-							FileReader fr = null;
-							String lastLine = null;
-							Scanner lineScanner;
-							int percentComplete = 0;
-							try {
-								fr = new FileReader(logFile);
-								br = new BufferedReader(fr);
-								Scanner sc = new Scanner(br);
-								// Get to the last line
-								while(sc.hasNextLine()){
-									lastLine = sc.nextLine();
-								}
-								sc.close();
-								if(lastLine != null) {
-									if(!lastLine.startsWith("Simulation")) {
-										continue;
-									}
-									lineScanner = new Scanner(lastLine);
-									// Skip "Simulation"
-									lineScanner.next();
-									String percent = lineScanner.next();
-									percent = percent.substring(0,percent.length()-1);
-									percentComplete = Integer.parseInt(percent);
-									getClientTaskStatusSupport().setProgress(percentComplete);
-									lineScanner.close();
-								}
-							} catch(FileNotFoundException fne) {
-								fne.printStackTrace(System.out);
-							}
-						}
 					}
 				}		
 			}

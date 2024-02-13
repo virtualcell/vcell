@@ -11,10 +11,8 @@
 package org.vcell.solver.langevin;
 
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverUtilities;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.ApplicationMessage;
@@ -24,8 +22,6 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /**
@@ -50,14 +46,6 @@ public class LangevinSolver extends SimpleCompiledSolver {
 	 * AM)
 	 */
 	public void cleanup() {
-		String vcdataid = simTask.getSimulationJob().getSimulationJobID();
-		Path langevinOutputPath = Paths.get(getSaveDirectory().getAbsolutePath(), vcdataid+".langevinI_FOLDER", "data", "Run0");
-		Path idaFile = Paths.get(getSaveDirectory().getAbsolutePath(),vcdataid+".ida");
-        try {
-            LangevinPostprocessor.writeIdaFile(langevinOutputPath, idaFile);
-        } catch (IOException e) {
-            throw new RuntimeException("failed to write tabular data extracted from simulation results", e);
-        }
     }
 
 
@@ -90,30 +78,11 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		}
 	}
 
-	/**
-	 * This method takes the place of the old runUnsteady()...
-	 */
 	protected void initialize() throws SolverException {
 		if (lg.isTraceEnabled()) lg.trace("LangevinSolver.initialize()");
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 		writeFunctionsFile();
 
-		
-		// TODO: make the input file and the results folder the way langevin wants them
-		// results folder:	Simulation0_SIM_FOLDER
-		// input file:		Simulation0_SIM.txt
-		String saveDirectory = getSaveDirectory().getPath();
-		String simulationJobID = simTask.getSimulationJob().getSimulationJobID();
-		String baseName = getBaseName();
-		String resultsFolder = baseName + "SIM_FOLDER";
-		String inputFile = baseName + "SIM.txt";
-		
-		// aici
-		
-		
-		
-		
-		
 		String inputFilename = getInputFilename();
 		if (lg.isTraceEnabled()) lg.trace("LangevinSolver.initialize() inputFilename = " + getInputFilename()); 
 
@@ -121,7 +90,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
 
 		try (PrintWriter pw = new PrintWriter(inputFilename)) {
-			// here we create the langevin input file (and any other file / directory that may be needed)
+			// here we create the langevin input file
 			LangevinFileWriter stFileWriter = new LangevinFileWriter(pw, simTask, bMessaging);
 			stFileWriter.write();
 		} catch (Exception e) {
@@ -129,7 +98,20 @@ public class LangevinSolver extends SimpleCompiledSolver {
 					SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
 			e.printStackTrace(System.out);
 			throw new SolverException(e.getMessage());
-		} 
+		}
+
+		if (bMessaging) {
+			String messagingConfigFilename = getMessagingConfigFilename();
+			try (PrintWriter pw = new PrintWriter(messagingConfigFilename)) {
+				// here we create the langevin input file
+				writeLangevinMessagingConfig(pw, simTask);
+			} catch (Exception e) {
+				setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
+						SimulationMessage.solverAborted("Could not generate messaging config file: " + e.getMessage())));
+				e.printStackTrace(System.out);
+				throw new SolverException(e.getMessage());
+			}
+		}
 
 		PrintWriter lg = null;
 		String logFilename = getLogFilename();
@@ -149,37 +131,46 @@ public class LangevinSolver extends SimpleCompiledSolver {
 			}
 		}
 		
-		/*
-		what solver gets from springsalad ui
-		C:\TEMP\ssld-eclipse\ssld-eclipse_SIMULATIONS\Simulation0_SIM.txt 
-		1 
-		C:\TEMP\ssld-eclipse\ssld-eclipse_SIMULATIONS\Simulations0_OutStream_0.txt
-		
-		what we give the solver
-		C:\Users\Vasilescu\.vcell\simdata\temp\SimID_1504782733_0_.langevinInput
-		1
-		C:\Users\Vasilescu\.vcell\simdata\temp\SimID_1504782733_0_.log
-		*/
-
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,
-				SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
-		// get executable path+name.
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
 		String[] mathExecutableCommand = getMathExecutableCommand();
 		File saveDirectoryFile = getSaveDirectory();	// working directory (not needed?)
-		
-//		mathExecutableCommand[2] = "--output-log=C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulations0_OutStream_0.txt";
-//		mathExecutableCommand[3] = "C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulation0_SIM.txt";
-		
 
 		MathExecutable me = new MathExecutable(mathExecutableCommand, saveDirectoryFile);
 		setMathExecutable(me);
-		
-//		setLogFileString("C:\\TEMP\\test\\ssld-eclipse_SIMULATIONS\\Simulations0_OutStream_0.txt");
+
 		setLogFileString(getLogFilename());		// variable is set "late"  TODO: may be not needed
+	}
+
+	private void writeLangevinMessagingConfig(PrintWriter pw, SimulationTask simTask){
+		Simulation simulation = simTask.getSimulationJob().getSimulation();
+		String jmsPassword = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
+		String jmsUser = PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
+		String jmshost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
+		String jmsrestport = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimRestPortExternal);
+		//                broker_host=localhost
+		//                broker_port=8165
+		//                broker_username=msg_user
+		//                broker_password=msg_pswd
+		//                vc_username=vcell_user
+		//                simKey=12334483837
+		//                taskID=0
+		//                jobIndex=0
+		pw.println("broker_host="+jmshost);
+		pw.println("broker_port="+jmsrestport);
+		pw.println("broker_username="+"admin");
+		pw.println("broker_password="+"admin");
+		pw.println("vc_username="+simulation.getVersion().getOwner().getName());
+		pw.println("simKey="+simulation.getVersion().getVersionKey());
+		pw.println("taskID="+simTask.getTaskID());
+		pw.println("jobIndex="+simTask.getSimulationJob().getJobIndex());
 	}
 
 	private String getInputFilename() {
 		return getBaseName() + LANGEVIN_INPUT_FILE_EXTENSION;
+	}
+
+	private String getMessagingConfigFilename() {
+		return getBaseName() + LANGEVIN_MESSAGINGCONFIG_FILE_EXTENSION;
 	}
 
 	private String getLogFilename() {
@@ -195,29 +186,30 @@ public class LangevinSolver extends SimpleCompiledSolver {
 
 	@Override
 	protected String[] getMathExecutableCommand() {
-		String executableName = null;
+		String executableName;
 		try {
 			executableName = SolverUtilities.getExes(SolverDescription.Langevin)[0].getAbsolutePath();
 		}catch (IOException e){
 			throw new RuntimeException("failed to get executable for solver "+SolverDescription.Langevin.getDisplayLabel()+": "+e.getMessage(),e);
 		}
 		String inputFilename = getInputFilename();
-		String outputFilename = getOutputFilename();
-		String speciesOutputFilename = getSpeciesOutputFilename();
-		String logFilename = getLogFilename();
-		String logFileOption = "--output-log=" + logFilename;
+		String logFileOption = "--output-log=" + getLogFilename();
+		String messagingConfigOption = "--vc-send-status-config=" + getMessagingConfigFilename();
 		
 		LangevinSimulationOptions lso = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
 		int runIndex = lso.getRunIndex();		// run index
 		
-		ArrayList<String> cmds = new ArrayList<String>();
+		ArrayList<String> cmds = new ArrayList<>();
 		cmds.add(executableName);	// executable
 		cmds.add("simulate");		// the new langevin solver made by jim wants this argument
 		cmds.add(logFileOption);	// used for solver to send status info to client (3rd argument);
+		if (bMessaging){
+			cmds.add(messagingConfigOption);	// used for solver to send status info to client;
+		}
 		cmds.add(inputFilename);	// first argument
 		cmds.add(runIndex + "");	// second argument
 		
-		return cmds.toArray(new String[cmds.size()]);
+		return cmds.toArray(new String[0]);
 	}
 	
 	@Override

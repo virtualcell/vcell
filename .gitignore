@@ -230,3 +230,5 @@ vcell-core/src/test/resources/simdata/n5/N5ExportData/
 !vcell-core/src/test/resources/simdata/n5/ezequiel23/SimID_1136922340_0_00.zip
 
 docker/swarm/zeke_env.txt
+
+localsolvers/mac64/GNUSparseFile.0/
