@@ -5,8 +5,9 @@ import requests
 
 
 def download_reference_projects():
+    api_base_url = os.environ.get('API_BASE_URL')
     num_models = 10
-    project_query = f'https://api.biosimulations.dev/projects/summary_filtered?' \
+    project_query = f'{api_base_url}/projects/summary_filtered?' \
                     f'pageSize={num_models}' \
                     '&pageIndex=0' \
                     '&searchText=' \
@@ -20,16 +21,16 @@ def download_reference_projects():
     for projectSummary in projects['projectSummaries']:
         project_id = projectSummary['id']
         run = projectSummary['simulationRun']['id']
-        r = requests.get(f'https://api.biosimulations.org/runs/{run}/download', allow_redirects=True)
+        r = requests.get(f'{api_base_url}/runs/{run}/download', allow_redirects=True)
         with open(f'{project_id}.spec.omex', 'wb') as f:
             f.write(r.content)
-        r = requests.get(f'https://api.biosimulations.org/logs/{run}', allow_redirects=True)
+        r = requests.get(f'{api_base_url}/logs/{run}', allow_redirects=True)
         with open(f'{project_id}.logs.json', 'wb') as f:
             f.write(r.content)
-        r = requests.get(f'https://api.biosimulations.org/results/{run}?includeData=true', allow_redirects=True)
+        r = requests.get(f'{api_base_url}/results/{run}?includeData=true', allow_redirects=True)
         with open(f'{project_id}.outputs.json', 'wb') as f:
             f.write(r.content)
-        r = requests.get(f'https://api.biosimulations.org/results/{run}/download')
+        r = requests.get(f'{api_base_url}/results/{run}/download')
         with open(f'{project_id}.results.zip', 'wb') as f:
             f.write(r.content)
         with ZipFile(f'{project_id}.results.zip', 'r') as zip_ref:

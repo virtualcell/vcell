@@ -35,7 +35,7 @@ def download_published_omex(api_base_url: str, out_dir: Path) -> None:
     for pub in pubs:
         if len(pub.biomodelReferences) == 0:
             continue
-        print(f"processing publication year={pub.year}, title={pub.title}")
+        print(f"Processing {pub.pubKey}, title: {pub.title}, year: {pub.year}, bimodels: {pub.biomodelReferences}")
         bmKey = pub.biomodelReferences[0].bmKey
         pubmedId: Optional[str] = pub.pubmedid
         citationInfo: Optional[CitationInfo] = None

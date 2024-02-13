@@ -444,7 +444,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     private Boolean bForceContinuous = DEFAULT_FORCECONTINUOUS;
 
     // SpringSaLaD specific entities
-    private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
+    public Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
     private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<>();
     // is2D flag, used by the solver for collision / overlapping calculations, exact meaning uncertain
     // membrane species may have it set to true, for compartment species is always false
@@ -745,11 +745,10 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
      */
     public boolean compareEqual(Matchable object){
 
-        SpeciesContextSpec scs = null;
         if(!(object instanceof SpeciesContextSpec)){
             return false;
         }
-        scs = (SpeciesContextSpec) object;
+        SpeciesContextSpec scs = (SpeciesContextSpec) object;   // we know it's not null
 
         if(!Compare.isEqual(speciesContext, scs.speciesContext)){
             return false;
@@ -783,9 +782,48 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             return false;
         }
 
+        if(internalLinkSet.size() != scs.internalLinkSet.size()) {      // springsalad MolecularInternalLinkSpec set
+            return false;
+        }
+        for(MolecularInternalLinkSpec ourMils : internalLinkSet) {
+            if (!containsIsomorph(ourMils, scs.internalLinkSet)) {
+                return false;
+            }
+        }
+
+        if(siteAttributesMap.size() != scs.siteAttributesMap.size()) {  // springsalad SiteAttributesSpec map
+            return false;
+        }
+        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+            if (!containsIsomorph(entry, siteAttributesMap)) {
+                return false;
+            }
+        }
+
         return true;
     }
 
+    private static boolean containsIsomorph(MolecularInternalLinkSpec ourMils, Set<MolecularInternalLinkSpec> theirMilsSet) {
+        for(MolecularInternalLinkSpec theirMils : theirMilsSet) {
+            if(ourMils.compareEqual(theirMils)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private static boolean containsIsomorph(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> ourEntry, Map<MolecularComponentPattern, SiteAttributesSpec> theirSasMap) {
+        MolecularComponentPattern ourMcp = ourEntry.getKey();
+        SiteAttributesSpec ourSas = ourEntry.getValue();
+        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> theirEntry : theirSasMap.entrySet()) {
+            MolecularComponentPattern theirMcp = theirEntry.getKey();
+            SiteAttributesSpec theirSas = theirEntry.getValue();
+            if(ourMcp.compareEqual(theirMcp) && ourSas.compareEqual(theirSas)) {
+                // note that for the mcp we only compare the bond type, not the bond (which is mtp attribute)
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * The firePropertyChange method was generated to support the propertyChange field.
@@ -1468,118 +1506,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         return buffer.toString();
     }
 
-    public String getSiteAttributesSQL() {
-        StringBuilder sb = new StringBuilder();
-        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
-            SiteAttributesSpec sas = entry.getValue();
-            sb.append(sas.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
-            sb.append(sas.getLocation().getName() + ",");
-            sb.append(sas.getRadius() + ",");
-            sb.append(sas.getDiffusionRate() +",");
-            sb.append(sas.getCoordinate().getX() + ",");
-            sb.append(sas.getCoordinate().getY() + ",");
-            sb.append(sas.getCoordinate().getZ() + ",");
-            sb.append(sas.getColor().getName());
-            sb.append(";");
-        }
-        return sb.toString();
-    }
-
-	public Map<MolecularComponentPattern, SiteAttributesSpec> readSiteAttributesSQL(String siteAttributesMapString) {
-		Map<MolecularComponentPattern, SiteAttributesSpec> saMap = new LinkedHashMap<>();
-		if(siteAttributesMapString.isEmpty()) {
-			return saMap;
-		}
-        StringTokenizer sat = new StringTokenizer(siteAttributesMapString, ";");
-		if(sat.countTokens() == 0) {
-			return saMap;
-		}
-
-		SpeciesContext sc = this.getSpeciesContext();
-		SpeciesPattern sp = sc.getSpeciesPattern();
-		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
-		if(mtpList.size() != 1) {
-			throw new RuntimeException("Exactly one MolecularTypePattern expected");
-		}
-		MolecularTypePattern mtp = mtpList.get(0);
-
-		while(sat.hasMoreTokens()) {
-			String saString = sat.nextToken();
-			StringTokenizer tokenizer = new StringTokenizer(saString, ",");
-			if(tokenizer.countTokens() != 8) {
-				return saMap;
-			}
-			while(tokenizer.hasMoreTokens()) {
-				String attribute = tokenizer.nextToken();
-				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(attribute);
-				attribute = tokenizer.nextToken();
-				Structure structure = simulationContext.getModel().getStructure(attribute);
-				attribute = tokenizer.nextToken();
-				double radius = Double.parseDouble(attribute);
-				attribute = tokenizer.nextToken();
-				double diffRate = Double.parseDouble(attribute);
-				attribute = tokenizer.nextToken();
-				double x = Double.parseDouble(attribute);
-				attribute = tokenizer.nextToken();
-				double y = Double.parseDouble(attribute);
-				attribute = tokenizer.nextToken();
-				double z = Double.parseDouble(attribute);
-				Coordinate coordinate = new Coordinate(x,y,z);
-				attribute = tokenizer.nextToken();
-				NamedColor color = Colors.getColorByName(attribute);
-				SiteAttributesSpec sas = new SiteAttributesSpec(this, mcp, radius, diffRate, structure, coordinate, color);
-				saMap.put(mcp, sas);
-			}
-		}
-		return saMap;	// may be empty but not null
-	}
-	public String getInternalLinksSQL() {
-		StringBuffer sb = new StringBuffer();
-		for( MolecularInternalLinkSpec mils : internalLinkSet) {
-			SiteAttributesSpec sas1 = mils.getSite1();
-			SiteAttributesSpec sas2 = mils.getSite2();
-			sb.append(sas1.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
-			sb.append(sas2.getMolecularComponentPattern().getMolecularComponent().getName() + ";");
-		}
-		return sb.toString();
-	}
-	public Set<MolecularInternalLinkSpec> readInternalLinksSQL(String internalLinkSetString) {
-		Set<MolecularInternalLinkSpec> ilSet = new LinkedHashSet<>();
-
-		if(internalLinkSetString.isEmpty()) {
-			return ilSet;
-		}
-		StringTokenizer sat = new StringTokenizer(internalLinkSetString, ";");
-		if(sat.countTokens() == 0) {
-			return ilSet;
-		}
-
-		SpeciesContext sc = this.getSpeciesContext();
-		SpeciesPattern sp = sc.getSpeciesPattern();
-		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
-		if(mtpList.size() != 1) {
-			throw new RuntimeException("Exactly one MolecularTypePattern expected");
-		}
-		MolecularTypePattern mtp = mtpList.get(0);
-
-		while(sat.hasMoreTokens()) {
-			String saString = sat.nextToken();
-			StringTokenizer tokenizer = new StringTokenizer(saString, ",");
-			if (tokenizer.countTokens() != 2) {
-				return ilSet;
-			}
-			while (tokenizer.hasMoreTokens()) {
-				String attribute = tokenizer.nextToken();
-				MolecularComponentPattern mcp1 = mtp.getMolecularComponentPattern(attribute);
-				attribute = tokenizer.nextToken();
-				MolecularComponentPattern mcp2 = mtp.getMolecularComponentPattern(attribute);
-
-				MolecularInternalLinkSpec ils = new MolecularInternalLinkSpec(this, mcp1, mcp2);
-				ilSet.add(ils);
-			}
-		}
-		return ilSet;	// may be empty but never null
-	}
 
     /**
      * Accessor for the vetoPropertyChange field.
@@ -2301,4 +2227,5 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public String getDisplayType(){
         return typeName;
     }
+
 }

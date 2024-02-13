@@ -1399,6 +1399,7 @@ public class SEDMLExporter {
 													  Predicate<Simulation> simulationExportFilter,
 													  ModelFormat modelFormat,
 													  SEDMLEventLog eventLogWriter,
+													  boolean bAddPublicationInfo,
 													  boolean bSkipUnsupportedApps,
 													  boolean bHasPython,
 													  boolean bValidate
@@ -1408,7 +1409,7 @@ public class SEDMLExporter {
 		String vcmlName = FilenameUtils.getBaseName(vcmlFilePath.getName());		// platform independent, strips extension too
 		Optional<File> jsonReportFile = Optional.of(Paths.get(
 				outputDir.getAbsolutePath(), "json_reports" ,vcmlName + ".json").toFile());
-
+		File omexOutputFile = Paths.get(outputDir.getAbsolutePath(), vcmlName + ".omex").toFile();
 		eventLogWriter.writeEntry(vcmlName);
 
 		// Create biomodel
@@ -1433,12 +1434,16 @@ public class SEDMLExporter {
 
 		Optional<PublicationMetadata> publicationMetadata = Optional.empty();
 		if (bioModelInfo!=null && bioModelInfo.getPublicationInfos()!=null && bioModelInfo.getPublicationInfos().length>0) {
-			publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfo(bioModelInfo.getPublicationInfos()[0]));
+			if (bAddPublicationInfo) {
+				publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfoAndWeb(bioModelInfo.getPublicationInfos()[0]));
+			}else{
+				publicationMetadata = Optional.of(PublicationMetadata.fromPublicationInfo(bioModelInfo.getPublicationInfos()[0]));
+			}
 		}
 
 		boolean bCreateOmexArchive = true;
 		return writeBioModel(
-				bioModel, publicationMetadata, jsonReportFile, outputDir, simulationExportFilter, simContextExportFilter,
+				bioModel, publicationMetadata, jsonReportFile, omexOutputFile, simulationExportFilter, simContextExportFilter,
 				modelFormat, eventLogWriter, bHasPython, bValidate, bCreateOmexArchive);
 	}
 

@@ -10,7 +10,15 @@
 
 package cbit.vcell.modeldb;
 
+import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SiteAttributesSpec;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.Coordinate;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.KeyValue;
 
@@ -18,6 +26,11 @@ import cbit.sql.Field;
 import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import org.vcell.util.springsalad.Colors;
+import org.vcell.util.springsalad.NamedColor;
+
+import java.util.*;
+
 /**
  * This type was created in VisualAge.
  */
@@ -161,14 +174,127 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 	if(speciesContextSpec.getInternalLinkSet() == null || speciesContextSpec.getInternalLinkSet().size() == 0) {
 		buffer.append(" NULL " + ",");
 	} else {
-		buffer.append("'" + speciesContextSpec.getInternalLinksSQL() + "'" + ",");
+		buffer.append("'" + getInternalLinksSQL(speciesContextSpec) + "'" + ",");
 	}
 	if(speciesContextSpec.getSiteAttributesMap() == null || speciesContextSpec.getSiteAttributesMap().size() == 0) {
 		buffer.append(" NULL " + ")");
 	} else {
-		buffer.append("'" + speciesContextSpec.getSiteAttributesSQL() + "'" + ")");
+		buffer.append("'" + getSiteAttributesSQL(speciesContextSpec) + "'" + ")");
 	}
 	return buffer.toString();
 }
+
+	static String getSiteAttributesSQL(SpeciesContextSpec scs) {
+		StringBuilder sb = new StringBuilder();
+		for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : scs.getSiteAttributesMap().entrySet()) {
+			SiteAttributesSpec sas = entry.getValue();
+			sb.append(sas.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
+			sb.append(sas.getLocation().getName() + ",");
+			sb.append(sas.getRadius() + ",");
+			sb.append(sas.getDiffusionRate() +",");
+			sb.append(sas.getCoordinate().getX() + ",");
+			sb.append(sas.getCoordinate().getY() + ",");
+			sb.append(sas.getCoordinate().getZ() + ",");
+			sb.append(sas.getColor().getName());
+			sb.append(";");
+		}
+		return sb.toString();
+	}
+
+	static Map<MolecularComponentPattern, SiteAttributesSpec> readSiteAttributesSQL(SpeciesContextSpec scs, String siteAttributesMapString) {
+		Map<MolecularComponentPattern, SiteAttributesSpec> saMap = new LinkedHashMap<>();
+		if(siteAttributesMapString.isEmpty()) {
+			return saMap;
+		}
+		StringTokenizer sat = new StringTokenizer(siteAttributesMapString, ";");
+		if(sat.countTokens() == 0) {
+			return saMap;
+		}
+
+		SpeciesContext sc = scs.getSpeciesContext();
+		SpeciesPattern sp = sc.getSpeciesPattern();
+		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+		if(mtpList.size() != 1) {
+			throw new RuntimeException("Exactly one MolecularTypePattern expected");
+		}
+		MolecularTypePattern mtp = mtpList.get(0);
+
+		while(sat.hasMoreTokens()) {
+			String saString = sat.nextToken();
+			StringTokenizer tokenizer = new StringTokenizer(saString, ",");
+			if(tokenizer.countTokens() != 8) {
+				return saMap;
+			}
+			while(tokenizer.hasMoreTokens()) {
+				String attribute = tokenizer.nextToken();
+				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(attribute);
+				attribute = tokenizer.nextToken();
+				Structure structure = scs.getSimulationContext().getModel().getStructure(attribute);
+				attribute = tokenizer.nextToken();
+				double radius = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double diffRate = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double x = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double y = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double z = Double.parseDouble(attribute);
+				Coordinate coordinate = new Coordinate(x,y,z);
+				attribute = tokenizer.nextToken();
+				NamedColor color = Colors.getColorByName(attribute);
+				SiteAttributesSpec sas = new SiteAttributesSpec(scs, mcp, radius, diffRate, structure, coordinate, color);
+				saMap.put(mcp, sas);
+			}
+		}
+		return saMap;	// may be empty but not null
+	}
+	static String getInternalLinksSQL(SpeciesContextSpec scs) {
+		StringBuffer sb = new StringBuffer();
+		for( MolecularInternalLinkSpec mils : scs.internalLinkSet) {
+			SiteAttributesSpec sas1 = mils.getSite1();
+			SiteAttributesSpec sas2 = mils.getSite2();
+			sb.append(sas1.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
+			sb.append(sas2.getMolecularComponentPattern().getMolecularComponent().getName() + ";");
+		}
+		return sb.toString();
+	}
+	static Set<MolecularInternalLinkSpec> readInternalLinksSQL(SpeciesContextSpec scs, String internalLinkSetString) {
+		Set<MolecularInternalLinkSpec> ilSet = new LinkedHashSet<>();
+
+		if(internalLinkSetString.isEmpty()) {
+			return ilSet;
+		}
+		StringTokenizer sat = new StringTokenizer(internalLinkSetString, ";");
+		if(sat.countTokens() == 0) {
+			return ilSet;
+		}
+
+		SpeciesContext sc = scs.getSpeciesContext();
+		SpeciesPattern sp = sc.getSpeciesPattern();
+		List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns();
+		if(mtpList.size() != 1) {
+			throw new RuntimeException("Exactly one MolecularTypePattern expected");
+		}
+		MolecularTypePattern mtp = mtpList.get(0);
+
+		while(sat.hasMoreTokens()) {
+			String saString = sat.nextToken();
+			StringTokenizer tokenizer = new StringTokenizer(saString, ",");
+			if (tokenizer.countTokens() != 2) {
+				return ilSet;
+			}
+			while (tokenizer.hasMoreTokens()) {
+				String attribute = tokenizer.nextToken();
+				MolecularComponentPattern mcp1 = mtp.getMolecularComponentPattern(attribute);
+				attribute = tokenizer.nextToken();
+				MolecularComponentPattern mcp2 = mtp.getMolecularComponentPattern(attribute);
+
+				MolecularInternalLinkSpec ils = new MolecularInternalLinkSpec(scs, mcp1, mcp2);
+				ilSet.add(ils);
+			}
+		}
+		return ilSet;	// may be empty but never null
+	}
 
 }

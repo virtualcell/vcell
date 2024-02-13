@@ -26,6 +26,7 @@ show_help() {
 	echo "    smoldyn_x64"
 	echo "    SundialsSolverStandalone_x64"
 	echo "    VCellStoch_x64"
+	echo "    langevin_x64"
 	echo ""
 	echo "  [OPTIONS]"
 	echo "    -h | --help                  show this message"
@@ -194,6 +195,10 @@ case $command in
 		;;
 	VCellStoch_x64)
 		/vcellbin/VCellStoch_x64 $arguments
+		exit $?
+		;;
+	langevin_x64)
+		/vcellbin/langevin_x64 $arguments
 		exit $?
 		;;
 	JavaPreprocessor64)
