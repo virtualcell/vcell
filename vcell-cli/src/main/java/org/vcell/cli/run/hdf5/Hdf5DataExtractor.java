@@ -21,7 +21,7 @@ import java.util.Map;
 public class Hdf5DataExtractor {
     private SedML sedml;
     private Map<AbstractTask, TempSimulation> taskToSimulationMap;
-    private String sedmlLocation, sedmlRoot;
+    private String sedmlLocation, sedmlRoot, outputDirectory;
 
     private final static Logger logger = LogManager.getLogger(Hdf5DataExtractor.class);
 
@@ -30,13 +30,14 @@ public class Hdf5DataExtractor {
      * 
      * @param sedml the sedml object to get outputs, datasets, and data generators from.
      * @param taskToSimulationMap mapping of task to its simulation data
-     * @param sedmlLocation relative path to the sedml file within the archive
+     * @param outputDirectory path to where the outputs should go
      */
-    public Hdf5DataExtractor(SedML sedml, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation){
+    public Hdf5DataExtractor(SedML sedml, Map<AbstractTask, TempSimulation> taskToSimulationMap, String outputDirectory){
         this.sedml = sedml;
         this.taskToSimulationMap = taskToSimulationMap;
         this.sedmlRoot = Paths.get(sedml.getPathForURI()).toString();
         this.sedmlLocation = Paths.get(this.sedmlRoot, this.sedml.getFileName()).toString();
+        this.outputDirectory = outputDirectory;
     }
 
     /**
@@ -53,14 +54,14 @@ public class Hdf5DataExtractor {
         Exception nonSpatialException = null, spatialException = null;
 
         try {
-            wrappers.addAll(NonspatialResultsConverter.convertNonspatialResultsToSedmlFormat(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation));
+            wrappers.addAll(NonspatialResultsConverter.convertNonspatialResultsToSedmlFormat(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation, this.outputDirectory));
         } catch (Exception e){
             logger.warn("Collection of nonspatial datasets failed for " + this.sedml.getFileName(), e);
             nonSpatialException = e;
         }
 
         try {
-            wrappers.addAll(SpatialResultsConverter.convertSpatialResultsToSedmlFormat(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation));
+            wrappers.addAll(SpatialResultsConverter.convertSpatialResultsToSedmlFormat(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation, this.outputDirectory));
         } catch (Exception e){
             logger.warn("Collection of spatial datasets failed for " + this.sedml.getFileName(), e);
             spatialException = e;
