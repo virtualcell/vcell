@@ -62,25 +62,20 @@ configuration = vcell_client.Configuration(
     host = "http://localhost:9000"
 )
 
-# The client must configure the authentication and authorization parameters
-# in accordance with the API server security policy.
-# Examples for each auth method are provided below, use the example that
-# satisfies your auth use case.
 
 
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = vcell_client.PublicationResourceApi(api_client)
-    publication = vcell_client.Publication() # Publication |  (optional)
+    api_instance = vcell_client.HelloWorldApi(api_client)
 
     try:
-        # Create publication
-        api_response = api_instance.create_publication(publication=publication)
-        print("The response of PublicationResourceApi->create_publication:\n")
+        # Get hello world message.
+        api_response = api_instance.get_hello_world()
+        print("The response of HelloWorldApi->get_hello_world:\n")
         pprint(api_response)
     except ApiException as e:
-        print("Exception when calling PublicationResourceApi->create_publication: %s\n" % e)
+        print("Exception when calling HelloWorldApi->get_hello_world: %s\n" % e)
 
 ```
 
@@ -90,6 +85,7 @@ All URIs are relative to *http://localhost:9000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/helloworld | Get hello world message.
 *PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
@@ -101,6 +97,7 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [BiomodelRef](docs/BiomodelRef.md)
+ - [HelloWorldMessage](docs/HelloWorldMessage.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
  - [User](docs/User.md)

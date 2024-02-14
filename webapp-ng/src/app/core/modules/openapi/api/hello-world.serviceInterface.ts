@@ -13,21 +13,21 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
-import { User } from '../model/models';
+import { HelloWorldMessage } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
 
 
 
-export interface UsersResourceServiceInterface {
+export interface HelloWorldServiceInterface {
     defaultHeaders: HttpHeaders;
     configuration: Configuration;
 
     /**
-     * 
+     * Get hello world message.
      * 
      */
-    apiUsersMeGet(extraHttpRequestParams?: any): Observable<User>;
+    getHelloWorld(extraHttpRequestParams?: any): Observable<HelloWorldMessage>;
 
 }

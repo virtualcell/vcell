@@ -17,7 +17,7 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
-import org.vcell.restclient.model.User;
+import org.vcell.restclient.model.HelloWorldMessage;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,7 +45,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class UsersResourceApi {
+public class HelloWorldApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
@@ -54,11 +54,11 @@ public class UsersResourceApi {
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
-  public UsersResourceApi() {
+  public HelloWorldApi() {
     this(new ApiClient());
   }
 
-  public UsersResourceApi(ApiClient apiClient) {
+  public HelloWorldApi(ApiClient apiClient) {
     memberVarHttpClient = apiClient.getHttpClient();
     memberVarObjectMapper = apiClient.getObjectMapper();
     memberVarBaseUri = apiClient.getBaseUri();
@@ -82,24 +82,24 @@ public class UsersResourceApi {
   }
 
   /**
+   * Get hello world message.
    * 
-   * 
-   * @return User
+   * @return HelloWorldMessage
    * @throws ApiException if fails to make API call
    */
-  public User apiUsersMeGet() throws ApiException {
-    ApiResponse<User> localVarResponse = apiUsersMeGetWithHttpInfo();
+  public HelloWorldMessage getHelloWorld() throws ApiException {
+    ApiResponse<HelloWorldMessage> localVarResponse = getHelloWorldWithHttpInfo();
     return localVarResponse.getData();
   }
 
   /**
+   * Get hello world message.
    * 
-   * 
-   * @return ApiResponse&lt;User&gt;
+   * @return ApiResponse&lt;HelloWorldMessage&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<User> apiUsersMeGetWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersMeGetRequestBuilder();
+  public ApiResponse<HelloWorldMessage> getHelloWorldWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getHelloWorldRequestBuilder();
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -109,12 +109,12 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersMeGet", localVarResponse);
+          throw getApiException("getHelloWorld", localVarResponse);
         }
-        return new ApiResponse<User>(
+        return new ApiResponse<HelloWorldMessage>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<User>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<HelloWorldMessage>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -127,11 +127,11 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiUsersMeGetRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getHelloWorldRequestBuilder() throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/users/me";
+    String localVarPath = "/api/helloworld";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 

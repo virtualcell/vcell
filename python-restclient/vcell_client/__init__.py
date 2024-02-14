@@ -3,7 +3,7 @@
 # flake8: noqa
 
 """
-    VCell API (development)
+    VCell API (test)
 
     VCell API
 
@@ -18,6 +18,7 @@
 __version__ = "1.0.0"
 
 # import apis into sdk package
+from vcell_client.api.hello_world_api import HelloWorldApi
 from vcell_client.api.publication_resource_api import PublicationResourceApi
 from vcell_client.api.users_resource_api import UsersResourceApi
 
@@ -34,6 +35,7 @@ from vcell_client.exceptions import ApiException
 
 # import models into sdk package
 from vcell_client.models.biomodel_ref import BiomodelRef
+from vcell_client.models.hello_world_message import HelloWorldMessage
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.publication import Publication
 from vcell_client.models.user import User

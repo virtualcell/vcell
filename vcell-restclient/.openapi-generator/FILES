@@ -2,6 +2,8 @@
 README.md
 api/openapi.yaml
 docs/BiomodelRef.md
+docs/HelloWorldApi.md
+docs/HelloWorldMessage.md
 docs/MathmodelRef.md
 docs/Publication.md
 docs/PublicationResourceApi.md
@@ -17,10 +19,14 @@ src/main/java/org/vcell/restclient/Pair.java
 src/main/java/org/vcell/restclient/RFC3339DateFormat.java
 src/main/java/org/vcell/restclient/ServerConfiguration.java
 src/main/java/org/vcell/restclient/ServerVariable.java
+src/main/java/org/vcell/restclient/api/HelloWorldApi.java
 src/main/java/org/vcell/restclient/api/PublicationResourceApi.java
 src/main/java/org/vcell/restclient/api/UsersResourceApi.java
 src/main/java/org/vcell/restclient/model/AbstractOpenApiSchema.java
 src/main/java/org/vcell/restclient/model/BiomodelRef.java
+src/main/java/org/vcell/restclient/model/HelloWorldMessage.java
 src/main/java/org/vcell/restclient/model/MathmodelRef.java
 src/main/java/org/vcell/restclient/model/Publication.java
 src/main/java/org/vcell/restclient/model/User.java
+src/test/java/org/vcell/restclient/api/HelloWorldApiTest.java
+src/test/java/org/vcell/restclient/model/HelloWorldMessageTest.java

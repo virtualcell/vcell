@@ -1,5 +1,5 @@
 /*
- * VCell API (development)
+ * VCell API (test)
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1

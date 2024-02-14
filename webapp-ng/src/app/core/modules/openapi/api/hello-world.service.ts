@@ -19,21 +19,21 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { User } from '../model/user';
+import { HelloWorldMessage } from '../model/hello-world-message';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import {
-    UsersResourceServiceInterface
-} from './users-resource.serviceInterface';
+    HelloWorldServiceInterface
+} from './hello-world.serviceInterface';
 
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class UsersResourceService implements UsersResourceServiceInterface {
+export class HelloWorldService implements HelloWorldServiceInterface {
 
     protected basePath = 'http://localhost:9000';
     public defaultHeaders = new HttpHeaders();
@@ -95,21 +95,16 @@ export class UsersResourceService implements UsersResourceServiceInterface {
     }
 
     /**
+     * Get hello world message.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiUsersMeGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<User>;
-    public apiUsersMeGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<User>>;
-    public apiUsersMeGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<User>>;
-    public apiUsersMeGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public getHelloWorld(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HelloWorldMessage>;
+    public getHelloWorld(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<HelloWorldMessage>>;
+    public getHelloWorld(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<HelloWorldMessage>>;
+    public getHelloWorld(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
-
-        let localVarCredential: string | undefined;
-        // authentication (openId) required
-        localVarCredential = this.configuration.lookupCredential('openId');
-        if (localVarCredential) {
-        }
 
         let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
         if (localVarHttpHeaderAcceptSelected === undefined) {
@@ -140,8 +135,8 @@ export class UsersResourceService implements UsersResourceServiceInterface {
             }
         }
 
-        let localVarPath = `/api/users/me`;
-        return this.httpClient.request<User>('get', `${this.configuration.basePath}${localVarPath}`,
+        let localVarPath = `/api/helloworld`;
+        return this.httpClient.request<HelloWorldMessage>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

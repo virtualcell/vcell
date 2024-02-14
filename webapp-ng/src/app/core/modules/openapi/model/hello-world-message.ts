@@ -11,11 +11,7 @@
  */
 
 
-export interface MathmodelRef { 
-    mmKey?: number;
-    name?: string;
-    ownerName?: string;
-    ownerKey?: number;
-    versionFlag?: number;
+export interface HelloWorldMessage { 
+    message?: string;
 }
 

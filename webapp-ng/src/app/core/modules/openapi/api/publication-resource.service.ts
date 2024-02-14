@@ -1,5 +1,5 @@
 /**
- * VCell API (development)
+ * VCell API (test)
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -13,7 +13,7 @@
 
 import { Inject, Injectable, Optional }                      from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams,
-         HttpResponse, HttpEvent, HttpParameterCodec, HttpContext
+         HttpResponse, HttpEvent, HttpParameterCodec, HttpContext 
         }       from '@angular/common/http';
 import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
@@ -96,7 +96,7 @@ export class PublicationResourceService implements PublicationResourceServiceInt
 
     /**
      * Create publication
-     * @param publication
+     * @param publication 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
@@ -167,7 +167,7 @@ export class PublicationResourceService implements PublicationResourceServiceInt
 
     /**
      * Delete publication
-     * @param id
+     * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
@@ -230,7 +230,7 @@ export class PublicationResourceService implements PublicationResourceServiceInt
 
     /**
      * Get publication by ID
-     * @param id
+     * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
@@ -328,7 +328,6 @@ export class PublicationResourceService implements PublicationResourceServiceInt
         }
 
         let localVarPath = `/api/publications`;
-        this.configuration.withCredentials = undefined;
         return this.httpClient.request<Array<Publication>>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -343,7 +342,7 @@ export class PublicationResourceService implements PublicationResourceServiceInt
 
     /**
      * Create publication
-     * @param publication
+     * @param publication 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */

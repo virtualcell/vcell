@@ -1,6 +1,6 @@
 # vcell-restclient
 
-VCell API (development)
+VCell API (test)
 
 - API version: 1.0.1
 
@@ -75,21 +75,20 @@ Please follow the [installation](#installation) instruction and execute the foll
 
 import org.vcell.restclient.*;
 import org.vcell.restclient.model.*;
-import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.HelloWorldApi;
 
-public class PublicationResourceApiExample {
+public class HelloWorldApiExample {
 
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         // Configure clients using the `defaultClient` object, such as
         // overriding the host and port, timeout, etc.
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-        Publication publication = new Publication(); // Publication | 
+        HelloWorldApi apiInstance = new HelloWorldApi(defaultClient);
         try {
-            Long result = apiInstance.createPublication(publication);
+            HelloWorldMessage result = apiInstance.getHelloWorld();
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#createPublication");
+            System.err.println("Exception when calling HelloWorldApi#getHelloWorld");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -106,6 +105,8 @@ All URIs are relative to *http://localhost:9000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/helloworld | Get hello world message.
+*HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/helloworld | Get hello world message.
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/publications | Create publication
 *PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/publications | Create publication
 *PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/publications/{id} | Delete publication
@@ -123,6 +124,7 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [BiomodelRef](docs/BiomodelRef.md)
+ - [HelloWorldMessage](docs/HelloWorldMessage.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
  - [User](docs/User.md)

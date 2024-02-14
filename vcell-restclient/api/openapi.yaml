@@ -9,11 +9,25 @@ info:
     name: MIT
     url: http://opensource.org/licenses/MIT
   termsOfService: Your terms of service here
-  title: VCell API (development)
+  title: VCell API (test)
   version: 1.0.1
 servers:
 - url: http://localhost:9000
 paths:
+  /api/helloworld:
+    get:
+      operationId: getHelloWorld
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelloWorldMessage'
+          description: OK
+      summary: Get hello world message.
+      tags:
+      - Hello World
+      x-accepts: application/json
   /api/publications:
     get:
       operationId: getPublications
@@ -178,6 +192,13 @@ components:
       example: 2022-03-10
       format: date
       type: string
+    HelloWorldMessage:
+      example:
+        message: message
+      properties:
+        message:
+          type: string
+      type: object
     MathmodelRef:
       example:
         ownerName: ownerName

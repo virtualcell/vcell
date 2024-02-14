@@ -26,15 +26,12 @@ try:
 except ImportError:
     from typing_extensions import Self
 
-class User(BaseModel):
+class HelloWorldMessage(BaseModel):
     """
-    User
+    HelloWorldMessage
     """ # noqa: E501
-    principal_name: Optional[StrictStr] = None
-    roles: Optional[List[StrictStr]] = None
-    attributes: Optional[List[StrictStr]] = None
-    credentials: Optional[List[StrictStr]] = None
-    __properties: ClassVar[List[str]] = ["principal_name", "roles", "attributes", "credentials"]
+    message: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["message"]
 
     model_config = {
         "populate_by_name": True,
@@ -53,7 +50,7 @@ class User(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of User from a JSON string"""
+        """Create an instance of HelloWorldMessage from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -76,7 +73,7 @@ class User(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Dict) -> Self:
-        """Create an instance of User from a dict"""
+        """Create an instance of HelloWorldMessage from a dict"""
         if obj is None:
             return None
 
@@ -86,13 +83,10 @@ class User(BaseModel):
         # raise errors for additional fields in the input
         for _key in obj.keys():
             if _key not in cls.__properties:
-                raise ValueError("Error due to additional fields (not defined in User) in the input: " + _key)
+                raise ValueError("Error due to additional fields (not defined in HelloWorldMessage) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "principal_name": obj.get("principal_name"),
-            "roles": obj.get("roles"),
-            "attributes": obj.get("attributes"),
-            "credentials": obj.get("credentials")
+            "message": obj.get("message")
         })
         return _obj
 
