@@ -9,6 +9,9 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
+import org.vcell.cli.PythonStreamException;
+import org.vcell.cli.run.PythonCalls;
+import org.vcell.cli.run.Status;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.util.DataAccessException;
 import org.apache.logging.log4j.LogManager;
@@ -20,7 +23,7 @@ import java.util.*;
 public class SpatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(SpatialResultsConverter.class);
 
-    public static List<Hdf5SedmlResults> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    public static List<Hdf5SedmlResults> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws DataAccessException, IOException, HDF5Exception, ExpressionException, PythonStreamException {
         List<Hdf5SedmlResults> datasetWrappers = new LinkedList<>();
 
         for (Report report : SpatialResultsConverter.getReports(sedml.getOutputs())){
@@ -108,6 +111,7 @@ public class SpatialResultsConverter {
                     }
                 }
                 // TODO: Data generator logic goes here
+                PythonCalls.updateDatasetStatusYml(sedmlLocation, report.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
             } // end of dataset
 
             if (bNotSpatial || hdf5DataSourceSpatial.varDataItems.isEmpty()){
