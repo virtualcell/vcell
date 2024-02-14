@@ -189,17 +189,17 @@ public class RunUtils {
         // finally, the real work
         Map<TaskJob, SBMLNonspatialSimResults> resultsHash = solverHandler.nonSpatialResults;
         HashMap<String, File> reportsHash = new HashMap<>();
-        List<Output> ooo = sedml.getOutputs();
-        for (Output oo : ooo) {
+        List<Output> allSedmlOutputs = sedml.getOutputs();
+        for (Output sedmlOutput : allSedmlOutputs) {
             // We only want Reports
-            if (!(oo instanceof Report)) {
-                logger.info("Ignoring unsupported output `" + oo.getId() + "` while CSV generation.");
+            if (!(sedmlOutput instanceof Report sedmlReport)) {
+                logger.info("Ignoring unsupported output `" + sedmlOutput.getId() + "` while CSV generation.");
                 continue;
             }
 
             StringBuilder sb = new StringBuilder();
 
-            logger.info("Generating report `" + oo.getId() +"`.");
+            logger.info("Generating report `" + sedmlReport.getId() +"`.");
             /*
              * we go through each entry (dataset) in the list of datasets
              * for each dataset, we use the data reference to obtain the data generator
@@ -209,7 +209,7 @@ public class RunUtils {
              * * we search the sbml model to find the vcell variable name associated with the urn
              */
             try {
-                List<DataSet> datasets = ((Report) oo).getListOfDataSets();
+                List<DataSet> datasets = sedmlReport.getListOfDataSets();
                 for (DataSet dataset : datasets) {
                     DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference()); assert datagen != null;
                     List<String> varIDs = new ArrayList<>();     
@@ -369,20 +369,19 @@ public class RunUtils {
                         sb.append("\n");
 
                     }	//end of k loop
-                    PythonCalls.updateDatasetStatusYml(sedmlLocation, oo.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
 
                 } // end of dataset			
 
                 if (sb.length() > 0) {
-                    File f = new File(outDirForCurrentSedml, oo.getId() + ".csv");
+                    File f = new File(outDirForCurrentSedml, sedmlReport.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
                     out.print(sb.toString());
                     out.flush();
                     out.close();
-                    logger.info("created csv file for report " + oo.getId() + ": " + f.getAbsolutePath());
-                    reportsHash.put(oo.getId(), f);
+                    logger.info("created csv file for report " + sedmlReport.getId() + ": " + f.getAbsolutePath());
+                    reportsHash.put(sedmlReport.getId(), f);
                 } else {
-                    logger.info("no csv file for report " + oo.getId());
+                    logger.info("no csv file for report " + sedmlReport.getId());
                 }
             } catch (Exception e) {
                 throw new RuntimeException("CSV generation failed: " + e.getMessage(), e);

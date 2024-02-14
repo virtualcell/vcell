@@ -18,6 +18,9 @@ import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.DataSet;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
+import org.vcell.cli.PythonStreamException;
+import org.vcell.cli.run.PythonCalls;
+import org.vcell.cli.run.Status;
 import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.util.DataAccessException;
@@ -31,7 +34,7 @@ public class NonspatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonspatialResultsConverter.class);
 
 
-    public static List<Hdf5SedmlResults> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws DataAccessException, IOException, HDF5Exception, ExpressionException {
+    public static List<Hdf5SedmlResults> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws ExpressionException, PythonStreamException {
         List<Hdf5SedmlResults> datasetWrappers = new ArrayList<>();
 
         for (Report report : NonspatialResultsConverter.getReports(sedml.getOutputs())){
@@ -53,7 +56,7 @@ public class NonspatialResultsConverter {
                     AbstractTask baseTask = NonspatialResultsConverter.getBaseTask(topLevelTask, sedml); // if !RepeatedTask, baseTask == topLevelTask
                     
                     // from the task we get the sbml model
-                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(((Task)baseTask).getSimulationReference());
+                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
 
                     if (!(sedmlSim instanceof UniformTimeCourse)){
                         logger.error("only uniform time course simulations are supported");
@@ -149,7 +152,7 @@ public class NonspatialResultsConverter {
                 }
 
                 dataSetValues.put(dataset, synthesizedResults);
-
+                PythonCalls.updateDatasetStatusYml(sedmlLocation, report.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
             } // end of current dataset processing
 
             if (dataSetValues.isEmpty()) {

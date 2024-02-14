@@ -101,7 +101,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
                         Tracer.reportErrors(bDebug);
                     }
                     return 1;
-                }else {
+                } else {
                     return 0;
                 }
             } finally {
