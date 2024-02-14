@@ -88,8 +88,6 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 logger.error("OUT_DIR " + OUT_DIR.getAbsolutePath() + " not found or is not a directory, try --help for usage");
                 return 1;
             }
-            long EXECUTABLE_MAX_WALLCLOCK_MILLIS = 600000;
-            Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
 
             logger.info("Beginning execution");
             try {
