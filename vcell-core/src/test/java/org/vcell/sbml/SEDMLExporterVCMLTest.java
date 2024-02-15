@@ -51,6 +51,11 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 		return faults;
 	}
 
+	@Override
+	Set<UnsupportedApplication> unsupportedApplications() {
+        return new HashSet<>();
+	}
+
 
 	public static Collection<TestCase> testCases() {
 		Predicate<String> skipFilter_VCML = (t) ->
