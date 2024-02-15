@@ -106,6 +106,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_22403576.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_225440511.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_232498815.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
+		faults.put("biomodel_259882394.vcml", SEDML_FAULT.MATH_DIFFERENT); // MathDifferent:DifferentExpression:expressions are different: '1.0000000000000001E-19' vs '0.0'
 		faults.put("biomodel_2912851.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_2913730.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_2915537.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);

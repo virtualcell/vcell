@@ -78,6 +78,7 @@ public abstract class SEDMLExporterCommon {
 		MATH_OVERRIDE_NOT_EQUIVALENT,
 		MATH_OVERRIDE_NAMES_DIFFERENT,
 		SIMCONTEXT_NOT_FOUND_BY_NAME,
+		MATH_DIFFERENT,
 		SIMULATION_NOT_FOUND_BY_NAME
 	};
 
@@ -337,6 +338,14 @@ public abstract class SEDMLExporterCommon {
 					return;
 				} else {
 					System.err.println("add SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME to " + test_case_name);
+				}
+			}
+			if (e.getMessage()!=null && e.getMessage().contains("could not be exported to SBML :MathDescriptions not equivalent after VCML->SBML->VCML")) {
+				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.MATH_DIFFERENT) {
+					System.err.println("Expected error: "+e.getMessage());
+					return;
+				} else {
+					System.err.println("add SEDML_FAULT.MATH_DIFFERENT to " + test_case_name);
 				}
 			}
 			throw e;

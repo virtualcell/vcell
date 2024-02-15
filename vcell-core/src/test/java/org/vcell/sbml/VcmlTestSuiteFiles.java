@@ -111,6 +111,11 @@ public class VcmlTestSuiteFiles {
             "biomodel_22681429.vcml",
             "biomodel_229605883.vcml",
             "biomodel_232498815.vcml",
+            "biomodel_245335415.vcml", // new published model 2023
+            "biomodel_247511065.vcml", // new published model 2023
+            "biomodel_256364414.vcml", // new published model 2023
+            "biomodel_259696124.vcml", // new published model 2023
+            "biomodel_259882394.vcml", // new published model 2023
             "biomodel_26454052.vcml",
             "biomodel_26454463.vcml",
             "biomodel_26455186.vcml",
