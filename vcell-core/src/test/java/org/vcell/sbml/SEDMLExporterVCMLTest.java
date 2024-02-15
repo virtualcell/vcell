@@ -38,6 +38,7 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_220138948.vcml", FAULT.MATHOVERRIDES_INVALID); // Kf_Uptake invalid override.
 		faults.put("biomodel_55178308.vcml", FAULT.MATHOVERRIDES_INVALID); // VolFract_ER_spine invalid override.
 		faults.put("biomodel_84982474.vcml", FAULT.UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM); // not supported nonspatial histogram
+		faults.put("biomodel_259882394.vcml", FAULT.SEDML_UNSUPPORTED_ENTITY); // Unsupported entity in VCML model export: class cbit.vcell.mapping.SimulationContext$SimulationContextParameter"
 		return faults;
 	}
 
@@ -49,6 +50,11 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_82065439.vcml", SEDML_FAULT.OMEX_PARSER_ERRORS);  //  NON_UNIQUE_IDS:    Each identified SED object must have a unique id. Multiple objects have the following ids:",[["compartmental"]]
 //		faults.put("biomodel_165181964.vcml", SEDML_FAULT.OMEX_VALIDATION_ERRORS); //  EXCEPTION IN VALIDATOR: ValueError: 'KISAO' is not an id for a KiSAO term.
 		return faults;
+	}
+
+	@Override
+	Set<UnsupportedApplication> unsupportedApplications() {
+        return new HashSet<>();
 	}
 
 

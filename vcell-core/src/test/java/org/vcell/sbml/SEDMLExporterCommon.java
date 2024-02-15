@@ -29,6 +29,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public abstract class SEDMLExporterCommon {
 
+	record UnsupportedApplication(String filename, String applicationName, String reason) {
+	}
+
 	static class TestCase {
 		public final String filename;
 		public final ModelFormat modelFormat;
@@ -78,6 +81,7 @@ public abstract class SEDMLExporterCommon {
 		MATH_OVERRIDE_NOT_EQUIVALENT,
 		MATH_OVERRIDE_NAMES_DIFFERENT,
 		SIMCONTEXT_NOT_FOUND_BY_NAME,
+		MATH_DIFFERENT,
 		SIMULATION_NOT_FOUND_BY_NAME
 	};
 
@@ -121,6 +125,8 @@ public abstract class SEDMLExporterCommon {
 
 	abstract Map<String, SEDML_FAULT> knownSEDMLFaults();
 
+	abstract Set<UnsupportedApplication> unsupportedApplications();
+
 
 	void sedml_roundtrip_common(TestCase testCase) throws Exception {
 		String test_case_name = testCase.modelFormat+"."+testCase.filename;
@@ -150,8 +156,21 @@ public abstract class SEDMLExporterCommon {
 		boolean bWriteOmexArchive = true;
 		File omexFile = new File(outputDir, test_case_name + ".omex");
 		Optional<PublicationMetadata> publicationMetadata = Optional.empty();
-		Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, testCase.modelFormat);
-		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
+		Set<UnsupportedApplication> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, testCase.modelFormat)
+				.entrySet().stream().map(e -> new UnsupportedApplication(testCase.filename, e.getKey(), e.getValue())).collect(Collectors.toSet());
+		Set<UnsupportedApplication> declaredUnsupportedApplications = unsupportedApplications().stream()
+				.filter(ua -> ua.filename.equals(testCase.filename)).collect(Collectors.toSet());
+		if (!declaredUnsupportedApplications.equals(unsupportedApplications)){
+			System.err.println("declared unsupported applications for model "+test_case_name+" do not match actual, add the following to unsupportedApplications():");
+			for (UnsupportedApplication ua : unsupportedApplications){
+				System.err.println("unsupportedApplications.add(new UnsupportedApplication(\""+ua.filename+"\",\""+ua.applicationName+"\",\""+ua.reason+"\"));");
+			}
+			assertEquals(declaredUnsupportedApplications, unsupportedApplications,
+					"declared unsupported applications for model "+test_case_name+" do not match actual:\ndeclared:\n"+declaredUnsupportedApplications+"\nfound\n"+unsupportedApplications);
+		}
+		assertEquals(declaredUnsupportedApplications, unsupportedApplications,
+				"declared unsupported applications for model "+test_case_name+" do not match actual:\ndeclared:\n"+declaredUnsupportedApplications+"\nfound\n"+unsupportedApplications);
+		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> unsupportedApplications.stream().noneMatch(ua -> ua.applicationName.equals(sc.getName()));
 		try {
 			List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
 					bioModel, publicationMetadata, omexFile, testCase.modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
@@ -337,6 +356,14 @@ public abstract class SEDMLExporterCommon {
 					return;
 				} else {
 					System.err.println("add SEDML_FAULT.SIMULATION_NOT_FOUND_BY_NAME to " + test_case_name);
+				}
+			}
+			if (e.getMessage()!=null && e.getMessage().contains("could not be exported to SBML :MathDescriptions not equivalent after VCML->SBML->VCML")) {
+				if (knownSEDMLFaults().get(testCase.filename) == SEDML_FAULT.MATH_DIFFERENT) {
+					System.err.println("Expected error: "+e.getMessage());
+					return;
+				} else {
+					System.err.println("add SEDML_FAULT.MATH_DIFFERENT to " + test_case_name);
 				}
 			}
 			throw e;

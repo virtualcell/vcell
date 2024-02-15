@@ -1,0 +1,2219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Rel_Version_7.5.0_build_62.1-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_7.5.0_build_62.1">
+  <BioModel Name="Aging_Phenotypes">
+    <Annotation>cloned from 'Aging_Study_High_IGF_Low_IL6' owned by user mblinov
+cloned from 'Aging_Study_Quadrant1_2021_a_mortality_simplified_copy' owned by user nathan_schaumburger
+cloned from 'Aging_Study_Quadrant1_2021_a_mortality_simplified' owned by user mblinov
+cloned from '705' owned by user pallyjoel
+cloned from '2012-06-08-SampleBistab' owned by user mblinov
+cloned from '2012-05-17-SampleBistab' owned by user pallyjoel
+cloned from '2012-05-01-bistab' owned by user mblinov
+cloned from '2012-04-24-bistab' owned by user pallyjoel
+cloned from '2012-04-05-bistab' owned by user mblinov</Annotation>
+    <Model Name="unnamed">
+      <Annotation>cloned from 'unnamed' owned by user mblinov
+cloned from 'unnamed' owned by user nathan_schaumburger
+cloned from 'unnamed' owned by user mblinov
+cloned from 'unnamed' owned by user pallyjoel
+cloned from 'unnamed' owned by user mblinov
+cloned from 'unnamed' owned by user pallyjoel
+cloned from 'unnamed' owned by user mblinov
+cloned from 'unnamed' owned by user pallyjoel
+cloned from 'unnamed' owned by user mblinov</Annotation>
+      <ModelParameters>
+        <Parameter Name="k_loss" Role="user defined" Unit="s-1.uM-1">0.0</Parameter>
+        <Parameter Name="k_gain" Role="user defined" Unit="tbd">0.0</Parameter>
+        <Parameter Name="kp_IGF1" Role="user defined" Unit="tbd">20.0</Parameter>
+        <Parameter Name="kd_IGF" Role="user defined" Unit="s-1">0.05</Parameter>
+        <Parameter Name="kp_IL6" Role="user defined" Unit="tbd">8.0E-4</Parameter>
+        <Parameter Name="kd_IL6" Role="user defined" Unit="s-1">0.033</Parameter>
+        <Parameter Name="ks_IGF" Role="user defined" Unit="tbd">5.777278E-4</Parameter>
+        <Parameter Name="ks_IL6" Role="user defined" Unit="tbd">286266.8</Parameter>
+        <Parameter Name="k_mort" Role="user defined" Unit="tbd">0.0</Parameter>
+        <Parameter Name="k_longevity" Role="user defined" Unit="s-1">0.004</Parameter>
+        <Parameter Name="k_extra" Role="user defined" Unit="tbd">2.5</Parameter>
+      </ModelParameters>
+      <Compound Name="s0" />
+      <Compound Name="s1" />
+      <Compound Name="s4" />
+      <Compound Name="s2" />
+      <Compound Name="s3" />
+      <Feature Name="Blood" KeyValue="235245489" />
+      <LocalizedCompound Name="IL6" CompoundRef="s0" Structure="Blood" OverrideName="true" KeyValue="235245491" />
+      <LocalizedCompound Name="IGF1" CompoundRef="s1" Structure="Blood" OverrideName="true" KeyValue="235245492" />
+      <LocalizedCompound Name="Deceased" CompoundRef="s4" Structure="Blood" OverrideName="true" KeyValue="235245493" />
+      <LocalizedCompound Name="Mobility_Disability" CompoundRef="s2" Structure="Blood" OverrideName="true" KeyValue="235245494" />
+      <LocalizedCompound Name="Mobile" CompoundRef="s3" Structure="Blood" OverrideName="true" KeyValue="235245495" />
+      <SimpleReaction Structure="Blood" Name="prod_IGF1" Reversible="true" FluxOption="MolecularOnly" KeyValue="235245496">
+        <Product LocalizedCompoundRef="IGF1" Stoichiometry="1" KeyValue="235245497" />
+        <Modifier LocalizedCompoundRef="IL6" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(kp_IGF1 / (1.0 + (ks_IL6 * (IL6 ^ 2.0))))</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Blood" Name="deg_IL6" Reversible="true" FluxOption="MolecularOnly" KeyValue="235245499">
+        <Reactant LocalizedCompoundRef="IL6" Stoichiometry="1" KeyValue="235245500" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(kd_IL6 * IL6)</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Blood" Name="deg_IGF1" Reversible="true" FluxOption="MolecularOnly" KeyValue="235245501">
+        <Reactant LocalizedCompoundRef="IGF1" Stoichiometry="1" KeyValue="235245502" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(kd_IGF * IGF1)</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Blood" Name="MD -&gt; M" Reversible="true" FluxOption="MolecularOnly" KeyValue="235245503">
+        <Reactant LocalizedCompoundRef="Mobility_Disability" Stoichiometry="1" KeyValue="235245504" />
+        <Product LocalizedCompoundRef="Mobile" Stoichiometry="1" KeyValue="235245505" />
+        <Modifier LocalizedCompoundRef="IGF1" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(k_gain * Mobility_Disability * IGF1)</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Blood" Name="M -&gt; MD" Reversible="true" FluxOption="MolecularOnly" KeyValue="235245507">
+        <Reactant LocalizedCompoundRef="Mobile" Stoichiometry="1" KeyValue="235245508" />
+        <Product LocalizedCompoundRef="Mobility_Disability" Stoichiometry="1" KeyValue="235245509" />
+        <Modifier LocalizedCompoundRef="IL6" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(k_loss * Mobile * IL6)</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Blood" Name="MD -&gt; D" Reversible="true" FluxOption="MolecularOnly" KeyValue="235245511">
+        <Reactant LocalizedCompoundRef="Mobility_Disability" Stoichiometry="1" KeyValue="235245512" />
+        <Product LocalizedCompoundRef="Deceased" Stoichiometry="1" KeyValue="235245513" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(((k_extra * k_mort) * (2.718281828459 ^ (k_longevity * t))) * Mobility_Disability)</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Blood" Name="prod_ILG6" Reversible="true" FluxOption="MolecularOnly" KeyValue="235245514">
+        <Product LocalizedCompoundRef="IL6" Stoichiometry="1" KeyValue="235245515" />
+        <Modifier LocalizedCompoundRef="IGF1" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(kp_IL6 / (1.0 + (ks_IGF * (IGF1 ^ 2.0))))</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="Blood" Name="M -&gt; D" Reversible="true" FluxOption="MolecularOnly" KeyValue="235245517">
+        <Reactant LocalizedCompoundRef="Mobile" Stoichiometry="1" KeyValue="235245518" />
+        <Product LocalizedCompoundRef="Deceased" Stoichiometry="1" KeyValue="235245519" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((k_mort * (2.718281828459 ^ (k_longevity * t))) * Mobile)</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c0" Structure="Blood">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Deceased" LocationX="303" LocationY="350" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="MD -&gt; M" LocationX="302" LocationY="271" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="M -&gt; D" LocationX="459" LocationY="295" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="deg_IL6" LocationX="587" LocationY="74" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="IGF1" LocationX="134" LocationY="55" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="IL6" LocationX="368" LocationY="53" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Mobility_Disability" LocationX="194" LocationY="176" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="deg_IGF1" LocationX="0" LocationY="66" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Mobile" LocationX="435" LocationY="207" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="MD -&gt; D" LocationX="135" LocationY="304" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="M -&gt; MD" LocationX="306" LocationY="168" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="prod_ILG6" LocationX="275" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="prod_IGF1" LocationX="276" LocationY="46" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="deg_IL6" LocationX="451" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="Mobility_Disability" LocationX="126" LocationY="222" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="IL6" LocationX="317" LocationY="60" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="Mobile" LocationX="435" LocationY="207" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="MD -&gt; D" LocationX="71" LocationY="216" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="prod_ILG6" LocationX="241" LocationY="80" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="deg_IGF1" LocationX="19" LocationY="60" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="IGF1" LocationX="134" LocationY="55" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="prod_IGF1" LocationX="239" LocationY="36" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="MD -&gt; M" LocationX="266" LocationY="260" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="molecule" SimpleReactionRef="M -&gt; MD" LocationX="267" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="molecule" LocalizedCompoundRef="Deceased" LocationX="14" LocationY="221" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="deg_IL6" LocationX="451" LocationY="62" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="Mobility_Disability" LocationX="126" LocationY="222" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="IL6" LocationX="317" LocationY="60" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="Mobile" LocationX="435" LocationY="207" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="MD -&gt; D" LocationX="71" LocationY="216" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="prod_ILG6" LocationX="241" LocationY="80" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="deg_IGF1" LocationX="19" LocationY="60" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="IGF1" LocationX="134" LocationY="55" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="prod_IGF1" LocationX="239" LocationY="36" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="MD -&gt; M" LocationX="266" LocationY="260" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="rule" SimpleReactionRef="M -&gt; MD" LocationX="267" LocationY="182" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="rule" LocalizedCompoundRef="Deceased" LocationX="14" LocationY="221" />
+      </Diagram>
+      <Version Name="unnamed" KeyValue="235245482" BranchId="205150762" Archived="0" Date="13-Jun-2022 15:21:40" FromVersionable="false">
+        <Owner Name="aging_project" Identifier="205148987" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'unnamed' owned by user mblinov
+cloned from 'unnamed' owned by user nathan_schaumburger
+cloned from 'unnamed' owned by user mblinov
+cloned from 'unnamed' owned by user pallyjoel
+cloned from 'unnamed' owned by user mblinov
+cloned from 'unnamed' owned by user pallyjoel
+cloned from 'unnamed' owned by user mblinov
+cloned from 'unnamed' owned by user pallyjoel
+cloned from 'unnamed' owned by user mblinov</Annotation>
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="Molecular_mechanism" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>cloned from 'Molecular_mechanism' owned by user mblinov
+(copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger
+cloned from 'Death_scales_2000_0.1' owned by user mblinov
+(copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      <Geometry Name="non-spatial281903117" Dimension="0">
+        <Annotation>cloned from 'non-spatial281903117' owned by user mblinov</Annotation>
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="205150746" />
+        <Version Name="non-spatial281903117" KeyValue="205150742" BranchId="205150743" Archived="0" Date="22-Apr-2021 22:15:58" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'non-spatial281903117' owned by user mblinov</Annotation>
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Blood" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IL6" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.00314</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IGF1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>107.8</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Deceased" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobility_Disability" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobile" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="prod_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IL6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; M" ReactionMapping="excluded" />
+        <ReactionSpec ReactionStepRef="M -&gt; MD" ReactionMapping="excluded" />
+        <ReactionSpec ReactionStepRef="MD -&gt; D" ReactionMapping="excluded" />
+        <ReactionSpec ReactionStepRef="prod_ILG6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; D" ReactionMapping="excluded" />
+      </ReactionContext>
+      <MathDescription Name="Copy of Phenotypes_generated">
+        <Annotation>cloned from 'Copy of Phenotypes_generated' owned by user mblinov</Annotation>
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Deceased_init_uM">0.0</Constant>
+        <Constant Name="IGF1_init_uM">107.8</Constant>
+        <Constant Name="IL6_init_uM">0.00314</Constant>
+        <Constant Name="k_extra">2.5</Constant>
+        <Constant Name="k_gain">0.0</Constant>
+        <Constant Name="k_longevity">0.004</Constant>
+        <Constant Name="k_loss">0.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="k_mort">0.0</Constant>
+        <Constant Name="kd_IGF">0.05</Constant>
+        <Constant Name="kd_IL6">0.033</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="kp_IGF1">20.0</Constant>
+        <Constant Name="kp_IL6">8.0E-4</Constant>
+        <Constant Name="ks_IGF">5.777278E-4</Constant>
+        <Constant Name="ks_IL6">286266.8</Constant>
+        <Constant Name="Mobile_init_uM">0.0</Constant>
+        <Constant Name="Mobility_Disability_init_uM">0.0</Constant>
+        <Constant Name="Size_Blood">50000.0</Constant>
+        <VolumeVariable Name="Deceased" Domain="Compartment" />
+        <VolumeVariable Name="IGF1" Domain="Compartment" />
+        <VolumeVariable Name="IL6" Domain="Compartment" />
+        <VolumeVariable Name="Mobile" Domain="Compartment" />
+        <VolumeVariable Name="Mobility_Disability" Domain="Compartment" />
+        <Function Name="J_deg_IGF1" Domain="Compartment">(kd_IGF * IGF1)</Function>
+        <Function Name="J_deg_IL6" Domain="Compartment">(kd_IL6 * IL6)</Function>
+        <Function Name="J_prod_IGF1" Domain="Compartment">(kp_IGF1 / (1.0 + (ks_IL6 * (IL6 ^ 2.0))))</Function>
+        <Function Name="J_prod_ILG6" Domain="Compartment">(kp_IL6 / (1.0 + (ks_IGF * (IGF1 ^ 2.0))))</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="IL6" SolutionType="Unknown">
+            <Rate>( - J_deg_IL6 + J_prod_ILG6)</Rate>
+            <Initial>IL6_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="IGF1" SolutionType="Unknown">
+            <Rate>(J_prod_IGF1 - J_deg_IGF1)</Rate>
+            <Initial>IGF1_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Deceased" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Initial>Deceased_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobility_Disability" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Initial>Mobility_Disability_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobile" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Initial>Mobile_init_uM</Initial>
+          </OdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Copy of Phenotypes_generated" KeyValue="235245470" BranchId="205150756" Archived="0" Date="13-Jun-2022 15:21:39" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Copy of Phenotypes_generated' owned by user mblinov</Annotation>
+        </Version>
+      </MathDescription>
+      <Simulation Name="1. Fit of kp and kd only">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="360.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="ks_IGF">0.0</Constant>
+          <Constant Name="ks_IL6">0.0</Constant>
+        </MathOverrides>
+        <Version Name="1. Fit of kp and kd only" KeyValue="235245629" BranchId="230124395" Archived="0" Date="13-Jun-2022 15:21:40" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="230700716" />
+        </Version>
+      </Simulation>
+      <Simulation Name="2. Fit of ks_IGF and ks_IL6">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="360.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+        </MathOverrides>
+        <Version Name="2. Fit of ks_IGF and ks_IL6" KeyValue="235245631" BranchId="230124674" Archived="0" Date="13-Jun-2022 15:21:40" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="230700685" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 3 Simulation 7/24 IGF">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="400.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 100 values</Constant>
+        </MathOverrides>
+        <Version Name="Figure 3 Simulation 7/24 IGF" KeyValue="238840287" BranchId="238840288" Archived="0" Date="27-Jul-2022 20:49:14" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="3 Simulation 7/24 IL6">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="400.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 100 values</Constant>
+        </MathOverrides>
+        <Version Name="3 Simulation 7/24 IL6" KeyValue="238840290" BranchId="238840291" Archived="0" Date="27-Jul-2022 20:49:14" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <AnalysisTaskList>
+        <ParameterEstimationTask Name="DefaultTask">
+          <parameterMappingSpecList>
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_loss" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_gain" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IGF1" lowLimit="0.4" highLimit="40.0" currentValue="4.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IGF" lowLimit="1.0E-4" highLimit="0.01" currentValue="0.001" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IGF" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_mort" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_longevity" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_extra" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Molecular_mechanism.IL6_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Molecular_mechanism.IGF1_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Molecular_mechanism.Deceased_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Molecular_mechanism.Mobility_Disability_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Molecular_mechanism.Mobile_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Molecular_mechanism.Blood_mapping.Size" lowLimit="5000.0" highLimit="500000.0" currentValue="50000.0" selected="false" />
+          </parameterMappingSpecList>
+          <referenceData numRows="4" numColumns="3">
+            <dataColumnList>
+              <dataColumn Name="t" weight="1.0" />
+              <dataColumn Name="IGF1" weight="1.0" />
+              <dataColumn Name="IL6" weight="1.0" />
+            </dataColumnList>
+            <dataRowList>
+              <dataRow>0.0 107.8 0.00314</dataRow>
+              <dataRow>12.0 105.85 0.00319</dataRow>
+              <dataRow>36.0 101.95 0.00329</dataRow>
+              <dataRow>60.0 98.05 0.00339</dataRow>
+            </dataRowList>
+          </referenceData>
+          <referenceDataMappingSpecList>
+            <referenceDataMappingSpec referenceDataColumnName="t" referenceDataModelSymbol="t" />
+            <referenceDataMappingSpec referenceDataColumnName="IGF1" referenceDataModelSymbol="IGF1" />
+            <referenceDataMappingSpec referenceDataColumnName="IL6" referenceDataModelSymbol="IL6" />
+          </referenceDataMappingSpecList>
+          <optimizationSolverSpec optimizationSolverType="Evolutionary Programming" NumOfRuns="25">
+            <ListOfParameters>
+              <Parameter Name="Number of Generations" Value="200.0" />
+              <Parameter Name="Population Size" Value="20.0" />
+              <Parameter Name="Random Number Generator" Value="1.0" />
+              <Parameter Name="Seed" Value="0.0" />
+            </ListOfParameters>
+          </optimizationSolverSpec>
+          <OptimizationResultSet>
+            <bestOptRunResultSet>
+              <ListOfParameters>
+                <Parameter Name="ks_IL6" Value="286266.80971509713" />
+                <Parameter Name="ks_IGF" Value="5.77727799452756E-4" />
+              </ListOfParameters>
+              <objectiveFunction Value="5.4556749579317025E-9" />
+              <ObjectiveFunctionEvaluations Value="4006" />
+            </bestOptRunResultSet>
+          </OptimizationResultSet>
+        </ParameterEstimationTask>
+      </AnalysisTaskList>
+      <Version Name="Molecular_mechanism" KeyValue="244346413" BranchId="244346414" Archived="0" Date="04-Oct-2022 21:41:17" FromVersionable="false">
+        <Owner Name="aging_project" Identifier="205148987" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'Molecular_mechanism' owned by user mblinov
+(copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger
+cloned from 'Death_scales_2000_0.1' owned by user mblinov
+(copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <SimulationSpec Name="Average Phenotypes" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>(copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov
+(copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger
+cloned from 'Death_scales_2000_0.1' owned by user mblinov
+(copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      <Geometry Name="non-spatial1583052434" Dimension="0">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="226149146" />
+        <Version Name="non-spatial1583052434" KeyValue="226149142" BranchId="226149143" Archived="0" Date="08-Feb-2022 18:08:18" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Blood" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IL6" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.00314</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IGF1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>107.8</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Deceased" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobility_Disability" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>332.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobile" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>386.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="prod_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IL6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; M" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; MD" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; D" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="prod_ILG6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; D" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Copy of Molecular_mechanism_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Deceased_init_uM">0.0</Constant>
+        <Constant Name="IGF1_init_uM">107.8</Constant>
+        <Constant Name="IL6_init_uM">0.00314</Constant>
+        <Constant Name="k_extra">2.5</Constant>
+        <Constant Name="k_gain">0.0</Constant>
+        <Constant Name="k_longevity">0.004</Constant>
+        <Constant Name="k_loss">0.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="k_mort">0.0</Constant>
+        <Constant Name="kd_IGF">0.05</Constant>
+        <Constant Name="kd_IL6">0.033</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="kp_IGF1">20.0</Constant>
+        <Constant Name="kp_IL6">8.0E-4</Constant>
+        <Constant Name="ks_IGF">5.777278E-4</Constant>
+        <Constant Name="ks_IL6">286266.8</Constant>
+        <Constant Name="Mobile_init_uM">386.0</Constant>
+        <Constant Name="Mobility_Disability_init_uM">332.0</Constant>
+        <Constant Name="Size_Blood">50000.0</Constant>
+        <VolumeVariable Name="Deceased" Domain="Compartment" />
+        <VolumeVariable Name="IGF1" Domain="Compartment" />
+        <VolumeVariable Name="IL6" Domain="Compartment" />
+        <VolumeVariable Name="Mobile" Domain="Compartment" />
+        <VolumeVariable Name="Mobility_Disability" Domain="Compartment" />
+        <Function Name="J_deg_IGF1" Domain="Compartment">(kd_IGF * IGF1)</Function>
+        <Function Name="J_deg_IL6" Domain="Compartment">(kd_IL6 * IL6)</Function>
+        <Function Name="J_M____D" Domain="Compartment">((k_mort * (2.718281828459 ^ (k_longevity * t))) * Mobile)</Function>
+        <Function Name="J_M____MD" Domain="Compartment">(k_loss * Mobile * IL6)</Function>
+        <Function Name="J_MD____D" Domain="Compartment">(((k_extra * k_mort) * (2.718281828459 ^ (k_longevity * t))) * Mobility_Disability)</Function>
+        <Function Name="J_MD____M" Domain="Compartment">(k_gain * Mobility_Disability * IGF1)</Function>
+        <Function Name="J_prod_IGF1" Domain="Compartment">(kp_IGF1 / (1.0 + (ks_IL6 * (IL6 ^ 2.0))))</Function>
+        <Function Name="J_prod_ILG6" Domain="Compartment">(kp_IL6 / (1.0 + (ks_IGF * (IGF1 ^ 2.0))))</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="IL6" SolutionType="Unknown">
+            <Rate>( - J_deg_IL6 + J_prod_ILG6)</Rate>
+            <Initial>IL6_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="IGF1" SolutionType="Unknown">
+            <Rate>(J_prod_IGF1 - J_deg_IGF1)</Rate>
+            <Initial>IGF1_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Deceased" SolutionType="Unknown">
+            <Rate>(J_MD____D + J_M____D)</Rate>
+            <Initial>Deceased_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobility_Disability" SolutionType="Unknown">
+            <Rate>( - J_MD____M + J_M____MD - J_MD____D)</Rate>
+            <Initial>Mobility_Disability_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobile" SolutionType="Unknown">
+            <Rate>(J_MD____M - J_M____MD - J_M____D)</Rate>
+            <Initial>Mobile_init_uM</Initial>
+          </OdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Copy of Molecular_mechanism_generated" KeyValue="235245472" BranchId="226149150" Archived="0" Date="13-Jun-2022 15:21:39" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <OutputFunctions>
+        <AnnotatedFunction Name="Frac_Mobile" ErrorString="" FunctionType="Nonspatial">(((Mobile / (Mobile + Mobility_Disability)) * ((Mobile + Mobility_Disability) &gt;= 1.0)) + (0.0 * ((Mobile + Mobility_Disability) &lt; 1.0)))</AnnotatedFunction>
+        <AnnotatedFunction Name="Surviving_number" ErrorString="" FunctionType="Nonspatial">floor((Mobile + Mobility_Disability))</AnnotatedFunction>
+        <AnnotatedFunction Name="Surviving_chances" ErrorString="" FunctionType="Nonspatial">(100.0 * (Mobile + Mobility_Disability) / (Deceased + Mobile + Mobility_Disability))</AnnotatedFunction>
+      </OutputFunctions>
+      <Simulation Name="Average_timecourse">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="300.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_loss">5.5283862512227735</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Average_timecourse" KeyValue="235245633" BranchId="234958842" Archived="0" Date="13-Jun-2022 15:21:40" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15" KeyValue="235391724" BranchId="235391725" Archived="0" Date="15-Jun-2022 13:56:54" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 4 7/24">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="360.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Figure 4 7/24" KeyValue="238625541" BranchId="238624848" Archived="0" Date="25-Jul-2022 19:16:12" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Copy of Figure 4 7/24">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="360.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimes="0.0,60.0,120.0,180.0,240.0,360.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 100 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Copy of Figure 4 7/24" KeyValue="238632037" BranchId="238632038" Archived="0" Date="25-Jul-2022 21:07:17" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Copy of Copy of Figure 4 7/24">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="360.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimes="0.0,60.0,120.0,180.0,240.0,360.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 100 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Copy of Copy of Figure 4 7/24" KeyValue="238632040" BranchId="238632041" Archived="0" Date="25-Jul-2022 21:07:17" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 7 Switchpoints 1">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="360.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimes="0.0,60.0,120.0,180.0,240.0,360.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 100 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Figure 7 Switchpoints 1" KeyValue="238637057" BranchId="238637058" Archived="0" Date="25-Jul-2022 22:24:25" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 7 Switchpoints 2">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">150.0 to 200.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.004 to 0.0045, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Figure 7 Switchpoints 2" KeyValue="238639201" BranchId="238637061" Archived="0" Date="25-Jul-2022 22:52:44" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name=" Figure 7 Switchpoints 3">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">150.0 to 200.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.0045 to 0.005, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name=" Figure 7 Switchpoints 3" KeyValue="238639203" BranchId="238639204" Archived="0" Date="25-Jul-2022 22:52:44" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 7 Switchpoints 4">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">200.0 to 250.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.0045 to 0.005, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Figure 7 Switchpoints 4" KeyValue="238639206" BranchId="238639207" Archived="0" Date="25-Jul-2022 22:52:44" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 7 Switchpoints 5">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">200.0 to 250.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.005 to 0.0055, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Figure 7 Switchpoints 5" KeyValue="238639209" BranchId="238639210" Archived="0" Date="25-Jul-2022 22:52:44" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 7 Switchpoints 6">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">250.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.0055 to 0.006, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Figure 7 Switchpoints 6" KeyValue="238639212" BranchId="238639213" Archived="0" Date="25-Jul-2022 22:52:44" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 7 Switchpoints 7">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">250.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.006 to 0.0065, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Figure 7 Switchpoints 7" KeyValue="238639215" BranchId="238639216" Archived="0" Date="25-Jul-2022 22:52:44" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Copy of Figure 7 Switchpoints extra">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">150.0 to 200.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.0042 to 0.0044, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Copy of Figure 7 Switchpoints extra" KeyValue="238639218" BranchId="238639219" Archived="0" Date="25-Jul-2022 22:52:44" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 7 Switchpoints 8">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">0.0 to 50.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">2.0E-4 to 7.0E-4, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Figure 7 Switchpoints 8" KeyValue="238719564" BranchId="238719406" Archived="0" Date="26-Jul-2022 18:13:02" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Figure 7 Switchpoints 9">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">0.0 to 50.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">7.0E-4 to 0.0012, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Figure 7 Switchpoints 9" KeyValue="238720022" BranchId="238720023" Archived="0" Date="26-Jul-2022 18:16:42" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="7 Switchpoints 10">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">0.0 to 50.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.0012 to 0.0017, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="7 Switchpoints 10" KeyValue="238720182" BranchId="238720183" Archived="0" Date="26-Jul-2022 18:18:52" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="7 Switchpoints 11">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">50.0 to 100.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.0017 to 0.0022, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="7 Switchpoints 11" KeyValue="238720643" BranchId="238720644" Archived="0" Date="26-Jul-2022 18:23:37" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="7 Switchpoints 12">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">50.0 to 100.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.0022 to 0.0027, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="7 Switchpoints 12" KeyValue="238721264" BranchId="238721265" Archived="0" Date="26-Jul-2022 18:26:19" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="238720805" />
+        </Version>
+      </Simulation>
+      <Simulation Name="7 Switchpoints 13">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">50.0 to 100.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001716180355161493</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">0.0027 to 0.0032, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372225719366946</Constant>
+          <Constant Name="k_loss">5.528283428365836</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="7 Switchpoints 13" KeyValue="238721267" BranchId="238721268" Archived="0" Date="26-Jul-2022 18:26:19" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <AnalysisTaskList>
+        <ParameterEstimationTask Name="DefaultTask">
+          <parameterMappingSpecList>
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_loss" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_gain" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IGF1" lowLimit="0.4" highLimit="40.0" currentValue="4.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IGF" lowLimit="1.0E-4" highLimit="0.01" currentValue="0.001" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IGF" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_mort" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_longevity" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_extra" lowLimit="2.5" highLimit="2.5" currentValue="2.5" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="Average_Phenotypes.IL6_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Average_Phenotypes.IGF1_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Average_Phenotypes.Deceased_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Average_Phenotypes.Mobility_Disability_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Average_Phenotypes.Mobile_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="Average_Phenotypes.Blood_mapping.Size" lowLimit="5000.0" highLimit="500000.0" currentValue="50000.0" selected="false" />
+          </parameterMappingSpecList>
+          <referenceData numRows="4" numColumns="4">
+            <dataColumnList>
+              <dataColumn Name="t" weight="1.0" />
+              <dataColumn Name="Deceased" weight="1.0" />
+              <dataColumn Name="Mobility_Disability" weight="1.0" />
+              <dataColumn Name="Mobile" weight="1.0" />
+            </dataColumnList>
+            <dataRowList>
+              <dataRow>0.0 0.0 341.0 377.0</dataRow>
+              <dataRow>12.0 26.0 382.0 310.0</dataRow>
+              <dataRow>36.0 102.0 425.0 191.0</dataRow>
+              <dataRow>60.0 197.0 412.0 109.0</dataRow>
+            </dataRowList>
+          </referenceData>
+          <referenceDataMappingSpecList>
+            <referenceDataMappingSpec referenceDataColumnName="t" referenceDataModelSymbol="t" />
+            <referenceDataMappingSpec referenceDataColumnName="Deceased" referenceDataModelSymbol="Deceased" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobility_Disability" referenceDataModelSymbol="Mobility_Disability" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobile" referenceDataModelSymbol="Mobile" />
+          </referenceDataMappingSpecList>
+          <optimizationSolverSpec optimizationSolverType="Evolutionary Programming" NumOfRuns="25">
+            <ListOfParameters>
+              <Parameter Name="Number of Generations" Value="200.0" />
+              <Parameter Name="Population Size" Value="20.0" />
+              <Parameter Name="Random Number Generator" Value="1.0" />
+              <Parameter Name="Seed" Value="0.0" />
+            </ListOfParameters>
+          </optimizationSolverSpec>
+          <OptimizationResultSet>
+            <bestOptRunResultSet>
+              <ListOfParameters>
+                <Parameter Name="k_loss" Value="5.528283428365836" />
+                <Parameter Name="k_gain" Value="1.0E-8" />
+                <Parameter Name="k_mort" Value="0.001716180355161493" />
+                <Parameter Name="k_longevity" Value="0.01372225719366946" />
+                <Parameter Name="k_extra" Value="2.5" />
+              </ListOfParameters>
+              <objectiveFunction Value="31.827714976941657" />
+              <ObjectiveFunctionEvaluations Value="4009" />
+            </bestOptRunResultSet>
+          </OptimizationResultSet>
+        </ParameterEstimationTask>
+      </AnalysisTaskList>
+      <Version Name="Average Phenotypes" KeyValue="238846553" BranchId="226149210" Archived="0" Date="27-Jul-2022 21:37:43" FromVersionable="false">
+        <Owner Name="aging_project" Identifier="205148987" />
+        <GroupAccess Type="1" />
+        <Annotation>(copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov
+(copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger
+cloned from 'Death_scales_2000_0.1' owned by user mblinov
+(copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <SimulationSpec Name="1st cohort High IGF Low IL6" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>(copied from Average Phenotypes) (copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov (copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger cloned from 'Death_scales_2000_0.1' owned by user mblinov (copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      <Geometry Name="non-spatial847909428" Dimension="0">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="230117726" />
+        <Version Name="non-spatial847909428" KeyValue="230117722" BranchId="230117723" Archived="0" Date="30-Mar-2022 22:20:35" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Blood" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IL6" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.00206</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IGF1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>148.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Deceased" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobility_Disability" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>179.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobile" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>219.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="prod_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IL6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; M" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; MD" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; D" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="prod_ILG6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; D" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Copy of Average Phenotypes_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Deceased_init_uM">0.0</Constant>
+        <Constant Name="IGF1_init_uM">148.0</Constant>
+        <Constant Name="IL6_init_uM">0.00206</Constant>
+        <Constant Name="k_extra">2.5</Constant>
+        <Constant Name="k_gain">0.0</Constant>
+        <Constant Name="k_longevity">0.004</Constant>
+        <Constant Name="k_loss">0.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="k_mort">0.0</Constant>
+        <Constant Name="kd_IGF">0.05</Constant>
+        <Constant Name="kd_IL6">0.033</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="kp_IGF1">20.0</Constant>
+        <Constant Name="kp_IL6">8.0E-4</Constant>
+        <Constant Name="ks_IGF">5.777278E-4</Constant>
+        <Constant Name="ks_IL6">286266.8</Constant>
+        <Constant Name="Mobile_init_uM">219.0</Constant>
+        <Constant Name="Mobility_Disability_init_uM">179.0</Constant>
+        <Constant Name="Size_Blood">50000.0</Constant>
+        <VolumeVariable Name="Deceased" Domain="Compartment" />
+        <VolumeVariable Name="IGF1" Domain="Compartment" />
+        <VolumeVariable Name="IL6" Domain="Compartment" />
+        <VolumeVariable Name="Mobile" Domain="Compartment" />
+        <VolumeVariable Name="Mobility_Disability" Domain="Compartment" />
+        <Function Name="J_deg_IGF1" Domain="Compartment">(kd_IGF * IGF1)</Function>
+        <Function Name="J_deg_IL6" Domain="Compartment">(kd_IL6 * IL6)</Function>
+        <Function Name="J_M____D" Domain="Compartment">((k_mort * (2.718281828459 ^ (k_longevity * t))) * Mobile)</Function>
+        <Function Name="J_M____MD" Domain="Compartment">(k_loss * Mobile * IL6)</Function>
+        <Function Name="J_MD____D" Domain="Compartment">(((k_extra * k_mort) * (2.718281828459 ^ (k_longevity * t))) * Mobility_Disability)</Function>
+        <Function Name="J_MD____M" Domain="Compartment">(k_gain * Mobility_Disability * IGF1)</Function>
+        <Function Name="J_prod_IGF1" Domain="Compartment">(kp_IGF1 / (1.0 + (ks_IL6 * (IL6 ^ 2.0))))</Function>
+        <Function Name="J_prod_ILG6" Domain="Compartment">(kp_IL6 / (1.0 + (ks_IGF * (IGF1 ^ 2.0))))</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="IL6" SolutionType="Unknown">
+            <Rate>( - J_deg_IL6 + J_prod_ILG6)</Rate>
+            <Initial>IL6_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="IGF1" SolutionType="Unknown">
+            <Rate>(J_prod_IGF1 - J_deg_IGF1)</Rate>
+            <Initial>IGF1_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Deceased" SolutionType="Unknown">
+            <Rate>(J_MD____D + J_M____D)</Rate>
+            <Initial>Deceased_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobility_Disability" SolutionType="Unknown">
+            <Rate>( - J_MD____M + J_M____MD - J_MD____D)</Rate>
+            <Initial>Mobility_Disability_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobile" SolutionType="Unknown">
+            <Rate>(J_MD____M - J_M____MD - J_M____D)</Rate>
+            <Initial>Mobile_init_uM</Initial>
+          </OdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Copy of Average Phenotypes_generated" KeyValue="235245474" BranchId="230117728" Archived="0" Date="13-Jun-2022 15:21:40" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <OutputFunctions>
+        <AnnotatedFunction Name="Frac_Mobile" ErrorString="" FunctionType="Nonspatial">(((Mobile / (Mobile + Mobility_Disability)) * ((Mobile + Mobility_Disability) &gt;= 1.0)) + (0.0 * ((Mobile + Mobility_Disability) &lt; 1.0)))</AnnotatedFunction>
+        <AnnotatedFunction Name="Surviving" ErrorString="" FunctionType="Nonspatial">(Mobile + Mobility_Disability)</AnnotatedFunction>
+      </OutputFunctions>
+      <Simulation Name="Fitted 6/7 ">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/7 " KeyValue="235245637" BranchId="234798052" Archived="0" Date="13-Jun-2022 15:21:41" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15 Fixed k_longevity">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.0013696420529835257</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372</Constant>
+          <Constant Name="k_loss">7.184032405048748</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15 Fixed k_longevity" KeyValue="235406388" BranchId="235406389" Archived="0" Date="15-Jun-2022 18:16:34" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="235405190" />
+        </Version>
+      </Simulation>
+      <Simulation Name="7/25 Fixed k_longevity Figure 5">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="400.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1000">"74.3", "148.0", "270.0"</Constant>
+          <Constant Name="k_mort">0.0013696420529835257</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1000">"0.0037", "0.00206", "4.0E-4"</Constant>
+          <Constant Name="k_longevity">0.01372</Constant>
+          <Constant Name="k_loss">7.184032405048748</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="7/25 Fixed k_longevity Figure 5" KeyValue="238632526" BranchId="238632044" Archived="0" Date="25-Jul-2022 21:13:37" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <AnalysisTaskList>
+        <ParameterEstimationTask Name="DefaultTask">
+          <parameterMappingSpecList>
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_loss" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_gain" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IGF1" lowLimit="0.4" highLimit="40.0" currentValue="4.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IGF" lowLimit="1.0E-4" highLimit="0.01" currentValue="0.001" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IGF" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_mort" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_longevity" lowLimit="0.01372" highLimit="0.01372" currentValue="0.01372" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_extra" lowLimit="2.5" highLimit="2.5" currentValue="2.5" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="_1st_cohort_High_IGF_Low_IL6.IL6_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_1st_cohort_High_IGF_Low_IL6.IGF1_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_1st_cohort_High_IGF_Low_IL6.Deceased_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_1st_cohort_High_IGF_Low_IL6.Mobility_Disability_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_1st_cohort_High_IGF_Low_IL6.Mobile_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_1st_cohort_High_IGF_Low_IL6.Blood_mapping.Size" lowLimit="5000.0" highLimit="500000.0" currentValue="50000.0" selected="false" />
+          </parameterMappingSpecList>
+          <referenceData numRows="4" numColumns="4">
+            <dataColumnList>
+              <dataColumn Name="t" weight="1.0" />
+              <dataColumn Name="Deceased" weight="1.0" />
+              <dataColumn Name="Mobility_Disability" weight="1.0" />
+              <dataColumn Name="Mobile" weight="1.0" />
+            </dataColumnList>
+            <dataRowList>
+              <dataRow>0.0 0.0 179.0 219.0</dataRow>
+              <dataRow>12.0 7.0 198.0 193.0</dataRow>
+              <dataRow>36.0 36.0 224.0 138.0</dataRow>
+              <dataRow>60.0 92.0 219.0 87.0</dataRow>
+            </dataRowList>
+          </referenceData>
+          <referenceDataMappingSpecList>
+            <referenceDataMappingSpec referenceDataColumnName="t" referenceDataModelSymbol="t" />
+            <referenceDataMappingSpec referenceDataColumnName="Deceased" referenceDataModelSymbol="Deceased" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobility_Disability" referenceDataModelSymbol="Mobility_Disability" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobile" referenceDataModelSymbol="Mobile" />
+          </referenceDataMappingSpecList>
+          <optimizationSolverSpec optimizationSolverType="Evolutionary Programming" NumOfRuns="25">
+            <ListOfParameters>
+              <Parameter Name="Number of Generations" Value="200.0" />
+              <Parameter Name="Population Size" Value="20.0" />
+              <Parameter Name="Random Number Generator" Value="1.0" />
+              <Parameter Name="Seed" Value="0.0" />
+            </ListOfParameters>
+          </optimizationSolverSpec>
+          <OptimizationResultSet>
+            <bestOptRunResultSet>
+              <ListOfParameters>
+                <Parameter Name="k_loss" Value="7.184029634362771" />
+                <Parameter Name="k_gain" Value="1.0E-8" />
+                <Parameter Name="k_mort" Value="0.0013696420847587483" />
+                <Parameter Name="k_longevity" Value="0.01372" />
+                <Parameter Name="k_extra" Value="2.5" />
+              </ListOfParameters>
+              <objectiveFunction Value="155.41129655524026" />
+              <ObjectiveFunctionEvaluations Value="4009" />
+            </bestOptRunResultSet>
+          </OptimizationResultSet>
+        </ParameterEstimationTask>
+      </AnalysisTaskList>
+      <Version Name="1st cohort High IGF Low IL6" KeyValue="238845523" BranchId="230701779" Archived="0" Date="27-Jul-2022 21:23:24" FromVersionable="false">
+        <Owner Name="aging_project" Identifier="205148987" />
+        <GroupAccess Type="1" />
+        <Annotation>(copied from Average Phenotypes) (copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov (copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger cloned from 'Death_scales_2000_0.1' owned by user mblinov (copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <SimulationSpec Name="3rd cohort High IGF High IL6" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>(copied from High IGF Low IL6) (copied from Average Phenotypes) (copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov (copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger cloned from 'Death_scales_2000_0.1' owned by user mblinov (copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      <Geometry Name="non-spatial275287972" Dimension="0">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="230118738" />
+        <Version Name="non-spatial275287972" KeyValue="230118734" BranchId="230118735" Archived="0" Date="30-Mar-2022 22:36:18" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Blood" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IL6" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.00623</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IGF1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>148.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Deceased" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobility_Disability" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>65.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobile" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>63.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="prod_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IL6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; M" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; MD" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; D" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="prod_ILG6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; D" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Copy of High IGF Low IL6_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Deceased_init_uM">0.0</Constant>
+        <Constant Name="IGF1_init_uM">148.0</Constant>
+        <Constant Name="IL6_init_uM">0.00623</Constant>
+        <Constant Name="k_extra">2.5</Constant>
+        <Constant Name="k_gain">0.0</Constant>
+        <Constant Name="k_longevity">0.004</Constant>
+        <Constant Name="k_loss">0.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="k_mort">0.0</Constant>
+        <Constant Name="kd_IGF">0.05</Constant>
+        <Constant Name="kd_IL6">0.033</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="kp_IGF1">20.0</Constant>
+        <Constant Name="kp_IL6">8.0E-4</Constant>
+        <Constant Name="ks_IGF">5.777278E-4</Constant>
+        <Constant Name="ks_IL6">286266.8</Constant>
+        <Constant Name="Mobile_init_uM">63.0</Constant>
+        <Constant Name="Mobility_Disability_init_uM">65.0</Constant>
+        <Constant Name="Size_Blood">50000.0</Constant>
+        <VolumeVariable Name="Deceased" Domain="Compartment" />
+        <VolumeVariable Name="IGF1" Domain="Compartment" />
+        <VolumeVariable Name="IL6" Domain="Compartment" />
+        <VolumeVariable Name="Mobile" Domain="Compartment" />
+        <VolumeVariable Name="Mobility_Disability" Domain="Compartment" />
+        <Function Name="J_deg_IGF1" Domain="Compartment">(kd_IGF * IGF1)</Function>
+        <Function Name="J_deg_IL6" Domain="Compartment">(kd_IL6 * IL6)</Function>
+        <Function Name="J_M____D" Domain="Compartment">((k_mort * (2.718281828459 ^ (k_longevity * t))) * Mobile)</Function>
+        <Function Name="J_M____MD" Domain="Compartment">(k_loss * Mobile * IL6)</Function>
+        <Function Name="J_MD____D" Domain="Compartment">(((k_extra * k_mort) * (2.718281828459 ^ (k_longevity * t))) * Mobility_Disability)</Function>
+        <Function Name="J_MD____M" Domain="Compartment">(k_gain * Mobility_Disability * IGF1)</Function>
+        <Function Name="J_prod_IGF1" Domain="Compartment">(kp_IGF1 / (1.0 + (ks_IL6 * (IL6 ^ 2.0))))</Function>
+        <Function Name="J_prod_ILG6" Domain="Compartment">(kp_IL6 / (1.0 + (ks_IGF * (IGF1 ^ 2.0))))</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="IL6" SolutionType="Unknown">
+            <Rate>( - J_deg_IL6 + J_prod_ILG6)</Rate>
+            <Initial>IL6_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="IGF1" SolutionType="Unknown">
+            <Rate>(J_prod_IGF1 - J_deg_IGF1)</Rate>
+            <Initial>IGF1_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Deceased" SolutionType="Unknown">
+            <Rate>(J_MD____D + J_M____D)</Rate>
+            <Initial>Deceased_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobility_Disability" SolutionType="Unknown">
+            <Rate>( - J_MD____M + J_M____MD - J_MD____D)</Rate>
+            <Initial>Mobility_Disability_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobile" SolutionType="Unknown">
+            <Rate>(J_MD____M - J_M____MD - J_M____D)</Rate>
+            <Initial>Mobile_init_uM</Initial>
+          </OdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Copy of High IGF Low IL6_generated" KeyValue="235245476" BranchId="230118740" Archived="0" Date="13-Jun-2022 15:21:40" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <OutputFunctions>
+        <AnnotatedFunction Name="Frac_Mobile" ErrorString="" FunctionType="Nonspatial">(((Mobile / (Mobile + Mobility_Disability)) * ((Mobile + Mobility_Disability) &gt;= 1.0)) + (0.0 * ((Mobile + Mobility_Disability) &lt; 1.0)))</AnnotatedFunction>
+        <AnnotatedFunction Name="Surviving" ErrorString="" FunctionType="Nonspatial">(Mobile + Mobility_Disability)</AnnotatedFunction>
+      </OutputFunctions>
+      <Simulation Name="Fitted    6/15 Fixed k_longevity">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.002557778254389985</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372</Constant>
+          <Constant Name="k_loss">4.622801375983063</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted    6/15 Fixed k_longevity" KeyValue="235406391" BranchId="235406392" Archived="0" Date="15-Jun-2022 18:16:34" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="235405724" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15 all0">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.003817145010588412</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">1.0E-8</Constant>
+          <Constant Name="k_loss">4.668180325130389</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15 all0" KeyValue="235407772" BranchId="235407773" Archived="0" Date="15-Jun-2022 18:35:36" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15 fixed k_mort_1">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.00171618035516</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.023317209185642115</Constant>
+          <Constant Name="k_loss">4.6648144121224275</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15 fixed k_mort_1" KeyValue="244346792" BranchId="244346793" Archived="0" Date="04-Oct-2022 21:47:47" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="235408263" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Copy of Fitted 7/25 Fixed k_longevity Figure 5">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="400.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1000">"74.3", "148.0", "270.0"</Constant>
+          <Constant Name="k_mort">0.002557778254389985</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1000">"0.01", "0.00623", "0.0037"</Constant>
+          <Constant Name="k_longevity">0.01372</Constant>
+          <Constant Name="k_loss">4.622801375983063</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Copy of Fitted 7/25 Fixed k_longevity Figure 5" KeyValue="238633738" BranchId="238633739" Archived="0" Date="25-Jul-2022 21:32:04" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <AnalysisTaskList>
+        <ParameterEstimationTask Name="DefaultTask">
+          <parameterMappingSpecList>
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_loss" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_gain" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IGF1" lowLimit="0.4" highLimit="40.0" currentValue="4.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IGF" lowLimit="1.0E-4" highLimit="0.01" currentValue="0.001" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IGF" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_mort" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_longevity" lowLimit="0.01372" highLimit="0.01372" currentValue="0.01372" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_extra" lowLimit="2.5" highLimit="2.5" currentValue="2.5" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="_3rd_cohort_High_IGF_High_IL6.IL6_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_3rd_cohort_High_IGF_High_IL6.IGF1_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_3rd_cohort_High_IGF_High_IL6.Deceased_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_3rd_cohort_High_IGF_High_IL6.Mobility_Disability_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_3rd_cohort_High_IGF_High_IL6.Mobile_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_3rd_cohort_High_IGF_High_IL6.Blood_mapping.Size" lowLimit="5000.0" highLimit="500000.0" currentValue="50000.0" selected="false" />
+          </parameterMappingSpecList>
+          <referenceData numRows="4" numColumns="4">
+            <dataColumnList>
+              <dataColumn Name="t" weight="1.0" />
+              <dataColumn Name="Deceased" weight="1.0" />
+              <dataColumn Name="Mobility_Disability" weight="1.0" />
+              <dataColumn Name="Mobile" weight="1.0" />
+            </dataColumnList>
+            <dataRowList>
+              <dataRow>0.0 0.0 65.0 63.0</dataRow>
+              <dataRow>12.0 10.0 72.0 46.0</dataRow>
+              <dataRow>36.0 36.0 71.0 21.0</dataRow>
+              <dataRow>60.0 45.0 73.0 10.0</dataRow>
+            </dataRowList>
+          </referenceData>
+          <referenceDataMappingSpecList>
+            <referenceDataMappingSpec referenceDataColumnName="t" referenceDataModelSymbol="t" />
+            <referenceDataMappingSpec referenceDataColumnName="Deceased" referenceDataModelSymbol="Deceased" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobility_Disability" referenceDataModelSymbol="Mobility_Disability" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobile" referenceDataModelSymbol="Mobile" />
+          </referenceDataMappingSpecList>
+          <optimizationSolverSpec optimizationSolverType="Evolutionary Programming" NumOfRuns="25">
+            <ListOfParameters>
+              <Parameter Name="Number of Generations" Value="200.0" />
+              <Parameter Name="Population Size" Value="20.0" />
+              <Parameter Name="Random Number Generator" Value="1.0" />
+              <Parameter Name="Seed" Value="0.0" />
+            </ListOfParameters>
+          </optimizationSolverSpec>
+          <OptimizationResultSet>
+            <bestOptRunResultSet>
+              <ListOfParameters>
+                <Parameter Name="k_loss" Value="4.622801280245331" />
+                <Parameter Name="k_gain" Value="1.0E-8" />
+                <Parameter Name="k_mort" Value="0.002557779198734411" />
+                <Parameter Name="k_longevity" Value="0.01372" />
+                <Parameter Name="k_extra" Value="2.5" />
+              </ListOfParameters>
+              <objectiveFunction Value="135.002881239968" />
+              <ObjectiveFunctionEvaluations Value="4009" />
+            </bestOptRunResultSet>
+          </OptimizationResultSet>
+        </ParameterEstimationTask>
+      </AnalysisTaskList>
+      <Version Name="3rd cohort High IGF High IL6" KeyValue="238846571" BranchId="230701798" Archived="0" Date="27-Jul-2022 21:37:43" FromVersionable="false">
+        <Owner Name="aging_project" Identifier="205148987" />
+        <GroupAccess Type="1" />
+        <Annotation>(copied from High IGF Low IL6) (copied from Average Phenotypes) (copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov (copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger cloned from 'Death_scales_2000_0.1' owned by user mblinov (copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <SimulationSpec Name="2nd cohort Low IGF Low IL6" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>(copied from  High IGF High IL6) (copied from High IGF Low IL6) (copied from Average Phenotypes) (copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov (copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger cloned from 'Death_scales_2000_0.1' owned by user mblinov (copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      <Geometry Name="non-spatial1941130928" Dimension="0">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="230118883" />
+        <Version Name="non-spatial1941130928" KeyValue="230118879" BranchId="230118880" Archived="0" Date="30-Mar-2022 22:37:57" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Blood" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IL6" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.00206</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IGF1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>69.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Deceased" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobility_Disability" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>64.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobile" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>78.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="prod_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IL6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; M" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; MD" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; D" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="prod_ILG6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; D" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Copy of  High IGF High IL6_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Deceased_init_uM">0.0</Constant>
+        <Constant Name="IGF1_init_uM">69.0</Constant>
+        <Constant Name="IL6_init_uM">0.00206</Constant>
+        <Constant Name="k_extra">2.5</Constant>
+        <Constant Name="k_gain">0.0</Constant>
+        <Constant Name="k_longevity">0.004</Constant>
+        <Constant Name="k_loss">0.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="k_mort">0.0</Constant>
+        <Constant Name="kd_IGF">0.05</Constant>
+        <Constant Name="kd_IL6">0.033</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="kp_IGF1">20.0</Constant>
+        <Constant Name="kp_IL6">8.0E-4</Constant>
+        <Constant Name="ks_IGF">5.777278E-4</Constant>
+        <Constant Name="ks_IL6">286266.8</Constant>
+        <Constant Name="Mobile_init_uM">78.0</Constant>
+        <Constant Name="Mobility_Disability_init_uM">64.0</Constant>
+        <Constant Name="Size_Blood">50000.0</Constant>
+        <VolumeVariable Name="Deceased" Domain="Compartment" />
+        <VolumeVariable Name="IGF1" Domain="Compartment" />
+        <VolumeVariable Name="IL6" Domain="Compartment" />
+        <VolumeVariable Name="Mobile" Domain="Compartment" />
+        <VolumeVariable Name="Mobility_Disability" Domain="Compartment" />
+        <Function Name="J_deg_IGF1" Domain="Compartment">(kd_IGF * IGF1)</Function>
+        <Function Name="J_deg_IL6" Domain="Compartment">(kd_IL6 * IL6)</Function>
+        <Function Name="J_M____D" Domain="Compartment">((k_mort * (2.718281828459 ^ (k_longevity * t))) * Mobile)</Function>
+        <Function Name="J_M____MD" Domain="Compartment">(k_loss * Mobile * IL6)</Function>
+        <Function Name="J_MD____D" Domain="Compartment">(((k_extra * k_mort) * (2.718281828459 ^ (k_longevity * t))) * Mobility_Disability)</Function>
+        <Function Name="J_MD____M" Domain="Compartment">(k_gain * Mobility_Disability * IGF1)</Function>
+        <Function Name="J_prod_IGF1" Domain="Compartment">(kp_IGF1 / (1.0 + (ks_IL6 * (IL6 ^ 2.0))))</Function>
+        <Function Name="J_prod_ILG6" Domain="Compartment">(kp_IL6 / (1.0 + (ks_IGF * (IGF1 ^ 2.0))))</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="IL6" SolutionType="Unknown">
+            <Rate>( - J_deg_IL6 + J_prod_ILG6)</Rate>
+            <Initial>IL6_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="IGF1" SolutionType="Unknown">
+            <Rate>(J_prod_IGF1 - J_deg_IGF1)</Rate>
+            <Initial>IGF1_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Deceased" SolutionType="Unknown">
+            <Rate>(J_MD____D + J_M____D)</Rate>
+            <Initial>Deceased_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobility_Disability" SolutionType="Unknown">
+            <Rate>( - J_MD____M + J_M____MD - J_MD____D)</Rate>
+            <Initial>Mobility_Disability_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobile" SolutionType="Unknown">
+            <Rate>(J_MD____M - J_M____MD - J_M____D)</Rate>
+            <Initial>Mobile_init_uM</Initial>
+          </OdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Copy of  High IGF High IL6_generated" KeyValue="235245478" BranchId="230118885" Archived="0" Date="13-Jun-2022 15:21:40" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <OutputFunctions>
+        <AnnotatedFunction Name="Frac_Mobile" ErrorString="" FunctionType="Nonspatial">(((Mobile / (Mobile + Mobility_Disability)) * ((Mobile + Mobility_Disability) &gt;= 1.0)) + (0.0 * ((Mobile + Mobility_Disability) &lt; 1.0)))</AnnotatedFunction>
+        <AnnotatedFunction Name="Surviving" ErrorString="" FunctionType="Nonspatial">(Mobile + Mobility_Disability)</AnnotatedFunction>
+      </OutputFunctions>
+      <Simulation Name="Fitted 3/30/2022_2">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 3/30/2022_2" KeyValue="235245643" BranchId="230119288" Archived="0" Date="13-Jun-2022 15:21:41" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/7   ">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/7   " KeyValue="235245645" BranchId="234798376" Archived="0" Date="13-Jun-2022 15:21:41" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15   Fixed k_longevity">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.001476092969991101</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372</Constant>
+          <Constant Name="k_loss">10.556057109863438</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15   Fixed k_longevity" KeyValue="235406394" BranchId="235406395" Archived="0" Date="15-Jun-2022 18:16:34" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="235405395" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15 all2">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.0012109147143451824</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.019824537334031427</Constant>
+          <Constant Name="k_loss">10.534503089912358</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15 all2" KeyValue="235408889" BranchId="235408890" Archived="0" Date="15-Jun-2022 18:50:39" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15 fixed k_mort">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.00171618035516</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.009391330606273151</Constant>
+          <Constant Name="k_loss">10.502214490180789</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15 fixed k_mort" KeyValue="244346795" BranchId="244346796" Archived="0" Date="04-Oct-2022 21:47:47" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="235409841" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Copy of Fitted 7/25  Fixed k_longevity Figure 5">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="400.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1000">"12.0", "69.0", "74.3"</Constant>
+          <Constant Name="k_mort">0.001476092969991101</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1000">"0.0037", "0.00206", "4.0E-4"</Constant>
+          <Constant Name="k_longevity">0.01372</Constant>
+          <Constant Name="k_loss">10.556057109863438</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Copy of Fitted 7/25  Fixed k_longevity Figure 5" KeyValue="238845559" BranchId="238845560" Archived="0" Date="27-Jul-2022 21:23:24" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <AnalysisTaskList>
+        <ParameterEstimationTask Name="DefaultTask">
+          <parameterMappingSpecList>
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_loss" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_gain" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IGF1" lowLimit="0.4" highLimit="40.0" currentValue="4.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IGF" lowLimit="1.0E-4" highLimit="0.01" currentValue="0.001" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IGF" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_mort" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_longevity" lowLimit="0.01372" highLimit="0.01372" currentValue="0.01372" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_extra" lowLimit="2.5" highLimit="2.5" currentValue="2.5" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="_2nd_cohort_Low_IGF_Low_IL6.IL6_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_2nd_cohort_Low_IGF_Low_IL6.IGF1_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_2nd_cohort_Low_IGF_Low_IL6.Deceased_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_2nd_cohort_Low_IGF_Low_IL6.Mobility_Disability_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_2nd_cohort_Low_IGF_Low_IL6.Mobile_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_2nd_cohort_Low_IGF_Low_IL6.Blood_mapping.Size" lowLimit="5000.0" highLimit="500000.0" currentValue="50000.0" selected="false" />
+          </parameterMappingSpecList>
+          <referenceData numRows="4" numColumns="4">
+            <dataColumnList>
+              <dataColumn Name="t" weight="1.0" />
+              <dataColumn Name="Deceased" weight="1.0" />
+              <dataColumn Name="Mobility_Disability" weight="1.0" />
+              <dataColumn Name="Mobile" weight="1.0" />
+            </dataColumnList>
+            <dataRowList>
+              <dataRow>0.0 0.0 64.0 78.0</dataRow>
+              <dataRow>12.0 4.0 80.0 58.0</dataRow>
+              <dataRow>36.0 17.0 100.0 25.0</dataRow>
+              <dataRow>60.0 37.0 96.0 9.0</dataRow>
+            </dataRowList>
+          </referenceData>
+          <referenceDataMappingSpecList>
+            <referenceDataMappingSpec referenceDataColumnName="t" referenceDataModelSymbol="t" />
+            <referenceDataMappingSpec referenceDataColumnName="Deceased" referenceDataModelSymbol="Deceased" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobility_Disability" referenceDataModelSymbol="Mobility_Disability" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobile" referenceDataModelSymbol="Mobile" />
+          </referenceDataMappingSpecList>
+          <optimizationSolverSpec optimizationSolverType="Evolutionary Programming" NumOfRuns="25">
+            <ListOfParameters>
+              <Parameter Name="Number of Generations" Value="200.0" />
+              <Parameter Name="Population Size" Value="20.0" />
+              <Parameter Name="Random Number Generator" Value="1.0" />
+              <Parameter Name="Seed" Value="0.0" />
+            </ListOfParameters>
+          </optimizationSolverSpec>
+          <OptimizationResultSet>
+            <bestOptRunResultSet>
+              <ListOfParameters>
+                <Parameter Name="k_loss" Value="10.556057243798001" />
+                <Parameter Name="k_gain" Value="1.0E-8" />
+                <Parameter Name="k_mort" Value="0.0014760928294104817" />
+                <Parameter Name="k_longevity" Value="0.01372" />
+                <Parameter Name="k_extra" Value="2.5" />
+              </ListOfParameters>
+              <objectiveFunction Value="4.679275587015767" />
+              <ObjectiveFunctionEvaluations Value="4009" />
+            </bestOptRunResultSet>
+          </OptimizationResultSet>
+        </ParameterEstimationTask>
+      </AnalysisTaskList>
+      <Version Name="2nd cohort Low IGF Low IL6" KeyValue="238845541" BranchId="230701817" Archived="0" Date="27-Jul-2022 21:23:24" FromVersionable="false">
+        <Owner Name="aging_project" Identifier="205148987" />
+        <GroupAccess Type="1" />
+        <Annotation>(copied from  High IGF High IL6) (copied from High IGF Low IL6) (copied from Average Phenotypes) (copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov (copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger cloned from 'Death_scales_2000_0.1' owned by user mblinov (copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <SimulationSpec Name="4th cohort Low IGF High IL6" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>(copied from Low IGF Low IL6) (copied from  High IGF High IL6) (copied from High IGF Low IL6) (copied from Average Phenotypes) (copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov (copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger cloned from 'Death_scales_2000_0.1' owned by user mblinov (copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      <Geometry Name="non-spatial26797410" Dimension="0">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="230120397" />
+        <Version Name="non-spatial26797410" KeyValue="230120393" BranchId="230120394" Archived="0" Date="30-Mar-2022 23:04:03" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="Blood" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IL6" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.00623</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="IGF1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>69.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Deceased" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobility_Disability" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>33.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Mobile" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>17.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="prod_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IL6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="deg_IGF1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; M" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; MD" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MD -&gt; D" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="prod_ILG6" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="M -&gt; D" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Copy of Low IGF Low IL6_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="Deceased_init_uM">0.0</Constant>
+        <Constant Name="IGF1_init_uM">69.0</Constant>
+        <Constant Name="IL6_init_uM">0.00623</Constant>
+        <Constant Name="k_extra">2.5</Constant>
+        <Constant Name="k_gain">0.0</Constant>
+        <Constant Name="k_longevity">0.004</Constant>
+        <Constant Name="k_loss">0.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="k_mort">0.0</Constant>
+        <Constant Name="kd_IGF">0.05</Constant>
+        <Constant Name="kd_IL6">0.033</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="kp_IGF1">20.0</Constant>
+        <Constant Name="kp_IL6">8.0E-4</Constant>
+        <Constant Name="ks_IGF">5.777278E-4</Constant>
+        <Constant Name="ks_IL6">286266.8</Constant>
+        <Constant Name="Mobile_init_uM">17.0</Constant>
+        <Constant Name="Mobility_Disability_init_uM">33.0</Constant>
+        <Constant Name="Size_Blood">50000.0</Constant>
+        <VolumeVariable Name="Deceased" Domain="Compartment" />
+        <VolumeVariable Name="IGF1" Domain="Compartment" />
+        <VolumeVariable Name="IL6" Domain="Compartment" />
+        <VolumeVariable Name="Mobile" Domain="Compartment" />
+        <VolumeVariable Name="Mobility_Disability" Domain="Compartment" />
+        <Function Name="J_deg_IGF1" Domain="Compartment">(kd_IGF * IGF1)</Function>
+        <Function Name="J_deg_IL6" Domain="Compartment">(kd_IL6 * IL6)</Function>
+        <Function Name="J_M____D" Domain="Compartment">((k_mort * (2.718281828459 ^ (k_longevity * t))) * Mobile)</Function>
+        <Function Name="J_M____MD" Domain="Compartment">(k_loss * Mobile * IL6)</Function>
+        <Function Name="J_MD____D" Domain="Compartment">(((k_extra * k_mort) * (2.718281828459 ^ (k_longevity * t))) * Mobility_Disability)</Function>
+        <Function Name="J_MD____M" Domain="Compartment">(k_gain * Mobility_Disability * IGF1)</Function>
+        <Function Name="J_prod_IGF1" Domain="Compartment">(kp_IGF1 / (1.0 + (ks_IL6 * (IL6 ^ 2.0))))</Function>
+        <Function Name="J_prod_ILG6" Domain="Compartment">(kp_IL6 / (1.0 + (ks_IGF * (IGF1 ^ 2.0))))</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="IL6" SolutionType="Unknown">
+            <Rate>( - J_deg_IL6 + J_prod_ILG6)</Rate>
+            <Initial>IL6_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="IGF1" SolutionType="Unknown">
+            <Rate>(J_prod_IGF1 - J_deg_IGF1)</Rate>
+            <Initial>IGF1_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Deceased" SolutionType="Unknown">
+            <Rate>(J_MD____D + J_M____D)</Rate>
+            <Initial>Deceased_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobility_Disability" SolutionType="Unknown">
+            <Rate>( - J_MD____M + J_M____MD - J_MD____D)</Rate>
+            <Initial>Mobility_Disability_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Mobile" SolutionType="Unknown">
+            <Rate>(J_MD____M - J_M____MD - J_M____D)</Rate>
+            <Initial>Mobile_init_uM</Initial>
+          </OdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Copy of Low IGF Low IL6_generated" KeyValue="235245480" BranchId="230120399" Archived="0" Date="13-Jun-2022 15:21:40" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <OutputFunctions>
+        <AnnotatedFunction Name="Frac_Mobile" ErrorString="" FunctionType="Nonspatial">(((Mobile / (Mobile + Mobility_Disability)) * ((Mobile + Mobility_Disability) &gt;= 1.0)) + (0.0 * ((Mobile + Mobility_Disability) &lt; 1.0)))</AnnotatedFunction>
+        <AnnotatedFunction Name="Surviving" ErrorString="" FunctionType="Nonspatial">(Mobile + Mobility_Disability)</AnnotatedFunction>
+      </OutputFunctions>
+      <Simulation Name="Fitted 3/20/2022_3">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 3/20/2022_3" KeyValue="235245647" BranchId="230120421" Archived="0" Date="13-Jun-2022 15:21:41" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/7     ">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/7     " KeyValue="235245649" BranchId="234799162" Archived="0" Date="13-Jun-2022 15:21:41" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15    Fixed k_longevity">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.003060969623901592</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.01372</Constant>
+          <Constant Name="k_loss">2.607423067461949</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15    Fixed k_longevity" KeyValue="235406397" BranchId="235406398" Archived="0" Date="15-Jun-2022 18:16:34" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="235405934" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15 fixed k_mort_0">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.00171618035516</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.030096911698034478</Constant>
+          <Constant Name="k_loss">2.626534328177392</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15 fixed k_mort_0" KeyValue="244346798" BranchId="244346799" Archived="0" Date="04-Oct-2022 21:47:47" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="235406400" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Fitted 6/15 all">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="1000.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions KeepEvery="1" KeepAtMost="1000" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1001">10.0 to 300.0, 10 values</Constant>
+          <Constant Name="k_mort">0.003504631045954118</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1001">1.0E-4 to 0.01, 10 values</Constant>
+          <Constant Name="k_longevity">0.009052426765750384</Constant>
+          <Constant Name="k_loss">2.609057583720068</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Fitted 6/15 all" KeyValue="235406917" BranchId="235406918" Archived="0" Date="15-Jun-2022 18:22:39" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Copy of Fitted 7/25 Fixed k_longevity Fig 5">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="400.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="IGF1_init_uM" ConstantArraySpec="1000">"12.0", "69.0", "74.3"</Constant>
+          <Constant Name="k_mort">0.003060969623901592</Constant>
+          <Constant Name="IL6_init_uM" ConstantArraySpec="1000">"0.01", "0.00623", "0.0037"</Constant>
+          <Constant Name="k_longevity">0.01372</Constant>
+          <Constant Name="k_loss">2.607423067461949</Constant>
+          <Constant Name="k_gain">1.0E-8</Constant>
+        </MathOverrides>
+        <Version Name="Copy of Fitted 7/25 Fixed k_longevity Fig 5" KeyValue="238634737" BranchId="238634738" Archived="0" Date="25-Jul-2022 21:46:55" FromVersionable="false">
+          <Owner Name="aging_project" Identifier="205148987" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <AnalysisTaskList>
+        <ParameterEstimationTask Name="DefaultTask">
+          <parameterMappingSpecList>
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_loss" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_gain" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IGF1" lowLimit="0.4" highLimit="40.0" currentValue="4.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IGF" lowLimit="1.0E-4" highLimit="0.01" currentValue="0.001" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kp_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.kd_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IGF" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.ks_IL6" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_mort" lowLimit="0.0" highLimit="10000.0" currentValue="0.1" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_longevity" lowLimit="0.01372" highLimit="0.01372" currentValue="0.01372" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="unnamed.k_extra" lowLimit="2.5" highLimit="2.5" currentValue="2.5" selected="true" />
+            <parameterMappingSpec parameterReferenceAttribute="_4th_cohort_Low_IGF_High_IL6.IL6_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_4th_cohort_Low_IGF_High_IL6.IGF1_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_4th_cohort_Low_IGF_High_IL6.Deceased_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_4th_cohort_Low_IGF_High_IL6.Mobility_Disability_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_4th_cohort_Low_IGF_High_IL6.Mobile_scs.initConc" lowLimit="0.0" highLimit="0.0" currentValue="0.0" selected="false" />
+            <parameterMappingSpec parameterReferenceAttribute="_4th_cohort_Low_IGF_High_IL6.Blood_mapping.Size" lowLimit="5000.0" highLimit="500000.0" currentValue="50000.0" selected="false" />
+          </parameterMappingSpecList>
+          <referenceData numRows="4" numColumns="4">
+            <dataColumnList>
+              <dataColumn Name="t" weight="1.0" />
+              <dataColumn Name="Deceased" weight="1.0" />
+              <dataColumn Name="Mobility_Disability" weight="1.0" />
+              <dataColumn Name="Mobile" weight="1.0" />
+            </dataColumnList>
+            <dataRowList>
+              <dataRow>0.0 0.0 33.0 17.0</dataRow>
+              <dataRow>12.0 5.0 32.0 13.0</dataRow>
+              <dataRow>36.0 13.0 30.0 7.0</dataRow>
+              <dataRow>60.0 23.0 24.0 3.0</dataRow>
+            </dataRowList>
+          </referenceData>
+          <referenceDataMappingSpecList>
+            <referenceDataMappingSpec referenceDataColumnName="t" referenceDataModelSymbol="t" />
+            <referenceDataMappingSpec referenceDataColumnName="Deceased" referenceDataModelSymbol="Deceased" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobility_Disability" referenceDataModelSymbol="Mobility_Disability" />
+            <referenceDataMappingSpec referenceDataColumnName="Mobile" referenceDataModelSymbol="Mobile" />
+          </referenceDataMappingSpecList>
+          <optimizationSolverSpec optimizationSolverType="Genetic Algorithm" NumOfRuns="25">
+            <ListOfParameters>
+              <Parameter Name="Number of Generations" Value="200.0" />
+              <Parameter Name="Population Size" Value="20.0" />
+              <Parameter Name="Random Number Generator" Value="1.0" />
+              <Parameter Name="Seed" Value="0.0" />
+            </ListOfParameters>
+          </optimizationSolverSpec>
+          <OptimizationResultSet>
+            <bestOptRunResultSet>
+              <ListOfParameters>
+                <Parameter Name="k_loss" Value="2.609057583720068" />
+                <Parameter Name="k_gain" Value="1.0E-8" />
+                <Parameter Name="k_mort" Value="0.003504631045954118" />
+                <Parameter Name="k_longevity" Value="0.009052426765750384" />
+                <Parameter Name="k_extra" Value="2.5" />
+              </ListOfParameters>
+              <objectiveFunction Value="0.7575906277155444" />
+              <ObjectiveFunctionEvaluations Value="4009" />
+            </bestOptRunResultSet>
+          </OptimizationResultSet>
+        </ParameterEstimationTask>
+      </AnalysisTaskList>
+      <Version Name="4th cohort Low IGF High IL6" KeyValue="242016609" BranchId="230701836" Archived="0" Date="01-Sep-2022 21:28:51" FromVersionable="false">
+        <Owner Name="aging_project" Identifier="205148987" />
+        <GroupAccess Type="1" />
+        <Annotation>(copied from Low IGF Low IL6) (copied from  High IGF High IL6) (copied from High IGF Low IL6) (copied from Average Phenotypes) (copied from Molecular_mechanism) cloned from 'Molecular_mechanism' owned by user mblinov (copied from Phenotypes) cloned from 'Death_scales_2000_0.1' owned by user nathan_schaumburger cloned from 'Death_scales_2000_0.1' owned by user mblinov (copied from No_death_scales_2000_0.1) (copied from Molecular Only_scales_2000_0.1) (copied from Molecular Only_scales_1000_0.1) (copied from Molecular Only_scales_100_0.1) (copied from Molecular Only_scales_1000_0.1) cloned from 'Molecular Only' owned by user pallyjoel</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="Aging_Phenotypes" KeyValue="245335415" BranchId="245335416" Archived="0" Date="18-Oct-2022 14:24:23" FromVersionable="false">
+      <Owner Name="aging_project" Identifier="205148987" />
+      <GroupAccess Type="1" />
+      <Annotation>cloned from 'Aging_Study_High_IGF_Low_IL6' owned by user mblinov
+cloned from 'Aging_Study_Quadrant1_2021_a_mortality_simplified_copy' owned by user nathan_schaumburger
+cloned from 'Aging_Study_Quadrant1_2021_a_mortality_simplified' owned by user mblinov
+cloned from '705' owned by user pallyjoel
+cloned from '2012-06-08-SampleBistab' owned by user mblinov
+cloned from '2012-05-17-SampleBistab' owned by user pallyjoel
+cloned from '2012-05-01-bistab' owned by user mblinov
+cloned from '2012-04-24-bistab' owned by user pallyjoel
+cloned from '2012-04-05-bistab' owned by user mblinov</Annotation>
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+
