@@ -195,6 +195,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		String inputFilename = getInputFilename();
 		String logFileOption = "--output-log=" + getLogFilename();
 		String messagingConfigOption = "--vc-send-status-config=" + getMessagingConfigFilename();
+		String localMessagingOption = "--vc-print-status";
 		
 		LangevinSimulationOptions lso = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
 		int runIndex = lso.getRunIndex();		// run index
@@ -205,6 +206,8 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		cmds.add(logFileOption);	// used for solver to send status info to client (3rd argument);
 		if (bMessaging){
 			cmds.add(messagingConfigOption);	// used for solver to send status info to client;
+		} else {
+			cmds.add(localMessagingOption);	    // used for solver to send status to stdout/stderr;
 		}
 		cmds.add(inputFilename);	// first argument
 		cmds.add(runIndex + "");	// second argument
