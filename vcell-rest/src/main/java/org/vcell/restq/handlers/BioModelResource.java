@@ -36,51 +36,18 @@ public class BioModelResource {
     private static final User dummyUser = AuthUtils.DUMMY_USER; // replace when OAuth is implemented
     private final BioModelRestDB bioModelRestDB;
 
-    @Location("biomodel.html")
-    @Inject
-    Template biomodelTemplate;
-
-
     @Inject
     public BioModelResource(OracleAgroalConnectionFactory oracleAgroalConnectionFactory) throws DataAccessException {
         bioModelRestDB = new BioModelRestDB(oracleAgroalConnectionFactory);
     }
 
     @GET
-    @Path("{biomodelID}/html")
-    @Operation(operationId = "getBiomodelInfoHTMLById", summary = "Get biomodel HTML information page by ID")
-    @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance getBioModelInfoHTML(@PathParam("biomodelID") String bioModelID, @Context UriInfo uriInfo) throws SQLException, DataAccessException, MalformedURLException, ExpressionException {
-        User vcellUser = dummyUser;
-        BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
-        BioModel bioModel = BioModel.fromBioModelRep(bioModelRep);
-
-        if (bioModel==null){
-            throw new RuntimeException("biomodel not found");
-        }
-        Map<String, Object> links = new HashMap<>();
-
-        String loginPath = "/"+ Main.LOGINFORM;  // +"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+getRequest().getResourceRef().toUrl());
-        String logoutPath = "/"+Main.LOGOUT+"?"+Main.REDIRECTURL_FORMNAME+"="+ URLEncoder.encode(uriInfo.getBaseUri().toString(), Charset.defaultCharset());
-        links.put("loginurl", loginPath);
-        links.put("logouturl", logoutPath);
-        links.put("vcmllink", "/api/" + Main.BIOMODEL + "/" + bioModelID + "/" + Main.VCML_DOWNLOAD);
-        links.put("omexlink", "/api/" + Main.BIOMODEL + "/" + bioModelID + "/" + Main.OMEX_DOWNLOAD);
-        links.put("sbmllink", "/api/" + Main.BIOMODEL + "/" + bioModelID + "/" + Main.SBML_DOWNLOAD);
-        links.put("simstatuslink", "");
-        links.put("simtasklink", "");
-        links.put("diagramlink", "");
-
-        Gson gson = new Gson();
-
-        return biomodelTemplate.data("links", links,"user", vcellUser.getName(), "biomodel", bioModel, "jsonResponse", gson.toJson(bioModel));
-    }
-
-    @GET
     @Path("{biomodelID}/json")
     @Operation(operationId = "getBiomodelInfoJSONById", summary = "Get biomodel information in JSON format by ID")
     @Produces(MediaType.APPLICATION_JSON)
-    public void getBioModelInfoJSON(){
-
+    public BioModel getBioModelInfoJSON(@PathParam("biomodelID") String bioModelID) throws SQLException, DataAccessException, ExpressionException {
+        User vcellUser = dummyUser;
+        BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
+        return BioModel.fromBioModelRep(bioModelRep);
     }
 }
