@@ -30,7 +30,7 @@ else
 fi
 
 # run container-registry.oracle.com/database/free:latest and mount /Users/schaff/Documents/workspace/vcell/vcell-rest/src/main/resources/scripts/init-oracle.sql to /home/oracle/scripts/init-oracle.sql
-docker run -d -p 1521:1521 \
+docker run -d -p 127.0.0.1:1521:1521 \
       --name ${CONTAINER_NAME} \
       --env "ORACLE_PASSWORD=quarkus" \
       --env "ORACLE_DATABASE=quarkus" \
