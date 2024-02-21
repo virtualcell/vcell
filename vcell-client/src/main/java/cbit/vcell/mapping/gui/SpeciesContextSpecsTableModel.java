@@ -308,10 +308,11 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			if(!bEditable) {
 				return false;
 			}
-			Structure structure = speciesContextSpec.getSpeciesContext().getStructure();
-			if(structure instanceof Membrane) {
-				return true;
-			}
+			// is2D flag permanently set to false in this version, the next 4 rows commented out
+//			Structure structure = speciesContextSpec.getSpeciesContext().getStructure();
+//			if(structure instanceof Membrane) {
+//				return true;
+//			}
 			return false;
 		}
 		case COLUMN_CLAMPED:{
