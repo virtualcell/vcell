@@ -1197,6 +1197,9 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					LangevinParticleMolecularComponent one = mcToLpmc.get(link.one);
 					LangevinParticleMolecularComponent two = mcToLpmc.get(link.two);
 					Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair = new Pair<> (one, two);
+					// TODO: error during math refresh "Cannot invoke "Object.equals(Object)" because "this.one" is null"
+					// when a molecule and species are added after the application creation
+					// maybe link is bad?
 					particleMolecularType.getInternalLinkSpec().add(pair);
 				}
 			}

@@ -817,7 +817,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> theirEntry : theirSasMap.entrySet()) {
             MolecularComponentPattern theirMcp = theirEntry.getKey();
             SiteAttributesSpec theirSas = theirEntry.getValue();
-            if(ourMcp.compareEqual(theirMcp) && ourSas.compareEqual(theirSas)) {
+            // TODO: infinite loop if we compare the sas here, because that will compare the scs, which will again compare the sas, aso
+            if(ourMcp.compareEqual(theirMcp)/* && ourSas.compareEqual(theirSas)*/) {
                 // note that for the mcp we only compare the bond type, not the bond (which is mtp attribute)
                 return true;
             }
@@ -1077,7 +1078,27 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 // if the species context is on membrane it must have a site named Anchor on the membrane, the other sites must NOT be on membrane
                 Structure struct = sc.getStructure();
                 MolecularComponentPattern mcpAnchor = null;
-                if(struct instanceof Membrane){
+                if(struct instanceof Membrane) {
+                    // this deals with the unified concept of anchoring
+                    // any membrane molecule needs to have its molecular type anchored to one membrane only
+                    // transport is not compatible with springsalad
+                    // we assume there is only one membrane named Membrane (springsalad restriction)
+                    {
+                        String msg = "SpringSaLaD requires that the Molecule must be anchored to one Membrane only.";
+                        String tip = msg;
+                        MolecularType mt = mtp.getMolecularType();
+                        if (mt.isAnchorAll() || mt.getAnchors().size() != 1) {
+                            issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                            return;
+                        } else {
+                            Structure mtAnchorStruct = mt.getAnchors().stream().findFirst().get();  // get the first (and only) anchor
+                            if (struct != mtAnchorStruct) {
+                                issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                                return;
+                            }
+                        }
+                    }
+                    // TODO: this deals with the implementation that needs an explicit extra site named Anchor
                     boolean anchorExists = false;
                     for(MolecularComponentPattern mcp : mcpList){
                         MolecularComponent mc = mcp.getMolecularComponent();
