@@ -51,7 +51,6 @@ def test_parse_vcelldata():
             data = pde_dataset.get_data(v.var_name, t)
             if data.size > 0 and v == "cytosol::RanC_cyt":
                 print(f"v={v}, t={t}, shape={data.shape}, min={np.min(data)}, max={np.max(data)}")
-    print("done")
 
 
 def test_function_parse():

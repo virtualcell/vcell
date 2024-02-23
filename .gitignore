@@ -246,3 +246,5 @@ pythonData/test_data/SimID_946368938_0_.meshmetrics
 pythonData/test_data/SimID_946368938_0_.subdomains
 pythonData/test_data/SimID_946368938_0_.vcg
 pythonData/test_data/SimID_946368938_mathmodel.vcml
+
+pythonData/test_data/zarr/
