@@ -236,3 +236,13 @@ webapp-ng/.nx/
 localsolvers/mac64/GNUSparseFile.0/
 
 webapp-ng/.nvmrc
+
+pythonData/test_data/SimID_946368938_0__0.simtask.xml
+pythonData/test_data/SimID_946368938_0_.functions
+pythonData/test_data/SimID_946368938_0_.fvinput
+pythonData/test_data/SimID_946368938_0_.hdf5
+pythonData/test_data/SimID_946368938_0_.mesh
+pythonData/test_data/SimID_946368938_0_.meshmetrics
+pythonData/test_data/SimID_946368938_0_.subdomains
+pythonData/test_data/SimID_946368938_0_.vcg
+pythonData/test_data/SimID_946368938_mathmodel.vcml
