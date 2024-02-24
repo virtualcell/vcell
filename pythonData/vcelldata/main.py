@@ -2,6 +2,7 @@ from pathlib import Path
 
 import typer
 
+from vcelldata.mesh import CartesianMesh
 from vcelldata.simdata_models import PdeDataSet, DataFunctions
 from vcelldata.zarr_writer import write_zarr
 
@@ -18,8 +19,10 @@ def n5_to_zarr(
     pde_dataset.read()
     data_functions = DataFunctions(function_file=sim_data_dir / f"SimID_{sim_id}_{job_id}_.functions")
     data_functions.read()
+    mesh = CartesianMesh(mesh_file=sim_data_dir / f"SimID_{sim_id}_{job_id}_.mesh")
+    mesh.read()
 
-    write_zarr(pde_dataset=pde_dataset, data_functions=data_functions, zarr_dir=zarr_path)
+    write_zarr(pde_dataset=pde_dataset, data_functions=data_functions, mesh=mesh, zarr_dir=zarr_path)
 
 
 def main():

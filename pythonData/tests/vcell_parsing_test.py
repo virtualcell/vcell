@@ -3,6 +3,7 @@ from pathlib import Path
 import tarfile
 
 from vcelldata.simdata_models import PdeDataSet, DataFunctions, NamedFunction, VariableType
+from vcelldata.mesh import CartesianMesh
 
 test_data_dir = (Path(__file__).parent.parent / "test_data").absolute()
 
@@ -139,3 +140,10 @@ def test_function_eval():
 
     assert min_values == [0.0, 0.0, 0.0, 0.0, 0.0]
     assert max_values == [0.0, 0.00013838468860665845, 0.0001493452037574851, 0.0001484768688158302, 0.00014236316719653776]
+
+
+def test_mesh_parse():
+    extract_simdata()
+
+    mesh = CartesianMesh(mesh_file=test_data_dir / "SimID_946368938_0_.mesh")
+    mesh.read()
