@@ -107,8 +107,11 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
      */
     protected void fireJButtonOKAction_actionPerformed(java.util.EventObject newEvent) {
         String dataSetName = getJTextFieldDataSetName().getText();
-        boolean textConditions = dataSetName.isEmpty() || !dataSetName.matches("^[a-zA-Z 0-9]*$"); //Regex expression only allows spaces, a-z, A-Z, and 0-9. If it has anything else there is no Regex match
-        if (fieldASCIISettingsPanelListenerEventMulticaster == null || textConditions) {
+
+        boolean allowedCharacters = dataSetName.matches("^[a-zA-Z0-9 \\[\\]():,_-]*$");
+        boolean onlySpaces = dataSetName.matches("^\\s*$");
+        boolean notAllowedName = dataSetName.isEmpty() || onlySpaces || !allowedCharacters || dataSetName.length() > 100;
+        if (fieldASCIISettingsPanelListenerEventMulticaster == null || notAllowedName) {
             return;
         };
         fieldASCIISettingsPanelListenerEventMulticaster.JButtonOKAction_actionPerformed(newEvent);
