@@ -109,15 +109,14 @@ public class N5Exporter implements ExportConstants {
 
 
 		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
-			//place to add tracking, each variable can be measured in tracking
 			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
-				//another place to add tracking, each time index can be used to determine how much has been exported
-				// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
+
+				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
 				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
-				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (timeIndex - timeSpecs.getBeginTimeIndex())}, data);
+				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
 				n5FSWriter.writeBlock(dataSetName, datasetAttributes, doubleArrayDataBlock);
 				if(timeIndex % 3 == 0){
-					double progress = (double) (variableIndex + (timeIndex - timeSpecs.getBeginTimeIndex())) / (numVariables + numTimes);
+					double progress = (double) (variableIndex + normalizedTimeIndex) / (numVariables + (numTimes * numVariables));
 					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
 				}
 			}
