@@ -407,7 +407,7 @@ public class SimulationDispatcher {
 									}
 								}
 							}
-							if (killJob && HtcProxy.isMyJob(htcJobInfo)){
+							if (killJob && HtcProxy.isMySimulationJob(htcJobInfo)){
 								if (lg.isWarnEnabled()) {
 									lg.warn("killing " + htcJobInfo + ", " + failureMessage);
 								}

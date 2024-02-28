@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.vcell.util.document.KeyValue;
 
 import static cbit.vcell.message.server.htc.HtcProxy.getSimTaskInfoFromSimJobName;
-import static cbit.vcell.message.server.htc.HtcProxy.isMyJob;
+import static cbit.vcell.message.server.htc.HtcProxy.isMySimulationJob;
 import static cbit.vcell.server.HtcJobID.BatchSystemType.SLURM;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,11 +51,11 @@ public class HtcProxyTest {
 	@Test
 	public void test_isMyJob(){
 		PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "ALPHA");
-		assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM), "V_ALPHA_115785823_0_0")));
-		assertFalse(isMyJob(new HtcJobInfo(new HtcJobID("1200725", SLURM), "V_BETA_115785823_0_0")));
+		assertTrue(HtcProxy.isMySimulationJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM), "V_ALPHA_115785823_0_0")));
+		assertFalse(isMySimulationJob(new HtcJobInfo(new HtcJobID("1200725", SLURM), "V_BETA_115785823_0_0")));
 
 		PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "BETA");
-		assertTrue(HtcProxy.isMyJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM), "V_BETA_115785823_0_0")));
+		assertTrue(HtcProxy.isMySimulationJob(new HtcJobInfo(new HtcJobID("1200725", BatchSystemType.SLURM), "V_BETA_115785823_0_0")));
 	}
 
 }

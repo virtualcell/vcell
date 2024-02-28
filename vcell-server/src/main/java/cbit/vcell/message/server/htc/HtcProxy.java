@@ -147,7 +147,7 @@ public abstract class HtcProxy {
 		return htcJobInfo.getJobName().startsWith(parameterEstimationJobNamePrefix());
 	}
 
-	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = jobNamePrefix();
+	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = simulationJobNamePrefix();
 	protected final CommandService commandService;
 	protected final String htcUser;
 
