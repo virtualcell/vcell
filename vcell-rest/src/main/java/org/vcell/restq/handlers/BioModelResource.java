@@ -3,6 +3,8 @@ package org.vcell.restq.handlers;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -14,14 +16,16 @@ import org.vcell.restq.db.OracleAgroalConnectionFactory;
 import org.vcell.restq.models.BioModel;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 
-@Path("/api/biomodel")
+@Path("/api/bioModel")
 public class BioModelResource {
-    private static final User dummyUser = AuthUtils.DUMMY_USER; // replace when OAuth is implemented
+    private static final User dummyUser = new User("vcellNagios", new KeyValue(new BigDecimal(3))); // replace when OAuth is implemented
     private final BioModelRestDB bioModelRestDB;
     private final DatabaseServerImpl databaseServer;
 
@@ -43,7 +47,7 @@ public class BioModelResource {
 
     // TODO: Specify the media type instead of leaving it as wildcard
     @GET
-    @Path("{biomodelID}/vcml_download")
+    @Path("{bioModelID}/vcml_download")
     @Operation(operationId = "getBioModelVCML", summary = "Get the BioModel in VCML format.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelVCML(){
@@ -51,7 +55,7 @@ public class BioModelResource {
     }
 
     @GET
-    @Path("{biomodelID}/sbml_download")
+    @Path("{bioModelID}/sbml_download")
     @Operation(operationId = "getBioModelSBML", summary = "Get the BioModel in SBML format.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelSBML(){
@@ -59,7 +63,7 @@ public class BioModelResource {
     }
 
     @GET
-    @Path("{biomodelID}/omex_download")
+    @Path("{bioModelID}/omex_download")
     @Operation(operationId = "getBioModelOMEX", summary = "Get the BioModel in OMEX format.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelOMEX(){
@@ -67,7 +71,7 @@ public class BioModelResource {
     }
 
     @GET
-    @Path("{biomodelID}/bngl_download")
+    @Path("{bioModelID}/bngl_download")
     @Operation(operationId = "getBioModelBNGL", summary = "Get the BioModel in BNGL format.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelBNGL(){
@@ -75,7 +79,7 @@ public class BioModelResource {
     }
 
     @GET
-    @Path("{biomodelID}/diagram_download")
+    @Path("{bioModelID}/diagram_download")
     @Operation(operationId = "getBioModelDIAGRAM", summary = "Get the BioModels diagram.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelDiagram(){
@@ -84,15 +88,18 @@ public class BioModelResource {
 
     @POST
     @Path("upload_bioModel")
-    @Operation(operationId = "uploadBioModel", summary = "Upload the BioModel to VCell database.")
+    @Operation(operationId = "uploadBioModel", summary = "Upload the BioModel to VCell database. Returns BioModel ID.")
     @Consumes(MediaType.TEXT_XML)
-    public void uploadBioModel(String bioModelXML) throws DataAccessException {
+    @Produces(MediaType.TEXT_PLAIN)
+    public String uploadBioModel(String bioModelXML) throws DataAccessException, XmlParseException {
         User user = dummyUser;
-        databaseServer.saveBioModel(user, new BigString(bioModelXML), null);
+        String savedModel = databaseServer.saveBioModel(user, new BigString(bioModelXML), null).toString();
+        cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(savedModel));
+        return bioModel.getVersion().getVersionKey().toString();
     }
 
     @DELETE
-    @Path("{bioModelID}/delete_bioModel")
+    @Path("{bioModelID}")
     @Operation(operationId = "deleteBioModel", summary = "Delete the BioModel from VCell's database.")
     public void deleteBioModel(@PathParam("bioModelID") String bioModelID) throws DataAccessException {
         User user = dummyUser;
