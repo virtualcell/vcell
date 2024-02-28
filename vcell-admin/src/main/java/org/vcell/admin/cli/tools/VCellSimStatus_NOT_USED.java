@@ -1,4 +1,4 @@
-package cbit.vcell.util;
+package org.vcell.admin.cli.tools;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,6 +14,7 @@ import java.util.GregorianCalendar;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import cbit.vcell.message.server.htc.HtcProxy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BeanUtils;
@@ -27,8 +28,8 @@ import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 
-public class VCellSimStatus {
-    private final static Logger lg = LogManager.getLogger(VCellSimStatus.class);
+public class VCellSimStatus_NOT_USED {
+    private final static Logger lg = LogManager.getLogger(VCellSimStatus_NOT_USED.class);
 
     public static class CommandExecError extends Exception {
         public CommandExecError(String message){
@@ -115,7 +116,7 @@ public class VCellSimStatus {
 
     public static void main(String[] args){
         if(args.length != 6){
-            System.out.println("Usage: " + VCellSimStatus.class.getSimpleName() + " dbHost dbName dbUser dbPassword sshRSAKeyFile slurmHost");
+            System.out.println("Usage: " + VCellSimStatus_NOT_USED.class.getSimpleName() + " dbHost dbName dbUser dbPassword sshRSAKeyFile slurmHost");
             System.exit(1);
         }
         String dbHost = args[0];
@@ -138,7 +139,7 @@ public class VCellSimStatus {
             //TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS')
             stmt = con.createStatement();
             String sql =
-                    "select 'V_' || vc_simulationjob.serverid || '_' || simref || '_' || vc_simulationjob.jobindex || '_' || vc_simulationjob.taskid slurnjobname,vc_userinfo.userid," +
+                    "select '"+HtcProxy.JOB_NAME_PREFIX_SIMULATION+"' || vc_simulationjob.serverid || '_' || simref || '_' || vc_simulationjob.jobindex || '_' || vc_simulationjob.taskid slurnjobname,vc_userinfo.userid," +
                             "vc_simulationjob.*" +
                             " from vc_simulationjob,vc_simulation,vc_userinfo" +
                             " where schedulerstatus not in (4,5,6) and vc_simulation.id=vc_simulationjob.simref" +
@@ -230,7 +231,7 @@ public class VCellSimStatus {
 //		    			continue;
 //		    		}
 //		    		String s = st.nextToken();
-                    if(nextStr.contains("V_")){
+                    if(nextStr.contains(HtcProxy.JOB_NAME_PREFIX_SIMULATION)){
                         StringTokenizer st = new StringTokenizer(nextStr, " ", false);
                         //GEt slurmjobid (and array job index if present)
                         String slurmJobIDAndArrayIndex = st.nextToken();

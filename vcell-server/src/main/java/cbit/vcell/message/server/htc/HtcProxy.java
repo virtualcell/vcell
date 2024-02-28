@@ -32,6 +32,8 @@ import cbit.vcell.solvers.ExecutableCommand;
 
 public abstract class HtcProxy {
 	public static final Logger LG = LogManager.getLogger(HtcProxy.class);
+	public static final String JOB_NAME_PREFIX_SIMULATION = "V_";
+	public static final String JOB_NAME_PREFIX_COPASI_PAREST = "CopasiParest_";
 
 	public interface HtcProxyFactory {
 		HtcProxy getHtcProxy();
@@ -124,16 +126,27 @@ public abstract class HtcProxy {
 	 * set {@link HtcProxy#HTC_SIMULATION_JOB_NAME_PREFIX}
 	 * @return V_<i>server<i>
 	 */
-	private static String jobNamePrefix( ){
-		String stub = "V_";
+	private static String simulationJobNamePrefix( ){
+		String stub = JOB_NAME_PREFIX_SIMULATION;
 		String server = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
 		return stub + server + "_";
 	}
-	
-	public static boolean isMyJob(HtcJobInfo htcJobInfo){
-		return htcJobInfo.getJobName().startsWith(jobNamePrefix());
+
+	/**
+	 * set {@link HtcProxy#HTC_SIMULATION_JOB_NAME_PREFIX}
+	 * @return CopasiParest
+	 */
+	private static String parameterEstimationJobNamePrefix( ){
+		return JOB_NAME_PREFIX_COPASI_PAREST;
 	}
-	
+
+	public static boolean isMySimulationJob(HtcJobInfo htcJobInfo){
+		return htcJobInfo.getJobName().startsWith(simulationJobNamePrefix());
+	}
+	public static boolean isMyParameterEstimationJob(HtcJobInfo htcJobInfo){
+		return htcJobInfo.getJobName().startsWith(parameterEstimationJobNamePrefix());
+	}
+
 	public final static String HTC_SIMULATION_JOB_NAME_PREFIX = jobNamePrefix();
 	protected final CommandService commandService;
 	protected final String htcUser;
@@ -196,7 +209,8 @@ public abstract class HtcProxy {
 		if (tokens.hasMoreTokens()){
 			taskIdString = tokens.nextToken();
 		}
-		if (PREFIX.equals("V") && SITE!=null && simIdString!=null && jobIndexString!=null && taskIdString!=null){
+		String expectedSimPrefix = HtcProxy.JOB_NAME_PREFIX_SIMULATION.replace("_","");
+		if (PREFIX.equals(expectedSimPrefix) && SITE!=null && simIdString!=null && jobIndexString!=null && taskIdString!=null){
 			KeyValue simId = new KeyValue(simIdString);
 			int jobIndex = Integer.valueOf(jobIndexString);
 			int taskId = Integer.valueOf(taskIdString);
