@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.3
 info:
-  title: VCell API (test)
+  title: VCell API
   description: VCell API
   termsOfService: Your terms of service here
   contact:
@@ -15,6 +15,132 @@ info:
 servers:
 - url: http://localhost:9000
 paths:
+  /api/bioModel/upload_bioModel:
+    post:
+      tags:
+      - Bio Model Resource
+      summary: Upload the BioModel to VCell database. Returns BioModel ID.
+      operationId: uploadBioModel
+      requestBody:
+        content:
+          text/xml:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/bioModel/{bioModelID}:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Get BioModel information in JSON format by ID.
+      operationId: getBiomodelById
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BioModel'
+    delete:
+      tags:
+      - Bio Model Resource
+      summary: Delete the BioModel from VCell's database.
+      operationId: deleteBioModel
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+  /api/bioModel/{bioModelID}/bngl_download:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Get the BioModel in BNGL format.
+      operationId: getBioModelBNGL
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+  /api/bioModel/{bioModelID}/diagram_download:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Get the BioModels diagram.
+      operationId: getBioModelDIAGRAM
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+  /api/bioModel/{bioModelID}/omex_download:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Get the BioModel in OMEX format.
+      operationId: getBioModelOMEX
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+  /api/bioModel/{bioModelID}/sbml_download:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Get the BioModel in SBML format.
+      operationId: getBioModelSBML
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+  /api/bioModel/{bioModelID}/vcml_download:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Get the BioModel in VCML format.
+      operationId: getBioModelVCML
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
   /api/helloworld:
     get:
       tags:
@@ -154,6 +280,43 @@ paths:
         - user
 components:
   schemas:
+    Application:
+      type: object
+    BioModel:
+      type: object
+      properties:
+        bmKey:
+          type: string
+        name:
+          type: string
+        privacy:
+          format: int32
+          type: integer
+        groupUsers:
+          type: array
+          items:
+            type: string
+        savedDate:
+          format: int64
+          type: integer
+        annot:
+          type: string
+        branchID:
+          type: string
+        modelKey:
+          type: string
+        ownerName:
+          type: string
+        ownerKey:
+          type: string
+        simulations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Simulation'
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Application'
     BiomodelRef:
       type: object
       properties:
@@ -234,6 +397,11 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
+    Simulation:
+      type: object
+      properties:
+        name:
+          type: string
     User:
       type: object
       properties:

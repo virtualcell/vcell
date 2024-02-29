@@ -67,15 +67,14 @@ configuration = vcell_client.Configuration(
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = vcell_client.HelloWorldApi(api_client)
+    api_instance = vcell_client.BioModelResourceApi(api_client)
+    bio_model_id = 'bio_model_id_example' # str | 
 
     try:
-        # Get hello world message.
-        api_response = api_instance.get_hello_world()
-        print("The response of HelloWorldApi->get_hello_world:\n")
-        pprint(api_response)
+        # Delete the BioModel from VCell's database.
+        api_instance.delete_bio_model(bio_model_id)
     except ApiException as e:
-        print("Exception when calling HelloWorldApi->get_hello_world: %s\n" % e)
+        print("Exception when calling BioModelResourceApi->delete_bio_model: %s\n" % e)
 
 ```
 
@@ -85,6 +84,14 @@ All URIs are relative to *http://localhost:9000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**get_bio_model_bngl**](docs/BioModelResourceApi.md#get_bio_model_bngl) | **GET** /api/bioModel/{bioModelID}/bngl_download | Get the BioModel in BNGL format.
+*BioModelResourceApi* | [**get_bio_model_diagram**](docs/BioModelResourceApi.md#get_bio_model_diagram) | **GET** /api/bioModel/{bioModelID}/diagram_download | Get the BioModels diagram.
+*BioModelResourceApi* | [**get_bio_model_omex**](docs/BioModelResourceApi.md#get_bio_model_omex) | **GET** /api/bioModel/{bioModelID}/omex_download | Get the BioModel in OMEX format.
+*BioModelResourceApi* | [**get_bio_model_sbml**](docs/BioModelResourceApi.md#get_bio_model_sbml) | **GET** /api/bioModel/{bioModelID}/sbml_download | Get the BioModel in SBML format.
+*BioModelResourceApi* | [**get_bio_model_vcml**](docs/BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
+*BioModelResourceApi* | [**get_biomodel_by_id**](docs/BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+*BioModelResourceApi* | [**upload_bio_model**](docs/BioModelResourceApi.md#upload_bio_model) | **POST** /api/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
 *HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/helloworld | Get hello world message.
 *PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
@@ -96,10 +103,12 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
+ - [Simulation](docs/Simulation.md)
  - [User](docs/User.md)
 
 

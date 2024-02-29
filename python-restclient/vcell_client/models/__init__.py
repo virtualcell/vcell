@@ -2,7 +2,7 @@
 
 # flake8: noqa
 """
-    VCell API (test)
+    VCell API
 
     VCell API
 
@@ -15,8 +15,10 @@
 
 
 # import models into model package
+from vcell_client.models.bio_model import BioModel
 from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.hello_world_message import HelloWorldMessage
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.publication import Publication
+from vcell_client.models.simulation import Simulation
 from vcell_client.models.user import User

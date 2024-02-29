@@ -50,7 +50,7 @@ public class BioModelResource {
     @Path("{bioModelID}/vcml_download")
     @Operation(operationId = "getBioModelVCML", summary = "Get the BioModel in VCML format.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
-    public void getBioModelVCML(){
+    public void getBioModelVCML(@PathParam("bioModelID") String bioModelID){
 
     }
 
@@ -58,7 +58,7 @@ public class BioModelResource {
     @Path("{bioModelID}/sbml_download")
     @Operation(operationId = "getBioModelSBML", summary = "Get the BioModel in SBML format.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
-    public void getBioModelSBML(){
+    public void getBioModelSBML(@PathParam("bioModelID") String bioModelID){
 
     }
 
@@ -66,7 +66,7 @@ public class BioModelResource {
     @Path("{bioModelID}/omex_download")
     @Operation(operationId = "getBioModelOMEX", summary = "Get the BioModel in OMEX format.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
-    public void getBioModelOMEX(){
+    public void getBioModelOMEX(@PathParam("bioModelID") String bioModelID){
 
     }
 
@@ -74,7 +74,7 @@ public class BioModelResource {
     @Path("{bioModelID}/bngl_download")
     @Operation(operationId = "getBioModelBNGL", summary = "Get the BioModel in BNGL format.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
-    public void getBioModelBNGL(){
+    public void getBioModelBNGL(@PathParam("bioModelID") String bioModelID){
 
     }
 
@@ -82,7 +82,7 @@ public class BioModelResource {
     @Path("{bioModelID}/diagram_download")
     @Operation(operationId = "getBioModelDIAGRAM", summary = "Get the BioModels diagram.")
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
-    public void getBioModelDiagram(){
+    public void getBioModelDiagram(@PathParam("bioModelID") String bioModelID){
 
     }
 

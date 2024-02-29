@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (test)
+    VCell API
 
     VCell API
 

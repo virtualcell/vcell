@@ -1,6 +1,6 @@
 # vcell-restclient
 
-VCell API (test)
+VCell API
 
 - API version: 1.0.1
 
@@ -75,20 +75,20 @@ Please follow the [installation](#installation) instruction and execute the foll
 
 import org.vcell.restclient.*;
 import org.vcell.restclient.model.*;
-import org.vcell.restclient.api.HelloWorldApi;
+import org.vcell.restclient.api.BioModelResourceApi;
 
-public class HelloWorldApiExample {
+public class BioModelResourceApiExample {
 
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         // Configure clients using the `defaultClient` object, such as
         // overriding the host and port, timeout, etc.
-        HelloWorldApi apiInstance = new HelloWorldApi(defaultClient);
+        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
+        String bioModelID = "bioModelID_example"; // String | 
         try {
-            HelloWorldMessage result = apiInstance.getHelloWorld();
-            System.out.println(result);
+            apiInstance.deleteBioModel(bioModelID);
         } catch (ApiException e) {
-            System.err.println("Exception when calling HelloWorldApi#getHelloWorld");
+            System.err.println("Exception when calling BioModelResourceApi#deleteBioModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -105,6 +105,22 @@ All URIs are relative to *http://localhost:9000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*BioModelResourceApi* | [**deleteBioModel**](docs/BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**deleteBioModelWithHttpInfo**](docs/BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**getBioModelBNGL**](docs/BioModelResourceApi.md#getBioModelBNGL) | **GET** /api/bioModel/{bioModelID}/bngl_download | Get the BioModel in BNGL format.
+*BioModelResourceApi* | [**getBioModelBNGLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelBNGLWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/bngl_download | Get the BioModel in BNGL format.
+*BioModelResourceApi* | [**getBioModelDIAGRAM**](docs/BioModelResourceApi.md#getBioModelDIAGRAM) | **GET** /api/bioModel/{bioModelID}/diagram_download | Get the BioModels diagram.
+*BioModelResourceApi* | [**getBioModelDIAGRAMWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelDIAGRAMWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/diagram_download | Get the BioModels diagram.
+*BioModelResourceApi* | [**getBioModelOMEX**](docs/BioModelResourceApi.md#getBioModelOMEX) | **GET** /api/bioModel/{bioModelID}/omex_download | Get the BioModel in OMEX format.
+*BioModelResourceApi* | [**getBioModelOMEXWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelOMEXWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/omex_download | Get the BioModel in OMEX format.
+*BioModelResourceApi* | [**getBioModelSBML**](docs/BioModelResourceApi.md#getBioModelSBML) | **GET** /api/bioModel/{bioModelID}/sbml_download | Get the BioModel in SBML format.
+*BioModelResourceApi* | [**getBioModelSBMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelSBMLWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/sbml_download | Get the BioModel in SBML format.
+*BioModelResourceApi* | [**getBioModelVCML**](docs/BioModelResourceApi.md#getBioModelVCML) | **GET** /api/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
+*BioModelResourceApi* | [**getBioModelVCMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
+*BioModelResourceApi* | [**getBiomodelById**](docs/BioModelResourceApi.md#getBiomodelById) | **GET** /api/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+*BioModelResourceApi* | [**getBiomodelByIdWithHttpInfo**](docs/BioModelResourceApi.md#getBiomodelByIdWithHttpInfo) | **GET** /api/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+*BioModelResourceApi* | [**uploadBioModel**](docs/BioModelResourceApi.md#uploadBioModel) | **POST** /api/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
+*BioModelResourceApi* | [**uploadBioModelWithHttpInfo**](docs/BioModelResourceApi.md#uploadBioModelWithHttpInfo) | **POST** /api/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
 *HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/helloworld | Get hello world message.
 *HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/helloworld | Get hello world message.
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/publications | Create publication
@@ -123,10 +139,12 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
+ - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
+ - [Simulation](docs/Simulation.md)
  - [User](docs/User.md)
 
 
