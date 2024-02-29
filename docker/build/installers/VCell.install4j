@@ -296,7 +296,7 @@
   </launchers>
   <installerGui autoUpdateDescriptorUrl="${compiler:updateSiteBaseUrl}/updates.xml" useAutoUpdateBaseUrl="true" autoUpdateBaseUrl="${compiler:updateSiteBaseUrl}/">
     <applications>
-      <application id="installer" beanClass="com.install4j.runtime.beans.applications.InstallerApplication" actionElevationType="elevated" launchInNewProcess="false">
+      <application id="installer" beanClass="com.install4j.runtime.beans.applications.InstallerApplication" launchInNewProcess="false">
         <serializedBean>
           <property name="splashMessage" type="string">Installing Virtual Cell ${compiler:vcellVersion}</property>
         </serializedBean>
