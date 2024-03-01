@@ -1379,7 +1379,7 @@ if (context.isUnattended()) {
     </styles>
   </installerGui>
   <mediaSets>
-    <macos name="Mac OS X Single Bundle ${compiler:vcellVersion} ${compiler:Site}" id="105" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" architecture="universal" launcherId="102">
+    <macosArchive name="macOS Single Bundle Archive ${compiler:vcellVersion} ${compiler:Site}" id="105" launcherId="102" executeSetupApp="true" setupAppId="127">
       <excludedBeans>
         <bean refId="1672" />
         <bean refId="1673" />
@@ -1397,7 +1397,7 @@ if (context.isUnattended()) {
         <variable name="resourceDir" value="resources" />
       </variables>
       <jreBundle usePack200="false" />
-    </macos>
+    </macosArchive>
     <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" architecture="64">
       <excludedLaunchers>
         <launcher id="102" />
