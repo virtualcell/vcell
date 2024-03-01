@@ -1166,9 +1166,13 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					}
 				}
 				if(scs != null) {
+					// these are correct: scs -> sc -> sp -> mtp -> mcp, mcp,...
 					Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.getSiteAttributesMap();
 					MolecularTypePattern mtp = scs.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0);	// we know it's valid, no null pointer possible
 					MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(molecularComponent);
+					// the siteAttributesMap contains 2 conflicting sets of mcp / sas (old mcp and new mcp)
+					// need to clean up and update the scs -> ils, scs -> siteAttributesMap at the point where the new
+					// pairs of mcp / sas are being added to the siteAttributesMap
 					SiteAttributesSpec sas = siteAttributesMap.get(mcp);
 					// TODO: perhaps move this to constructor so that object will be complete from the start
 					particleMolecularComponent.setColor(sas.getColor());
@@ -1196,6 +1200,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
 					LangevinParticleMolecularComponent one = mcToLpmc.get(link.one);
 					LangevinParticleMolecularComponent two = mcToLpmc.get(link.two);
+					// error: Cannot invoke "Object.equals(Object)" because "this.one" is null
 					Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair = new Pair<> (one, two);
 					particleMolecularType.getInternalLinkSpec().add(pair);
 				}
