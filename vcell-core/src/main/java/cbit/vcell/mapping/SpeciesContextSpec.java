@@ -664,35 +664,35 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     }
 
     public void initializeForSpringSaLaD(MolecularType molecularType){
-        if(getSpeciesContext() != null){
+        if(getSpeciesContext() != null) {
             SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
-            if(sp == null){
+            if (sp == null) {
                 return;
             }
             // in SpringSaLaD all seed species are single molecule, we don't use complexes
             MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
             MolecularType mt = mtp.getMolecularType();
-            if(molecularType != null && molecularType != mt){
+            if (molecularType != null && molecularType != mt) {
                 return;        // this molecule is unchanged, nothing to do
             }
             // molecularType == null : full initialization
             // molecularType != null and molecularType == mt : this molecule has a different
             //   number of components or a different component order
             List<MolecularComponent> componentList = mt.getComponentList();
-            for(MolecularComponent mc : componentList){
+            for (MolecularComponent mc : componentList) {
                 MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-                if(siteAttributesMap.containsKey(mcp)){
+                if (siteAttributesMap.containsKey(mcp)) {
                     continue;    // this is set, nothing to do
                 }
                 SiteAttributesSpec sas = siteAttributesMap.get(mcp);
-                if(sas == null || sas.getMolecularComponentPattern() == null){
+                if (sas == null || sas.getMolecularComponentPattern() == null) {
                     sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
                     siteAttributesMap.put(mcp, sas);
                 }
             }
 
-            if(getInternalLinkSet().isEmpty()){
-                for(int i = 0; i < componentList.size() - 1; i++){
+            if (getInternalLinkSet().isEmpty()) {
+                for (int i = 0; i < componentList.size() - 1; i++) {
                     MolecularComponent mcOne = componentList.get(i);
                     MolecularComponent mcTwo = componentList.get(i + 1);
                     MolecularComponentPattern mcpOne = mtp.getMolecularComponentPattern(mcOne);
@@ -701,6 +701,44 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     // TODO: set x,y,z instead, link will be computed
 //				link.setLinkLength(2.0);
                     internalLinkSet.add(link);
+                }
+            }
+            // sanity checks (the current (up to date) instances can be obtained
+            // only via SpeciesContext -> SpeciesPattern -> MolecularTypePattern -> MolecularComponentPattern
+            // all the site attribute map elements and all internal link set elements must use the right instances of these mcp
+//            if(molecularType == null) {
+//                return; // we don't need to do sanity check when we start clean (do we? does it hurt if we do? can it possibly fail?)
+//            }
+            String saMapExceptionPrefix = "SiteAttributeMap of SpeciesContextSpec of Species '" + getSpeciesContext().getName() + "' ";
+            if(siteAttributesMap.size() > componentList.size()) {
+                throw new RuntimeException(saMapExceptionPrefix + "has obsolete attributes");
+            } else if(siteAttributesMap.size() < componentList.size()) {
+                throw new RuntimeException(saMapExceptionPrefix + "has missing attributes");
+            } else {
+                for (MolecularComponent mc : componentList) {
+                    MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+                    if (!siteAttributesMap.containsKey(mcp)) {
+                        throw new RuntimeException(saMapExceptionPrefix + "mismatching key found (MolecularComponentPattern)");
+                    }
+                }
+            }
+            String ilSetExceptionPrefix = "InternalLinkSet of SpeciesContextSpec of Species '" + getSpeciesContext().getName() + "' ";
+            // we build set of authoritative MolecularComponentPattern from the SpeciesPattern
+            Set<MolecularComponentPattern> authoritativeMcpSet = new LinkedHashSet<>();
+            for (MolecularComponent mc : componentList) {
+                MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+                authoritativeMcpSet.add(mcp);
+            }
+            // we can't assume how many links we have, even 0 is possible if we deleted them manually
+            // hoever, any mcp instance present in a link must be valid (present in the authoritativeMcpSet)
+            for(MolecularInternalLinkSpec link : getInternalLinkSet()) {
+                MolecularComponentPattern mcpOne = link.getMolecularComponentPatternOne();
+                MolecularComponentPattern mcpTwo = link.getMolecularComponentPatternTwo();
+                if(!authoritativeMcpSet.contains(mcpOne)) {
+                    throw new RuntimeException(ilSetExceptionPrefix + "has invalid MolecularComponentPattern instance");
+                }
+                if(!authoritativeMcpSet.contains(mcpTwo)) {
+                    throw new RuntimeException(ilSetExceptionPrefix + "has invalid MolecularComponentPattern instance");
                 }
             }
         }
