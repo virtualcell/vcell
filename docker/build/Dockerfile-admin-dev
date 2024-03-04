@@ -17,7 +17,7 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 
 # now we have Java 17
 RUN apt-get -y update && \
-    apt-get install -y curl dnsutils apt-utils libfreetype6 fontconfig fonts-dejavu && \
+    apt-get install -y curl dnsutils apt-utils libfreetype6 fontconfig fonts-dejavu openssh-client && \
     mkdir -p /usr/local/app/lib 
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
