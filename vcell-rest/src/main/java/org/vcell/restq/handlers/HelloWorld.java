@@ -20,6 +20,7 @@ public class HelloWorld {
 
     @GET
     @Operation(operationId = "getHelloWorld", summary = "Get hello world message.")
+    @Produces(MediaType.APPLICATION_JSON)
     public HelloWorldMessage get_HelloWorld() {
         try {
             return new HelloWorldMessage("Hello Security Roles: " + securityIdentity.getRoles());
