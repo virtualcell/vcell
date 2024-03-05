@@ -1,7 +1,9 @@
 package org.vcell.restq.apiclient;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
@@ -11,17 +13,22 @@ import org.vcell.restclient.model.BioModel;
 
 import java.io.IOException;
 
-//@QuarkusTest
+@QuarkusTest
 public class BioModelApiTest {
 
-//    KeycloakTestClient keycloakClient = new KeycloakTestClient();
+    @ConfigProperty(name = "quarkus.oidc.auth-server-url")
+    String authServerUrl;
+
+    @ConfigProperty(name = "quarkus.http.test-port")
+    Integer testPort;
+    KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     //TODO: Add endpoint that retrieves all BM affiliated with user, then use that for testing
     @Test
     public void testAddRemove() throws ApiException, IOException {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setHost("localhost");
-        defaultClient.setPort(9000);
+        defaultClient.setPort(testPort);
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(defaultClient);
 
         String vcmlString = IOUtils.toString(getClass().getResourceAsStream("/TestVCML.vcml"));
