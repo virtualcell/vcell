@@ -11,6 +11,9 @@ import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -21,7 +24,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
 
-public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener {
+public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, ListSelectionListener {
 
     private JScrollPane scrollPane;
 
@@ -29,6 +32,8 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     private EditorScrollTable editorScrollTable;
     private JButton refresh;
     private JButton copyButton;
+
+    private JTextPane parameters;
 
     private final static Logger lg = LogManager.getLogger(ExportedDataViewer.class);
 
@@ -57,9 +62,17 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         topBar.add(copyButton);
         topBar.add(refresh);
 
+        parameters = new JTextPane();
+        JScrollPane parameterScrollPane = new JScrollPane(parameters, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        parameters.setEditable(false);
+        parameterScrollPane.setPreferredSize(new Dimension(380, 100));
+
+        editorScrollTable.getSelectionModel().addListSelectionListener(this);
+
         this.setLayout(new BorderLayout());
         this.add(topBar, BorderLayout.NORTH);
-        this.add(scrollPane);
+        this.add(scrollPane, BorderLayout.CENTER);
+        this.add(parameterScrollPane, BorderLayout.SOUTH);
         initalizeTableData();
     }
 
@@ -160,5 +173,16 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
 
+    }
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        int row = editorScrollTable.getSelectedRow();
+        StyleContext styleContext = new StyleContext();
+//        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
+        String defaultParameterValues = tableModel.getRowData(row).defaultParameters.toString();
+        String actualParameterValues = tableModel.getRowData(row).setParameters.toString();
+        parameters.setText("Set Parameter Values: " + actualParameterValues + "\n \nDefault Parameter Values: " + defaultParameterValues);
+        parameters.updateUI();
     }
 }

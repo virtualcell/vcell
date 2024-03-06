@@ -26,8 +26,8 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         add(timeSliceCol);
         add(variablesCol);
         add(formatCol);
-        add(defaultParametersCol);
-        add(setParametersCol);
+//        add(defaultParametersCol);
+//        add(setParametersCol);
         add(dateExportedCol);
     }};
 
