@@ -90,7 +90,7 @@ ln -s /usr/local/deploy/${host}-keystorepswd.txt /usr/local/deploy/keystorepswd.
 ### 6. shutdown, remove and reinstall stack to remove/replace secrets
 shutdown the stack
 ```bash
-vcell-services shutdown test --all
+vcell-services --all shutdown test
 ```
 remove (A.) just the secrets and corresponding services, or (B.) the entire stack.
 - A. Either - remove the secrets and the services which use them
