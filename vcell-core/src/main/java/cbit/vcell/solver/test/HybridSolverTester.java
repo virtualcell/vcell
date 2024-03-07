@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import cbit.vcell.simdata.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
@@ -44,13 +45,6 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataOperation;
-import cbit.vcell.simdata.DataOperationResults;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -138,8 +132,9 @@ public class HybridSolverTester {
 					VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getVersion().getVersionKey(), sim.getVersion().getOwner());
 					VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 					File hdf5File = new File(simDataDir, vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
+					Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
 					DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
-							(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimDataID,false,null), hdf5File);
+							(DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimDataID,false,null), hdf5File);
 
 					//initialize for the first time
 					
@@ -304,8 +299,9 @@ public class HybridSolverTester {
 			DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = null;
 			try{
 				simData = new SimulationData(vcSimulationDataIdentifier, userSimDataDir, null, null);
+				Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
 				dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)
-					DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimulationDataIdentifier, true, null), new File(userSimDataDir,SimulationData.createCanonicalPostProcessFileName(vcSimulationDataIdentifier)));
+					hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimulationDataIdentifier, true, null), new File(userSimDataDir,SimulationData.createCanonicalPostProcessFileName(vcSimulationDataIdentifier)));
 			}catch(FileNotFoundException e){
 				if(jobCounter == 0){
 					System.out.println("found no trials matching SimID="+altArgsHelper.simID+" in user dir "+userSimDataDir.getAbsolutePath());

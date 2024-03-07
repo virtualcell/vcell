@@ -13,6 +13,7 @@ package cbit.vcell.microscopy;
 import java.io.File;
 import java.util.Arrays;
 
+import cbit.vcell.simdata.*;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -27,12 +28,8 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
-import cbit.vcell.simdata.DataOperationResults;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
@@ -196,10 +193,11 @@ public class FRAPOptData {
 		//read results from netCDF file
 		File hdf5File = new File(getLocalWorkspace().getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		//get dataprocessing output
+		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
 		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
-				(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), hdf5File);
+				(DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), hdf5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
-				(DataOperationResults.DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(
+				(DataOperationResults.DataProcessingOutputDataValues) hdf5DataProcessingReader.getDataProcessingOutput(
 					new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/,FRAPStudy.ROI_EXTDATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), hdf5File);
 
 //		DataProcessingOutput dataProcessingOutput = getRawReferenceDataFromHDF5(hdf5File);
