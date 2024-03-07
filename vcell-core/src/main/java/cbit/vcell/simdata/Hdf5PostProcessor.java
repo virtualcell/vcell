@@ -14,14 +14,14 @@ import java.util.Map;
 
 public class Hdf5PostProcessor {
 
-    enum Statistic {
+    enum StatisticType {
         average(0), total(1), min(2), max(3);
         private final int index;
-        private Statistic(int index) {
+        StatisticType(int index) {
             this.index = index;
         }
-        static Statistic fromIndex(int index) {
-            for (Statistic statistic : Statistic.values()) {
+        public static StatisticType fromIndex(int index) {
+            for (StatisticType statistic : StatisticType.values()) {
                 if (statistic.index == index) {
                     return statistic;
                 }
@@ -29,8 +29,8 @@ public class Hdf5PostProcessor {
             throw new IllegalArgumentException("No Statistic with index " + index);
         }
 
-        static Statistic fromName(String name) {
-            for (Statistic statistic : Statistic.values()) {
+        public static StatisticType fromName(String name) {
+            for (StatisticType statistic : StatisticType.values()) {
                 if (statistic.name().equals(name)) {
                     return statistic;
                 }
@@ -39,7 +39,12 @@ public class Hdf5PostProcessor {
         }
     }
 
-    record VariableInfo(int channel_index, String stat_var_name, String unit, int var_index, String var_name) {}
+    public record VariableInfo(int channel_index,
+                        String stat_var_name,
+                        StatisticType statisticType,
+                        String unit,
+                        int var_index,
+                        String var_name) {}
     public static class ImageMetadata {
         String groupPath;
         String name;
@@ -63,8 +68,6 @@ public class Hdf5PostProcessor {
             }
 
             Group parentGroup = imageDataset_t0.getParent();
-            List<Double> extents_list = new ArrayList<>();
-            List<Double> origin_list = new ArrayList<>();
             Attribute extentX = parentGroup.getAttribute("ExtentX");
             Attribute extentY = parentGroup.getAttribute("ExtentY");
             Attribute extentZ = parentGroup.getAttribute("ExtentZ");
@@ -123,7 +126,9 @@ public class Hdf5PostProcessor {
                     String unit = var_unit_by_channel.get(channel);
                     int var_index = channel / 4;  // because there are 4 statistics per variable
                     String var_name = stat_var_name.substring(0, stat_var_name.lastIndexOf("_"));
-                    this.variables.add(new VariableInfo(channel, stat_var_name, unit, var_index, var_name));
+                    String statistic_name = stat_var_name.substring(stat_var_name.lastIndexOf("_") + 1);
+                    StatisticType statisticType = StatisticType.fromName(statistic_name);
+                    this.variables.add(new VariableInfo(channel, stat_var_name, statisticType, unit, var_index, var_name));
                 }
 
                 // read VariableStatistics datasets for each time
@@ -166,13 +171,11 @@ public class Hdf5PostProcessor {
 
         /**
          * Read image data from the HDF5 file
-         * @param imageMetadata
-         * @param timeIndex
          * @return double[][][] 3D array of doubles (z, y, x) z=1 for 2D images
          */
         public double[][][] readImageData(ImageMetadata imageMetadata, int timeIndex) {
             try (HdfFile hdfFile = new HdfFile(postprocessingHdf5Path.toFile())) {
-                Dataset imageDataset = hdfFile.getDatasetByPath(imageMetadata.groupPath + "time" + String.format("%06d", timeIndex));
+                Dataset imageDataset = imageMetadata.getDataset(hdfFile, timeIndex);
                 if (imageDataset.getDimensions().length == 2) {
                     return new double[][][] { (double[][]) imageDataset.getData() };
                 } else if (imageDataset.getDimensions().length == 3) {
