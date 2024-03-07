@@ -562,6 +562,7 @@ private JMenu getToolMenu() {
 //			toolMenu.add(getRunBNGMenuItem());
 			toolMenu.add(new JSeparator());
 			toolMenu.add(getRunVFrapItem());
+			toolMenu.add(getExportedDataViewer());
 //			toolMenu.add(getImageJServiceMenuItem());	// moved here from Tools
 		    toolMenu.add(new JSeparator());
 //			toolMenu.add(new JSeparator());
@@ -712,7 +713,6 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(createWindowMenu(true));
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
-			ivjDocumentWindowJMenuBar.add(getExportedDataViewer());
 			ivjDocumentWindowJMenuBar.add(Box.createHorizontalGlue());
 			ivjDocumentWindowJMenuBar.add(createWindowMenu(false));
 			// user code begin {1}

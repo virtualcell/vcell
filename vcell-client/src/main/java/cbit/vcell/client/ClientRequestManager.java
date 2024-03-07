@@ -2755,9 +2755,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 				// put lock
 				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
-				RandomAccessFile randomAccessFile = new RandomAccessFile(jsonFile, "rw");
-				FileChannel fileChannel = randomAccessFile.getChannel();
-				FileLock fileLock = fileChannel.lock();
 
 				String stringJobID = String.valueOf(exportEvent.getJobID());
 				String exportFormat = exportEvent.getFormat();
@@ -2809,11 +2806,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 					jsonFileWriter.close();
 				}
-
-				// close file lock
-				fileLock.close();
-				fileChannel.close();
-				randomAccessFile.close();
 			}
 		}
 		catch (Exception e){
