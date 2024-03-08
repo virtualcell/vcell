@@ -581,8 +581,17 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 			return null;
 		}
 		File dataProcessingOutputFileHDF5 = ((SimulationData)getVCData(dataOperation.getVCDataIdentifier())).getDataProcessingOutputSourceFileHDF5();
-		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
-		DataOperationResults dataOperationResults = hdf5DataProcessingReader.getDataProcessingOutput(dataOperation,dataProcessingOutputFileHDF5);
+		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
+		DataOperationResults dataOperationResults;
+		if (dataOperation instanceof DataOperation.DataProcessingOutputInfoOP infoOP) {
+			dataOperationResults = hdf5DataProcessingReader.getDataProcessingOutput(infoOP, dataProcessingOutputFileHDF5);
+		} else if (dataOperation instanceof DataOperation.DataProcessingOutputDataValuesOP dataValuesOP) {
+			dataOperationResults = hdf5DataProcessingReader.getDataProcessingOutput(dataValuesOP, dataProcessingOutputFileHDF5);
+		} else if (dataOperation instanceof DataOperation.DataProcessingOutputTimeSeriesOP timeSeriesOp) {
+			dataOperationResults = hdf5DataProcessingReader.getDataProcessingOutput(timeSeriesOp, dataProcessingOutputFileHDF5);
+		} else {
+			throw new RuntimeException("unexpected data operation type "+dataOperation);
+		}
 		if(vcDataJobID != null){
 			fireDataJobEventIfNecessary(vcDataJobID,MessageEvent.DATA_COMPLETE, dataOperation.getVCDataIdentifier(), 0.0, ((DataOperationResults.DataProcessingOutputTimeSeriesValues)dataOperationResults).getTimeSeriesJobResults(),null);
 		}

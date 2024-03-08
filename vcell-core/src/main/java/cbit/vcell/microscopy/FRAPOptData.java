@@ -193,7 +193,7 @@ public class FRAPOptData {
 		//read results from netCDF file
 		File hdf5File = new File(getLocalWorkspace().getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		//get dataprocessing output
-		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
+		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
 		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
 				(DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), hdf5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =

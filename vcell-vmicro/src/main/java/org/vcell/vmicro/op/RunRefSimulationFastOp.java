@@ -164,7 +164,7 @@ public class RunRefSimulationFastOp {
 		File hdf5File = new File(localWorkspace.getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		
 		// get post processing info (time points, variable sizes)
-		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
+		Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
 		DataOperation.DataProcessingOutputInfoOP dataOperationInfo = new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null);
 		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(dataOperationInfo, hdf5File);
 		// get post processing data

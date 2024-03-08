@@ -258,7 +258,7 @@ public class FrapDataUtils {
 		if(progressListener != null){
 			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
 		}
-		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
+		Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
 		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
 			(DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), inputHDF5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =

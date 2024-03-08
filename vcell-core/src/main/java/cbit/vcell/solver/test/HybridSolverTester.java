@@ -132,7 +132,7 @@ public class HybridSolverTester {
 					VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getVersion().getVersionKey(), sim.getVersion().getOwner());
 					VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 					File hdf5File = new File(simDataDir, vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
-					Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
+					Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
 					DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
 							(DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimDataID,false,null), hdf5File);
 
@@ -299,7 +299,7 @@ public class HybridSolverTester {
 			DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = null;
 			try{
 				simData = new SimulationData(vcSimulationDataIdentifier, userSimDataDir, null, null);
-				Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
+				Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
 				dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)
 					hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimulationDataIdentifier, true, null), new File(userSimDataDir,SimulationData.createCanonicalPostProcessFileName(vcSimulationDataIdentifier)));
 			}catch(FileNotFoundException e){

@@ -3,7 +3,7 @@ package org.vcell.vmicro.op;
 import java.io.File;
 import java.util.ArrayList;
 
-import cbit.vcell.simdata.Hdf5DataProcessingReader;
+import cbit.vcell.simdata.Hdf5DataProcessingReaderNative;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 
 import cbit.image.ImageException;
@@ -24,7 +24,7 @@ public class ImportRawTimeSeriesFromHdf5FluorOp {
 //		if(progressListener != null){
 //			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
 //		}
-		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReader();
+		Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
 		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
 			(DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), inputHDF5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
