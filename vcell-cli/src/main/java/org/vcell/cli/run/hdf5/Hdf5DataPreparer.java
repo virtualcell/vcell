@@ -84,6 +84,7 @@ public class Hdf5DataPreparer {
         for (int scanBound : spatialDataResults.scanBounds){
             dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task"
             numJobs *= (scanBound+1);
+            dataDimensionList.add((long)1);                     // ...then by num of subtasks (VCell only supports 1)
         }
         for (long dim : spaceTimeDimensions){                   // ...finally by space-time dimensions
             dataDimensionList.add(dim);
@@ -146,6 +147,7 @@ public class Hdf5DataPreparer {
         dataDimensionList.add(numDataSets);                     // ...first by dataSet
         for (int scanBound : dataSourceNonspatial.scanBounds){
             dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task" dimensions
+            dataDimensionList.add((long)1);                     // ...then by num of subtasks (VCell only supports 1)
         }
         dataDimensionList.add(numTimePoints);                   // ...finally by max time points
 
