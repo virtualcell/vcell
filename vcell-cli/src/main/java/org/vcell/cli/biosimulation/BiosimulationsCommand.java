@@ -92,7 +92,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliRecorder);
+                ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliRecorder, true);
                 if (Tracer.hasErrors()){
                     if (!bQuiet) {
                         logger.error("Errors occurred during execution");

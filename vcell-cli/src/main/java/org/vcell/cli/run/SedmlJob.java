@@ -382,7 +382,7 @@ public class SedmlJob {
         }
     }
 
-    private void generateHDF5(SolverHandler solverHandler, Hdf5DataContainer masterHdf5File) throws IOException {
+    private void generateHDF5(SolverHandler solverHandler, Hdf5DataContainer masterHdf5File) {
         this.logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 

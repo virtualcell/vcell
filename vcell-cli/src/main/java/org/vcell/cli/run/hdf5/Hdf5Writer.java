@@ -62,8 +62,10 @@ public class Hdf5Writer {
                 // Process the Dataset
                 for (Hdf5SedmlResults data : hdf5DataWrapper.uriToResultsMap.get(rawPath)){
                     Hdf5PreparedData preparedData;
-                    if (data.dataSource instanceof Hdf5SedmlResultsNonspatial) preparedData = Hdf5DataPreparer.prepareNonspatialData(data);
-                    else if (data.dataSource instanceof Hdf5SedmlResultsSpatial) preparedData = Hdf5DataPreparer.prepareSpatialData(data);
+                    if (data.dataSource instanceof Hdf5SedmlResultsNonspatial)
+                        preparedData = Hdf5DataPreparer.prepareNonspatialData(data, hdf5DataWrapper.trackSubSetsInReports);
+                    else if (data.dataSource instanceof Hdf5SedmlResultsSpatial)
+                        preparedData = Hdf5DataPreparer.prepareSpatialData(data, hdf5DataWrapper.trackSubSetsInReports);
                     else continue;
     
                     int currentDatasetId = masterHdf5.insertSedmlData(path, preparedData);
