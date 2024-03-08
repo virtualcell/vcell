@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -315,10 +316,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				case N5:
 					n5Exporter.initalizeDataControllers(user, dataServerImpl,  (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier());
 					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
-
-					String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
-					String uri = url  + ":" + PropertyLoader.getRequiredProperty(PropertyLoader.s3ProxyExternalPort) + "/" + n5Exporter.getN5FilePathSuffix();
-					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), uri, exportOutput, exportSpecs, newExportJob);
+					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), exportOutput, exportSpecs, newExportJob);
 				default:
 					throw new DataAccessException("Unknown export format requested");
 			}
@@ -478,11 +476,15 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 }
 
 
-private ExportEvent makeRemoteN5File(String fileFormat, String fileName, String exportBaseURL, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob) throws DataFormatException, IOException{
+private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob) throws DataFormatException, IOException{
 	if (exportOutput.isValid()) {
 		completedExportRequests.put(exportSpecs, newExportJob);
+		String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
+		String uri = url  + ":" + PropertyLoader.getRequiredProperty(PropertyLoader.s3ProxyExternalPort) + "/" + n5Exporter.getN5FilePathSuffix();
+		N5Specs n5Specs = (N5Specs) exportSpecs.getFormatSpecificSpecs();
+		uri += "?dataSetName=" + n5Specs.dataSetName;
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
-		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exportBaseURL, exportSpecs);
+		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, URI.create(uri).toString(), exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
