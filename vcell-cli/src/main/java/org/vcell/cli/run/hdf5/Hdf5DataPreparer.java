@@ -40,7 +40,7 @@ public class Hdf5DataPreparer {
      * @param datasetWrapper the data relevant to an HDF5 output file
      * @return the prepared spatial data
      */
-    public static Hdf5PreparedData prepareSpatialData (Hdf5SedmlResults datasetWrapper){
+    public static Hdf5PreparedData prepareSpatialData (Hdf5SedmlResults datasetWrapper, boolean reportSubSets){
         int totalDataVolume = 1;
         int numJobs = 1;
         double[] bigDataBuffer;
@@ -84,7 +84,7 @@ public class Hdf5DataPreparer {
         for (int scanBound : spatialDataResults.scanBounds){
             dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task"
             numJobs *= (scanBound+1);
-            dataDimensionList.add((long)1);                     // ...then by num of subtasks (VCell only supports 1)
+            if (reportSubSets) dataDimensionList.add((long)1);  // ...then by num of subtasks (VCell only supports 1)
         }
         for (long dim : spaceTimeDimensions){                   // ...finally by space-time dimensions
             dataDimensionList.add(dim);
@@ -126,7 +126,7 @@ public class Hdf5DataPreparer {
      * @param datasetWrapper the data relevant to an hdf5 output file
      * @return the prepared nonspatial data
      */
-    public static Hdf5PreparedData prepareNonspatialData(Hdf5SedmlResults datasetWrapper){
+    public static Hdf5PreparedData prepareNonspatialData(Hdf5SedmlResults datasetWrapper, boolean reportSubSets){
         long numTimePoints = 0;
         int totalDataVolume = 1;
         long numDataSets;
@@ -147,7 +147,7 @@ public class Hdf5DataPreparer {
         dataDimensionList.add(numDataSets);                     // ...first by dataSet
         for (int scanBound : dataSourceNonspatial.scanBounds){
             dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task" dimensions
-            dataDimensionList.add((long)1);                     // ...then by num of subtasks (VCell only supports 1)
+            if (reportSubSets) dataDimensionList.add((long)1);  // ...then by num of subtasks (VCell only supports 1)
         }
         dataDimensionList.add(numTimePoints);                   // ...finally by max time points
 
