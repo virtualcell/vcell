@@ -48,7 +48,7 @@ public class Hdf5PostProcessor {
     public static class ImageMetadata {
         String groupPath;
         String name;
-        double[] extent;
+        double[] extent;  // extentX, extentY, extentZ.  extentZ defaults to 1.0 for 2D images
         double[] origin;
         int[] shape;
         ImageMetadata(String groupPath, String name) {
@@ -78,8 +78,14 @@ public class Hdf5PostProcessor {
             Attribute originX = parentGroup.getAttribute("OriginX");
             Attribute originY = parentGroup.getAttribute("OriginY");
             Attribute originZ = parentGroup.getAttribute("OriginZ");
-            this.extent = new double[] { (Float)extentX.getData(), (Float)extentY.getData(), (Float)extentZ.getData() };
-            this.origin = new double[] { (Float)originX.getData(), (Float)originY.getData(), (Float)originZ.getData() };
+            double ex = (extentX != null) ? (Float)extentX.getData() : 0.0;
+            double ey = (extentY != null) ? (Float)extentY.getData() : 0.0;
+            double ez = (extentZ != null) ? (Float)extentZ.getData() : 1.0; // a vcell default, could be confusing
+            double ox = (originX != null) ? (Float)originX.getData() : 0.0;
+            double oy = (originY != null) ? (Float)originY.getData() : 0.0;
+            double oz = (originZ != null) ? (Float)originZ.getData() : 0.0;
+            this.extent = new double[] { ex, ey, ez };
+            this.origin = new double[] { ox, oy, oz };
         }
     }
 
