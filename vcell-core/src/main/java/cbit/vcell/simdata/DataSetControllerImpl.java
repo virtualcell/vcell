@@ -582,14 +582,13 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 		}
 		File dataProcessingOutputFileHDF5 = ((SimulationData)getVCData(dataOperation.getVCDataIdentifier())).getDataProcessingOutputSourceFileHDF5();
 		DataOperationResults dataOperationResults;
-		Hdf5DataProcessingReaderNative hdf5DataProcessingReaderNative = new Hdf5DataProcessingReaderNative();
 		Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 		if (dataOperation instanceof DataOperation.DataProcessingOutputInfoOP infoOP) {
 			dataOperationResults = hdf5DataProcessingReaderPure.getDataProcessingOutput(infoOP, dataProcessingOutputFileHDF5);
 		} else if (dataOperation instanceof DataOperation.DataProcessingOutputDataValuesOP dataValuesOP) {
 			dataOperationResults = hdf5DataProcessingReaderPure.getDataProcessingOutput(dataValuesOP, dataProcessingOutputFileHDF5);
 		} else if (dataOperation instanceof DataOperation.DataProcessingOutputTimeSeriesOP timeSeriesOp) {
-			dataOperationResults = hdf5DataProcessingReaderNative.getDataProcessingOutput(timeSeriesOp, dataProcessingOutputFileHDF5);
+			dataOperationResults = hdf5DataProcessingReaderPure.getDataProcessingOutput(timeSeriesOp, dataProcessingOutputFileHDF5);
 		} else {
 			throw new RuntimeException("unexpected data operation type "+dataOperation);
 		}

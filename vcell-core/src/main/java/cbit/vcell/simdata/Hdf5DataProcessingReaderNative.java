@@ -55,7 +55,10 @@ public class Hdf5DataProcessingReaderNative {
 
 
     public DataOperationResults.DataProcessingOutputTimeSeriesValues getDataProcessingOutput(DataOperation.DataProcessingOutputTimeSeriesOP timeSeriesOp, File dataProcessingOutputFileHDF5) throws Exception {
-        return (DataOperationResults.DataProcessingOutputTimeSeriesValues)getDataProcessingOutput_internal(timeSeriesOp, dataProcessingOutputFileHDF5);
+        var values1 = (DataOperationResults.DataProcessingOutputTimeSeriesValues)getDataProcessingOutput_internal(timeSeriesOp, dataProcessingOutputFileHDF5);
+        Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
+        var values2 = hdf5DataProcessingReaderPure.getDataProcessingOutput(timeSeriesOp, dataProcessingOutputFileHDF5);
+        return values1;
     }
 
     private DataOperationResults getDataProcessingOutput_internal(DataOperation dataOperation, File dataProcessingOutputFileHDF5) throws Exception {
