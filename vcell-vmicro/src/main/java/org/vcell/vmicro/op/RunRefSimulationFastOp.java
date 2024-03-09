@@ -164,12 +164,12 @@ public class RunRefSimulationFastOp {
 		File hdf5File = new File(localWorkspace.getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		
 		// get post processing info (time points, variable sizes)
-		Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
+		Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 		DataOperation.DataProcessingOutputInfoOP dataOperationInfo = new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null);
-		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(dataOperationInfo, hdf5File);
+		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = hdf5DataProcessingReaderPure.getDataProcessingOutput(dataOperationInfo, hdf5File);
 		// get post processing data
 		DataOperation.DataProcessingOutputDataValuesOP dataOperationDataValues = new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/,ROI_EXTDATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null);
-		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues = (DataOperationResults.DataProcessingOutputDataValues) hdf5DataProcessingReader.getDataProcessingOutput(dataOperationDataValues, hdf5File);
+		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues = hdf5DataProcessingReaderPure.getDataProcessingOutput(dataOperationDataValues, hdf5File);
 
 		//
 		// delete the simulation files

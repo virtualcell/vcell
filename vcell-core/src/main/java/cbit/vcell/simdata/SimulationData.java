@@ -981,9 +981,9 @@ public synchronized SimDataBlock getSimDataBlock(OutputContext outputContext, St
 			PDEDataInfo pdeDataInfo = new PDEDataInfo(vcDataId.getOwner(),vcDataId.getID(),varName,time,lastDataProcessingOutputInfoTime);
 			DataProcessingOutputDataValuesOP dataProcessingOutputDataValuesOP =
 				new DataProcessingOutputDataValuesOP(vcDataId, varName, TimePointHelper.createSingleTimeTimePointHelper(extractClosestPostProcessTime(time)), DataIndexHelper.createAllDataIndexesDataIndexHelper(), outputContext, null);
-			Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
+			Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 			DataProcessingOutputDataValues dataProcessingOutputDataValues =
-				(DataProcessingOutputDataValues) hdf5DataProcessingReader.getDataProcessingOutput(dataProcessingOutputDataValuesOP, getDataProcessingOutputSourceFileHDF5());
+                    hdf5DataProcessingReaderPure.getDataProcessingOutput(dataProcessingOutputDataValuesOP, getDataProcessingOutputSourceFileHDF5());
 			return new SimDataBlock(pdeDataInfo,dataProcessingOutputDataValues.getDataValues()[0]/*1 time only*/,VariableType.POSTPROCESSING);
 		}
 	}catch(Exception e){
@@ -1083,9 +1083,9 @@ synchronized double[][][] getSimDataTimeSeries0(
 				DataProcessingOutputDataValuesOP dataProcessingOutputDataValuesOP =
 					new DataProcessingOutputDataValuesOP(vcDataId, varNames[i],
 						TimePointHelper.createSpecificTimePointHelper(specificTimePoints), DataIndexHelper.createSpecificDataIndexHelper(indexes[i]), outputContext, null);
-				Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
+				Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 				DataProcessingOutputDataValues dataProcessingOutputDataValues =
-					(DataProcessingOutputDataValues) hdf5DataProcessingReader.getDataProcessingOutput(dataProcessingOutputDataValuesOP, getDataProcessingOutputSourceFileHDF5());
+                        hdf5DataProcessingReaderPure.getDataProcessingOutput(dataProcessingOutputDataValuesOP, getDataProcessingOutputSourceFileHDF5());
 				for (int j = 0; j < specificTimePoints.length; j++) {
 					results[j][i] = dataProcessingOutputDataValues.getDataValues()[j];
 				}
@@ -1811,8 +1811,8 @@ private void refreshDataProcessingOutputInfo(OutputContext outputContext) throws
 		lastOutputContext = outputContext;
 		DataProcessingOutputInfoOP dataProcessingOutputInfoOP = new DataProcessingOutputInfoOP(vcDataId, false, outputContext);
 		try{
-			Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
-			dataProcessingOutputInfo = (DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(dataProcessingOutputInfoOP, dataProcessingOutputFile);
+			Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
+			dataProcessingOutputInfo = hdf5DataProcessingReaderPure.getDataProcessingOutput(dataProcessingOutputInfoOP, dataProcessingOutputFile);
 		}catch(Exception e){
 			throw new DataAccessException(e.getMessage(),(e.getCause()==null?e:e.getCause()));
 		}

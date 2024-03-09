@@ -581,14 +581,15 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 			return null;
 		}
 		File dataProcessingOutputFileHDF5 = ((SimulationData)getVCData(dataOperation.getVCDataIdentifier())).getDataProcessingOutputSourceFileHDF5();
-		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
 		DataOperationResults dataOperationResults;
+		Hdf5DataProcessingReaderNative hdf5DataProcessingReaderNative = new Hdf5DataProcessingReaderNative();
+		Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 		if (dataOperation instanceof DataOperation.DataProcessingOutputInfoOP infoOP) {
-			dataOperationResults = hdf5DataProcessingReader.getDataProcessingOutput(infoOP, dataProcessingOutputFileHDF5);
+			dataOperationResults = hdf5DataProcessingReaderPure.getDataProcessingOutput(infoOP, dataProcessingOutputFileHDF5);
 		} else if (dataOperation instanceof DataOperation.DataProcessingOutputDataValuesOP dataValuesOP) {
-			dataOperationResults = hdf5DataProcessingReader.getDataProcessingOutput(dataValuesOP, dataProcessingOutputFileHDF5);
+			dataOperationResults = hdf5DataProcessingReaderPure.getDataProcessingOutput(dataValuesOP, dataProcessingOutputFileHDF5);
 		} else if (dataOperation instanceof DataOperation.DataProcessingOutputTimeSeriesOP timeSeriesOp) {
-			dataOperationResults = hdf5DataProcessingReader.getDataProcessingOutput(timeSeriesOp, dataProcessingOutputFileHDF5);
+			dataOperationResults = hdf5DataProcessingReaderNative.getDataProcessingOutput(timeSeriesOp, dataProcessingOutputFileHDF5);
 		} else {
 			throw new RuntimeException("unexpected data operation type "+dataOperation);
 		}

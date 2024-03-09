@@ -258,12 +258,12 @@ public class FrapDataUtils {
 		if(progressListener != null){
 			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
 		}
-		Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
+		Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
-			(DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), inputHDF5File);
+                hdf5DataProcessingReaderPure.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), inputHDF5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
-			(DataOperationResults.DataProcessingOutputDataValues) hdf5DataProcessingReader.getDataProcessingOutput(
-				new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/, SimulationContext.FLUOR_DATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), inputHDF5File);
+                hdf5DataProcessingReaderPure.getDataProcessingOutput(
+                    new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/, SimulationContext.FLUOR_DATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), inputHDF5File);
 		ArrayList<SourceDataInfo> sdiArr =
 			dataProcessingOutputDataValues.createSourceDataInfos(
 				dataProcessingOutputInfo.getVariableISize(SimulationContext.FLUOR_DATA_NAME),

@@ -23,20 +23,37 @@ import java.util.List;
 import static cbit.vcell.simdata.SimDataConstants.*;
 
 
-public class Hdf5DataProcessingReaderNative implements Hdf5DataProcessingReader {
+public class Hdf5DataProcessingReaderNative {
 
 
-    @Override
     public DataOperationResults.DataProcessingOutputInfo getDataProcessingOutput(DataOperation.DataProcessingOutputInfoOP infoOP, File dataProcessingOutputFileHDF5) throws Exception {
-        return (DataOperationResults.DataProcessingOutputInfo)getDataProcessingOutput_internal(infoOP, dataProcessingOutputFileHDF5);
+        var outputInfo1 = (DataOperationResults.DataProcessingOutputInfo)getDataProcessingOutput_internal(infoOP, dataProcessingOutputFileHDF5);
+        Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
+        var outputInfo2 = hdf5DataProcessingReaderPure.getDataProcessingOutput(infoOP, dataProcessingOutputFileHDF5);
+        if (outputInfo1.getVariableNames().length != outputInfo2.getVariableNames().length) {
+            throw new Exception("Variable names length mismatch");
+        }
+        for (int i = 0; i < outputInfo1.getVariableNames().length; i++) {
+            if (!outputInfo1.getVariableNames()[i].equals(outputInfo2.getVariableNames()[i])) {
+                throw new Exception("Variable names mismatch");
+            }
+        }
+        System.out.println("hello");
+        return outputInfo1;
     }
 
-    @Override
+
     public DataOperationResults.DataProcessingOutputDataValues getDataProcessingOutput(DataOperation.DataProcessingOutputDataValuesOP dataValuesOp, File dataProcessingOutputFileHDF5) throws Exception {
-        return (DataOperationResults.DataProcessingOutputDataValues)getDataProcessingOutput_internal(dataValuesOp, dataProcessingOutputFileHDF5);
+        var values1 = (DataOperationResults.DataProcessingOutputDataValues)getDataProcessingOutput_internal(dataValuesOp, dataProcessingOutputFileHDF5);
+        Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
+        var values2 = hdf5DataProcessingReaderPure.getDataProcessingOutput(dataValuesOp, dataProcessingOutputFileHDF5);
+        if (values1.getDataValues().length != values2.getDataValues().length) {
+            throw new Exception("Data values length mismatch");
+        }
+        return values1;
     }
 
-    @Override
+
     public DataOperationResults.DataProcessingOutputTimeSeriesValues getDataProcessingOutput(DataOperation.DataProcessingOutputTimeSeriesOP timeSeriesOp, File dataProcessingOutputFileHDF5) throws Exception {
         return (DataOperationResults.DataProcessingOutputTimeSeriesValues)getDataProcessingOutput_internal(timeSeriesOp, dataProcessingOutputFileHDF5);
     }
@@ -133,7 +150,7 @@ public class Hdf5DataProcessingReaderNative implements Hdf5DataProcessingReader 
                     double[] alltimes = null;
                     if(foundFunction != null){
                         DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
-                            (DataOperationResults.DataProcessingOutputInfo)getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(dataOperation.getVCDataIdentifier(),false,dataOperation.getOutputContext()), dataProcessingOutputFileHDF5);
+                                getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(dataOperation.getVCDataIdentifier(),false,dataOperation.getOutputContext()), dataProcessingOutputFileHDF5);
                         alltimes = dataProcessingOutputInfo.getVariableTimePoints();
                         DataSetControllerImpl.FunctionHelper functionHelper = DataSetControllerImpl.getPostProcessStateVariables(foundFunction, dataProcessingOutputInfo);
                         DataSetControllerImpl.DataProcessingHelper dataProcessingHelper = new DataSetControllerImpl.DataProcessingHelper(functionHelper.postProcessStateVars,timePointHelper,dataIndexHelper);

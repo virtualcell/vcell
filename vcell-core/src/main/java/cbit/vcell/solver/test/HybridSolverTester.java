@@ -132,9 +132,9 @@ public class HybridSolverTester {
 					VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(sim.getVersion().getVersionKey(), sim.getVersion().getOwner());
 					VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
 					File hdf5File = new File(simDataDir, vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
-					Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
+					Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 					DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
-							(DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimDataID,false,null), hdf5File);
+                            hdf5DataProcessingReaderPure.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimDataID,false,null), hdf5File);
 
 					//initialize for the first time
 					
@@ -299,9 +299,8 @@ public class HybridSolverTester {
 			DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = null;
 			try{
 				simData = new SimulationData(vcSimulationDataIdentifier, userSimDataDir, null, null);
-				Hdf5DataProcessingReaderNative hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
-				dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)
-					hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimulationDataIdentifier, true, null), new File(userSimDataDir,SimulationData.createCanonicalPostProcessFileName(vcSimulationDataIdentifier)));
+				Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
+				dataProcessingOutputInfo = hdf5DataProcessingReaderPure.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcSimulationDataIdentifier, true, null), new File(userSimDataDir,SimulationData.createCanonicalPostProcessFileName(vcSimulationDataIdentifier)));
 			}catch(FileNotFoundException e){
 				if(jobCounter == 0){
 					System.out.println("found no trials matching SimID="+altArgsHelper.simID+" in user dir "+userSimDataDir.getAbsolutePath());

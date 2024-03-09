@@ -193,12 +193,12 @@ public class FRAPOptData {
 		//read results from netCDF file
 		File hdf5File = new File(getLocalWorkspace().getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		//get dataprocessing output
-		Hdf5DataProcessingReader hdf5DataProcessingReader = new Hdf5DataProcessingReaderNative();
+		Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
-				(DataOperationResults.DataProcessingOutputInfo) hdf5DataProcessingReader.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), hdf5File);
+                hdf5DataProcessingReaderPure.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), hdf5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
-				(DataOperationResults.DataProcessingOutputDataValues) hdf5DataProcessingReader.getDataProcessingOutput(
-					new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/,FRAPStudy.ROI_EXTDATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), hdf5File);
+                hdf5DataProcessingReaderPure.getDataProcessingOutput(
+                    new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/,FRAPStudy.ROI_EXTDATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), hdf5File);
 
 //		DataProcessingOutput dataProcessingOutput = getRawReferenceDataFromHDF5(hdf5File);
 		//get ref sim time points
