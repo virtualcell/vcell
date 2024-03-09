@@ -64,7 +64,11 @@ public class Hdf5PostProcessor {
             Dataset imageDataset_t0 = getDataset(hdfFile, 0);
             this.shape = imageDataset_t0.getDimensions();
             if (this.shape.length == 2){
-                this.shape = new int[] {1, this.shape[0], this.shape[1]};
+                this.shape = new int[] {1, this.shape[1], this.shape[0]};
+            } else if (this.shape.length == 3) {
+                this.shape = new int[] {this.shape[2], this.shape[1], this.shape[0]};
+            } else {
+                throw new RuntimeException("Image dataset has unexpected number of dimensions: " + this.shape.length);
             }
 
             Group parentGroup = imageDataset_t0.getParent();

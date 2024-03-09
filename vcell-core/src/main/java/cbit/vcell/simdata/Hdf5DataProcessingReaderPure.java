@@ -1,84 +1,215 @@
-//package cbit.vcell.simdata;
-//
-//import cbit.vcell.math.VariableType;
-//import cbit.vcell.resource.NativeLib;
-//import cbit.vcell.solver.AnnotatedFunction;
-//import cbit.vcell.solver.Simulation;
-//import ncsa.hdf.object.*;
-//import ncsa.hdf.object.h5.H5ScalarDS;
-//import org.vcell.util.Extent;
-//import org.vcell.util.ISize;
-//import org.vcell.util.Origin;
-//import org.vcell.util.document.TSJobResultsNoStats;
-//import org.vcell.util.document.TimeSeriesJobResults;
-//import org.vcell.util.document.TimeSeriesJobSpec;
-//
-//import java.io.File;
-//import java.io.FileNotFoundException;
-//import java.util.ArrayList;
-//import java.util.HashMap;
-//import java.util.Iterator;
-//import java.util.List;
-//
-//import static cbit.vcell.simdata.SimDataConstants.*;
-//
-//
-//public class Hdf5DataProcessingReaderPure implements Hdf5DataProcessingReader {
-//
-//    @Override
-//    public DataOperationResults.DataProcessingOutputInfo getDataProcessingOutput(DataOperation.DataProcessingOutputInfoOP infoOP, File dataProcessingOutputFileHDF5) throws Exception {
-//        Hdf5PostProcessor.PostProcessing postProcessing = new Hdf5PostProcessor.PostProcessing(dataProcessingOutputFileHDF5.toPath());
-//        postProcessing.read();
-//        DataSetControllerImpl.DataProcessingHelper dataProcessingHelper = new DataSetControllerImpl.DataProcessingHelper();
-//        // TODO: populate this data from postprocessing
-//
-//        DataOperationResults.DataProcessingOutputInfo info = new DataOperationResults.DataProcessingOutputInfo(
-//                infoOP.getVCDataIdentifier(),
-//                dataProcessingHelper.getVarNames(),
-//                dataProcessingHelper.getVarISizes(),
-//                dataProcessingHelper.times,
-//                dataProcessingHelper.getVarUnits(),
-//                dataProcessingHelper.getPostProcessDataTypes(),
-//                dataProcessingHelper.getVarOrigins(),
-//                dataProcessingHelper.getVarExtents(),
-//                dataProcessingHelper.getVarStatValues());
-//
-//        return info;
-//    }
-//
-//    @Override
-//    public DataOperationResults.DataProcessingOutputDataValues getDataProcessingOutput(DataOperation.DataProcessingOutputDataValuesOP dataValuesOp, File dataProcessingOutputFileHDF5) throws Exception {
-//        DataSetControllerImpl.DataProcessingHelper dataProcessingHelper = new DataSetControllerImpl.DataProcessingHelper();
-//        // what format is it wanted?
-//        return new DataOperationResults.DataProcessingOutputDataValues(
-//                dataValuesOp.getVCDataIdentifier(),
-//                dataValuesOp.getVariableName(),
-//                dataValuesOp.getTimePointHelper(),
-//                dataValuesOp.getDataIndexHelper(),
-//                dataProcessingHelper.specificDataValues[0]);
-//    }
-//
-//    @Override
-//    public DataOperationResults.DataProcessingOutputTimeSeriesValues getDataProcessingOutput(DataOperation.DataProcessingOutputTimeSeriesOP timeSeriesOp, File dataProcessingOutputFileHDF5) throws Exception {
-//        DataSetControllerImpl.DataProcessingHelper dataProcessingHelper = new DataSetControllerImpl.DataProcessingHelper();
+package cbit.vcell.simdata;
+
+import cbit.vcell.math.VariableType;
+import cbit.vcell.resource.NativeLib;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.Simulation;
+import ncsa.hdf.object.*;
+import ncsa.hdf.object.h5.H5ScalarDS;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+import org.vcell.util.document.TSJobResultsNoStats;
+import org.vcell.util.document.TimeSeriesJobResults;
+import org.vcell.util.document.TimeSeriesJobSpec;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
+
+import static cbit.vcell.simdata.SimDataConstants.*;
+
+
+public class Hdf5DataProcessingReaderPure {
+
+
+    public DataOperationResults.DataProcessingOutputInfo getDataProcessingOutput(DataOperation.DataProcessingOutputInfoOP infoOP, File dataProcessingOutputFileHDF5) throws Exception {
+        Hdf5PostProcessor.PostProcessing postProcessing = new Hdf5PostProcessor.PostProcessing(dataProcessingOutputFileHDF5.toPath());
+        postProcessing.read();
+        //DataSetControllerImpl.DataProcessingHelper dataProcessingHelper = new DataSetControllerImpl.DataProcessingHelper();
+        // TODO: populate this data from postprocessing
+
+        // status_by_channel is a list of double arrays of shape (times), where each item of the list corresponds to a statistic
+        List<double[]> timeseries_per_statistic = postProcessing.statistics_by_channel;
+        HashMap<String,double[]> varStatValues = new HashMap<>();
+        for (int i = 0; i < postProcessing.getVariables().size(); i++) {
+            varStatValues.put(postProcessing.getVariables().get(i).stat_var_name(), timeseries_per_statistic.get(i));
+        }
+        // collect data for the statistics variables
+        List<String> varNames = new ArrayList<>(postProcessing.getVariables().stream().map(vi -> vi.stat_var_name()).toList());
+        List<String> units = new ArrayList<>(postProcessing.getVariables().stream().map(vi -> vi.unit()).toList());
+        List<PostProcessDataType> vtypes = new ArrayList<>(postProcessing.getVariables().stream().map(vi -> PostProcessDataType.statistic).toList());
+        List<ISize> isizes = new ArrayList<>(postProcessing.getVariables().stream().map(im -> (ISize) null).toList());
+        List<Origin> origins = new ArrayList<>(postProcessing.getVariables().stream().map(im -> (Origin) null).toList());
+        List<Extent> extents = new ArrayList<>(postProcessing.getVariables().stream().map(im -> (Extent) null).toList());
+        // add data for the image variables
+        for (Hdf5PostProcessor.ImageMetadata imageMetadata : postProcessing.imageMetadata){
+            varNames.add(imageMetadata.name);
+            units.add(null);
+            vtypes.add(PostProcessDataType.image);
+            isizes.add(new ISize(imageMetadata.shape[2],imageMetadata.shape[1],imageMetadata.shape[0]));  // shape is (z, y, x)
+            origins.add(new Origin(imageMetadata.origin[0],imageMetadata.origin[1],imageMetadata.origin[2]));
+            extents.add(new Extent(imageMetadata.extent[0],imageMetadata.extent[1],imageMetadata.extent[2]));
+        }
+        DataOperationResults.DataProcessingOutputInfo info = new DataOperationResults.DataProcessingOutputInfo(
+                infoOP.getVCDataIdentifier(),
+                varNames.toArray(new String[0]),
+                isizes.toArray(new ISize[0]),
+                postProcessing.times,
+                units.toArray(new String[0]),
+                vtypes.toArray(new PostProcessDataType[0]),
+                origins.toArray(new Origin[0]),
+                extents.toArray(new Extent[0]),
+                varStatValues
+        );
+
+
+        ArrayList<String> postProcessImageVarNames = new ArrayList<>();
+        for (int i = 0; i < info.getVariableNames().length; i++) {
+            String variableName = info.getVariableNames()[i];
+            if(info.getPostProcessDataType(variableName).equals(DataOperationResults.DataProcessingOutputInfo.PostProcessDataType.image)){
+                postProcessImageVarNames.add(variableName);
+            }
+        }
+        HashMap<String, String> mapFunctionNameToStateVarName = null;
+        if(infoOP.getOutputContext() != null){
+            mapFunctionNameToStateVarName = new HashMap<>();
+            for (int i = 0; i < infoOP.getOutputContext().getOutputFunctions().length; i++) {
+                AnnotatedFunction annotatedFunction = infoOP.getOutputContext().getOutputFunctions()[i];
+                if(annotatedFunction.getFunctionType().equals(VariableType.POSTPROCESSING)){
+                    String[] symbols = annotatedFunction.getExpression().flatten().getSymbols();
+                    //Find any PostProcess state var that matches a symbol in the function
+                    for (int j = 0; j < symbols.length; j++) {
+                        if(postProcessImageVarNames.contains(symbols[j])){
+                            mapFunctionNameToStateVarName.put(annotatedFunction.getName(), symbols[j]);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if(mapFunctionNameToStateVarName != null && !mapFunctionNameToStateVarName.isEmpty()){
+            info = new DataOperationResults.DataProcessingOutputInfo(info,mapFunctionNameToStateVarName);
+        }
+        return info;
+    }
+
+
+    public DataOperationResults.DataProcessingOutputDataValues getDataProcessingOutput(DataOperation.DataProcessingOutputDataValuesOP dataValuesOp, File dataProcessingOutputFileHDF5) throws Exception {
+        Hdf5PostProcessor.PostProcessing postProcessing = new Hdf5PostProcessor.PostProcessing(dataProcessingOutputFileHDF5.toPath());
+        postProcessing.read();
+        // find indices of time dataValuesOp.getTimePointHelper().getTimePoints() in postProcessing.times
+        int[] timeIndices = new int[dataValuesOp.getTimePointHelper().getTimePoints().length];
+        for (int i = 0; i < timeIndices.length; i++) {
+            timeIndices[i] = -1;
+            for (int j = 0; j < postProcessing.times.length; j++) {
+                if (postProcessing.times[j] == dataValuesOp.getTimePointHelper().getTimePoints()[i]){
+                    timeIndices[i] = j;
+                    break;
+                }
+            }
+            if (timeIndices[i] == -1){
+                throw new Exception("Time point not found in postprocessing data: " + dataValuesOp.getTimePointHelper().getTimePoints()[i]);
+            }
+        }
+        double[][] timeSpecificDataValues = new double[timeIndices.length][];
+        Hdf5PostProcessor.ImageMetadata imageMetadata = postProcessing.imageMetadata.stream().filter(im -> im.name.equals(dataValuesOp.getVariableName())).findFirst().orElse(null);
+        int count = 0;
+        for (int timeIndex : timeIndices) {
+            double[][][] values3D = postProcessing.readImageData(imageMetadata, timeIndex);
+            // flatten 3D array into 1D array
+            double[] values1D = new double[values3D.length * values3D[0].length * values3D[0][0].length];
+            int k = 0;
+            for (int i = 0; i < values3D.length; i++) {
+                for (int j = 0; j < values3D[0].length; j++) {
+                    for (int l = 0; l < values3D[0][0].length; l++) {
+                        values1D[k++] = values3D[i][j][l];
+                    }
+                }
+            }
+            timeSpecificDataValues[count++] = values1D;
+        }
+
+        return new DataOperationResults.DataProcessingOutputDataValues(
+                dataValuesOp.getVCDataIdentifier(),
+                dataValuesOp.getVariableName(),
+                dataValuesOp.getTimePointHelper(),
+                dataValuesOp.getDataIndexHelper(),
+                timeSpecificDataValues);
+    }
+
+
+    public DataOperationResults.DataProcessingOutputTimeSeriesValues getDataProcessingOutput(DataOperation.DataProcessingOutputTimeSeriesOP timeSeriesOp, File dataProcessingOutputFileHDF5) throws Exception {
+        Hdf5PostProcessor.PostProcessing postProcessing = new Hdf5PostProcessor.PostProcessing(dataProcessingOutputFileHDF5.toPath());
+        postProcessing.read();
+        return new DataOperationResults.DataProcessingOutputTimeSeriesValues(timeSeriesOp.getVCDataIdentifier(), null);
 //        DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper dataIndexHelper = null;
 //        DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper timePointHelper = null;
-//        String[] variableNames;
-//        if (timeSeriesOp instanceof DataOperation.DataProcessingOutputTimeSeriesOP) {
-//            variableNames = timeSeriesOp.getTimeSeriesJobSpec().getVariableNames();
-//            TimeSeriesJobSpec timeSeriesJobSpec = timeSeriesOp.getTimeSeriesJobSpec();
-//            double[] specificTimepoints = extractTimeRange(timeSeriesOp.getAllDatasetTimes(), timeSeriesJobSpec.getStartTime(), timeSeriesJobSpec.getEndTime());
-//            timePointHelper = DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper.createSpecificTimePointHelper(specificTimepoints);
-//            timeSeriesJobSpec.initIndices();
-//            dataIndexHelper = DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper.createSpecificDataIndexHelper(timeSeriesJobSpec.getIndices()[0]);
-//            return null;
+//        String[] variableNames = timeSeriesOp.getTimeSeriesJobSpec().getVariableNames();
+//        if(variableNames.length != 1){
+//            throw new Exception("Only 1 variable request at a time");
+//        }
+//        OutputContext outputContext = timeSeriesOp.getOutputContext();
+//        AnnotatedFunction[] annotatedFunctions = (outputContext==null?null:outputContext.getOutputFunctions());
+//        AnnotatedFunction foundFunction = null;
+//        if(annotatedFunctions != null){
+//            for (int i = 0; i < annotatedFunctions.length; i++) {
+//                if(annotatedFunctions[i].getName().equals(variableNames[0])){
+//                    foundFunction = annotatedFunctions[i];
+//                    break;
+//                }
+//            }
+//        }
+//        DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputResults = null;
+//        double[] alltimes = null;
+//        if(foundFunction != null){
+//            DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
+//                    getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(timeSeriesOp.getVCDataIdentifier(),false,timeSeriesOp.getOutputContext()), dataProcessingOutputFileHDF5);
+//            alltimes = dataProcessingOutputInfo.getVariableTimePoints();
+//            DataSetControllerImpl.FunctionHelper functionHelper = DataSetControllerImpl.getPostProcessStateVariables(foundFunction, dataProcessingOutputInfo);
+//            DataSetControllerImpl.DataProcessingHelper dataProcessingHelper = new DataSetControllerImpl.DataProcessingHelper(functionHelper.postProcessStateVars,timePointHelper,dataIndexHelper);
+//            iterateHDF5(postProcessing,"",dataProcessingHelper);
+//            dataProcessingOutputResults =
+//                    DataSetControllerImpl.evaluatePostProcessFunction(dataProcessingOutputInfo, functionHelper.postProcessStateVars, dataProcessingHelper.specificDataValues,
+//                            dataIndexHelper, timePointHelper, functionHelper.flattenedBoundExpression,variableNames[0]);
+//        }else{
+//            DataSetControllerImpl.DataProcessingHelper dataProcessingHelper =
+//                    new DataSetControllerImpl.DataProcessingHelper(new String[] {variableNames[0]},timePointHelper,dataIndexHelper);
+//            iterateHDF5(postProcessing,"",dataProcessingHelper);
+//            alltimes = dataProcessingHelper.times;
+//            if(dataProcessingHelper.specificDataValues == null){
+//                throw new Exception("Couldn't find postprocess data as specified for var="+variableNames[0]);
+//            }
+//            dataProcessingOutputResults = new DataOperationResults.DataProcessingOutputDataValues(timeSeriesOp.getVCDataIdentifier(),
+//                    variableNames[0],timePointHelper,dataIndexHelper, dataProcessingHelper.specificDataValues[0]);
 //        }
 //        TimeSeriesJobResults timeSeriesJobResults = null;
-//        if (timeSeriesOp.getTimeSeriesJobSpec().isCalcSpaceStats()){
+//        double[][] dataValues = dataProcessingOutputResults.getDataValues();//[time][data]
+//        double[] desiredTimes = (timePointHelper.isAllTimePoints()?alltimes:timePointHelper.getTimePoints());
+//        double[][][] timeSeriesFormatedValuesArr = new double[variableNames.length][dataIndexHelper.getDataIndexes().length+1][desiredTimes.length];
+//        for (int i = 0; i < timeSeriesFormatedValuesArr.length; i++) {//var
+//            for (int j = 0; j < timeSeriesFormatedValuesArr[i].length; j++) {//index
+//                if(j==0){
+//                    timeSeriesFormatedValuesArr[i][j] = desiredTimes;
+//                    continue;
+//                }
+//                for (int k = 0; k < timeSeriesFormatedValuesArr[i][j].length; k++) {//time
+//                    //assume 1 variable for now
+//                    timeSeriesFormatedValuesArr[i][j][k] = dataValues[k][j-1];
+//                }
+//            }
+//        }
+//
+//        if(timeSeriesOp.getTimeSeriesJobSpec().isCalcSpaceStats()){
 //            DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo = new DataSetControllerImpl.SpatialStatsInfo();
 //            spatialStatsInfo.bWeightsValid = false;
 //            timeSeriesJobResults =
-//                    DataSetControllerImpl.calculateStatisticsFromWhole(dataProcessingOutputTimeSeriesOP.getTimeSeriesJobSpec(), timeSeriesFormatedValuesArr, timePointHelper.getTimePoints(), spatialStatsInfo);
+//                    DataSetControllerImpl.calculateStatisticsFromWhole(timeSeriesOp.getTimeSeriesJobSpec(), timeSeriesFormatedValuesArr, timePointHelper.getTimePoints(), spatialStatsInfo);
 //        }else{
 //            timeSeriesJobResults =
 //                    new TSJobResultsNoStats(
@@ -87,12 +218,10 @@
 //                            timePointHelper.getTimePoints(),
 //                            timeSeriesFormatedValuesArr);
 //        }
-//        return new DataOperationResults.DataProcessingOutputTimeSeriesValues(
-//                timeSeriesOp.getVCDataIdentifier(),
-//                timeSeriesJobResults
-//        );
-//    }
-//
+//        return new DataOperationResults.DataProcessingOutputTimeSeriesValues(timeSeriesOp.getVCDataIdentifier(), timeSeriesJobResults);
+
+    }
+
 //    public DataOperationResults getDataProcessingOutput_internal(DataOperation dataOperation, File dataProcessingOutputFileHDF5) throws Exception {
 //        DataOperationResults dataProcessingOutputResults = null;
 //        FileFormat hdf5FileFormat = null;
@@ -264,9 +393,9 @@
 //        }
 //        return selectedTimePoints;
 //    }
-//
-//
-//    private static void iterateHDF5(HObject hObject, String indent, DataSetControllerImpl.DataProcessingHelper dataProcessingHelper) throws Exception{
+
+
+//    private static void iterateHDF5(Hdf5PostProcessor.PostProcessing postProcessing, String indent, DataSetControllerImpl.DataProcessingHelper dataProcessingHelper) throws Exception{
 //        if(hObject instanceof Group){
 //            Group group = ((Group)hObject);
 //            printInfo(group,indent);
@@ -491,238 +620,4 @@
 //            dataProcessingHelper.statVarUnits = variableUnits;
 //        }
 //    }
-//
-//
-//    //uncomment it for Debug
-////private static String DATASETNAME = "/";
-////enum H5O_type {
-////    H5O_TYPE_UNKNOWN(-1), // Unknown object type
-////    H5O_TYPE_GROUP(0), // Object is a group
-////    H5O_TYPE_DATASET(1), // Object is a dataset
-////    H5O_TYPE_NAMED_DATATYPE(2), // Object is a named data type
-////    H5O_TYPE_NTYPES(3); // Number of different object types
-////	private static final Map<Integer, H5O_type> lookup = new HashMap<Integer, H5O_type>();
-////
-////	static {
-////		for (H5O_type s : EnumSet.allOf(H5O_type.class))
-////			lookup.put(s.getCode(), s);
-////	}
-////
-////	private int code;
-////
-////	H5O_type(int layout_type) {
-////		this.code = layout_type;
-////	}
-////
-////	public int getCode() {
-////		return this.code;
-////	}
-////
-////	public static H5O_type get(int code) {
-////		return lookup.get(code);
-////	}
-////}
-////
-////public static void do_iterate(File hdfFile) {
-////	int file_id = -1;
-////
-////	// Open a file using default properties.
-////	try {
-////		file_id = H5.H5Fopen(hdfFile.getAbsolutePath(), HDF5Constants.H5F_ACC_RDONLY, HDF5Constants.H5P_DEFAULT);
-////	}
-////	catch (Exception e) {
-////		lg.error(e);
-////	}
-////
-////	// Begin iteration.
-////	System.out.println("Objects in root group:");
-////	try {
-////		if (file_id >= 0) {
-////			int count = (int)H5.H5Gn_members(file_id, DATASETNAME);
-////			String[] oname = new String[count];
-////            int[] otype = new int[count];
-////            int[] ltype = new int[count];
-////			long[] orefs = new long[count];
-////			H5.H5Gget_obj_info_all(file_id, DATASETNAME, oname, otype, ltype, orefs, HDF5Constants.H5_INDEX_NAME);
-////
-////			// Get type of the object and display its name and type.
-////			for (int indx = 0; indx < otype.length; indx++) {
-////				switch (H5O_type.get(otype[indx])) {
-////				case H5O_TYPE_GROUP:
-////					System.out.println("  Group: " + oname[indx]);
-////					break;
-////				case H5O_TYPE_DATASET:
-////					System.out.println("  Dataset: " + oname[indx]);
-////					break;
-////				case H5O_TYPE_NAMED_DATATYPE:
-////					System.out.println("  Datatype: " + oname[indx]);
-////					break;
-////				default:
-////					System.out.println("  Unknown: " + oname[indx]);
-////				}
-////			}
-////		}
-////	}
-////	catch (Exception e) {
-////		lg.error(e);
-////	}
-////
-////	// Close the file.
-////	try {
-////		if (file_id >= 0)
-////			H5.H5Fclose(file_id);
-////	}
-////	catch (Exception e) {
-////		lg.error(e);
-////	}
-////}
-//
-////public static void populateHDF5(Group g, String indent,DataProcessingOutput0 dataProcessingOutput,boolean bVarStatistics,String imgDataName,Origin imgDataOrigin,Extent imgDataExtent) throws Exception
-////{
-////    if (g == null)
-////        return;
-////
-////    List members = g.getMemberList();
-////
-////    int n = members.size();
-////    indent += "    ";
-////    HObject obj = null;
-////
-////    String nameAtt = "_name";
-////    String unitAtt = "_unit";
-////    for (int i=0; i<n; i++){
-////
-////        obj = (HObject)members.get(i);
-////        //uncomment for Debug
-////        /*System.out.print(indent+obj+" ("+obj.getClass().getName()+") isGroup="+(obj instanceof Group));*/
-////        if(obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_VARIABLESTATISTICS)){
-////	    	List<Metadata> metaDataL = obj.getMetadata();
-////	    	if(metaDataL != null){
-////	    		HashMap<String, String> attrHashMap = getHDF5Attributes(obj);//map contains the same number of names and attributes
-////	    		String[] variableStatNames = null;
-////	    		String[] variableUnits = null;
-////	    		Iterator<String> attrIterTemp = attrHashMap.keySet().iterator();
-////	    		boolean bHasUnit = false;
-////	    		for (int j = 0; j < attrHashMap.size(); j++) {
-////	    			String compVal = attrIterTemp.next();
-////	    			if(compVal.contains(nameAtt) || compVal.contains(unitAtt)){
-////	    				bHasUnit = true;
-////	    				break;
-////	    			}
-////	    		}
-////	    		if(bHasUnit){
-////	    			variableStatNames = new String[attrHashMap.size()/2];
-////	    			variableUnits = new String[attrHashMap.size()/2];
-////	    		}else{
-////	    			variableStatNames = new String[attrHashMap.size()]; // old way
-////	    		}
-////	    		Iterator<String> attrIter = attrHashMap.keySet().iterator();
-////	    		for (int j = 0; j < attrHashMap.size(); j++) {
-////	    			String compVal = attrIter.next();
-////	    			int compVarIdx = Integer.parseInt(compVal.substring(5, 6));
-////	    			if(compVal.contains(nameAtt)){
-////	    				variableStatNames[compVarIdx] = attrHashMap.get(compVal);
-////	    			}else if(compVal.contains(unitAtt)){
-////	    				variableUnits[compVarIdx] = attrHashMap.get(compVal);
-////	    			}else{//old way for var names(e.g. comp_0 = abc) with no "_name" or "_unit"
-////	    				variableStatNames[compVarIdx] = attrHashMap.get(compVal);
-////	    			}
-////				}
-////	        	dataProcessingOutput.setVariableStatNames(variableStatNames);
-////	        	dataProcessingOutput.setVariableUnits(variableUnits);
-////	        	dataProcessingOutput.setVariableStatValues(new double[variableStatNames.length][dataProcessingOutput.getTimes().length]);
-////	        	bVarStatistics = true;
-////	    	}
-////        }else if(obj instanceof H5ScalarDS){
-////        	H5ScalarDS h5ScalarDS = (H5ScalarDS)obj;
-////        	h5ScalarDS.init();
-////        	long[] dims = h5ScalarDS.getDims();
-////
-////        	//make sure all dimensions are selected for loading if 3D
-////        	//note: for 3D, only 1st slice selected by default
-////        	long[] selectedDims = h5ScalarDS.getSelectedDims();
-////        	if(selectedDims != null && selectedDims.length > 2){
-////        		//changes internal class variable used during read
-////        		selectedDims[2] = dims[2];
-////        	}
-////
-////        	//load all data
-////        	Object data = h5ScalarDS.read();
-////
-////        	if(dims != null){
-////        		if(dims.length > 1){
-////        			//For HDF5View (x stored in index 1) and (y stored in index 0) so must switch back to normal assumption
-////        			long dimsY = dims[0];
-////        			dims[0] = dims[1];
-////        			dims[1] = dimsY;
-////        		}
-////        		//uncomment for Debug
-////	        	/*System.out.print(" dims=(");
-////	        	for (int j = 0; j < dims.length; j++) {
-////					System.out.print((j>0?"x":"")+dims[j]);
-////				}
-////	        	System.out.print(")");*/
-////        	}
-////
-//////        	System.out.print(" len="+times.length);
-////        	if(obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_TIMES)){
-////            	double[] times = (double[])data;
-////            	dataProcessingOutput.setTimes(times);
-////        	}else if(bVarStatistics){
-////        		double[] stats = (double[])data;
-////        		int timeIndex = Integer.parseInt(obj.getName().substring("time".length()));
-////        		for (int j = 0; j < stats.length; j++) {
-////            		dataProcessingOutput.getVariableStatValues()[j][timeIndex] = stats[j];
-////				}
-////        	}else{
-////        		double min = ((double[])data)[0];
-////        		double max = min;
-////        		for (int j = 0; j < ((double[])data).length; j++) {
-////					min = Math.min(min, ((double[])data)[j]);
-////					max = Math.max(max, ((double[])data)[j]);
-////				}
-////        		int xSize = (int)dims[0];
-////        		int ySize = (int)(dims.length>1?dims[1]:1);
-////        		int zSize = (int)(dims.length>2?dims[2]:1);
-////        		SourceDataInfo sourceDataInfo =
-////        			new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, (double[])data, (imgDataExtent==null?new Extent(1,1,1):imgDataExtent), (imgDataOrigin==null?null:imgDataOrigin), new Range(min, max), 0, xSize, 1, ySize, xSize, zSize, xSize*ySize);
-////        		Vector<SourceDataInfo> otherData = dataProcessingOutput.getDataGenerators().get(imgDataName);
-////        		int timeIndex = Integer.parseInt(obj.getName().substring(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_TIMEPREFIX.length()));
-////        		otherData.add(sourceDataInfo);
-////        		if(otherData.size()-1 != timeIndex){
-////        			throw new Exception("Error HDF5 parse: added data index does not match timeIndex");
-////        		}
-////        	}
-////        }else if (obj instanceof H5Group && !obj.getName().equals(SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_POSTPROCESSING)){
-////        	bVarStatistics = false;
-////        	imgDataName = obj.getName();
-////        	dataProcessingOutput.getDataGenerators().put(imgDataName, new Vector<SourceDataInfo>());
-////
-////	    	List<Metadata> metaDataL = obj.getMetadata();
-////	    	if(metaDataL != null){//assume 6 attributes defining origin and extent
-////	    		HashMap<String, String> attrHashMap = getHDF5Attributes(obj);
-////	    		if(attrHashMap.size() == 2){
-////		    		imgDataOrigin = new Origin(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINX)), 0, 0);
-////		    		imgDataExtent = new Extent(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTX)), 1, 1);//this is 1D, however the extentY, Z cannot take 0
-////	    		}
-////	    		else if(attrHashMap.size() == 4){
-////		    		imgDataOrigin = new Origin(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINY)), 0);
-////		    		imgDataExtent = new Extent(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTY)), 1);//this is 2D, however the extentZ cannot take 0
-////	    		}
-////	    		else if(attrHashMap.size() == 6){
-////		    		imgDataOrigin = new Origin(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_ORIGINZ)));
-////		    		imgDataExtent = new Extent(Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTX)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTY)), Double.valueOf(attrHashMap.get(DATA_PROCESSING_OUTPUT_EXTENTZ)));
-////	    		}
-////	    	}
-////
-////        }
-////        System.out.println();
-////
-////        if (obj instanceof Group)
-////        {
-////        	populateHDF5((Group)obj, indent,dataProcessingOutput,bVarStatistics,imgDataName,imgDataOrigin,imgDataExtent);
-////        }
-////    }
-////}
-//
-//}
+}
