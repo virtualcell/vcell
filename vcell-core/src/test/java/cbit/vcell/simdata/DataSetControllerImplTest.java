@@ -1,6 +1,5 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -27,7 +26,6 @@ public class DataSetControllerImplTest {
 	public void setUp() throws Exception {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("../").getAbsolutePath());
 		String message = "installation directory is "+PropertyLoader.getRequiredProperty(PropertyLoader.installationRoot);
-		NativeLib.HDF5.load();
 
 		Cachetable cachetable = new Cachetable(2000,1000000L);
 		File resourcesDirectory = new File("src/test/resources/simdata");
@@ -72,7 +70,6 @@ public class DataSetControllerImplTest {
 	
 	@Test
 	public void testGetDataIdentifiers() throws DataAccessException, IOException {
-		NativeLib.HDF5.load();
 		DataIdentifier[] dataIdentifiers = dsc.getDataIdentifiers(outputContext, vcDataIdentifier);
 		String[] varNames = Arrays.stream(dataIdentifiers)
 				.map(DataIdentifier::getName)
