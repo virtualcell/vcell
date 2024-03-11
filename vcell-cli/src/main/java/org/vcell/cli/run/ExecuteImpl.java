@@ -110,13 +110,20 @@ public class ExecuteImpl {
         Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
         final boolean bEncapsulateOutput = true;
 
-        singleExecOmex(inputFile, outputDir, cliLogger,
-                bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
+        ExecuteImpl.singleExecOmex(inputFile, outputDir, cliLogger,
+                bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride, false);
     }
 
     public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
-            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride
-    ) throws Exception {
+                                  boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput,
+                                  boolean bSmallMeshOverride) throws Exception{
+        ExecuteImpl.singleMode(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                bEncapsulateOutput, bSmallMeshOverride, false);
+    }
+
+    public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput,
+          boolean bSmallMeshOverride, boolean bBioSimMode) throws Exception {
         // Build statuses
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // bioModelBaseName = input file without the path
         String outputBaseDir = rootOutputDir.getAbsolutePath(); 
@@ -132,10 +139,14 @@ public class ExecuteImpl {
         PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
         ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
-                bEncapsulateOutput, bSmallMeshOverride);
+                bEncapsulateOutput, bSmallMeshOverride, bBioSimMode);
     }
 
     public static void singleMode(File inputFile, File outputDir, CLIRecordable cliLogger) throws Exception {
+        ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, false);
+    }
+
+    public static void singleMode(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bioSimMode) throws Exception {
         final boolean bKeepTempFiles = false;
         final boolean bExactMatchOnly = false;
         final boolean bEncapsulateOutput = false;
@@ -145,7 +156,7 @@ public class ExecuteImpl {
         try {
             span = Tracer.startSpan(Span.ContextType.OMEX_EXECUTE, inputFile.getName(), Map.of("filename", inputFile.getName()));
             ExecuteImpl.singleMode(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
-                    bEncapsulateOutput, bSmallMeshOverride);
+                    bEncapsulateOutput, bSmallMeshOverride, bioSimMode);
         } catch (Exception e) {
             Tracer.failure(e, "error message");
             throw e;
@@ -218,13 +229,13 @@ public class ExecuteImpl {
     }
 
     private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
-            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride)
+            boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride, boolean bBioSimMode)
             throws ExecutionException, PythonStreamException, IOException, InterruptedException, HDF5Exception {
 
         ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder,
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
         requestedExecution.preprocessArchive();
-        requestedExecution.executeArchive();
+        requestedExecution.executeArchive(bBioSimMode);
         requestedExecution.postProcessessArchive();
     }
 

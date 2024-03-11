@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
+import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
@@ -58,13 +59,8 @@ import cbit.vcell.model.Model;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
-import cbit.vcell.simdata.DataOperationResults;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
@@ -168,11 +164,12 @@ public class RunRefSimulationFastOp {
 		File hdf5File = new File(localWorkspace.getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		
 		// get post processing info (time points, variable sizes)
+		Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 		DataOperation.DataProcessingOutputInfoOP dataOperationInfo = new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null);
-		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = (DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(dataOperationInfo, hdf5File);
+		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo = hdf5DataProcessingReaderPure.getDataProcessingOutput(dataOperationInfo, hdf5File);
 		// get post processing data
 		DataOperation.DataProcessingOutputDataValuesOP dataOperationDataValues = new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/,ROI_EXTDATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null);
-		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues = (DataOperationResults.DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(dataOperationDataValues, hdf5File);
+		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues = hdf5DataProcessingReaderPure.getDataProcessingOutput(dataOperationDataValues, hdf5File);
 
 		//
 		// delete the simulation files

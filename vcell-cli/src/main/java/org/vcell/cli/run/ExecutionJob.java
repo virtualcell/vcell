@@ -122,9 +122,9 @@ public class ExecutionJob {
      * @throws IOException if there are system I/O issues
      * @throws ExecutionException if an execution specfic error occurs
      */
-    public void executeArchive() throws HDF5Exception, PythonStreamException, ExecutionException {
+    public void executeArchive(boolean isBioSimSedml) throws HDF5Exception, PythonStreamException, ExecutionException {
         try {
-            Hdf5DataContainer masterHdf5File = new Hdf5DataContainer();
+            Hdf5DataContainer masterHdf5File = new Hdf5DataContainer(isBioSimSedml);
             this.queueAllSedml();
 
             for (String sedmlLocation : this.sedmlLocations){

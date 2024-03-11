@@ -14,6 +14,7 @@ package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
 import java.util.*;
 
+import cbit.vcell.geometry.surface.GeometricRegion;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -338,15 +339,21 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		for (int i=0;i<structureMappings.length;i++){
 			StructureMapping sm = structureMappings[i];
 			StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
-			if(parm.getExpression() != null)
+			if(parm.getExpression() != null)	// this is the default 50,000 um3 which don't make any sense for Langevin; we don't use it!!!
 			{
 				try {
-					double value = parm.getExpression().evaluateConstant();
-					varHash.addVariable(new Constant(getMathSymbol(parm,sm.getGeometryClass()),new Expression(value)));
-				}catch (ExpressionException e){
-					//varHash.addVariable(new Function(getMathSymbol0(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
+					// instead, we use the size of the geometric region
+					GeometricRegion[] grArray = simContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions(sm.getGeometryClass());
+					if(grArray.length != 1) {
+						throw new RuntimeException("Expecting only one region for GeometryClass '" + sm.getGeometryClass().getName() + "', found: " + grArray.length);
+					}
+					GeometricRegion gr = grArray[0];
+					double value2 = gr.getSize();
+					varHash.addVariable(new Constant(getMathSymbol(parm, sm.getGeometryClass()), new Expression(value2)));
+
+				}catch (Exception e) {
 					e.printStackTrace(System.out);
-					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.");
+					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated.");
 				}
 			}
 		}
@@ -1166,9 +1173,13 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					}
 				}
 				if(scs != null) {
+					// these are correct: scs -> sc -> sp -> mtp -> mcp, mcp,...
 					Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.getSiteAttributesMap();
 					MolecularTypePattern mtp = scs.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0);	// we know it's valid, no null pointer possible
 					MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(molecularComponent);
+					// the siteAttributesMap contains 2 conflicting sets of mcp / sas (old mcp and new mcp)
+					// need to clean up and update the scs -> ils, scs -> siteAttributesMap at the point where the new
+					// pairs of mcp / sas are being added to the siteAttributesMap
 					SiteAttributesSpec sas = siteAttributesMap.get(mcp);
 					// TODO: perhaps move this to constructor so that object will be complete from the start
 					particleMolecularComponent.setColor(sas.getColor());
@@ -1196,6 +1207,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
 					LangevinParticleMolecularComponent one = mcToLpmc.get(link.one);
 					LangevinParticleMolecularComponent two = mcToLpmc.get(link.two);
+					// error: Cannot invoke "Object.equals(Object)" because "this.one" is null
 					Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair = new Pair<> (one, two);
 					particleMolecularType.getInternalLinkSpec().add(pair);
 				}

@@ -374,16 +374,16 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 				if(getClientTaskStatusSupport() != null){
 					getClientTaskStatusSupport().setMessage("Getting Simulation status...");
 				}
-				SimulationStatus simStatus =
-						PDEDataViewerPostProcess.this.getDataViewerManager().getRequestManager().getServerSimulationStatus(PDEDataViewerPostProcess.this.getSimulation().getSimulationInfo());
-				if(simStatus == null){
-					hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, no simulation status");
-					return;
-				}else if(!simStatus.isCompleted()){
-					//sim still busy, no postprocessing data
-					hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, waiting for completed simulation: "+simStatus.toString());
-					return;
-				}
+//				SimulationStatus simStatus =
+//						PDEDataViewerPostProcess.this.getDataViewerManager().getRequestManager().getServerSimulationStatus(PDEDataViewerPostProcess.this.getSimulation().getSimulationInfo());
+//				if(simStatus == null){
+//					hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, no simulation status");
+//					return;
+//				}else if(!simStatus.isCompleted()){
+//					//sim still busy, no postprocessing data
+//					hashTable.put(SPATIAL_ERROR_KEY, "PostProcessing Image, waiting for completed simulation: "+simStatus.toString());
+//					return;
+//				}
 				if(getClientTaskStatusSupport() != null){
 					getClientTaskStatusSupport().setMessage("Getting Post Process Info...");
 				}

@@ -3,6 +3,7 @@ package org.vcell.vmicro.op;
 import java.io.File;
 import java.util.ArrayList;
 
+import cbit.vcell.simdata.Hdf5DataProcessingReaderPure;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 
 import cbit.image.ImageException;
@@ -14,7 +15,6 @@ import cbit.vcell.simdata.DataOperation;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 import cbit.vcell.simdata.DataOperationResults;
-import cbit.vcell.simdata.DataSetControllerImpl;
 
 public class ImportRawTimeSeriesFromHdf5FluorOp {
 	
@@ -23,12 +23,13 @@ public class ImportRawTimeSeriesFromHdf5FluorOp {
 	{
 //		if(progressListener != null){
 //			progressListener.setMessage("Loading HDF5 file " + inputHDF5File.getAbsolutePath() + "...");
-//		}		
+//		}
+		Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 		DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
-			(DataOperationResults.DataProcessingOutputInfo)DataSetControllerImpl.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), inputHDF5File);
+                hdf5DataProcessingReaderPure.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(null/*no vcDataIdentifier OK*/,false,null), inputHDF5File);
 		DataOperationResults.DataProcessingOutputDataValues dataProcessingOutputDataValues =
-			(DataOperationResults.DataProcessingOutputDataValues)DataSetControllerImpl.getDataProcessingOutput(
-				new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/, SimulationContext.FLUOR_DATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), inputHDF5File);
+                hdf5DataProcessingReaderPure.getDataProcessingOutput(
+                    new DataOperation.DataProcessingOutputDataValuesOP(null/*no vcDataIdentifier OK*/, SimulationContext.FLUOR_DATA_NAME,TimePointHelper.createAllTimeTimePointHelper(),DataIndexHelper.createSliceDataIndexHelper(0),null,null), inputHDF5File);
 		ArrayList<SourceDataInfo> sdiArr =
 			dataProcessingOutputDataValues.createSourceDataInfos(
 				dataProcessingOutputInfo.getVariableISize(SimulationContext.FLUOR_DATA_NAME),

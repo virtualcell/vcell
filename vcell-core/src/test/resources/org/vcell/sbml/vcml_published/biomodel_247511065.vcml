@@ -1,0 +1,1125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Rel_Version_7.5.0_build_62.1-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_7.5.0_build_62.1">
+  <BioModel Name="Bacillus Spore Membrane FRAP Analysis">
+    <Annotation>cloned from 'SporeDiff_add3_new' owned by user ACowan
+cloned from 'SporeDiff_add3' owned by user dfairchild
+cloned from 'SporeDiff_add3' owned by user ACowan</Annotation>
+    <Model Name="model">
+      <Annotation>cloned from 'model' owned by user ACowan
+cloned from 'model' owned by user dfairchild
+cloned from 'model' owned by user ACowan</Annotation>
+      <ModelParameters>
+        <Parameter Name="a" Role="user defined" Unit="molecules.um-2">0.6</Parameter>
+        <Parameter Name="st" Role="user defined" Unit="s">0.09</Parameter>
+        <Parameter Name="ed" Role="user defined" Unit="s">0.1</Parameter>
+        <Parameter Name="Kproc" Role="user defined" Unit="s-1">0.1</Parameter>
+        <Parameter Name="Kb" Role="user defined" Unit="um2.s-1.molecules-1">175.0</Parameter>
+        <Parameter Name="DC" Role="user defined" Unit="um2.s-1">0.1</Parameter>
+        <Parameter Name="BRx" Role="user defined" Unit="um">0.6</Parameter>
+        <Parameter Name="ImmF" Role="user defined" Unit="molecules.um-2">0.5</Parameter>
+        <Parameter Name="B" Role="user defined" Unit="1">1.0</Parameter>
+      </ModelParameters>
+      <Compound Name="s0" />
+      <Compound Name="s1" />
+      <Compound Name="s2" />
+      <Compound Name="s3" />
+      <Compound Name="s4" />
+      <Compound Name="s5" />
+      <Compound Name="s6" />
+      <Compound Name="s7" />
+      <Compound Name="s8" />
+      <Feature Name="core" KeyValue="227866098" />
+      <Feature Name="c0" KeyValue="227866100" />
+      <Membrane MembraneVoltage="Voltage_inner_mem" Name="inner_mem" KeyValue="227866102" />
+      <LocalizedCompound Name="di4ANEPPS" CompoundRef="s0" Structure="inner_mem" OverrideName="true" KeyValue="227866104" />
+      <LocalizedCompound Name="BR" CompoundRef="s1" Structure="inner_mem" OverrideName="true" KeyValue="227866105" />
+      <LocalizedCompound Name="WC" CompoundRef="s2" Structure="inner_mem" OverrideName="true" KeyValue="227866106" />
+      <LocalizedCompound Name="B_light" CompoundRef="s3" Structure="inner_mem" OverrideName="true" KeyValue="227866107" />
+      <LocalizedCompound Name="nf_Di4ANEPPS" CompoundRef="s4" Structure="inner_mem" OverrideName="true" KeyValue="227866108" />
+      <LocalizedCompound Name="NBR" CompoundRef="s5" Structure="inner_mem" OverrideName="true" KeyValue="227866109" />
+      <LocalizedCompound Name="M_light" CompoundRef="s6" Structure="inner_mem" OverrideName="true" KeyValue="227866110" />
+      <LocalizedCompound Name="Di4Imm" CompoundRef="s7" Structure="inner_mem" OverrideName="true" KeyValue="227866111" />
+      <LocalizedCompound Name="nf_Di4Imm" CompoundRef="s8" Structure="inner_mem" OverrideName="true" KeyValue="227866112" />
+      <SimpleReaction Structure="inner_mem" Name="BleachingReaction" Reversible="true" FluxOption="MolecularOnly" KeyValue="227866113">
+        <Reactant LocalizedCompoundRef="di4ANEPPS" Stoichiometry="1" KeyValue="227866114" />
+        <Product LocalizedCompoundRef="nf_Di4ANEPPS" Stoichiometry="1" KeyValue="227866115" />
+        <Modifier LocalizedCompoundRef="B_light" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kb * B * B_light * di4ANEPPS)</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="inner_mem" Name="MonitorBleach_Unquench" Reversible="true" FluxOption="MolecularOnly" KeyValue="227866117">
+        <Reactant LocalizedCompoundRef="di4ANEPPS" Stoichiometry="1" KeyValue="227866118" />
+        <Product LocalizedCompoundRef="nf_Di4ANEPPS" Stoichiometry="1" KeyValue="227866119" />
+        <Modifier LocalizedCompoundRef="M_light" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kb * M_light * di4ANEPPS) - (Kproc * (nf_Di4ANEPPS - (a * (1.0 - ImmF))) * ((nf_Di4ANEPPS - (a * (1.0 - ImmF))) &gt; 0.0)))</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="inner_mem" Name="Imm_MonitorBleach_Unquench" Reversible="true" FluxOption="MolecularOnly" KeyValue="227866121">
+        <Reactant LocalizedCompoundRef="Di4Imm" Stoichiometry="1" KeyValue="227866122" />
+        <Product LocalizedCompoundRef="nf_Di4Imm" Stoichiometry="1" KeyValue="227866123" />
+        <Modifier LocalizedCompoundRef="M_light" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">((Kb * M_light * Di4Imm) - (Kproc * (nf_Di4Imm - (a * ImmF)) * ((nf_Di4Imm - (a * ImmF)) &gt; 0.0)))</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="inner_mem" Name="Imm_BleachingReaction" Reversible="true" FluxOption="MolecularOnly" KeyValue="227866125">
+        <Reactant LocalizedCompoundRef="Di4Imm" Stoichiometry="1" KeyValue="227866126" />
+        <Product LocalizedCompoundRef="nf_Di4Imm" Stoichiometry="1" KeyValue="227866127" />
+        <Modifier LocalizedCompoundRef="B_light" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="molecules.um-2.s-1">(Kb * B * B_light * Di4Imm)</Parameter>
+          <Parameter Name="I" Role="inward current density" Unit="pA.um-2">0.0</Parameter>
+          <Parameter Name="netValence" Role="net charge valence" Unit="1">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c0" Structure="c0">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="BR" LocationX="25" LocationY="253" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Di4Imm" LocationX="202" LocationY="41" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="WC" LocationX="112" LocationY="253" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="Imm_BleachingReaction" LocationX="223" LocationY="112" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="nf_Di4Imm" LocationX="200" LocationY="198" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="MonitorBleach_Unquench" LocationX="75" LocationY="157" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="di4ANEPPS" LocationX="51" LocationY="42" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="BleachingReaction" LocationX="43" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="Imm_MonitorBleach_Unquench" LocationX="196" LocationY="157" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="B_light" LocationX="132" LocationY="108" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="NBR" LocationX="62" LocationY="253" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="nf_Di4ANEPPS" LocationX="52" LocationY="201" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="M_light" LocationX="131" LocationY="154" />
+      </Diagram>
+      <Diagram Name="m0" Structure="inner_mem">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="BR" LocationX="25" LocationY="253" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Di4Imm" LocationX="202" LocationY="41" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="WC" LocationX="112" LocationY="253" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="Imm_BleachingReaction" LocationX="223" LocationY="112" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="nf_Di4Imm" LocationX="200" LocationY="198" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="MonitorBleach_Unquench" LocationX="75" LocationY="157" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="di4ANEPPS" LocationX="51" LocationY="42" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="BleachingReaction" LocationX="43" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="Imm_MonitorBleach_Unquench" LocationX="196" LocationY="157" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="B_light" LocationX="132" LocationY="108" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="NBR" LocationX="62" LocationY="253" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="nf_Di4ANEPPS" LocationX="52" LocationY="201" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="M_light" LocationX="131" LocationY="154" />
+      </Diagram>
+      <Diagram Name="c1" Structure="core">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="BR" LocationX="25" LocationY="253" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Di4Imm" LocationX="202" LocationY="41" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="WC" LocationX="112" LocationY="253" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="Imm_BleachingReaction" LocationX="223" LocationY="112" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="nf_Di4Imm" LocationX="200" LocationY="198" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="MonitorBleach_Unquench" LocationX="75" LocationY="157" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="di4ANEPPS" LocationX="51" LocationY="42" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="BleachingReaction" LocationX="43" LocationY="119" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="Imm_MonitorBleach_Unquench" LocationX="196" LocationY="157" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="B_light" LocationX="132" LocationY="108" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="NBR" LocationX="62" LocationY="253" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="nf_Di4ANEPPS" LocationX="52" LocationY="201" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="M_light" LocationX="131" LocationY="154" />
+      </Diagram>
+      <Version Name="model" KeyValue="227866086" BranchId="227866087" Archived="0" Date="01-Mar-2022 21:41:51" FromVersionable="false">
+        <Owner Name="dfairchild" Identifier="215618541" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'model' owned by user ACowan
+cloned from 'model' owned by user dfairchild
+cloned from 'model' owned by user ACowan</Annotation>
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="NoBleach_control" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.01664505722507674">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>cloned from 'NoBleach_control' owned by user ACowan
+cloned from 'NoBleach_control' owned by user dfairchild
+cloned from 'NoBleach_control' owned by user ACowan</Annotation>
+      <Geometry Name="Geometry129104628" Dimension="3">
+        <Annotation>cloned from 'Geometry129104628' owned by user ACowan
+cloned from 'Geometry1071279498' owned by user dfairchild
+cloned from 'Geometry1071279498' owned by user ACowan</Annotation>
+        <Extent X="1.6" Y="1.6" Z="1.6" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="subdomain1" Handle="1" Type="Analytical" KeyValue="227866048">
+          <AnalyticExpression>(((((x - 0.8) ^ 2.0) / (0.6 ^ 2.0)) + (((y - 0.8) ^ 2.0) / (0.5 ^ 2.0)) + (((z - 0.8) ^ 2.0) / (0.5 ^ 2.0))) &lt;= 1.0)</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="227866049">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="subdomain0_subdomain1_membrane" SubVolume1Ref="subdomain0" SubVolume2Ref="subdomain1" KeyValue="227866050" />
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="3.4677759999999993" Unit="um3" />
+          <VolumeRegion Name="subdomain11" RegionID="1" SubVolume="subdomain1" Size="0.6282239999999999" Unit="um3" />
+          <MembraneRegion Name="membrane_subdomain00_subdomain11" VolumeRegion1="subdomain11" VolumeRegion2="subdomain00" Size="3.562616671270524" Unit="um2" />
+        </SurfaceDescription>
+        <Version Name="Geometry129104628" KeyValue="227866044" BranchId="227866045" Archived="0" Date="01-Mar-2022 21:41:51" FromVersionable="false">
+          <Owner Name="dfairchild" Identifier="215618541" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Geometry129104628' owned by user ACowan
+cloned from 'Geometry1071279498' owned by user dfairchild
+cloned from 'Geometry1071279498' owned by user ACowan</Annotation>
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="core" GeometryClass="subdomain1" SubVolume="subdomain1" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="c0" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="inner_mem" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="subdomain0_subdomain1_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="di4ANEPPS" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.0 - ImmF)</InitialConcentration>
+          <Diffusion>DC</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="BR" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.0 * (x &gt; BRx))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="WC" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="B_light" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(((t &gt; st) &amp;&amp; (t &lt; ed)) &amp;&amp; (x &gt; BRx))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="nf_Di4ANEPPS" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>DC</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="NBR" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.0 * (x &lt;= BRx))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="M_light" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.1</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Di4Imm" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>ImmF</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="nf_Di4Imm" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="BleachingReaction" ReactionMapping="excluded" />
+        <ReactionSpec ReactionStepRef="MonitorBleach_Unquench" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="Imm_MonitorBleach_Unquench" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="Imm_BleachingReaction" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Application0_generated">
+        <Annotation>cloned from 'Application0_generated' owned by user ACowan
+cloned from 'Application0_generated' owned by user dfairchild
+cloned from 'Application0_generated' owned by user ACowan</Annotation>
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="a">0.6</Constant>
+        <Constant Name="AreaPerUnitArea_inner_mem">1.0</Constant>
+        <Constant Name="B">1.0</Constant>
+        <Constant Name="BRx">0.6</Constant>
+        <Constant Name="DC">0.1</Constant>
+        <Constant Name="ed">0.1</Constant>
+        <Constant Name="ImmF">0.5</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kb">175.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="Kproc">0.1</Constant>
+        <Constant Name="M_light_init_molecules_um_2">0.1</Constant>
+        <Constant Name="netValence_Imm_BleachingReaction">1.0</Constant>
+        <Constant Name="netValence_Imm_MonitorBleach_Unquench">1.0</Constant>
+        <Constant Name="netValence_MonitorBleach_Unquench">1.0</Constant>
+        <Constant Name="nf_Di4ANEPPS_init_molecules_um_2">0.0</Constant>
+        <Constant Name="nf_Di4Imm_init_molecules_um_2">0.0</Constant>
+        <Constant Name="st">0.09</Constant>
+        <Constant Name="Voltage_inner_mem">0.0</Constant>
+        <Constant Name="VolumePerUnitVolume_c0">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_core">1.0</Constant>
+        <Constant Name="WC_init_molecules_um_2">1.0</Constant>
+        <MembraneVariable Name="di4ANEPPS" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="Di4Imm" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="NBR" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="nf_Di4ANEPPS" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="nf_Di4Imm" Domain="subdomain0_subdomain1_membrane" />
+        <Function Name="B_light" Domain="subdomain0_subdomain1_membrane">B_light_init_molecules_um_2</Function>
+        <Function Name="B_light_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(((t &gt; st) &amp;&amp; (t &lt; ed)) &amp;&amp; (x &gt; BRx))</Function>
+        <Function Name="BR" Domain="subdomain0_subdomain1_membrane">BR_init_molecules_um_2</Function>
+        <Function Name="BR_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.0 * (x &gt; BRx))</Function>
+        <Function Name="di4ANEPPS_diffusionRate" Domain="subdomain0_subdomain1_membrane">DC</Function>
+        <Function Name="di4ANEPPS_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.0 - ImmF)</Function>
+        <Function Name="Di4Imm_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">ImmF</Function>
+        <Function Name="J_Imm_BleachingReaction" Domain="subdomain0_subdomain1_membrane">(Kb * B * B_light * Di4Imm)</Function>
+        <Function Name="J_Imm_MonitorBleach_Unquench" Domain="subdomain0_subdomain1_membrane">((Kb * M_light * Di4Imm) - (Kproc * (nf_Di4Imm - (a * ImmF)) * ((nf_Di4Imm - (a * ImmF)) &gt; 0.0)))</Function>
+        <Function Name="J_MonitorBleach_Unquench" Domain="subdomain0_subdomain1_membrane">((Kb * M_light * di4ANEPPS) - (Kproc * (nf_Di4ANEPPS - (a * (1.0 - ImmF))) * ((nf_Di4ANEPPS - (a * (1.0 - ImmF))) &gt; 0.0)))</Function>
+        <Function Name="M_light" Domain="subdomain0_subdomain1_membrane">M_light_init_molecules_um_2</Function>
+        <Function Name="NBR_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.0 * (x &lt;= BRx))</Function>
+        <Function Name="nf_Di4ANEPPS_diffusionRate" Domain="subdomain0_subdomain1_membrane">DC</Function>
+        <Function Name="Size_c0" Domain="subdomain0">(VolumePerUnitVolume_c0 * vcRegionVolume('subdomain0'))</Function>
+        <Function Name="Size_core" Domain="subdomain1">(VolumePerUnitVolume_core * vcRegionVolume('subdomain1'))</Function>
+        <Function Name="Size_inner_mem" Domain="subdomain0_subdomain1_membrane">(AreaPerUnitArea_inner_mem * vcRegionArea('subdomain0_subdomain1_membrane'))</Function>
+        <Function Name="sobj_subdomain11_subdomain00_size" Domain="subdomain0_subdomain1_membrane">vcRegionArea('subdomain0_subdomain1_membrane')</Function>
+        <Function Name="vobj_subdomain00_size" Domain="subdomain0">vcRegionVolume('subdomain0')</Function>
+        <Function Name="vobj_subdomain11_size" Domain="subdomain1">vcRegionVolume('subdomain1')</Function>
+        <Function Name="WC" Domain="subdomain0_subdomain1_membrane">WC_init_molecules_um_2</Function>
+        <CompartmentSubDomain Name="subdomain1">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="subdomain0_subdomain1_membrane" InsideCompartment="subdomain0" OutsideCompartment="subdomain1">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="NBR" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Initial>NBR_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Di4Imm" SolutionType="Unknown">
+            <Rate>( - J_Imm_MonitorBleach_Unquench - J_Imm_BleachingReaction)</Rate>
+            <Initial>Di4Imm_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <OdeEquation Name="nf_Di4Imm" SolutionType="Unknown">
+            <Rate>(J_Imm_MonitorBleach_Unquench + J_Imm_BleachingReaction)</Rate>
+            <Initial>nf_Di4Imm_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <PdeEquation Name="di4ANEPPS" SolutionType="Unknown">
+            <Rate>- J_MonitorBleach_Unquench</Rate>
+            <Diffusion>di4ANEPPS_diffusionRate</Diffusion>
+            <Initial>di4ANEPPS_init_molecules_um_2</Initial>
+          </PdeEquation>
+          <PdeEquation Name="nf_Di4ANEPPS" SolutionType="Unknown">
+            <Rate>J_MonitorBleach_Unquench</Rate>
+            <Diffusion>nf_Di4ANEPPS_diffusionRate</Diffusion>
+            <Initial>nf_Di4ANEPPS_init_molecules_um_2</Initial>
+          </PdeEquation>
+        </MembraneSubDomain>
+        <Version Name="Application0_generated" KeyValue="227866077" BranchId="227866078" Archived="0" Date="01-Mar-2022 21:41:51" FromVersionable="false">
+          <Owner Name="dfairchild" Identifier="215618541" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Application0_generated' owned by user ACowan
+cloned from 'Application0_generated' owned by user dfairchild
+cloned from 'Application0_generated' owned by user ACowan</Annotation>
+        </Version>
+      </MathDescription>
+      <OutputFunctions>
+        <AnnotatedFunction Name="totalF" ErrorString="" Domain="subdomain0_subdomain1_membrane" FunctionType="Membrane">(di4ANEPPS + Di4Imm)</AnnotatedFunction>
+      </OutputFunctions>
+      <Simulation Name="4461noBleachFit">
+        <Annotation>cloned from 'noBleachFit' owned by user ACowan
+cloned from 'noBleachFit' owned by user dfairchild
+cloned from 'BestFit Kproc = 1.2' owned by user ACowan</Annotation>
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="14.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.17" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="Kproc">0.4</Constant>
+          <Constant Name="M_light_init_molecules_um_2" ConstantArraySpec="1000">"1.2E-4", "1.4E-4", "1.6E-4"</Constant>
+          <Constant Name="BRx">1.6</Constant>
+        </MathOverrides>
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="4461noBleachFit" KeyValue="247510984" BranchId="247510985" Archived="0" Date="15-Nov-2022 20:36:22" FromVersionable="false">
+          <Owner Name="dfairchild" Identifier="215618541" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'noBleachFit' owned by user ACowan
+cloned from 'noBleachFit' owned by user dfairchild
+cloned from 'BestFit Kproc = 1.2' owned by user ACowan</Annotation>
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_subdomain00" Type="Volume" subVolume="subdomain0" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_subdomain11" Type="Volume" subVolume="subdomain1" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_subdomain11_subdomain00" Type="Surface" subVolumeInside="subdomain1" regionIdInside="1" subVolumeOutside="subdomain0" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="NoBleach_control" KeyValue="227866133" BranchId="227866134" Archived="0" Date="01-Mar-2022 21:41:51" FromVersionable="false">
+        <Owner Name="dfairchild" Identifier="215618541" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'NoBleach_control' owned by user ACowan
+cloned from 'NoBleach_control' owned by user dfairchild
+cloned from 'NoBleach_control' owned by user ACowan</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <SimulationSpec Name="WholeBleach_control" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.01664505722507674">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>cloned from 'WholeBleach_control' owned by user ACowan
+cloned from 'WholeBleach_control' owned by user dfairchild
+cloned from 'WholeBleach_control' owned by user ACowan
+(copied from NoBleach_control)</Annotation>
+      <Geometry Name="Geometry1621377113" Dimension="3">
+        <Annotation>cloned from 'Geometry1156355558' owned by user ACowan
+cloned from 'Geometry1156355558' owned by user dfairchild
+cloned from 'Geometry1071279498' owned by user ACowan</Annotation>
+        <Extent X="1.6" Y="1.6" Z="1.6" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="subdomain1" Handle="1" Type="Analytical" KeyValue="227866059">
+          <AnalyticExpression>(((((x - 0.8) ^ 2.0) / (0.6 ^ 2.0)) + (((y - 0.8) ^ 2.0) / (0.5 ^ 2.0)) + (((z - 0.8) ^ 2.0) / (0.5 ^ 2.0))) &lt;= 1.0)</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="227866060">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="subdomain0_subdomain1_membrane" SubVolume1Ref="subdomain0" SubVolume2Ref="subdomain1" KeyValue="227866061" />
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="3.4677759999999993" Unit="um3" />
+          <VolumeRegion Name="subdomain11" RegionID="1" SubVolume="subdomain1" Size="0.6282239999999999" Unit="um3" />
+          <MembraneRegion Name="membrane_subdomain00_subdomain11" VolumeRegion1="subdomain11" VolumeRegion2="subdomain00" Size="3.562616671270524" Unit="um2" />
+        </SurfaceDescription>
+        <Version Name="Geometry1621377113" KeyValue="227866055" BranchId="227866056" Archived="0" Date="01-Mar-2022 21:41:51" FromVersionable="false">
+          <Owner Name="dfairchild" Identifier="215618541" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Geometry1156355558' owned by user ACowan
+cloned from 'Geometry1156355558' owned by user dfairchild
+cloned from 'Geometry1071279498' owned by user ACowan</Annotation>
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="core" GeometryClass="subdomain1" SubVolume="subdomain1" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="c0" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="inner_mem" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="subdomain0_subdomain1_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="di4ANEPPS" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.0 - ImmF)</InitialConcentration>
+          <Diffusion>DC</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="BR" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.0 * (x &gt; BRx))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="WC" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="B_light" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.2 * ((t &gt; st) &amp;&amp; (t &lt; ed)))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="nf_Di4ANEPPS" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>DC</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="NBR" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.0 * (x &lt;= BRx))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="M_light" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.1</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Di4Imm" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>ImmF</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="nf_Di4Imm" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="BleachingReaction" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MonitorBleach_Unquench" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="Imm_MonitorBleach_Unquench" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="Imm_BleachingReaction" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Copy of NoBleach_control_generated">
+        <Annotation>cloned from 'Copy of NoBleach_control_generated' owned by user ACowan
+cloned from 'Copy of NoBleach_control_generated' owned by user dfairchild
+cloned from 'Copy of NoBleach_control_generated' owned by user ACowan</Annotation>
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="a">0.6</Constant>
+        <Constant Name="AreaPerUnitArea_inner_mem">1.0</Constant>
+        <Constant Name="B">1.0</Constant>
+        <Constant Name="BRx">0.6</Constant>
+        <Constant Name="DC">0.1</Constant>
+        <Constant Name="ed">0.1</Constant>
+        <Constant Name="ImmF">0.5</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kb">175.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="Kproc">0.1</Constant>
+        <Constant Name="M_light_init_molecules_um_2">0.1</Constant>
+        <Constant Name="netValence_BleachingReaction">1.0</Constant>
+        <Constant Name="netValence_Imm_BleachingReaction">1.0</Constant>
+        <Constant Name="netValence_Imm_MonitorBleach_Unquench">1.0</Constant>
+        <Constant Name="netValence_MonitorBleach_Unquench">1.0</Constant>
+        <Constant Name="nf_Di4ANEPPS_init_molecules_um_2">0.0</Constant>
+        <Constant Name="nf_Di4Imm_init_molecules_um_2">0.0</Constant>
+        <Constant Name="st">0.09</Constant>
+        <Constant Name="Voltage_inner_mem">0.0</Constant>
+        <Constant Name="VolumePerUnitVolume_c0">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_core">1.0</Constant>
+        <Constant Name="WC_init_molecules_um_2">1.0</Constant>
+        <MembraneVariable Name="di4ANEPPS" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="Di4Imm" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="NBR" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="nf_Di4ANEPPS" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="nf_Di4Imm" Domain="subdomain0_subdomain1_membrane" />
+        <Function Name="B_light" Domain="subdomain0_subdomain1_membrane">B_light_init_molecules_um_2</Function>
+        <Function Name="B_light_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.2 * ((t &gt; st) &amp;&amp; (t &lt; ed)))</Function>
+        <Function Name="BR" Domain="subdomain0_subdomain1_membrane">BR_init_molecules_um_2</Function>
+        <Function Name="BR_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.0 * (x &gt; BRx))</Function>
+        <Function Name="di4ANEPPS_diffusionRate" Domain="subdomain0_subdomain1_membrane">DC</Function>
+        <Function Name="di4ANEPPS_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.0 - ImmF)</Function>
+        <Function Name="Di4Imm_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">ImmF</Function>
+        <Function Name="J_BleachingReaction" Domain="subdomain0_subdomain1_membrane">(Kb * B * B_light * di4ANEPPS)</Function>
+        <Function Name="J_Imm_BleachingReaction" Domain="subdomain0_subdomain1_membrane">(Kb * B * B_light * Di4Imm)</Function>
+        <Function Name="J_Imm_MonitorBleach_Unquench" Domain="subdomain0_subdomain1_membrane">((Kb * M_light * Di4Imm) - (Kproc * (nf_Di4Imm - (a * ImmF)) * ((nf_Di4Imm - (a * ImmF)) &gt; 0.0)))</Function>
+        <Function Name="J_MonitorBleach_Unquench" Domain="subdomain0_subdomain1_membrane">((Kb * M_light * di4ANEPPS) - (Kproc * (nf_Di4ANEPPS - (a * (1.0 - ImmF))) * ((nf_Di4ANEPPS - (a * (1.0 - ImmF))) &gt; 0.0)))</Function>
+        <Function Name="M_light" Domain="subdomain0_subdomain1_membrane">M_light_init_molecules_um_2</Function>
+        <Function Name="NBR_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.0 * (x &lt;= BRx))</Function>
+        <Function Name="nf_Di4ANEPPS_diffusionRate" Domain="subdomain0_subdomain1_membrane">DC</Function>
+        <Function Name="Size_c0" Domain="subdomain0">(VolumePerUnitVolume_c0 * vcRegionVolume('subdomain0'))</Function>
+        <Function Name="Size_core" Domain="subdomain1">(VolumePerUnitVolume_core * vcRegionVolume('subdomain1'))</Function>
+        <Function Name="Size_inner_mem" Domain="subdomain0_subdomain1_membrane">(AreaPerUnitArea_inner_mem * vcRegionArea('subdomain0_subdomain1_membrane'))</Function>
+        <Function Name="sobj_subdomain11_subdomain00_size" Domain="subdomain0_subdomain1_membrane">vcRegionArea('subdomain0_subdomain1_membrane')</Function>
+        <Function Name="vobj_subdomain00_size" Domain="subdomain0">vcRegionVolume('subdomain0')</Function>
+        <Function Name="vobj_subdomain11_size" Domain="subdomain1">vcRegionVolume('subdomain1')</Function>
+        <Function Name="WC" Domain="subdomain0_subdomain1_membrane">WC_init_molecules_um_2</Function>
+        <CompartmentSubDomain Name="subdomain1">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="subdomain0_subdomain1_membrane" InsideCompartment="subdomain0" OutsideCompartment="subdomain1">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="NBR" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Initial>NBR_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Di4Imm" SolutionType="Unknown">
+            <Rate>( - J_Imm_MonitorBleach_Unquench - J_Imm_BleachingReaction)</Rate>
+            <Initial>Di4Imm_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <OdeEquation Name="nf_Di4Imm" SolutionType="Unknown">
+            <Rate>(J_Imm_MonitorBleach_Unquench + J_Imm_BleachingReaction)</Rate>
+            <Initial>nf_Di4Imm_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <PdeEquation Name="di4ANEPPS" SolutionType="Unknown">
+            <Rate>( - J_BleachingReaction - J_MonitorBleach_Unquench)</Rate>
+            <Diffusion>di4ANEPPS_diffusionRate</Diffusion>
+            <Initial>di4ANEPPS_init_molecules_um_2</Initial>
+          </PdeEquation>
+          <PdeEquation Name="nf_Di4ANEPPS" SolutionType="Unknown">
+            <Rate>(J_BleachingReaction + J_MonitorBleach_Unquench)</Rate>
+            <Diffusion>nf_Di4ANEPPS_diffusionRate</Diffusion>
+            <Initial>nf_Di4ANEPPS_init_molecules_um_2</Initial>
+          </PdeEquation>
+        </MembraneSubDomain>
+        <Version Name="Copy of NoBleach_control_generated" KeyValue="227866080" BranchId="227866081" Archived="0" Date="01-Mar-2022 21:41:51" FromVersionable="false">
+          <Owner Name="dfairchild" Identifier="215618541" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Copy of NoBleach_control_generated' owned by user ACowan
+cloned from 'Copy of NoBleach_control_generated' owned by user dfairchild
+cloned from 'Copy of NoBleach_control_generated' owned by user ACowan</Annotation>
+        </Version>
+      </MathDescription>
+      <OutputFunctions>
+        <AnnotatedFunction Name="totalF" ErrorString="" Domain="subdomain0_subdomain1_membrane" FunctionType="Membrane">(di4ANEPPS + Di4Imm)</AnnotatedFunction>
+      </OutputFunctions>
+      <Simulation Name="4461WholeBleach">
+        <Annotation>cloned from 'Scan_Kproc' owned by user ACowan
+cloned from 'Scan_Kproc' owned by user dfairchild
+cloned from 'Scan_Kproc' owned by user ACowan</Annotation>
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="14.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.17" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="Kproc" ConstantArraySpec="1000">"0.3", "0.4", "0.5"</Constant>
+          <Constant Name="a">0.68</Constant>
+          <Constant Name="M_light_init_molecules_um_2">1.4E-4</Constant>
+          <Constant Name="BRx">0.0</Constant>
+          <Constant Name="B">0.9</Constant>
+        </MathOverrides>
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="4461WholeBleach" KeyValue="247510786" BranchId="247510705" Archived="0" Date="15-Nov-2022 20:33:13" FromVersionable="false">
+          <Owner Name="dfairchild" Identifier="215618541" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Scan_Kproc' owned by user ACowan
+cloned from 'Scan_Kproc' owned by user dfairchild
+cloned from 'Scan_Kproc' owned by user ACowan</Annotation>
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_subdomain00" Type="Volume" subVolume="subdomain0" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_subdomain11" Type="Volume" subVolume="subdomain1" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_subdomain11_subdomain00" Type="Surface" subVolumeInside="subdomain1" regionIdInside="1" subVolumeOutside="subdomain0" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="WholeBleach_control" KeyValue="227866153" BranchId="227866154" Archived="0" Date="01-Mar-2022 21:41:51" FromVersionable="false">
+        <Owner Name="dfairchild" Identifier="215618541" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'WholeBleach_control' owned by user ACowan
+cloned from 'WholeBleach_control' owned by user dfairchild
+cloned from 'WholeBleach_control' owned by user ACowan
+(copied from NoBleach_control)</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <SimulationSpec Name="1/2Bleach" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.01664505722507674">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>cloned from 'FRAP_533' owned by user ACowan
+cloned from 'FRAP_533' owned by user dfairchild
+cloned from 'FRAP_533' owned by user ACowan
+(copied from WholeBleach_control) (copied from NoBleach_control)</Annotation>
+      <Geometry Name="Geometry1649422627" Dimension="3">
+        <Annotation>cloned from 'Geometry1494416323' owned by user ACowan
+cloned from 'Geometry1494416323' owned by user dfairchild
+cloned from 'Geometry1071279498' owned by user ACowan</Annotation>
+        <Extent X="1.6" Y="1.6" Z="1.6" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="subdomain1" Handle="1" Type="Analytical" KeyValue="227866070">
+          <AnalyticExpression>(((((x - 0.8) ^ 2.0) / (0.6 ^ 2.0)) + (((y - 0.8) ^ 2.0) / (0.5 ^ 2.0)) + (((z - 0.8) ^ 2.0) / (0.5 ^ 2.0))) &lt;= 1.0)</AnalyticExpression>
+        </SubVolume>
+        <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="227866071">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceClass Name="subdomain0_subdomain1_membrane" SubVolume1Ref="subdomain0" SubVolume2Ref="subdomain1" KeyValue="227866072" />
+        <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+          <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="3.4677759999999993" Unit="um3" />
+          <VolumeRegion Name="subdomain11" RegionID="1" SubVolume="subdomain1" Size="0.6282239999999999" Unit="um3" />
+          <MembraneRegion Name="membrane_subdomain00_subdomain11" VolumeRegion1="subdomain11" VolumeRegion2="subdomain00" Size="3.562616671270524" Unit="um2" />
+        </SurfaceDescription>
+        <Version Name="Geometry1649422627" KeyValue="227866066" BranchId="227866067" Archived="0" Date="01-Mar-2022 21:41:51" FromVersionable="false">
+          <Owner Name="dfairchild" Identifier="215618541" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Geometry1494416323' owned by user ACowan
+cloned from 'Geometry1494416323' owned by user dfairchild
+cloned from 'Geometry1071279498' owned by user ACowan</Annotation>
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="core" GeometryClass="subdomain1" SubVolume="subdomain1" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <FeatureMapping Feature="c0" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+        <MembraneMapping Membrane="inner_mem" Size="6563.0" AreaPerUnitArea="1.0" CalculateVoltage="false" SpecificCapacitance="1.0" InitialVoltage="0.0" GeometryClass="subdomain0_subdomain1_membrane">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </MembraneMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="di4ANEPPS" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.0 - ImmF)</InitialConcentration>
+          <Diffusion>DC</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="BR" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.0 * (x &gt; BRx))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="WC" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="B_light" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.2 * (((t &gt; st) &amp;&amp; (t &lt; ed)) &amp;&amp; (x &gt; BRx)))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="nf_Di4ANEPPS" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>DC</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="NBR" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(1.0 * (x &lt;= BRx))</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="M_light" ForceConstant="true" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>2.5E-4</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Di4Imm" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>ImmF</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="nf_Di4Imm" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="BleachingReaction" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="MonitorBleach_Unquench" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="Imm_MonitorBleach_Unquench" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="Imm_BleachingReaction" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Copy of WholeBleach_control_generated">
+        <Annotation>cloned from 'Copy of WholeBleach_control_generated' owned by user ACowan
+cloned from 'Copy of WholeBleach_control_generated' owned by user dfairchild
+cloned from 'Copy of WholeBleach_control_generated' owned by user ACowan</Annotation>
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="a">0.6</Constant>
+        <Constant Name="AreaPerUnitArea_inner_mem">1.0</Constant>
+        <Constant Name="B">1.0</Constant>
+        <Constant Name="BRx">0.6</Constant>
+        <Constant Name="DC">0.1</Constant>
+        <Constant Name="ed">0.1</Constant>
+        <Constant Name="ImmF">0.5</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kb">175.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="Kproc">0.1</Constant>
+        <Constant Name="M_light_init_molecules_um_2">2.5E-4</Constant>
+        <Constant Name="netValence_BleachingReaction">1.0</Constant>
+        <Constant Name="netValence_Imm_BleachingReaction">1.0</Constant>
+        <Constant Name="netValence_Imm_MonitorBleach_Unquench">1.0</Constant>
+        <Constant Name="netValence_MonitorBleach_Unquench">1.0</Constant>
+        <Constant Name="nf_Di4ANEPPS_init_molecules_um_2">0.0</Constant>
+        <Constant Name="nf_Di4Imm_init_molecules_um_2">0.0</Constant>
+        <Constant Name="st">0.09</Constant>
+        <Constant Name="Voltage_inner_mem">0.0</Constant>
+        <Constant Name="VolumePerUnitVolume_c0">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_core">1.0</Constant>
+        <Constant Name="WC_init_molecules_um_2">1.0</Constant>
+        <MembraneVariable Name="di4ANEPPS" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="Di4Imm" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="NBR" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="nf_Di4ANEPPS" Domain="subdomain0_subdomain1_membrane" />
+        <MembraneVariable Name="nf_Di4Imm" Domain="subdomain0_subdomain1_membrane" />
+        <Function Name="B_light" Domain="subdomain0_subdomain1_membrane">B_light_init_molecules_um_2</Function>
+        <Function Name="B_light_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.2 * (((t &gt; st) &amp;&amp; (t &lt; ed)) &amp;&amp; (x &gt; BRx)))</Function>
+        <Function Name="BR" Domain="subdomain0_subdomain1_membrane">BR_init_molecules_um_2</Function>
+        <Function Name="BR_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.0 * (x &gt; BRx))</Function>
+        <Function Name="di4ANEPPS_diffusionRate" Domain="subdomain0_subdomain1_membrane">DC</Function>
+        <Function Name="di4ANEPPS_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.0 - ImmF)</Function>
+        <Function Name="Di4Imm_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">ImmF</Function>
+        <Function Name="J_BleachingReaction" Domain="subdomain0_subdomain1_membrane">(Kb * B * B_light * di4ANEPPS)</Function>
+        <Function Name="J_Imm_BleachingReaction" Domain="subdomain0_subdomain1_membrane">(Kb * B * B_light * Di4Imm)</Function>
+        <Function Name="J_Imm_MonitorBleach_Unquench" Domain="subdomain0_subdomain1_membrane">((Kb * M_light * Di4Imm) - (Kproc * (nf_Di4Imm - (a * ImmF)) * ((nf_Di4Imm - (a * ImmF)) &gt; 0.0)))</Function>
+        <Function Name="J_MonitorBleach_Unquench" Domain="subdomain0_subdomain1_membrane">((Kb * M_light * di4ANEPPS) - (Kproc * (nf_Di4ANEPPS - (a * (1.0 - ImmF))) * ((nf_Di4ANEPPS - (a * (1.0 - ImmF))) &gt; 0.0)))</Function>
+        <Function Name="M_light" Domain="subdomain0_subdomain1_membrane">M_light_init_molecules_um_2</Function>
+        <Function Name="NBR_init_molecules_um_2" Domain="subdomain0_subdomain1_membrane">(1.0 * (x &lt;= BRx))</Function>
+        <Function Name="nf_Di4ANEPPS_diffusionRate" Domain="subdomain0_subdomain1_membrane">DC</Function>
+        <Function Name="Size_c0" Domain="subdomain0">(VolumePerUnitVolume_c0 * vcRegionVolume('subdomain0'))</Function>
+        <Function Name="Size_core" Domain="subdomain1">(VolumePerUnitVolume_core * vcRegionVolume('subdomain1'))</Function>
+        <Function Name="Size_inner_mem" Domain="subdomain0_subdomain1_membrane">(AreaPerUnitArea_inner_mem * vcRegionArea('subdomain0_subdomain1_membrane'))</Function>
+        <Function Name="sobj_subdomain11_subdomain00_size" Domain="subdomain0_subdomain1_membrane">vcRegionArea('subdomain0_subdomain1_membrane')</Function>
+        <Function Name="vobj_subdomain00_size" Domain="subdomain0">vcRegionVolume('subdomain0')</Function>
+        <Function Name="vobj_subdomain11_size" Domain="subdomain1">vcRegionVolume('subdomain1')</Function>
+        <Function Name="WC" Domain="subdomain0_subdomain1_membrane">WC_init_molecules_um_2</Function>
+        <CompartmentSubDomain Name="subdomain1">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <CompartmentSubDomain Name="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Flux" />
+          <BoundaryType Boundary="Yp" Type="Flux" />
+          <BoundaryType Boundary="Zm" Type="Flux" />
+          <BoundaryType Boundary="Zp" Type="Flux" />
+        </CompartmentSubDomain>
+        <MembraneSubDomain Name="subdomain0_subdomain1_membrane" InsideCompartment="subdomain0" OutsideCompartment="subdomain1">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="NBR" SolutionType="Unknown">
+            <Rate>0.0</Rate>
+            <Initial>NBR_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Di4Imm" SolutionType="Unknown">
+            <Rate>( - J_Imm_MonitorBleach_Unquench - J_Imm_BleachingReaction)</Rate>
+            <Initial>Di4Imm_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <OdeEquation Name="nf_Di4Imm" SolutionType="Unknown">
+            <Rate>(J_Imm_MonitorBleach_Unquench + J_Imm_BleachingReaction)</Rate>
+            <Initial>nf_Di4Imm_init_molecules_um_2</Initial>
+          </OdeEquation>
+          <PdeEquation Name="di4ANEPPS" SolutionType="Unknown">
+            <Rate>( - J_BleachingReaction - J_MonitorBleach_Unquench)</Rate>
+            <Diffusion>di4ANEPPS_diffusionRate</Diffusion>
+            <Initial>di4ANEPPS_init_molecules_um_2</Initial>
+          </PdeEquation>
+          <PdeEquation Name="nf_Di4ANEPPS" SolutionType="Unknown">
+            <Rate>(J_BleachingReaction + J_MonitorBleach_Unquench)</Rate>
+            <Diffusion>nf_Di4ANEPPS_diffusionRate</Diffusion>
+            <Initial>nf_Di4ANEPPS_init_molecules_um_2</Initial>
+          </PdeEquation>
+        </MembraneSubDomain>
+        <Version Name="Copy of WholeBleach_control_generated" KeyValue="227866083" BranchId="227866084" Archived="0" Date="01-Mar-2022 21:41:51" FromVersionable="false">
+          <Owner Name="dfairchild" Identifier="215618541" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Copy of WholeBleach_control_generated' owned by user ACowan
+cloned from 'Copy of WholeBleach_control_generated' owned by user dfairchild
+cloned from 'Copy of WholeBleach_control_generated' owned by user ACowan</Annotation>
+        </Version>
+      </MathDescription>
+      <OutputFunctions>
+        <AnnotatedFunction Name="TotalF" ErrorString="" Domain="subdomain0_subdomain1_membrane" FunctionType="Membrane">(di4ANEPPS + Di4Imm)</AnnotatedFunction>
+      </OutputFunctions>
+      <Simulation Name="PS4461-halfbleach">
+        <Annotation>cloned from '533BleachFitFull' owned by user ACowan
+cloned from '533BleachFitFull' owned by user dfairchild</Annotation>
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="14.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.17" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="Kproc">0.4</Constant>
+          <Constant Name="a">0.68</Constant>
+          <Constant Name="DC" ConstantArraySpec="1000">"0.09", "0.1", "0.12", "0.14"</Constant>
+          <Constant Name="M_light_init_molecules_um_2">1.4E-4</Constant>
+          <Constant Name="ImmF" ConstantArraySpec="1000">"0.5", "0.6", "0.7", "0.8"</Constant>
+          <Constant Name="B">0.8</Constant>
+          <Constant Name="BRx">1.0</Constant>
+        </MathOverrides>
+        <MeshSpecification>
+          <Size X="51" Y="51" Z="51" />
+        </MeshSpecification>
+        <Version Name="PS4461-halfbleach" KeyValue="247511062" BranchId="247511063" Archived="0" Date="15-Nov-2022 20:38:26" FromVersionable="false">
+          <Owner Name="dfairchild" Identifier="215618541" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from '533BleachFitFull' owned by user ACowan
+cloned from '533BleachFitFull' owned by user dfairchild</Annotation>
+        </Version>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_subdomain00" Type="Volume" subVolume="subdomain0" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="vobj_subdomain11" Type="Volume" subVolume="subdomain1" regionId="1">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+        <SpatialObject Name="sobj_subdomain11_subdomain00" Type="Surface" subVolumeInside="subdomain1" regionIdInside="1" subVolumeOutside="subdomain0" regionIdOutside="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="SurfaceNormal" Enabled="false" />
+            <QuantityCategory Name="SurfaceVelocity" Enabled="false" />
+            <QuantityCategory Name="DistanceToSurface" Enabled="false" />
+            <QuantityCategory Name="DirectionToSurface" Enabled="false" />
+            <QuantityCategory Name="SurfaceSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="1/2Bleach" KeyValue="247510681" BranchId="247510682" Archived="0" Date="15-Nov-2022 20:32:42" FromVersionable="false">
+        <Owner Name="dfairchild" Identifier="215618541" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'FRAP_533' owned by user ACowan
+cloned from 'FRAP_533' owned by user dfairchild
+cloned from 'FRAP_533' owned by user ACowan
+(copied from WholeBleach_control) (copied from NoBleach_control)</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="Bacillus Spore Membrane FRAP Analysis" KeyValue="247511065" BranchId="247509128" Archived="0" Date="15-Nov-2022 20:38:26" FromVersionable="false">
+      <Owner Name="dfairchild" Identifier="215618541" />
+      <GroupAccess Type="1" />
+      <Annotation>cloned from 'SporeDiff_add3_new' owned by user ACowan
+cloned from 'SporeDiff_add3' owned by user dfairchild
+cloned from 'SporeDiff_add3' owned by user ACowan</Annotation>
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList>
+        <nonrdfAnnotation vcid="ModelParameter(ed)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+    &#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      End time for bleach&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="Species(s2)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Species to define whole membrane for data&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="Species(s5)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Species to define nonbleached region&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="ModelParameter(Kproc)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      rate for unquenching reaction&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="ModelParameter(st)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      start time for bleach&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="Species(s1)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Species to define bleached region&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="ModelParameter(DC)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      diffusion coefficient for fluorescent and nonfluorescent di4ANEPPS&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="ReactionStep(BleachingReaction)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Forward rate only to account for main bleaching event.&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="ModelParameter(a)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      fraction remaining after bleaching&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="ReactionStep(MonitorBleach_Unquench)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Forward rate is bleaching during monitoring.&#xD;
+    &lt;/p&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Reverse rate is &amp;quot;unquenching&amp;quot;&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="ModelParameter(ImmF)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Immobile Fraction&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="Species(s6)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Monitoring light&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="Species(s3)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+    &#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Bleaching light&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
+      </nonrdfAnnotationList>
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Rel_Version_7.5.0_build_62.1-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_7.5.0_build_62.1">
+  <BioModel Name="Figure 4">
+    <Annotation>cloned from 'actin bleaching 8 (1D) - v2' owned by user rappala
+cloned from 'actin bleaching 6 (2D)' owned by user jmhaugh</Annotation>
+    <Model Name="model">
+      <Annotation>cloned from 'model' owned by user rappala
+cloned from 'model' owned by user jmhaugh</Annotation>
+      <ModelParameters>
+        <Parameter Name="VF" Role="user defined" Unit="um.s-1">0.2</Parameter>
+        <Parameter Name="DG" Role="user defined" Unit="um2.s-1">3.0</Parameter>
+        <Parameter Name="VG" Role="user defined" Unit="um.s-1">1.0</Parameter>
+        <Parameter Name="kbleach" Role="user defined" Unit="s-1">200.0</Parameter>
+        <Parameter Name="kdepol" Role="user defined" Unit="s-1">0.01</Parameter>
+        <Parameter Name="gfrac" Role="user defined" Unit="tbd">0.01</Parameter>
+        <Parameter Name="bleachzone" Role="user defined" Unit="1">((t &gt; 2.4) * (t &lt; 2.5))</Parameter>
+        <Parameter Name="alpha" Role="user defined" Unit="tbd">(VF / (VG - (DG * kdepol / VF)))</Parameter>
+        <Parameter Name="L" Role="user defined" Unit="tbd">10.0</Parameter>
+        <Parameter Name="Wbleach" Role="user defined" Unit="tbd">20.0</Parameter>
+        <Parameter Name="GFP_Actin" Role="user defined" Unit="tbd">(Fun + Gun)</Parameter>
+        <Parameter Name="DF" Role="user defined" Unit="tbd">1.0E-9</Parameter>
+      </ModelParameters>
+      <Compound Name="s3" />
+      <Compound Name="s0" />
+      <Feature Name="c0" KeyValue="259882106" />
+      <LocalizedCompound Name="Fun" CompoundRef="s3" Structure="c0" OverrideName="true" KeyValue="259882108" />
+      <LocalizedCompound Name="Gun" CompoundRef="s0" Structure="c0" OverrideName="true" KeyValue="259882109" />
+      <SimpleReaction Structure="c0" Name="depol" Reversible="false" FluxOption="MolecularOnly" KeyValue="259882110">
+        <Reactant LocalizedCompoundRef="Fun" Stoichiometry="1" KeyValue="259882111" />
+        <Product LocalizedCompoundRef="Gun" Stoichiometry="1" KeyValue="259882112" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(kdepol * Fun)</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="G bleach" Reversible="false" FluxOption="MolecularOnly" KeyValue="259882113">
+        <Reactant LocalizedCompoundRef="Gun" Stoichiometry="1" KeyValue="259882114" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(kbleach * bleachzone * Gun)</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="F bleach" Reversible="false" FluxOption="MolecularOnly" KeyValue="259882115">
+        <Reactant LocalizedCompoundRef="Fun" Stoichiometry="1" KeyValue="259882116" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">(kbleach * bleachzone * Fun)</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c0" Structure="c0">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Gun" LocationX="149" LocationY="90" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="G bleach" LocationX="151" LocationY="184" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="depol" LocationX="231" LocationY="98" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Fun" LocationX="296" LocationY="90" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="F bleach" LocationX="300" LocationY="181" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="bleach_zone" LocationX="228" LocationY="191" />
+      </Diagram>
+      <Version Name="model" KeyValue="259882101" BranchId="259882102" Archived="0" Date="28-Aug-2023 04:02:49" FromVersionable="false">
+        <Owner Name="ra_mb_jb_jmh" Identifier="258119600" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'model' owned by user rappala
+cloned from 'model' owned by user jmhaugh</Annotation>
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="Constant Diffusion Models w/ 'Full Bleach'" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.06494642050936816">
+      <NetworkConstraints RbmMaxIteration="3" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation>cloned from 'Diffusion Scan' owned by user rappala
+(copied from Application0) cloned from 'Application0' owned by user jmhaugh</Annotation>
+      <Geometry Name="Geometry5" Dimension="1">
+        <Annotation>cloned from 'Geometry5' owned by user rappala</Annotation>
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="259882075">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceDescription NumSamplesX="50" NumSamplesY="1" NumSamplesZ="1" CutoffFrequency="0.3">
+          <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="10.0" Unit="um" />
+        </SurfaceDescription>
+        <Version Name="Geometry5" KeyValue="259882071" BranchId="259882072" Archived="0" Date="28-Aug-2023 04:02:49" FromVersionable="false">
+          <Owner Name="ra_mb_jb_jmh" Identifier="258119600" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Geometry5' owned by user rappala</Annotation>
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="c0" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Value" Ym="Flux" Yp="Value" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Fun" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>((1.0 - gfrac) * exp(( - kdepol * x / VF)))</InitialConcentration>
+          <Diffusion>DF_1</Diffusion>
+          <Boundaries Xm="(VF * (1.0 - gfrac) * Gun / gfrac)" Xp="((1.0 - gfrac) * exp(( - kdepol * L / VF)))" Ym="(VF * (1.0 - gfrac) * Gun / gfrac)" Yp="((1.0 - gfrac) * exp(( - kdepol * L / VF)))" />
+          <Velocity X="VF" Y="VF" />
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Gun" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(((gfrac - (alpha * (1.0 - gfrac))) * exp(( - VG * x / DG))) + ((alpha * (1.0 - gfrac)) * exp(( - kdepol * x / VF))))</InitialConcentration>
+          <Diffusion>DG</Diffusion>
+          <Boundaries Xm=" - (VF * (1.0 - gfrac) * Gun / gfrac)" Xp="(((gfrac - (alpha * (1.0 - gfrac))) * exp(( - VG * L / DG))) + ((alpha * (1.0 - gfrac)) * exp(( - kdepol * L / VF))))" Ym=" - (VF * (1.0 - gfrac) * Gun / gfrac)" Yp="(((gfrac - (alpha * (1.0 - gfrac))) * exp(( - VG * L / DG))) + ((alpha * (1.0 - gfrac)) * exp(( - kdepol * L / VF))))" />
+          <Velocity X=" - VG" Y=" - VG" />
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="depol" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="G bleach" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="F bleach" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Copy of Application0_generated">
+        <Annotation>cloned from 'Copy of Application0_generated' owned by user rappala</Annotation>
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="DF">1.0E-9</Constant>
+        <Constant Name="DF_1">1.0E-9</Constant>
+        <Constant Name="DG">3.0</Constant>
+        <Constant Name="gfrac">0.01</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="kbleach">200.0</Constant>
+        <Constant Name="kdepol">0.01</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="L">10.0</Constant>
+        <Constant Name="VF">0.2</Constant>
+        <Constant Name="VG">1.0</Constant>
+        <Constant Name="VolumePerUnitVolume_c0">1.0</Constant>
+        <Constant Name="Wbleach">20.0</Constant>
+        <VolumeVariable Name="Fun" Domain="subdomain0" />
+        <VolumeVariable Name="Gun" Domain="subdomain0" />
+        <Function Name="alpha">(VF / (VG - (DG * kdepol / VF)))</Function>
+        <Function Name="bleachzone">((t &gt; 2.4) * (t &lt; 2.5))</Function>
+        <Function Name="Fun_boundaryXm" Domain="subdomain0">(VF * (1.0 - gfrac) * Gun / gfrac)</Function>
+        <Function Name="Fun_boundaryXp" Domain="subdomain0">((1.0 - gfrac) * exp(( - kdepol * L / VF)))</Function>
+        <Function Name="Fun_boundaryYm" Domain="subdomain0">(VF * (1.0 - gfrac) * Gun / gfrac)</Function>
+        <Function Name="Fun_boundaryYp" Domain="subdomain0">((1.0 - gfrac) * exp(( - kdepol * L / VF)))</Function>
+        <Function Name="Fun_diffusionRate" Domain="subdomain0">DF_1</Function>
+        <Function Name="Fun_init_uM" Domain="subdomain0">((1.0 - gfrac) * exp(( - kdepol * x / VF)))</Function>
+        <Function Name="Fun_velocityX" Domain="subdomain0">VF</Function>
+        <Function Name="Fun_velocityY" Domain="subdomain0">VF</Function>
+        <Function Name="GFP_Actin" Domain="subdomain0">(Fun + Gun)</Function>
+        <Function Name="Gun_boundaryXm" Domain="subdomain0">- (VF * (1.0 - gfrac) * Gun / gfrac)</Function>
+        <Function Name="Gun_boundaryXp" Domain="subdomain0">(((gfrac - (alpha * (1.0 - gfrac))) * exp(( - VG * L / DG))) + ((alpha * (1.0 - gfrac)) * exp(( - kdepol * L / VF))))</Function>
+        <Function Name="Gun_boundaryYm" Domain="subdomain0">- (VF * (1.0 - gfrac) * Gun / gfrac)</Function>
+        <Function Name="Gun_boundaryYp" Domain="subdomain0">(((gfrac - (alpha * (1.0 - gfrac))) * exp(( - VG * L / DG))) + ((alpha * (1.0 - gfrac)) * exp(( - kdepol * L / VF))))</Function>
+        <Function Name="Gun_diffusionRate" Domain="subdomain0">DG</Function>
+        <Function Name="Gun_init_uM" Domain="subdomain0">(((gfrac - (alpha * (1.0 - gfrac))) * exp(( - VG * x / DG))) + ((alpha * (1.0 - gfrac)) * exp(( - kdepol * x / VF))))</Function>
+        <Function Name="Gun_velocityX" Domain="subdomain0">- VG</Function>
+        <Function Name="Gun_velocityY" Domain="subdomain0">- VG</Function>
+        <Function Name="J_depol" Domain="subdomain0">(kdepol * Fun)</Function>
+        <Function Name="J_F_bleach" Domain="subdomain0">(kbleach * bleachzone * Fun)</Function>
+        <Function Name="J_G_bleach" Domain="subdomain0">(kbleach * bleachzone * Gun)</Function>
+        <Function Name="Size_c0" Domain="subdomain0">(VolumePerUnitVolume_c0 * vcRegionVolume('subdomain0'))</Function>
+        <Function Name="vobj_subdomain00_size" Domain="subdomain0">vcRegionVolume('subdomain0')</Function>
+        <CompartmentSubDomain Name="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <PdeEquation Name="Fun" SolutionType="Unknown">
+            <Boundaries Xm="Fun_boundaryXm" Xp="Fun_boundaryXp" Ym="Fun_boundaryYm" Yp="Fun_boundaryYp" />
+            <Rate>( - J_depol - J_F_bleach)</Rate>
+            <Diffusion>Fun_diffusionRate</Diffusion>
+            <Initial>Fun_init_uM</Initial>
+            <Velocity X="Fun_velocityX" />
+          </PdeEquation>
+          <PdeEquation Name="Gun" SolutionType="Unknown">
+            <Boundaries Xm="Gun_boundaryXm" Xp="Gun_boundaryXp" Ym="Gun_boundaryYm" Yp="Gun_boundaryYp" />
+            <Rate>(J_depol - J_G_bleach)</Rate>
+            <Diffusion>Gun_diffusionRate</Diffusion>
+            <Initial>Gun_init_uM</Initial>
+            <Velocity X="Gun_velocityX" />
+          </PdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Copy of Application0_generated" KeyValue="259882092" BranchId="259882093" Archived="0" Date="28-Aug-2023 04:02:49" FromVersionable="false">
+          <Owner Name="ra_mb_jb_jmh" Identifier="258119600" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from 'Copy of Application0_generated' owned by user rappala</Annotation>
+        </Version>
+      </MathDescription>
+      <Simulation Name="Constant Diffusion Only; g(0) ~ 0">
+        <Annotation>cloned from '200k mesh DF = -5; DG = 10.5; VG = 10E-6; gfrac = 0' owned by user rappala
+cloned from 'Scan DG,VG,kdepol, W=5' owned by user jmhaugh</Annotation>
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="30.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.009" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="VG">1.0E-6</Constant>
+          <Constant Name="Wbleach">11.0</Constant>
+          <Constant Name="gfrac">0.001</Constant>
+          <Constant Name="DF_1">1.0E-5</Constant>
+          <Constant Name="DG">10.49251033</Constant>
+        </MathOverrides>
+        <MeshSpecification>
+          <Size X="200000" Y="1" Z="1" />
+        </MeshSpecification>
+        <Version Name="Constant Diffusion Only; g(0) ~ 0" KeyValue="259882382" BranchId="259882383" Archived="0" Date="28-Aug-2023 04:08:04" FromVersionable="false">
+          <Owner Name="ra_mb_jb_jmh" Identifier="258119600" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from '200k mesh DF = -5; DG = 10.5; VG = 10E-6; gfrac = 0' owned by user rappala
+cloned from 'Scan DG,VG,kdepol, W=5' owned by user jmhaugh</Annotation>
+        </Version>
+      </Simulation>
+      <Simulation Name="Constant Diffusion Only; g(0) = 0.1">
+        <Annotation>cloned from '200k mesh DF = -5; DG = 30; VG = 10E-6; gfrac = 0.1' owned by user rappala
+cloned from 'Scan DG,VG,kdepol, W=5' owned by user jmhaugh</Annotation>
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="30.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.009" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="kdepol">0.00789279</Constant>
+          <Constant Name="VG">1.0E-6</Constant>
+          <Constant Name="Wbleach">11.0</Constant>
+          <Constant Name="gfrac">0.1</Constant>
+          <Constant Name="DF_1">1.0E-5</Constant>
+          <Constant Name="DG">29.7455376</Constant>
+        </MathOverrides>
+        <MeshSpecification>
+          <Size X="200000" Y="1" Z="1" />
+        </MeshSpecification>
+        <Version Name="Constant Diffusion Only; g(0) = 0.1" KeyValue="259882385" BranchId="259882386" Archived="0" Date="28-Aug-2023 04:08:04" FromVersionable="false">
+          <Owner Name="ra_mb_jb_jmh" Identifier="258119600" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from '200k mesh DF = -5; DG = 30; VG = 10E-6; gfrac = 0.1' owned by user rappala
+cloned from 'Scan DG,VG,kdepol, W=5' owned by user jmhaugh</Annotation>
+        </Version>
+      </Simulation>
+      <Simulation Name="Constant Diffusion + Anterograde Transport; g(0) ~ 0">
+        <Annotation>cloned from '200k mesh DF = -5; DG = 3; VG = 1; gfrac = 0' owned by user rappala
+cloned from 'Scan DG,VG,kdepol, W=5' owned by user jmhaugh</Annotation>
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="30.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.009" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="VG">0.8900969</Constant>
+          <Constant Name="Wbleach">11.0</Constant>
+          <Constant Name="gfrac">0.001</Constant>
+          <Constant Name="DF_1">1.0E-5</Constant>
+        </MathOverrides>
+        <MeshSpecification>
+          <Size X="200000" Y="1" Z="1" />
+        </MeshSpecification>
+        <Version Name="Constant Diffusion + Anterograde Transport; g(0) ~ 0" KeyValue="259882388" BranchId="259882389" Archived="0" Date="28-Aug-2023 04:08:04" FromVersionable="false">
+          <Owner Name="ra_mb_jb_jmh" Identifier="258119600" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from '200k mesh DF = -5; DG = 3; VG = 1; gfrac = 0' owned by user rappala
+cloned from 'Scan DG,VG,kdepol, W=5' owned by user jmhaugh</Annotation>
+        </Version>
+      </Simulation>
+      <Simulation Name="Constant Diffusion + Anterograde Transport; g(0) = 0.1">
+        <Annotation>cloned from '200k mesh DF = -5; DG = 3; VG = 1; gfrac = 0.1' owned by user rappala
+cloned from 'Scan DG,VG,kdepol, W=5' owned by user jmhaugh</Annotation>
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="30.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.009" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="1.0" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="kdepol">0.00789279</Constant>
+          <Constant Name="VG">0.8921311</Constant>
+          <Constant Name="Wbleach">11.0</Constant>
+          <Constant Name="gfrac">0.1</Constant>
+          <Constant Name="DF_1">1.0E-5</Constant>
+        </MathOverrides>
+        <MeshSpecification>
+          <Size X="200000" Y="1" Z="1" />
+        </MeshSpecification>
+        <Version Name="Constant Diffusion + Anterograde Transport; g(0) = 0.1" KeyValue="259882391" BranchId="259882392" Archived="0" Date="28-Aug-2023 04:08:04" FromVersionable="false">
+          <Owner Name="ra_mb_jb_jmh" Identifier="258119600" />
+          <GroupAccess Type="1" />
+          <Annotation>cloned from '200k mesh DF = -5; DG = 3; VG = 1; gfrac = 0.1' owned by user rappala
+cloned from 'Scan DG,VG,kdepol, W=5' owned by user jmhaugh</Annotation>
+        </Version>
+      </Simulation>
+      <ApplicationParameters>
+        <Parameter Name="DF_1" Role="user defined" Unit="1">1.0E-9</Parameter>
+      </ApplicationParameters>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_subdomain00" Type="Volume" subVolume="subdomain0" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <Version Name="Constant Diffusion Models w/ 'Full Bleach'" KeyValue="259882373" BranchId="259882374" Archived="0" Date="28-Aug-2023 04:08:04" FromVersionable="false">
+        <Owner Name="ra_mb_jb_jmh" Identifier="258119600" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'Diffusion Scan' owned by user rappala
+(copied from Application0) cloned from 'Application0' owned by user jmhaugh</Annotation>
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="Figure 4" KeyValue="259882394" BranchId="259882258" Archived="0" Date="28-Aug-2023 04:08:04" FromVersionable="false">
+      <Owner Name="ra_mb_jb_jmh" Identifier="258119600" />
+      <GroupAccess Type="1" />
+      <Annotation>cloned from 'actin bleaching 8 (1D) - v2' owned by user rappala
+cloned from 'actin bleaching 6 (2D)' owned by user jmhaugh</Annotation>
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+

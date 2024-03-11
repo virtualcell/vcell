@@ -12,12 +12,18 @@ public class Hdf5DataContainer {
      *  Uri to results map
      */
     public Map<String, List<Hdf5SedmlResults>> uriToResultsMap;
+    public boolean trackSubSetsInReports;
 
     /**
      * Basic constructor
      */
     public Hdf5DataContainer(){
+        this(false);
+    }
+
+    public Hdf5DataContainer(boolean shouldTrackSedmlSubSetsInReports){
         this.uriToResultsMap = new HashMap<>();
+        this.trackSubSetsInReports = shouldTrackSedmlSubSetsInReports;
     }
 
     /**

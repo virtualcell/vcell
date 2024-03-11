@@ -212,11 +212,13 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	@Override
 	public boolean isCellEditable(int row, int col) {
 		String siteName = (String)getValueAt(row, 0);
-		if(SpeciesContextSpec.AnchorSiteString.equals(siteName)) {
-			// TODO: X, Y, Z, Color must also be non-editable
-			return false;	// row of reserved "Anchor" site is non-editable
-		}
 		ColumnType columnType = columns.get(col);
+		// TODO: X, Y, Z, Color must also be non-editable
+		// 03/01/24 correction: anchor Location (structure) must be editable
+		// because it may start as other than Membrane, in which case we need to make it right
+//		if(SpeciesContextSpec.AnchorSiteString.equals(siteName)) {
+//			return false;	// row of reserved "Anchor" site is non-editable
+//		}
 		switch (columnType) {
 		case COLUMN_SITE:
 		case COLUMN_MOLECULE:

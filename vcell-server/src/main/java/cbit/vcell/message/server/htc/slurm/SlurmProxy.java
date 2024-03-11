@@ -81,7 +81,7 @@ public class SlurmProxy extends HtcProxy {
 	@Override
 	public void killJobSafe(HtcJobInfo htcJobInfo) throws ExecutableException, HtcException {
 		final String JOB_CMD_DELETE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scancel,"scancel");
-		String[] cmd = new String[]{JOB_CMD_DELETE, "--jobname", htcJobInfo.getJobName(), Long.toString(htcJobInfo.getHtcJobID().getJobNumber())};
+		String[] cmd = new String[]{JOB_CMD_DELETE,"-u",getHtcUser(), "--jobname", htcJobInfo.getJobName(), Long.toString(htcJobInfo.getHtcJobID().getJobNumber())};
 		try {
 			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			if (LG.isDebugEnabled()) {
@@ -108,7 +108,7 @@ public class SlurmProxy extends HtcProxy {
 	@Override
 	public void killJobUnsafe(HtcJobID htcJobId) throws ExecutableException, HtcException {
 		final String JOB_CMD_DELETE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_scancel,"scancel");
-		String[] cmd = new String[]{JOB_CMD_DELETE, Long.toString(htcJobId.getJobNumber())};
+		String[] cmd = new String[]{JOB_CMD_DELETE, "-u", getHtcUser(), Long.toString(htcJobId.getJobNumber())};
 		try {
 			//CommandOutput commandOutput = commandService.command(cmd, new int[] { 0, QDEL_JOB_NOT_FOUND_RETURN_CODE });
 			if (LG.isDebugEnabled()) {
@@ -282,7 +282,7 @@ public class SlurmProxy extends HtcProxy {
 		final String JOB_CMD_SQUEUE = PropertyLoader.getProperty(PropertyLoader.slurm_cmd_squeue,"squeue");
 		// squeue -p vcell2 -O jobid:25,name:25,state:13
 		String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
-		String[] cmds = {JOB_CMD_SQUEUE,"-p",partition,"-O","jobid:25,name:25,state:13,batchhost"};
+		String[] cmds = {JOB_CMD_SQUEUE,"-p",partition,"-u",getHtcUser(),"-O","jobid:25,name:25,state:13,batchhost"};
 		CommandOutput commandOutput = commandService.command(cmds);
 
 		String output = commandOutput.getStandardOutput();
@@ -330,7 +330,7 @@ public class SlurmProxy extends HtcProxy {
 			jobNumbers.add(Long.toString(jobInfo.getHtcJobID().getJobNumber()));
 		}
 		String jobList = String.join(",", jobNumbers);
-		String[] cmds = {JOB_CMD_SACCT,"-P","-j",jobList,"-o","jobid%25,jobname%25,state%13"};
+		String[] cmds = {JOB_CMD_SACCT,"-P","-u",getHtcUser(),"-j",jobList,"-o","jobid%25,jobname%25,state%13"};
 		CommandOutput commandOutput = commandService.command(cmds);
 		
 		String output = commandOutput.getStandardOutput();

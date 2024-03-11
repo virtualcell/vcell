@@ -54,12 +54,10 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		setMolecularComponentPattern(mcp);
 		setLocation(structure);
 	}
-	public SiteAttributesSpec(SpeciesContextSpec scs, MolecularComponentPattern mcp, double radius, double diffusion, Structure location, Coordinate coordinate, NamedColor color) {
-		fieldSpeciesContextSpec = scs;
-		setMolecularComponentPattern(mcp);
+	public SiteAttributesSpec(SpeciesContextSpec scs, MolecularComponentPattern mcp, double radius, double diffusion, Structure structure, Coordinate coordinate, NamedColor color) {
+		this(scs, mcp, structure);
 		setRadius(radius);
 		setDiffusionRate(diffusion);
-		setLocation(location);
 		setCoordinate(coordinate);
 		setColor(color);
 	}

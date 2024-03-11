@@ -1,0 +1,685 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Rel_Version_7.5.0_build_62.1-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_7.5.0_build_62.1">
+  <BioModel Name="cdh11-pdgfr-erk-feedback-v2">
+    <Model Name="model">
+      <ModelParameters>
+        <Parameter Name="h" Role="user defined" Unit="tbd">
+          1.0
+          <Annotation>Copied from model : cbit.vcell.model.Model$ModelNameScope@3ce5f7aa: 'model'</Annotation>
+        </Parameter>
+        <Parameter Name="c_signal" Role="user defined" Unit="tbd">0.1</Parameter>
+        <Parameter Name="pdgf_a_signal" Role="user defined" Unit="tbd">0.1</Parameter>
+        <Parameter Name="pdgf_b_signal" Role="user defined" Unit="tbd">0.4</Parameter>
+      </ModelParameters>
+      <Compound Name="s10" />
+      <Compound Name="s1" />
+      <Compound Name="s3" />
+      <Compound Name="s12" />
+      <Compound Name="s4" />
+      <Compound Name="s6" />
+      <Compound Name="s8" />
+      <Compound Name="s5" />
+      <Compound Name="s7" />
+      <Compound Name="s11" />
+      <Feature Name="c0" KeyValue="223791113" />
+      <LocalizedCompound Name="pdgfr_b" CompoundRef="s10" Structure="c0" OverrideName="true" KeyValue="223791115" />
+      <LocalizedCompound Name="cdh11" CompoundRef="s1" Structure="c0" OverrideName="true" KeyValue="223791116" />
+      <LocalizedCompound Name="Bcat" CompoundRef="s3" Structure="c0" OverrideName="true" KeyValue="223791117" />
+      <LocalizedCompound Name="ras" CompoundRef="s12" Structure="c0" OverrideName="true" KeyValue="223791118" />
+      <LocalizedCompound Name="raf" CompoundRef="s4" Structure="c0" OverrideName="true" KeyValue="223791119" />
+      <LocalizedCompound Name="mek" CompoundRef="s6" Structure="c0" OverrideName="true" KeyValue="223791120" />
+      <LocalizedCompound Name="erk" CompoundRef="s8" Structure="c0" OverrideName="true" KeyValue="223791121" />
+      <LocalizedCompound Name="cyclinD1" CompoundRef="s5" Structure="c0" OverrideName="true" KeyValue="223791122" />
+      <LocalizedCompound Name="dusp1" CompoundRef="s7" Structure="c0" OverrideName="true" KeyValue="223791123" />
+      <LocalizedCompound Name="pdgfr_a" CompoundRef="s11" Structure="c0" OverrideName="true" KeyValue="223791124" />
+      <SimpleReaction Structure="c0" Name="pdgfr_activation" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791125">
+        <Product LocalizedCompoundRef="pdgfr_b" Stoichiometry="1" KeyValue="223791126" />
+        <Modifier LocalizedCompoundRef="cdh11" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_pdgfr_b) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_pdgfr_b) * h))))) - (1.0 * pdgfr_b))</Parameter>
+          <Parameter Name="omg_pdgfr_b" Role="user defined" Unit="tbd">((((1.0 + a_pdgfr_b_by_pdgf_b) / a_pdgfr_b_by_pdgf_b) * ((pdgf_b_signal * a_pdgfr_b_by_pdgf_b) / (1.0 + (pdgf_b_signal * a_pdgfr_b_by_pdgf_b)))) * (1.0 - (((1.0 + b_pdgfr_b_by_cdh11) / b_pdgfr_b_by_cdh11) * ((b_pdgfr_b_by_cdh11 * cdh11) / (1.0 + (b_pdgfr_b_by_cdh11 * cdh11))))))</Parameter>
+          <Parameter Name="b_pdgfr_b_by_cdh11" Role="user defined" Unit="tbd">1.0</Parameter>
+          <Parameter Name="a_pdgfr_b_by_pdgf_b" Role="user defined" Unit="tbd">0.5</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="cdh11_activation" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791128">
+        <Product LocalizedCompoundRef="cdh11" Stoichiometry="1" KeyValue="223791129" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_cdh11) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_cdh11) * h))))) - (cdh_deg * cdh11))</Parameter>
+          <Parameter Name="omg_cdh11" Role="user defined" Unit="tbd">(((1.0 + a_cdh11_by_c) / a_cdh11_by_c) * ((c_signal * a_cdh11_by_c) / (1.0 + (c_signal * a_cdh11_by_c))))</Parameter>
+          <Parameter Name="cdh_deg" Role="user defined" Unit="tbd">1.0</Parameter>
+          <Parameter Name="a_cdh11_by_c" Role="user defined" Unit="tbd">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="Bcat_activation" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791130">
+        <Product LocalizedCompoundRef="Bcat" Stoichiometry="1" KeyValue="223791131" />
+        <Modifier LocalizedCompoundRef="cdh11" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_Bcat) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_Bcat) * h))))) - (2.0 * Bcat))</Parameter>
+          <Parameter Name="omg_Bcat" Role="user defined" Unit="tbd">(1.0 - (((1.0 + b_Bcat_by_cdh11) / b_Bcat_by_cdh11) * ((b_Bcat_by_cdh11 * cdh11) / (1.0 + (b_Bcat_by_cdh11 * cdh11)))))</Parameter>
+          <Parameter Name="b_Bcat_by_cdh11" Role="user defined" Unit="tbd">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="ras_activation" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791133">
+        <Product LocalizedCompoundRef="ras" Stoichiometry="1" KeyValue="223791134" />
+        <Modifier LocalizedCompoundRef="pdgfr_b" />
+        <Modifier LocalizedCompoundRef="pdgfr_a" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_ras) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_ras) * h))))) - (1.0 * ras))</Parameter>
+          <Parameter Name="omg_ras" Role="user defined" Unit="tbd">(((1.0 + a_ras_by_pdgfr_b + a_ras_by_pdgfr_a) / (a_ras_by_pdgfr_b + a_ras_by_pdgfr_a)) * (((pdgfr_b * a_ras_by_pdgfr_b) + (pdgfr_a * a_ras_by_pdgfr_a)) / (1.0 + (pdgfr_b * a_ras_by_pdgfr_b) + (pdgfr_a * a_ras_by_pdgfr_a))))</Parameter>
+          <Parameter Name="a_ras_by_pdgfr_b" Role="user defined" Unit="tbd">1.0</Parameter>
+          <Parameter Name="a_ras_by_pdgfr_a" Role="user defined" Unit="tbd">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="raf_activation" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791137">
+        <Product LocalizedCompoundRef="raf" Stoichiometry="1" KeyValue="223791138" />
+        <Modifier LocalizedCompoundRef="ras" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_raf) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_raf) * h))))) - (1.0 * raf))</Parameter>
+          <Parameter Name="omg_raf" Role="user defined" Unit="tbd">(((1.0 + a_raf_by_ras) / a_raf_by_ras) * ((ras * a_raf_by_ras) / (1.0 + (ras * a_raf_by_ras))))</Parameter>
+          <Parameter Name="a_raf_by_ras" Role="user defined" Unit="tbd">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="mek_activation" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791140">
+        <Product LocalizedCompoundRef="mek" Stoichiometry="1" KeyValue="223791141" />
+        <Modifier LocalizedCompoundRef="raf" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_mek) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_mek) * h))))) - (1.0 * mek))</Parameter>
+          <Parameter Name="omg_mek" Role="user defined" Unit="tbd">(((1.0 + a_mek_by_raf) / a_mek_by_raf) * ((raf * a_mek_by_raf) / (1.0 + (mek * a_mek_by_raf))))</Parameter>
+          <Parameter Name="a_mek_by_raf" Role="user defined" Unit="tbd">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="erk_actviation" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791143">
+        <Product LocalizedCompoundRef="erk" Stoichiometry="1" KeyValue="223791144" />
+        <Modifier LocalizedCompoundRef="mek" />
+        <Modifier LocalizedCompoundRef="dusp1" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_erk) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_erk) * h))))) - (1.0 * erk))</Parameter>
+          <Parameter Name="omg_erk" Role="user defined" Unit="tbd">((((1.0 + a_erk_by_mek) / a_erk_by_mek) * ((mek * a_erk_by_mek) / (1.0 + (mek * a_erk_by_mek)))) * (1.0 - (((1.0 + b_erk_by_dusp1) / b_erk_by_dusp1) * ((b_erk_by_dusp1 * dusp1) / (1.0 + (b_erk_by_dusp1 * dusp1))))))</Parameter>
+          <Parameter Name="a_erk_by_mek" Role="user defined" Unit="tbd">1.0</Parameter>
+          <Parameter Name="b_erk_by_dusp1" Role="user defined" Unit="tbd">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="r0" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791147">
+        <Product LocalizedCompoundRef="cyclinD1" Stoichiometry="1" KeyValue="223791148" />
+        <Modifier LocalizedCompoundRef="dusp1" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_cyclinD1) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_cyclinD1) * h))))) - (1.0 * cyclinD1))</Parameter>
+          <Parameter Name="omg_cyclinD1" Role="user defined" Unit="tbd">(((1.0 + a_cyclinD1_by_dusp1) / a_cyclinD1_by_dusp1) * ((dusp1 * a_cyclinD1_by_dusp1) / (1.0 + (dusp1 * a_cyclinD1_by_dusp1))))</Parameter>
+          <Parameter Name="a_cyclinD1_by_dusp1" Role="user defined" Unit="tbd">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="r1" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791150">
+        <Product LocalizedCompoundRef="dusp1" Stoichiometry="1" KeyValue="223791151" />
+        <Modifier LocalizedCompoundRef="erk" />
+        <Modifier LocalizedCompoundRef="Bcat" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_dusp1) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_dusp1) * h))))) - (1.0 * dusp1))</Parameter>
+          <Parameter Name="omg_dusp1" Role="user defined" Unit="tbd">((((1.0 + a_dusp1_by_erk) / a_dusp1_by_erk) * ((erk * a_dusp1_by_erk) / (1.0 + (erk * a_dusp1_by_erk)))) * (1.0 - (((1.0 + b_dusp1_by_Bcat) / b_dusp1_by_Bcat) * ((b_dusp1_by_Bcat * Bcat) / (1.0 + (b_dusp1_by_Bcat * Bcat))))))</Parameter>
+          <Parameter Name="b_dusp1_by_Bcat" Role="user defined" Unit="tbd">1.0</Parameter>
+          <Parameter Name="a_dusp1_by_erk" Role="user defined" Unit="tbd">1.0</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <SimpleReaction Structure="c0" Name="r2" Reversible="true" FluxOption="MolecularOnly" KeyValue="223791154">
+        <Product LocalizedCompoundRef="pdgfr_a" Stoichiometry="1" KeyValue="223791155" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="uM.s-1">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_pdgfr_a) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_pdgfr_a) * h))))) - (1.0 * pdgfr_a))</Parameter>
+          <Parameter Name="omg_pdgfr_a" Role="user defined" Unit="tbd">(((1.0 + a_pdgfr_a_by_c + a_pdgfr_a_by_pdgf_a) / (a_pdgfr_a_by_c + a_pdgfr_a_by_pdgf_a)) * (((pdgf_a_signal * a_pdgfr_a_by_pdgf_a) + (c_signal * a_pdgfr_a_by_c)) / (1.0 + (pdgf_a_signal * a_pdgfr_a_by_pdgf_a) + (c_signal * a_pdgfr_a_by_c))))</Parameter>
+          <Parameter Name="a_pdgfr_a_by_pdgf_a" Role="user defined" Unit="tbd">0.5</Parameter>
+          <Parameter Name="a_pdgfr_a_by_c" Role="user defined" Unit="tbd">0.5</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c0" Structure="c0">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="ras" LocationX="261" LocationY="156" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="436" LocationY="334" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="dusp1" LocationX="338" LocationY="399" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r2" LocationX="343" LocationY="20" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="raf_activation" LocationX="355" LocationY="181" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="ras_activation" LocationX="352" LocationY="149" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="cyclinD1" LocationX="547" LocationY="376" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="mek_activation" LocationX="315" LocationY="237" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="pdgfr_a" LocationX="428" LocationY="64" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="mek" LocationX="174" LocationY="249" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="Bcat_activation" LocationX="596" LocationY="233" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="cdh11" LocationX="579" LocationY="94" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="raf" LocationX="226" LocationY="208" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="pdgfr_b" LocationX="194" LocationY="114" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r1" LocationX="337" LocationY="313" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="Bcat" LocationX="486" LocationY="258" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="pdgfr_activation" LocationX="262" LocationY="62" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="cdh11_activation" LocationX="568" LocationY="35" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="erk_actviation" LocationX="235" LocationY="312" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="erk" LocationX="201" LocationY="374" />
+      </Diagram>
+      <Version Name="model" KeyValue="223791101" BranchId="218471034" Archived="0" Date="10-Jan-2022 13:35:31" FromVersionable="false">
+        <Owner Name="zeynepkaragoz" Identifier="167182808" />
+        <GroupAccess Type="1" />
+      </Version>
+      <ModelUnitSystem VolumeSubstanceUnit="uM.um3" MembraneSubstanceUnit="molecules" LumpedReactionSubstanceUnit="molecules" VolumeUnit="um3" AreaUnit="um2" LengthUnit="um" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="Manuscript simulations" Stochastic="false" UseConcentration="true" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation />
+      <Geometry Name="non-spatial1606490218" Dimension="0">
+        <Extent X="10.0" Y="10.0" Z="10.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="218471029" />
+        <Version Name="non-spatial1606490218" KeyValue="218471025" BranchId="218471026" Archived="0" Date="26-Oct-2021 14:16:17" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="c0" GeometryClass="Compartment" SubVolume="Compartment" Size="50000.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="pdgfr_b" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="cdh11" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="Bcat" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>1.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="ras" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="raf" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="mek" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="erk" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="cyclinD1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="dusp1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="pdgfr_a" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>0.0</InitialConcentration>
+          <Diffusion>0.0</Diffusion>
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="pdgfr_activation" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="cdh11_activation" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="Bcat_activation" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="ras_activation" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="raf_activation" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="mek_activation" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="erk_actviation" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r0" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r1" ReactionMapping="included" />
+        <ReactionSpec ReactionStepRef="r2" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="Application0_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="a_cdh11_by_c">1.0</Constant>
+        <Constant Name="a_cyclinD1_by_dusp1">1.0</Constant>
+        <Constant Name="a_dusp1_by_erk">1.0</Constant>
+        <Constant Name="a_erk_by_mek">1.0</Constant>
+        <Constant Name="a_mek_by_raf">1.0</Constant>
+        <Constant Name="a_pdgfr_a_by_c">0.5</Constant>
+        <Constant Name="a_pdgfr_a_by_pdgf_a">0.5</Constant>
+        <Constant Name="a_pdgfr_b_by_pdgf_b">0.5</Constant>
+        <Constant Name="a_raf_by_ras">1.0</Constant>
+        <Constant Name="a_ras_by_pdgfr_a">1.0</Constant>
+        <Constant Name="a_ras_by_pdgfr_b">1.0</Constant>
+        <Constant Name="b_Bcat_by_cdh11">1.0</Constant>
+        <Constant Name="b_dusp1_by_Bcat">1.0</Constant>
+        <Constant Name="b_erk_by_dusp1">1.0</Constant>
+        <Constant Name="b_pdgfr_b_by_cdh11">1.0</Constant>
+        <Constant Name="Bcat_init_uM">1.0</Constant>
+        <Constant Name="c_signal">0.1</Constant>
+        <Constant Name="cdh11_init_uM">0.0</Constant>
+        <Constant Name="cdh_deg">1.0</Constant>
+        <Constant Name="cyclinD1_init_uM">0.0</Constant>
+        <Constant Name="dusp1_init_uM">0.0</Constant>
+        <Constant Name="erk_init_uM">0.0</Constant>
+        <Constant Name="h">1.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="mek_init_uM">0.0</Constant>
+        <Constant Name="pdgf_a_signal">0.1</Constant>
+        <Constant Name="pdgf_b_signal">0.4</Constant>
+        <Constant Name="pdgfr_a_init_uM">0.0</Constant>
+        <Constant Name="pdgfr_b_init_uM">0.0</Constant>
+        <Constant Name="raf_init_uM">0.0</Constant>
+        <Constant Name="ras_init_uM">0.0</Constant>
+        <Constant Name="Size_c0">50000.0</Constant>
+        <VolumeVariable Name="Bcat" Domain="Compartment" />
+        <VolumeVariable Name="cdh11" Domain="Compartment" />
+        <VolumeVariable Name="cyclinD1" Domain="Compartment" />
+        <VolumeVariable Name="dusp1" Domain="Compartment" />
+        <VolumeVariable Name="erk" Domain="Compartment" />
+        <VolumeVariable Name="mek" Domain="Compartment" />
+        <VolumeVariable Name="pdgfr_a" Domain="Compartment" />
+        <VolumeVariable Name="pdgfr_b" Domain="Compartment" />
+        <VolumeVariable Name="raf" Domain="Compartment" />
+        <VolumeVariable Name="ras" Domain="Compartment" />
+        <Function Name="J_Bcat_activation" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_Bcat) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_Bcat) * h))))) - (2.0 * Bcat))</Function>
+        <Function Name="J_cdh11_activation" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_cdh11) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_cdh11) * h))))) - (cdh_deg * cdh11))</Function>
+        <Function Name="J_erk_actviation" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_erk) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_erk) * h))))) - (1.0 * erk))</Function>
+        <Function Name="J_mek_activation" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_mek) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_mek) * h))))) - (1.0 * mek))</Function>
+        <Function Name="J_pdgfr_activation" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_pdgfr_b) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_pdgfr_b) * h))))) - (1.0 * pdgfr_b))</Function>
+        <Function Name="J_r0" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_cyclinD1) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_cyclinD1) * h))))) - (1.0 * cyclinD1))</Function>
+        <Function Name="J_r1" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_dusp1) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_dusp1) * h))))) - (1.0 * dusp1))</Function>
+        <Function Name="J_r2" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_pdgfr_a) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_pdgfr_a) * h))))) - (1.0 * pdgfr_a))</Function>
+        <Function Name="J_raf_activation" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_raf) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_raf) * h))))) - (1.0 * raf))</Function>
+        <Function Name="J_ras_activation" Domain="Compartment">((( - exp((0.5 * h)) + exp( - (( - 0.5 + omg_ras) * h))) / ((1.0 - exp((0.5 * h))) * (1.0 + exp( - (( - 0.5 + omg_ras) * h))))) - (1.0 * ras))</Function>
+        <Function Name="omg_Bcat" Domain="Compartment">(1.0 - (((1.0 + b_Bcat_by_cdh11) / b_Bcat_by_cdh11) * ((b_Bcat_by_cdh11 * cdh11) / (1.0 + (b_Bcat_by_cdh11 * cdh11)))))</Function>
+        <Function Name="omg_cdh11" Domain="Compartment">(((1.0 + a_cdh11_by_c) / a_cdh11_by_c) * ((c_signal * a_cdh11_by_c) / (1.0 + (c_signal * a_cdh11_by_c))))</Function>
+        <Function Name="omg_cyclinD1" Domain="Compartment">(((1.0 + a_cyclinD1_by_dusp1) / a_cyclinD1_by_dusp1) * ((dusp1 * a_cyclinD1_by_dusp1) / (1.0 + (dusp1 * a_cyclinD1_by_dusp1))))</Function>
+        <Function Name="omg_dusp1" Domain="Compartment">((((1.0 + a_dusp1_by_erk) / a_dusp1_by_erk) * ((erk * a_dusp1_by_erk) / (1.0 + (erk * a_dusp1_by_erk)))) * (1.0 - (((1.0 + b_dusp1_by_Bcat) / b_dusp1_by_Bcat) * ((b_dusp1_by_Bcat * Bcat) / (1.0 + (b_dusp1_by_Bcat * Bcat))))))</Function>
+        <Function Name="omg_erk" Domain="Compartment">((((1.0 + a_erk_by_mek) / a_erk_by_mek) * ((mek * a_erk_by_mek) / (1.0 + (mek * a_erk_by_mek)))) * (1.0 - (((1.0 + b_erk_by_dusp1) / b_erk_by_dusp1) * ((b_erk_by_dusp1 * dusp1) / (1.0 + (b_erk_by_dusp1 * dusp1))))))</Function>
+        <Function Name="omg_mek" Domain="Compartment">(((1.0 + a_mek_by_raf) / a_mek_by_raf) * ((raf * a_mek_by_raf) / (1.0 + (mek * a_mek_by_raf))))</Function>
+        <Function Name="omg_pdgfr_a" Domain="Compartment">(((1.0 + a_pdgfr_a_by_c + a_pdgfr_a_by_pdgf_a) / (a_pdgfr_a_by_c + a_pdgfr_a_by_pdgf_a)) * (((pdgf_a_signal * a_pdgfr_a_by_pdgf_a) + (c_signal * a_pdgfr_a_by_c)) / (1.0 + (pdgf_a_signal * a_pdgfr_a_by_pdgf_a) + (c_signal * a_pdgfr_a_by_c))))</Function>
+        <Function Name="omg_pdgfr_b" Domain="Compartment">((((1.0 + a_pdgfr_b_by_pdgf_b) / a_pdgfr_b_by_pdgf_b) * ((pdgf_b_signal * a_pdgfr_b_by_pdgf_b) / (1.0 + (pdgf_b_signal * a_pdgfr_b_by_pdgf_b)))) * (1.0 - (((1.0 + b_pdgfr_b_by_cdh11) / b_pdgfr_b_by_cdh11) * ((b_pdgfr_b_by_cdh11 * cdh11) / (1.0 + (b_pdgfr_b_by_cdh11 * cdh11))))))</Function>
+        <Function Name="omg_raf" Domain="Compartment">(((1.0 + a_raf_by_ras) / a_raf_by_ras) * ((ras * a_raf_by_ras) / (1.0 + (ras * a_raf_by_ras))))</Function>
+        <Function Name="omg_ras" Domain="Compartment">(((1.0 + a_ras_by_pdgfr_b + a_ras_by_pdgfr_a) / (a_ras_by_pdgfr_b + a_ras_by_pdgfr_a)) * (((pdgfr_b * a_ras_by_pdgfr_b) + (pdgfr_a * a_ras_by_pdgfr_a)) / (1.0 + (pdgfr_b * a_ras_by_pdgfr_b) + (pdgfr_a * a_ras_by_pdgfr_a))))</Function>
+        <CompartmentSubDomain Name="Compartment">
+          <BoundaryType Boundary="Xm" Type="Value" />
+          <BoundaryType Boundary="Xp" Type="Value" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <OdeEquation Name="pdgfr_b" SolutionType="Unknown">
+            <Rate>J_pdgfr_activation</Rate>
+            <Initial>pdgfr_b_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="cdh11" SolutionType="Unknown">
+            <Rate>J_cdh11_activation</Rate>
+            <Initial>cdh11_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="Bcat" SolutionType="Unknown">
+            <Rate>J_Bcat_activation</Rate>
+            <Initial>Bcat_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="ras" SolutionType="Unknown">
+            <Rate>J_ras_activation</Rate>
+            <Initial>ras_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="raf" SolutionType="Unknown">
+            <Rate>J_raf_activation</Rate>
+            <Initial>raf_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="mek" SolutionType="Unknown">
+            <Rate>J_mek_activation</Rate>
+            <Initial>mek_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="erk" SolutionType="Unknown">
+            <Rate>J_erk_actviation</Rate>
+            <Initial>erk_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="cyclinD1" SolutionType="Unknown">
+            <Rate>J_r0</Rate>
+            <Initial>cyclinD1_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="dusp1" SolutionType="Unknown">
+            <Rate>J_r1</Rate>
+            <Initial>dusp1_init_uM</Initial>
+          </OdeEquation>
+          <OdeEquation Name="pdgfr_a" SolutionType="Unknown">
+            <Rate>J_r2</Rate>
+            <Initial>pdgfr_a_init_uM</Initial>
+          </OdeEquation>
+        </CompartmentSubDomain>
+        <Version Name="Application0_generated" KeyValue="223791099" BranchId="218471031" Archived="0" Date="10-Jan-2022 13:35:31" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+        </Version>
+      </MathDescription>
+      <Simulation Name="Baseline model - 01">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="pdgf_a_signal" ConstantArraySpec="1000">"0.1", "0.3"</Constant>
+          <Constant Name="pdgf_b_signal" ConstantArraySpec="1000">"0.4", "0.7"</Constant>
+          <Constant Name="c_signal" ConstantArraySpec="1000">"0.1", "0.2", "0.3"</Constant>
+        </MathOverrides>
+        <Version Name="Baseline model - 01" KeyValue="242247316" BranchId="242247317" Archived="0" Date="05-Sep-2022 11:30:43" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="223795325" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Cadherin-11 knockdown - 02">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="pdgf_a_signal" ConstantArraySpec="1000">"0.1", "0.3"</Constant>
+          <Constant Name="pdgf_b_signal" ConstantArraySpec="1000">"0.4", "0.7"</Constant>
+          <Constant Name="c_signal">0.0</Constant>
+        </MathOverrides>
+        <Version Name="Cadherin-11 knockdown - 02" KeyValue="242247319" BranchId="242247320" Archived="0" Date="05-Sep-2022 11:30:43" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="223795327" />
+        </Version>
+      </Simulation>
+      <Simulation Name=" Cell-cell contact off and cadherin11-PDGFR-alpha binding off -03">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="cdh11_init_uM">0.18</Constant>
+          <Constant Name="c_signal">0.0</Constant>
+          <Constant Name="b_Bcat_by_cdh11">0.0</Constant>
+          <Constant Name="cdh_deg">0.0</Constant>
+        </MathOverrides>
+        <Version Name=" Cell-cell contact off and cadherin11-PDGFR-alpha binding off -03" KeyValue="242247621" BranchId="242247622" Archived="0" Date="05-Sep-2022 11:38:56" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="223791185" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Cell-cell contact off and cadherin11-PDGFR-beta binding off - 04">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="a_cdh11_by_c">0.0</Constant>
+        </MathOverrides>
+        <Version Name="Cell-cell contact off and cadherin11-PDGFR-beta binding off - 04" KeyValue="242247624" BranchId="242247625" Archived="0" Date="05-Sep-2022 11:38:56" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="223791187" />
+        </Version>
+      </Simulation>
+      <Simulation Name="pdgfr-a is not available - 05">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="a_pdgfr_a_by_pdgf_a">0.0</Constant>
+          <Constant Name="a_pdgfr_a_by_c">0.0</Constant>
+        </MathOverrides>
+        <Version Name="pdgfr-a is not available - 05" KeyValue="242247328" BranchId="242247329" Archived="0" Date="05-Sep-2022 11:30:43" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="223791189" />
+        </Version>
+      </Simulation>
+      <Simulation Name="pdgfr-b is not available -06">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="b_pdgfr_b_by_cdh11">0.0</Constant>
+          <Constant Name="a_pdgfr_b_by_pdgf_b">0.0</Constant>
+        </MathOverrides>
+        <Version Name="pdgfr-b is not available -06" KeyValue="242247331" BranchId="242247332" Archived="0" Date="05-Sep-2022 11:30:43" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="223791191" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Crosstalk disabled -07">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="b_erk_by_dusp1" ConstantArraySpec="1000">"1.0", "5.0", "10.0"</Constant>
+          <Constant Name="b_pdgfr_b_by_cdh11">0.0</Constant>
+          <Constant Name="a_pdgfr_a_by_c">0.0</Constant>
+          <Constant Name="b_dusp1_by_Bcat">0.0</Constant>
+        </MathOverrides>
+        <Version Name="Crosstalk disabled -07" KeyValue="242247334" BranchId="242247335" Archived="0" Date="05-Sep-2022 11:30:43" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="223793328" />
+        </Version>
+      </Simulation>
+      <Simulation Name=" Receptor interaction disabled and cadherin-11 knockdown -08b">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="b_pdgfr_b_by_cdh11">0.0</Constant>
+          <Constant Name="a_pdgfr_a_by_c">0.0</Constant>
+          <Constant Name="c_signal" ConstantArraySpec="1000">"0.0", "0.02"</Constant>
+        </MathOverrides>
+        <Version Name=" Receptor interaction disabled and cadherin-11 knockdown -08b" KeyValue="259696121" BranchId="259696122" Archived="0" Date="21-Aug-2023 13:59:44" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Crosstalk disabled and cadherin-11 knockdown -08">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="b_pdgfr_b_by_cdh11">0.0</Constant>
+          <Constant Name="a_pdgfr_a_by_c">0.0</Constant>
+          <Constant Name="c_signal" ConstantArraySpec="1000">"0.0", "0.02"</Constant>
+          <Constant Name="b_dusp1_by_Bcat">0.0</Constant>
+        </MathOverrides>
+        <Version Name="Crosstalk disabled and cadherin-11 knockdown -08" KeyValue="259696024" BranchId="259696025" Archived="0" Date="21-Aug-2023 13:58:12" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name=" Receptor interaction disabled -07b">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="b_pdgfr_b_by_cdh11">0.0</Constant>
+          <Constant Name="a_pdgfr_a_by_c">0.0</Constant>
+        </MathOverrides>
+        <Version Name=" Receptor interaction disabled -07b" KeyValue="242247343" BranchId="242247344" Archived="0" Date="05-Sep-2022 11:30:43" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="224316582" />
+        </Version>
+      </Simulation>
+      <Simulation Name="sensitivity 1 - Bcat initial conc and b_dusp1_by_Bcat scan">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="Bcat_init_uM" ConstantArraySpec="1000">"0.1", "0.3", "0.5", "0.7", "1.0"</Constant>
+          <Constant Name="b_dusp1_by_Bcat" ConstantArraySpec="1000">"0.1", "0.5", "1.0", "5.0", "7.0", "10.0"</Constant>
+        </MathOverrides>
+        <Version Name="sensitivity 1 - Bcat initial conc and b_dusp1_by_Bcat scan" KeyValue="230620828" BranchId="230620829" Archived="0" Date="06-Apr-2022 16:34:54" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="230152286" />
+        </Version>
+      </Simulation>
+      <Simulation Name="sensitivity 2 - a_cyclinD1_by_dusp1 and b_erk_by_dusp1 scan">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="b_erk_by_dusp1" ConstantArraySpec="1000">"0.1", "0.5", "1.0", "5.0", "10.0"</Constant>
+          <Constant Name="a_cyclinD1_by_dusp1" ConstantArraySpec="1000">"0.1", "0.5", "1.0", "5.0", "10.0"</Constant>
+        </MathOverrides>
+        <Version Name="sensitivity 2 - a_cyclinD1_by_dusp1 and b_erk_by_dusp1 scan" KeyValue="235006110" BranchId="235006111" Archived="0" Date="10-Jun-2022 07:16:53" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="230620834" />
+        </Version>
+      </Simulation>
+      <Simulation Name=" sensitivity 3 - a_dusp1_by_erk and b_dusp1_by_Bcat scan">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="a_dusp1_by_erk" ConstantArraySpec="1000">"0.1", "0.5", "1.0", "5.0", "10.0"</Constant>
+          <Constant Name="b_dusp1_by_Bcat" ConstantArraySpec="1000">"0.1", "0.5", "1.0", "5.0", "10.0"</Constant>
+        </MathOverrides>
+        <Version Name=" sensitivity 3 - a_dusp1_by_erk and b_dusp1_by_Bcat scan" KeyValue="234954405" BranchId="234954406" Archived="0" Date="09-Jun-2022 15:17:34" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="sensitivity 4 - a_erk_by_mek and b_erk_by_dusp1 scan">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="b_erk_by_dusp1" ConstantArraySpec="1000">"0.1", "0.5", "1.0", "5.0", "10.0"</Constant>
+          <Constant Name="a_erk_by_mek" ConstantArraySpec="1000">"0.1", "0.5", "1.0", "5.0", "10.0"</Constant>
+        </MathOverrides>
+        <Version Name="sensitivity 4 - a_erk_by_mek and b_erk_by_dusp1 scan" KeyValue="235006113" BranchId="235006114" Archived="0" Date="10-Jun-2022 07:16:53" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name=" Downstream interaction disabled -07c">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="b_dusp1_by_Bcat">0.0</Constant>
+        </MathOverrides>
+        <Version Name=" Downstream interaction disabled -07c" KeyValue="242247346" BranchId="242247347" Archived="0" Date="05-Sep-2022 11:30:43" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+          <ParentSimRef KeyValue="239249606" />
+        </Version>
+      </Simulation>
+      <Simulation Name=" Downstream interaction disabled and cadherin-11 knockdown -08c">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="c_signal" ConstantArraySpec="1000">"0.0", "0.02"</Constant>
+          <Constant Name="b_dusp1_by_Bcat">0.0</Constant>
+        </MathOverrides>
+        <Version Name=" Downstream interaction disabled and cadherin-11 knockdown -08c" KeyValue="259695857" BranchId="259695858" Archived="0" Date="21-Aug-2023 13:52:26" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Simulation Name="Cadherin-11 knockdown 25 and 50% - 02">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Combined Stiff Solver (IDA/CVODE)">
+          <TimeBound StartTime="0.0" EndTime="100.0" />
+          <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+          <OutputOptions OutputTimeStep="0.5" />
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides>
+          <Constant Name="c_signal" ConstantArraySpec="1000">"0.1", "0.05", "0.025", "0.02", "0.0"</Constant>
+        </MathOverrides>
+        <Version Name="Cadherin-11 knockdown 25 and 50% - 02" KeyValue="259586248" BranchId="259505636" Archived="0" Date="16-Aug-2023 09:39:48" FromVersionable="false">
+          <Owner Name="zeynepkaragoz" Identifier="167182808" />
+          <GroupAccess Type="1" />
+        </Version>
+      </Simulation>
+      <Version Name="Manuscript simulations" KeyValue="242247896" BranchId="242247897" Archived="0" Date="05-Sep-2022 11:44:47" FromVersionable="false">
+        <Owner Name="zeynepkaragoz" Identifier="167182808" />
+        <GroupAccess Type="1" />
+      </Version>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <Version Name="cdh11-pdgfr-erk-feedback-v2" KeyValue="259696124" BranchId="222138194" Archived="0" Date="21-Aug-2023 13:59:44" FromVersionable="false">
+      <Owner Name="zeynepkaragoz" Identifier="167182808" />
+      <GroupAccess Type="0" />
+    </Version>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+

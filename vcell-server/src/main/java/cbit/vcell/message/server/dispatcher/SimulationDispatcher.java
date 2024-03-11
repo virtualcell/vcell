@@ -382,6 +382,9 @@ public class SimulationDispatcher {
 					for (HtcJobInfo htcJobInfo : runningJobs.keySet()){
 						try {
 							String simJobName = htcJobInfo.getJobName();
+							if (!simJobName.startsWith(HtcProxy.JOB_NAME_PREFIX_SIMULATION)){
+								continue;
+							}
 							HtcProxy.SimTaskInfo simTaskInfo = HtcProxy.getSimTaskInfoFromSimJobName(simJobName);
 							SimulationJobStatus simJobStatus = simulationDatabase.getLatestSimulationJobStatus(simTaskInfo.simId, simTaskInfo.jobIndex);
 							String failureMessage = null;
@@ -404,7 +407,7 @@ public class SimulationDispatcher {
 									}
 								}
 							}
-							if (killJob && HtcProxy.isMyJob(htcJobInfo)){
+							if (killJob && HtcProxy.isMySimulationJob(htcJobInfo)){
 								if (lg.isWarnEnabled()) {
 									lg.warn("killing " + htcJobInfo + ", " + failureMessage);
 								}

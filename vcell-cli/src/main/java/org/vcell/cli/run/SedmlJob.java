@@ -382,11 +382,11 @@ public class SedmlJob {
         }
     }
 
-    private void generateHDF5(SolverHandler solverHandler, Hdf5DataContainer masterHdf5File) throws IOException {
+    private void generateHDF5(SolverHandler solverHandler, Hdf5DataContainer masterHdf5File) {
         this.logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 
-        Hdf5DataExtractor hdf5Extractor = new Hdf5DataExtractor(this.sedml, solverHandler.taskToTempSimulationMap, this.SEDML_LOCATION);
+        Hdf5DataExtractor hdf5Extractor = new Hdf5DataExtractor(this.sedml, solverHandler.taskToTempSimulationMap, this.RESULTS_DIRECTORY_PATH);
 
         Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(solverHandler.nonSpatialResults, solverHandler.spatialResults);
         masterHdf5File.incorporate(partialHdf5File); // Add the data to the master hdf5 file wrapper.

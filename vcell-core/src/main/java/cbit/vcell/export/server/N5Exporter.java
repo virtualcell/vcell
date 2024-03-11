@@ -66,30 +66,20 @@ public class N5Exporter implements ExportConstants {
 	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws MathException, DataAccessException, IOException {
 		double[] allTimes = dataServer.getDataSetTimes(user, vcDataID);
 		TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
+		String[] variableNames = exportSpecs.getVariableSpecs().getVariableNames();
 		// output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
 
-		// With Dex's dataset ID get the data block during the first time instance t
 
-		// All variables can be visually represented, its just that some have its data already computed, and others are derived
-		// from that data, so if we want to visualize that data we need to compute the results.
-
-		// according to Jim what should happen is that the VCdata should automatically derive the data for me since it knows everything
-		// and the only reason why this wouldn't work is due to some misconfiguration, but what is that misconfig
-
-		ArrayList<DataIdentifier> species = new ArrayList<>();
-		for (String specie: exportSpecs.getVariableSpecs().getVariableNames()){
-			species.add(getSpecificDI(specie));
-		}
-
-
-		for (DataIdentifier specie: species) {
-			if (unsupportedTypes.contains(specie.getVariableType())) {
+		// Check for unsupported variable types. If the return DI is null, most likely an output function
+		for (String variableName: variableNames){
+			DataIdentifier specie = getSpecificDI(variableName);
+			if (specie != null && unsupportedTypes.contains(specie.getVariableType())){
 				throw new RuntimeException("Tried to export a variable type that is not supported!");
 			}
 		}
-	//        DexDataIdentifier.getVariableType();
 
-		int numVariables = species.size();
+
+		int numVariables = variableNames.length;
 		CartesianMesh mesh = dataServer.getMesh(user, vcDataID);
 		int numTimes = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex(); //end index is an actual index within the array and not representative of length
 		long[] dimensions = {mesh.getSizeX(), mesh.getSizeY(), numVariables, mesh.getSizeZ(), numTimes + 1};
@@ -109,15 +99,14 @@ public class N5Exporter implements ExportConstants {
 
 
 		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
-			//place to add tracking, each variable can be measured in tracking
 			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
-				//another place to add tracking, each time index can be used to determine how much has been exported
-				// data does get returned, but it does not seem to cover the entire region of space, but only returns regions where there is activity
-				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, species.get(variableIndex).getName(), allTimes[timeIndex]).getData();
-				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (timeIndex - timeSpecs.getBeginTimeIndex())}, data);
+
+				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
+				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex], allTimes[timeIndex]).getData();
+				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
 				n5FSWriter.writeBlock(dataSetName, datasetAttributes, doubleArrayDataBlock);
 				if(timeIndex % 3 == 0){
-					double progress = (double) (variableIndex + (timeIndex - timeSpecs.getBeginTimeIndex())) / (numVariables + numTimes);
+					double progress = (double) (variableIndex + normalizedTimeIndex) / (numVariables + (numTimes * numVariables));
 					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
 				}
 			}
@@ -128,18 +117,11 @@ public class N5Exporter implements ExportConstants {
 	}
 
 	public void initalizeDataControllers(User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) throws IOException, DataAccessException {
-		// Set my user ID associated with VC database
-		// set simulation key
-		// make an object that ties the user to that simulation key
-		// make an object that then identifies the simulation
 		this.user = user;
 		this.vcDataID = vcSimulationDataIdentifier;
 		this.dataServer = dataServer;
 	}
 
-	public void initalizeDataControllers(){
-
-	}
 
 	public VCSimulationDataIdentifier getVcDataID(){return vcDataID;}
 
