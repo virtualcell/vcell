@@ -13,22 +13,16 @@
 
 package org.vcell.restclient.api;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.HelloWorldMessage;
-import org.junit.Test;
-import org.junit.Ignore;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
  * API tests for HelloWorldApi
  */
-@Ignore
+@Disabled
 public class HelloWorldApiTest {
 
     private final HelloWorldApi api = new HelloWorldApi();
