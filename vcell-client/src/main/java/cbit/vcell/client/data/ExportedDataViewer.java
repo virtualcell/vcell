@@ -7,13 +7,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.StyleContext;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -26,18 +28,18 @@ import java.util.List;
 
 public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, ListSelectionListener {
 
-    private JScrollPane scrollPane;
-
     public ExportedDataTableModel tableModel;
-    private EditorScrollTable editorScrollTable;
-    private JButton refresh;
-    private JButton copyButton;
+    private final EditorScrollTable editorScrollTable;
+    private final JButton refresh;
+    private final JButton copyButton;
 
-    private JTextPane parameters;
+    private final JTextPane exportDetails;
 
     private final static Logger lg = LogManager.getLogger(ExportedDataViewer.class);
 
     public ExportedDataViewer() {
+        Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+
         editorScrollTable = new EditorScrollTable();
         editorScrollTable.setDefaultEditor(Object.class, null);
         tableModel = new ExportedDataTableModel(editorScrollTable);
@@ -45,10 +47,11 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         editorScrollTable.setModel(tableModel);
         editorScrollTable.setRowHeight(30);
 
-        scrollPane = new JScrollPane(editorScrollTable);
-        scrollPane.setSize(400, 400);
-        scrollPane.setPreferredSize(new Dimension(400, 400));
-        scrollPane.setMinimumSize(new Dimension(400, 400));
+        JScrollPane tableScrollPane = new JScrollPane(editorScrollTable);
+        tableScrollPane.setSize(400, 400);
+        tableScrollPane.setPreferredSize(new Dimension(400, 400));
+        tableScrollPane.setMinimumSize(new Dimension(400, 400));
+        tableScrollPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Table "));
 
         JLabel jLabel = new JLabel("Most recent exports. This list is volatile so save important metadata elsewhere.");
         refresh = new JButton("Refresh List");
@@ -62,16 +65,19 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         topBar.add(copyButton);
         topBar.add(refresh);
 
-        parameters = new JTextPane();
-        JScrollPane parameterScrollPane = new JScrollPane(parameters, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        parameters.setEditable(false);
+        exportDetails = new JTextPane();
+        JScrollPane parameterScrollPane = new JScrollPane(exportDetails, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        exportDetails.setEditable(false);
         parameterScrollPane.setPreferredSize(new Dimension(380, 100));
+        exportDetails.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Details "));
+
+
 
         editorScrollTable.getSelectionModel().addListSelectionListener(this);
 
         this.setLayout(new BorderLayout());
         this.add(topBar, BorderLayout.NORTH);
-        this.add(scrollPane, BorderLayout.CENTER);
+        this.add(tableScrollPane, BorderLayout.CENTER);
         this.add(parameterScrollPane, BorderLayout.SOUTH);
         initalizeTableData();
     }
@@ -178,11 +184,33 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     @Override
     public void valueChanged(ListSelectionEvent e) {
         int row = editorScrollTable.getSelectedRow();
+        ExportedDataTableModel.TableData rowData = tableModel.getRowData(row);
+        String defaultParameterValues = rowData.defaultParameters.toString();
+        String actualParameterValues = rowData.setParameters.toString();
         StyleContext styleContext = new StyleContext();
 //        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
-        String defaultParameterValues = tableModel.getRowData(row).defaultParameters.toString();
-        String actualParameterValues = tableModel.getRowData(row).setParameters.toString();
-        parameters.setText("Set Parameter Values: " + actualParameterValues + "\n \nDefault Parameter Values: " + defaultParameterValues);
-        parameters.updateUI();
+        StyledDocument doc = new DefaultStyledDocument();
+        addColoredText(doc, "\nVariables:  ", Color.GREEN);
+        addColoredText(doc, rowData.variables, Color.BLACK);
+        addColoredText(doc, "\n \nSet Parameter Values:  ", Color.RED);
+        addColoredText(doc, actualParameterValues, Color.BLACK);
+        addColoredText(doc, "\n \nDefault Parameter Values:  ", Color.ORANGE);
+        addColoredText(doc, defaultParameterValues, Color.BLACK);
+
+//        exportDetails.setText(
+//                rowData.variables +
+//                "\n \nSet Parameter Values: " + actualParameterValues +
+//                "\n \nDefault Parameter Values: " + defaultParameterValues);
+        exportDetails.setStyledDocument(doc);
+        exportDetails.updateUI();
+    }
+    private static void addColoredText(StyledDocument doc, String text, Color color) {
+        Style style = doc.addStyle("ColoredStyle", null);
+        StyleConstants.setForeground(style, color);
+        try {
+            doc.insertString(doc.getLength(), text, style);
+        } catch (BadLocationException e) {
+            lg.error(e);
+        }
     }
 }
