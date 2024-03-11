@@ -108,7 +108,7 @@ public class ExecuteCommand implements Callable<Integer> {
             CLIPythonManager.getInstance().instantiatePythonProcess();
             
 
-            Executable.setTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
+            Executable.setGlobalTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
             logger.info("Beginning execution");
             if (inputFilePath.isDirectory()) {
                 logger.debug("Batch mode requested");

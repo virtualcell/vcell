@@ -39,7 +39,8 @@ public class Executable implements IExecutable {
 	private String errorString = "";
 	private Integer exitValue = null;
 	private ExecutableStatus status = null;
-	private static long timeoutMS = 0;
+	private final long localTimeoutMS;
+	private static final ThreadLocal<Long> globalTimeoutMS = ThreadLocal.withInitial(() -> 0L);
 	private File workingDir = null;
 	private Thread runThread = null;
 	private CountDownLatch stoppingLatch = null;
@@ -90,19 +91,49 @@ public class Executable implements IExecutable {
  */
 
 public Executable(String[] command) {
-	// Do NOT arbitrarily set a static value to a number!!
-	this(command, Executable.getTimeoutMS());
+	// no local timeout specified for this invocation, but still subject to globalTimeoutMS.
+	// see getEffectiveTimeoutMS()
+	this(command, 0);
 }
 
 /**
  * Executable constructor comment.
  */
-public Executable(String[] command, long arg_timeoutMS) {
+public Executable(String[] command, long arg_localTimeoutMS) {
+	// timeout is to minimum of nonzero minimum of arg_timeoutMS and globalTimeoutMS.
+	// see getEffectiveTimeoutMS()
 	setCommand(command);
 	setStatus(ExecutableStatus.READY);
-	timeoutMS = arg_timeoutMS;
+	localTimeoutMS = arg_localTimeoutMS;
 }
 
+private long getEffectiveTimeoutMS() {
+	if (localTimeoutMS <= 0 && getGlobalTimeoutMS() <= 0) {
+		return 0;
+	}
+	if (localTimeoutMS > 0 && getGlobalTimeoutMS() > 0) {
+		return Math.min(localTimeoutMS, getGlobalTimeoutMS());
+	}
+	if (localTimeoutMS > 0) {
+		return localTimeoutMS;
+	}else{
+		return getGlobalTimeoutMS();
+	}
+}
+
+public static long getGlobalTimeoutMS() {
+	// zero or null means no timeout
+	if (Executable.globalTimeoutMS.get() == null) {
+		return 0;
+	}
+	return Executable.globalTimeoutMS.get();
+}
+
+public static void setGlobalTimeoutMS(long timeoutMS) {
+	// zero means no timeout
+	logger.trace("Setting timeout to: " + Long.toString(timeoutMS) + "ms");
+	Executable.globalTimeoutMS.set(timeoutMS);
+}
 
 /**
  * This method was created by a SmartGuide.
@@ -298,7 +329,7 @@ protected final int monitorProcess(InputStream inputStreamOut, InputStream input
 
 	boolean running = true;
 	while (running || (numReadOut > 0) || (numReadErr > 0)) {
-		if (timeoutMS > 0 && System.currentTimeMillis() - t > timeoutMS) {
+		if (getEffectiveTimeoutMS() > 0 && System.currentTimeMillis() - t > getEffectiveTimeoutMS()) {
 			throw new ExecutableException("Process timed out");
 		}
 		try {
@@ -507,14 +538,5 @@ public void addEnvironmentVariable(String varName,String varValue){
 		addedEnvironmentVariables = new HashMap<>();
 	}
 	addedEnvironmentVariables.put(varName,varValue);
-}
-
-public static long getTimeoutMS() {
-	return Executable.timeoutMS;
-}
-
-public static void setTimeoutMS(long timeoutMS) {
-	logger.trace("Setting timeout to: " + Long.toString(timeoutMS) + "ms");
-	Executable.timeoutMS = timeoutMS;
 }
 }
