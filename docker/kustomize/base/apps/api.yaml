@@ -1,0 +1,168 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
+    kompose.version: 1.32.0 (HEAD)
+  labels:
+    io.kompose.service: api
+  name: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: api
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
+        kompose.version: 1.32.0 (HEAD)
+      labels:
+        io.kompose.network/swarm-vcellnet: "true"
+        io.kompose.service: api
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: zone
+                    operator: In
+                    values:
+                      - INTERNAL
+      containers:
+        - env:
+            - name: dbdriver
+              value: oracle.jdbc.driver.OracleDriver
+            - name: dburl
+              value: jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1
+            - name: dbuser
+              value: vcell
+            - name: jmshost_int_internal
+              value: activemqint
+            - name: jmsport_int_internal
+              value: "61616"
+            - name: jmsuser
+              value: clientUser
+            - name: mongodb_database
+              value: test
+            - name: mongodb_host_internal
+              value: mongodb
+            - name: mongodb_port_internal
+              value: "27017"
+            - name: serverid
+              value: TEST
+            - name: simdataCacheSize
+              value: "10000000"
+            - name: smtp_emailaddress
+              value: VCell_Support@uchc.edu
+            - name: smtp_hostname
+              value: vdsmtp.cam.uchc.edu
+            - name: smtp_port
+              value: "25"
+            - name: softwareVersion
+              value: Test_Version_7.5.0_build_1234
+            - name: ssl_ignoreCertProblems
+              value: "true"
+            - name: ssl_ignoreHostMismatch
+              value: "true"
+            - name: submit_service_host
+              value: submit
+            - name: webDataPort
+              value: "55556"
+          image: ghcr.io/virtualcell/vcell-api:dev
+          name: api
+          ports:
+            - containerPort: 8080
+              hostPort: 8083
+              protocol: TCP
+            - containerPort: 8000
+              hostPort: 5001
+              protocol: TCP
+          resources:
+            limits:
+              memory: "2097152e3"
+            requests:
+              memory: "1048576e3"
+          volumeMounts:
+            - mountPath: /run/secrets/keystorefile
+              name: keystorefile
+            - mountPath: /run/secrets/keystorepswd
+              name: keystorepswd
+            - mountPath: /run/secrets/dbpswd
+              name: dbpswd
+            - mountPath: /run/secrets/jmspswd
+              name: jmspswd
+            - mountPath: /n5DataDir
+              name: api-claim0
+            - mountPath: /simdata
+              name: api-claim1
+            - mountPath: /share/apps/vcell12/users
+              name: api-claim2
+            - mountPath: /simdata_secondary
+              name: api-claim3
+            - mountPath: /exportdir
+              name: api-claim4
+      restartPolicy: Always
+      volumes:
+        - name: keystorefile
+          secret:
+            items:
+              - key: keystorefile
+                path: keystorefile
+            secretName: keystorefile
+        - name: keystorepswd
+          secret:
+            items:
+              - key: keystorepswd
+                path: keystorepswd
+            secretName: keystorepswd
+        - name: dbpswd
+          secret:
+            items:
+              - key: dbpswd
+                path: dbpswd
+            secretName: dbpswd
+        - name: jmspswd
+          secret:
+            items:
+              - key: jmspswd
+                path: jmspswd
+            secretName: jmspswd
+        - name: api-claim0
+          persistentVolumeClaim:
+            claimName: api-claim0
+        - name: api-claim1
+          persistentVolumeClaim:
+            claimName: api-claim1
+        - name: api-claim2
+          persistentVolumeClaim:
+            claimName: api-claim2
+        - name: api-claim3
+          persistentVolumeClaim:
+            claimName: api-claim3
+        - name: api-claim4
+          persistentVolumeClaim:
+            claimName: api-claim4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
+    kompose.version: 1.32.0 (HEAD)
+  labels:
+    io.kompose.service: api
+  name: api
+spec:
+  ports:
+    - name: "8083"
+      port: 8083
+      targetPort: 8080
+    - name: "5001"
+      port: 5001
+      targetPort: 8000
+  selector:
+    io.kompose.service: api

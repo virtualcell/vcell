@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
+    kompose.version: 1.32.0 (HEAD)
+  labels:
+    io.kompose.service: s3proxy
+  name: s3proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: s3proxy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
+        kompose.version: 1.32.0 (HEAD)
+      labels:
+        io.kompose.network/swarm-default: "true"
+        io.kompose.service: s3proxy
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: zone
+                    operator: In
+                    values:
+                      - INTERNAL
+      containers:
+        - command:
+            - sh
+            - -c
+            - export S3PROXY_KEYSTORE_PASSWORD=$(cat /run/secrets/keystorepswd); /opt/s3proxy/run-docker-container.sh
+          env:
+            - name: JCLOUDS_CREDENTIAL
+              value: remote-credential
+            - name: JCLOUDS_ENDPOINT
+            - name: JCLOUDS_FILESYSTEM_BASEDIR
+              value: /data
+            - name: JCLOUDS_IDENTITY
+              value: remote-identity
+            - name: JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME
+            - name: JCLOUDS_KEYSTONE_SCOPE
+            - name: JCLOUDS_KEYSTONE_VERSION
+            - name: JCLOUDS_PROVIDER
+              value: filesystem
+            - name: JCLOUDS_REGION
+            - name: JCLOUDS_REGIONS
+              value: site2-low
+            - name: LOG_LEVEL
+              value: info
+            - name: S3PROXY_AUTHORIZATION
+              value: none
+            - name: S3PROXY_CORS_ALLOW_ALL
+              value: "false"
+            - name: S3PROXY_CORS_ALLOW_HEADERS
+            - name: S3PROXY_CORS_ALLOW_METHODS
+            - name: S3PROXY_CORS_ALLOW_ORIGINS
+            - name: S3PROXY_CREDENTIAL
+              value: local-credential
+            - name: S3PROXY_ENCRYPTED_BLOBSTORE
+            - name: S3PROXY_ENCRYPTED_BLOBSTORE_PASSWORD
+            - name: S3PROXY_ENCRYPTED_BLOBSTORE_SALT
+            - name: S3PROXY_ENDPOINT
+              value: http://0.0.0.0:80
+            - name: S3PROXY_IDENTITY
+              value: local-identity
+            - name: S3PROXY_IGNORE_UNKNOWN_HEADERS
+              value: "false"
+            - name: S3PROXY_KEYSTORE_PATH
+              value: /run/secrets/keystorefile
+            - name: S3PROXY_SECURE_ENDPOINT
+              value: https://0.0.0.0:443
+            - name: S3PROXY_VIRTUALHOST
+          image: andrewgaul/s3proxy:sha-10469f40c0b27a091fde70ee065bd6ee1c945bca
+          name: s3proxy
+          ports:
+            - containerPort: 443
+              hostPort: 8089
+              protocol: TCP
+          resources:
+            limits:
+              memory: "2097152e3"
+            requests:
+              memory: "1048576e3"
+          volumeMounts:
+            - mountPath: /run/secrets/keystorefile
+              name: keystorefile
+            - mountPath: /run/secrets/keystorepswd
+              name: keystorepswd
+            - mountPath: /data
+              name: s3proxy-claim0
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: keystorefile
+          secret:
+            items:
+              - key: keystorefile
+                path: keystorefile
+            secretName: keystorefile
+        - name: keystorepswd
+          secret:
+            items:
+              - key: keystorepswd
+                path: keystorepswd
+            secretName: keystorepswd
+        - name: s3proxy-claim0
+          persistentVolumeClaim:
+            claimName: s3proxy-claim0
+            readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
+    kompose.version: 1.32.0 (HEAD)
+  labels:
+    io.kompose.service: s3proxy
+  name: s3proxy
+spec:
+  ports:
+    - name: "8089"
+      port: 8089
+      targetPort: 443
+  selector:
+    io.kompose.service: s3proxy

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Kustomization
+resources:
+  - apps/api.yaml
+  - apps/data.yaml
+  - apps/db.yaml
+  - apps/rest.yaml
+  - apps/s3proxy.yaml
+  - apps/sched.yaml
+  - apps/submit.yaml
+  - resources/activemqint.yaml
+  - resources/activemqsim.yaml
+  - resources/mongo.yaml
