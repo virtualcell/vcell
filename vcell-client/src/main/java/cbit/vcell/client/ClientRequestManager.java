@@ -2750,7 +2750,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	private static void updateExportMetaData(final ExportEvent exportEvent){
 		try{
 			if(ResourceUtil.getVcellHome() != null){
-				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new ArrayList<>(), new HashMap<>());
+				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new Stack<>(), new HashMap<>());
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 				// put lock
