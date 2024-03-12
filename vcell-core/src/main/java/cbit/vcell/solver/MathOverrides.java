@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Constant expressions that override those specified in the MathDescription
@@ -1147,9 +1148,11 @@ public class MathOverrides implements Matchable, java.io.Serializable {
         if(simulationOwner != null && simulationOwner.getMathOverridesResolver() != null){
             Set<String> nonOverridableConstantNames = simulationOwner.getMathOverridesResolver().getNonOverridableConstantNames();
             if(nonOverridableConstantNames != null){ // returns null if MathSymbolMapping is missing from MathDescription.
-                List<String> allConstants = Arrays.asList(getAllConstantNames());
-                allConstants.removeAll(nonOverridableConstantNames);
-                return allConstants.toArray(new String[0]);
+                Stream<String> ss = Arrays.stream(getAllConstantNames().clone()).filter(elem -> !nonOverridableConstantNames.contains(elem));
+                return ss.toArray(String[]::new);
+                //List<String> allConstants = Arrays.asList(getAllConstantNames());
+                //allConstants.removeAll(nonOverridableConstantNames);
+                //return allConstants.toArray(new String[0]);
             }
         }
 
