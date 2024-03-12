@@ -27,6 +27,8 @@ public class DatabaseService {
 	
 	private static DatabaseService service;
 
+	private ConnectionFactory connectionFactory;
+
 	private DatabaseService() {
 
 	}
@@ -37,16 +39,29 @@ public class DatabaseService {
 		}
 		return service;
 	}
-	
-	public ConnectionFactory createConnectionFactory() throws SQLException {
-		return createConnectionFactory(
-						PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
-						PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL),
-						PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid),
-						PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue,PropertyLoader.dbPasswordFile));
+
+	public void setConnectionFactory(ConnectionFactory connectionFactory) {
+		if (this.connectionFactory != null) {
+			throw new RuntimeException("Initialization Error, overriding existing connection factory");
+		}
+		if (connectionFactory == null) {
+			throw new RuntimeException("Initialization Error, cannot set null connection factory");
+		}
+		this.connectionFactory = connectionFactory;
 	}
 	
-	public ConnectionFactory createConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {
+	public ConnectionFactory createConnectionFactory() throws SQLException {
+		if (connectionFactory == null) {
+			connectionFactory = createConnectionFactory(
+					PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName),
+					PropertyLoader.getRequiredProperty(PropertyLoader.dbConnectURL),
+					PropertyLoader.getRequiredProperty(PropertyLoader.dbUserid),
+					PropertyLoader.getSecretValue(PropertyLoader.dbPasswordValue, PropertyLoader.dbPasswordFile));
+		}
+		return connectionFactory;
+	}
+	
+	private ConnectionFactory createConnectionFactory(String argDriverName, String argConnectURL, String argUserid, String argPassword) throws SQLException {
 		switch (argDriverName) {
 			case OraclePoolingConnectionFactoryProvider.ORACLE_DRIVER_NAME: {
 				Database database = new OraclePoolingConnectionFactoryProvider();

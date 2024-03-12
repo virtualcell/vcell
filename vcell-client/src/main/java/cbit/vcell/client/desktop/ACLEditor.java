@@ -16,6 +16,7 @@ import java.util.Vector;
 
 import javax.swing.JLabel;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.vcell.util.ArrayUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.document.GroupAccess;
@@ -25,7 +26,6 @@ import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.User;
 
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.constants.GuiConstants;
 
 /**
  * Insert the type's description here.
@@ -176,7 +176,7 @@ private void actionACLState(java.awt.event.ItemEvent itemEvent) {
 			aclList.add((String)getJListACL().getModel().getElementAt(i));
 		}
 		if (vcellSupportCheckBox.isSelected()) {
-			aclList.add(GuiConstants.VCELL_SUPPORT_ACCOUNT_ID);
+			aclList.add(PropertyLoader.VCELL_SUPPORT_USERID);
 		}
 		String[] array = new String[aclList.size()];
 		aclList.toArray(array);
@@ -645,7 +645,7 @@ private void updateInterface() {
 		String[] currentUserList = (currentState != null?currentState.getAccessList():new String[0]);
 		Vector<String> newList = new Vector<String>();
 		for (String u : currentUserList) {
-			if (u.equals(GuiConstants.VCELL_SUPPORT_ACCOUNT_ID)) {
+			if (u.equals(PropertyLoader.VCELL_SUPPORT_USERID)) {
 				if (!getVCellSupportCheckBox().isSelected()) {
 					getVCellSupportCheckBox().setSelected(true);				
 				}

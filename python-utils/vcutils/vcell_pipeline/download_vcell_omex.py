@@ -8,6 +8,8 @@ from vcutils.common.api_utils import download_file
 from vcutils.vcell_pipeline.citation import getCitation, CitationInfo, getSuggestedProjectName
 from vcutils.vcell_pipeline.datamodels import Publication
 
+VERIFY_SSL = False
+
 
 class ExportStatus(BaseModel):
     bmKey: str
@@ -26,7 +28,7 @@ def write_log(entry: ExportStatus, log_path: Path) -> None:
 def download_published_omex(api_base_url: str, out_dir: Path) -> None:
     log_path = Path(out_dir, "export.log")
 
-    response = requests.get(f"{api_base_url}/publication", headers={'Accept': 'application/json'}, verify=True, timeout=600)
+    response = requests.get(f"{api_base_url}/publication", headers={'Accept': 'application/json'}, verify=VERIFY_SSL)
     publication_json = response.json()
     pubs = [Publication(**jsonDict) for jsonDict in publication_json]
 
@@ -76,5 +78,5 @@ if __name__ == "__main__":
     download_published_omex(
         # api_base_url="https://vcellapi-beta.cam.uchc.edu:8080",
         api_base_url="https://localhost:8083",
-        out_dir=Path("/Users/schaff/Documents/workspace/vcell/export4")
+        out_dir=Path("/Users/schaff/Documents/workspace/vcdb/published/biomodel/omex/sbml")
     )

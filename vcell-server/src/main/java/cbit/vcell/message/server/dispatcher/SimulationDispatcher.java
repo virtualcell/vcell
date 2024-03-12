@@ -164,7 +164,7 @@ public class SimulationDispatcher {
 				lg.debug("getting simulation status for sim "+simulationKey+" for user "+user);
 			}
 			SimulationStatus simStatus = simulationDatabase.getSimulationStatus(simulationKey);
-			if (simStatus.getVCSimulationIdentifier().getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
+			if (simStatus.getVCSimulationIdentifier().getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_USERID)){
 				if (lg.isDebugEnabled()) {
 					lg.debug("simulation status for sim "+simulationKey+" is '"+simStatus+"'");
 				}
@@ -183,7 +183,7 @@ public class SimulationDispatcher {
 			SimulationStatus[] simStatusArray = simulationDatabase.getSimulationStatus(simKeys);
 			for (SimulationStatus simStatus : simStatusArray){
 				if (simStatus!=null){
-					if (simStatus.getVCSimulationIdentifier().getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
+					if (simStatus.getVCSimulationIdentifier().getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_USERID)){
 						continue;
 					}
 					lg.error("User "+user.getName()+" doesn't have access to simulation "+simStatus.getVCSimulationIdentifier().getSimulationKey());
@@ -202,7 +202,7 @@ public class SimulationDispatcher {
 			SimpleJobStatus[] simpleJobStatusArray = simulationDatabase.getSimpleJobStatus(user,simJobStatusQuerySpec);
 			for (SimpleJobStatus simStatus : simpleJobStatusArray){
 				if (simStatus!=null){
-					if (simStatus.simulationMetadata.vcSimID.getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT)){
+					if (simStatus.simulationMetadata.vcSimID.getOwner().equals(user) || user.getName().equals(PropertyLoader.ADMINISTRATOR_USERID)){
 						continue;
 					}
 					lg.error("User "+user.getName()+" doesn't have access to simulation "+simStatus.simulationMetadata.vcSimID.getSimulationKey());

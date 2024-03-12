@@ -250,7 +250,12 @@ public class DBBackupAndClean {
 			String url = "jdbc:oracle:thin:"+"system"+"/"+password+"@//"+importServerName+":1521/"+importDBSrvcName;
 			lg.info(url);
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, "system", password);
+
+			PropertyLoader.setProperty(PropertyLoader.dbDriverName, dbDriverName);
+			PropertyLoader.setProperty(PropertyLoader.dbConnectURL, url);
+			PropertyLoader.setProperty(PropertyLoader.dbUserid, "system");
+			PropertyLoader.setProperty(PropertyLoader.dbPasswordValue, password);
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory();
 
 			con = connectionFactory.getConnection(new Object());
 			con.setAutoCommit(false);
@@ -1142,7 +1147,11 @@ public class DBBackupAndClean {
 			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
 			lg.info("Getting DB connection..."+url.toString()+" "+dbDriverName);
-			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
+			PropertyLoader.setProperty(PropertyLoader.dbDriverName, dbDriverName);
+			PropertyLoader.setProperty(PropertyLoader.dbConnectURL, url);
+			PropertyLoader.setProperty(PropertyLoader.dbUserid, dbBackupHelper.vcellSchema);
+			PropertyLoader.setProperty(PropertyLoader.dbPasswordValue, dbBackupHelper.password);
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory();
 			String sql = "SELECT vc_simulation.id from vc_simulation";
 //					+",vc_userinfo where userid='frm' and vc_userinfo.id=vc_simulation.ownerref";
 			lg.info("Doing sims query... "+sql);
@@ -1308,7 +1317,11 @@ lg.info("Getting Backuphelper...");
 			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
 lg.info("Getting DB connection..."+url.toString()+" "+dbDriverName);
-			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
+			PropertyLoader.setProperty(PropertyLoader.dbDriverName, dbDriverName);
+			PropertyLoader.setProperty(PropertyLoader.dbConnectURL, url);
+			PropertyLoader.setProperty(PropertyLoader.dbUserid, dbBackupHelper.vcellSchema);
+			PropertyLoader.setProperty(PropertyLoader.dbPasswordValue, dbBackupHelper.password);
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory();
 			
 			String sql = 
 				"SELECT simid,userid" +
@@ -1526,7 +1539,11 @@ lg.info("Del sim simcount="+deleteTheseSims.size());
 			//<database> = <host>:<port>:<SID>
 			String url = "jdbc:oracle:thin:"+dbBackupHelper.vcellSchema+"/"+dbBackupHelper.password+"@//"+dbBackupHelper.dbHostName+":1521/"+dbBackupHelper.dbSrvcName;
 			String dbDriverName = PropertyLoader.getRequiredProperty(PropertyLoader.dbDriverName);
-			connectionFactory = DatabaseService.getInstance().createConnectionFactory(dbDriverName, url, dbBackupHelper.vcellSchema, dbBackupHelper.password);
+			PropertyLoader.setProperty(PropertyLoader.dbDriverName, dbDriverName);
+			PropertyLoader.setProperty(PropertyLoader.dbConnectURL, url);
+			PropertyLoader.setProperty(PropertyLoader.dbUserid, dbBackupHelper.vcellSchema);
+			PropertyLoader.setProperty(PropertyLoader.dbPasswordValue, dbBackupHelper.password);
+			connectionFactory = DatabaseService.getInstance().createConnectionFactory();
 
 			con = connectionFactory.getConnection(new Object());
 			con.setAutoCommit(false);

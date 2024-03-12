@@ -24,6 +24,9 @@ public class DatabaseCreateScriptCommand implements Callable<Integer> {
     @Option(names = { "--create-script"}, type = File.class, required = true, description = "database creation script path")
     private File creationScript;
 
+    @Option(names = { "--bootstrap-data"}, type = Boolean.class, required = true, description = "populate database with bootstrap data")
+    private Boolean bootstrapData;
+
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
 
@@ -36,7 +39,7 @@ public class DatabaseCreateScriptCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try (FileWriter fw = new FileWriter(creationScript)){
-            SQLCreateAllTables.writeScript(databaseSyntax, fw);
+            SQLCreateAllTables.writeScript(databaseSyntax, bootstrapData, fw);
             return 0;
         } catch (Exception e) {
             e.printStackTrace();

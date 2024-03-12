@@ -25,7 +25,7 @@ import cbit.sql.Table;
  */
 public class OracleKeyFactory implements KeyFactory {
 	
-OracleKeyFactory(){
+public OracleKeyFactory(){
 	
 }
 

@@ -1,0 +1,258 @@
+---
+openapi: 3.0.3
+info:
+  title: VCell API (test)
+  description: VCell API
+  termsOfService: Your terms of service here
+  contact:
+    name: VCell API Support
+    url: http://exampleurl.com/contact
+    email: vcell_support@uchc.com
+  license:
+    name: MIT
+    url: http://opensource.org/licenses/MIT
+  version: 1.0.1
+servers:
+- url: http://localhost:9000
+paths:
+  /api/helloworld:
+    get:
+      tags:
+      - Hello World
+      summary: Get hello world message.
+      operationId: getHelloWorld
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelloWorldMessage'
+  /api/publications:
+    get:
+      tags:
+      - Publication Resource
+      summary: Get all publications
+      operationId: getPublications
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Publication'
+    put:
+      tags:
+      - Publication Resource
+      summary: Create publication
+      operationId: updatePublication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Publication'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - curator
+    post:
+      tags:
+      - Publication Resource
+      summary: Create publication
+      operationId: createPublication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Publication'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                format: int64
+                type: integer
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - curator
+  /api/publications/{id}:
+    get:
+      tags:
+      - Publication Resource
+      summary: Get publication by ID
+      operationId: getPublicationById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Publication'
+    delete:
+      tags:
+      - Publication Resource
+      summary: Delete publication
+      operationId: deletePublication
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "204":
+          description: No Content
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - curator
+  /api/users/me:
+    get:
+      tags:
+      - Users Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
+components:
+  schemas:
+    BiomodelRef:
+      type: object
+      properties:
+        bmKey:
+          format: int64
+          type: integer
+        name:
+          type: string
+        ownerName:
+          type: string
+        ownerKey:
+          format: int64
+          type: integer
+        versionFlag:
+          format: int32
+          type: integer
+    Date:
+      format: date
+      type: string
+      example: 2022-03-10
+    HelloWorldMessage:
+      type: object
+      properties:
+        message:
+          type: string
+    MathmodelRef:
+      type: object
+      properties:
+        mmKey:
+          format: int64
+          type: integer
+        name:
+          type: string
+        ownerName:
+          type: string
+        ownerKey:
+          format: int64
+          type: integer
+        versionFlag:
+          format: int32
+          type: integer
+    Publication:
+      type: object
+      properties:
+        pubKey:
+          format: int64
+          type: integer
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        year:
+          format: int32
+          type: integer
+        citation:
+          type: string
+        pubmedid:
+          type: string
+        doi:
+          type: string
+        endnoteid:
+          format: int32
+          type: integer
+        url:
+          type: string
+        wittid:
+          format: int32
+          type: integer
+        biomodelRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BiomodelRef'
+        mathmodelRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MathmodelRef'
+        date:
+          $ref: '#/components/schemas/Date'
+    User:
+      type: object
+      properties:
+        principal_name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            type: string
+        credentials:
+          type: array
+          items:
+            type: string
+  securitySchemes:
+    openId:
+      type: openIdConnect
+      description: Authentication
+      openIdConnectUrl: https://dev-dzhx7i2db3x3kkvq.us.auth0.com/.well-known/openid-configuration

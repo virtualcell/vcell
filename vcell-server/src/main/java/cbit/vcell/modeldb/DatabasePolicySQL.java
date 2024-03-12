@@ -141,7 +141,7 @@ public static class LeftOuterJoin {
 
 public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, LeftOuterJoin leftOuterJoin, String conditions, String special, boolean bCheckPermission) {
 
-	boolean isAdministrator = user.getName().equals(PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
+	boolean isAdministrator = user.getName().equals(PropertyLoader.ADMINISTRATOR_USERID) && user.getID().equals(new org.vcell.util.document.KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 	if (bAllowAdministrativeAccess && isAdministrator){
 		bCheckPermission = false;
 	}

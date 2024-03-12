@@ -65,7 +65,7 @@ public class BatchTester extends VCDatabaseScanner {
 	/**
 	 * special user with access to all models (see {@link DatabasePolicySQL#enforceOwnershipSelect(User, cbit.sql.Field[], cbit.sql.Table[], String, String)
 	 */
-	public static final User ADMINISTRATOR = new User(PropertyLoader.ADMINISTRATOR_ACCOUNT,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
+	public static final User ADMINISTRATOR = new User(PropertyLoader.ADMINISTRATOR_USERID,new KeyValue(PropertyLoader.ADMINISTRATOR_ID));
 
 	public BatchTester() throws Exception {
 		super();

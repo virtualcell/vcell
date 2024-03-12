@@ -59,6 +59,12 @@ jobs:
           poetry install
           poetry run python -m pytest
 
+      - name: build python-restclient package
+        run: |
+          cd python-restclient
+          poetry install
+          poetry run python -m pytest
+
       - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
@@ -87,7 +93,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        test-group: [Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT]
+        test-group: [Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT, Quarkus]
       fail-fast: false
     if: ${{ github.event_name == 'push' }}
     name: CI-Test-group-${{ matrix.test-group }}
@@ -136,6 +142,12 @@ jobs:
           poetry install
           poetry run python -m pytest
 
+      - name: build python-restclient package
+        run: |
+          cd python-restclient
+          poetry install
+          poetry run python -m pytest
+
       - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
@@ -143,12 +155,18 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Add Linux dependencies
+      - name: Maven Build and run Test group ${{ matrix.test-group }}
         shell: bash
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
+          if [ "${{ matrix.test-group }}" == "Quarkus" ]; then
+            mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
+            cd vcell-rest
+            mvn test
+          else
+            mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
+          fi
 
 #      - name: Setup tmate session
 #        uses: mxschmitt/action-tmate@v3
@@ -198,6 +216,12 @@ jobs:
       - name: build vcutils package
         run: |
           cd python-utils
+          poetry install
+          poetry run python -m pytest
+
+      - name: build python-restclient package
+        run: |
+          cd python-restclient
           poetry install
           poetry run python -m pytest
 

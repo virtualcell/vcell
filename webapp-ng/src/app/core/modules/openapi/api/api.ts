@@ -1,0 +1,10 @@
+export * from './hello-world.service';
+import { HelloWorldService } from './hello-world.service';
+export * from './hello-world.serviceInterface';
+export * from './publication-resource.service';
+import { PublicationResourceService } from './publication-resource.service';
+export * from './publication-resource.serviceInterface';
+export * from './users-resource.service';
+import { UsersResourceService } from './users-resource.service';
+export * from './users-resource.serviceInterface';
+export const APIS = [HelloWorldService, PublicationResourceService, UsersResourceService];

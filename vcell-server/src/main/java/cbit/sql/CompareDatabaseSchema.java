@@ -11,6 +11,7 @@
 package cbit.sql;
 
 import cbit.vcell.modeldb.SQLCreateAllTables;
+import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
@@ -199,33 +200,22 @@ public static void main(java.lang.String[] args) {
         String dbSchemaUser = args[2];
         String dbPassword = args[3];
         //
+		PropertyLoader.setProperty(PropertyLoader.dbConnectURL, connectURL);
+		PropertyLoader.setProperty(PropertyLoader.dbUserid, dbSchemaUser);
+		PropertyLoader.setProperty(PropertyLoader.dbPasswordValue, dbPassword);
 
         ConnectionFactory conFactory = null;
-        KeyFactory keyFactory = null;
 
         //
         // get appropriate database factory objects
         //
 
-        DatabaseSyntax dbSyntax = null;
-        if (args[0].equalsIgnoreCase(oracle)) {
-        	dbSyntax = DatabaseSyntax.ORACLE;
-            String driverName = "oracle.jdbc.driver.OracleDriver";
-			conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    driverName,
-                    connectURL,
-                    dbSchemaUser,
-                    dbPassword);
-            keyFactory = conFactory.getKeyFactory();
+         if (args[0].equalsIgnoreCase(oracle)) {
+			PropertyLoader.setProperty(PropertyLoader.dbDriverName, "oracle.jdbc.driver.OracleDriver");
+			conFactory = DatabaseService.getInstance().createConnectionFactory();
         } else if (args[0].equalsIgnoreCase(postgres)) {
-        	dbSyntax = DatabaseSyntax.POSTGRES;
-            String driverName = "org.postgresql.Driver";
-            conFactory = DatabaseService.getInstance().createConnectionFactory(
-                    driverName,
-                    connectURL,
-                    dbSchemaUser,
-                    dbPassword);
-            keyFactory = conFactory.getKeyFactory();
+			 PropertyLoader.setProperty(PropertyLoader.dbDriverName, "org.postgresql.Driver");
+			 conFactory = DatabaseService.getInstance().createConnectionFactory();
         } else {
                 System.out.println(usage);
                 System.exit(1);

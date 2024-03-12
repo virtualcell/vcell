@@ -120,9 +120,7 @@ public class GuiConstants {
 	public static final String ACTIONCMD_VIEW_FIELD_DATA = "OpenFieldDataManager";
 	public static final String ACTIONCMD_ADD_VFAP_DATASET = "AddDatasetFromvFrap";
 	public static final String ACTIONCMD_ADD_VFRAP_DERIVED_DATA = "AddDerivedDataFromvFrap";
-	
-	public static final String VCELL_SUPPORT_ACCOUNT_ID = "VCellSupport";
-	
+
 	public static final Border ProblematicTextFieldBorder = BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.red), BorderFactory.createEmptyBorder(2, 2, 2, 2));
 	public static final Border TAB_PANEL_BORDER = new LineBorder(new Color(127, 157,185));
 }
