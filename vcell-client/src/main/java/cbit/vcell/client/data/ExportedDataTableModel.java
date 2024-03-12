@@ -40,10 +40,22 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         return new Comparator<TableData>() {
             @Override
             public int compare(TableData o1, TableData o2) {
-                switch (col){
-                    default:
-                        return ascendingMask * o1.dateExported.compareTo(o2.dateExported);
-
+                if (col == header.indexOf(bioModelCol)){
+                    return ascendingMask * o1.bioModelName.compareTo(o2.bioModelName);
+                } else if (col == header.indexOf(appNameCol)){
+                    return ascendingMask * o1.appName.compareTo(o2.appName);
+                } else if (col == header.indexOf(formatCol)) {
+                    return ascendingMask * o1.format.compareTo(o2.format);
+                } else if (col == header.indexOf(simNameCol)) {
+                    return ascendingMask * o1.simName.compareTo(o2.simName);
+                } else if (col == header.indexOf(timeSliceCol)) {
+                    String[] tokens1 = o1.timeSlice.split("/");
+                    String[] tokens2 = o2.timeSlice.split("/");
+                    double timeRange1 = Double.parseDouble(tokens1[1]) - Double.parseDouble(tokens1[0]);
+                    double timeRange2 = Double.parseDouble(tokens2[1]) - Double.parseDouble(tokens2[0]);
+                    return (int) (ascendingMask *  Math.round(timeRange1 - timeRange2));
+                } else{
+                    return ascendingMask * o1.dateExported.compareTo(o2.dateExported);
                 }
             }
         };
