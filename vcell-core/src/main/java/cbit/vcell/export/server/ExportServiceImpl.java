@@ -18,6 +18,8 @@ import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.zip.DataFormatException;
@@ -482,9 +484,9 @@ private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportO
 		String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
 		String uri = url  + ":" + PropertyLoader.getRequiredProperty(PropertyLoader.s3ProxyExternalPort) + "/" + n5Exporter.getN5FilePathSuffix();
 		N5Specs n5Specs = (N5Specs) exportSpecs.getFormatSpecificSpecs();
-		uri += "?dataSetName=" + n5Specs.dataSetName;
+		uri += "?dataSetName=" + URLEncoder.encode(n5Specs.dataSetName, StandardCharsets.UTF_8);
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
-		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, URI.create(uri).toString(), exportSpecs);
+		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, uri, exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
