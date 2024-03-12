@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Constant expressions that override those specified in the MathDescription
@@ -1140,16 +1141,15 @@ public class MathOverrides implements Matchable, java.io.Serializable {
         //
         // try to ask SimulationContext for Constants which map to unit conversions and physical constants (exclude these).
         //
-        SimulationOwner simulationOwner = simulation.getSimulationOwner();
+        SimulationOwner simulationOwner = this.simulation.getSimulationOwner();
         //
         // MathModels don't provide MathOverrides resolvers, and in context of Simulation editor, cloned Simulation doesn't have an owner (transient field)
         //
         if(simulationOwner != null && simulationOwner.getMathOverridesResolver() != null){
             Set<String> nonOverridableConstantNames = simulationOwner.getMathOverridesResolver().getNonOverridableConstantNames();
             if(nonOverridableConstantNames != null){ // returns null if MathSymbolMapping is missing from MathDescription.
-                List<String> allConstants = Arrays.asList(getAllConstantNames());
-                allConstants.removeAll(nonOverridableConstantNames);
-                return allConstants.toArray(new String[0]);
+                Stream<String> ss = Arrays.stream(this.getAllConstantNames().clone()).filter(elem -> !nonOverridableConstantNames.contains(elem));
+                return ss.toArray(String[]::new);
             }
         }
 
@@ -1157,15 +1157,15 @@ public class MathOverrides implements Matchable, java.io.Serializable {
         // Simulation owner cannot provide intelligent choices (MathModel or MathSymbolMapping is missing)
         //
         List<String> reservedConstants = Arrays.asList("KMOLE", "_T_", "_F_", "F_nmol_", "_N_pmol_", "_PI_", "_R_", "_K_GHK", "K_millivolts_per_volt", "param_K_millivolts_per_volt");
-        List<String> allConstants = Arrays.asList(getAllConstantNames());
-        ArrayList<String> filteredConstants = new ArrayList<String>();
+        String[] allConstants = this.getAllConstantNames();
+        ArrayList<String> filteredConstants = new ArrayList<>();
         for(String constant : allConstants){
             if(reservedConstants.stream().anyMatch(constant::contains)) continue;
             if(constant.startsWith("UnitFactor")) continue;
             if(constant.startsWith("param__")) continue;
             filteredConstants.add(constant);
         }
-        return filteredConstants.toArray(new String[filteredConstants.size()]);
+        return filteredConstants.toArray(String[]::new);
     }
 
 }
