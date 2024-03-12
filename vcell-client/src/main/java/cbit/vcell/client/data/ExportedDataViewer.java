@@ -2,12 +2,18 @@ package cbit.vcell.client.data;
 
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.SimpleJobStatus;
+import cbit.vcell.server.SimulationJobStatus;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.VCellIcons;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -25,6 +31,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Stack;
 
 public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, ListSelectionListener {
 
@@ -38,6 +45,8 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     private final static Logger lg = LogManager.getLogger(ExportedDataViewer.class);
 
     public ExportedDataViewer() {
+        int tableHeight = 300;
+        int tableWidth = 400;
         Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 
         editorScrollTable = new EditorScrollTable();
@@ -48,9 +57,9 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         editorScrollTable.setRowHeight(30);
 
         JScrollPane tableScrollPane = new JScrollPane(editorScrollTable);
-        tableScrollPane.setSize(400, 400);
-        tableScrollPane.setPreferredSize(new Dimension(400, 400));
-        tableScrollPane.setMinimumSize(new Dimension(400, 400));
+        tableScrollPane.setSize(tableWidth, tableHeight);
+        tableScrollPane.setPreferredSize(new Dimension(tableWidth, tableHeight));
+        tableScrollPane.setMinimumSize(new Dimension(tableWidth, tableHeight));
         tableScrollPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Table "));
 
         JLabel jLabel = new JLabel("Most recent exports. This list is volatile so save important metadata elsewhere.");
@@ -68,17 +77,55 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         exportDetails = new JTextPane();
         JScrollPane parameterScrollPane = new JScrollPane(exportDetails, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         exportDetails.setEditable(false);
-        parameterScrollPane.setPreferredSize(new Dimension(380, 100));
+        parameterScrollPane.setPreferredSize(new Dimension(380, 200));
         exportDetails.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Details "));
+
+        DefaultScrollTableCellRenderer applicationCellRender = new DefaultScrollTableCellRenderer(){
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus, int row, int column) {
+                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                setText((String)value);
+                if (table.getModel() instanceof ExportedDataTableModel) {
+                    ExportedDataTableModel.TableData rowData = ((ExportedDataTableModel) table.getModel()).getValueAt(row);
+                    if(rowData != null && rowData.applicationType != null) {
+                        SimulationContext.Application application = SimulationContext.Application.valueOf(rowData.applicationType);
+                        switch (application) {
+                            case NETWORK_DETERMINISTIC:
+                                setIcon(rowData.nonSpatial ? VCellIcons.appDetNonspIcon : VCellIcons.appDetSpatialIcon);
+                                break;
+                            case NETWORK_STOCHASTIC:
+                                setIcon(rowData.nonSpatial ? VCellIcons.appStoNonspIcon : VCellIcons.appStoSpatialIcon);
+                                break;
+                            case SPRINGSALAD:
+                                setIcon(rowData.nonSpatial ? null : VCellIcons.appSpringSaLaDSpatialIcon);
+                                break;
+                            case RULE_BASED_STOCHASTIC:
+                                setIcon(VCellIcons.appRbmNonspIcon);
+                                break;
+                    }
+                        //setText("");
+//                        setToolTipText(application.getDescription());
+                        setHorizontalTextPosition(SwingConstants.RIGHT);
+                    }
+                }
+                return this;
+            }
+        };
 
 
 
         editorScrollTable.getSelectionModel().addListSelectionListener(this);
+        editorScrollTable.getColumnModel().getColumn(1).setCellRenderer(applicationCellRender);
 
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, parameterScrollPane);
+        splitPane.setContinuousLayout(true);
         this.setLayout(new BorderLayout());
         this.add(topBar, BorderLayout.NORTH);
-        this.add(tableScrollPane, BorderLayout.CENTER);
-        this.add(parameterScrollPane, BorderLayout.SOUTH);
+        add(splitPane);
+//        this.add(tableScrollPane, BorderLayout.CENTER);
+//        this.add(parameterScrollPane, BorderLayout.SOUTH);
         initalizeTableData();
     }
 
@@ -108,9 +155,9 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     public void initalizeTableData(){
         ExportDataRepresentation jsonData = getJsonData();
         if (jsonData != null){
-            List<String> globalJobIDs = jsonData.globalJobIDs;
-            for (String s : globalJobIDs) {
-                String[] tokens = s.split(",");
+            Stack<String> globalJobIDs = jsonData.globalJobIDs;
+            while(!globalJobIDs.empty()) {
+                String[] tokens = globalJobIDs.pop().split(",");
                 addRowFromJson(tokens[0], tokens[1], jsonData);
             }
         }
@@ -122,7 +169,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         ExportedDataTableModel.TableData newRow = new ExportedDataTableModel.TableData(
                 simData.jobID, simData.dataID, simData.exportDate, dataFormat, simData.uri,
                 simData.biomodelName, simData.startAndEndTime, simData.applicationName, simData.simulationName, simData.variables,
-                simData.defaultParameterValues, simData.setParameterValues
+                simData.defaultParameterValues, simData.setParameterValues, simData.nonSpatial, simData.applicationType
         );
         tableModel.addRow(newRow);
     }
@@ -164,7 +211,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             updateTableModel();
         } else if (e.getSource().equals(copyButton)) {
             int row = editorScrollTable.getSelectedRow();
-            ExportedDataTableModel.TableData tableData = tableModel.getRowData(row);
+            ExportedDataTableModel.TableData tableData = tableModel.getValueAt(row);
 
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(tableData.link), null);
@@ -184,17 +231,17 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     @Override
     public void valueChanged(ListSelectionEvent e) {
         int row = editorScrollTable.getSelectedRow();
-        ExportedDataTableModel.TableData rowData = tableModel.getRowData(row);
+        ExportedDataTableModel.TableData rowData = tableModel.getValueAt(row);
         String defaultParameterValues = rowData.defaultParameters.toString();
         String actualParameterValues = rowData.setParameters.toString();
         StyleContext styleContext = new StyleContext();
 //        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
         StyledDocument doc = new DefaultStyledDocument();
-        addColoredText(doc, "\nVariables:  ", Color.GREEN);
+        addColoredText(doc, "\nVARIABLES:  ", Color.GREEN);
         addColoredText(doc, rowData.variables, Color.BLACK);
-        addColoredText(doc, "\n \nSet Parameter Values:  ", Color.RED);
+        addColoredText(doc, "\n \nSET PARAMETER VALUES:  ", Color.RED);
         addColoredText(doc, actualParameterValues, Color.BLACK);
-        addColoredText(doc, "\n \nDefault Parameter Values:  ", Color.ORANGE);
+        addColoredText(doc, "\n \nDEFAULT PARAMETER VALUES:  ", Color.ORANGE);
         addColoredText(doc, defaultParameterValues, Color.BLACK);
 
 //        exportDetails.setText(

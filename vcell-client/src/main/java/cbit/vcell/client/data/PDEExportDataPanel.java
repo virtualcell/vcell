@@ -699,8 +699,9 @@ private ExportSpecs getExportSpecs() {
 
 	String serverSavedFileName = getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs ? ((N5Specs) getExportSettings1().getFormatSpecificSpecs()).dataSetName : "";
 
+	boolean nonSpatial = sc.getGeometry().getDimension() == 0;
 	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
-			defaultParameterValues, setParameterValues, serverSavedFileName);
+			defaultParameterValues, setParameterValues, serverSavedFileName, sc.getApplicationType().name(), nonSpatial);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
 	ExportSpecs exportSpecs = new ExportSpecs(
 			vcDataIdentifier,

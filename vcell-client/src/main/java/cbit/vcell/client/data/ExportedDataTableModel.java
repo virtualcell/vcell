@@ -24,10 +24,7 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         add(appNameCol);
         add(simNameCol);
         add(timeSliceCol);
-        add(variablesCol);
         add(formatCol);
-//        add(defaultParametersCol);
-//        add(setParametersCol);
         add(dateExportedCol);
     }};
 
@@ -63,26 +60,13 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
             return data.simName;
         } else if (columnIndex == header.indexOf(timeSliceCol)) {
             return  data.timeSlice;
-        } else if (columnIndex == header.indexOf(variablesCol)) {
-            return data.variables;
         } else if (columnIndex == header.indexOf(dateExportedCol)) {
             return data.dateExported;
         } else if (columnIndex == header.indexOf(formatCol)) {
             return data.format;
         }
-        else if (columnIndex == header.indexOf(defaultParametersCol)) {
-            return data.defaultParameters;
-        }
-        else if (columnIndex == header.indexOf(setParametersCol)) {
-            return data.setParameters;
-        }
         return null;
     }
-
-    public TableData getRowData(int rowIndex){
-        return tableData.get(rowIndex);
-    }
-
 
     public void addRow(TableData row){
         tableData.add(row);
@@ -114,10 +98,12 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         public String variables = null;
         public ArrayList<String> defaultParameters = null;
         public ArrayList<String> setParameters = null;
+        public boolean nonSpatial;
+        public String applicationType = null;
 
         public TableData(String jobID, String simID, String dateExported, String format, String link,
                          String bioModelName, String timeSlice, String appName, String simName, String variables,
-                         ArrayList<String> defaultParameters, ArrayList<String> setParameters){
+                         ArrayList<String> defaultParameters, ArrayList<String> setParameters, boolean nonSpatial, String applicationType){
             this.jobID = jobID;
             this.simID = simID;
             this.dateExported = dateExported;
@@ -130,6 +116,8 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
             this.variables = variables;
             this.defaultParameters = defaultParameters;
             this.setParameters = setParameters;
+            this.nonSpatial = nonSpatial;
+            this.applicationType = applicationType;
         }
     }
 
