@@ -2,11 +2,8 @@ package cbit.vcell.client.data;
 
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.SimpleJobStatus;
-import cbit.vcell.server.SimulationJobStatus;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +15,6 @@ import org.vcell.util.gui.VCellIcons;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.*;
@@ -32,34 +28,40 @@ import java.io.File;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, ListSelectionListener {
 
     public ExportedDataTableModel tableModel;
     private final EditorScrollTable editorScrollTable;
-    private final JButton refresh;
-    private final JButton copyButton;
+    private EditorScrollTable parameterScrollTable = new EditorScrollTable();
+    private ParameterTableModelExport parameterScrollTableModel;
+    private JButton refresh;
+    private JButton copyButton;
 
-    private final JTextPane exportDetails;
     private final JRadioButton todayInterval = new JRadioButton("Past 24 hours");
     private final JRadioButton monthInterval = new JRadioButton("Past Month");
     private final JRadioButton yearlyInterval = new JRadioButton("Past Year");
     private final JRadioButton anyInterval = new JRadioButton("Any Time");
     private final ButtonGroup timeButtonGroup = new ButtonGroup();
 
+
+    private JTextPane exportVariableText;
+    private final Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+
+
     private final static Logger lg = LogManager.getLogger(ExportedDataViewer.class);
 
     public ExportedDataViewer() {
         int tableHeight = 300;
         int tableWidth = 400;
-        Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 
         editorScrollTable = new EditorScrollTable();
         editorScrollTable.setDefaultEditor(Object.class, null);
         tableModel = new ExportedDataTableModel(editorScrollTable);
 
         editorScrollTable.setModel(tableModel);
-        editorScrollTable.setRowHeight(30);
+        editorScrollTable.setRowHeight(25);
 
         JScrollPane tableScrollPane = new JScrollPane(editorScrollTable);
         tableScrollPane.setSize(tableWidth, tableHeight);
@@ -67,23 +69,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         tableScrollPane.setMinimumSize(new Dimension(tableWidth, tableHeight));
         tableScrollPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Table "));
 
-        JLabel jLabel = new JLabel("Most recent exports. This list is volatile so save important metadata elsewhere.");
-        refresh = new JButton("Refresh List");
-        copyButton = new JButton("Copy Export Link");
 
-        JPanel topBar = new JPanel();
-        topBar.setLayout(new FlowLayout());
-        refresh.addActionListener(this);
-        copyButton.addActionListener(this);
-        topBar.add(jLabel);
-        topBar.add(copyButton);
-        topBar.add(refresh);
-
-        exportDetails = new JTextPane();
-        JScrollPane parameterScrollPane = new JScrollPane(exportDetails, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        exportDetails.setEditable(false);
-        parameterScrollPane.setPreferredSize(new Dimension(380, 200));
-        exportDetails.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Details "));
 
         DefaultScrollTableCellRenderer applicationCellRender = new DefaultScrollTableCellRenderer(){
             @Override
@@ -124,37 +110,98 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         editorScrollTable.getColumnModel().getColumn(1).setCellRenderer(applicationCellRender);
 
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, parameterScrollPane);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, exportDetailsPane());
         splitPane.setContinuousLayout(true);
         this.setLayout(new BorderLayout());
-        this.add(topBar, BorderLayout.NORTH);
+        this.add(userOptionsPane(), BorderLayout.NORTH);
         add(splitPane);
 //        this.add(tableScrollPane, BorderLayout.CENTER);
 //        this.add(parameterScrollPane, BorderLayout.SOUTH);
         initalizeTableData();
     }
 
-    public void updateTableModel(){
-        try{
-            ExportDataRepresentation jsonData = getJsonData();
-            if (jsonData != null){
-                List<String> globalJobIDs = jsonData.globalJobIDs;
-                String lastElement = tableModel.getRowCount() == 0 ? null: tableModel.tableData.get(tableModel.tableData.size() - 1).jobID;
-                for(int i = globalJobIDs.size() - 1; i > -1; i--){
-                    // first index is JobID, second is data format
-                    String[] tokens = globalJobIDs.get(i).split(",");
-                    if(lastElement != null && lastElement.equals(tokens[0])){
-                        break;
-                    }
-                    addRowFromJson(tokens[0], tokens[1], jsonData);
-                }
-            }
-            tableModel.refreshData();
-        }
-        catch (Exception e){
-            lg.error("Failed Update Export Viewer Table Model:", e);
-        }
+    private JSplitPane exportDetailsPane(){
+        int height = 200;
+        int width = 140;
+        exportVariableText = new JTextPane();
+        exportVariableText.setEditable(false);
+
+        parameterScrollTableModel = new ParameterTableModelExport(parameterScrollTable);
+        parameterScrollTable.setModel(parameterScrollTableModel);
+
+        JScrollPane parameterScrollPane = new JScrollPane(parameterScrollTable, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        parameterScrollPane.setPreferredSize(new Dimension(width, height));
+        parameterScrollPane.setSize(new Dimension(width, height));
+        parameterScrollPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Parameters "));
+//
+//        parameterScrollTable.setModel(new ParameterTableModelExport(parameterScrollTable));
+//        parameterScrollTable.setPreferredSize(new Dimension(width, height));
+
+
+        JScrollPane exportDetails = new JScrollPane(exportVariableText, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        exportDetails.setPreferredSize(new Dimension(width, height));
+        exportDetails.setSize(new Dimension(width, height));
+        exportDetails.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Variables "));
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportVariableText, parameterScrollPane);
+        splitPane.setContinuousLayout(true);
+        splitPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Details "));
+        return splitPane;
     }
+
+    private JPanel userOptionsPane(){
+        refresh = new JButton("Refresh");
+        copyButton = new JButton("Copy Export Link");
+
+        JPanel timeIntervalSelector = new JPanel();
+        timeIntervalSelector.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Time Interval "));
+        timeIntervalSelector.setLayout(new BoxLayout(timeIntervalSelector, BoxLayout.Y_AXIS));
+
+        timeButtonGroup.add(todayInterval);
+        timeButtonGroup.add(monthInterval);
+        timeButtonGroup.add(yearlyInterval);
+        timeButtonGroup.add(anyInterval);
+
+        timeIntervalSelector.add(todayInterval);
+        timeIntervalSelector.add(monthInterval);
+        timeIntervalSelector.add(yearlyInterval);
+        timeIntervalSelector.add(anyInterval);
+
+        JPanel topBar = new JPanel();
+        topBar.setLayout(new FlowLayout());
+        refresh.addActionListener(this);
+        copyButton.addActionListener(this);
+        topBar.add(timeIntervalSelector);
+        topBar.add(copyButton);
+        topBar.add(refresh);
+
+        topBar.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " User Options "));
+        topBar.setPreferredSize(new Dimension(400, 150));
+
+        return topBar;
+    }
+
+//    public void updateTableModel(){
+//        try{
+//            ExportDataRepresentation jsonData = getJsonData();
+//            if (jsonData != null){
+//                List<String> globalJobIDs = jsonData.globalJobIDs;
+//                String lastElement = tableModel.getRowCount() == 0 ? null: tableModel.tableData.get(tableModel.tableData.size() - 1).jobID;
+//                for(int i = globalJobIDs.size() - 1; i > -1; i--){
+//                    // first index is JobID, second is data format
+//                    String[] tokens = globalJobIDs.get(i).split(",");
+//                    if(lastElement != null && lastElement.equals(tokens[0])){
+//                        break;
+//                    }
+//                    addRowFromJson(tokens[0], tokens[1], jsonData);
+//                }
+//            }
+//            tableModel.refreshData();
+//        }
+//        catch (Exception e){
+//            lg.error("Failed Update Export Viewer Table Model:", e);
+//        }
+//    }
 
     /* Reason for this function is the for loop order, it matters when doing efficient updating by checking end of row. */
     public void initalizeTableData(){
@@ -255,24 +302,31 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     public void valueChanged(ListSelectionEvent e) {
         int row = editorScrollTable.getSelectedRow();
         ExportedDataTableModel.TableData rowData = tableModel.getValueAt(row);
-        String defaultParameterValues = rowData.defaultParameters.toString();
-        String actualParameterValues = rowData.setParameters.toString();
+        ArrayList<String> defaultParameterValues = rowData.defaultParameters;
+        ArrayList<String> actualParameterValues = rowData.setParameters;
         StyleContext styleContext = new StyleContext();
 //        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
         StyledDocument doc = new DefaultStyledDocument();
         addColoredText(doc, "\nVARIABLES:  ", Color.GREEN);
         addColoredText(doc, rowData.variables, Color.BLACK);
-        addColoredText(doc, "\n \nSET PARAMETER VALUES:  ", Color.RED);
-        addColoredText(doc, actualParameterValues, Color.BLACK);
-        addColoredText(doc, "\n \nDEFAULT PARAMETER VALUES:  ", Color.ORANGE);
-        addColoredText(doc, defaultParameterValues, Color.BLACK);
 
+
+        parameterScrollTableModel.resetData();
+        for(int i =0; i < defaultParameterValues.size(); i++){
+            String[] tokensDefault = defaultParameterValues.get(i).split(":");
+            String[] tokensSet = actualParameterValues.get(i).split(":");
+            ParameterTableModelExport.ParameterTableData data = new ParameterTableModelExport.ParameterTableData(
+                    tokensDefault[0], tokensDefault[1], tokensSet[1]
+            );
+            parameterScrollTableModel.addRow(data);
+        }
+        parameterScrollTableModel.refreshData();
 //        exportDetails.setText(
 //                rowData.variables +
 //                "\n \nSet Parameter Values: " + actualParameterValues +
 //                "\n \nDefault Parameter Values: " + defaultParameterValues);
-        exportDetails.setStyledDocument(doc);
-        exportDetails.updateUI();
+        exportVariableText.setStyledDocument(doc);
+        exportVariableText.updateUI();
     }
     private static void addColoredText(StyledDocument doc, String text, Color color) {
         Style style = doc.addStyle("ColoredStyle", null);

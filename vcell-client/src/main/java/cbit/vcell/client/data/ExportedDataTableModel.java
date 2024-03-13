@@ -28,7 +28,7 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         add(dateExportedCol);
     }};
 
-    public List<TableData> tableData = new ArrayList<>();
+    private List<TableData> tableData = new ArrayList<>();
 
     public ExportedDataTableModel(ScrollTable scrollTable){
         super(scrollTable, header.toArray(new String[0]));
@@ -86,6 +86,8 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
     public void refreshData(){
         setData(tableData);
     }
+
+    public void resetData(){tableData = new ArrayList<>();}
 
     @Override
     public Class<?> getColumnClass(int iCol) {
