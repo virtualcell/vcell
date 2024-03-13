@@ -30,8 +30,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.Stack;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, ListSelectionListener {
 
@@ -41,6 +41,11 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     private final JButton copyButton;
 
     private final JTextPane exportDetails;
+    private final JRadioButton todayInterval = new JRadioButton("Past 24 hours");
+    private final JRadioButton monthInterval = new JRadioButton("Past Month");
+    private final JRadioButton yearlyInterval = new JRadioButton("Past Year");
+    private final JRadioButton anyInterval = new JRadioButton("Any Time");
+    private final ButtonGroup timeButtonGroup = new ButtonGroup();
 
     private final static Logger lg = LogManager.getLogger(ExportedDataViewer.class);
 
@@ -154,10 +159,28 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     /* Reason for this function is the for loop order, it matters when doing efficient updating by checking end of row. */
     public void initalizeTableData(){
         ExportDataRepresentation jsonData = getJsonData();
+        tableModel.resetData();
         if (jsonData != null){
             Stack<String> globalJobIDs = jsonData.globalJobIDs;
+            ButtonModel buttonModel = timeButtonGroup.getSelection();
+            LocalDateTime pastTime = LocalDateTime.now();
+            if (todayInterval.isSelected()){
+                pastTime = pastTime.minusDays(1);
+            } else if (monthInterval.isSelected()) {
+                pastTime = pastTime.minusMonths(1);
+            } else if (yearlyInterval.isSelected()) {
+                pastTime = pastTime.minusYears(1);
+            } else {
+                pastTime = pastTime.minusYears(10); //Max date back is 10 years
+            }
+
             while(!globalJobIDs.empty()) {
                 String[] tokens = globalJobIDs.pop().split(",");
+                DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                LocalDateTime exportDate = LocalDateTime.parse(jsonData.formatData.get(tokens[1]).simulationDataMap.get(tokens[0]).exportDate, dateFormat);
+                if (exportDate.isBefore(pastTime)){
+                    break;
+                }
                 addRowFromJson(tokens[0], tokens[1], jsonData);
             }
         }
@@ -208,7 +231,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(refresh)){
-            updateTableModel();
+            initalizeTableData();
         } else if (e.getSource().equals(copyButton)) {
             int row = editorScrollTable.getSelectedRow();
             ExportedDataTableModel.TableData tableData = tableModel.getValueAt(row);
