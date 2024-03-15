@@ -37,21 +37,16 @@ spec:
               hostPort: 5001
               protocol: TCP
           volumeMounts:
-            # dbpswdfile=/run/secrets/dbpswd
-            # jmspswdfile=/run/secrets/jmspswd
-            # keystore=/run/secrets/keystorefile
-            # keystorepswdfile=/run/secrets/keystorepswd
-            # cat /run/secrets/dbpswd/password
             - mountPath: /run/secrets/api-secrets
               name: api-secrets
             - mountPath: /n5DataDir
               name: n5data-pvc
-#            - mountPath: /simdata
-#              name: api-claim1
+            - mountPath: /simdata
+              name: primary-data-pvc
 #            - mountPath: /share/apps/vcell12/users
 #              name: api-claim2
-#            - mountPath: /simdata_secondary
-#              name: api-claim3
+            - mountPath: /simdata_secondary
+              name: secondary-data-pvc
 #            - mountPath: /exportdir
 #              name: api-claim4
       restartPolicy: Always
@@ -69,13 +64,19 @@ spec:
         - name: n5data-pvc
           persistentVolumeClaim:
             claimName: n5data-pvc
+        - name: primary-data-pvc
+          persistentVolumeClaim:
+            claimName: primary-data-pvc
+        - name: secondary-data-pvc
+          persistentVolumeClaim:
+            claimName: secondary-data-pvc
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    io.kompose.service: api
+    app: api
   name: api
 spec:
   ports:
@@ -86,4 +87,4 @@ spec:
       port: 5001
       targetPort: 8000
   selector:
-    io.kompose.service: api
+    app: api

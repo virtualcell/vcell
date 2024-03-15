@@ -50,6 +50,8 @@ resources:
 - api-ingress.yaml
 - mongodb-pvc.yaml
 - n5data-pvc.yaml
+- primary-data-pvc.yaml
+- secondary-data-pvc.yaml
 - api-certificate.yaml
 - selfsigned-issuer.yaml
 - api-secrets.yaml
