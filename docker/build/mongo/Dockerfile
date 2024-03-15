@@ -1,5 +1,5 @@
 # derived from StackOverflow https://stackoverflow.com/a/33601894
-FROM mongo:6.0.1
+FROM mongo:4.4.29
 
 VOLUME /data/db /data/configdb
 

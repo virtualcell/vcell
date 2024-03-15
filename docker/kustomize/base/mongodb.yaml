@@ -15,8 +15,9 @@ spec:
         app: mongodb
     spec:
       containers:
-        - image: ghcr.io/virtualcell/vcell-mongo:dev
-          name: mongodb
+        - name: mongodb
+          image: ghcr.io/virtualcell/vcell-mongo
+          imagePullPolicy: "Always"
           ports:
             - containerPort: 27017
               hostPort: 27020
