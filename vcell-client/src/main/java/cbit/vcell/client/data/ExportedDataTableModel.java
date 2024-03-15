@@ -110,14 +110,13 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         public String appName = null;
         public String simName = null;
         public String variables = null;
-        public ArrayList<String> defaultParameters = null;
-        public ArrayList<String> setParameters = null;
+        public ArrayList<String> differentParameterValues;
         public boolean nonSpatial;
         public String applicationType = null;
 
         public TableData(String jobID, String simID, String dateExported, String format, String link,
                          String bioModelName, String timeSlice, String appName, String simName, String variables,
-                         ArrayList<String> defaultParameters, ArrayList<String> setParameters, boolean nonSpatial, String applicationType){
+                         ArrayList<String> differentParameterValues, boolean nonSpatial, String applicationType){
             this.jobID = jobID;
             this.simID = simID;
             this.dateExported = dateExported;
@@ -128,8 +127,7 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
             this.appName = appName;
             this.simName = simName;
             this.variables = variables;
-            this.defaultParameters = defaultParameters;
-            this.setParameters = setParameters;
+            this.differentParameterValues = differentParameterValues;
             this.nonSpatial = nonSpatial;
             this.applicationType = applicationType;
         }

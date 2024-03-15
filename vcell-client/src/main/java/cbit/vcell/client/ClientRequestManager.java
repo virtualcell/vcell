@@ -2786,8 +2786,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							humanReadableExportData.biomodelName,
                             Arrays.toString(exportEvent.getVariableSpecs().getVariableNames()),
 							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()],
-							humanReadableExportData.defaultParameterValues,
-							humanReadableExportData.setParameterValues,
+							humanReadableExportData.differentParameterValues,
 							humanReadableExportData.serverSavedFileName,
 							humanReadableExportData.applicationType,
 							humanReadableExportData.nonSpatial

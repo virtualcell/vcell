@@ -239,7 +239,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         ExportedDataTableModel.TableData newRow = new ExportedDataTableModel.TableData(
                 simData.jobID, simData.dataID, simData.exportDate, dataFormat, simData.uri,
                 simData.biomodelName, simData.startAndEndTime, simData.applicationName, simData.simulationName, simData.variables,
-                simData.defaultParameterValues, simData.setParameterValues, simData.nonSpatial, simData.applicationType
+                simData.differentParameterValues, simData.nonSpatial, simData.applicationType
         );
         tableModel.addRow(newRow);
     }
@@ -247,7 +247,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     public ExportDataRepresentation getJsonData(){
         try{
             File jsonFile = new File(ResourceUtil.getVcellHome(), ClientRequestManager.EXPORT_METADATA_FILENAME);
-            String jsonString = new String(Files.readAllBytes(jsonFile.toPath()));
+            String jsonString = jsonFile.exists() ? new String(Files.readAllBytes(jsonFile.toPath())) : "";
             if (jsonFile.exists() && !jsonString.isEmpty()){
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 return gson.fromJson(jsonString, ExportDataRepresentation.class);
@@ -302,7 +302,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     public void valueChanged(ListSelectionEvent e) {
         int row = editorScrollTable.getSelectedRow();
         ExportedDataTableModel.TableData rowData = tableModel.getValueAt(row);
-        ArrayList<String> defaultParameterValues = rowData.defaultParameters;
+        ArrayList<String> differentParameterValues = rowData.differentParameterValues;
         ArrayList<String> actualParameterValues = rowData.setParameters;
         StyleContext styleContext = new StyleContext();
 //        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
@@ -312,11 +312,11 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
 
         parameterScrollTableModel.resetData();
-        for(int i =0; i < defaultParameterValues.size(); i++){
-            String[] tokensDefault = defaultParameterValues.get(i).split(":");
+        for(int i =0; i < differentParameterValues.size(); i++){
+            String[] parameterTokens = differentParameterValues.get(i).split(":");
             String[] tokensSet = actualParameterValues.get(i).split(":");
             ParameterTableModelExport.ParameterTableData data = new ParameterTableModelExport.ParameterTableData(
-                    tokensDefault[0], tokensDefault[1], tokensSet[1]
+                    parameterTokens[0], parameterTokens[1], parameterTokens[2]
             );
             parameterScrollTableModel.addRow(data);
         }
@@ -328,7 +328,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         exportVariableText.setStyledDocument(doc);
         exportVariableText.updateUI();
     }
-    private static void addColoredText(StyledDocument doc, String text, Color color) {
+    private void addColoredText(StyledDocument doc, String text, Color color) {
         Style style = doc.addStyle("ColoredStyle", null);
         StyleConstants.setForeground(style, color);
         try {
