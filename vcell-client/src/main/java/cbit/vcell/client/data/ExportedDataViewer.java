@@ -45,6 +45,9 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     private final JRadioButton anyInterval = new JRadioButton("Any Time");
     private final ButtonGroup timeButtonGroup = new ButtonGroup();
 
+    private final ArrayList<JCheckBox> formatButtonGroup = new ArrayList<>();
+
+
 
     private JTextPane exportVariableText;
     private final Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
@@ -167,10 +170,28 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         timeIntervalSelector.add(yearlyInterval);
         timeIntervalSelector.add(anyInterval);
 
+        JPanel exportFormatFilter = new JPanel();
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        exportFormatFilter.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Type "));
+        exportFormatFilter.setLayout(new GridBagLayout());
+        Set<String> exportNames = new HashSet<>();
+        for (ExportFormat format : ExportFormat.values()){
+            String properFormatName = format.name().contains("_") ? format.name().split("_")[1] : format.name();
+            if(!exportNames.contains(properFormatName)){
+                exportNames.add(properFormatName);
+                JCheckBox formatButton = new JCheckBox(properFormatName);
+                formatButton.setPreferredSize(new Dimension(50, 10));
+                formatButton.setSelected(true);
+                exportFormatFilter.add(formatButton);
+                formatButtonGroup.add(formatButton);
+            }
+        }
+
         JPanel topBar = new JPanel();
         topBar.setLayout(new FlowLayout());
         refresh.addActionListener(this);
         copyButton.addActionListener(this);
+        topBar.add(exportFormatFilter);
         topBar.add(timeIntervalSelector);
         topBar.add(copyButton);
         topBar.add(refresh);
@@ -221,6 +242,13 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
                 pastTime = pastTime.minusYears(10); //Max date back is 10 years
             }
 
+            Set<String> allowedFormats = new HashSet<>();
+            for (JCheckBox button : formatButtonGroup){
+                if(button.isSelected()){
+                    allowedFormats.add(button.getText());
+                }
+            }
+
             while(!globalJobIDs.empty()) {
                 String[] tokens = globalJobIDs.pop().split(",");
                 DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
@@ -228,7 +256,9 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
                 if (exportDate.isBefore(pastTime)){
                     break;
                 }
-                addRowFromJson(tokens[0], tokens[1], jsonData);
+                if (allowedFormats.contains(tokens[1])){
+                    addRowFromJson(tokens[0], tokens[1], jsonData);
+                }
             }
         }
         tableModel.refreshData();
@@ -303,7 +333,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         int row = editorScrollTable.getSelectedRow();
         ExportedDataTableModel.TableData rowData = tableModel.getValueAt(row);
         ArrayList<String> differentParameterValues = rowData.differentParameterValues;
-        ArrayList<String> actualParameterValues = rowData.setParameters;
         StyleContext styleContext = new StyleContext();
 //        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
         StyledDocument doc = new DefaultStyledDocument();
@@ -314,7 +343,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         parameterScrollTableModel.resetData();
         for(int i =0; i < differentParameterValues.size(); i++){
             String[] parameterTokens = differentParameterValues.get(i).split(":");
-            String[] tokensSet = actualParameterValues.get(i).split(":");
             ParameterTableModelExport.ParameterTableData data = new ParameterTableModelExport.ParameterTableData(
                     parameterTokens[0], parameterTokens[1], parameterTokens[2]
             );
