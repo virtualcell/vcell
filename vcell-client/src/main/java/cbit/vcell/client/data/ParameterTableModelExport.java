@@ -23,7 +23,19 @@ public class ParameterTableModelExport extends VCellSortTableModel<ParameterTabl
 
     @Override
     protected Comparator getComparator(int col, boolean ascending) {
-        return null;
+        int ascendingMask = ascending ? 1 : -1;
+        return (o1, o2) -> {
+            if (o1 instanceof ParameterTableData && o2 instanceof ParameterTableData){
+                if (col == header.indexOf(parameterName)){
+                    return ascendingMask * ((ParameterTableData) o1).parameterName.compareTo(((ParameterTableData) o2).parameterName);
+                } else if (col == header.indexOf(defaultValue)) {
+                    return ascendingMask * ((ParameterTableData) o1).defaultValue.compareTo(((ParameterTableData) o2).defaultValue);
+                } else if (col == header.indexOf(setValue)) {
+                    return ascendingMask * ((ParameterTableData) o1).setValue.compareTo(((ParameterTableData) o2).setValue);
+                }
+            }
+            return 0;
+        };
     }
 
     @Override

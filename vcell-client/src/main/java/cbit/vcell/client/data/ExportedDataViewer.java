@@ -2,6 +2,7 @@ package cbit.vcell.client.data;
 
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.ResourceUtil;
 import com.google.gson.Gson;
@@ -135,10 +136,8 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         JScrollPane parameterScrollPane = new JScrollPane(parameterScrollTable, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         parameterScrollPane.setPreferredSize(new Dimension(width, height));
         parameterScrollPane.setSize(new Dimension(width, height));
+        parameterScrollPane.setMaximumSize(new Dimension(width, height));
         parameterScrollPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Parameters "));
-//
-//        parameterScrollTable.setModel(new ParameterTableModelExport(parameterScrollTable));
-//        parameterScrollTable.setPreferredSize(new Dimension(width, height));
 
 
         JScrollPane exportDetails = new JScrollPane(exportVariableText, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -148,6 +147,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportVariableText, parameterScrollPane);
         splitPane.setContinuousLayout(true);
+        splitPane.setResizeWeight(0.5);
         splitPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Details "));
         return splitPane;
     }
@@ -202,35 +202,12 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         return topBar;
     }
 
-//    public void updateTableModel(){
-//        try{
-//            ExportDataRepresentation jsonData = getJsonData();
-//            if (jsonData != null){
-//                List<String> globalJobIDs = jsonData.globalJobIDs;
-//                String lastElement = tableModel.getRowCount() == 0 ? null: tableModel.tableData.get(tableModel.tableData.size() - 1).jobID;
-//                for(int i = globalJobIDs.size() - 1; i > -1; i--){
-//                    // first index is JobID, second is data format
-//                    String[] tokens = globalJobIDs.get(i).split(",");
-//                    if(lastElement != null && lastElement.equals(tokens[0])){
-//                        break;
-//                    }
-//                    addRowFromJson(tokens[0], tokens[1], jsonData);
-//                }
-//            }
-//            tableModel.refreshData();
-//        }
-//        catch (Exception e){
-//            lg.error("Failed Update Export Viewer Table Model:", e);
-//        }
-//    }
-
     /* Reason for this function is the for loop order, it matters when doing efficient updating by checking end of row. */
     public void initalizeTableData(){
         ExportDataRepresentation jsonData = getJsonData();
         tableModel.resetData();
         if (jsonData != null){
             Stack<String> globalJobIDs = jsonData.globalJobIDs;
-            ButtonModel buttonModel = timeButtonGroup.getSelection();
             LocalDateTime pastTime = LocalDateTime.now();
             if (todayInterval.isSelected()){
                 pastTime = pastTime.minusDays(1);
@@ -290,20 +267,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         }
     }
 
-    public static void main(String[] args) {
-        ExportedDataViewer exportedDataViewer = new ExportedDataViewer();
-        exportedDataViewer.setPreferredSize(new Dimension(1000, 600));
-
-        JDialog viewSpeciesDialog = new JDialog();
-        JFrame jFrame = new JFrame();
-
-        JOptionPane pane = new JOptionPane(exportedDataViewer, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
-        viewSpeciesDialog = pane.createDialog(jFrame, "View Exported Data");
-        viewSpeciesDialog.setModal(false);
-        viewSpeciesDialog.setResizable(true);
-        viewSpeciesDialog.setVisible(true);
-        jFrame.setVisible(true);
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -349,10 +312,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             parameterScrollTableModel.addRow(data);
         }
         parameterScrollTableModel.refreshData();
-//        exportDetails.setText(
-//                rowData.variables +
-//                "\n \nSet Parameter Values: " + actualParameterValues +
-//                "\n \nDefault Parameter Values: " + defaultParameterValues);
         exportVariableText.setStyledDocument(doc);
         exportVariableText.updateUI();
     }
