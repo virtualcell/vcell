@@ -5,13 +5,13 @@ metadata:
     kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
     kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: api
-  name: api
+    io.kompose.service: sched
+  name: sched
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
-      io.kompose.service: api
+      io.kompose.service: sched
   strategy:
     type: Recreate
   template:
@@ -21,7 +21,7 @@ spec:
         kompose.version: 1.32.0 (HEAD)
       labels:
         io.kompose.network/swarm-vcellnet: "true"
-        io.kompose.service: api
+        io.kompose.service: sched
     spec:
       affinity:
         nodeAffinity:
@@ -34,18 +34,35 @@ spec:
                       - INTERNAL
       containers:
         - env:
+            - name: batchhost
+              value: hpc-ext-1.cam.uchc.edu,hpc-ext-2.cam.uchc.edu,hpc-ext-3.cam.uchc.edu,hpc-ext-4.cam.uchc.edu
+            - name: batchsystem
+              value: SLURM
+            - name: batchuser
+              value: vcell
             - name: dbdriver
               value: oracle.jdbc.driver.OracleDriver
             - name: dburl
               value: jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1
             - name: dbuser
               value: vcell
+            - name: htcnodelist
             - name: jmshost_int_internal
               value: activemqint
+            - name: jmshost_sim_internal
+              value: activemqsim
             - name: jmsport_int_internal
+              value: "61616"
+            - name: jmsport_sim_internal
               value: "61616"
             - name: jmsuser
               value: clientUser
+            - name: maxJobsPerScan
+              value: "100"
+            - name: maxOdeJobsPerUser
+              value: "100"
+            - name: maxPdeJobsPerUser
+              value: "40"
             - name: mongodb_database
               value: test
             - name: mongodb_host_internal
@@ -56,30 +73,33 @@ spec:
               value: TEST
             - name: simdataCacheSize
               value: "10000000"
-            - name: smtp_emailaddress
-              value: VCell_Support@uchc.edu
-            - name: smtp_hostname
-              value: vdsmtp.cam.uchc.edu
-            - name: smtp_port
-              value: "25"
+            - name: slurm_cmd_sacct
+              value: sacct
+            - name: slurm_cmd_sbatch
+              value: sbatch
+            - name: slurm_cmd_scancel
+              value: scancel
+            - name: slurm_cmd_squeue
+              value: squeue
+            - name: slurm_partition
+              value: vcell
+            - name: slurm_partition_pu
+              value: vcellpu
+            - name: slurm_reservation
+              value: vcell
+            - name: slurm_reservation_pu
+              value: vcellpu
             - name: softwareVersion
               value: Test_Version_7.5.0_build_1234
-            - name: ssl_ignoreCertProblems
-              value: "true"
-            - name: ssl_ignoreHostMismatch
-              value: "true"
-            - name: submit_service_host
-              value: submit
-            - name: webDataPort
-              value: "55556"
-          image: ghcr.io/virtualcell/vcell-api:dev
-          name: api
+            - name: vcell_ssh_cmd_cmdtimeout
+              value: "10000"
+            - name: vcell_ssh_cmd_restoretimeout
+              value: "5"
+          image: ghcr.io/virtualcell/vcell-sched:dev
+          name: sched
           ports:
-            - containerPort: 8080
-              hostPort: 8083
-              protocol: TCP
             - containerPort: 8000
-              hostPort: 5001
+              hostPort: 5004
               protocol: TCP
           resources:
             limits:
@@ -87,38 +107,20 @@ spec:
             requests:
               memory: "1048576e3"
           volumeMounts:
-            - mountPath: /run/secrets/keystorefile
-              name: keystorefile
-            - mountPath: /run/secrets/keystorepswd
-              name: keystorepswd
             - mountPath: /run/secrets/dbpswd
               name: dbpswd
             - mountPath: /run/secrets/jmspswd
               name: jmspswd
-            - mountPath: /n5DataDir
-              name: api-claim0
+            - mountPath: /run/secrets/batchuserkeyfile
+              name: batchuserkeyfile
             - mountPath: /simdata
-              name: api-claim1
+              name: sched-claim0
             - mountPath: /share/apps/vcell12/users
-              name: api-claim2
-            - mountPath: /simdata_secondary
-              name: api-claim3
-            - mountPath: /exportdir
-              name: api-claim4
+              name: sched-claim1
+            - mountPath: /htclogs
+              name: sched-claim2
       restartPolicy: Always
       volumes:
-        - name: keystorefile
-          secret:
-            items:
-              - key: keystorefile
-                path: keystorefile
-            secretName: keystorefile
-        - name: keystorepswd
-          secret:
-            items:
-              - key: keystorepswd
-                path: keystorepswd
-            secretName: keystorepswd
         - name: dbpswd
           secret:
             items:
@@ -131,21 +133,22 @@ spec:
               - key: jmspswd
                 path: jmspswd
             secretName: jmspswd
-        - name: api-claim0
+        - name: batchuserkeyfile
+          secret:
+            defaultMode: 256
+            items:
+              - key: batchuserkeyfile
+                path: batchuserkeyfile
+            secretName: batchuserkeyfile
+        - name: sched-claim0
           persistentVolumeClaim:
-            claimName: api-claim0
-        - name: api-claim1
+            claimName: sched-claim0
+        - name: sched-claim1
           persistentVolumeClaim:
-            claimName: api-claim1
-        - name: api-claim2
+            claimName: sched-claim1
+        - name: sched-claim2
           persistentVolumeClaim:
-            claimName: api-claim2
-        - name: api-claim3
-          persistentVolumeClaim:
-            claimName: api-claim3
-        - name: api-claim4
-          persistentVolumeClaim:
-            claimName: api-claim4
+            claimName: sched-claim2
 ---
 apiVersion: v1
 kind: Service
@@ -154,15 +157,12 @@ metadata:
     kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
     kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: api
-  name: api
+    io.kompose.service: sched
+  name: sched
 spec:
   ports:
-    - name: "8083"
-      port: 8083
-      targetPort: 8080
-    - name: "5001"
-      port: 5001
+    - name: "5004"
+      port: 5004
       targetPort: 8000
   selector:
-    io.kompose.service: api
+    io.kompose.service: sched

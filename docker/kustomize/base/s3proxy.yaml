@@ -8,7 +8,7 @@ metadata:
     io.kompose.service: s3proxy
   name: s3proxy
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       io.kompose.service: s3proxy

@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: activemqint
+  name: activemqint
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: activemqint
+  template:
+    metadata:
+      labels:
+        app: activemqint
+    spec:
+      containers:
+        - name: activemqint
+          image: webcenter/activemq:5.14.3
+          envFrom:
+            - configMapRef:
+                name: activemqint-config
+          ports:
+            - containerPort: 61616
+              protocol: TCP
+            - containerPort: 8161
+              protocol: TCP
+          resources:
+            limits:
+              memory: "2097152e3"
+            requests:
+              memory: "1048576e3"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: activemqint
+  name: activemqint
+spec:
+  ports:
+    - name: "61616"
+      port: 61616
+      targetPort: 61616
+    - name: "8161"
+      port: 8161
+      targetPort: 8161
+  selector:
+    app: activemqint

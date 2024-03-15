@@ -1,0 +1,59 @@
+# create kustimization.yaml file
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: devjim
+
+images:
+  - name: ghcr.io/virtualcell/vcell-api
+    newTag: dev
+#  - name: ghcr.io/virtualcell/vcell-data
+#    newTag: devjim
+#  - name: ghcr.io/virtualcell/vcell-db
+#    newTag: devjim
+#  - name: ghcr.io/virtualcell/vcell-rest
+#    newTag: devjim
+#  - name: ghcr.io/virtualcell/vcell-s3proxy
+#    newTag: devjim
+#  - name: ghcr.io/virtualcell/vcell-sched
+#    newTag: devjim
+#  - name: ghcr.io/virtualcell/vcell-submit
+#    newTag: devjim
+  - name: webcenter/activemq
+    newTag: 5.14.3
+  - name: ghcr.io/virtualcell/vcell-mongo
+    newTag: dev
+
+replicas:
+  - name: api
+    count: 1
+#  - name: data
+#    count: 0
+#  - name: db
+#    count: 0
+#  - name: rest
+#    count: 0
+#  - name: s3proxy
+#    count: 0
+#  - name: sched
+#    count: 0
+#  - name: submit
+#    count: 0
+  - name: activemqint
+    count: 1
+#  - name: activemqsim
+#    count: 0
+  - name: mongodb
+    count: 1
+
+resources:
+- api-ingress.yaml
+- mongodb-pvc.yaml
+- n5data-pvc.yaml
+- api-certificate.yaml
+- selfsigned-issuer.yaml
+- secret-db.yaml
+- secret-jms.yaml
+- secret-ghcr.yaml
+- ../../config/devjim
+- ../../base

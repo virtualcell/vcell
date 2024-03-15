@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: activemqsim
+  name: activemqsim
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: activemqsim
+  template:
+    metadata:
+      labels:
+        app: activemqsim
+    spec:
+      containers:
+        - image: webcenter/activemq:5.14.3
+          name: activemqsim
+          ports:
+            - containerPort: 61616
+              hostPort: 61619
+              protocol: TCP
+            - containerPort: 8161
+              hostPort: 8164
+              protocol: TCP
+          resources:
+            limits:
+              memory: "2000Mi"
+            requests:
+              memory: "1000Mi"
+          envFrom:
+            - configMapRef:
+                name: activemqint-config
+            - configMapRef:
+                name: shared-config
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: activemqsim
+  name: activemqsim
+spec:
+  ports:
+    - name: "61619"
+      port: 61619
+      targetPort: 61616
+    - name: "8164"
+      port: 8164
+      targetPort: 8161
+  selector:
+    app: activemqsim

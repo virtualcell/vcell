@@ -1,27 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
-    kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: mongodb
+    app: mongodb
   name: mongodb
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
-      io.kompose.service: mongodb
-  strategy:
-    type: Recreate
+      app: mongodb
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
-        kompose.version: 1.32.0 (HEAD)
       labels:
-        io.kompose.network/swarm-vcellnet: "true"
-        io.kompose.service: mongodb
+        app: mongodb
     spec:
       containers:
         - image: ghcr.io/virtualcell/vcell-mongo:dev
@@ -32,13 +23,15 @@ spec:
               protocol: TCP
           resources:
             limits:
-              memory: "1572864e3"
+              memory: "1500Mi"
             requests:
-              memory: "1048576e3"
+              memory: "1000Mi"
           volumeMounts:
             - mountPath: /data/db
               name: mongodata
       restartPolicy: Always
+      imagePullSecrets:
+        - name: ghcr-secret
       volumes:
         - name: mongodata
           persistentVolumeClaim:
@@ -47,11 +40,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
-    kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: mongodb
+    app: mongodb
   name: mongodb
 spec:
   ports:
@@ -59,4 +49,4 @@ spec:
       port: 27020
       targetPort: 27017
   selector:
-    io.kompose.service: mongodb
+    app: mongodb

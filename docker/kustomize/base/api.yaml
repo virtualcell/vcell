@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api
+  name: api
+spec:
+  selector:
+    matchLabels:
+      app: api
+  replicas: 0
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/virtualcell/vcell-api
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              memory: "1000Mi"
+              cpu: "200m"
+            limits:
+              memory: "2000Mi"
+              cpu: "500m"
+          envFrom:
+            - configMapRef:
+                name: api-config
+            - configMapRef:
+                name: shared-config
+          ports:
+            - containerPort: 8080
+              hostPort: 8083
+              protocol: TCP
+            - containerPort: 8000
+              hostPort: 5001
+              protocol: TCP
+          volumeMounts:
+            # dbpswdfile=/run/secrets/dbpswd
+            # jmspswdfile=/run/secrets/jmspswd
+            # keystore=/run/secrets/keystorefile
+            # keystorepswdfile=/run/secrets/keystorepswd
+            # cat /run/secrets/dbpswd/password
+            - mountPath: /run/secrets/dbpswd
+              name: dbpswd
+            - mountPath: /run/secrets/jmspswd
+              name: jmspswd
+            - mountPath: /n5DataDir
+              name: n5data-pvc
+#            - mountPath: /simdata
+#              name: api-claim1
+#            - mountPath: /share/apps/vcell12/users
+#              name: api-claim2
+#            - mountPath: /simdata_secondary
+#              name: api-claim3
+#            - mountPath: /exportdir
+#              name: api-claim4
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: ghcr-secret
+      volumes:
+        - name: dbpswd
+          secret:
+            items:
+              - key: password
+                path: password
+            secretName: db-secret
+        - name: jmspswd
+          secret:
+            items:
+              - key: password
+                path: password
+            secretName: jms-secret
+        - name: n5data-pvc
+          persistentVolumeClaim:
+            claimName: n5data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: api
+  name: api
+spec:
+  ports:
+    - name: "8083"
+      port: 8083
+      targetPort: 8080
+    - name: "5001"
+      port: 5001
+      targetPort: 8000
+  selector:
+    io.kompose.service: api
