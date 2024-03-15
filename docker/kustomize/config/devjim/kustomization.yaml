@@ -5,6 +5,9 @@ configMapGenerator:
   - name: api-config
     envs:
       - api.env
+  - name: db-config
+    envs:
+      - db.env
   - name: activemqint-config
     envs:
       - activemqint.env

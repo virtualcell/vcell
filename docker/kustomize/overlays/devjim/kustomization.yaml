@@ -29,8 +29,8 @@ replicas:
     count: 1
 #  - name: data
 #    count: 0
-#  - name: db
-#    count: 0
+  - name: db
+    count: 1
 #  - name: rest
 #    count: 0
 #  - name: s3proxy
