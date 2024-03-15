@@ -5,6 +5,7 @@ services:
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
+      - protocol=https
 
       - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
 

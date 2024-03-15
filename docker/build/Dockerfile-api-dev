@@ -68,6 +68,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     webDataPort="webDataPort-not-set" \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
+	protocol="https" \
 	submit_service_host="submit" \
 	workingDir="/usr/local/app"
 
@@ -116,4 +117,4 @@ ENTRYPOINT java \
 	-Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
 	-Dvcell.submit.service.host="${submit_service_host}" \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
-	/usr/local/app/docroot 8080
+	/usr/local/app/docroot 8080 ${protocol}
