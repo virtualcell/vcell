@@ -8,3 +8,6 @@ configMapGenerator:
   - name: activemqint-config
     envs:
       - activemqint.env
+  - name: activemqsim-config
+    envs:
+      - activemqsim.env

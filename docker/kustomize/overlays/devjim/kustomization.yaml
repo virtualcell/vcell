@@ -41,8 +41,8 @@ replicas:
 #    count: 0
   - name: activemqint
     count: 1
-#  - name: activemqsim
-#    count: 0
+  - name: activemqsim
+    count: 1
   - name: mongodb
     count: 1
 

@@ -15,25 +15,23 @@ spec:
         app: activemqsim
     spec:
       containers:
-        - image: webcenter/activemq:5.14.3
-          name: activemqsim
+        - name: activemqsim
+          image: webcenter/activemq:5.14.3
+          envFrom:
+            - configMapRef:
+                name: activemqsim-config
           ports:
             - containerPort: 61616
-              hostPort: 61619
+#              hostPort: 61619
               protocol: TCP
             - containerPort: 8161
-              hostPort: 8164
+#              hostPort: 8164
               protocol: TCP
           resources:
             limits:
               memory: "2000Mi"
             requests:
               memory: "1000Mi"
-          envFrom:
-            - configMapRef:
-                name: activemqint-config
-            - configMapRef:
-                name: shared-config
       restartPolicy: Always
 ---
 apiVersion: v1

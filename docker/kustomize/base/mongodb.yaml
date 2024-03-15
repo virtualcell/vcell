@@ -28,14 +28,14 @@ spec:
               memory: "1000Mi"
           volumeMounts:
             - mountPath: /data/db
-              name: mongodata
+              name: mongodbdata
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-secret
       volumes:
-        - name: mongodata
+        - name: mongodbdata
           persistentVolumeClaim:
-            claimName: mongodata
+            claimName: mongodbdata
 ---
 apiVersion: v1
 kind: Service
