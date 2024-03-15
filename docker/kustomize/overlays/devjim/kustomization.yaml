@@ -52,8 +52,7 @@ resources:
 - n5data-pvc.yaml
 - api-certificate.yaml
 - selfsigned-issuer.yaml
-- secret-db.yaml
-- secret-jms.yaml
+- api-secrets.yaml
 - secret-ghcr.yaml
 - ../../config/devjim
 - ../../base

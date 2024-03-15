@@ -28,8 +28,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: api-config
-            - configMapRef:
-                name: shared-config
+#          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
           ports:
             - containerPort: 8080
               hostPort: 8083
@@ -43,10 +42,8 @@ spec:
             # keystore=/run/secrets/keystorefile
             # keystorepswdfile=/run/secrets/keystorepswd
             # cat /run/secrets/dbpswd/password
-            - mountPath: /run/secrets/dbpswd
-              name: dbpswd
-            - mountPath: /run/secrets/jmspswd
-              name: jmspswd
+            - mountPath: /run/secrets/api-secrets
+              name: api-secrets
             - mountPath: /n5DataDir
               name: n5data-pvc
 #            - mountPath: /simdata
@@ -61,18 +58,14 @@ spec:
       imagePullSecrets:
         - name: ghcr-secret
       volumes:
-        - name: dbpswd
+        - name: api-secrets
           secret:
             items:
-              - key: password
-                path: password
-            secretName: db-secret
-        - name: jmspswd
-          secret:
-            items:
-              - key: password
-                path: password
-            secretName: jms-secret
+              - key: dbpswd
+                path: dbpswd
+              - key: jmspswd
+                path: jmspswd
+            secretName: api-secrets
         - name: n5data-pvc
           persistentVolumeClaim:
             claimName: n5data-pvc
