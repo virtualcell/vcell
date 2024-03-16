@@ -11,6 +11,9 @@ configMapGenerator:
   - name: data-config
     envs:
       - data.env
+  - name: sched-config
+    envs:
+      - sched.env
   - name: activemqint-config
     envs:
       - activemqint.env
