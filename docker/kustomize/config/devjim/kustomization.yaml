@@ -8,6 +8,9 @@ configMapGenerator:
   - name: db-config
     envs:
       - db.env
+  - name: data-config
+    envs:
+      - data.env
   - name: activemqint-config
     envs:
       - activemqint.env

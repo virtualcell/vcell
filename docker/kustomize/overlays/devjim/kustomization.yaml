@@ -27,8 +27,8 @@ images:
 replicas:
   - name: api
     count: 1
-#  - name: data
-#    count: 0
+  - name: data
+    count: 1
   - name: db
     count: 1
 #  - name: rest
