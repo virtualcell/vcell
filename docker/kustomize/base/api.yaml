@@ -24,18 +24,14 @@ spec:
               cpu: "200m"
             limits:
               memory: "2000Mi"
-              cpu: "500m"
+#              cpu: "500m"
           envFrom:
             - configMapRef:
                 name: api-config
 #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
           ports:
             - containerPort: 8080
-              hostPort: 8083
-              protocol: TCP
             - containerPort: 8000
-              hostPort: 5001
-              protocol: TCP
           volumeMounts:
             - mountPath: /run/secrets/api-secrets
               name: api-secrets

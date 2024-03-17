@@ -5,7 +5,9 @@ metadata:
   namespace: cert-manager-test
 spec:
   dnsNames:
-    - example.com
+    - minikube.local
+  commonName: minikube.local
   secretName: selfsigned-cert-tls
   issuerRef:
     name: test-selfsigned
+    kind: ClusterIssuer

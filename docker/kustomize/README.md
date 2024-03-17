@@ -101,3 +101,18 @@ kubectl kustomize overlays/devjim | kubectl apply -f -
 ```
 
 ### create sealed secrets (see [scripts/README.md](scripts/README.md))
+
+# setting up minikube.local for local development with ingress
+from https://github.com/kubernetes/minikube/issues/13510.  "Hi, I can confirm that running minikube tunnel works for me on m1 with the docker driver. 
+Keep in mind that your etc/hosts file needs to map to 127.0.0.1, instead of the output 
+of minikube ip or kubectl get ingress - this is an important gotcha."
+```bash
+#echo "$(minikube ip) minikube.local" | sudo tee -a /etc/hosts
+echo "127.0.0.1 minikube.local" | sudo tee -a /etc/hosts
+sudo minikube tunnel
+✅  Tunnel successfully started
+📌  NOTE: Please do not close this terminal as this process must stay alive for the tunnel to be accessible ...
+❗  The service/ingress nginx-ingress requires privileged ports to be exposed: [80 443]
+🔑  sudo permission will be asked for it.
+🏃  Starting tunnel for service nginx-ingress.
+```

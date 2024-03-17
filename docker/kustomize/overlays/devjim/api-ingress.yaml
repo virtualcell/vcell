@@ -5,17 +5,19 @@ metadata:
   name: api-ingress
   labels:
     app: api
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-passthrough: "true"
 spec:
-    rules:
-    - host: minikube.local
-      http:
-        paths:
-        - path: "/"
-          pathType: Prefix
-          backend:
-            service:
-                name: api
-                port:
-                  number: 8083
+  tls:
+    - hosts:
+        - minikube.local
+      secretName: selfsigned-cert-tls
+  rules:
+  - host: minikube.local
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+              name: api
+              port:
+                number: 8080
