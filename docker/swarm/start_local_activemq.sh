@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Note: Use Rosetta for x86_64/amd64 emulation on Apple Silicon Docker Desktop (see settings)"
+
 docker run -d \
   --name activemqint \
   -p 61616:61616 \

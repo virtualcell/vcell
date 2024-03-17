@@ -96,9 +96,9 @@ tag=$3
 
 build_api() {
 	echo "building $repo/vcell-api:$tag"
-	echo "$SUDO_CMD docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../.."
-	$SUDO_CMD docker build -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-api-dev --tag $repo/vcell-api:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-api:$tag
 	fi
@@ -107,9 +107,9 @@ build_api() {
 
 build_batch() {
 	echo "building $repo/vcell-batch:$tag"
-	echo "$SUDO_CMD docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../.."
-	$SUDO_CMD docker build -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-batch-dev --tag $repo/vcell-batch:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-batch:$tag
 	fi
@@ -117,9 +117,9 @@ build_batch() {
 
 build_clientgen() {
 	echo "building $repo/vcell-clientgen:$tag"
-	echo "$SUDO_CMD docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../.."
-	$SUDO_CMD docker build -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-clientgen-dev --tag $repo/vcell-clientgen:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-clientgen:$tag
 	fi
@@ -127,9 +127,9 @@ build_clientgen() {
 
 build_db() {
 	echo "building $repo/vcell-db:$tag"
-	echo "$SUDO_CMD docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../.."
-	$SUDO_CMD docker build -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-db-dev --tag $repo/vcell-db:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-db:$tag
 	fi
@@ -137,9 +137,9 @@ build_db() {
 
 build_sched() {
 	echo "building $repo/vcell-sched:$tag"
-	echo "$SUDO_CMD docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../.."
-	$SUDO_CMD docker build -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-sched-dev --tag $repo/vcell-sched:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-sched:$tag
 	fi
@@ -147,9 +147,9 @@ build_sched() {
 
 build_submit() {
 	echo "building $repo/vcell-submit:$tag"
-	echo "$SUDO_CMD docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../.."
-	$SUDO_CMD docker build -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-submit-dev --tag $repo/vcell-submit:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-submit:$tag
 	fi
@@ -157,9 +157,9 @@ build_submit() {
 
 build_data() {
 	echo "building $repo/vcell-data:$tag"
-	echo "$SUDO_CMD docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../.."
-	$SUDO_CMD docker build -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-data-dev --tag $repo/vcell-data:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-data:$tag
 	fi
@@ -167,9 +167,9 @@ build_data() {
 
 build_web() {
 	echo "building $repo/vcell-web:$tag"
-	echo "$SUDO_CMD docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../.."
-	$SUDO_CMD docker build -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-web:$tag
 	fi
@@ -177,9 +177,9 @@ build_web() {
 
 build_admin() {
 	echo "building $repo/vcell-admin:$tag"
-	echo "$SUDO_CMD docker build -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../.."
-	$SUDO_CMD docker build -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-admin-dev --tag $repo/vcell-admin:$tag ../..
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-admin:$tag
 	fi
@@ -188,9 +188,9 @@ build_admin() {
 
 build_opt() {
 	echo "building $repo/vcell-opt:$tag"
-	echo "$SUDO_CMD docker build -f ../../pythonCopasiOpt/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonCopasiOpt"
-	$SUDO_CMD docker build -f ../../pythonCopasiOpt/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonCopasiOpt
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../pythonCopasiOpt/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonCopasiOpt"
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../pythonCopasiOpt/Dockerfile --tag $repo/vcell-opt:$tag ../../pythonCopasiOpt
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-opt:$tag
 	fi
@@ -198,9 +198,9 @@ build_opt() {
 
 build_mongo() {
 	echo "building $repo/vcell-mongo:$tag"
-	echo "$SUDO_CMD docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo"
-	$SUDO_CMD docker build -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo
-	if [[ $? -ne 0 ]]; then echo "docker build failed"; exit 1; fi
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo"
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f mongo/Dockerfile --tag $repo/vcell-mongo:$tag mongo
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-mongo:$tag
 	fi

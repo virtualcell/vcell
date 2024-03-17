@@ -4,7 +4,8 @@
 pushd ../../
 mvn clean install dependency:copy-dependencies -DskipTests=true
 popd
-
+```
+```bash
 pushd ../../pythonCopasiOpt/vcell-opt
 poetry install
 popd
