@@ -33,8 +33,6 @@ spec:
           #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
           ports:
             - containerPort: 8000
-              hostPort: 5002
-              protocol: TCP
           volumeMounts:
             - mountPath: /run/secrets/api-secrets
               name: api-secrets

@@ -126,8 +126,6 @@ spec:
           name: submit
           ports:
             - containerPort: 8000
-              hostPort: 5005
-              protocol: TCP
             - containerPort: 8877
               protocol: TCP
           resources:
