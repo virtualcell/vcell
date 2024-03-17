@@ -9,6 +9,7 @@ spec:
   selector:
     matchLabels:
       app: mongodb
+  strategy: {}
   template:
     metadata:
       labels:
@@ -16,12 +17,48 @@ spec:
     spec:
       containers:
         - name: mongodb
-          image: ghcr.io/virtualcell/vcell-mongo
+#          image: ghcr.io/virtualcell/vcell-mongo
+          image: zcube/bitnami-compat-mongodb:6.0.5
+#          args: ["--dbpath","/data/db"]
+#          livenessProbe:
+#            exec:
+#              command:
+#                - mongo
+#                - --disableImplicitSessions
+#                - --eval
+#                - "db.adminCommand('ping')"
+#            initialDelaySeconds: 30
+#            periodSeconds: 10
+#            timeoutSeconds: 5
+#            successThreshold: 1
+#            failureThreshold: 6
+#          readinessProbe:
+#            exec:
+#              command:
+#                - mongo
+#                - --disableImplicitSessions
+#                - --eval
+#                - "db.adminCommand('ping')"
+#            initialDelaySeconds: 30
+#            periodSeconds: 10
+#            timeoutSeconds: 5
+#            successThreshold: 1
+#            failureThreshold: 6
           imagePullPolicy: "Always"
+          env:
+            - name: MONGODB_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: mongo-password
+            - name: MONGODB_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: mongo-username
           ports:
             - containerPort: 27017
-              hostPort: 27020
-              protocol: TCP
+              name: "mongodb"
           resources:
             limits:
               memory: "1500Mi"
@@ -29,14 +66,14 @@ spec:
               memory: "1000Mi"
           volumeMounts:
             - mountPath: /data/db
-              name: mongodbdata
+              name: mongodb-data-dir
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-secret
       volumes:
-        - name: mongodbdata
+        - name: mongodb-data-dir
           persistentVolumeClaim:
-            claimName: mongodbdata
+            claimName: mongodb-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -46,8 +83,11 @@ metadata:
   name: mongodb
 spec:
   ports:
-    - name: "27020"
-      port: 27020
+    - name: "mongodb"
+      protocol: "TCP"
+      port: 27017
       targetPort: 27017
+      nodePort: 32000
+  type: NodePort
   selector:
     app: mongodb

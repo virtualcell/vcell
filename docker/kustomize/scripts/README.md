@@ -5,6 +5,6 @@ kubernetes before creating the sealed secrets.
 DEPLOYMENT=devjim
 NAMESPACE=devjim
 kubectl create namespace ${NAMESPACE}
-./sealed_secret_api.sh ${NAMESPACE} db_pswd jms_pswd > ../overlays/${DEPLOYMENT}/api-secrets.yaml
+./sealed_secret_api.sh ${NAMESPACE} db_pswd jms_pswd mongo_user mongo_pswd > ../overlays/${DEPLOYMENT}/api-secrets.yaml
 ./sealed_secret_ghcr.sh ${NAMESPACE} gh_user gh_user_email gh_token > ../overlays/${DEPLOYMENT}/secret-ghcr.yaml
 ```
