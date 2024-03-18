@@ -34,6 +34,10 @@ spec:
           env:
             - name: batchuserkeyfile
               value: "/run/secrets/batchuserkeyfile/ssh-privatekey"
+            - name: jmspswdfile
+              value: "/run/secrets/api-secrets/jmspswd"
+            - name: dbpswdfile
+              value: "/run/secrets/api-secrets/dbpswd"
           ports:
             - containerPort: 8000
           volumeMounts:

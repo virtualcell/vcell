@@ -31,6 +31,11 @@ spec:
             - configMapRef:
                 name: data-config
           #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
+          env:
+            - name: jmspswdfile
+              value: "/run/secrets/api-secrets/jmspswd"
+            - name: dbpswdfile
+              value: "/run/secrets/api-secrets/dbpswd"
           ports:
             - containerPort: 8000
           volumeMounts:
