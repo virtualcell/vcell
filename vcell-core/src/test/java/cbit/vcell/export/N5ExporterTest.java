@@ -175,7 +175,7 @@ public class N5ExporterTest {
 
     }
 
-    public void makeN5Model(N5Specs.CompressionLevel compressionLevel, int startTimeIndex, int endTimeIndex, String modelID) throws MathException, IOException, DataAccessException {
+    public void makeN5Model(N5Specs.CompressionLevel compressionLevel, int startTimeIndex, int endTimeIndex, String modelID) throws Exception {
         OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 
         VariableSpecs variableSpecs = new VariableSpecs(variables.stream().map(di -> di.getName()).toList(), Integer.parseInt(modelID));
@@ -226,7 +226,7 @@ public class N5ExporterTest {
 
 
     @Test
-    public void testMetaData() throws MathException, DataAccessException, IOException {
+    public void testMetaData() throws Exception {
 
         for(String model: testModels){
             this.initalizeModel(model);
@@ -246,7 +246,7 @@ public class N5ExporterTest {
     }
 
     @Test
-    public void testRandomTimeSlices() throws MathException, IOException, DataAccessException {
+    public void testRandomTimeSlices() throws Exception {
         for (String model: testModels){
             initalizeModel(model);
             for (int k=0; k<8; k++){ //try 8 randomly chosen time slice combinations
@@ -278,7 +278,7 @@ public class N5ExporterTest {
     }
 
     @Test
-    public void testRawDataEquivelance() throws IOException, DataAccessException, MathException {
+    public void testRawDataEquivelance() throws Exception {
         // Is the histogram over entire slice of an image result in the same for both parties
         // is it the same for some random region of space in the slice for the intensities should be the same
 
@@ -312,7 +312,7 @@ public class N5ExporterTest {
     // Test only one time slice for each compression type for data equivalence, the time slice is chosen randomly
     // and random variable, this way it doesn't take forever to test
     @Test
-    public void testDataCompressionEquivelance() throws MathException, IOException, DataAccessException {
+    public void testDataCompressionEquivelance() throws Exception {
         ArrayList<N5Specs.CompressionLevel> compressions = new ArrayList<>(Arrays.asList(
                 N5Specs.CompressionLevel.BZIP,
                 N5Specs.CompressionLevel.GZIP
