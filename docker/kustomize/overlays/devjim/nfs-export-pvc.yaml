@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  # corresponds to the NFS mount of cfs05:/vcellroot to /opt/vcelldata on swarm nodes
+  name: nfs-export-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  resources:
+    requests:
+      storage: 1000Gi
+  volumeName: cfs05-vcellroot-pv

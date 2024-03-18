@@ -49,13 +49,18 @@ replicas:
 resources:
 - api-ingress.yaml
 - mongodb-pvc.yaml
-- n5data-pvc.yaml
-- primary-data-pvc.yaml
-- secondary-data-pvc.yaml
 - api-certificate.yaml
 - selfsigned-issuer.yaml
 - api-secrets.yaml
 - secret-ghcr.yaml
 - vcell-ssh-secret.yaml
+- cfs05_vcellroot_pv.yaml
+- cfs07_vcell_pv.yaml
+- cfs12_vcell_pv.yaml
+- cfs09_vcell_pv.yaml
+- nfs-secondary-pvc.yaml
+- nfs-archive-pvc.yaml
+- nfs-primary-pvc.yaml
+- nfs-export-pvc.yaml
 - ../../config/devjim
 - ../../base
