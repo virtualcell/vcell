@@ -31,7 +31,7 @@ spec:
             limits:
               memory: "2000Mi"
             requests:
-              memory: "1000Mi"
+              memory: "700Mi"
       restartPolicy: Always
 ---
 apiVersion: v1

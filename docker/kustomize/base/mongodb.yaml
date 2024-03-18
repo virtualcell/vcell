@@ -63,7 +63,7 @@ spec:
             limits:
               memory: "1500Mi"
             requests:
-              memory: "1000Mi"
+              memory: "250Mi"
           volumeMounts:
             - mountPath: /data/db
               name: mongodb-data-dir
