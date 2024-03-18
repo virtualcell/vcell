@@ -1,195 +1,91 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
-    kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: submit
+    app: submit
   name: submit
 spec:
-  replicas: 0
   selector:
     matchLabels:
-      io.kompose.service: submit
+      app: submit
+  replicas: 0
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
-        kompose.version: 1.32.0 (HEAD)
       labels:
-        io.kompose.network/swarm-vcellnet: "true"
-        io.kompose.service: submit
+        app: submit
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: zone
-                    operator: In
-                    values:
-                      - INTERNAL
       containers:
-        - env:
-            - name: batch_singularity_imagefile
-              value: /state/partition1/singularityImages/ghcr.io_virtualcell_vcell-batch_dev.img
-            - name: batchhost
-              value: hpc-ext-1.cam.uchc.edu,hpc-ext-2.cam.uchc.edu,hpc-ext-3.cam.uchc.edu,hpc-ext-4.cam.uchc.edu
-            - name: batchsystem
-              value: SLURM
-            - name: batchuser
-              value: vcell
-            - name: docker_name
-              value: ghcr.io/virtualcell/vcell-batch:dev
-            - name: htclogdir_external
-              value: /share/apps/vcell3/dev_htclogs
-            - name: htcnodelist
-            - name: jmshost_int_internal
-              value: activemqint
-            - name: jmshost_sim_external
-              value: vcell-node3.cam.uchc.edu
-            - name: jmshost_sim_internal
-              value: activemqsim
-            - name: jmsport_int_internal
-              value: "61616"
-            - name: jmsport_sim_external
-              value: "61619"
-            - name: jmsport_sim_internal
-              value: "61616"
-            - name: jmsrestport_sim_external
-              value: "8164"
-            - name: jmsuser
-              value: clientUser
-            - name: mongodb_database
-              value: test
-            - name: mongodb_host_external
-              value: Jims-MBP-2
-            - name: mongodb_host_internal
-              value: mongodb
-            - name: mongodb_port_external
-              value: "27020"
-            - name: mongodb_port_internal
-              value: "27017"
-            - name: nativesolverdir_external
-              value: /share/apps/vcell3/nativesolvers
-            - name: opt_singularity_imagefile
-              value: /state/partition1/singularityImages/ghcr.io_virtualcell_vcell-opt_dev.img
-            - name: serverid
-              value: TEST
-            - name: simdatadir_archive_external
-              value: /share/apps/vcell12/users
-            - name: simdatadir_archive_internal
-              value: /share/apps/vcell12/users
-            - name: simdatadir_external
-              value: /share/apps/vcell3/users
-            - name: simdatadir_parallel_external
-              value: /share/apps/vcell3parallel
-            - name: simdatadir_secondary_external
-              value: /share/apps/vcell7/users
-            - name: slurm_central_singularity_dir
-              value: /share/apps/vcell3/singularityImages
-            - name: slurm_cmd_sacct
-              value: sacct
-            - name: slurm_cmd_sbatch
-              value: sbatch
-            - name: slurm_cmd_scancel
-              value: scancel
-            - name: slurm_cmd_squeue
-              value: squeue
-            - name: slurm_local_singularity_dir
-              value: /state/partition1/singularityImages
-            - name: slurm_partition
-              value: vcell
-            - name: slurm_partition_pu
-              value: vcellpu
-            - name: slurm_qos
-              value: vcell
-            - name: slurm_qos_pu
-              value: vcellpu
-            - name: slurm_reservation
-            - name: slurm_reservation_pu
-              value: vcellpu
-            - name: slurm_singularity_module_name
-              value: singularity/vcell-3.10.0
-            - name: slurm_tmpdir
-              value: /scratch/vcell
-            - name: softwareVersion
-              value: Test_Version_7.5.0_build_1234
-            - name: vcell_ssh_cmd_cmdtimeout
-              value: "10000"
-            - name: vcell_ssh_cmd_restoretimeout
-              value: "5"
-          image: ghcr.io/virtualcell/vcell-submit:dev
-          name: submit
+        - name: submit
+          image: ghcr.io/virtualcell/vcell-submit
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              memory: "250Mi"
+              cpu: "200m"
+            limits:
+              memory: "2000Mi"
+#              cpu: "500m"
+          envFrom:
+            - configMapRef:
+                name: submit-config
+          #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
+          env:
+            - name: batchuserkeyfile
+              value: "/run/secrets/batchuserkeyfile/ssh-privatekey"
+            - name: jmspswdfile
+              value: "/run/secrets/api-secrets/jmspswd"
+            - name: dbpswdfile
+              value: "/run/secrets/api-secrets/dbpswd"
           ports:
             - containerPort: 8000
             - containerPort: 8877
               protocol: TCP
-          resources:
-            limits:
-              memory: "2097152e3"
-            requests:
-              memory: "1048576e3"
           volumeMounts:
-            - mountPath: /run/secrets/jmspswd
-              name: jmspswd
-            - mountPath: /run/secrets/jmsrestpswd
-              name: jmsrestpswd
+            - mountPath: /run/secrets/api-secrets
+              name: api-secrets
             - mountPath: /run/secrets/batchuserkeyfile
               name: batchuserkeyfile
             - mountPath: /simdata
-              name: submit-claim0
+              name: primary-data-pvc
+#            - mountPath: /share/apps/vcell12/users
+#              name: sched-claim1
             - mountPath: /simdata_secondary
-              name: submit-claim1
-            - mountPath: /share/apps/vcell12/users
-              name: submit-claim2
-            - mountPath: /htclogs
-              name: submit-claim3
+              name: secondary-data-pvc
+#            - mountPath: /htclogs
+#              name: submit-claim2
       restartPolicy: Always
+      imagePullSecrets:
+        - name: ghcr-secret
       volumes:
-        - name: jmspswd
+        - name: api-secrets
           secret:
             items:
+              - key: dbpswd
+                path: dbpswd
               - key: jmspswd
                 path: jmspswd
-            secretName: jmspswd
-        - name: jmsrestpswd
-          secret:
-            items:
-              - key: jmsrestpswd
-                path: jmsrestpswd
-            secretName: jmsrestpswd
+            secretName: api-secrets
         - name: batchuserkeyfile
           secret:
             defaultMode: 256
             items:
-              - key: batchuserkeyfile
-                path: batchuserkeyfile
-            secretName: batchuserkeyfile
-        - name: submit-claim0
+              - key: ssh-privatekey
+                path: ssh-privatekey
+            secretName: vcell-ssh-secret
+        - name: primary-data-pvc
           persistentVolumeClaim:
-            claimName: submit-claim0
-        - name: submit-claim1
+            claimName: primary-data-pvc
+        - name: secondary-data-pvc
           persistentVolumeClaim:
-            claimName: submit-claim1
-        - name: submit-claim2
-          persistentVolumeClaim:
-            claimName: submit-claim2
-        - name: submit-claim3
-          persistentVolumeClaim:
-            claimName: submit-claim3
+            claimName: secondary-data-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
-    kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: submit
+    app: submit
   name: submit
 spec:
   ports:
@@ -200,4 +96,4 @@ spec:
       port: 8877
       targetPort: 8877
   selector:
-    io.kompose.service: submit
+    app: submit

@@ -31,13 +31,16 @@ spec:
             - configMapRef:
                 name: sched-config
           #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
+          env:
+            - name: batchuserkeyfile
+              value: "/run/secrets/batchuserkeyfile/ssh-privatekey"
           ports:
             - containerPort: 8000
           volumeMounts:
             - mountPath: /run/secrets/api-secrets
               name: api-secrets
-#            - mountPath: /run/secrets/batchuserkeyfile
-#              name: batchuserkeyfile
+            - mountPath: /run/secrets/batchuserkeyfile
+              name: batchuserkeyfile
             - mountPath: /simdata
               name: primary-data-pvc
 #            - mountPath: /share/apps/vcell12/users
@@ -58,13 +61,13 @@ spec:
               - key: jmspswd
                 path: jmspswd
             secretName: api-secrets
-#        - name: batchuserkeyfile
-#          secret:
-#            defaultMode: 256
-#            items:
-#              - key: batchuserkeyfile
-#                path: batchuserkeyfile
-#            secretName: batchuserkeyfile
+        - name: batchuserkeyfile
+          secret:
+            defaultMode: 256
+            items:
+              - key: ssh-privatekey
+                path: ssh-privatekey
+            secretName: vcell-ssh-secret
         - name: primary-data-pvc
           persistentVolumeClaim:
             claimName: primary-data-pvc

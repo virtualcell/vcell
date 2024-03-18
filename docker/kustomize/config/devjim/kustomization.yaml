@@ -14,6 +14,9 @@ configMapGenerator:
   - name: sched-config
     envs:
       - sched.env
+  - name: submit-config
+    envs:
+      - submit.env
   - name: activemqint-config
     envs:
       - activemqint.env

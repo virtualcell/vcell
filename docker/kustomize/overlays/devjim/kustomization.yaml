@@ -17,8 +17,8 @@ images:
 #    newTag: dev
   - name: ghcr.io/virtualcell/vcell-sched
     newTag: dev
-#  - name: ghcr.io/virtualcell/vcell-submit
-#    newTag: dev
+  - name: ghcr.io/virtualcell/vcell-submit
+    newTag: dev
   - name: webcenter/activemq
     newTag: 5.14.3
   - name: ghcr.io/virtualcell/vcell-mongo
@@ -37,8 +37,8 @@ replicas:
 #    count: 0
   - name: sched
     count: 1
-#  - name: submit
-#    count: 0
+  - name: submit
+    count: 1
   - name: activemqint
     count: 1
   - name: activemqsim
