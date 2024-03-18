@@ -49,6 +49,9 @@ spec:
               mountPath: /n5DataDir
               subPath: n5
             - name: nfs-primary-pvc
+              mountPath: /exportdir
+              subPath: export
+            - name: nfs-primary-pvc
               mountPath: /simdata
               subPath: users
             - name: nfs-archive-pvc
@@ -57,9 +60,6 @@ spec:
 #            - name: nfs-secondary-pvc
 #              mountPath: /simdata_secondary
 #              subPath: users
-#            - name: nfs-export-pvc
-#              mountPath: /exportdir
-#              subPath: export
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-secret
@@ -72,18 +72,15 @@ spec:
               - key: jmspswd
                 path: jmspswd
             secretName: api-secrets
-#        - name: nfs-export-pvc
-#          persistentVolumeClaim:
-#            claimName: nfs-export-pvc
         - name: nfs-primary-pvc
           persistentVolumeClaim:
             claimName: nfs-primary-pvc
         - name: nfs-archive-pvc
           persistentVolumeClaim:
             claimName: nfs-archive-pvc
-#        - name: nfs-secondary-pvc
-#          persistentVolumeClaim:
-#            claimName: nfs-secondary-pvc
+        - name: nfs-secondary-pvc
+          persistentVolumeClaim:
+            claimName: nfs-secondary-pvc
 
 ---
 apiVersion: v1
