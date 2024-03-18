@@ -116,3 +116,15 @@ sudo minikube tunnel
 🔑  sudo permission will be asked for it.
 🏃  Starting tunnel for service nginx-ingress.
 ```
+when running VCell client with self-signed cert, set the following flags
+```
+-Dvcell.ssl.ignoreHostMismatch=true
+-Dvcell.ssl.ignoreCertProblems=true
+```
+
+### lightweight local log tailing with logtail
+```bash
+brew tap johanhaleby/kubetail
+brew install kubetail
+kubetail -n devjim
+```

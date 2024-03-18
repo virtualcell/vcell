@@ -203,7 +203,7 @@ results/*
 
 /status.yml
 .java-version
-
+.python-version
 
 Makefile
 

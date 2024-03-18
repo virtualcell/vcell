@@ -43,18 +43,23 @@ spec:
             - containerPort: 8877
               protocol: TCP
           volumeMounts:
-            - mountPath: /run/secrets/api-secrets
-              name: api-secrets
-            - mountPath: /run/secrets/batchuserkeyfile
-              name: batchuserkeyfile
-            - mountPath: /simdata
-              name: primary-data-pvc
-#            - mountPath: /share/apps/vcell12/users
-#              name: sched-claim1
-            - mountPath: /simdata_secondary
-              name: secondary-data-pvc
-#            - mountPath: /htclogs
-#              name: submit-claim2
+            - name: api-secrets
+              mountPath: /run/secrets/api-secrets
+            - name: batchuserkeyfile
+              mountPath: /run/secrets/batchuserkeyfile
+
+            - name: nfs-primary-pvc
+              mountPath: /htclogs
+              subPath: htclogs
+            - name: nfs-primary-pvc
+              mountPath: /simdata
+              subPath: users
+            - name: nfs-archive-pvc
+              mountPath: /share/apps/vcell12/users
+              subPath: users
+#            - name: nfs-secondary-pvc
+#              mountPath: /simdata_secondary
+#              subPath: users
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-secret
@@ -74,12 +79,15 @@ spec:
               - key: ssh-privatekey
                 path: ssh-privatekey
             secretName: vcell-ssh-secret
-        - name: primary-data-pvc
+        - name: nfs-primary-pvc
           persistentVolumeClaim:
-            claimName: primary-data-pvc
-        - name: secondary-data-pvc
+            claimName: nfs-primary-pvc
+        - name: nfs-archive-pvc
           persistentVolumeClaim:
-            claimName: secondary-data-pvc
+            claimName: nfs-archive-pvc
+#        - name: nfs-secondary-pvc
+#          persistentVolumeClaim:
+#            claimName: nfs-secondary-pvc
 ---
 apiVersion: v1
 kind: Service

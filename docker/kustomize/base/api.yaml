@@ -38,18 +38,24 @@ spec:
             - containerPort: 8080
             - containerPort: 8000
           volumeMounts:
-            - mountPath: /run/secrets/api-secrets
-              name: api-secrets
-            - mountPath: /n5DataDir
-              name: n5data-pvc
-            - mountPath: /simdata
-              name: primary-data-pvc
-#            - mountPath: /share/apps/vcell12/users
-#              name: api-claim2
-            - mountPath: /simdata_secondary
-              name: secondary-data-pvc
-#            - mountPath: /exportdir
-#              name: api-claim4
+            - name: api-secrets
+              mountPath: /run/secrets/api-secrets
+
+            - name: nfs-primary-pvc
+              mountPath: /n5DataDir
+              subPath: n5
+            - name: nfs-primary-pvc
+              mountPath: /simdata
+              subPath: users
+            - name: nfs-archive-pvc
+              mountPath: /share/apps/vcell12/users
+              subPath: users
+#            - name: nfs-secondary-pvc
+#              mountPath: /simdata_secondary
+#              subPath: users
+#            - name: nfs-export-pvc
+#              mountPath: /exportdir
+#              subPath: export
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-secret
@@ -62,15 +68,18 @@ spec:
               - key: jmspswd
                 path: jmspswd
             secretName: api-secrets
-        - name: n5data-pvc
+#        - name: nfs-export-pvc
+#          persistentVolumeClaim:
+#            claimName: nfs-export-pvc
+        - name: nfs-primary-pvc
           persistentVolumeClaim:
-            claimName: n5data-pvc
-        - name: primary-data-pvc
+            claimName: nfs-primary-pvc
+        - name: nfs-archive-pvc
           persistentVolumeClaim:
-            claimName: primary-data-pvc
-        - name: secondary-data-pvc
-          persistentVolumeClaim:
-            claimName: secondary-data-pvc
+            claimName: nfs-archive-pvc
+#        - name: nfs-secondary-pvc
+#          persistentVolumeClaim:
+#            claimName: nfs-secondary-pvc
 
 ---
 apiVersion: v1
