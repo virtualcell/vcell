@@ -56,5 +56,6 @@ resources:
 - selfsigned-issuer.yaml
 - api-secrets.yaml
 - secret-ghcr.yaml
+- vcell-ssh-secret.yaml
 - ../../config/devjim
 - ../../base
