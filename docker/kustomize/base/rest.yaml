@@ -23,15 +23,11 @@ spec:
         io.kompose.network/swarm-vcellnet: "true"
         io.kompose.service: rest
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: zone
-                    operator: In
-                    values:
-                      - INTERNAL
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10000
+        fsGroup: 10000
+
       containers:
         - env:
             - name: dbdriver
@@ -74,6 +70,7 @@ spec:
               value: "55556"
           image: ghcr.io/virtualcell/vcell-rest:dev
           name: rest
+          imagePullPolicy: "Always"
           ports:
             - containerPort: 8080
               hostPort: 8083

@@ -23,15 +23,10 @@ spec:
         io.kompose.network/swarm-default: "true"
         io.kompose.service: s3proxy
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: zone
-                    operator: In
-                    values:
-                      - INTERNAL
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10000
+        fsGroup: 10000
       containers:
         - command:
             - sh

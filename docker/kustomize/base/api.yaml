@@ -14,6 +14,10 @@ spec:
       labels:
         app: api
     spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10000
+        fsGroup: 10000
       containers:
         - name: api
           image: ghcr.io/virtualcell/vcell-api

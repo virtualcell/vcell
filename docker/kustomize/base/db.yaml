@@ -14,6 +14,10 @@ spec:
       labels:
         app: db
     spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10000
+        fsGroup: 10000
       containers:
         - name: db
           image: ghcr.io/virtualcell/vcell-db

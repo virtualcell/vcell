@@ -16,6 +16,10 @@ spec:
       labels:
         app: sched
     spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10000
+        fsGroup: 10000
       containers:
         - name: sched
           image: ghcr.io/virtualcell/vcell-sched
