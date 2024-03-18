@@ -58,8 +58,9 @@ spec:
               mountPath: /share/apps/vcell12/users
               subPath: users
 #            - name: nfs-secondary-pvc
-#              mountPath: /simdata_secondary
-#              subPath: users
+            - name: nfs-primary-pvc
+              mountPath: /simdata_secondary
+              subPath: users
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-secret
@@ -78,9 +79,9 @@ spec:
         - name: nfs-archive-pvc
           persistentVolumeClaim:
             claimName: nfs-archive-pvc
-        - name: nfs-secondary-pvc
-          persistentVolumeClaim:
-            claimName: nfs-secondary-pvc
+#        - name: nfs-secondary-pvc
+#          persistentVolumeClaim:
+#            claimName: nfs-secondary-pvc
 
 ---
 apiVersion: v1
