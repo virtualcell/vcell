@@ -24,6 +24,15 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tz
 RUN unlink /etc/localtime || true
 RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 
+# Create a user with UID 10001 and GID 10000
+RUN groupadd -g 10000 vcellgroup && \
+    useradd -rm -d /home/vcell -s /bin/bash -u 10001 -g vcellgroup vcell
+
+USER vcell
+
+RUN mkdir -p ~vcell/.ssh && \
+    chmod 700 ~vcell/.ssh
+
 WORKDIR /usr/local/app
 
 COPY ./vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar \
