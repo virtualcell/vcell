@@ -1,6 +1,6 @@
 package org.vcell.cli.run.hdf5;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +22,7 @@ public class Hdf5DataContainer {
     }
 
     public Hdf5DataContainer(boolean shouldTrackSedmlSubSetsInReports){
-        this.uriToResultsMap = new HashMap<>();
+        this.uriToResultsMap = new LinkedHashMap<>();
         this.trackSubSetsInReports = shouldTrackSedmlSubSetsInReports;
     }
 

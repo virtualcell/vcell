@@ -542,7 +542,7 @@ public class SolverHandler {
 							sdl = kisao;
 						}
 						if (logTaskError.contains("Process timed out")) {
-							if (bTimeoutFound == false) {        // don't repeat this for each task
+							if (!bTimeoutFound) {        // don't repeat this for each task
 								String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
 								str += "Process timed out";        // truncate the rest of the spam
 								cliLogger.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);

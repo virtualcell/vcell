@@ -284,7 +284,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 						URL url = new URL(exportBaseURL + downloadableHDF5File.getName());
 						return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 					}
-					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case QUICKTIME:
 				case GIF:
 				case FORMAT_JPEG:
@@ -292,7 +292,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 					exportOutputs = imgExporter.makeMediaData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,clientTaskStatusSupport,fileDataContainerManager);
 					boolean bOverrideZip = exportOutputs.length == 1;
 					if(bSaveAsZip && !bOverrideZip){
-						return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+						return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 					}else{
 						return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 					}
@@ -302,16 +302,16 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob, fileDataContainerManager);
 				case UCD:
 					exportOutputs = rrExporter.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
-					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case PLY:
 					exportOutputs = rrExporter.makePLYWithTexData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
-					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case VTK_IMAGE:
 					exportOutputs = rrExporter.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
-					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case VTK_UNSTRUCT:
 					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
-					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case N5:
 					n5Exporter.initalizeDataControllers(user, dataServerImpl,  (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier());
 					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
@@ -388,7 +388,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
  * This function saves the remote file into a compressed zip file.
  * Creation date: (4/26/2004 6:47:56 PM)
  */
-private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
+private ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob, FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
 			fireExportAssembling(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
 
