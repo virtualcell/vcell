@@ -145,7 +145,8 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         exportDetails.setSize(new Dimension(width, height));
         exportDetails.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Variables "));
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportVariableText, parameterScrollPane);
+//        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportVariableText, parameterScrollPane);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportDetails, parameterScrollPane);
         splitPane.setContinuousLayout(true);
         splitPane.setResizeWeight(0.5);
         splitPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Details "));
