@@ -12,5 +12,5 @@ spec:
   nfs:
     path: /ifs/vcell
     server: cfs07.cam.uchc.edu
-#  mountOptions:
-#    - nfsvers=4.2
+  mountOptions:
+    - nfsvers=3

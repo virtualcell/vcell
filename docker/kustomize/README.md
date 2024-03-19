@@ -121,6 +121,12 @@ when running VCell client with self-signed cert, set the following flags
 -Dvcell.ssl.ignoreHostMismatch=true
 -Dvcell.ssl.ignoreCertProblems=true
 ```
+### set up the external ip address of the minicube cluster
+```bash
+ifconfig | grep "inet " | grep 155
+```
+then, set the ip address in /docker/kustomize/config/jimdev/submit.env
+
 
 ### lightweight local log tailing with logtail
 ```bash

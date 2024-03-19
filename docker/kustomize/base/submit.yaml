@@ -62,8 +62,9 @@ spec:
               mountPath: /share/apps/vcell12/users
               subPath: users
 #            - name: nfs-secondary-pvc
-#              mountPath: /simdata_secondary
-#              subPath: users
+            - name: nfs-primary-pvc
+              mountPath: /simdata_secondary
+              subPath: users
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-secret

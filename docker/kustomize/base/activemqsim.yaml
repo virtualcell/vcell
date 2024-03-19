@@ -22,10 +22,8 @@ spec:
                 name: activemqsim-config
           ports:
             - containerPort: 61616
-#              hostPort: 61619
               protocol: TCP
             - containerPort: 8161
-#              hostPort: 8164
               protocol: TCP
           resources:
             limits:
@@ -42,11 +40,11 @@ metadata:
   name: activemqsim
 spec:
   ports:
-    - name: "61619"
-      port: 61619
+    - name: "61616"
+      port: 61616
       targetPort: 61616
-    - name: "8164"
-      port: 8164
+    - name: "8161"
+      port: 8161
       targetPort: 8161
   selector:
     app: activemqsim
