@@ -102,7 +102,6 @@ ENTRYPOINT java \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.secondarySimdatadir.external="${simdatadir_secondary_external}" \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
-	-Dvcell.htc.simPerUserMemLimitFile=sim_mem_per_user_limits.txt \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.parallelDatadir.external="${simdatadir_parallel_external}" \
 	-Dvcell.nativesolverdir.external="${nativesolverdir_external}" \
