@@ -165,7 +165,7 @@ public class N5Exporter implements ExportConstants {
 	}
 
 	private static String actualHash(String simID, String jobID) {
-		MessageDigest sha256 = DigestUtils.getSha256Digest();
+		MessageDigest sha256 = DigestUtils.getMd5Digest();
 		sha256.update(simID.getBytes(StandardCharsets.UTF_8));
 //		sha256.update(jobID.getBytes(StandardCharsets.UTF_8));
 
