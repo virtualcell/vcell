@@ -74,8 +74,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         tableScrollPane.setMinimumSize(new Dimension(tableWidth, tableHeight));
         tableScrollPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Table "));
 
-
-
         DefaultScrollTableCellRenderer applicationCellRender = new DefaultScrollTableCellRenderer(){
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -108,14 +106,66 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
                 return this;
             }
         };
-
-
-
         editorScrollTable.getSelectionModel().addListSelectionListener(this);
         editorScrollTable.getColumnModel().getColumn(1).setCellRenderer(applicationCellRender);
 
+        JPanel searchPane = new JPanel();
+        searchPane.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 4, 1, 2);
+        searchPane.add(new JLabel("Search"), gbc);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, exportDetailsPane());
+        JTextField searchField = new JTextField();
+        searchField.setEnabled(false);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 2, 1, 2);
+        searchPane.add(searchField, gbc);
+
+        copyButton = new JButton("Copy Export Link");
+        copyButton.addActionListener(this);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+//        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(1, 4, 1, 4);
+        searchPane.add(copyButton, gbc);
+
+        JPanel exportPane = new JPanel();       // --------------------------------------------------
+        exportPane.setLayout(new GridBagLayout());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 1, 1, 1);
+        exportPane.add(tableScrollPane, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(1, 1, 1, 1);
+        exportPane.add(searchPane, gbc);
+
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, exportPane, exportDetailsPane());
         splitPane.setContinuousLayout(true);
         this.setLayout(new BorderLayout());
         this.add(userOptionsPane(), BorderLayout.NORTH);
@@ -156,7 +206,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     private JPanel userOptionsPane(){
         refreshButton = new JButton("Refresh");
-        copyButton = new JButton("Copy Export Link");
 
         JPanel timeIntervalSelector = new JPanel();
         timeIntervalSelector.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Time Interval "));
@@ -166,6 +215,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         timeButtonGroup.add(monthInterval);
         timeButtonGroup.add(yearlyInterval);
         timeButtonGroup.add(anyInterval);
+        timeButtonGroup.setSelected(anyInterval.getModel(), true);
 
         timeIntervalSelector.add(todayInterval);
         timeIntervalSelector.add(monthInterval);
@@ -203,72 +253,45 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         gbc.gridy = 0;
 //        gbc.weightx = 1;
 //        gbc.weighty = 1;
-        gbc.gridwidth = 3;
+//        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
 //        gbc.fill = GridBagConstraints.VERTICAL;
         gbc.insets = new Insets(1, 1, 5, 1);
         topBar.add(exportFormatFilterPanel, gbc);
 
         gbc = new GridBagConstraints();
-        gbc.gridx = 4;
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+//        gbc.gridwidth = 2;
+//        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 1, 1, 1);
+        topBar.add(timeIntervalSelector, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
         gbc.gridy = 0;
         gbc.weightx = 1;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(1, 1, 5, 1);
-        topBar.add(new JLabel(), gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(1, 1, 1, 1);
-        topBar.add(timeIntervalSelector, gbc);
-
-//        gbc.gridx = 0;
-//        gbc.gridy = 0;
-//        gbc.weightx = 1;
-//        gbc.weighty = 1;
-//        gbc.fill = GridBagConstraints.BOTH;
-//        gbc.insets = new Insets(1, 1, 1, 1);
-//        topBar.add(copyButton, gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.gridx = 4;
-        gbc.gridy = 1;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(1, 1, 1, 1);
-        topBar.add(refreshButton, gbc);
+        topBar.add(new JLabel(), gbc);      // fake element for filling any empty space
 
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
-        gbc.gridy = 1;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
+        gbc.gridy = 0;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(1, 1, 5, 1);
-        topBar.add(new JLabel(), gbc);
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(9, 1, 7, 4);
+        topBar.add(refreshButton, gbc);
 
 
-//        JPanel topBar = new JPanel();
-//        topBar.setLayout(new FlowLayout());
-//        refresh.addActionListener(this);
-//        copyButton.addActionListener(this);
-//        topBar.add(exportFormatFilter);
-//        topBar.add(timeIntervalSelector);
-//        topBar.add(copyButton);
-//        topBar.add(refresh);
-//
-//        topBar.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " User Options "));
 //        topBar.setPreferredSize(new Dimension(400, 150));
 
         refreshButton.addActionListener(this);
-        copyButton.addActionListener(this);
         return topBar;
     }
 
