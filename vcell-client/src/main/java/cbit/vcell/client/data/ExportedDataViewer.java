@@ -16,6 +16,7 @@ import org.vcell.util.gui.VCellIcons;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.*;
@@ -37,7 +38,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     private final EditorScrollTable editorScrollTable;
     private EditorScrollTable parameterScrollTable = new EditorScrollTable();
     private ParameterTableModelExport parameterScrollTableModel;
-    private JButton refresh;
+    private JButton refreshButton;
     private JButton copyButton;
 
     private final JRadioButton todayInterval = new JRadioButton("Past 24 hours");
@@ -154,12 +155,12 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     }
 
     private JPanel userOptionsPane(){
-        refresh = new JButton("Refresh");
+        refreshButton = new JButton("Refresh");
         copyButton = new JButton("Copy Export Link");
 
         JPanel timeIntervalSelector = new JPanel();
         timeIntervalSelector.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Time Interval "));
-        timeIntervalSelector.setLayout(new BoxLayout(timeIntervalSelector, BoxLayout.Y_AXIS));
+        timeIntervalSelector.setLayout(new BoxLayout(timeIntervalSelector, BoxLayout.X_AXIS));
 
         timeButtonGroup.add(todayInterval);
         timeButtonGroup.add(monthInterval);
@@ -171,35 +172,103 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         timeIntervalSelector.add(yearlyInterval);
         timeIntervalSelector.add(anyInterval);
 
-        JPanel exportFormatFilter = new JPanel();
+        JPanel exportFormatFilterPanel = new JPanel();
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        exportFormatFilter.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Type "));
-        exportFormatFilter.setLayout(new GridBagLayout());
+        exportFormatFilterPanel.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Type "));
+        exportFormatFilterPanel.setLayout(new GridBagLayout());
         Set<String> exportNames = new HashSet<>();
-        for (ExportFormat format : ExportFormat.values()){
+        GridBagConstraints gbc = new GridBagConstraints();
+        for (ExportFormat format : ExportFormat.values()) {
             String properFormatName = format.name().contains("_") ? format.name().split("_")[1] : format.name();
             if(!exportNames.contains(properFormatName)){
                 exportNames.add(properFormatName);
                 JCheckBox formatButton = new JCheckBox(properFormatName);
-                formatButton.setPreferredSize(new Dimension(50, 10));
+                formatButton.setPreferredSize(new Dimension(120, 10));
                 formatButton.setSelected(true);
-                exportFormatFilter.add(formatButton);
+                exportFormatFilterPanel.add(formatButton);
                 formatButtonGroup.add(formatButton);
             }
         }
 
         JPanel topBar = new JPanel();
-        topBar.setLayout(new FlowLayout());
-        refresh.addActionListener(this);
+        TitledBorder titleOptions = BorderFactory.createTitledBorder(loweredEtchedBorder, " User Options ");
+        titleOptions.setTitleJustification(TitledBorder.LEFT);
+        titleOptions.setTitlePosition(TitledBorder.TOP);
+        topBar.setBorder(titleOptions);
+
+        topBar.setLayout(new GridBagLayout());
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+        gbc.gridwidth = 3;
+        gbc.anchor = GridBagConstraints.WEST;
+//        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.insets = new Insets(1, 1, 5, 1);
+        topBar.add(exportFormatFilterPanel, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 4;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 1, 5, 1);
+        topBar.add(new JLabel(), gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 1, 1, 1);
+        topBar.add(timeIntervalSelector, gbc);
+
+//        gbc.gridx = 0;
+//        gbc.gridy = 0;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+//        gbc.fill = GridBagConstraints.BOTH;
+//        gbc.insets = new Insets(1, 1, 1, 1);
+//        topBar.add(copyButton, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 4;
+        gbc.gridy = 1;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(1, 1, 1, 1);
+        topBar.add(refreshButton, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 1;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 1, 5, 1);
+        topBar.add(new JLabel(), gbc);
+
+
+//        JPanel topBar = new JPanel();
+//        topBar.setLayout(new FlowLayout());
+//        refresh.addActionListener(this);
+//        copyButton.addActionListener(this);
+//        topBar.add(exportFormatFilter);
+//        topBar.add(timeIntervalSelector);
+//        topBar.add(copyButton);
+//        topBar.add(refresh);
+//
+//        topBar.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " User Options "));
+//        topBar.setPreferredSize(new Dimension(400, 150));
+
+        refreshButton.addActionListener(this);
         copyButton.addActionListener(this);
-        topBar.add(exportFormatFilter);
-        topBar.add(timeIntervalSelector);
-        topBar.add(copyButton);
-        topBar.add(refresh);
-
-        topBar.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " User Options "));
-        topBar.setPreferredSize(new Dimension(400, 150));
-
         return topBar;
     }
 
@@ -271,7 +340,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(refresh)){
+        if (e.getSource().equals(refreshButton)){
             initalizeTableData();
         } else if (e.getSource().equals(copyButton)) {
             int row = editorScrollTable.getSelectedRow();
