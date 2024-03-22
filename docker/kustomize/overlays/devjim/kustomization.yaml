@@ -33,8 +33,8 @@ replicas:
     count: 1
 #  - name: rest
 #    count: 0
-#  - name: s3proxy
-#    count: 0
+  - name: s3proxy
+    count: 1
   - name: sched
     count: 1
   - name: submit
@@ -48,6 +48,7 @@ replicas:
 
 resources:
 - api-ingress.yaml
+- s3proxy-ingress.yaml
 - mongodb-pvc.yaml
 - api-certificate.yaml
 - selfsigned-issuer.yaml

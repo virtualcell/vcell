@@ -22,6 +22,10 @@ configMapGenerator:
     envs:
       - submit.env
       - shared.env
+
+  - name: s3proxy-config
+    envs:
+      - s3proxy.env
   - name: activemqint-config
     envs:
       - activemqint.env
