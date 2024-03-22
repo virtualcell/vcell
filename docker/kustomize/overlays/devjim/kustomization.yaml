@@ -47,9 +47,7 @@ replicas:
     count: 1
 
 resources:
-- api-ingress.yaml
-- s3proxy-ingress.yaml
-- rest-ingress.yaml
+- vcell-ingress.yaml
 - mongodb-pvc.yaml
 - api-certificate.yaml
 - selfsigned-issuer.yaml
