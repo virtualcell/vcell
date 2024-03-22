@@ -3,6 +3,7 @@ package cbit.vcell.client.data;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.export.server.ExportFormat;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.ResourceUtil;
 import com.google.gson.Gson;
@@ -111,11 +112,28 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
         JPanel searchPane = new JPanel();
         searchPane.setLayout(new GridBagLayout());
+
+        copyButton = new JButton("Copy Export Link");
+        copyButton.setEnabled(false);
+        copyButton.addActionListener(this);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-//        gbc.weightx = 1;
-//        gbc.weighty = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(1, 4, 1, 4);
+        searchPane.add(copyButton, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 4, 1, 4);
+        searchPane.add(new JSeparator(SwingConstants.VERTICAL), gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(1, 4, 1, 2);
@@ -124,25 +142,13 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         JTextField searchField = new JTextField();
         searchField.setEnabled(false);
         gbc = new GridBagConstraints();
-        gbc.gridx = 1;
+        gbc.gridx = 3;
         gbc.gridy = 0;
         gbc.weightx = 1;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(1, 2, 1, 2);
         searchPane.add(searchField, gbc);
-
-        copyButton = new JButton("Copy Export Link");
-        copyButton.addActionListener(this);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 0;
-//        gbc.weightx = 1;
-//        gbc.weighty = 1;
-//        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.insets = new Insets(1, 4, 1, 4);
-        searchPane.add(copyButton, gbc);
 
         JPanel exportPane = new JPanel();       // --------------------------------------------------
         exportPane.setLayout(new GridBagLayout());
@@ -180,6 +186,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         int width = 140;
         exportVariableText = new JTextPane();
         exportVariableText.setEditable(false);
+        exportVariableText.setBackground(UIManager.getColor("TextField.inactiveBackground"));
 
         parameterScrollTableModel = new ParameterTableModelExport(parameterScrollTable);
         parameterScrollTable.setModel(parameterScrollTableModel);
@@ -196,7 +203,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         exportDetails.setSize(new Dimension(width, height));
         exportDetails.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Variables "));
 
-//        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportVariableText, parameterScrollPane);
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportDetails, parameterScrollPane);
         splitPane.setContinuousLayout(true);
         splitPane.setResizeWeight(0.5);
@@ -388,13 +394,16 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     public void valueChanged(ListSelectionEvent e) {
         int row = editorScrollTable.getSelectedRow();
         ExportedDataTableModel.TableData rowData = tableModel.getValueAt(row);
+        copyButton.setEnabled(rowData == null ? false : true);
+        if(rowData == null) {
+            return;
+        }
         ArrayList<String> differentParameterValues = rowData.differentParameterValues;
         StyleContext styleContext = new StyleContext();
 //        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
         StyledDocument doc = new DefaultStyledDocument();
-        addColoredText(doc, "\nVARIABLES:  ", Color.GREEN);
+        addColoredText(doc, "\nVARIABLES:  ", GraphConstants.darkgreen);
         addColoredText(doc, rowData.variables, Color.BLACK);
-
 
         parameterScrollTableModel.resetData();
         for(int i =0; i < differentParameterValues.size(); i++){
@@ -406,6 +415,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         }
         parameterScrollTableModel.refreshData();
         exportVariableText.setStyledDocument(doc);
+        exportVariableText.setOpaque(false);    // we still want the background we chose (TextField.inactiveBackground)
         exportVariableText.updateUI();
     }
     private void addColoredText(StyledDocument doc, String text, Color color) {
