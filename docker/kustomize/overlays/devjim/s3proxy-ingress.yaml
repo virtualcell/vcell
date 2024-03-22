@@ -5,9 +5,6 @@ metadata:
   name: s3proxy-ingress
   labels:
     app: s3proxy
-  annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   tls:
     - hosts:
@@ -17,9 +14,8 @@ spec:
   - host: minikube.local
     http:
       paths:
-      # prefix path of /n5 will route to s3proxy service and /n5 prefix will be stripped
-      - path: "/n5(/|$)(.*)"
-        pathType: ImplementationSpecific
+      - path: /n5Data
+        pathType: Prefix
         backend:
           service:
             name: s3proxy
