@@ -1,0 +1,23 @@
+# ingress for api
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rest-ingress
+  labels:
+    app: rest
+spec:
+  tls:
+    - hosts:
+        - minikube.local
+      secretName: selfsigned-cert-tls
+  rules:
+  - host: minikube.local
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: rest
+            port:
+              number: 80

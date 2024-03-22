@@ -1,165 +1,58 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
-    kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: rest
+    app: rest
   name: rest
 spec:
-  replicas: 0
   selector:
     matchLabels:
-      io.kompose.service: rest
+      app: rest
+  replicas: 0
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
-        kompose.version: 1.32.0 (HEAD)
       labels:
-        io.kompose.network/swarm-vcellnet: "true"
-        io.kompose.service: rest
+        app: rest
     spec:
       securityContext:
         runAsUser: 10001
         runAsGroup: 10000
         fsGroup: 10000
-
       containers:
-        - env:
-            - name: dbdriver
-              value: oracle.jdbc.driver.OracleDriver
-            - name: dburl
-              value: jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1
-            - name: dbuser
-              value: vcell
-            - name: jmshost_int_internal
-              value: activemqint
-            - name: jmsport_int_internal
-              value: "61616"
-            - name: jmsuser
-              value: clientUser
-            - name: mongodb_database
-              value: test
-            - name: mongodb_host_internal
-              value: mongodb
-            - name: mongodb_port_internal
-              value: "27017"
-            - name: serverid
-              value: TEST
-            - name: simdataCacheSize
-              value: "10000000"
-            - name: smtp_emailaddress
-              value: VCell_Support@uchc.edu
-            - name: smtp_hostname
-              value: vdsmtp.cam.uchc.edu
-            - name: smtp_port
-              value: "25"
-            - name: softwareVersion
-              value: Test_Version_7.5.0_build_1234
-            - name: ssl_ignoreCertProblems
-              value: "true"
-            - name: ssl_ignoreHostMismatch
-              value: "true"
-            - name: submit_service_host
-              value: submit
-            - name: webDataPort
-              value: "55556"
-          image: ghcr.io/virtualcell/vcell-rest:dev
-          name: rest
+        - name: rest
+          image: ghcr.io/virtualcell/vcell-rest
           imagePullPolicy: "Always"
-          ports:
-            - containerPort: 8080
-              hostPort: 8083
-              protocol: TCP
-            - containerPort: 8000
-              hostPort: 5001
-              protocol: TCP
           resources:
-            limits:
-              memory: "2097152e3"
             requests:
-              memory: "1048576e3"
-          volumeMounts:
-            - mountPath: /run/secrets/keystorefile
-              name: keystorefile
-            - mountPath: /run/secrets/keystorepswd
-              name: keystorepswd
-            - mountPath: /run/secrets/dbpswd
-              name: dbpswd
-            - mountPath: /run/secrets/jmspswd
-              name: jmspswd
-            - mountPath: /n5DataDir
-              name: rest-claim0
-            - mountPath: /simdata
-              name: rest-claim1
-            - mountPath: /share/apps/vcell12/users
-              name: rest-claim2
-            - mountPath: /simdata_secondary
-              name: rest-claim3
-            - mountPath: /exportdir
-              name: rest-claim4
+              memory: "400Mi"
+              cpu: "200m"
+            limits:
+              memory: "1000Mi"
+#              cpu: "500m"
+          envFrom:
+            - configMapRef:
+                name: rest-config
+            - secretRef:
+                name: rest-secrets
+          #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
+          ports:
+            - containerPort: 80
       restartPolicy: Always
-      volumes:
-        - name: keystorefile
-          secret:
-            items:
-              - key: keystorefile
-                path: keystorefile
-            secretName: keystorefile
-        - name: keystorepswd
-          secret:
-            items:
-              - key: keystorepswd
-                path: keystorepswd
-            secretName: keystorepswd
-        - name: dbpswd
-          secret:
-            items:
-              - key: dbpswd
-                path: dbpswd
-            secretName: dbpswd
-        - name: jmspswd
-          secret:
-            items:
-              - key: jmspswd
-                path: jmspswd
-            secretName: jmspswd
-        - name: rest-claim0
-          persistentVolumeClaim:
-            claimName: rest-claim0
-        - name: rest-claim1
-          persistentVolumeClaim:
-            claimName: rest-claim1
-        - name: rest-claim2
-          persistentVolumeClaim:
-            claimName: rest-claim2
-        - name: rest-claim3
-          persistentVolumeClaim:
-            claimName: rest-claim3
-        - name: rest-claim4
-          persistentVolumeClaim:
-            claimName: rest-claim4
+      imagePullSecrets:
+        - name: ghcr-secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f ../../swarm/docker-compose.yml
-    kompose.version: 1.32.0 (HEAD)
   labels:
-    io.kompose.service: rest
+    app: rest
   name: rest
 spec:
   ports:
-    - name: "8083"
-      port: 8083
-      targetPort: 8080
-    - name: "5001"
-      port: 5001
-      targetPort: 8000
+    - name: "80"
+      port: 80
+      targetPort: 80
   selector:
-    io.kompose.service: rest
+    app: rest

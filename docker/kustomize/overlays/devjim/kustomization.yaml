@@ -11,10 +11,8 @@ images:
     newTag: dev
   - name: ghcr.io/virtualcell/vcell-db
     newTag: dev
-#  - name: ghcr.io/virtualcell/vcell-rest
-#    newTag: dev
-#  - name: ghcr.io/virtualcell/vcell-s3proxy
-#    newTag: dev
+  - name: ghcr.io/virtualcell/vcell-rest
+    newTag: dev
   - name: ghcr.io/virtualcell/vcell-sched
     newTag: dev
   - name: ghcr.io/virtualcell/vcell-submit
@@ -31,8 +29,8 @@ replicas:
     count: 1
   - name: db
     count: 1
-#  - name: rest
-#    count: 0
+  - name: rest
+    count: 1
   - name: s3proxy
     count: 1
   - name: sched
@@ -49,12 +47,14 @@ replicas:
 resources:
 - api-ingress.yaml
 - s3proxy-ingress.yaml
+- rest-ingress.yaml
 - mongodb-pvc.yaml
 - api-certificate.yaml
 - selfsigned-issuer.yaml
 - api-secrets.yaml
 - secret-ghcr.yaml
 - vcell-ssh-secret.yaml
+- rest-secrets.yaml
 - cfs07_vcell_pv.yaml
 - cfs12_vcell_pv.yaml
 - cfs09_vcell_pv.yaml

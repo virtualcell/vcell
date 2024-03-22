@@ -13,8 +13,8 @@ mvn_repo=$HOME/.m2
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | db | sched | submit | data | mongo | clientgen | web | opt | appservices | admin | all)"
-	echo "                              where appservices = (api, db, sched, submit, data, web)"
+	echo "    target                ( batch | api | test | db | sched | submit | data | mongo | clientgen | web | opt | appservices | admin | all)"
+	echo "                              where appservices = (api, rest, db, sched, submit, data, web)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
 	echo ""
@@ -101,6 +101,17 @@ build_api() {
 	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-api:$tag
+	fi
+}
+
+
+build_rest() {
+	echo "building $repo/vcell-rest:$tag"
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../vcell-rest/src/main/docker/Dockerfile.jvm --tag $repo/vcell-rest:$tag ../.."
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../vcell-rest/src/main/docker/Dockerfile.jvm --tag $repo/vcell-rest:$tag ../../vcell-rest
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
+	if [ "$skip_push" == "false" ]; then
+		$SUDO_CMD docker push $repo/vcell-rest:$tag
 	fi
 }
 
@@ -438,6 +449,10 @@ case $target in
 		build_api
 		exit $?
 		;;
+	rest)
+		build_rest
+		exit $?
+		;;
 	# master)
 	# 	build_master
 	# 	exit $?
@@ -479,7 +494,7 @@ case $target in
 		exit $?
 		;;
 	appservices)
-		build_api && build_db && build_sched && build_submit && build_data && build_web
+		build_api && build_rest && build_db && build_sched && build_submit && build_data && build_web
 		exit $?
 		;;
 	*)
