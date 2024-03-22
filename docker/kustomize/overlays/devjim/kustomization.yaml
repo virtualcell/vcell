@@ -19,6 +19,8 @@ images:
     newTag: dev
   - name: ghcr.io/virtualcell/vcell-s3proxy
     newTag: dev
+  - name: ghcr.io/virtualcell/vcell-webapp
+    newTag: dev
   - name: webcenter/activemq
     newTag: 5.14.3
   - name: ghcr.io/virtualcell/vcell-mongo
@@ -39,6 +41,8 @@ replicas:
     count: 1
   - name: submit
     count: 1
+  - name: webapp
+    count: 1
   - name: activemqint
     count: 1
   - name: activemqsim
@@ -48,6 +52,7 @@ replicas:
 
 resources:
 - vcell-ingress.yaml
+- webapp-ingress.yaml
 - mongodb-pvc.yaml
 - api-certificate.yaml
 - selfsigned-issuer.yaml

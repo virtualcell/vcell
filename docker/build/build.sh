@@ -13,8 +13,8 @@ mvn_repo=$HOME/.m2
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
 	echo "  ARGUMENTS"
-	echo "    target                ( batch | api | test | webapp | db | sched | submit | data | mongo | clientgen | web | opt | appservices | admin | all)"
-	echo "                              where appservices = (api, rest, webapp, db, sched, submit, data, web)"
+	echo "    target                ( batch | api | rest | webapp | db | sched | submit | data | mongo | clientgen | opt | appservices | admin | all)"
+	echo "                              where appservices = (api, rest, webapp, db, sched, submit, data)"
 	echo ""
 	echo "    repo                  ( schaff | localhost:5000 | vcell-docker.cam.uchc.edu:5000 )"
 	echo ""
@@ -184,16 +184,6 @@ build_data() {
 	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-data:$tag
-	fi
-}
-
-build_web() {
-	echo "building $repo/vcell-web:$tag"
-	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../.."
-	$SUDO_CMD docker buildx build --platform=linux/amd64 -f Dockerfile-web-dev --tag $repo/vcell-web:$tag ../..
-	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
-	if [ "$skip_push" == "false" ]; then
-		$SUDO_CMD docker push $repo/vcell-web:$tag
 	fi
 }
 
@@ -488,10 +478,6 @@ case $target in
 		build_data
 		exit $?
 		;;
-	web)
-		build_web
-		exit $?
-		;;
 	mongo)
 		build_mongo
 		exit $?
@@ -505,11 +491,11 @@ case $target in
 		exit $?
 		;;
 	all)
-		build_batch && build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_web && build_opt && build_clientgen && build_mongo && build_batch_singularity && build_opt_singularity && build_admin
+		build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_batch_singularity && build_opt_singularity && build_admin
 		exit $?
 		;;
 	appservices)
-		build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_web
+		build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo
 		exit $?
 		;;
 	*)

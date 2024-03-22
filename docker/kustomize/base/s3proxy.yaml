@@ -30,10 +30,6 @@ spec:
             limits:
               memory: "300Mi"
 #              cpu: "500m"
-#          command:
-#            - sh
-#            - -c
-#            - export S3PROXY_KEYSTORE_PASSWORD=$(cat /run/secrets/keystorepswd); /opt/s3proxy/run-docker-container.sh
           envFrom:
             - configMapRef:
                 name: s3proxy-config
