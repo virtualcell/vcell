@@ -92,11 +92,8 @@ metadata:
   name: api
 spec:
   ports:
-    - name: "8083"
-      port: 8083
+    - name: "8080"
+      port: 8080
       targetPort: 8080
-    - name: "5001"
-      port: 5001
-      targetPort: 8000
   selector:
     app: api

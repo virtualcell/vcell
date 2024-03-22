@@ -17,6 +17,8 @@ images:
     newTag: dev
   - name: ghcr.io/virtualcell/vcell-submit
     newTag: dev
+  - name: ghcr.io/virtualcell/vcell-s3proxy
+    newTag: dev
   - name: webcenter/activemq
     newTag: 5.14.3
   - name: ghcr.io/virtualcell/vcell-mongo

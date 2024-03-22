@@ -5,6 +5,9 @@ metadata:
   name: api-ingress
   labels:
     app: api
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   tls:
     - hosts:
@@ -14,8 +17,8 @@ spec:
   - host: minikube.local
     http:
       paths:
-      - path: "/"
-        pathType: Prefix
+      - path: "/vcellapi(/|$)(.*)"
+        pathType: ImplementationSpecific
         backend:
           service:
               name: api
