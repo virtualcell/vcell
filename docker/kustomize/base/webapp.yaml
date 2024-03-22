@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp-app
+  template:
+    metadata:
+      labels:
+        app: webapp-app
+    spec:
+      containers:
+      - name: webapp-app
+        image: <your-docker-image>
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  selector:
+    app: webapp-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

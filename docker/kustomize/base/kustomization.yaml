@@ -9,6 +9,7 @@ resources:
   - s3proxy.yaml
   - sched.yaml
   - submit.yaml
+  - webapp.yaml
   - activemqint.yaml
   - activemqsim.yaml
   - mongodb.yaml

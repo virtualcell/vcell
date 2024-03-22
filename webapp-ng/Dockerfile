@@ -1,4 +1,4 @@
-FROM node:18-alpine AS build
+FROM node:20.11-alpine3.19 AS build
 
 RUN apk update && apk add git
 
