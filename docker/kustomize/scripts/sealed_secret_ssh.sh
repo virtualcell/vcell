@@ -12,7 +12,7 @@
 # validate the number of arguments
 if [ "$#" -ne 3 ]; then
     echo "Illegal number of parameters"
-    echo "Usage: ./sealed_secret_db.sh <namespace> <priv_key_file> <pub_key_file>"
+    echo "Usage: ./sealed_secret_ssh.sh <namespace> <priv_key_file> <pub_key_file>"
     exit 1
 fi
 

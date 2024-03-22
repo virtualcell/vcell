@@ -7,7 +7,7 @@
 # validate the number of arguments
 if [ "$#" -ne 4 ]; then
     echo "Illegal number of parameters"
-    echo "Usage: ./sealed_secret_jms.sh <namespace> <github_user> <github_user_email> <github_token>"
+    echo "Usage: ./sealed_secret_ghcr.sh <namespace> <github_user> <github_user_email> <github_token>"
     exit 1
 fi
 

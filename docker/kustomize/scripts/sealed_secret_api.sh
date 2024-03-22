@@ -14,7 +14,7 @@
 # validate the number of arguments
 if [ "$#" -ne 5 ]; then
     echo "Illegal number of parameters"
-    echo "Usage: ./sealed_secret_db.sh <namespace> <db_password> <jms_password> <mongo_user> <mongo_pswd>"
+    echo "Usage: ./sealed_secret_api.sh <namespace> <db_password> <jms_password> <mongo_user> <mongo_pswd>"
     exit 1
 fi
 
