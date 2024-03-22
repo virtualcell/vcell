@@ -41,7 +41,7 @@ spec:
             - containerPort: 80
           volumeMounts:
             - name: nfs-primary-pvc
-              mountPath: /n5DataDir
+              mountPath: /data
               subPath: n5
       restartPolicy: Always
       volumes:
