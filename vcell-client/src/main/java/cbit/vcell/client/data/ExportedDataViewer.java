@@ -3,6 +3,7 @@ package cbit.vcell.client.data;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.export.server.ExportFormat;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.ResourceUtil;
 import com.google.gson.Gson;
@@ -16,6 +17,7 @@ import org.vcell.util.gui.VCellIcons;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.*;
@@ -37,7 +39,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     private final EditorScrollTable editorScrollTable;
     private EditorScrollTable parameterScrollTable = new EditorScrollTable();
     private ParameterTableModelExport parameterScrollTableModel;
-    private JButton refresh;
+    private JButton refreshButton;
     private JButton copyButton;
 
     private final JRadioButton todayInterval = new JRadioButton("Past 24 hours");
@@ -73,8 +75,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         tableScrollPane.setMinimumSize(new Dimension(tableWidth, tableHeight));
         tableScrollPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Table "));
 
-
-
         DefaultScrollTableCellRenderer applicationCellRender = new DefaultScrollTableCellRenderer(){
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -107,14 +107,71 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
                 return this;
             }
         };
-
-
-
         editorScrollTable.getSelectionModel().addListSelectionListener(this);
         editorScrollTable.getColumnModel().getColumn(1).setCellRenderer(applicationCellRender);
 
+        JPanel searchPane = new JPanel();
+        searchPane.setLayout(new GridBagLayout());
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, exportDetailsPane());
+        copyButton = new JButton("Copy Export Link");
+        copyButton.setEnabled(false);
+        copyButton.addActionListener(this);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(1, 4, 1, 4);
+        searchPane.add(copyButton, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 4, 1, 4);
+        searchPane.add(new JSeparator(SwingConstants.VERTICAL), gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 4, 1, 2);
+        searchPane.add(new JLabel("Search"), gbc);
+
+        JTextField searchField = new JTextField();
+        searchField.setEnabled(false);
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 2, 1, 2);
+        searchPane.add(searchField, gbc);
+
+        JPanel exportPane = new JPanel();       // --------------------------------------------------
+        exportPane.setLayout(new GridBagLayout());
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 1, 1, 1);
+        exportPane.add(tableScrollPane, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(1, 1, 1, 1);
+        exportPane.add(searchPane, gbc);
+
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, exportPane, exportDetailsPane());
         splitPane.setContinuousLayout(true);
         this.setLayout(new BorderLayout());
         this.add(userOptionsPane(), BorderLayout.NORTH);
@@ -129,6 +186,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         int width = 140;
         exportVariableText = new JTextPane();
         exportVariableText.setEditable(false);
+        exportVariableText.setBackground(UIManager.getColor("TextField.inactiveBackground"));
 
         parameterScrollTableModel = new ParameterTableModelExport(parameterScrollTable);
         parameterScrollTable.setModel(parameterScrollTableModel);
@@ -145,7 +203,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         exportDetails.setSize(new Dimension(width, height));
         exportDetails.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Variables "));
 
-//        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportVariableText, parameterScrollPane);
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportDetails, parameterScrollPane);
         splitPane.setContinuousLayout(true);
         splitPane.setResizeWeight(0.5);
@@ -154,52 +211,93 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     }
 
     private JPanel userOptionsPane(){
-        refresh = new JButton("Refresh");
-        copyButton = new JButton("Copy Export Link");
+        refreshButton = new JButton("Refresh");
 
         JPanel timeIntervalSelector = new JPanel();
         timeIntervalSelector.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Time Interval "));
-        timeIntervalSelector.setLayout(new BoxLayout(timeIntervalSelector, BoxLayout.Y_AXIS));
+        timeIntervalSelector.setLayout(new BoxLayout(timeIntervalSelector, BoxLayout.X_AXIS));
 
         timeButtonGroup.add(todayInterval);
         timeButtonGroup.add(monthInterval);
         timeButtonGroup.add(yearlyInterval);
         timeButtonGroup.add(anyInterval);
+        timeButtonGroup.setSelected(anyInterval.getModel(), true);
 
         timeIntervalSelector.add(todayInterval);
         timeIntervalSelector.add(monthInterval);
         timeIntervalSelector.add(yearlyInterval);
         timeIntervalSelector.add(anyInterval);
 
-        JPanel exportFormatFilter = new JPanel();
+        JPanel exportFormatFilterPanel = new JPanel();
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        exportFormatFilter.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Type "));
-        exportFormatFilter.setLayout(new GridBagLayout());
+        exportFormatFilterPanel.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Type "));
+        exportFormatFilterPanel.setLayout(new GridBagLayout());
         Set<String> exportNames = new HashSet<>();
-        for (ExportFormat format : ExportFormat.values()){
+        GridBagConstraints gbc = new GridBagConstraints();
+        for (ExportFormat format : ExportFormat.values()) {
             String properFormatName = format.name().contains("_") ? format.name().split("_")[1] : format.name();
             if(!exportNames.contains(properFormatName)){
                 exportNames.add(properFormatName);
                 JCheckBox formatButton = new JCheckBox(properFormatName);
-                formatButton.setPreferredSize(new Dimension(50, 10));
+                formatButton.setPreferredSize(new Dimension(120, 10));
                 formatButton.setSelected(true);
-                exportFormatFilter.add(formatButton);
+                exportFormatFilterPanel.add(formatButton);
                 formatButtonGroup.add(formatButton);
             }
         }
 
         JPanel topBar = new JPanel();
-        topBar.setLayout(new FlowLayout());
-        refresh.addActionListener(this);
-        copyButton.addActionListener(this);
-        topBar.add(exportFormatFilter);
-        topBar.add(timeIntervalSelector);
-        topBar.add(copyButton);
-        topBar.add(refresh);
+        TitledBorder titleOptions = BorderFactory.createTitledBorder(loweredEtchedBorder, " User Options ");
+        titleOptions.setTitleJustification(TitledBorder.LEFT);
+        titleOptions.setTitlePosition(TitledBorder.TOP);
+        topBar.setBorder(titleOptions);
 
-        topBar.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " User Options "));
-        topBar.setPreferredSize(new Dimension(400, 150));
+        topBar.setLayout(new GridBagLayout());
 
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+//        gbc.gridwidth = 3;
+        gbc.anchor = GridBagConstraints.WEST;
+//        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.insets = new Insets(1, 1, 5, 1);
+        topBar.add(exportFormatFilterPanel, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+//        gbc.gridwidth = 2;
+//        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 1, 1, 1);
+        topBar.add(timeIntervalSelector, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(1, 1, 5, 1);
+        topBar.add(new JLabel(), gbc);      // fake element for filling any empty space
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 3;
+        gbc.gridy = 0;
+//        gbc.weightx = 1;
+//        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(9, 1, 7, 4);
+        topBar.add(refreshButton, gbc);
+
+
+//        topBar.setPreferredSize(new Dimension(400, 150));
+
+        refreshButton.addActionListener(this);
         return topBar;
     }
 
@@ -271,7 +369,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(refresh)){
+        if (e.getSource().equals(refreshButton)){
             initalizeTableData();
         } else if (e.getSource().equals(copyButton)) {
             int row = editorScrollTable.getSelectedRow();
@@ -296,13 +394,16 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     public void valueChanged(ListSelectionEvent e) {
         int row = editorScrollTable.getSelectedRow();
         ExportedDataTableModel.TableData rowData = tableModel.getValueAt(row);
+        copyButton.setEnabled(rowData == null ? false : true);
+        if(rowData == null) {
+            return;
+        }
         ArrayList<String> differentParameterValues = rowData.differentParameterValues;
         StyleContext styleContext = new StyleContext();
 //        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
         StyledDocument doc = new DefaultStyledDocument();
-        addColoredText(doc, "\nVARIABLES:  ", Color.GREEN);
+        addColoredText(doc, "\nVARIABLES:  ", GraphConstants.darkgreen);
         addColoredText(doc, rowData.variables, Color.BLACK);
-
 
         parameterScrollTableModel.resetData();
         for(int i =0; i < differentParameterValues.size(); i++){
@@ -314,6 +415,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         }
         parameterScrollTableModel.refreshData();
         exportVariableText.setStyledDocument(doc);
+        exportVariableText.setOpaque(false);    // we still want the background we chose (TextField.inactiveBackground)
         exportVariableText.updateUI();
     }
     private void addColoredText(StyledDocument doc, String text, Color color) {
