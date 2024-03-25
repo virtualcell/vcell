@@ -49,17 +49,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: activemqsim-nodeport
+  name: activemqsim-loadbalancer
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
     - name: "61616"
       port: 61616
       targetPort: 61616
-      nodePort: 31616
     - name: "8161"
       port: 8161
       targetPort: 8161
-      nodePort: 30080
   selector:
     app: activemqsim

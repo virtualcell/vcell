@@ -32,7 +32,7 @@ brew install socket_vmnet
 brew tap homebrew/services
 HOMEBREW=$(which brew) && sudo ${HOMEBREW} services start socket_vmnet
 # minikube start --driver qemu --network socket_vmnet --memory=8g --cpus=2
-minikube start --base-image gcr.io/k8s-minikube/kicbase-builds:v0.0.42-1703092832-17830 --driver docker  --memory=8g --cpus=2
+minikube start --base-image gcr.io/k8s-minikube/kicbase-builds:v0.0.42-1703092832-17830 --driver docker  --memory=32g --cpus=8
 minikube addons enable metrics-server
 
 brew install kubectl
@@ -88,8 +88,26 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 cmctl check api
 ```
 
+# Configure minikube networking for local development
 
-# application configuration
+### set up DNS entries for ingress rounting
+* vcell-api, vcell-rest, and s3proxy services are mapped to minikube.local
+* vcell-webapp is mapped to minikube.local
+
+* create local DNS entries for minikube.local and webapp.minikube.local
+   ```bash
+   #echo "$(minikube ip) minikube.local" | sudo tee -a /etc/hosts
+   echo "127.0.0.1 minikube.local" | sudo tee -a /etc/hosts
+   echo "127.0.0.1 webapp.minikube.local" | sudo tee -a /etc/hosts
+   ```
+* **note** on mapping to localhost rather than minikube ip address:  
+  from https://github.com/kubernetes/minikube/issues/13510.  "Hi, I can confirm that running minikube tunnel works for me on m1 with the docker driver.
+  Keep in mind that your etc/hosts file needs to map to 127.0.0.1, instead of the output
+  of minikube ip or kubectl get ingress - this is an important gotcha."
+
+
+# deploying the vcell services to minikube
+
 ### verify the kustomization scripts
 ```bash
 kubectl create namespace devjim
@@ -102,35 +120,42 @@ kubectl kustomize overlays/devjim | kubectl apply -f -
 
 ### create sealed secrets (see [scripts/README.md](scripts/README.md))
 
-# setting up minikube.local for local development with ingress
-from https://github.com/kubernetes/minikube/issues/13510.  "Hi, I can confirm that running minikube tunnel works for me on m1 with the docker driver. 
-Keep in mind that your etc/hosts file needs to map to 127.0.0.1, instead of the output 
-of minikube ip or kubectl get ingress - this is an important gotcha."
+# expose services from minikube cluster
+### expose ingress routing to localhost as minikube.local and webapp.minikube.local
+for vcell-rest, vcell-api and s3proxy services
 ```bash
-#echo "$(minikube ip) minikube.local" | sudo tee -a /etc/hosts
-echo "127.0.0.1 minikube.local" | sudo tee -a /etc/hosts
 sudo minikube tunnel
-✅  Tunnel successfully started
-📌  NOTE: Please do not close this terminal as this process must stay alive for the tunnel to be accessible ...
-❗  The service/ingress nginx-ingress requires privileged ports to be exposed: [80 443]
-🔑  sudo permission will be asked for it.
-🏃  Starting tunnel for service nginx-ingress.
 ```
-when running VCell client with self-signed cert, set the following flags
-```
--Dvcell.ssl.ignoreHostMismatch=true
--Dvcell.ssl.ignoreCertProblems=true
-```
-### set up the external ip address of the minicube cluster
+### expose JMS and Mongo services to UCH routable ip address
+for activemqsim service to receive status messages from simulation workers on HPC cluster
 ```bash
-ifconfig | grep "inet " | grep 155
+export EXTERNAL_IP=$(ifconfig | grep 155.37 | awk '{print $2}' | cut -d'-' -f1)
+export DEV_NAMESPACE=devjim
+# bypass services of type LoadBalancer or NodePort - directly export deployment ports
+sudo kubectl port-forward --address ${EXTERNAL_IP} -n ${DEV_NAMESPACE} deployment/activemqsim 8161:8161
+sudo kubectl port-forward --address ${EXTERNAL_IP} -n ${DEV_NAMESPACE} deployment/activemqsim 61616:61616
+sudo kubectl port-forward --address ${EXTERNAL_IP} -n ${DEV_NAMESPACE} deployment/mongodb 27017:27017
+# set jmshost_sim_external to $EXTERNAL_IP in ./config/jimdev/submit.env
+sed -i '' "s/jmshost_sim_external=.*/jmshost_sim_external=${EXTERNAL_IP}/" ./config/jimdev/submit.env
 ```
-then, set the ip address in /docker/kustomize/config/jimdev/submit.env
 
+# running the VCell Client
+run VCell Java Client (cbit.vcell.client.VCellClientMain) against local minikube
+1) set VM Option flags to tolerate the self-signed cert
+   ```
+   -Dvcell.ssl.ignoreHostMismatch=true
+   -Dvcell.ssl.ignoreCertProblems=true
+   ```
+2) use local DNS entry for minikube cluster (see spec.tls.hosts in /overlays/devjim/vcell-ingress.yaml)
+   ```
+   --api-host=minikube.local:443
+   ```
 
-### lightweight local log tailing with logtail
-```bash
-brew tap johanhaleby/kubetail
-brew install kubetail
-kubetail -n devjim
-```
+# debugging
+
+1) lightweight local log tailing with logtail
+   ```bash
+   brew tap johanhaleby/kubetail
+   brew install kubetail
+   kubetail -n devjim
+   ```
