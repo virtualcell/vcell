@@ -156,7 +156,7 @@
 		<log4j2-jboss-logmanager.version>1.1.2.Final</log4j2-jboss-logmanager.version>
 		<log4j-layout-template-json.version>2.22.1</log4j-layout-template-json.version>
 		<lz4.version>1.8.0</lz4.version>
-		<mongo-java-driver.version>3.12.11</mongo-java-driver.version>
+		<mongodb-driver-sync.version>5.0.0</mongodb-driver-sync.version>
 		<n5.version>3.0.0</n5.version>
 		<netcdf.version>4.3.22</netcdf.version>
 		<netty.version>3.2.10.Final</netty.version>
