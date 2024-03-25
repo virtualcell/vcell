@@ -10,13 +10,10 @@
 
 package cbit.vcell.export.server;
 
-import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
-import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 import com.google.gson.GsonBuilder;
 import edu.uchc.connjur.wb.ExecutionTrace;
@@ -27,14 +24,17 @@ import org.apache.logging.log4j.Logger;
 import org.janelia.saalfeldlab.n5.DatasetAttributes;
 import org.janelia.saalfeldlab.n5.DoubleArrayDataBlock;
 import org.janelia.saalfeldlab.n5.N5FSWriter;
-import org.vcell.util.*;
-import org.vcell.util.document.*;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ISize;
+import org.vcell.util.document.User;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 
 public class N5Exporter implements ExportConstants {
@@ -63,20 +63,11 @@ public class N5Exporter implements ExportConstants {
 	this.exportServiceImpl = exportServiceImpl;
 }
 
-	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws MathException, DataAccessException, IOException {
+	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws Exception {
 		double[] allTimes = dataServer.getDataSetTimes(user, vcDataID);
 		TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
 		String[] variableNames = exportSpecs.getVariableSpecs().getVariableNames();
 		// output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
-
-
-		// Check for unsupported variable types. If the return DI is null, most likely an output function
-		for (String variableName: variableNames){
-			DataIdentifier specie = getSpecificDI(variableName);
-			if (specie != null && unsupportedTypes.contains(specie.getVariableType())){
-				throw new RuntimeException("Tried to export a variable type that is not supported!");
-			}
-		}
 
 
 		int numVariables = variableNames.length;
@@ -87,6 +78,26 @@ public class N5Exporter implements ExportConstants {
 		int[] blockSize = {mesh.getSizeX(), mesh.getSizeY(), 1, mesh.getSizeZ(), 1};
 
 
+
+		for (String variableName: variableNames){
+			DataIdentifier specie = getSpecificDI(variableName, outputContext);
+			if (specie != null){
+				if (unsupportedTypes.contains(specie.getVariableType())){
+					throw new RuntimeException("Tried to export a variable type that is not supported!");
+				} else if (specie.getVariableType().equals(VariableType.POSTPROCESSING)) {
+					File hdf5File = dataServer.getVCellSimFiles(vcDataID.getOwner(), vcDataID).postprocessingFile;
+					Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
+					DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
+							hdf5DataProcessingReaderPure.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcDataID,false, outputContext), hdf5File);
+
+					ISize iSize = dataProcessingOutputInfo.getVariableISize(variableName);
+					dimensions = new long[]{iSize.getX(), iSize.getY(), numVariables, iSize.getZ(), numTimes + 1};
+					blockSize = new int[]{iSize.getX(), iSize.getY(), 1, iSize.getZ(), 1};
+                }
+			}
+		}
+
+
 		// rewrite so that it still results in a tmp file does not raise File already exists error
 		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
 		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
@@ -95,7 +106,7 @@ public class N5Exporter implements ExportConstants {
 		String dataSetName = n5Specs.dataSetName;
 
 		n5FSWriter.createDataset(dataSetName, datasetAttributes);
-		N5Specs.imageJMetaData(n5FSWriter, dataSetName, numVariables, mesh.getSizeZ(), allTimes.length, additionalMetaData);
+		N5Specs.imageJMetaData(n5FSWriter, dataSetName, numVariables, blockSize[3], allTimes.length, additionalMetaData);
 
 
 		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
@@ -125,8 +136,8 @@ public class N5Exporter implements ExportConstants {
 
 	public VCSimulationDataIdentifier getVcDataID(){return vcDataID;}
 
-	public DataIdentifier getSpecificDI(String diName) throws IOException, DataAccessException {
-		ArrayList<DataIdentifier> list = new ArrayList<>(Arrays.asList(dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), user, vcDataID)));
+	public DataIdentifier getSpecificDI(String diName, OutputContext outputContext) throws IOException, DataAccessException {
+		ArrayList<DataIdentifier> list = new ArrayList<>(Arrays.asList(dataServer.getDataIdentifiers(outputContext, user, vcDataID)));
 		for(DataIdentifier dataIdentifier: list){
 			if(dataIdentifier.getName().equals(diName)){
 				list.remove(dataIdentifier);
@@ -154,7 +165,7 @@ public class N5Exporter implements ExportConstants {
 	}
 
 	private static String actualHash(String simID, String jobID) {
-		MessageDigest sha256 = DigestUtils.getSha256Digest();
+		MessageDigest sha256 = DigestUtils.getMd5Digest();
 		sha256.update(simID.getBytes(StandardCharsets.UTF_8));
 //		sha256.update(jobID.getBytes(StandardCharsets.UTF_8));
 
@@ -167,7 +178,7 @@ public class N5Exporter implements ExportConstants {
  * @throws IOException
  */
 	public ExportOutput makeN5Data(OutputContext outputContext, JobRequest jobRequest, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
-			throws DataAccessException, IOException, MathException {
+			throws Exception {
 		FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
 		if (formatSpecs instanceof N5Specs n5Specs){
 			return exportToN5(
@@ -184,7 +195,7 @@ public class N5Exporter implements ExportConstants {
 	}
 
 	public ExportOutput makeN5Data(OutputContext outputContext, long jobID, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager)
-			throws DataAccessException, IOException, MathException {
+			throws Exception {
 		FormatSpecificSpecs formatSpecs = exportSpecs.getFormatSpecificSpecs( );
 		if (formatSpecs instanceof N5Specs n5Specs) {
 			return exportToN5(
