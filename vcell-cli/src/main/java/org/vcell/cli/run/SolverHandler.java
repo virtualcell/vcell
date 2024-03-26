@@ -437,7 +437,7 @@ public class SolverHandler {
 								odeSolverResultSet = ((HybridSolver) solver).getHybridSolverResultSet();
 							} else {
 								String str = "Solver results are not compatible with CSV format. ";
-								logger.error(str);
+								logger.warn(str);
 	//                            keepTempFiles = true;		// temp fix for Jasraj
 	//                        	throw new RuntimeException(str);
 							}
