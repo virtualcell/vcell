@@ -1,7 +1,6 @@
 package org.vcell.cli.run.hdf5;
 
-import cbit.vcell.modelopt.MathSystemHash;
-import cbit.vcell.solver.Simulation;
+
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.TempSimulation;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
@@ -19,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
 import java.util.*;
 public class SpatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(SpatialResultsConverter.class);
