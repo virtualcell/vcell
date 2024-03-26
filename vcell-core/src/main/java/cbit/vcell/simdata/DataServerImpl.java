@@ -304,7 +304,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, cbit.vc
 		return exportEvent;
 	} catch (Throwable e) {
 		lg.error(e.getMessage(), e);
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(), e);
 	}
 }
 
