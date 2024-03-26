@@ -35,23 +35,13 @@ public Origin(double newX,double newY,double newZ) {
 }
 
 	public Origin getAsClipped(int dimension){
-		switch (dimension) {
-			case 0: {
-				return new Origin(1, 1, 1);
-			}
-			case 1: {
-				return new Origin(this.x, 1, 1);
-			}
-			case 2: {
-				return new Origin(this.x, this.y, 1);
-			}
-			case 3: {
-				return new Origin(this.x, this.y, this.z);
-			}
-			default:{
-				throw new IllegalArgumentException("dimension must be between 0 and 3");
-			}
-		}
+        return switch (dimension) {
+            case 0 -> new Origin(1, 1, 1);
+            case 1 -> new Origin(this.x, 1, 1);
+            case 2 -> new Origin(this.x, this.y, 1);
+            case 3 -> new Origin(this.x, this.y, this.z);
+            default -> throw new IllegalArgumentException("dimension must be between 0 and 3");
+        };
 	}
 
 /**
@@ -96,6 +86,20 @@ public double getZ() {
  * This method was created in VisualAge.
  * @return java.lang.String
  */
+
+/**
+ * For unit conversion Purposes
+ *
+ * @param scaleFactor the factor to scale by
+ */
+public void rescaleInPlace(double scaleFactor, int dimension) {
+	switch (dimension){
+		case 3: this.x *= scaleFactor; this.y *= scaleFactor; this.z *= scaleFactor; break;
+		case 2: this.x *= scaleFactor; this.y *= scaleFactor; break;
+		case 1: this.x *= scaleFactor; break;
+	}
+}
+
 public String toString() {
 	return "Origin["+getX()+","+getY()+","+getZ()+"]";
 }
