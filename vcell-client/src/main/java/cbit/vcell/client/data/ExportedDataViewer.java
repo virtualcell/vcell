@@ -33,7 +33,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, ListSelectionListener {
+public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, ListSelectionListener, KeyListener {
 
     public ExportedDataTableModel tableModel;
     private final EditorScrollTable editorScrollTable;
@@ -41,6 +41,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     private ParameterTableModelExport parameterScrollTableModel;
     private JButton refreshButton;
     private JButton copyButton;
+    private JButton deleteButton;
 
     private final JRadioButton todayInterval = new JRadioButton("Past 24 hours");
     private final JRadioButton monthInterval = new JRadioButton("Past Month");
@@ -53,6 +54,8 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
 
     private JTextPane exportVariableText;
+    private JTextField searchField;
+
     private final Border loweredEtchedBorder = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 
 
@@ -113,18 +116,28 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         JPanel searchPane = new JPanel();
         searchPane.setLayout(new GridBagLayout());
 
-        copyButton = new JButton("Copy Export Link");
+        copyButton = new JButton("Copy Export URI");
         copyButton.setEnabled(false);
         copyButton.addActionListener(this);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.EAST;
+//        gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(1, 4, 1, 4);
         searchPane.add(copyButton, gbc);
 
+        deleteButton = new JButton("Delete Export");
+        deleteButton.setEnabled(false);
+        deleteButton.addActionListener(this);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(1, 4, 1, 4);
+        searchPane.add(deleteButton, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 2;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
@@ -132,17 +145,18 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         searchPane.add(new JSeparator(SwingConstants.VERTICAL), gbc);
 
         gbc = new GridBagConstraints();
-        gbc.gridx = 2;
+        gbc.gridx = 3;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(1, 4, 1, 2);
         searchPane.add(new JLabel("Search"), gbc);
 
-        JTextField searchField = new JTextField();
-        searchField.setEnabled(false);
+        searchField = new JTextField();
+        searchField.setEnabled(true);
+        searchField.addKeyListener(this);
         gbc = new GridBagConstraints();
-        gbc.gridx = 3;
+        gbc.gridx = 4;
         gbc.gridy = 0;
         gbc.weightx = 1;
         gbc.weighty = 1;
@@ -178,6 +192,12 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         add(splitPane);
 //        this.add(tableScrollPane, BorderLayout.CENTER);
 //        this.add(parameterScrollPane, BorderLayout.SOUTH);
+
+        todayInterval.addActionListener(this);
+        monthInterval.addActionListener(this);
+        yearlyInterval.addActionListener(this);
+        anyInterval.addActionListener(this);
+
         initalizeTableData();
     }
 
@@ -201,7 +221,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         JScrollPane exportDetails = new JScrollPane(exportVariableText, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         exportDetails.setPreferredSize(new Dimension(width, height));
         exportDetails.setSize(new Dimension(width, height));
-        exportDetails.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Variables "));
+        exportDetails.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Properties "));
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportDetails, parameterScrollPane);
         splitPane.setContinuousLayout(true);
@@ -239,6 +259,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             if(!exportNames.contains(properFormatName)){
                 exportNames.add(properFormatName);
                 JCheckBox formatButton = new JCheckBox(properFormatName);
+                formatButton.addActionListener(this);
                 formatButton.setPreferredSize(new Dimension(120, 10));
                 formatButton.setSelected(true);
                 exportFormatFilterPanel.add(formatButton);
@@ -292,12 +313,8 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(9, 1, 7, 4);
-        topBar.add(refreshButton, gbc);
-
-
-//        topBar.setPreferredSize(new Dimension(400, 150));
-
-        refreshButton.addActionListener(this);
+//        topBar.add(refreshButton, gbc);
+//        refreshButton.addActionListener(this);
         return topBar;
     }
 
@@ -374,9 +391,21 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         } else if (e.getSource().equals(copyButton)) {
             int row = editorScrollTable.getSelectedRow();
             ExportedDataTableModel.TableData tableData = tableModel.getValueAt(row);
-
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(tableData.link), null);
+        } else if(e.getSource().equals(deleteButton)) {
+            // TODO: add delete code here
+
+        } else if(e.getSource() instanceof JCheckBox && formatButtonGroup.contains(e.getSource())) {
+            initalizeTableData();
+        } else if(e.getSource().equals(todayInterval)) {
+            initalizeTableData();
+        } else if(e.getSource().equals(monthInterval)) {
+            initalizeTableData();
+        } else if(e.getSource().equals(yearlyInterval)) {
+            initalizeTableData();
+        } else if(e.getSource().equals(anyInterval)) {
+            initalizeTableData();
         }
     }
 
@@ -395,15 +424,30 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         int row = editorScrollTable.getSelectedRow();
         ExportedDataTableModel.TableData rowData = tableModel.getValueAt(row);
         copyButton.setEnabled(rowData == null ? false : true);
+        deleteButton.setEnabled(rowData == null ? false : true);
         if(rowData == null) {
+            parameterScrollTableModel.resetData();
+            parameterScrollTableModel.refreshData();
+            exportVariableText.setText("");
             return;
         }
         ArrayList<String> differentParameterValues = rowData.differentParameterValues;
         StyleContext styleContext = new StyleContext();
 //        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
         StyledDocument doc = new DefaultStyledDocument();
-        addColoredText(doc, "\nVARIABLES:  ", GraphConstants.darkgreen);
+        addColoredText(doc, "\nVariables List: ", GraphConstants.darkgreen);
         addColoredText(doc, rowData.variables, Color.BLACK);
+        addColoredText(doc, "\n\nSimulation ID:  ", GraphConstants.darkgreen);
+        addColoredText(doc, rowData.simID, Color.BLACK);
+
+        String dataSetName = rowData.link;
+        if(dataSetName != null && dataSetName.contains(ExportedDataTableModel.prefix)) {
+            dataSetName = dataSetName.substring(dataSetName.lastIndexOf(ExportedDataTableModel.prefix) + ExportedDataTableModel.prefix.length());
+            if(dataSetName != null && !dataSetName.isEmpty()) {
+                addColoredText(doc, "\nDataset Name:   ", GraphConstants.darkgreen);
+                addColoredText(doc, dataSetName, Color.BLACK);
+            }
+        }
 
         parameterScrollTableModel.resetData();
         for(int i =0; i < differentParameterValues.size(); i++){
@@ -425,6 +469,26 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             doc.insertString(doc.getLength(), text, style);
         } catch (BadLocationException e) {
             lg.error(e);
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if(e.getSource().equals(searchField)) {
+            String searchText = searchField.getText();
+            System.out.println(searchText);
+            tableModel.setSearchText(searchText);
+            tableModel.refreshData();
         }
     }
 }
