@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mongodb
+  name: mongodb
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: mongodb
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+#          image: ghcr.io/virtualcell/vcell-mongo
+          image: zcube/bitnami-compat-mongodb:6.0.5
+#          args: ["--dbpath","/data/db"]
+#          livenessProbe:
+#            exec:
+#              command:
+#                - mongo
+#                - --disableImplicitSessions
+#                - --eval
+#                - "db.adminCommand('ping')"
+#            initialDelaySeconds: 30
+#            periodSeconds: 10
+#            timeoutSeconds: 5
+#            successThreshold: 1
+#            failureThreshold: 6
+#          readinessProbe:
+#            exec:
+#              command:
+#                - mongo
+#                - --disableImplicitSessions
+#                - --eval
+#                - "db.adminCommand('ping')"
+#            initialDelaySeconds: 30
+#            periodSeconds: 10
+#            timeoutSeconds: 5
+#            successThreshold: 1
+#            failureThreshold: 6
+          imagePullPolicy: "Always"
+          env:
+            - name: MONGODB_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: mongo-password
+            - name: MONGODB_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: mongo-username
+          ports:
+            - containerPort: 27017
+              name: "mongodb"
+          resources:
+            limits:
+              memory: "1500Mi"
+            requests:
+              memory: "250Mi"
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongodb-data-dir
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: ghcr-secret
+      volumes:
+        - name: mongodb-data-dir
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mongodb
+  name: mongodb
+spec:
+  ports:
+    - name: "mongodb"
+      protocol: "TCP"
+      port: 27017
+      targetPort: 27017
+      nodePort: 32000
+  type: NodePort
+  selector:
+    app: mongodb

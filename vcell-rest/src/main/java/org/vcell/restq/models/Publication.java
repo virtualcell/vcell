@@ -36,9 +36,9 @@ public record Publication(
                 publicationRep.getCitation(),
                 publicationRep.getPubmedid(),
                 publicationRep.getDoi(),
-                Integer.parseInt(publicationRep.getEndnoteid()),
+                (publicationRep.getEndnoteid()!=null) ? Integer.parseInt(publicationRep.getEndnoteid()) : null,
                 publicationRep.getUrl(),
-                Integer.parseInt(publicationRep.getWittid()),
+                (publicationRep.getWittid()!=null) ? Integer.parseInt(publicationRep.getWittid()) : null,
                 bioModelRefs,
                 mathModelRefs,
                 publicationRep.getDate()
@@ -62,11 +62,11 @@ public record Publication(
                 citation,
                 pubmedid,
                 doi,
-                Integer.toString(endnoteid),
+                (endnoteid!=null) ? Integer.toString(endnoteid) : null,
                 url,
                 bioModelReferenceReps,
                 mathModelReferenceReps,
-                Integer.toString(wittid),
+                (wittid!=null) ? Integer.toString(wittid) : null,
                 date
         );
 

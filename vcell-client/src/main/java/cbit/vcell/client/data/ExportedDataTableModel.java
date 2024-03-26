@@ -24,14 +24,11 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         add(appNameCol);
         add(simNameCol);
         add(timeSliceCol);
-        add(variablesCol);
         add(formatCol);
-//        add(defaultParametersCol);
-//        add(setParametersCol);
         add(dateExportedCol);
     }};
 
-    public List<TableData> tableData = new ArrayList<>();
+    private List<TableData> tableData = new ArrayList<>();
 
     public ExportedDataTableModel(ScrollTable scrollTable){
         super(scrollTable, header.toArray(new String[0]));
@@ -43,10 +40,22 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         return new Comparator<TableData>() {
             @Override
             public int compare(TableData o1, TableData o2) {
-                switch (col){
-                    default:
-                        return ascendingMask * o1.dateExported.compareTo(o2.dateExported);
-
+                if (col == header.indexOf(bioModelCol)){
+                    return ascendingMask * o1.bioModelName.compareTo(o2.bioModelName);
+                } else if (col == header.indexOf(appNameCol)){
+                    return ascendingMask * o1.appName.compareTo(o2.appName);
+                } else if (col == header.indexOf(formatCol)) {
+                    return ascendingMask * o1.format.compareTo(o2.format);
+                } else if (col == header.indexOf(simNameCol)) {
+                    return ascendingMask * o1.simName.compareTo(o2.simName);
+                } else if (col == header.indexOf(timeSliceCol)) {
+                    String[] tokens1 = o1.timeSlice.split("/");
+                    String[] tokens2 = o2.timeSlice.split("/");
+                    double timeRange1 = Double.parseDouble(tokens1[1]) - Double.parseDouble(tokens1[0]);
+                    double timeRange2 = Double.parseDouble(tokens2[1]) - Double.parseDouble(tokens2[0]);
+                    return (int) (ascendingMask *  Math.round(timeRange1 - timeRange2));
+                } else{
+                    return ascendingMask * o1.dateExported.compareTo(o2.dateExported);
                 }
             }
         };
@@ -63,26 +72,13 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
             return data.simName;
         } else if (columnIndex == header.indexOf(timeSliceCol)) {
             return  data.timeSlice;
-        } else if (columnIndex == header.indexOf(variablesCol)) {
-            return data.variables;
         } else if (columnIndex == header.indexOf(dateExportedCol)) {
             return data.dateExported;
         } else if (columnIndex == header.indexOf(formatCol)) {
             return data.format;
         }
-        else if (columnIndex == header.indexOf(defaultParametersCol)) {
-            return data.defaultParameters;
-        }
-        else if (columnIndex == header.indexOf(setParametersCol)) {
-            return data.setParameters;
-        }
         return null;
     }
-
-    public TableData getRowData(int rowIndex){
-        return tableData.get(rowIndex);
-    }
-
 
     public void addRow(TableData row){
         tableData.add(row);
@@ -90,6 +86,8 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
     public void refreshData(){
         setData(tableData);
     }
+
+    public void resetData(){tableData = new ArrayList<>();}
 
     @Override
     public Class<?> getColumnClass(int iCol) {
@@ -112,12 +110,13 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         public String appName = null;
         public String simName = null;
         public String variables = null;
-        public ArrayList<String> defaultParameters = null;
-        public ArrayList<String> setParameters = null;
+        public ArrayList<String> differentParameterValues;
+        public boolean nonSpatial;
+        public String applicationType = null;
 
         public TableData(String jobID, String simID, String dateExported, String format, String link,
                          String bioModelName, String timeSlice, String appName, String simName, String variables,
-                         ArrayList<String> defaultParameters, ArrayList<String> setParameters){
+                         ArrayList<String> differentParameterValues, boolean nonSpatial, String applicationType){
             this.jobID = jobID;
             this.simID = simID;
             this.dateExported = dateExported;
@@ -128,8 +127,9 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
             this.appName = appName;
             this.simName = simName;
             this.variables = variables;
-            this.defaultParameters = defaultParameters;
-            this.setParameters = setParameters;
+            this.differentParameterValues = differentParameterValues;
+            this.nonSpatial = nonSpatial;
+            this.applicationType = applicationType;
         }
     }
 

@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: activemqsim
+  name: activemqsim
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: activemqsim
+  template:
+    metadata:
+      labels:
+        app: activemqsim
+    spec:
+      containers:
+        - name: activemqsim
+          image: webcenter/activemq:5.14.3
+          envFrom:
+            - configMapRef:
+                name: activemqsim-config
+          ports:
+            - containerPort: 61616
+              protocol: TCP
+            - containerPort: 8161
+              protocol: TCP
+          resources:
+            limits:
+              memory: "2000Mi"
+            requests:
+              memory: "700Mi"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: activemqsim
+  name: activemqsim-internal
+spec:
+  ports:
+    - name: "61616"
+      port: 61616
+      targetPort: 61616
+  selector:
+    app: activemqsim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: activemqsim-loadbalancer
+spec:
+  type: LoadBalancer
+  ports:
+    - name: "61616"
+      port: 61616
+      targetPort: 61616
+    - name: "8161"
+      port: 8161
+      targetPort: 8161
+  selector:
+    app: activemqsim

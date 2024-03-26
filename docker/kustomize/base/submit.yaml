@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: submit
+  name: submit
+spec:
+  selector:
+    matchLabels:
+      app: submit
+  replicas: 0
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: submit
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10000
+        fsGroup: 10000
+      containers:
+        - name: submit
+          image: ghcr.io/virtualcell/vcell-submit
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              memory: "250Mi"
+              cpu: "200m"
+            limits:
+              memory: "2000Mi"
+#              cpu: "500m"
+          envFrom:
+            - configMapRef:
+                name: submit-config
+          #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
+          env:
+            - name: batchuserkeyfile
+              value: "/run/secrets/batchuserkeyfile/ssh-privatekey"
+            - name: jmspswdfile
+              value: "/run/secrets/api-secrets/jmspswd"
+            - name: dbpswdfile
+              value: "/run/secrets/api-secrets/dbpswd"
+          ports:
+            - containerPort: 8000
+            - containerPort: 8877
+              protocol: TCP
+          volumeMounts:
+            - name: api-secrets
+              mountPath: /run/secrets/api-secrets
+            - name: batchuserkeyfile
+              mountPath: /run/secrets/batchuserkeyfile
+
+            - name: nfs-primary-pvc
+              mountPath: /htclogs
+              subPath: htclogs
+            - name: nfs-primary-pvc
+              mountPath: /simdata
+              subPath: users
+            - name: nfs-archive-pvc
+              mountPath: /share/apps/vcell12/users
+              subPath: users
+#            - name: nfs-secondary-pvc
+            - name: nfs-primary-pvc
+              mountPath: /simdata_secondary
+              subPath: users
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: ghcr-secret
+      volumes:
+        - name: api-secrets
+          secret:
+            items:
+              - key: dbpswd
+                path: dbpswd
+              - key: jmspswd
+                path: jmspswd
+            secretName: api-secrets
+        - name: batchuserkeyfile
+          secret:
+            defaultMode: 256
+            items:
+              - key: ssh-privatekey
+                path: ssh-privatekey
+            secretName: vcell-ssh-secret
+        - name: nfs-primary-pvc
+          persistentVolumeClaim:
+            claimName: nfs-primary-pvc
+        - name: nfs-archive-pvc
+          persistentVolumeClaim:
+            claimName: nfs-archive-pvc
+#        - name: nfs-secondary-pvc
+#          persistentVolumeClaim:
+#            claimName: nfs-secondary-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: submit
+  name: submit
+spec:
+  ports:
+    - name: "5005"
+      port: 5005
+      targetPort: 8000
+    - name: "8877"
+      port: 8877
+      targetPort: 8877
+  selector:
+    app: submit
