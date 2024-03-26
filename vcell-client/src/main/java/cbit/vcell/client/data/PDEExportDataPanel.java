@@ -42,6 +42,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import cbit.vcell.export.server.*;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.solver.*;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.UserCancelException;
@@ -702,8 +703,12 @@ private ExportSpecs getExportSpecs() {
 	String serverSavedFileName = getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs ? ((N5Specs) getExportSettings1().getFormatSpecificSpecs()).dataSetName : "";
 
 	boolean nonSpatial = sc.getGeometry().getDimension() == 0;
+	HashMap<Integer, String> subVolumes = new HashMap<>();
+	for(SubVolume subVolume: sc.getGeometry().getGeometrySpec().getSubVolumes()){
+		subVolumes.put(subVolume.getHandle(), subVolume.getName());
+	}
 	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
-			differentParameterValues, serverSavedFileName, sc.getApplicationType().name(), nonSpatial);
+			differentParameterValues, serverSavedFileName, sc.getApplicationType().name(), nonSpatial, subVolumes);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
 	ExportSpecs exportSpecs = new ExportSpecs(
 			vcDataIdentifier,
