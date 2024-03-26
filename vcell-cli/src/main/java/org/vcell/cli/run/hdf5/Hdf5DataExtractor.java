@@ -2,6 +2,7 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.solver.TempSimulation;
 
+import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
 import org.jlibsedml.AbstractTask;
 import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
@@ -11,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
@@ -49,19 +51,24 @@ public class Hdf5DataExtractor {
      * @see SpatialResultsConverter::collectSpatialDatasets
      */
     public Hdf5DataContainer extractHdf5RelevantData(Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResults, Map<TaskJob, File> spatialResults) {
-        List<Hdf5SedmlResults> wrappers = new LinkedList<>();
+        Map<Report, List<Hdf5SedmlResults>> wrappers = new LinkedHashMap<>();
         Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer();
         Exception nonSpatialException = null, spatialException = null;
 
         try {
-            wrappers.addAll(NonspatialResultsConverter.convertNonspatialResultsToSedmlFormat(this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation, this.outputDirectory));
+            Map<Report, List<Hdf5SedmlResults>> nonspatialWrappers = NonspatialResultsConverter.convertNonspatialResultsToSedmlFormat(
+                    this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation, this.outputDirectory);
+            Hdf5DataExtractor.addWrappers(wrappers, nonspatialWrappers);
         } catch (Exception e){
             logger.warn("Collection of nonspatial datasets failed for " + this.sedml.getFileName(), e);
             nonSpatialException = e;
         }
 
         try {
-            wrappers.addAll(SpatialResultsConverter.convertSpatialResultsToSedmlFormat(this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation, this.outputDirectory));
+            Map<Report, List<Hdf5SedmlResults>> spatialWrappers = SpatialResultsConverter.convertSpatialResultsToSedmlFormat(
+                    this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation, this.outputDirectory);
+            Hdf5DataExtractor.addWrappers(wrappers, spatialWrappers);
+
         } catch (Exception e){
             logger.warn("Collection of spatial datasets failed for " + this.sedml.getFileName(), e);
             spatialException = e;
@@ -76,7 +83,19 @@ public class Hdf5DataExtractor {
                 + "dataset collection failure.", exception);
         } // else no problem
 
-        hdf5FileWrapper.uriToResultsMap.put(this.sedmlLocation, wrappers);
+        Hdf5DataExtractor.addWrappers(hdf5FileWrapper.reportToResultsMap, wrappers);
+        for (Report report : wrappers.keySet()){
+            hdf5FileWrapper.reportToUriMap.put(report, this.sedmlLocation);
+        }
+
         return hdf5FileWrapper;
+    }
+
+    private static void addWrappers(Map<Report, List<Hdf5SedmlResults>> wrappers, Map<Report, List<Hdf5SedmlResults>> wrappersToAdd){
+        for (Report potentiallyNewReport : wrappersToAdd.keySet()){
+            if (!wrappers.containsKey(potentiallyNewReport)) wrappers.put(potentiallyNewReport, new LinkedList<>());
+            wrappers.get(potentiallyNewReport).addAll(wrappersToAdd.get(potentiallyNewReport));
+        }
+
     }
 }
