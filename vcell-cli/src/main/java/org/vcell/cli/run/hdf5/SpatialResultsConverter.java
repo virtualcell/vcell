@@ -27,7 +27,7 @@ public class SpatialResultsConverter {
         List<Report> allReports = SpatialResultsConverter.getReports(sedml.getOutputs());
 
         for (Report report : allReports){
-            boolean bNotSpatial = false;
+            boolean bNotSpatial = false, hasNotGivenWarning = true;
             Hdf5SedmlResultsSpatial hdf5DataSourceSpatial = new Hdf5SedmlResultsSpatial();
 
             // go through each entry (dataset)
@@ -35,8 +35,9 @@ public class SpatialResultsConverter {
                 // use the data reference to obtain the data generator
                 DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference()); assert datagen != null;
                 //TODO: Allow multiple variables in DataGenerators for Spatial, AND fill out TDDO below.
-                if (datagen.getListOfVariables().size() != 1){
-                    throw new RuntimeException("VCell does not support multi-variable data generators in spatial sims.");
+                if (datagen.getListOfVariables().size() != 1 && hasNotGivenWarning){
+                    logger.warn("VCell does not support multi-variable data generators in spatial sims.");
+                    hasNotGivenWarning = false;
                 }
                 Map<Variable, Hdf5DataSourceSpatialVarDataItem> variableToDataMap = new HashMap<>();
 
