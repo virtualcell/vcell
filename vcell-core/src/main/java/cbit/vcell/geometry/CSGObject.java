@@ -18,7 +18,6 @@ import cbit.image.ImageException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.render.Vect3d;
 
-@SuppressWarnings("serial")
 public class CSGObject extends SubVolume {
 	
 	public static final String PROPERTY_NAME_ROOT = "root";
@@ -37,17 +36,12 @@ public class CSGObject extends SubVolume {
 		if (!compareEqual0(obj)){
 			return false;
 		}
-		if (!(obj instanceof CSGObject)){
-			return false;
-		}
-		CSGObject csgo = (CSGObject)obj;
-
-		if (!Compare.isEqualOrNull(root,csgo.root)){
+		if (!(obj instanceof CSGObject csgo)){
 			return false;
 		}
 
-		return true;
-	}
+        return Compare.isEqualOrNull(root, csgo.root);
+    }
 
 	@Override
 	public boolean isInside(double x, double y, double z, GeometrySpec geometrySpec) throws GeometryException, ImageException, ExpressionException {
@@ -75,10 +69,7 @@ public class CSGObject extends SubVolume {
 			}
 		} else if (node instanceof CSGTransformation) {
 			CSGNode child = ((CSGTransformation) node).getChild();
-			CSGNode csgNode = findCSGNodeByName(child, name);
-			if (csgNode != null) {
-				return csgNode;
-			}
+            return findCSGNodeByName(child, name);
 		}
 		return null;
 	}

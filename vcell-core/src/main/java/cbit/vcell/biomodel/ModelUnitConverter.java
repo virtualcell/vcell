@@ -27,20 +27,15 @@ public class ModelUnitConverter {
 
 	public static ModelUnitSystem createSbmlModelUnitSystem() {
 		final String substanceUnit = "umol";
-		String volumeSubstanceSymbol = substanceUnit;
-		String membraneSubstanceSymbol = substanceUnit;
-		String lumpedReactionSubstanceSymbol = substanceUnit;
-		String volumeSymbol = "l";
+        String volumeSymbol = "l";
 		String areaSymbol = "dm2";
 		String lengthSymbol = "dm";
 		String timeSymbol = "s";
-		ModelUnitSystem mus = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
-		return mus;
+        return ModelUnitSystem.createVCModelUnitSystem(substanceUnit, substanceUnit, substanceUnit, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
 	}
 	public static BioModel createBioModelWithSBMLUnitSystem(BioModel oldBioModel) throws ExpressionException, XmlParseException, ImageException, GeometryException {
 		ModelUnitSystem mus = createSbmlModelUnitSystem();
-		BioModel newBioModel = createBioModelWithNewUnitSystem(oldBioModel, mus);
-		return newBioModel;
+        return createBioModelWithNewUnitSystem(oldBioModel, mus);
 	}
 	
 	
@@ -78,12 +73,11 @@ public class ModelUnitConverter {
 		
 		for (ReactionStep reactionStep : newBioModel.getModel().getReactionSteps()) {
 			SymbolTable oldSymbolTable = oldBioModel.getModel().getReactionStep(reactionStep.getName());
-			SymbolTable newSymbolTable = reactionStep;
-			for (Parameter p : reactionStep.getKinetics().getUnresolvedParameters()){
-				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p, dimensionless, KMOLE);
+            for (Parameter p : reactionStep.getKinetics().getUnresolvedParameters()){
+				convertVarsWithUnitFactors(oldSymbolTable, reactionStep, p, dimensionless, KMOLE);
 			}
 			for (Parameter p : reactionStep.getKinetics().getKineticsParameters()){
-				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p, dimensionless, KMOLE);
+				convertVarsWithUnitFactors(oldSymbolTable, reactionStep, p, dimensionless, KMOLE);
 			}
 			
 //			We no longer have to deal with conversion factor expressions and try to be smart and simplify/flatten and rebind
@@ -176,7 +170,7 @@ public class ModelUnitConverter {
 			 */
 			// convert rate rules
 			RateRule[] rateRules = simContext.getRateRules();
-			if (rateRules != null && rateRules.length > 0) { 
+			if (rateRules != null && rateRules.length > 0) {
 				for (RateRule rateRule : rateRules) {
 					RateRule oldRateRule = oldSimContext.getRateRule(rateRule.getName());
 					ScopedSymbolTable oldSymbolTable = oldRateRule.getSimulationContext();
