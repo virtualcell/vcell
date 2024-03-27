@@ -112,4 +112,14 @@ public class CSGObject extends SubVolume {
 		this.root = newValue;
 		firePropertyChange(PROPERTY_NAME_ROOT, oldValue, newValue);
 	}
+
+	public void rescaleInPlace(double lengthScaleFactor){
+		if (!(this.root instanceof CSGScale scaledNode)){
+			CSGNode temp = this.root;
+			this.root = new CSGScale("Unit Scale", new Vect3d(lengthScaleFactor, lengthScaleFactor, lengthScaleFactor));
+			((CSGScale)this.root).setChild(temp);
+		} else {
+			scaledNode.getScale().scale(lengthScaleFactor);
+		}
+	}
 }

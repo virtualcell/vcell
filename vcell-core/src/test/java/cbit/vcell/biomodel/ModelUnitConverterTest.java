@@ -144,7 +144,7 @@ public class ModelUnitConverterTest {
     }
 
     @Test
-    public void test_VCell_to_SBML_conversion_uM_um3() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException {
+    public void test_VCell_to_SBML_conversion_uM_um3() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException, ImageException, GeometryException {
         BioModel bioModel_vcellUnits = getBioModelFromResource("MathOverrides_UnitSystem_vcell_units.vcml");
 
         BioModel expected_bioModel_sbmlUnts = getBioModelFromResource("MathOverrides_UnitSystem_sbml_units.vcml");
@@ -172,7 +172,7 @@ public class ModelUnitConverterTest {
     }
 
     @Test
-    public void test_SBML_to_VCell_conversion() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException {
+    public void test_SBML_to_VCell_conversion() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException, ImageException, GeometryException {
         BioModel bioModel_sbmlUnts = getBioModelFromResource("MathOverrides_UnitSystem_sbml_units.vcml");
 
         BioModel expected_bioModel_vcellUnits = getBioModelFromResource("MathOverrides_UnitSystem_vcell_units.vcml");
@@ -213,7 +213,7 @@ public class ModelUnitConverterTest {
     }
 
     @Test
-    public void test_VCell_to_SBML_conversion_overrides_uM_um3() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException {
+    public void test_VCell_to_SBML_conversion_overrides_uM_um3() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException, ImageException, GeometryException {
         BioModel bioModel_vcellUnits = getBioModelFromResource("BioModel_overrides_std_units.vcml");
         {
             Simulation sim = bioModel_vcellUnits.getSimulation(0);
@@ -296,7 +296,7 @@ public class ModelUnitConverterTest {
     }
 
     @Test
-    public void test_VCell_to_SBML_conversion_overrides_default_SBML() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException {
+    public void test_VCell_to_SBML_conversion_overrides_default_SBML() throws IOException, XmlParseException, ExpressionException, MatrixException, ModelException, MathException, MappingException, ImageException, GeometryException {
         BioModel bioModel_vcellUnits = getBioModelFromResource("BioModel_overrides_std_units.vcml");
         {
             Simulation sim = bioModel_vcellUnits.getSimulation(0);

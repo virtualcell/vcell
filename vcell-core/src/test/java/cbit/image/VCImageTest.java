@@ -101,6 +101,18 @@ public class VCImageTest {
         VCImage roundTripImage = roundTripBioModel.getSimulationContext(0).getGeometry().getGeometrySpec().getImage();
         int dimension = bioModel.getSimulationContext(0).getGeometry().getDimension();
         boolean bImageEquivalent = origImage.compareEqual(roundTripImage, dimension,true);
-        Assertions.assertTrue(bImageEquivalent,"images don't match");
+        Assertions.assertFalse(bImageEquivalent,"images match when they shouldn't");
+        BioModel correctedRoundTripBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(roundTripBioModel, bioModel.getModel().getUnitSystem());
+        correctedRoundTripBioModel.updateAll(false);
+        MathCompareResults correctedMathEquivalent = MathDescription.testEquivalency(
+                SimulationSymbolTable.createMathSymbolTableFactory(),
+                bioModel.getSimulationContext(0).getMathDescription(),
+                correctedRoundTripBioModel.getSimulationContext(0).getMathDescription());
+        Assertions.assertTrue(correctedMathEquivalent.isEquivalent(),"math descriptions didn't match: "+correctedMathEquivalent.toDatabaseStatus());
+
+        VCImage correctedRoundTripImage = correctedRoundTripBioModel.getSimulationContext(0).getGeometry().getGeometrySpec().getImage();
+        boolean bCorrectedImageEquivalent = origImage.compareEqual(correctedRoundTripImage, dimension,true);
+        Assertions.assertTrue(bCorrectedImageEquivalent,"images don't match");
+
     }
 }
