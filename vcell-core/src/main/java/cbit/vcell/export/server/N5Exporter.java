@@ -21,6 +21,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.janelia.saalfeldlab.n5.DataType;
 import org.janelia.saalfeldlab.n5.DatasetAttributes;
 import org.janelia.saalfeldlab.n5.DoubleArrayDataBlock;
 import org.janelia.saalfeldlab.n5.N5FSWriter;
@@ -70,14 +71,17 @@ public class N5Exporter implements ExportConstants {
 		// output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
 
 
-		int numVariables = variableNames.length;
+		int numVariables = variableNames.length + 1; //the extra variable length is for the mask generated for every  N5 Export
 		CartesianMesh mesh = dataServer.getMesh(user, vcDataID);
 		int numTimes = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex(); //end index is an actual index within the array and not representative of length
 		long[] dimensions = {mesh.getSizeX(), mesh.getSizeY(), numVariables, mesh.getSizeZ(), numTimes + 1};
 		// 51X, 51Y, 1Z, 1C, 2T
 		int[] blockSize = {mesh.getSizeX(), mesh.getSizeY(), 1, mesh.getSizeZ(), 1};
 
-
+		double[] mask = new double[mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ()];
+		for (int i =0; i < mesh.getSizeX() * mesh.getSizeY() * mesh.getSizeZ(); i++){
+			mask[i] = (double) mesh.getSubVolumeFromVolumeIndex(i);
+		}
 
 		for (String variableName: variableNames){
 			DataIdentifier specie = getSpecificDI(variableName, outputContext);
@@ -101,19 +105,22 @@ public class N5Exporter implements ExportConstants {
 		// rewrite so that it still results in a tmp file does not raise File already exists error
 		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
 		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
-		HashMap<String, Object> additionalMetaData = new HashMap<>();
-
 		String dataSetName = n5Specs.dataSetName;
-
 		n5FSWriter.createDataset(dataSetName, datasetAttributes);
-		N5Specs.imageJMetaData(n5FSWriter, dataSetName, numVariables, blockSize[3], allTimes.length, additionalMetaData);
+		N5Specs.writeImageJMetaData(dimensions, blockSize, n5Specs.getCompression(),n5FSWriter, dataSetName, numVariables, blockSize[3], allTimes.length, exportSpecs.getHumanReadableExportData().subVolume);
 
+		//Create mask
+		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
+			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
+			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, 0, 0, normalizedTimeIndex}, mask);
+			n5FSWriter.writeBlock(dataSetName, datasetAttributes, doubleArrayDataBlock);
+		}
 
-		for (int variableIndex=0; variableIndex < numVariables; variableIndex++){
+		for (int variableIndex=1; variableIndex < numVariables; variableIndex++){
 			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 
 				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
-				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex], allTimes[timeIndex]).getData();
+				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex - 1], allTimes[timeIndex]).getData();
 				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
 				n5FSWriter.writeBlock(dataSetName, datasetAttributes, doubleArrayDataBlock);
 				if(timeIndex % 3 == 0){

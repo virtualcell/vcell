@@ -22,6 +22,7 @@ import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
+import com.google.gson.internal.LinkedTreeMap;
 import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.*;
 import org.junit.Before;
@@ -35,10 +36,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -185,6 +183,8 @@ public class N5ExporterTest {
         double[] allTimes = dataServer.getDataSetTimes(testUser,n5Exporter.getVcDataID());
         TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, variableSpecs.getModeID());
         ExportSpecs exportSpecs = new ExportSpecs(n5Exporter.getVcDataID(), ExportFormat.N5, variableSpecs, timeSpecs, geometrySpecs, n5Specs, "", "");
+        HashMap<Integer, String> dummyMaskInfo = new HashMap<>(){{put(0, "Dummy"); put(1, "Test");}};
+        exportSpecs.setExportMetaData(new HumanReadableExportData("", "", "", new ArrayList<>(), "", "", false, dummyMaskInfo));
         FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
 
         ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, 0, exportSpecs, fileDataContainerManager);
@@ -232,13 +232,18 @@ public class N5ExporterTest {
             this.initalizeModel(model);
             this.makeN5Model(N5Specs.CompressionLevel.RAW, 0, times.length - 1, model);
             //X, Y, T, Z, Channels
-            long[] controlDimensions = {modelMesh.getSizeX(), modelMesh.getSizeY(), variables.size(), modelMesh.getSizeZ(), times.length};
+            long[] controlDimensions = {modelMesh.getSizeX(), modelMesh.getSizeY(), variables.size() + 1, modelMesh.getSizeZ(), times.length};
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
             DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
             long[] exportDimensions = datasetAttributes.getDimensions();
             assertArrayEquals(controlDimensions, exportDimensions, "Testing dimension results for model " + model);
+            ((N5FSReader) n5Reader).getAttributes(model);
+
+            LinkedTreeMap<String, String> dummyMaskInfo = (LinkedTreeMap<String, java.lang.String>)((N5FSReader) n5Reader).getAttribute(model, N5Specs.maskingMetaDataName, LinkedTreeMap.class);
 
             assertSame(DataType.FLOAT64, datasetAttributes.getDataType(),"Data Type of model " + model);
+            assert("Dummy".equals(dummyMaskInfo.get("0")));
+            assert("Test".equals(dummyMaskInfo.get("1")));
 
             int[] expectedBlockSize = {modelMesh.getSizeX(), modelMesh.getSizeY(), 1, modelMesh.getSizeZ(), 1};
             assertArrayEquals(expectedBlockSize, datasetAttributes.getBlockSize(),"Block Size of model " + model);
@@ -261,7 +266,7 @@ public class N5ExporterTest {
 
                 for (int i = 0; i < variables.size(); i++){
                     for(int timeSlice = startTimeIndex; timeSlice <= attributesTimeSize; timeSlice++){
-                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice - startTimeIndex});
+                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i + 1, 0, timeSlice - startTimeIndex});
 
                         double[] exportedRawData = (double[]) dataBlock.getData();
                         assertArrayEquals(
@@ -295,7 +300,7 @@ public class N5ExporterTest {
             for(int i = 0; i < variables.size(); i++){
                 for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
                     DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
-                    DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
+                    DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i + 1, 0, timeSlice});
 
                     double[] exportedRawData = (double[]) dataBlock.getData();
                     assertArrayEquals(
@@ -329,7 +334,7 @@ public class N5ExporterTest {
                     for(int j = 0; j< 8; j++){
                         int timeSlice = random.nextInt(endTimeIndex);
                         int chosenVariable = random.nextInt(variables.size());
-                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
+                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, chosenVariable + 1, 0, timeSlice});
 
                         double[] exportedData = (double[]) dataBlock.getData();
                         Assertions.assertArrayEquals(
