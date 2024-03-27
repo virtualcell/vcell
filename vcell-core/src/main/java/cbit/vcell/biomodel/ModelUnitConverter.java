@@ -2,6 +2,7 @@ package cbit.vcell.biomodel;
 
 import cbit.image.ImageException;
 import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.math.MathDescription;
@@ -426,8 +427,11 @@ public class ModelUnitConverter {
 			csg.rescaleInPlace(lengthScaleFactor);
 		}
 
-		newGeometry.getGeometrySpec().getSampledImage().setDirty();
-		newGeometry.getGeometrySurfaceDescription().updateAll();
+		GeometrySurfaceDescription gsd = newGeometry.getGeometrySurfaceDescription();
+		if (gsd != null){
+			newGeometry.getGeometrySpec().getSampledImage().setDirty();
+			gsd.updateAll();
+		}
 	}
 	
 	public static void main(String[] args) {
