@@ -21,6 +21,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.janelia.saalfeldlab.n5.DataType;
 import org.janelia.saalfeldlab.n5.DatasetAttributes;
 import org.janelia.saalfeldlab.n5.DoubleArrayDataBlock;
 import org.janelia.saalfeldlab.n5.N5FSWriter;
@@ -104,13 +105,9 @@ public class N5Exporter implements ExportConstants {
 		// rewrite so that it still results in a tmp file does not raise File already exists error
 		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
 		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
-		HashMap<String, Object> additionalMetaData = new HashMap<>();
-		additionalMetaData.put("Mask Mapping", exportSpecs.getHumanReadableExportData().subVolume);
-
 		String dataSetName = n5Specs.dataSetName;
-
 		n5FSWriter.createDataset(dataSetName, datasetAttributes);
-		N5Specs.imageJMetaData(n5FSWriter, dataSetName, numVariables, blockSize[3], allTimes.length, additionalMetaData);
+		N5Specs.writeImageJMetaData(dimensions, blockSize, n5Specs.getCompression(),n5FSWriter, dataSetName, numVariables, blockSize[3], allTimes.length, exportSpecs.getHumanReadableExportData().subVolume);
 
 		//Create mask
 		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
