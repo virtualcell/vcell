@@ -87,19 +87,6 @@ public double getZ() {
  * @return java.lang.String
  */
 
-/**
- * For unit conversion Purposes
- *
- * @param scaleFactor the factor to scale by
- */
-public void rescaleInPlace(double scaleFactor, int dimension) {
-	switch (dimension){
-		case 3: this.x *= scaleFactor; this.y *= scaleFactor; this.z *= scaleFactor; break;
-		case 2: this.x *= scaleFactor; this.y *= scaleFactor; break;
-		case 1: this.x *= scaleFactor; break;
-	}
-}
-
 public String toString() {
 	return "Origin["+getX()+","+getY()+","+getZ()+"]";
 }

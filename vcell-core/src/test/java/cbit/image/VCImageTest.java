@@ -102,6 +102,7 @@ public class VCImageTest {
         int dimension = bioModel.getSimulationContext(0).getGeometry().getDimension();
         boolean bImageEquivalent = origImage.compareEqual(roundTripImage, dimension,true);
         Assertions.assertFalse(bImageEquivalent,"images match when they shouldn't");
+
         BioModel correctedRoundTripBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(roundTripBioModel, bioModel.getModel().getUnitSystem());
         correctedRoundTripBioModel.updateAll(false);
         MathCompareResults correctedMathEquivalent = MathDescription.testEquivalency(
