@@ -484,7 +484,7 @@ private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportO
 		String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
 		String uri = url  + ":" + PropertyLoader.getRequiredProperty(PropertyLoader.s3ProxyExternalPort) + "/" + n5Exporter.getN5FilePathSuffix();
 		N5Specs n5Specs = (N5Specs) exportSpecs.getFormatSpecificSpecs();
-		uri += "?dataSetName=" + URLEncoder.encode(n5Specs.dataSetName, StandardCharsets.UTF_8);
+		uri += "?dataSetName=" + newExportJob.getJobID();
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
 		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, uri, exportSpecs);
 	}

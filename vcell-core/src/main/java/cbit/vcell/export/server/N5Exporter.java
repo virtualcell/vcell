@@ -105,15 +105,14 @@ public class N5Exporter implements ExportConstants {
 		// rewrite so that it still results in a tmp file does not raise File already exists error
 		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
 		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
-		String dataSetName = n5Specs.dataSetName;
-		n5FSWriter.createDataset(dataSetName, datasetAttributes);
-		N5Specs.writeImageJMetaData(dimensions, blockSize, n5Specs.getCompression(),n5FSWriter, dataSetName, numVariables, blockSize[3], allTimes.length, exportSpecs.getHumanReadableExportData().subVolume);
+		n5FSWriter.createDataset(String.valueOf(jobID), datasetAttributes);
+		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter, n5Specs.dataSetName, numVariables, blockSize[3], allTimes.length, exportSpecs.getHumanReadableExportData().subVolume);
 
 		//Create mask
 		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
 			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, 0, 0, normalizedTimeIndex}, mask);
-			n5FSWriter.writeBlock(dataSetName, datasetAttributes, doubleArrayDataBlock);
+			n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
 		}
 
 		for (int variableIndex=1; variableIndex < numVariables; variableIndex++){
@@ -122,7 +121,7 @@ public class N5Exporter implements ExportConstants {
 				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
 				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex - 1], allTimes[timeIndex]).getData();
 				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
-				n5FSWriter.writeBlock(dataSetName, datasetAttributes, doubleArrayDataBlock);
+				n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
 				if(timeIndex % 3 == 0){
 					double progress = (double) (variableIndex + normalizedTimeIndex) / (numVariables + (numTimes * numVariables));
 					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
@@ -166,17 +165,11 @@ public class N5Exporter implements ExportConstants {
 	public String getN5FileNameHash(){
 		return actualHash(vcDataID.getDataKey().toString(), String.valueOf(vcDataID.getJobIndex()));
 	}
-
-	public static String getN5FileNameHash(String simID, String jobID){
-		return actualHash(simID, jobID);
-	}
-
 	private static String actualHash(String simID, String jobID) {
 		MessageDigest sha256 = DigestUtils.getMd5Digest();
 		sha256.update(simID.getBytes(StandardCharsets.UTF_8));
-//		sha256.update(jobID.getBytes(StandardCharsets.UTF_8));
-
-		return Hex.encodeHexString(sha256.digest());
+		String hashString = Hex.encodeHexString(sha256.digest());
+		return hashString.substring(17);
 	}
 
 

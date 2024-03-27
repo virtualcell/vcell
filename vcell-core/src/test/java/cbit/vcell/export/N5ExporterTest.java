@@ -25,15 +25,12 @@ import cbit.vcell.solvers.CartesianMesh;
 import com.google.gson.internal.LinkedTreeMap;
 import org.janelia.saalfeldlab.n5.DataBlock;
 import org.janelia.saalfeldlab.n5.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -52,7 +49,6 @@ public class N5ExporterTest {
     private User testUser;
     private CartesianMesh modelMesh;
     private double[] times;
-    private static final int simulationJobId = 0;
     private static final String fourDModelID = "597714292";
     private static final String fiveDModelID = "1136922340";
     private final ArrayList<String> testModels = new ArrayList<>(Arrays.asList(
@@ -173,8 +169,9 @@ public class N5ExporterTest {
 
     }
 
-    public void makeN5Model(N5Specs.CompressionLevel compressionLevel, int startTimeIndex, int endTimeIndex, String modelID) throws Exception {
+    public void makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel compressionLevel, int startTimeIndex, int endTimeIndex, String modelID) throws Exception {
         OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+
 
         VariableSpecs variableSpecs = new VariableSpecs(variables.stream().map(di -> di.getName()).toList(), Integer.parseInt(modelID));
         GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], 0, 0, 0);
@@ -187,7 +184,7 @@ public class N5ExporterTest {
         exportSpecs.setExportMetaData(new HumanReadableExportData("", "", "", new ArrayList<>(), "", "", false, dummyMaskInfo));
         FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
 
-        ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, 0, exportSpecs, fileDataContainerManager);
+        ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, Integer.parseInt(modelID), exportSpecs, fileDataContainerManager);
 
         if(n5Reader != null){
             n5Reader.close();
@@ -195,10 +192,10 @@ public class N5ExporterTest {
         this.n5Reader = new N5FSReader(n5Exporter.getN5FileAbsolutePath());
     }
 
-    public void initalizeModel(String simKeyID) throws IOException, DataAccessException, MathException {
+    public void setExportTestState(String simKeyID) throws IOException, DataAccessException, MathException {
         VCSimulationIdentifier vcSimulationIdentifier = simKeyID.equals(fourDModelID) ? new VCSimulationIdentifier(new KeyValue(fourDModelID), testUser) :
                 new VCSimulationIdentifier(new KeyValue(fiveDModelID), testUser);
-        vcDataID = new VCSimulationDataIdentifier(vcSimulationIdentifier, simulationJobId);
+        vcDataID = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
         n5Exporter.initalizeDataControllers(testUser, dataServer, vcDataID);
         dataIdentifiers = new ArrayList<>(Arrays.asList(dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), testUser, vcDataID)));
 
@@ -229,8 +226,8 @@ public class N5ExporterTest {
     public void testMetaData() throws Exception {
 
         for(String model: testModels){
-            this.initalizeModel(model);
-            this.makeN5Model(N5Specs.CompressionLevel.RAW, 0, times.length - 1, model);
+            this.setExportTestState(model);
+            this.makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel.RAW, 0, times.length - 1, model);
             //X, Y, T, Z, Channels
             long[] controlDimensions = {modelMesh.getSizeX(), modelMesh.getSizeY(), variables.size() + 1, modelMesh.getSizeZ(), times.length};
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
@@ -253,14 +250,14 @@ public class N5ExporterTest {
     @Test
     public void testRandomTimeSlices() throws Exception {
         for (String model: testModels){
-            initalizeModel(model);
+            setExportTestState(model);
             for (int k=0; k<8; k++){ //try 8 randomly chosen time slice combinations
                 Random random = new Random();
                 int startTimeIndex = random.nextInt(0, times.length);
                 int endTimeIndex = random.nextInt(startTimeIndex, times.length);
                 OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 
-                makeN5Model(N5Specs.CompressionLevel.RAW, startTimeIndex, endTimeIndex, model);
+                makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel.RAW, startTimeIndex, endTimeIndex, model);
                 DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
                 long attributesTimeSize = startTimeIndex + (datasetAttributes.getDimensions()[4] - 1); //minus 1 since we are already starting at startTimeIndex
 
@@ -292,10 +289,10 @@ public class N5ExporterTest {
         //each block is entire XYZ, broken in time and channels
 
         for(String model: testModels){
-            this.initalizeModel(model);
+            this.setExportTestState(model);
             OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
             int endTimeIndex = times.length - 1;
-            makeN5Model(N5Specs.CompressionLevel.RAW, 0, endTimeIndex, model);
+            makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel.RAW, 0, endTimeIndex, model);
 
             for(int i = 0; i < variables.size(); i++){
                 for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
@@ -326,9 +323,9 @@ public class N5ExporterTest {
 
         for (N5Specs.CompressionLevel compression: compressions){
                 for(String model: testModels){
-                    initalizeModel(model);
+                    setExportTestState(model);
                     int endTimeIndex = times.length - 1;
-                    makeN5Model(compression, 0 , endTimeIndex, model);
+                    makeN5FileWithSpecificSimulationResults(compression, 0 , endTimeIndex, model);
                     OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
                     DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
                     for(int j = 0; j< 8; j++){
