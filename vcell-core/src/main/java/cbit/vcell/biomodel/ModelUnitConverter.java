@@ -27,11 +27,16 @@ public class ModelUnitConverter {
 
 	public static ModelUnitSystem createSbmlModelUnitSystem() {
 		final String substanceUnit = "umol";
+		// All three of the following are the same in an SBML Unit system
+		String volumeSubstanceSymbol = substanceUnit; 			// Used to demonstrate difference between VCell and SBML
+		String membraneSubstanceSymbol = substanceUnit;			// Used to demonstrate difference between VCell and SBML
+		String lumpedReactionSubstanceSymbol = substanceUnit;	// Used to demonstrate difference between VCell and SBML
         String volumeSymbol = "l";
 		String areaSymbol = "dm2";
 		String lengthSymbol = "dm";
 		String timeSymbol = "s";
-        return ModelUnitSystem.createVCModelUnitSystem(substanceUnit, substanceUnit, substanceUnit, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
+        return ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol,
+				lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
 	}
 	public static BioModel createBioModelWithSBMLUnitSystem(BioModel oldBioModel) throws ExpressionException, XmlParseException, ImageException, GeometryException {
 		ModelUnitSystem mus = createSbmlModelUnitSystem();
