@@ -247,10 +247,10 @@ public class XmlHelper {
 				// cleanup the string of all the "sameAs" statements
 				sbmlString = SBMLAnnotationUtil.postProcessCleanup(sbmlString);
 				return new Pair(sbmlString, sbmlExporter.getLocalToGlobalTranslationMap());
-			} catch (SbmlException | SBMLException | XMLStreamException | ExpressionException e) {
+			} catch (SbmlException | SBMLException | XMLStreamException | ExpressionException | GeometryException | ImageException e) {
 				throw new XmlParseException(e);
 			}
-		} else if (vcDoc instanceof MathModel) {
+        } else if (vcDoc instanceof MathModel) {
 			try {
 				return new Pair(MathModel_SBMLExporter.getSBMLString((MathModel)vcDoc, level, version), null);
 			} catch (ExpressionException | IOException | SBMLException | XMLStreamException e) {

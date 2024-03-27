@@ -16,10 +16,9 @@ import org.vcell.util.Matchable;
 import cbit.vcell.render.Affine;
 import cbit.vcell.render.Vect3d;
 
-@SuppressWarnings("serial")
 public class CSGScale extends CSGTransformation {
 
-	private Vect3d scale = null;
+	private Vect3d scale;
 
 	public CSGScale(String name, Vect3d scale) {
 		super(name);
@@ -37,12 +36,11 @@ public class CSGScale extends CSGTransformation {
 		if (!compareEqual0(obj)){
 			return false;
 		}
-		if (!(obj instanceof CSGScale)){
+		if (!(obj instanceof CSGScale csgs)){
 			return false;
 		}
-		CSGScale csgs = (CSGScale)obj;
 
-		if (!(getChild().compareEqual(csgs.getChild()))){
+        if (!(getChild().compareEqual(csgs.getChild()))){
 			return false;
 		}
 		
@@ -52,12 +50,8 @@ public class CSGScale extends CSGTransformation {
 		if (!(Compare.isEqual(scale.getY(), csgs.scale.getY()))){
 			return false;
 		}
-		if (!(Compare.isEqual(scale.getZ(), csgs.scale.getZ()))){
-			return false;
-		}
-
-		return true;
-	}
+        return Compare.isEqual(scale.getZ(), csgs.scale.getZ());
+    }
 
 	@Override
 	public CSGNode clone() {

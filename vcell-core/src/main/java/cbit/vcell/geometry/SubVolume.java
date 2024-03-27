@@ -22,10 +22,9 @@ import org.vcell.util.document.PropertyConstants;
  * This type was created in VisualAge.
  */
 public abstract class SubVolume implements GeometryClass, Cacheable {
-	private String name = null;
-//	protected Geometry geometry = null;
-	private int handle = -1;
-	private KeyValue key = null;
+	private String name;
+	private int handle;
+	private KeyValue key;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 /**
@@ -65,7 +64,7 @@ public void clearKey() {
  * @param obj java.lang.Object
  */
 protected boolean compareEqual0(Matchable obj) {
-	SubVolume sv = null;
+	SubVolume sv;
 	if (!(obj instanceof SubVolume)){
 		return false;
 	}
@@ -75,15 +74,11 @@ protected boolean compareEqual0(Matchable obj) {
 		return false;
 	}
 
-	if (handle != sv.handle){
-		return false;
-	}
+    return handle == sv.handle;
 
 	//
-	// dont compare 'geometry' objects, would be recursively defined
+	// don't compare 'geometry' objects, would be recursively defined
 	//
-	
-	return true;
 }
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
@@ -124,7 +119,7 @@ public String getName() {
 protected java.beans.PropertyChangeSupport getPropertyChange() {
 	if (propertyChange == null) {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
+	}
 	return propertyChange;
 }
 /**
@@ -133,7 +128,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	if (vetoPropertyChange == null) {
 		vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
-	};
+	}
 	return vetoPropertyChange;
 }
 /**
@@ -165,7 +160,6 @@ public void setHandle(int handle) {
 }
 /**
  * This method was created in VisualAge.
- * @param name java.lang.String
  */
 public void setName(String aName) throws java.beans.PropertyVetoException {
 	String oldName = this.name;

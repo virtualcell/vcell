@@ -102,7 +102,6 @@ public double getZ() {
 	return z;
 }
 
-
 /**
  * This method was created in VisualAge.
  * @return java.lang.String

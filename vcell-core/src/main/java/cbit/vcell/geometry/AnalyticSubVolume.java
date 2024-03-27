@@ -10,7 +10,6 @@
 
 package cbit.vcell.geometry;
 import cbit.vcell.parser.*;
-import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.KeyValue;
 
@@ -24,7 +23,7 @@ public class AnalyticSubVolume extends SubVolume {
 	//
 	// the following fields are used for evaluating the inside/outside function "isInside()"
 	//
-	private double valueArray[] = new double[3];
+	private final double[] valueArray = new double[3];
 
 /**
  * MathDescription constructor comment.
@@ -70,19 +69,14 @@ public boolean compareEqual(Matchable obj) {
 	if (!compareEqual0(obj)){
 		return false;
 	}
-	if (!(obj instanceof AnalyticSubVolume)){
-		return false;
-	}
-	AnalyticSubVolume sv = (AnalyticSubVolume)obj;
-
-	if ((exp==null && sv.exp!=null) || (exp!=null && sv.exp==null)){
-		return false;
-	}
-	if (!ExpressionUtils.functionallyEquivalent(exp,sv.exp)){
+	if (!(obj instanceof AnalyticSubVolume sv)){
 		return false;
 	}
 
-	return true;
+    if ((exp==null && sv.exp!=null) || (exp!=null && sv.exp==null)){
+		return false;
+	}
+    return ExpressionUtils.functionallyEquivalent(exp, sv.exp);
 }
 
 

@@ -355,6 +355,10 @@ public RegionImage getRegionImage() {
 	return getRegionImage0().getCurrentValue();
 }
 
+public State<RegionImage> getRegionImageState(){
+	return getRegionImage0();
+}
+
 private State<RegionImage> getRegionImage0() {
 	if (fieldRegionImage == null) {
 		fieldRegionImage = new State<RegionImage>(null);

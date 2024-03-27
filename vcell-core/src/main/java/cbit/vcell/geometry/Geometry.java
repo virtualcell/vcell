@@ -283,6 +283,8 @@ public Extent getExtent() {
 	return(getGeometrySpec().getExtent());
 }
 
+public void setExtent(Extent extent) throws PropertyVetoException {getGeometrySpec().setExtent(extent);}
+
 
 /**
  * Gets the geometrySpec property (cbit.vcell.geometry.GeometrySpec) value.
@@ -331,6 +333,8 @@ public java.lang.String getName() {
 public Origin getOrigin() {
 	return(getGeometrySpec().getOrigin());
 }
+
+public void setOrigin(Origin origin) {getGeometrySpec().setOrigin(origin);}
 
 
 /**
