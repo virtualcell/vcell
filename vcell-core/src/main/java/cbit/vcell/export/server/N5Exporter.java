@@ -21,7 +21,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.janelia.saalfeldlab.n5.DataType;
 import org.janelia.saalfeldlab.n5.DatasetAttributes;
 import org.janelia.saalfeldlab.n5.DoubleArrayDataBlock;
 import org.janelia.saalfeldlab.n5.N5FSWriter;
@@ -35,7 +34,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 
 
 public class N5Exporter implements ExportConstants {
@@ -183,7 +181,7 @@ public class N5Exporter implements ExportConstants {
 		if (formatSpecs instanceof N5Specs n5Specs){
 			return exportToN5(
 					outputContext,
-					jobRequest.getJobID(),
+					jobRequest.getExportJobID(),
 					n5Specs,
 					exportSpecs,
 					fileDataContainerManager

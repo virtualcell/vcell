@@ -16,10 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.zip.DataFormatException;
@@ -208,7 +205,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		throw new DataAccessException("ERROR: user is null");
 	}
 	JobRequest newExportJob = JobRequest.createExportJobRequest(user);
-	jobRequestIDs.put(new Long(newExportJob.getJobID()), user);
+	jobRequestIDs.put(new Long(newExportJob.getExportJobID()), user);
 	if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): " + newExportJob + ", " + exportSpecs);
 	String fileFormat = null;
 	switch (exportSpecs.getFormat()) {
@@ -236,7 +233,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 //			fileFormat = "IMAGEJ";
 //			break;
 	}
-	fireExportStarted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
+	fireExportStarted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
 
 	try {
 
@@ -281,11 +278,11 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 						exportOutputs[0].writeDataToOutputStream(baos, fileDataContainerManager);//Get location of temp HDF5 file
 						File tempHDF5File = new File(baos.toString());
 //						File downloadableHDF5File = new File(exportBaseDir +exportOutputs[0].getSimID() + exportOutputs[0].getDataID() + ".hdf5");
-						File downloadableHDF5File = new File(exportBaseDir + newExportJob.getJobID() + ".hdf5");
+						File downloadableHDF5File = new File(exportBaseDir + newExportJob.getExportJobID() + ".hdf5");
 						Files.copy(tempHDF5File, downloadableHDF5File);
 						tempHDF5File.delete();
 						URL url = new URL(exportBaseURL + downloadableHDF5File.getName());
-						return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+						return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 					}
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case QUICKTIME:
@@ -331,7 +328,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 	}
 	catch (Throwable exc) {
 		lg.error(exc.getMessage(), exc);
-		fireExportFailed(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exc.getMessage());
+		fireExportFailed(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exc.getMessage());
 		throw new DataAccessException(exc.getMessage());
 	}
 }
@@ -345,7 +342,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 			boolean exportValid = true;
 
 	// check outputs and package into zip file
-	File zipFile = new File(exportBaseDir + newExportJob.getJobID() + ".zip");
+	File zipFile = new File(exportBaseDir + newExportJob.getExportJobID() + ".zip");
 	BufferedOutputStream bout = new BufferedOutputStream(new FileOutputStream(zipFile));
 	ZipOutputStream zipOut = new ZipOutputStream(bout);
 	try {
@@ -376,7 +373,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 		completedExportRequests.put(exportSpecs, newExportJob);
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 		URL url = new URL(exportBaseURL + zipFile.getName());
-		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+		return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
@@ -390,10 +387,10 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
  */
 private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
-			fireExportAssembling(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
+			fireExportAssembling(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
 
 			// check outputs and package into zip file
-			File zipFile = new File(exportBaseDir + newExportJob.getJobID() + ".zip");
+			File zipFile = new File(exportBaseDir + newExportJob.getExportJobID() + ".zip");
 			FileOutputStream fileOut = new FileOutputStream(zipFile);
 			BufferedOutputStream bos = new BufferedOutputStream(fileOut);
 			ZipOutputStream zipOut = new ZipOutputStream(bos);
@@ -419,7 +416,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 				completedExportRequests.put(exportSpecs, newExportJob);
 				if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 				URL url = new URL(exportBaseURL + zipFile.getName());
-				return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+				return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 			}
 			else {
 				throw new DataFormatException("Export Server could not produce valid data !");
@@ -437,7 +434,7 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 	{
 		//do the first file of exportOutputs separately (for VFRAP, there is only one export output)
 		String extStr = "." + fileFormat;
-		File file = new File(exportBaseDir + newExportJob.getJobID() + extStr);
+		File file = new File(exportBaseDir + newExportJob.getExportJobID() + extStr);
 		FileOutputStream fileOut = new FileOutputStream(file);
 		BufferedOutputStream out= new BufferedOutputStream(fileOut);
 		exportOutputs[0].writeDataToOutputStream(out,fileDataContainerManager);
@@ -449,7 +446,7 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 		{
 			if (exportOutputs[i].isValid()) 
 			{
-				File moreFile = new File(exportBaseDir + newExportJob.getJobID()+"_"+ i + extStr);
+				File moreFile = new File(exportBaseDir + newExportJob.getExportJobID()+"_"+ i + extStr);
 				FileOutputStream moreFileOut = new FileOutputStream(moreFile);
 				ObjectOutputStream moreOut= new ObjectOutputStream(moreFileOut);
 				exportOutputs[i].writeDataToOutputStream(moreOut,fileDataContainerManager);
@@ -470,7 +467,7 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 		completedExportRequests.put(exportSpecs, newExportJob);
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileNames);
 		URL url = new URL(exportBaseURL + fileNames);
-		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+		return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
@@ -484,9 +481,9 @@ private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportO
 		String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
 		String uri = url  + ":" + PropertyLoader.getRequiredProperty(PropertyLoader.s3ProxyExternalPort) + "/" + n5Exporter.getN5FilePathSuffix();
 		N5Specs n5Specs = (N5Specs) exportSpecs.getFormatSpecificSpecs();
-		uri += "?dataSetName=" + newExportJob.getJobID();
+		uri += "?dataSetName=" + newExportJob.getExportJobID();
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
-		return fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, uri, exportSpecs);
+		return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, uri, exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
