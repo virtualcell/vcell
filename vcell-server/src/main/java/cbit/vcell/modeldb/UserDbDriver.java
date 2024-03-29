@@ -101,6 +101,83 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	}
 	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIAL_CLAIM[0]));
 }
+
+	public UserIdentity getUserIdentityFromAuth0Subject(Connection con, String auth0Subject) throws SQLException {
+		Statement stmt;
+		String sql;
+		ResultSet rset;
+		if (lg.isTraceEnabled()) {
+			lg.trace("UserDbDriver.getUserFromUserAuth0ID(userid=" + auth0Subject + ")");
+		}
+		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
+				UserTable.table.userid.getQualifiedColName() + "," +
+				UserIdentityTable.table.auth0Subject.getQualifiedColName() + "," +
+				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
+				UserIdentityTable.table.insertDate.getQualifiedColName() +
+				" FROM " + userTable.getTableName() +
+				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
+				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
+				" WHERE " + UserIdentityTable.table.auth0Subject.getQualifiedColName() + " = '" + auth0Subject + "'";
+
+		if (lg.isTraceEnabled()) {
+			lg.trace(sql);
+		}
+		stmt = con.createStatement();
+		UserIdentity resultIdentity = null;
+		try {
+			rset = stmt.executeQuery(sql);
+			while (rset.next()) {
+				BigDecimal userBD = rset.getBigDecimal("user_key");
+				String userID = rset.getString("userid");
+				User userFromDB = new User(userID, new KeyValue(userBD));
+				if(resultIdentity == null) {
+					resultIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB);
+				}else {
+					throw new SQLException("Not expecting more than 1 id for auth0id='"+auth0Subject+"'");
+				}
+			}
+		} finally {
+			stmt.close();
+		}
+		return resultIdentity;
+	}
+
+	public ArrayList<UserIdentity> getIdentitiesFromUser(Connection con, User user) throws SQLException {
+		Statement stmt;
+		String sql;
+		ResultSet rset;
+		if (lg.isTraceEnabled()) {
+			lg.trace("UserDbDriver.getIdentitiesFromUser(userid=" + user.getName() + ")");
+		}
+		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
+				UserTable.table.userid.getQualifiedColName() + "," +
+				UserIdentityTable.table.auth0Subject.getQualifiedColName() + "," +
+				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
+				UserIdentityTable.table.insertDate.getQualifiedColName() +
+				" FROM " + userTable.getTableName() +
+				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
+				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
+				" WHERE " + UserTable.table.id.getQualifiedColName() + " = " + user.getID();
+
+		if (lg.isTraceEnabled()) {
+			lg.trace(sql);
+		}
+		stmt = con.createStatement();
+		ArrayList<UserIdentity> userIdentities = new ArrayList<>();
+		try {
+			rset = stmt.executeQuery(sql);
+			while (rset.next()) {
+				BigDecimal userBD = rset.getBigDecimal("user_key");
+				String userID = rset.getString("userid");
+				User userFromDB = new User(userID, new KeyValue(userBD));
+				userIdentities.add(UserIdentityTable.table.getUserIdentity(rset, userFromDB));
+			}
+		} finally {
+			stmt.close();
+		}
+
+		return userIdentities;
+	}
 /**
  * @param con database connection
  * @param userid
