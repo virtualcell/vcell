@@ -631,6 +631,48 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         }
     }
 
+    public UserIdentity getUserIdentityFromAuth0(String auth0Subject, boolean bEnableRetry)
+            throws DataAccessException, java.sql.SQLException{
+
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            return userDB.getUserIdentityFromAuth0Subject(con, auth0Subject);
+        } catch(Throwable e){
+            lg.error("failure in getUserIdentityFromAuth0()", e);
+            if(bEnableRetry && isBadConnection(con)){
+                conFactory.failed(con, lock);
+                return getUserIdentityFromAuth0(auth0Subject, false);
+            } else {
+                handle_DataAccessException_SQLException(e);
+                return null; // never gets here;
+            }
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
+    public ArrayList<UserIdentity> getUserIdentitiesFromUser(User user, boolean bEnableRetry)
+            throws DataAccessException, java.sql.SQLException{
+
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            return userDB.getIdentitiesFromUser(con, user);
+        } catch(Throwable e){
+            lg.error("failure in getUserIdentitiesFromUser()", e);
+            if(bEnableRetry && isBadConnection(con)){
+                conFactory.failed(con, lock);
+                return getUserIdentitiesFromUser(user, false);
+            } else {
+                handle_DataAccessException_SQLException(e);
+                return null; // never gets here;
+            }
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
 
     public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user, Date expirationDate, boolean bEnableRetry)
             throws DataAccessException, java.sql.SQLException, ObjectNotFoundException{

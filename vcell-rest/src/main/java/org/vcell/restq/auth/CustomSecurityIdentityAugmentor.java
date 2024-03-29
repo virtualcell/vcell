@@ -10,9 +10,13 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonString;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 @ApplicationScoped
 public class CustomSecurityIdentityAugmentor implements SecurityIdentityAugmentor {
@@ -37,6 +41,10 @@ public class CustomSecurityIdentityAugmentor implements SecurityIdentityAugmento
         builder.addAttribute("rawtoken", jwt.getRawToken());
         builder.addAttribute("permissions", getPermissionsFromToken(jwt));
         return Uni.createFrom().item(builder.build());
+    }
+
+    public static String getAuth0ID(SecurityIdentity identity){
+        return identity.getPrincipal().getName();
     }
 
     private Set<String> getRolesFromToken(JsonWebToken jwt) {

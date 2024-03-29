@@ -1,7 +1,6 @@
 package org.vcell.restq.db;
 
 import cbit.vcell.modeldb.*;
-import jakarta.inject.Inject;
 import org.vcell.restq.auth.AuthUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -16,12 +15,25 @@ public class BioModelRestDB {
 
     private final DatabaseServerImpl databaseServerImpl;
     private final SimulationRestDB simulationRestDB;
+    private final AdminDBTopLevel adminDBTopLevel;
+
 
     public BioModelRestDB(OracleAgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         simulationRestDB = new SimulationRestDB(agroalConnectionFactory);
+        adminDBTopLevel = databaseServerImpl.getAdminDBTopLevel();
     }
-    public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, ObjectNotFoundException, DataAccessException {
+
+
+    public UserIdentity getUserFromAuth0ID(String auth0ID) {
+        try {
+            return adminDBTopLevel.getUserIdentityFromAuth0(auth0ID, true);
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, DataAccessException {
         if (vcellUser==null){
             vcellUser = AuthUtils.DUMMY_USER;
         }
