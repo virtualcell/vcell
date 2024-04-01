@@ -93,12 +93,12 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 		return "N5Specs: [compression: " + format + ", chunking: " + dataType + ", switchRowsColumns: " + "]";
 	}
 
-	public static void writeImageJMetaData(long[] dimensions, int[] blockSize, Compression compression, N5FSWriter n5FSWriter, String datasetName, int numChannels, int zSlices,
+	public static void writeImageJMetaData(long jobID,long[] dimensions, int[] blockSize, Compression compression, N5FSWriter n5FSWriter, String datasetName, int numChannels, int zSlices,
 										   int timeLength, HashMap<Integer, String> maskMapping) throws MathException, DataAccessException {
 		try {
 			HashMap<String, String> compresssionMap = new HashMap<>(){{put("type", compression.getType().toLowerCase());}};
 			ImageJMetaData imageJMetaData = ImageJMetaData.generateDefaultRecord(dimensions, blockSize, compresssionMap, datasetName, numChannels, zSlices, timeLength, maskMapping);
-			Path path = Path.of(n5FSWriter.getURI().getPath(), datasetName, "attributes.json");
+			Path path = Path.of(n5FSWriter.getURI().getPath(), String.valueOf(jobID), "attributes.json");
 			Gson gson = n5FSWriter.getGson();
 			String jsonRepresentation = gson.toJson(imageJMetaData, ImageJMetaData.class);
 			FileWriter fileWriter = new FileWriter(path.toFile());
