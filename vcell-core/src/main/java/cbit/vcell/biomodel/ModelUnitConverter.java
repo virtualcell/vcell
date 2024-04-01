@@ -439,6 +439,7 @@ public class ModelUnitConverter {
 			newGeometry.getGeometrySpec().getSampledImage().setDirty();
 			gsd.updateAll();
 		}
+		newSimContext.refreshSpatialObjects();
 	}
 
 	private static double round(double value, int places) {
