@@ -14,7 +14,6 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.render.Affine;
 
-@SuppressWarnings("serial")
 public class CSGHomogeneousTransformation extends CSGTransformation {
 		
 	public CSGHomogeneousTransformation(String name, Affine forward, Affine inverse){
@@ -33,13 +32,8 @@ public class CSGHomogeneousTransformation extends CSGTransformation {
 		if (!compareEqual0(obj)){
 			return false;
 		}
-		if (!(obj instanceof CSGHomogeneousTransformation)){
-			return false;
-		}
-		// CSGHomogeneousTransformation csght = (CSGHomogeneousTransformation)obj;
-
-		return true;
-	}
+        return obj instanceof CSGHomogeneousTransformation;
+    }
 
 	@Override
 	public CSGNode clone() {

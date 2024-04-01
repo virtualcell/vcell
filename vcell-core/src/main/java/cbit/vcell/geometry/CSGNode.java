@@ -17,7 +17,7 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.render.Vect3d;
 
-@SuppressWarnings("serial")
+
 public abstract class CSGNode implements Matchable, Serializable {
 	private String name;	
 	protected CSGNode(String name) {
@@ -36,16 +36,11 @@ public abstract class CSGNode implements Matchable, Serializable {
 	}
 	
 	protected boolean compareEqual0(Matchable obj) {
-		if (!(obj instanceof CSGNode)) {
+		if (!(obj instanceof CSGNode csgn)) {
 			return false;
 		}
-		
-		CSGNode csgn = (CSGNode)obj;
-		if (!Compare.isEqual(name, csgn.name)){
-			return false;
-		}
-		
-		return true;
-	}
+
+        return Compare.isEqual(name, csgn.name);
+    }
 
 }
