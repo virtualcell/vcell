@@ -143,7 +143,7 @@ public ExportOutput[] makeMediaData(
 	}
 	ExportOutput[] mediaArr = null;
 	if(particleMode == FormatSpecificSpecs.PARTICLE_NONE){
-		mediaArr = makeMedia(exportServiceImpl,outputContext,jobRequest.getJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,null/*particleInfo*/,fileDataContainerManager);
+		mediaArr = makeMedia(exportServiceImpl,outputContext,jobRequest.getExportJobID(),user,dataServerImpl,exportSpecs,clientTaskStatusSupport,null/*particleInfo*/,fileDataContainerManager);
 	}else if(particleMode == FormatSpecificSpecs.PARTICLE_SELECT){
 	//	ParticleInfo particleInfo = checkParticles_unused(exportSpecs,user,dataServerImpl,jobRequest.getJobID());
 		try{
