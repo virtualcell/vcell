@@ -55,10 +55,7 @@ public class VolumeRegionObject extends SpatialObject {
 					QuantityCategory.Centroid,
 					QuantityCategory.InteriorVelocity,
 					QuantityCategory.VolumeSize},
-				new Boolean[] {
-					new Boolean(false),
-					new Boolean(false),
-					new Boolean(true)}
+				new Boolean[] {false, false, true}
 		);
 
 		this.setSubVolume(subVolume);
@@ -140,13 +137,10 @@ public class VolumeRegionObject extends SpatialObject {
 			GeometricRegion[] regions = simulationContext.getGeometry().getGeometrySurfaceDescription().getGeometricRegions();
 			boolean bFound = false;
 			for (GeometricRegion region : regions){
-				if (region instanceof VolumeGeometricRegion){
-					VolumeGeometricRegion vr = (VolumeGeometricRegion)region;
-					if (getSubVolume() == vr.getSubVolume() && getRegionID() == vr.getRegionID()){
-						bFound = true;
-						break;
-					}
-				}
+				if (!(region instanceof VolumeGeometricRegion vr)) continue;
+				if (this.getSubVolume() != vr.getSubVolume() || this.getRegionID() != vr.getRegionID()) continue;
+				bFound = true;
+				break;
 			}
 			if (!bFound){
 				issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, "geometry missing volume region (subvolume "+subVolume.getName()+" region "+regionID+")", Issue.Severity.ERROR));

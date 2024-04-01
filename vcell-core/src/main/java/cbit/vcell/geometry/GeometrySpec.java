@@ -77,8 +77,8 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	//private Vector curveTypeList = new Vector();
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
-	private SubVolume[] fieldSubVolumes = new SubVolume[0];
-	private FilamentGroup fieldFilamentGroup = new FilamentGroup();
+	private SubVolume[] subVolumes = new SubVolume[0];
+	private FilamentGroup filamentGroup = new FilamentGroup();
 	
 public GeometrySpec(Version aVersion, int aDimension) {
 	addVetoableChangeListener(this);
@@ -119,21 +119,21 @@ public GeometrySpec(GeometrySpec geometrySpec){
 	}
 	this.dimension = geometrySpec.dimension;
 	try {
-		SubVolume[] newSubvolumes = new SubVolume[geometrySpec.fieldSubVolumes.length];
+		SubVolume[] newSubvolumes = new SubVolume[geometrySpec.subVolumes.length];
 		for (int i = 0; i < newSubvolumes.length; i++) {
-			if(geometrySpec.fieldSubVolumes[i] instanceof ImageSubVolume){
-				ImageSubVolume oldImagesuImageSubVolume = (ImageSubVolume)(geometrySpec.fieldSubVolumes[i]);
+			if(geometrySpec.subVolumes[i] instanceof ImageSubVolume){
+				ImageSubVolume oldImagesuImageSubVolume = (ImageSubVolume)(geometrySpec.subVolumes[i]);
 				newSubvolumes[i] = new ImageSubVolume(oldImagesuImageSubVolume);
 				VCPixelClass newVCPixelClass = this.vcImage.getPixelClassFromName(oldImagesuImageSubVolume.getPixelClass().getPixelClassName());
 				((ImageSubVolume)newSubvolumes[i]).setPixelClass(newVCPixelClass);
-			}else if(geometrySpec.fieldSubVolumes[i] instanceof AnalyticSubVolume){
-				newSubvolumes[i] = new AnalyticSubVolume((AnalyticSubVolume)(geometrySpec.fieldSubVolumes[i]));
-			}else if(geometrySpec.fieldSubVolumes[i] instanceof CSGObject){
-				newSubvolumes[i] = new CSGObject((CSGObject)(geometrySpec.fieldSubVolumes[i]));
-			}else if(geometrySpec.fieldSubVolumes[i] instanceof CompartmentSubVolume){
-				newSubvolumes[i] = new CompartmentSubVolume(geometrySpec.fieldSubVolumes[i].getKey(), geometrySpec.fieldSubVolumes[i].getHandle());
+			}else if(geometrySpec.subVolumes[i] instanceof AnalyticSubVolume){
+				newSubvolumes[i] = new AnalyticSubVolume((AnalyticSubVolume)(geometrySpec.subVolumes[i]));
+			}else if(geometrySpec.subVolumes[i] instanceof CSGObject){
+				newSubvolumes[i] = new CSGObject((CSGObject)(geometrySpec.subVolumes[i]));
+			}else if(geometrySpec.subVolumes[i] instanceof CompartmentSubVolume){
+				newSubvolumes[i] = new CompartmentSubVolume(geometrySpec.subVolumes[i].getKey(), geometrySpec.subVolumes[i].getHandle());
 			}else{
-				throw new RuntimeException("Unknown SubVolume "+geometrySpec.fieldSubVolumes[i]);
+				throw new RuntimeException("Unknown SubVolume "+geometrySpec.subVolumes[i]);
 			}
 		}
 		setSubVolumes(newSubvolumes);
@@ -208,14 +208,14 @@ private void addAnalyticSubVolumeOrCSGObject(SubVolume subVolume, boolean bFront
 	// add after last analytic subvolume (but before imageSubVolumes)
 	//
 	int firstImageIndex = -1;
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (fieldSubVolumes[i] instanceof ImageSubVolume){
+	for (int i = 0; i< subVolumes.length; i++){
+		if (subVolumes[i] instanceof ImageSubVolume){
 			firstImageIndex = i;
 			break;
 		}
 	}
 	
-	SubVolume newArray[] = new SubVolume[fieldSubVolumes.length+1];
+	SubVolume newArray[] = new SubVolume[subVolumes.length+1];
 	
 	if (firstImageIndex == -1){
 		//
@@ -223,17 +223,17 @@ private void addAnalyticSubVolumeOrCSGObject(SubVolume subVolume, boolean bFront
 		//
 		if(bFront){
 			newArray[0] = subVolume;
-			if (fieldSubVolumes.length>0){
-				System.arraycopy(fieldSubVolumes,0,newArray,1,fieldSubVolumes.length);
+			if (subVolumes.length>0){
+				System.arraycopy(subVolumes,0,newArray,1, subVolumes.length);
 			}
 		}else{
 			//add to end of analytics
 			// copy first N elements
-			if (fieldSubVolumes.length>0){
-				System.arraycopy(fieldSubVolumes,0,newArray,0,fieldSubVolumes.length);
+			if (subVolumes.length>0){
+				System.arraycopy(subVolumes,0,newArray,0, subVolumes.length);
 			}
 			// add new element to end
-			newArray[fieldSubVolumes.length] = subVolume;
+			newArray[subVolumes.length] = subVolume;
 		}
 		
 	}else{
@@ -243,7 +243,7 @@ private void addAnalyticSubVolumeOrCSGObject(SubVolume subVolume, boolean bFront
 	// and push all of the imageSubVolumes back
 	//
 		int newIndex = 0;
-		for (int i=0;i<fieldSubVolumes.length;i++){
+		for (int i = 0; i< subVolumes.length; i++){
 			if(bFront){
 				if (i == 0){
 					newArray[newIndex++] = subVolume;
@@ -253,7 +253,7 @@ private void addAnalyticSubVolumeOrCSGObject(SubVolume subVolume, boolean bFront
 					newArray[newIndex++] = subVolume;
 				}				
 			}
-			newArray[newIndex++] = fieldSubVolumes[i];
+			newArray[newIndex++] = subVolumes[i];
 		}
 	}	
 
@@ -312,7 +312,7 @@ private void bringForwardAnalyticSubVolumeOrCSGObject(SubVolume subVolume) throw
 	//
 	// copy existing array
 	//
-	SubVolume newArray[] = (SubVolume[])fieldSubVolumes.clone();
+	SubVolume newArray[] = (SubVolume[]) subVolumes.clone();
 	
 	//
 	// find index of subVolume in newArray
@@ -373,19 +373,17 @@ public boolean compareEqual(Matchable object) {
 		return false;
 	}
 
-	if (fieldSubVolumes.length != geometrySpec.fieldSubVolumes.length){
+	if (subVolumes.length != geometrySpec.subVolumes.length){
 		return false;
 	}
 
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (fieldSubVolumes[i] instanceof ImageSubVolume && geometrySpec.fieldSubVolumes[i] instanceof ImageSubVolume){
-			ImageSubVolume isv1 = (ImageSubVolume)fieldSubVolumes[i];
-			ImageSubVolume isv2 = (ImageSubVolume)geometrySpec.fieldSubVolumes[i];
-			if (!isv1.compareEqual(isv2, VCPixelClass::compareEqualIgnoreNames)){
+	for (int i = 0; i< subVolumes.length; i++){
+		if (subVolumes[i] instanceof ImageSubVolume isv1 && geometrySpec.subVolumes[i] instanceof ImageSubVolume isv2){
+            if (!isv1.compareEqual(isv2, VCPixelClass::compareEqualIgnoreNames)){
 				return false;
 			}
 		}else {
-			if (!fieldSubVolumes[i].compareEqual(geometrySpec.fieldSubVolumes[i])) {
+			if (!subVolumes[i].compareEqual(geometrySpec.subVolumes[i])) {
 				return false;
 			}
 		}
@@ -393,7 +391,7 @@ public boolean compareEqual(Matchable object) {
 	//
 	// FilamentGroup
 	//
-	if(!Compare.isEqual(fieldFilamentGroup,geometrySpec.fieldFilamentGroup)){
+	if(!Compare.isEqual(filamentGroup,geometrySpec.filamentGroup)){
 		return false;
 	}
 	return true;
@@ -427,8 +425,8 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 		// make lookup table of pixel values ----> handles
 		//
 		byte handleLookupTable[] = new byte[256];
-		for (int i=0;i<fieldSubVolumes.length;i++){
-			SubVolume sv = fieldSubVolumes[i];
+		for (int i = 0; i< subVolumes.length; i++){
+			SubVolume sv = subVolumes[i];
 			if (sv instanceof ImageSubVolume){
 				ImageSubVolume isv = (ImageSubVolume)sv;
 				handleLookupTable[isv.getPixelValue()] = (byte)isv.getHandle();
@@ -577,8 +575,8 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * @param y double
  */
 private SubVolume getAnalyticOrCSGSubVolume(double x, double y, double z) throws GeometryException, ImageException, ExpressionException {
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		SubVolume subVolume = fieldSubVolumes[i];
+	for (int i = 0; i< subVolumes.length; i++){
+		SubVolume subVolume = subVolumes[i];
 		if (subVolume instanceof AnalyticSubVolume || subVolume instanceof CSGObject){
 			if (subVolume.isInside(x,y,z,this)){
 				return subVolume;
@@ -594,8 +592,8 @@ private SubVolume getAnalyticOrCSGSubVolume(double x, double y, double z) throws
  */
 public Enumeration<SubVolume> getAnalyticOrCSGSubVolumes() {
 	Vector<SubVolume> analSubVolList = new Vector<SubVolume>();
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		SubVolume sv = fieldSubVolumes[i];
+	for (int i = 0; i< subVolumes.length; i++){
+		SubVolume sv = subVolumes[i];
 		if (sv instanceof AnalyticSubVolume || sv instanceof CSGObject){
 			analSubVolList.addElement(sv);
 		}
@@ -728,7 +726,7 @@ public FilamentGroup getFilamentGroup() {
 	if(getDimension() == 0){
 		throw new RuntimeException("FilamentGroup undefined for 0 dimesnion geometry");
 	}
-	return fieldFilamentGroup;
+	return filamentGroup;
 }
 
 
@@ -783,8 +781,8 @@ public ImageSubVolume getImageSubVolumeFromPixelValue(int pixelValue) {
 	if (getImage() == null){
 		throw new RuntimeException("Geometry doesn't have an image");
 	}
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		SubVolume subVolume = fieldSubVolumes[i];
+	for (int i = 0; i< subVolumes.length; i++){
+		SubVolume subVolume = subVolumes[i];
 		if (subVolume instanceof ImageSubVolume){
 			ImageSubVolume isv = (ImageSubVolume)subVolume;
 			if (isv.getPixelValue()==pixelValue){
@@ -802,8 +800,8 @@ public ImageSubVolume getImageSubVolumeFromPixelValue(int pixelValue) {
  */
 public int getNumAnalyticOrCSGSubVolumes() {
 	int count = 0;
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (fieldSubVolumes[i] instanceof AnalyticSubVolume || fieldSubVolumes[i] instanceof CSGObject){
+	for (int i = 0; i< subVolumes.length; i++){
+		if (subVolumes[i] instanceof AnalyticSubVolume || subVolumes[i] instanceof CSGObject){
 			count++;
 		}
 	}
@@ -816,7 +814,7 @@ public int getNumAnalyticOrCSGSubVolumes() {
  * @return int
  */
 public int getNumSubVolumes() {
-	return fieldSubVolumes.length;
+	return subVolumes.length;
 }
 
 
@@ -883,9 +881,9 @@ private ThumbnailImage createThumbnailImage(GeometryThumbnailImageFactory geomet
  * @param y double
  */
 public SubVolume getSubVolume(double x, double y, double z) throws GeometryException, ImageException, ExpressionException {
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (fieldSubVolumes[i].isInside(x,y,z,this)){
-			return fieldSubVolumes[i];
+	for (int i = 0; i< subVolumes.length; i++){
+		if (subVolumes[i].isInside(x,y,z,this)){
+			return subVolumes[i];
 		}
 	}
 	if (vcImage!=null){
@@ -900,9 +898,9 @@ public SubVolume getSubVolume(double x, double y, double z) throws GeometryExcep
 }
 
 public SubVolume getSubVolume(int handle) {
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (fieldSubVolumes[i].getHandle() == handle){
-			return fieldSubVolumes[i];
+	for (int i = 0; i< subVolumes.length; i++){
+		if (subVolumes[i].getHandle() == handle){
+			return subVolumes[i];
 		}
 	}
 	return null;
@@ -910,9 +908,9 @@ public SubVolume getSubVolume(int handle) {
 
 
 public SubVolume getSubVolume(String name) {
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (fieldSubVolumes[i].getName().equals(name)){
-			return fieldSubVolumes[i];
+	for (int i = 0; i< subVolumes.length; i++){
+		if (subVolumes[i].getName().equals(name)){
+			return subVolumes[i];
 		}
 	}
 	return null;
@@ -920,8 +918,8 @@ public SubVolume getSubVolume(String name) {
 
 
 public int getSubVolumeIndex(SubVolume subVolume) {
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		if (fieldSubVolumes[i] == subVolume){
+	for (int i = 0; i< subVolumes.length; i++){
+		if (subVolumes[i] == subVolume){
 			return i;
 		}
 	}
@@ -935,7 +933,7 @@ public int getSubVolumeIndex(SubVolume subVolume) {
  * @see #setSubVolumes
  */
 public SubVolume[] getSubVolumes() {
-	return fieldSubVolumes;
+	return subVolumes;
 }
 
 
@@ -1038,8 +1036,8 @@ public void refreshDependencies() {
 	//
 	// Geometry Listens to it's subVolumes
 	//
-	for (int i=0;i<fieldSubVolumes.length;i++){
-		SubVolume sv = fieldSubVolumes[i];
+	for (int i = 0; i< subVolumes.length; i++){
+		SubVolume sv = subVolumes[i];
 		sv.removePropertyChangeListener(this);
 		sv.removeVetoableChangeListener(this);
 		sv.addPropertyChangeListener(this);
@@ -1073,12 +1071,12 @@ private void removeAnalyticSubVolumeOrCSGObject(SubVolume subVolume) throws Prop
 		throw new IllegalArgumentException("subdomain "+subVolume+" cannot be removed, it doesn't belong to this Geometry");
 	}
 
-	SubVolume newArray[] = new SubVolume[fieldSubVolumes.length-1];
+	SubVolume newArray[] = new SubVolume[subVolumes.length-1];
 	
 	int newIndex = 0;
-	for (int i=0;i<fieldSubVolumes.length;i++){
+	for (int i = 0; i< subVolumes.length; i++){
 		if (i != subVolumeIndex){
-			newArray[newIndex++] = fieldSubVolumes[i];
+			newArray[newIndex++] = subVolumes[i];
 		}
 	}
 
@@ -1125,7 +1123,7 @@ private void sendBackwardAnalyticSubVolumeOrCSGObject(SubVolume subVolume) throw
 	//
 	// copy existing array
 	//
-	SubVolume newArray[] = (SubVolume[])fieldSubVolumes.clone();
+	SubVolume newArray[] = (SubVolume[]) subVolumes.clone();
 	
 	//
 	// find index of subVolume in newArray
@@ -1252,20 +1250,20 @@ public void setOrigin(Origin aOrigin) {
 }
 
 public void setSubVolumes(SubVolume[] subVolumes) throws java.beans.PropertyVetoException {
-	SubVolume[] oldSubVolumes = fieldSubVolumes;
+	SubVolume[] oldSubVolumes = this.subVolumes;
 	//Check instance change
 //	if(!BeanUtils.checkFullyEqual(oldSubVolumes, subVolumes)){
 //		System.out.println("GeometrySpec.setSubVolumes has different instances of same old and new subvolumes");
 //	}
 	fireVetoableChange("subVolumes", oldSubVolumes, subVolumes);
-	fieldSubVolumes = subVolumes;
+	this.subVolumes = subVolumes;
 	for (int i=0;i<oldSubVolumes.length;i++){
 		oldSubVolumes[i].removePropertyChangeListener(this);
 		oldSubVolumes[i].removeVetoableChangeListener(this);
 	}
 	for (int i=0;i<subVolumes.length;i++){
-		fieldSubVolumes[i].addPropertyChangeListener(this);
-		fieldSubVolumes[i].addVetoableChangeListener(this);
+		this.subVolumes[i].addPropertyChangeListener(this);
+		this.subVolumes[i].addVetoableChangeListener(this);
 	}
 	firePropertyChange("subVolumes", oldSubVolumes, subVolumes);
 }

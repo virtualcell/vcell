@@ -19,6 +19,8 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -315,7 +317,6 @@ public class ModelUnitConverter {
 	private static void convertExprWithUnitFactors(SymbolTable oldSymbolTable, SymbolTable newSymbolTable,
 												   VCUnitDefinition oldExprUnit, VCUnitDefinition newExprUnit,
 												   Expression expr, VCUnitDefinition dimensionless, Model.ReservedSymbol KMOLE) throws ExpressionException {
-
 		if (expr == null) {
 			return;
 		}
@@ -390,7 +391,7 @@ public class ModelUnitConverter {
 
 		double lengthScaleFactor;
 		try {
-			lengthScaleFactor = conversionFactor.evaluateConstant();
+			lengthScaleFactor = ModelUnitConverter.round(conversionFactor.evaluateConstant(), 10);
 		} catch (Exception e){
 			throw new RuntimeException("Geometry scaling is unusual; failed to evaluate conversion factor", e);
 		}
@@ -398,16 +399,22 @@ public class ModelUnitConverter {
 
 		// Scale Origin
 		Origin oldOrigin = newGeometry.getOrigin();
-		double correctedX = oldOrigin.getX() * lengthScaleFactor;
-		double correctedY = oldOrigin.getY() * lengthScaleFactor;
-		double correctedZ = oldOrigin.getZ() * lengthScaleFactor;
+		double correctedX = ModelUnitConverter.round(oldOrigin.getX() * lengthScaleFactor, 10);
+		if (correctedX == 0) correctedX = oldOrigin.getX() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		double correctedY = ModelUnitConverter.round(oldOrigin.getY() * lengthScaleFactor, 10);
+		if (correctedY == 0) correctedY = oldOrigin.getY() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		double correctedZ = ModelUnitConverter.round(oldOrigin.getZ() * lengthScaleFactor, 10);
+		if (correctedZ == 0) correctedZ = oldOrigin.getZ() * lengthScaleFactor; // to prevent accidentally truncating to 0
 		newGeometry.setOrigin(new Origin(correctedX, correctedY, correctedZ));
 
 		// Scale Extent
 		Extent oldExtent = newGeometry.getExtent();
-		correctedX = oldExtent.getX() * lengthScaleFactor;
-		correctedY = oldExtent.getY() * lengthScaleFactor;
-		correctedZ = oldExtent.getZ() * lengthScaleFactor;
+		correctedX = ModelUnitConverter.round(oldExtent.getX() * lengthScaleFactor, 10);
+		if (correctedX == 0) correctedX = oldExtent.getX() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		correctedY = ModelUnitConverter.round(oldExtent.getY() * lengthScaleFactor, 10);
+		if (correctedY == 0) correctedY = oldExtent.getY() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		correctedZ = ModelUnitConverter.round(oldExtent.getZ() * lengthScaleFactor, 10);
+		if (correctedZ == 0) correctedZ = oldExtent.getZ() * lengthScaleFactor; // to prevent accidentally truncating to 0
 		try {
 			newGeometry.setExtent(new Extent(correctedX, correctedY, correctedZ));
 		} catch (Exception e){
@@ -432,6 +439,14 @@ public class ModelUnitConverter {
 			newGeometry.getGeometrySpec().getSampledImage().setDirty();
 			gsd.updateAll();
 		}
+	}
+
+	private static double round(double value, int places) {
+		if (places < 0) throw new IllegalArgumentException();
+
+		BigDecimal bd = new BigDecimal(Double.toString(value));
+		bd = bd.setScale(places, RoundingMode.HALF_UP);
+		return bd.doubleValue();
 	}
 	
 	public static void main(String[] args) {
@@ -489,10 +504,5 @@ public class ModelUnitConverter {
 		System.out.println(a/b+"");
 		b = 1E-26;
 		System.out.println(a/b+"");
-		
-		
-		
-		
-		
 	}
 }
