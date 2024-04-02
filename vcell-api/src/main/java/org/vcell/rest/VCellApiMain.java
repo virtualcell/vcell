@@ -212,6 +212,7 @@ public class VCellApiMain {
 
 		RsaJsonWebKey jsonWebKey = JWTUtils.createNewJsonWebKey("k1");
 		JWTUtils.setRsaJsonWebKey(jsonWebKey);
+		JWTUtils.setRsaPublicAndPrivateKey();
 
 		lg.trace("create app");
 		boolean bIgnoreHostMismatchForHealthService = true; // HealthService connects via localhost, this will never match host in production cert

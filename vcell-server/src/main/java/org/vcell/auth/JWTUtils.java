@@ -2,6 +2,11 @@ package org.vcell.auth;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.openssl.PEMException;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwk.RsaJwkGenerator;
@@ -17,7 +22,10 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
 import org.vcell.util.document.User;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +38,9 @@ public class JWTUtils {
     private final static Logger lg = LogManager.getLogger(JWTUtils.class);
     private static RsaJsonWebKey rsaJsonWebKey = null;
     private static RSAPublicKey rsaPublicKey = null;
+    private static RSAPrivateKey rsaPrivateKey = null;
+    private static String privateKeyPath = "/secrets/privateKey";
+    private static String publicKeyPath = "/secrets/publicKey";
 
     public static String VCELL_JWT_AUDIENCE = "VCellService";
     public static String VCELL_JWT_ISSUER = "VCellService";
@@ -37,6 +48,29 @@ public class JWTUtils {
     public static void setRsaJsonWebKey(RsaJsonWebKey rsaJsonWebKey) {
         JWTUtils.rsaJsonWebKey = rsaJsonWebKey;
         JWTUtils.rsaPublicKey = rsaJsonWebKey.getRsaPublicKey();
+    }
+
+    public static void setRsaPublicAndPrivateKey() {
+        try (FileReader keyReader = new FileReader(publicKeyPath)) {
+            PEMParser pemParser = new PEMParser(keyReader);
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+            SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(pemParser.readObject());
+            rsaPublicKey = (RSAPublicKey) converter.getPublicKey(publicKeyInfo);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (FileReader keyReader = new FileReader(privateKeyPath)) {
+
+            PEMParser pemParser = new PEMParser(keyReader);
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+            PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(pemParser.readObject());
+
+            rsaPrivateKey = (RSAPrivateKey) converter.getPrivateKey(privateKeyInfo);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public static void setRsaPublicKey(RSAPublicKey rsaPublicKey) {
@@ -79,12 +113,12 @@ public class JWTUtils {
         jws.setPayload(claims.toJson());
 
         // The JWT is signed using the private key
-        jws.setKey(rsaJsonWebKey.getPrivateKey());
+        jws.setKey(rsaPrivateKey);
 
         // Set the Key ID (kid) header because it's just the polite thing to do.
         // We only have one key in this example but a using a Key ID helps
         // facilitate a smooth key rollover process
-        jws.setKeyIdHeaderValue(rsaJsonWebKey.getKeyId());
+//        jws.setKeyIdHeaderValue(rsaJsonWebKey.getKeyId());
 
         // Set the signature algorithm on the JWT/JWS that will integrity protect the claims
         jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
