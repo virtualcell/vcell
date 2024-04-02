@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.desktop.biomodel.annotations;
+package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -45,6 +45,8 @@ import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreePath;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.desktop.biomodel.annotations.AddAnnotationsPanel;
+import cbit.vcell.client.desktop.biomodel.annotations.SearchElement;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.sybil.models.AnnotationQualifiers;
@@ -956,7 +958,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		}
 	}
 
-	protected void addIdentifier(SearchElement searchElement) {
+	public void addIdentifier(SearchElement searchElement) {
 //	if(PopupGenerator.showComponentOKCancelDialog(AnnotationsPanel.this, getJPanelNewIdentifier(), "Define New Formal Identifier") != JOptionPane.OK_OPTION) {
 //		return;
 //	}

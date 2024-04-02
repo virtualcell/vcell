@@ -24,7 +24,6 @@ import java.util.Objects;
 import javax.swing.JComponent;
 import javax.swing.ListSelectionModel;
 
-import cbit.vcell.client.desktop.biomodel.annotations.AnnotationsPanel;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;

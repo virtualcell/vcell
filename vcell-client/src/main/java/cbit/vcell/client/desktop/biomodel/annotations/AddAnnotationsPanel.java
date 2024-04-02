@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
+import cbit.vcell.client.desktop.biomodel.AnnotationsPanel;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
