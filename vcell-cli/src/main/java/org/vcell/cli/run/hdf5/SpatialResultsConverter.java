@@ -42,19 +42,18 @@ public class SpatialResultsConverter {
                 Map<Variable, Hdf5DataSourceSpatialVarDataItem> variableToDataMap = new HashMap<>();
 
                 // get the list of variables associated with the data reference
-                for (Variable var : datagen.getListOfVariables()) {
+                for (Variable variable : datagen.getListOfVariables()) {
                     // for each variable we recover the task
-                    AbstractTask topLevelTask = sedml.getTaskWithId(var.getReference());
+                    AbstractTask topLevelTask = sedml.getTaskWithId(variable.getReference());
+                    if (topLevelTask == null) throw new RuntimeException("Null SedML task encountered");
                     AbstractTask baseTask = SpatialResultsConverter.getBaseTask(topLevelTask, sedml);
                     // from the task we get the sbml model
-                    org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
-
-                    if (!(sedmlSim instanceof UniformTimeCourse)){
+                    if (!(sedml.getSimulation(baseTask.getSimulationReference()) instanceof UniformTimeCourse utcSim)){
                         logger.error("only uniform time course simulations are supported");
                         continue;
                     }
 
-                    String vcellVarId = convertToVCellSymbol(var);
+                    String vcellVarId = convertToVCellSymbol(variable);
 
                     boolean bFoundTaskInSpatial = spatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
                     if (!bFoundTaskInSpatial){
@@ -96,20 +95,28 @@ public class SpatialResultsConverter {
 
                     if (taskJobs.isEmpty()) continue;
 
-                    int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
-                    double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
+                    int outputNumberOfPoints = utcSim.getNumberOfPoints();
+                    double outputStartTime = utcSim.getOutputStartTime();
 
                     int jobIndex = 0;
                     for (TaskJob taskJob : taskJobs) {
                         File spatialH5File = spatialResultsHash.get(taskJob);
                         if (spatialH5File != null) {
-                            Hdf5DataSourceSpatialVarDataItem job = new Hdf5DataSourceSpatialVarDataItem(
-                                    report, dataset, var, jobIndex, spatialH5File,
-                                    outputStartTime, outputNumberOfPoints, vcellVarId);
+                            Hdf5DataSourceSpatialVarDataItem job;
+                            try {
+                                job = new Hdf5DataSourceSpatialVarDataItem(
+                                        report, dataset, variable, jobIndex, spatialH5File,
+                                        outputStartTime, outputNumberOfPoints, vcellVarId);
+                            } catch (MissingDataException e) {
+                                String warningMessage = "Resulting HDF5 will not be complete as requested: ";
+                                if (logger.isDebugEnabled()) logger.warn(warningMessage, e);
+                                else logger.warn(warningMessage + e.getMessage());
+                                continue;
+                            }
                             if (job.spaceTimeDimensions == null){
                                 throw new RuntimeException("Unable to find dimensionality data for " + vcellVarId);
                             }
-                            variableToDataMap.put(var, job);
+                            variableToDataMap.put(variable, job);
                             hdf5DataSourceSpatial.scanBounds = scanBounds;
                             hdf5DataSourceSpatial.scanParameterNames = scanParamNames;
                         }
@@ -117,8 +124,8 @@ public class SpatialResultsConverter {
                     }
                 }
                 // TODO: Data generator logic (to resolve multiple variables) goes here...
-                for (Variable var : variableToDataMap.keySet()) { // ...Modify this loop!!
-                    hdf5DataSourceSpatial.dataItems.put(report, dataset, variableToDataMap.get(var));
+                for (Variable nextVariable : variableToDataMap.keySet()) { // ...Modify this loop!!
+                    hdf5DataSourceSpatial.dataItems.put(report, dataset, variableToDataMap.get(nextVariable));
                 }
                 PythonCalls.updateDatasetStatusYml(sedmlLocation, report.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
             } // end of dataset
