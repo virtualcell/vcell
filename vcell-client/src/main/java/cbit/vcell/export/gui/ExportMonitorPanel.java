@@ -17,8 +17,13 @@ import java.awt.event.ActionEvent;
 import java.util.Enumeration;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.apache.xalan.trace.SelectionEvent;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.ScrollTable;
 
@@ -36,11 +41,11 @@ public class ExportMonitorPanel extends JPanel {
 	private boolean fieldHasJobs = false;
 	private javax.swing.JMenuItem ivjJMenuItemCopyLocation = null;
 
-	class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
+	class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ExportMonitorPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("model"))) 
+			if (evt.getSource() == ExportMonitorPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("model")))
 				connPtoP1SetTarget();
-			if (evt.getSource() == ExportMonitorPanel.this.getExportMonitorTableModel1() && (evt.getPropertyName().equals("minRowHeight"))) 
+			if (evt.getSource() == ExportMonitorPanel.this.getExportMonitorTableModel1() && (evt.getPropertyName().equals("minRowHeight")))
 				connPtoP2SetTarget();
 		};
 
@@ -51,7 +56,22 @@ public class ExportMonitorPanel extends JPanel {
 			}
 		}
 
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+			if(e.getValueIsAdjusting()) {
+				return;
+			}
+			if(e.getSource() == getScrollPaneTable().getSelectionModel()) {
+				int row = getScrollPaneTable().getSelectedRow();
+				/*
+				TODO: we may like to automatically copy to clipboard the file location on row selection
+					instead of inserting the Copy Location menu on right click
+				*/
+			}
+		}
+
 	};
+
 /**
  * ExportMonitorPanel constructor comment.
  */
@@ -177,6 +197,7 @@ private ScrollTable getScrollPaneTable() {
 			ivjScrollPaneTable = new ScrollTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjScrollPaneTable.setModel(new ExportMonitorTableModel());
+			ivjScrollPaneTable.setToolTipText("Right Click to copy file location to Clipboard");
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			ivjScrollPaneTable.setScrollTableActionManager(new DefaultScrollTableActionManager(getScrollPaneTable()) {
 				@Override
@@ -219,6 +240,12 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	getScrollPaneTable().addPropertyChangeListener(ivjEventHandler);
+	ListSelectionModel lsm = getScrollPaneTable().getSelectionModel();
+	if(lsm instanceof DefaultListSelectionModel) {
+		DefaultListSelectionModel dlsm = (DefaultListSelectionModel)lsm;
+		dlsm.addListSelectionListener(ivjEventHandler);
+	}
+
 	getJMenuItemCopyLocation().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();

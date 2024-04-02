@@ -1,6 +1,7 @@
 package cbit.vcell.client.data;
 
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.model.ModelProcess;
 import org.vcell.util.gui.ScrollTable;
 
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.Comparator;
 import java.util.List;
 
 public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTableModel.TableData>{
+
+    public final static String prefix = "dataSetName=";
 
     public static final String bioModelCol = "BM Name";
     public static final String appNameCol = "App Name";
@@ -29,6 +32,7 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
     }};
 
     private List<TableData> tableData = new ArrayList<>();
+    protected String searchText = null;
 
     public ExportedDataTableModel(ScrollTable scrollTable){
         super(scrollTable, header.toArray(new String[0]));
@@ -84,8 +88,74 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         tableData.add(row);
     }
     public void refreshData(){
-        setData(tableData);
+        List<TableData> newData = computeData();
+        setData(newData);
     }
+
+    protected ArrayList<TableData> computeData() {
+        ArrayList<TableData> newData = new ArrayList<>();
+        if (searchText == null || searchText.length() == 0) {
+            newData.addAll(tableData);
+        } else {
+            String lowerCaseSearchText = searchText.toLowerCase();
+            for(TableData tableDataRow : tableData) {
+                if(tableDataRow.variables.toLowerCase().contains(lowerCaseSearchText)) {
+                    if(!newData.contains(tableDataRow)) {
+                        newData.add(tableDataRow);
+                        continue;
+                    }
+                }
+                if(tableDataRow.bioModelName.toLowerCase().contains(lowerCaseSearchText)) {
+                    if(!newData.contains(tableDataRow)) {
+                        newData.add(tableDataRow);
+                        continue;
+                    }
+                }
+                if(tableDataRow.appName.toLowerCase().contains(lowerCaseSearchText)) {
+                    if(!newData.contains(tableDataRow)) {
+                        newData.add(tableDataRow);
+                        continue;
+                    }
+                }
+                if(tableDataRow.simName.toLowerCase().contains(lowerCaseSearchText)) {
+                    if(!newData.contains(tableDataRow)) {
+                        newData.add(tableDataRow);
+                        continue;
+                    }
+                }
+                if(tableDataRow.simID.toLowerCase().contains(lowerCaseSearchText)) {
+                    if(!newData.contains(tableDataRow)) {
+                        newData.add(tableDataRow);
+                        continue;
+                    }
+                }
+
+                if(tableDataRow.link != null && tableDataRow.link.contains(prefix)) {
+                    String dataSetName = tableDataRow.link.substring(tableDataRow.link.lastIndexOf(prefix) + prefix.length());
+                    if (dataSetName.toLowerCase().contains(lowerCaseSearchText)) {
+                        if (!newData.contains(tableDataRow)) {
+                            newData.add(tableDataRow);
+//                        continue;
+                        }
+                    }
+                }
+                // TODO: we could also iterate through the list of parameters
+            }
+        }
+        return newData;
+    }
+    public void setSearchText(String newValue) {
+        if (newValue == searchText) { // takes care of both null
+            return;
+        }
+        if (newValue == null && searchText.length() == 0
+                || searchText == null && newValue.length() == 0) {
+            return;
+        }
+        String oldValue = searchText;
+        searchText = newValue;
+    }
+
 
     public void resetData(){tableData = new ArrayList<>();}
 
