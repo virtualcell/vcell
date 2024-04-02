@@ -1270,7 +1270,7 @@ public class ASCIIExporter implements ExportConstants {
             return switch(asciiSpecs.getDataType()){
                 case PDE_VARIABLE_DATA -> exportPDEData(
                         outputContext,
-                        jobRequest.getJobID(),
+                        jobRequest.getExportJobID(),
                         user,
                         dataServerImpl,
                         exportSpecs.getVCDataIdentifier(),
@@ -1283,7 +1283,7 @@ public class ASCIIExporter implements ExportConstants {
                 );
                 case ODE_VARIABLE_DATA -> exportODEData(
                         outputContext,
-                        jobRequest.getJobID(),
+                        jobRequest.getExportJobID(),
                         user,
                         dataServerImpl,
                         exportSpecs.getVCDataIdentifier(),
@@ -1294,7 +1294,7 @@ public class ASCIIExporter implements ExportConstants {
                 );
                 case PDE_PARTICLE_DATA -> exportParticleData(
                         outputContext,
-                        jobRequest.getJobID(),
+                        jobRequest.getExportJobID(),
                         user,
                         dataServerImpl,
                         exportSpecs,
