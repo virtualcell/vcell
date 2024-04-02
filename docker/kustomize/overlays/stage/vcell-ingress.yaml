@@ -1,0 +1,44 @@
+# ingress for api
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vcell-ingress
+  labels:
+    app: api
+spec:
+  tls:
+    - hosts:
+        - k8s-in-01.cam.uchc.edu
+      secretName: selfsigned-cert-tls
+  rules:
+  - host: k8s-in-01.cam.uchc.edu
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: rest
+            port:
+              number: 80
+      - path: /me/users
+        pathType: Prefix
+        backend:
+          service:
+            name: rest
+            port:
+              number: 80
+      - path: /n5Data
+        pathType: Prefix
+        backend:
+          service:
+            name: s3proxy
+            port:
+              number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+              name: api
+              port:
+                number: 8080

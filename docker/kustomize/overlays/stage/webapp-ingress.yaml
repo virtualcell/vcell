@@ -1,0 +1,23 @@
+# ingress for api
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp-ingress
+  labels:
+    app: api
+spec:
+  tls:
+    - hosts:
+        - webapp.k8s-in-01.cam.uchc.edu
+      secretName: selfsigned-cert-tls
+  rules:
+  - host: webapp.k8s-in-01.cam.uchc.edu
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: webapp
+            port:
+              number: 80
