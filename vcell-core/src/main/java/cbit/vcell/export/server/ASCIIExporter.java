@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import cbit.vcell.resource.NativeLib;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -452,7 +453,7 @@ public class ASCIIExporter implements ExportConstants {
                                              GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs, String contextName, FileDataContainerManager fileDataContainerManager)
             throws DataAccessException, IOException{
 
-
+        NativeLib.HDF5.load();
         ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
         Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
         double progressCounter = 0;
@@ -479,7 +480,7 @@ public class ASCIIExporter implements ExportConstants {
                 int hdf5FileID = -1;//Used if HDF5 format
                 if(asciiSpecs.isHDF5()){
                     hdf5TempFile = File.createTempFile("pde", ".hdf5");
-                    System.out.println("======== hdf5 file location: " + hdf5TempFile.getAbsolutePath());
+                    lg.debug("========> VCell-style hdf5 file location: " + hdf5TempFile.getAbsolutePath());
                     hdf5FileID = H5.H5Fcreate(hdf5TempFile.getAbsolutePath(), HDF5Constants.H5F_ACC_TRUNC, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                 }
 //		TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>> simsVarnamesDataMap = new TreeMap<VCDataIdentifier,TreeMap<String,PointsCurvesSlices>>();

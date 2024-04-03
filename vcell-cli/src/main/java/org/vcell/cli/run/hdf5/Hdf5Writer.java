@@ -6,6 +6,7 @@ import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
 import org.apache.logging.log4j.Level;
+import org.jlibsedml.Report;
 import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
 import java.util.*;
 import java.io.File;
@@ -43,13 +44,18 @@ public class Hdf5Writer {
         masterHdf5 = new Hdf5File(outDirForCurrentSedml);
         masterHdf5.open();
 
+        // Sanity Check
+        Set<Report> uriSet = hdf5DataWrapper.reportToUriMap.keySet(),
+                resultsSet = hdf5DataWrapper.reportToResultsMap.keySet();
+        if (uriSet.size() != resultsSet.size()) throw new RuntimeException("Sets are mismatched");
+
         
         // Attempt to fill the Hdf5
         try {
-            for (String rawPath : hdf5DataWrapper.uriToResultsMap.keySet()){
+            for (Report report : resultsSet){
                 // Process Parent Groups
                 String path = "";
-                for (String group : rawPath.split("/")){ 
+                for (String group : hdf5DataWrapper.reportToUriMap.get(report).split("/")){
                     path += ("/" + group); // Start from first group, then travel down the path.
                     if (masterHdf5.containsGroup(path)) continue;
                     int groupId = masterHdf5.addGroup(path);
@@ -60,18 +66,18 @@ public class Hdf5Writer {
                 }
     
                 // Process the Dataset
-                for (Hdf5SedmlResults data : hdf5DataWrapper.uriToResultsMap.get(rawPath)){
+                for (Hdf5SedmlResults data : hdf5DataWrapper.reportToResultsMap.get(report)){
                     Hdf5PreparedData preparedData;
                     if (data.dataSource instanceof Hdf5SedmlResultsNonspatial)
-                        preparedData = Hdf5DataPreparer.prepareNonspatialData(data, hdf5DataWrapper.trackSubSetsInReports);
+                        preparedData = Hdf5DataPreparer.prepareNonspatialData(data, report, hdf5DataWrapper.trackSubSetsInReports);
                     else if (data.dataSource instanceof Hdf5SedmlResultsSpatial)
-                        preparedData = Hdf5DataPreparer.prepareSpatialData(data, hdf5DataWrapper.trackSubSetsInReports);
+                        preparedData = Hdf5DataPreparer.prepareSpatialData(data, report, hdf5DataWrapper.trackSubSetsInReports);
                     else continue;
     
                     int currentDatasetId = masterHdf5.insertSedmlData(path, preparedData);
                     
                     if (data.dataSource instanceof Hdf5SedmlResultsSpatial){
-                        masterHdf5.insertNumericAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpatialHdf5Attribute_Times(data));
+                        masterHdf5.insertNumericAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpatialHdf5Attribute_Times(report, data));
                     }  
                     masterHdf5.insertFixedStringAttribute(currentDatasetId, "_type", data.datasetMetadata._type);
                     masterHdf5.insertFixedStringAttributes(currentDatasetId, "scanParameterNames", Arrays.asList(data.dataSource.scanParameterNames));

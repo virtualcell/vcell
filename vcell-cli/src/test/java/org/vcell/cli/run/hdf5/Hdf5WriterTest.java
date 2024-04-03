@@ -5,6 +5,7 @@ import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.DataSet;
+import org.jlibsedml.Report;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.util.VCellUtilityHub;
@@ -76,11 +77,13 @@ public class Hdf5WriterTest {
         reportDataSourceNonspatial.allJobResults = reportJob;
 
         Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer();
+        Report report = new Report("simId","simName");
         String uri = "___0_export_NO_scan_test.sedml";
         List<Hdf5SedmlResults> wrappers = new ArrayList<>();
         wrappers.add(plotDatasetWrapper);
         wrappers.add(reportDatasetWrapper);
-        hdf5FileWrapper.uriToResultsMap.put(uri, wrappers);
+        hdf5FileWrapper.reportToUriMap.put(report, uri);
+        hdf5FileWrapper.reportToResultsMap.put(report, wrappers);
 
         return hdf5FileWrapper;
     }
