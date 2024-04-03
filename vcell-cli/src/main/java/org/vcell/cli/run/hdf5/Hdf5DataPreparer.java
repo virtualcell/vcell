@@ -49,9 +49,7 @@ public class Hdf5DataPreparer {
         List<Long> dataDimensionList = new ArrayList<>();
         Hdf5DataSourceSpatialVarDataItem exampleVarDataItem = null;
         Hdf5SedmlResultsSpatial spatialDataSource = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource;
-        //Hdf5SedmlResultsSpatial spatialDataResults = new Hdf5SedmlResultsSpatial();
         Map<DataSet, Hdf5DataSourceSpatialVarDataItem> spatialResultsData = new LinkedHashMap<>();
-        //logger.debug(spatialDataResults);
 
         //spatialDataResults.scanBounds = spatialDataSource.scanBounds;
         //spatialDataResults.scanParameterNames = spatialDataSource.scanParameterNames;
@@ -61,7 +59,6 @@ public class Hdf5DataPreparer {
             if (symbol != null && "TIME".equals(symbol.name())) continue;
             if (exampleVarDataItem == null) exampleVarDataItem = dataItem;
             spatialResultsData.put(dataSetItem, dataItem);
-            //spatialDataResults.dataItems.put(sedmlReport, dataSetItem, dataItem);
         }
 
         if (exampleVarDataItem == null)
@@ -74,10 +71,6 @@ public class Hdf5DataPreparer {
         }
 
         int[] spaceTimeDimensions = exampleVarDataItem.spaceTimeDimensions;
-        //int numSpatialPoints = Arrays.stream(spatialDimensions).sum();
-        //long numJobs = spatialDataResults.varDataItems.stream().map(varDataItem -> varDataItem.jobIndex).collect(Collectors.toSet()).size();
-        //List<Variable> sedmlVars = spatialDataResults.varDataItems.keySet().stream().map(varDataSet -> spatialDataResults.varDataItems.get(varDataSet).sedmlVariable).distinct().toList();
-        //long numVars = sedmlVars.size();
 
         if (exampleVarDataItem.times.length != spaceTimeDimensions[spaceTimeDimensions.length-1]){
             throw new RuntimeException("unexpected dimension " + spaceTimeDimensions
@@ -109,33 +102,6 @@ public class Hdf5DataPreparer {
             System.arraycopy(dataArray,0, bigDataBuffer, bufferOffset, dataArray.length);
             bufferOffset += dataArray.length;
         }
-
-
-//        for (int jobIndex=0; jobIndex<numJobs; jobIndex++){
-//            for (DataSet varDataSet : spatialDataResults.varDataItems.keySet()){
-//                Hdf5DataSourceSpatialVarDataItem varDataItem = spatialDataResults.varDataItems.get(varDataSet);
-//                //if (varDataItem.jobIndex != jobIndex) continue;
-//                String varName = varDataItem.sedmlVariable.getSymbol() == null ? null : varDataItem.sedmlVariable.getSymbol().name();
-//                double[] dataArray = "TIME".equals(varName) ? varDataItem.times: varDataItem.getSpatialData();
-//                System.arraycopy(dataArray,0, bigDataBuffer, bufferOffset, dataArray.length);
-//                bufferOffset += dataArray.length;
-//            }
-//
-//
-//            for (Variable var : sedmlVars) {
-//                // find data for var and jobIndex
-//                for (DataSet varDataSet : spatialDataResults.varDataItems.keySet()) {
-//                    Hdf5DataSourceSpatialVarDataItem varDataItem = spatialDataResults.varDataItems.get(varDataSet);
-//                    if (!varDataItem.sedmlVariable.equals(var) || varDataItem.jobIndex != jobIndex) continue;
-//                    String varName = varDataItem.sedmlVariable.getSymbol() == null ? null :
-//                            varDataItem.sedmlVariable.getSymbol().name();
-//                    double[] dataArray = "TIME".equals(varName) ? varDataItem.times: varDataItem.getSpatialData();
-//                    System.arraycopy(dataArray,0,bigDataBuffer,bufferOffset,dataArray.length);
-//                    bufferOffset += dataArray.length;
-//                    break;
-//                }
-//            }
-//        }
 
         Hdf5PreparedData preparedData = new Hdf5PreparedData();
         preparedData.sedmlId = datasetWrapper.datasetMetadata.sedmlId;
