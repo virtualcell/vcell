@@ -104,7 +104,7 @@ jobs:
     - name: tag as latest and push to registry  # (jcs) are explicit singularity push commands redundant? (see ./build.sh)
       shell: bash
       run: |
-        for CONTAINER in vcell-api vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-web vcell-admin;\
+        for CONTAINER in vcell-api vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin;\
         do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
         docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ steps.version.outputs.tag }};\
         docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
