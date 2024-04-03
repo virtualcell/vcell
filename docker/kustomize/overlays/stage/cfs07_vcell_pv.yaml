@@ -8,7 +8,7 @@ spec:
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: nfs
+  storageClassName: nfs-csi
   nfs:
     path: /ifs/vcell
     server: cfs07.cam.uchc.edu

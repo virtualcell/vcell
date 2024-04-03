@@ -6,7 +6,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: nfs
+  storageClassName: nfs-csi
   resources:
     requests:
       storage: 1000Gi
