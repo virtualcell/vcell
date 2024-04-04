@@ -4,9 +4,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwk.RsaJwkGenerator;
@@ -25,8 +29,12 @@ import org.vcell.util.document.User;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,8 +47,11 @@ public class JWTUtils {
     private static RsaJsonWebKey rsaJsonWebKey = null;
     private static RSAPublicKey rsaPublicKey = null;
     private static RSAPrivateKey rsaPrivateKey = null;
-    private static String privateKeyPath = "/secrets/privateKey";
-    private static String publicKeyPath = "/secrets/publicKey";
+    private static String privateKeyPath = "/run/secrets/apiprivkey";
+    private static String publicKeyPath = "/run/secrets/apipubkey";
+
+//    private static String privateKeyPath = "/media/zeke/DiskDrive/Home/Work/CCAM/VCellDummyFiles/apiKeysPK";
+//    private static String publicKeyPath = "/media/zeke/DiskDrive/Home/Work/CCAM/VCellDummyFiles/apiKeys.pem";
 
     public static String VCELL_JWT_AUDIENCE = "VCellService";
     public static String VCELL_JWT_ISSUER = "VCellService";
@@ -61,13 +72,15 @@ public class JWTUtils {
         }
 
         try (FileReader keyReader = new FileReader(privateKeyPath)) {
+            java.security.Security.addProvider(new BouncyCastleProvider());
+            KeyFactory factory = KeyFactory.getInstance("RSA");
+            PemReader pemReader = new PemReader(keyReader);
+            PemObject pemObject = pemReader.readPemObject();
+            byte[] content = pemObject.getContent();
+            PKCS8EncodedKeySpec privKeySpec = new PKCS8EncodedKeySpec(content);
 
-            PEMParser pemParser = new PEMParser(keyReader);
-            JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-            PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(pemParser.readObject());
-
-            rsaPrivateKey = (RSAPrivateKey) converter.getPrivateKey(privateKeyInfo);
-        } catch (IOException e) {
+            rsaPrivateKey = (RSAPrivateKey) factory.generatePrivate(privKeySpec);
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException(e);
         }
 
