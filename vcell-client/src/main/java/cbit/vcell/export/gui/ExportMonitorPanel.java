@@ -14,7 +14,10 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.Enumeration;
+import java.util.Optional;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -23,6 +26,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import cbit.vcell.client.data.ExportedDataTableModel;
+import cbit.vcell.resource.PropertyLoader;
 import org.apache.xalan.trace.SelectionEvent;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.ScrollTable;
@@ -41,6 +46,9 @@ public class ExportMonitorPanel extends JPanel {
 	private boolean fieldHasJobs = false;
 	private javax.swing.JMenuItem ivjJMenuItemCopyLocation = null;
 
+	private JButton copyButton = null;
+	private JButton imagejButton = null;
+
 	class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ExportMonitorPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("model")))
@@ -51,8 +59,13 @@ public class ExportMonitorPanel extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == ExportMonitorPanel.this.getJMenuItemCopyLocation()) {
-				JMenuItemCopyLocation_ActionPerformed(e);
+//			if (e.getSource() == ExportMonitorPanel.this.getJMenuItemCopyLocation()) {
+//				JMenuItemCopyLocation_ActionPerformed(e);
+//			} else
+			if(e.getSource() == getCopyButton()) {
+				CopyButton_ActionPerformed();
+			} else if(e.getSource() == getImagejButton()) {
+				ImagejButton_ActionPerformed();
 			}
 		}
 
@@ -63,10 +76,8 @@ public class ExportMonitorPanel extends JPanel {
 			}
 			if(e.getSource() == getScrollPaneTable().getSelectionModel()) {
 				int row = getScrollPaneTable().getSelectedRow();
-				/*
-				TODO: we may like to automatically copy to clipboard the file location on row selection
-					instead of inserting the Copy Location menu on right click
-				*/
+				getCopyButton().setEnabled(row == -1 ? false : true);
+				//getImagejButton().setEnabled(row == -1 ? false : true);
 			}
 		}
 
@@ -202,14 +213,14 @@ private ScrollTable getScrollPaneTable() {
 			ivjScrollPaneTable.setScrollTableActionManager(new DefaultScrollTableActionManager(getScrollPaneTable()) {
 				@Override
 				protected void constructPopupMenu() {
-					if(popupMenu == null) {
-						//super.constructPopupMenu();
-						popupMenu = new JPopupMenu();
-						popupLabel = new javax.swing.JLabel();
-						popupLabel.setText(" Popup Menu");
-						popupMenu.insert(getJMenuItemCopyLocation(), 0);
-					}
-					popupMenu.show(ivjScrollPaneTable, ownerTable.getX(), ownerTable.getY());
+//					if(popupMenu == null) {
+//						//super.constructPopupMenu();
+//						popupMenu = new JPopupMenu();
+//						popupLabel = new javax.swing.JLabel();
+//						popupLabel.setText(" Popup Menu");
+//						popupMenu.insert(getJMenuItemCopyLocation(), 0);
+//					}
+//					popupMenu.show(ivjScrollPaneTable, ownerTable.getX(), ownerTable.getY());
 				}
 
 			});
@@ -262,13 +273,31 @@ private void initialize() {
 		setLayout(new java.awt.GridBagLayout());
 		setSize(638, 241);
 
-		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 0;
-		constraintsJScrollPane1.gridwidth = 2;
-		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJScrollPane1.weightx = 1.0;
-		constraintsJScrollPane1.weighty = 1.0;
-		add(getScrollPaneTable().getEnclosingScrollPane(), constraintsJScrollPane1);
+		GridBagConstraints gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 2;
+		gbc.gridheight = 7;
+		gbc.fill = java.awt.GridBagConstraints.BOTH;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		add(getScrollPaneTable().getEnclosingScrollPane(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = 0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.NORTHEAST;
+		gbc.insets = new Insets(1, 6, 7, 4);
+        add(getCopyButton(), gbc);
+
+		gbc = new java.awt.GridBagConstraints();
+		gbc.gridx = 2;
+		gbc.gridy = 1;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.anchor = GridBagConstraints.NORTHEAST;
+		gbc.insets = new Insets(1, 6, 7, 4);
+		add(getImagejButton(), gbc);
 
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
@@ -347,13 +376,69 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		return ivjJMenuItemCopyLocation;
 	}
 	private void JMenuItemCopyLocation_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+//		int[] rows = getScrollPaneTable().getSelectedRows();
+//		String str = (String)getScrollPaneTable().getModel().getValueAt(rows[0], 4);
+//		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+//		StringSelection stringSelection = new StringSelection(str);
+//		clipboard.setContents(stringSelection, null);
+	}
+
+	private JButton getCopyButton() {
+		if(copyButton == null) {
+			copyButton = new JButton("Copy Link");
+			copyButton.setName("CopyButton");
+			copyButton.addActionListener(ivjEventHandler);
+			copyButton.setEnabled(false);
+		}
+		return copyButton;
+	}
+	private JButton getImagejButton() {
+		if(imagejButton == null) {
+			imagejButton = new JButton("Launch Imagej");
+			imagejButton.setName("ImagejButton");
+			imagejButton.addActionListener(ivjEventHandler);
+			String command = PropertyLoader.getProperty(PropertyLoader.imageJ, "");
+			if(command == null || command.isEmpty()) {
+				imagejButton.setEnabled(false);
+			} else {
+				File imageJExe = new File(command);
+				if(imageJExe.exists() && !imageJExe.isDirectory() && imageJExe.canExecute()) {
+					imagejButton.setEnabled(true);
+				} else {
+					imagejButton.setEnabled(false);
+				}
+			}
+		}
+		return imagejButton;
+	}
+
+	private void CopyButton_ActionPerformed() {
 		int[] rows = getScrollPaneTable().getSelectedRows();
 		String str = (String)getScrollPaneTable().getModel().getValueAt(rows[0], 4);
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		StringSelection stringSelection = new StringSelection(str);
 		clipboard.setContents(stringSelection, null);
 	}
-
+	private void ImagejButton_ActionPerformed() {
+		try {
+//			String command = Paths.get(System.getenv("windir"), "system32", "tree.com /A").toString();
+			String command = PropertyLoader.getProperty(PropertyLoader.imageJ, "");
+			if(command == null || command.isEmpty()) {
+				System.out.println("Property 'vcell.imageJ' not set");
+				return;
+			}
+			ProcessHandle.allProcesses().forEach(process -> {
+				Optional<String> proc = process.info().command();
+				System.out.println(proc);
+				if(command.endsWith(proc.toString())) {
+					System.out.println(proc);
+				}
+					});
+			Process p = Runtime.getRuntime().exec(command);
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 /**
  * Sets the hasJobs property (boolean) value.
  * @param hasJobs The new value for the property.
