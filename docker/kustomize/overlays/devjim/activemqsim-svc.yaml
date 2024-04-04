@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: activemqsim
+spec:
+  type: NodePort
+  ports:
+    - name: "61616"
+      port: 61616
+      targetPort: 61616
+      nodePort: 31616  # unique port for same cluster across different namespaces
+    - name: "8161"
+      port: 8161
+      targetPort: 8161
+      nodePort: 30161  # unique port for same cluster across different namespaces
+  selector:
+    app: activemqsim
