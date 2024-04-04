@@ -27,9 +27,19 @@ public class UserIdentityTable extends Table {
     public static final String TABLE_NAME = "vc_useridentity";
     public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-    public final Field userRef = new Field("userRef", SQLDataType.integer, "NOT NULL " + UserTable.REF_TYPE);
-    public final Field auth0Subject = new Field("auth0Subject", SQLDataType.varchar_128, "NOT NULL");
-    public final Field insertDate	= new Field("insertDate", SQLDataType.date,"NOT NULL");
+    public static final Field userRef = new Field("userRef", SQLDataType.integer, "NOT NULL " + UserTable.REF_TYPE);
+    public static final Field auth0Subject = new Field("auth0Subject", SQLDataType.varchar_128, "");
+    public static final Field keycloakSubject = new Field("keycloakSubject", SQLDataType.varchar_128, "");
+    public static final Field insertDate	= new Field("insertDate", SQLDataType.date,"NOT NULL");
+
+    public enum IdentityProvider {
+        AUTH0(auth0Subject),
+        KEYCLOAK(keycloakSubject);
+        IdentityProvider(Field tableColumn){
+            this.tableColumn = tableColumn;
+        }
+        public final Field tableColumn;
+    }
 
 
 
@@ -40,15 +50,18 @@ public class UserIdentityTable extends Table {
      */
     private UserIdentityTable(){
         super(TABLE_NAME);
-        Field[] fields = {userRef, auth0Subject, insertDate};
+        Field[] fields = {userRef, auth0Subject, keycloakSubject, insertDate};
         addFields(fields);
     }
 
 
-    public UserIdentity getUserIdentity(ResultSet rset, User user) throws SQLException{
+    public UserIdentity getUserIdentity(ResultSet rset, User user, UserIdentityTable.IdentityProvider identityProvider) throws SQLException{
 
         KeyValue id = 		new KeyValue(rset.getBigDecimal(this.id.toString()));
-        String auth0Subject =	rset.getString(this.auth0Subject.toString());
+        String subject =	rset.getString(identityProvider.tableColumn.getQualifiedColName());
+        if(subject == null){
+            return null;
+        }
         //
         // Format Date
         //
@@ -62,7 +75,7 @@ public class UserIdentityTable extends Table {
             throw new java.sql.SQLException(e.getMessage());
         }
 
-        UserIdentity userIdentity = new UserIdentity(id, user, auth0Subject, insertDate);
+        UserIdentity userIdentity = new UserIdentity(id, user, subject, insertDate);
 
         return userIdentity;
     }

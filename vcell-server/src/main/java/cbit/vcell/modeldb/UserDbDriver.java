@@ -102,22 +102,63 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIAL_CLAIM[0]));
 }
 
-	public UserIdentity getUserIdentityFromAuth0Subject(Connection con, String auth0Subject) throws SQLException {
+	public void removeUserIdentity(Connection con, User user, String identity, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
+		Statement stmt;
+		String sql;
+		ResultSet rset;
+		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
+		if (!identities.isEmpty()){
+			sql = "DELETE " + identityProvider.tableColumn.getQualifiedColName() +
+					" FROM " + UserIdentityTable.table.getTableName() +
+					" WHERE " + UserIdentityTable.userRef + " = " + user.getID();
+
+			stmt = con.createStatement();
+			rset = stmt.executeQuery(sql);
+			stmt.close();
+		}
+	}
+
+
+	public void setUserIdentity(Connection con, User user, String identity, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
+		String sql;
+		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
+
+		if (identities.isEmpty()){
+			if(lg.isTraceEnabled()){
+				lg.trace("UserDbDriver.setUserIdentity. Creating new entry with identity " + identityProvider + " being set.");
+			}
+			sql = "INSERT INTO " + UserIdentityTable.table.getTableName() +
+					"VALUES (" +
+					user.getID() + "," +
+					(identityProvider == UserIdentityTable.IdentityProvider.AUTH0 ? identity : null) + "," +
+					(identityProvider == UserIdentityTable.IdentityProvider.KEYCLOAK ? identity : null) + "," +
+					"CURRENT_TIMESTAMP)";
+			DbDriver.updateCleanSQL(con, sql);
+		} else {
+			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
+					" SET " +
+					identityProvider.tableColumn.getQualifiedColName() + " = '" + identity + "'" +
+					"WHERE " + UserIdentityTable.userRef + " = " + user.getID();
+			DbDriver.updateCleanSQL(con, sql);
+		}
+	}
+
+	public UserIdentity getUserIdentityFromSubjectAndIdentityProvider(Connection con, String subject, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
 		Statement stmt;
 		String sql;
 		ResultSet rset;
 		if (lg.isTraceEnabled()) {
-			lg.trace("UserDbDriver.getUserFromUserAuth0ID(userid=" + auth0Subject + ")");
+			lg.trace("UserDbDriver.getUserFromUserAuth0ID(userid=" + subject + ")");
 		}
 		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
 				UserTable.table.userid.getQualifiedColName() + "," +
-				UserIdentityTable.table.auth0Subject.getQualifiedColName() + "," +
+				identityProvider.tableColumn.getQualifiedColName() + "," +
 				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
 				UserIdentityTable.table.insertDate.getQualifiedColName() +
 				" FROM " + userTable.getTableName() +
 				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
 				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
-				" WHERE " + UserIdentityTable.table.auth0Subject.getQualifiedColName() + " = '" + auth0Subject + "'";
+				" WHERE " + UserIdentityTable.table.auth0Subject.getQualifiedColName() + " = '" + subject + "'";
 
 		if (lg.isTraceEnabled()) {
 			lg.trace(sql);
@@ -131,9 +172,9 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				String userID = rset.getString("userid");
 				User userFromDB = new User(userID, new KeyValue(userBD));
 				if(resultIdentity == null) {
-					resultIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB);
+					resultIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider);
 				}else {
-					throw new SQLException("Not expecting more than 1 id for auth0id='"+auth0Subject+"'");
+					throw new SQLException("Not expecting more than 1 id for " + identityProvider.name() + "='"+subject+"'");
 				}
 			}
 		} finally {
@@ -149,11 +190,15 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 		if (lg.isTraceEnabled()) {
 			lg.trace("UserDbDriver.getIdentitiesFromUser(userid=" + user.getName() + ")");
 		}
+		String identityColumns = "";
+		for(UserIdentityTable.IdentityProvider identityProvider: UserIdentityTable.IdentityProvider.values()){
+			identityColumns =  identityProvider.tableColumn.getQualifiedColName() + "," + identityColumns;
+		}
 		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
 				UserTable.table.userid.getQualifiedColName() + "," +
-				UserIdentityTable.table.auth0Subject.getQualifiedColName() + "," +
+				identityColumns +
 				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
-				UserIdentityTable.table.insertDate.getQualifiedColName() +
+				UserIdentityTable.table.insertDate.getQualifiedColName() + "," +
 				" FROM " + userTable.getTableName() +
 				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
 				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
@@ -170,7 +215,12 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				BigDecimal userBD = rset.getBigDecimal("user_key");
 				String userID = rset.getString("userid");
 				User userFromDB = new User(userID, new KeyValue(userBD));
-				userIdentities.add(UserIdentityTable.table.getUserIdentity(rset, userFromDB));
+				for(UserIdentityTable.IdentityProvider identityProvider: UserIdentityTable.IdentityProvider.values()){
+					UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider);
+					if(userIdentity != null){
+						userIdentities.add(userIdentity);
+					}
+				}
 			}
 		} finally {
 			stmt.close();
