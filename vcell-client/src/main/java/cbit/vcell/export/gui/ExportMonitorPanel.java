@@ -30,6 +30,7 @@ import cbit.vcell.client.data.ExportedDataTableModel;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.xalan.trace.SelectionEvent;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.rmi.event.ExportEvent;
@@ -47,6 +48,7 @@ public class ExportMonitorPanel extends JPanel {
 	private javax.swing.JMenuItem ivjJMenuItemCopyLocation = null;
 
 	private JButton copyButton = null;
+	private JButton helpButton = null;
 	private JButton imagejButton = null;
 
 	class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, ListSelectionListener {
@@ -64,8 +66,10 @@ public class ExportMonitorPanel extends JPanel {
 //			} else
 			if(e.getSource() == getCopyButton()) {
 				CopyButton_ActionPerformed();
-			} else if(e.getSource() == getImagejButton()) {
-				ImagejButton_ActionPerformed();
+//			} else if(e.getSource() == getImagejButton()) {
+//				ImagejButton_ActionPerformed();
+			} else if(e.getSource() == getHelpButton()) {
+				HelpButton_ActionPerformed();
 			}
 		}
 
@@ -213,6 +217,7 @@ private ScrollTable getScrollPaneTable() {
 			ivjScrollPaneTable.setScrollTableActionManager(new DefaultScrollTableActionManager(getScrollPaneTable()) {
 				@Override
 				protected void constructPopupMenu() {
+					// uncomment to enable "Copy to clipboard" popup menu
 //					if(popupMenu == null) {
 //						//super.constructPopupMenu();
 //						popupMenu = new JPopupMenu();
@@ -297,7 +302,15 @@ private void initialize() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.anchor = GridBagConstraints.NORTHEAST;
 		gbc.insets = new Insets(1, 6, 7, 4);
-		add(getImagejButton(), gbc);
+		add(getHelpButton(), gbc);
+
+//		gbc = new java.awt.GridBagConstraints();
+//		gbc.gridx = 2;
+//		gbc.gridy = 2;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.NORTHEAST;
+//		gbc.insets = new Insets(1, 6, 7, 4);
+//		add(getImagejButton(), gbc);
 
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
@@ -392,6 +405,15 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		}
 		return copyButton;
 	}
+	private JButton getHelpButton() {
+		if(helpButton == null) {
+			helpButton = new JButton("Help");
+			helpButton.setName("HelpButton");
+			helpButton.addActionListener(ivjEventHandler);
+			helpButton.setEnabled(true);
+		}
+		return helpButton;
+	}
 	private JButton getImagejButton() {
 		if(imagejButton == null) {
 			imagejButton = new JButton("Launch Imagej");
@@ -414,10 +436,15 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 
 	private void CopyButton_ActionPerformed() {
 		int[] rows = getScrollPaneTable().getSelectedRows();
-		String str = (String)getScrollPaneTable().getModel().getValueAt(rows[0], 4);
+		String str = (String)getScrollPaneTable().getModel().getValueAt(rows[0], 3);
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		StringSelection stringSelection = new StringSelection(str);
 		clipboard.setContents(stringSelection, null);
+	}
+	private void HelpButton_ActionPerformed() {
+		String message = "Use the 'Copy Link' button above to copy the exported data location to the clipboard.\n";
+		message += "Use the vcell macro in ImageJ to download the file within ImageJ for further processing.";
+		DialogUtils.showInfoDialog(ExportMonitorPanel.this, "ImageJ Export Help", message);
 	}
 	private void ImagejButton_ActionPerformed() {
 		try {
@@ -430,10 +457,11 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 			ProcessHandle.allProcesses().forEach(process -> {
 				Optional<String> proc = process.info().command();
 				System.out.println(proc);
-				if(command.endsWith(proc.toString())) {
+				if(proc.toString().toLowerCase().contains("imagej")) {
 					System.out.println(proc);
+					//DialogUtils.showInfoDialog(ExportMonitorPanel.this, "Information", "ImageJ already running.");
 				}
-					});
+			});
 			Process p = Runtime.getRuntime().exec(command);
 		} catch(Exception ex) {
 			ex.printStackTrace();
