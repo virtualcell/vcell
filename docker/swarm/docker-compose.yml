@@ -119,6 +119,8 @@ services:
       - dbpswd
       - jmspswd
       - source: batchuserkeyfile
+        uid: "10001"
+        gid: "10000"
         mode: 0400
     networks:
       - vcellnet
@@ -202,6 +204,8 @@ services:
       - jmspswd
       - jmsrestpswd # "echo -ne  {activemq console user:passwd} | base64", this is hard-coded in some solvers
       - source: batchuserkeyfile
+        uid: "10001"
+        gid: "10000"
         mode: 0400
     networks:
       - vcellnet
