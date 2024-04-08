@@ -442,7 +442,9 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		clipboard.setContents(stringSelection, null);
 	}
 	private void HelpButton_ActionPerformed() {
-		String message = "Use the 'Copy Link' button above to copy the exported data location to the clipboard.\n";
+		String message = "The simulation results of spatial applications may be exported to ImageJ for further ";
+		message += "processing using the compatible N5 format.\n";
+		message += "Use the 'Copy Link' button above to copy the exported data location to the clipboard.\n";
 		message += "Use the vcell macro in ImageJ to download the file within ImageJ for further processing.";
 		DialogUtils.showInfoDialog(ExportMonitorPanel.this, "ImageJ Export Help", message);
 	}
