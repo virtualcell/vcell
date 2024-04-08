@@ -8,23 +8,37 @@ import { PublicationListComponent } from './components/publication-list/publicat
 
 const routes: Routes = [
   {
-    path: 'profile',
-    component: ProfileComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'publications',
-    component: PublicationListComponent,
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'error',
-    component: ErrorComponent,
+    path: 'app',
+    children: [
+      {
+        path: 'profile',
+        component: ProfileComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'publications',
+        component: PublicationListComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'error',
+        component: ErrorComponent,
+      },
+      {
+        path: '',
+        component: HomeComponent,
+        pathMatch: 'full',
+      },
+    ]
   },
   {
     path: '',
-    component: HomeComponent,
+    redirectTo: '/app',
     pathMatch: 'full',
+  },
+  {
+    path: '**',
+    redirectTo: '/app/error',
   },
 ];
 

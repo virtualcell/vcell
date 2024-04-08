@@ -14,6 +14,13 @@ spec:
   - host: k8s-in-01.cam.uchc.edu
     http:
       paths:
+      - path: /app
+        pathType: Prefix
+        backend:
+          service:
+            name: webapp
+            port:
+              number: 80
       - path: /api
         pathType: Prefix
         backend:

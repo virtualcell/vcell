@@ -52,7 +52,6 @@ replicas:
 
 resources:
 - vcell-ingress.yaml
-- webapp-ingress.yaml
 - activemqsim-svc.yaml
 - mongodb-srv.yaml
 - mongodb-pvc.yaml
