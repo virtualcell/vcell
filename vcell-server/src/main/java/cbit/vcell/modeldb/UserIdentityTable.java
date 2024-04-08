@@ -16,8 +16,10 @@ import cbit.sql.Table;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -54,26 +56,24 @@ public class UserIdentityTable extends Table {
         addFields(fields);
     }
 
+    public UserIdentity getUserIdentity(ResultSet rset, User user, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
+        return getUserIdentity(rset, user, identityProvider, this.id.getUnqualifiedColName());
+    }
 
-    public UserIdentity getUserIdentity(ResultSet rset, User user, UserIdentityTable.IdentityProvider identityProvider) throws SQLException{
 
-        KeyValue id = 		new KeyValue(rset.getBigDecimal(this.id.toString()));
-        String subject =	rset.getString(identityProvider.tableColumn.getQualifiedColName());
-        if(subject == null){
+    public UserIdentity getUserIdentity(ResultSet rset, User user, UserIdentityTable.IdentityProvider identityProvider, String idColName) throws SQLException{
+
+        BigDecimal id = rset.getBigDecimal(idColName);
+        String subject =	rset.getString(identityProvider.tableColumn.getUnqualifiedColName());
+        if(subject == null || id == null){
             return null;
         }
         //
         // Format Date
         //
-        java.sql.Date DBDate = rset.getDate(insertDate.getQualifiedColName());
-        java.sql.Time DBTime = rset.getTime(insertDate.getQualifiedColName());
-        Date insertDate = null;
-        try {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US);
-            insertDate = sdf.parse(DBDate + " " + DBTime);
-        } catch (java.text.ParseException e) {
-            throw new java.sql.SQLException(e.getMessage());
-        }
+        java.sql.Date DBDate = rset.getDate(insertDate.getUnqualifiedColName());
+        java.sql.Time DBTime = rset.getTime(insertDate.getUnqualifiedColName());
+        LocalDateTime insertDate =    LocalDateTime.of(DBDate.toLocalDate(), DBTime.toLocalTime());
 
         UserIdentity userIdentity = new UserIdentity(id, user, subject, insertDate);
 

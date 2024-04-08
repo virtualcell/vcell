@@ -3,13 +3,15 @@ package cbit.vcell.modeldb;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public record UserIdentity(
-        KeyValue id,
+        BigDecimal id,
         User user,
-        String auth0Subject,
-        Date insertDate
+        String subject,
+        LocalDateTime insertDate
 ) {
 
 }

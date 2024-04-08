@@ -119,25 +119,30 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	}
 
 
-	public void setUserIdentity(Connection con, User user, String identity, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
+	public void setUserIdentity(Connection con, User user, String identity, UserIdentityTable.IdentityProvider identityProvider, KeyFactory keyFactory) throws SQLException {
 		String sql;
-		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
 
+		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
+		if (identity.isEmpty()){
+			identity = "anonymous";
+		}
+		identity = "'" + identity + "'";
 		if (identities.isEmpty()){
 			if(lg.isTraceEnabled()){
 				lg.trace("UserDbDriver.setUserIdentity. Creating new entry with identity " + identityProvider + " being set.");
 			}
 			sql = "INSERT INTO " + UserIdentityTable.table.getTableName() +
-					"VALUES (" +
-					user.getID() + "," +
-					(identityProvider == UserIdentityTable.IdentityProvider.AUTH0 ? identity : null) + "," +
-					(identityProvider == UserIdentityTable.IdentityProvider.KEYCLOAK ? identity : null) + "," +
+					" VALUES (" +
+					keyFactory.nextSEQ() + "," +
+					user.getID().toString() + "," +
+					(identityProvider == UserIdentityTable.IdentityProvider.AUTH0 ? identity : "NULL") + "," +
+					(identityProvider == UserIdentityTable.IdentityProvider.KEYCLOAK ? identity : "NULL") + "," +
 					"CURRENT_TIMESTAMP)";
 			DbDriver.updateCleanSQL(con, sql);
 		} else {
 			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
 					" SET " +
-					identityProvider.tableColumn.getQualifiedColName() + " = '" + identity + "'" +
+					identityProvider.tableColumn.getQualifiedColName() + " = " + identity +
 					"WHERE " + UserIdentityTable.userRef + " = " + user.getID();
 			DbDriver.updateCleanSQL(con, sql);
 		}
@@ -158,7 +163,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				" FROM " + userTable.getTableName() +
 				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
 				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
-				" WHERE " + UserIdentityTable.table.auth0Subject.getQualifiedColName() + " = '" + subject + "'";
+				" WHERE " + identityProvider.tableColumn.getQualifiedColName() + " = '" + subject + "'";
 
 		if (lg.isTraceEnabled()) {
 			lg.trace(sql);
@@ -172,7 +177,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				String userID = rset.getString("userid");
 				User userFromDB = new User(userID, new KeyValue(userBD));
 				if(resultIdentity == null) {
-					resultIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider);
+					resultIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider, "identity_key");
 				}else {
 					throw new SQLException("Not expecting more than 1 id for " + identityProvider.name() + "='"+subject+"'");
 				}
@@ -198,7 +203,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				UserTable.table.userid.getQualifiedColName() + "," +
 				identityColumns +
 				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
-				UserIdentityTable.table.insertDate.getQualifiedColName() + "," +
+				UserIdentityTable.table.insertDate.getQualifiedColName() +
 				" FROM " + userTable.getTableName() +
 				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
 				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
@@ -216,7 +221,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				String userID = rset.getString("userid");
 				User userFromDB = new User(userID, new KeyValue(userBD));
 				for(UserIdentityTable.IdentityProvider identityProvider: UserIdentityTable.IdentityProvider.values()){
-					UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider);
+					UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider, "identity_key");
 					if(userIdentity != null){
 						userIdentities.add(userIdentity);
 					}

@@ -635,7 +635,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         Object lock = new Object();
         Connection con = conFactory.getConnection(lock);
         try {
-            userDB.setUserIdentity(con, user, identity, identityProvider);
+            userDB.setUserIdentity(con, user, identity, identityProvider, conFactory.getKeyFactory());
         } catch(Throwable e){
             lg.error("failure in getUserIdentityFromAuth0()", e);
             if(bEnableRetry && isBadConnection(con)){
