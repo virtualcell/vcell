@@ -17,10 +17,12 @@ index.ts
 model/bio-model.ts
 model/biomodel-ref.ts
 model/hello-world-message.ts
+model/map-user.ts
 model/mathmodel-ref.ts
 model/models.ts
 model/publication.ts
 model/simulation.ts
+model/user-identity-json-safe.ts
 model/user.ts
 param.ts
 variables.ts

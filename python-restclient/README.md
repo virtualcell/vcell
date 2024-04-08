@@ -98,6 +98,9 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/publications | Get all publications
 *PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/publications | Create publication
+*UsersResourceApi* | [**api_users_bearer_token_get**](docs/UsersResourceApi.md#api_users_bearer_token_get) | **GET** /api/users/bearerToken | 
+*UsersResourceApi* | [**api_users_get_identity_get**](docs/UsersResourceApi.md#api_users_get_identity_get) | **GET** /api/users/getIdentity | 
+*UsersResourceApi* | [**api_users_map_user_post**](docs/UsersResourceApi.md#api_users_map_user_post) | **POST** /api/users/mapUser | 
 *UsersResourceApi* | [**api_users_me_get**](docs/UsersResourceApi.md#api_users_me_get) | **GET** /api/users/me | 
 
 
@@ -106,10 +109,12 @@ Class | Method | HTTP request | Description
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
+ - [MapUser](docs/MapUser.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
  - [Simulation](docs/Simulation.md)
  - [User](docs/User.md)
+ - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
 
 
 <a id="documentation-for-authorization"></a>

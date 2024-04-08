@@ -13,7 +13,9 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
+import { MapUser } from '../model/models';
 import { User } from '../model/models';
+import { UserIdentityJSONSafe } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -23,6 +25,28 @@ import { Configuration }                                     from '../configurat
 export interface UsersResourceServiceInterface {
     defaultHeaders: HttpHeaders;
     configuration: Configuration;
+
+    /**
+     * 
+     * 
+     * @param userId 
+     * @param userPassword 
+     * @param clientId 
+     */
+    apiUsersBearerTokenGet(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<string>;
+
+    /**
+     * 
+     * 
+     */
+    apiUsersGetIdentityGet(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
+
+    /**
+     * 
+     * 
+     * @param mapUser 
+     */
+    apiUsersMapUserPost(mapUser?: MapUser, extraHttpRequestParams?: any): Observable<boolean>;
 
     /**
      * 

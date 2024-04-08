@@ -6,11 +6,13 @@ docs/BioModelResourceApi.md
 docs/BiomodelRef.md
 docs/HelloWorldApi.md
 docs/HelloWorldMessage.md
+docs/MapUser.md
 docs/MathmodelRef.md
 docs/Publication.md
 docs/PublicationResourceApi.md
 docs/Simulation.md
 docs/User.md
+docs/UserIdentityJSONSafe.md
 docs/UsersResourceApi.md
 src/main/AndroidManifest.xml
 src/main/java/org/vcell/restclient/ApiClient.java
@@ -30,10 +32,10 @@ src/main/java/org/vcell/restclient/model/AbstractOpenApiSchema.java
 src/main/java/org/vcell/restclient/model/BioModel.java
 src/main/java/org/vcell/restclient/model/BiomodelRef.java
 src/main/java/org/vcell/restclient/model/HelloWorldMessage.java
+src/main/java/org/vcell/restclient/model/MapUser.java
 src/main/java/org/vcell/restclient/model/MathmodelRef.java
 src/main/java/org/vcell/restclient/model/Publication.java
 src/main/java/org/vcell/restclient/model/Simulation.java
 src/main/java/org/vcell/restclient/model/User.java
-src/test/java/org/vcell/restclient/api/BioModelResourceApiTest.java
-src/test/java/org/vcell/restclient/model/BioModelTest.java
-src/test/java/org/vcell/restclient/model/SimulationTest.java
+src/main/java/org/vcell/restclient/model/UserIdentityJSONSafe.java
+src/test/java/org/vcell/restclient/model/UserIdentityJSONSafeTest.java

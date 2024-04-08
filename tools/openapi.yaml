@@ -186,10 +186,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -211,10 +211,10 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -253,13 +253,70 @@ paths:
       responses:
         "204":
           description: No Content
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
+  /api/users/bearerToken:
+    get:
+      tags:
+      - Users Resource
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                user_password:
+                  type: string
+                client_id:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/users/getIdentity:
+    get:
+      tags:
+      - Users Resource
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIdentityJSONSafe'
+  /api/users/mapUser:
+    post:
+      tags:
+      - Users Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapUser'
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: boolean
   /api/users/me:
     get:
       tags:
@@ -271,13 +328,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        "403":
-          description: Not Allowed
-        "401":
-          description: Not Authorized
-      security:
-      - openId:
-        - user
 components:
   schemas:
     Application:
@@ -341,6 +391,13 @@ components:
       type: object
       properties:
         message:
+          type: string
+    MapUser:
+      type: object
+      properties:
+        userID:
+          type: string
+        password:
           type: string
     MathmodelRef:
       type: object
@@ -419,6 +476,17 @@ components:
           type: array
           items:
             type: string
+    UserIdentityJSONSafe:
+      type: object
+      properties:
+        userName:
+          type: string
+        id:
+          type: number
+        subject:
+          type: string
+        insertDate:
+          type: string
   securitySchemes:
     openId:
       type: openIdConnect

@@ -133,6 +133,12 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/publications | Get all publications
 *PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/publications | Create publication
 *PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/publications | Create publication
+*UsersResourceApi* | [**apiUsersBearerTokenGet**](docs/UsersResourceApi.md#apiUsersBearerTokenGet) | **GET** /api/users/bearerToken | 
+*UsersResourceApi* | [**apiUsersBearerTokenGetWithHttpInfo**](docs/UsersResourceApi.md#apiUsersBearerTokenGetWithHttpInfo) | **GET** /api/users/bearerToken | 
+*UsersResourceApi* | [**apiUsersGetIdentityGet**](docs/UsersResourceApi.md#apiUsersGetIdentityGet) | **GET** /api/users/getIdentity | 
+*UsersResourceApi* | [**apiUsersGetIdentityGetWithHttpInfo**](docs/UsersResourceApi.md#apiUsersGetIdentityGetWithHttpInfo) | **GET** /api/users/getIdentity | 
+*UsersResourceApi* | [**apiUsersMapUserPost**](docs/UsersResourceApi.md#apiUsersMapUserPost) | **POST** /api/users/mapUser | 
+*UsersResourceApi* | [**apiUsersMapUserPostWithHttpInfo**](docs/UsersResourceApi.md#apiUsersMapUserPostWithHttpInfo) | **POST** /api/users/mapUser | 
 *UsersResourceApi* | [**apiUsersMeGet**](docs/UsersResourceApi.md#apiUsersMeGet) | **GET** /api/users/me | 
 *UsersResourceApi* | [**apiUsersMeGetWithHttpInfo**](docs/UsersResourceApi.md#apiUsersMeGetWithHttpInfo) | **GET** /api/users/me | 
 
@@ -142,10 +148,12 @@ Class | Method | HTTP request | Description
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
+ - [MapUser](docs/MapUser.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
  - [Simulation](docs/Simulation.md)
  - [User](docs/User.md)
+ - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
 
 
 <a id="documentation-for-authorization"></a>
