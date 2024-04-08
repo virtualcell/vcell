@@ -75,8 +75,7 @@ CREATE TABLE loadmodelstat(id integer PRIMARY KEY,bioModelRef integer REFERENCES
 CREATE TABLE vc_userlogininfo(id integer PRIMARY KEY,userRef integer NOT NULL REFERENCES vc_userinfo(id) ON DELETE CASCADE,loginCount number NOT NULL,lastLogin date NOT NULL,osarch varchar2(32) NOT NULL,osname varchar2(32) NOT NULL,osvers varchar2(32) NOT NULL,clientVers varchar2(32) NOT NULL,serverVers varchar2(32) NOT NULL,javavers varchar2(32) NOT NULL, CONSTRAINT ulinfo_unique UNIQUE(userRef,osarch,osname,osvers,clientVers,serverVers,javavers));
 CREATE TABLE vc_metadata(id integer PRIMARY KEY,bioModelRef integer NOT NULL REFERENCES vc_biomodel(id) ON DELETE CASCADE,vcMetaDataLarge clob ,vcMetaDataSmall varchar2(4000) );
 CREATE TABLE vc_simdelfromdisk(deldate varchar2(20) ,userid varchar2(255) NOT NULL,userkey integer ,simid integer ,simpref integer ,simdate varchar2(20) ,simname varchar2(255) NOT NULL,status varchar(10) ,numfiles integer ,totalsize integer );
-CREATE TABLE vc_useridentity(id integer PRIMARY KEY,userRef integer NOT NULL REFERENCES vc_userinfo(id),auth0Subject varchar(128) NOT NULL,insertDate date NOT NULL);
-
+CREATE TABLE vc_useridentity(id integer PRIMARY KEY,userRef integer NOT NULL REFERENCES vc_userinfo(id),auth0Subject varchar(128) ,keycloakSubject varchar(128) ,insertDate date NOT NULL);
 CREATE SEQUENCE newSeq;
 
 CREATE INDEX grp_grpid ON vc_group(groupid);
@@ -89,7 +88,7 @@ CREATE INDEX simcstat_simcref ON vc_simcontextstat(simContextRef);
 INSERT INTO vc_userinfo VALUES ( 0,'void','1700596370242','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'B9BDD75BC5382CA83D5AB82172A98D869555899C' );
 INSERT INTO vc_userinfo VALUES ( 2,'Administrator','1700596370260','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'CD181552B879A2F29D10434D8ACF692B6C8126F9' );
 INSERT INTO vc_userinfo VALUES ( 3,'vcellNagios','1700596370261','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'A93453F7962799355608EC89D33D3249474E538F' );
-INSERT INTO vc_useridentity VALUES ( 78, 3,'auth0|65cb6311365d79c2fb96a005', CURRENT_TIMESTAMP);
+INSERT INTO vc_useridentity VALUES ( 78, 2,'auth0|65cb6311365d79c2fb96a005', null, CURRENT_TIMESTAMP);
 INSERT INTO vc_group VALUES (4,1,0,0,1);
 INSERT INTO vc_group VALUES (5,0,0,0,0);
 INSERT INTO vc_available VALUES (6,current_timestamp,'true',NULL,NULL);
