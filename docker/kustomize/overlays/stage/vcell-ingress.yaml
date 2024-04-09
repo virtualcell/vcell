@@ -4,14 +4,17 @@ kind: Ingress
 metadata:
   name: vcell-ingress
   labels:
-    app: api
+    app: vcell-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
+  ingressClassName: nginx
   tls:
     - hosts:
-        - k8s-in-01.cam.uchc.edu
-      secretName: selfsigned-cert-tls
+        - vcellapi-test.cam.uchc.edu
+      secretName: letsencrypt-prod-vcell-tls
   rules:
-  - host: k8s-in-01.cam.uchc.edu
+  - host: vcellapi-test.cam.uchc.edu
     http:
       paths:
       - path: /app
