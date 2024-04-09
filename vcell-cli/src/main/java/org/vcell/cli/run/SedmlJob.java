@@ -10,6 +10,7 @@ import org.jlibsedml.*;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
+import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
 import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.cli.run.hdf5.Hdf5DataExtractor;
 import org.vcell.cli.trace.Span;
@@ -212,7 +213,7 @@ public class SedmlJob {
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues
      */
-    public boolean simulateSedml(Hdf5DataContainer masterHdf5File) throws InterruptedException, PythonStreamException, IOException {
+    public boolean simulateSedml(HDF5ExecutionResults masterHdf5File) throws InterruptedException, PythonStreamException, IOException {
         /*  temp code to test plot name correctness
         String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
         utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, this.resultsDirPath);
@@ -280,7 +281,7 @@ public class SedmlJob {
         this.recordRunDetails(solverHandler);
     }
 
-    private void processOutputs(SolverHandler solverHandler, Hdf5DataContainer masterHdf5File) throws InterruptedException, ExecutionException, PythonStreamException {
+    private void processOutputs(SolverHandler solverHandler, HDF5ExecutionResults masterHdf5File) throws InterruptedException, ExecutionException, PythonStreamException {
         // WARNING!!! Current logic dictates that if any task fails we fail the sedml document
         // change implemented on Nov 11, 2021
         // Previous logic was that if at least one task produces some results we declare the sedml document status as successful
@@ -382,14 +383,14 @@ public class SedmlJob {
         }
     }
 
-    private void generateHDF5(SolverHandler solverHandler, Hdf5DataContainer masterHdf5File) {
+    private void generateHDF5(SolverHandler solverHandler, HDF5ExecutionResults masterHdf5File) {
         this.logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 
         Hdf5DataExtractor hdf5Extractor = new Hdf5DataExtractor(this.sedml, solverHandler.taskToTempSimulationMap, this.RESULTS_DIRECTORY_PATH);
 
         Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(solverHandler.nonSpatialResults, solverHandler.spatialResults);
-        masterHdf5File.incorporate(partialHdf5File); // Add the data to the master hdf5 file wrapper.
+        masterHdf5File.addResults(this.sedml, partialHdf5File);
 
         for (File tempH5File : solverHandler.spatialResults.values()) {
             if (tempH5File == null) continue;
