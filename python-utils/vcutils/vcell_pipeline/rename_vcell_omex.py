@@ -37,8 +37,6 @@ def rename_published_omex(api_base_url: str, subject_dir: Path) -> None:
             suggested_project_name = getSuggestedProjectName(bm_key=bmKey, pub_info=pub, citation_info=citationInfo)
             id_to_name_mapping[bioModelKey] = suggested_project_name
 
-    print(len(set(id_to_name_mapping.values())))
-
     for file in files_to_check:
         file_key = file[9:-5]
         if not file_key.isdigit():
