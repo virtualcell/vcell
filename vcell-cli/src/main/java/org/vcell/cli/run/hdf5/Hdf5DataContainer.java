@@ -13,6 +13,7 @@ public class Hdf5DataContainer {
     /**
      *  Uri to results map
      */
+
     public Map<Report, List<Hdf5SedmlResults>> reportToResultsMap;
     public Map<Report, String> reportToUriMap;
     public boolean trackSubSetsInReports;
