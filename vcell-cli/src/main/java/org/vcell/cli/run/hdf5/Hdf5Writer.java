@@ -45,16 +45,13 @@ public class Hdf5Writer {
         masterHdf5 = new Hdf5File(outDirForCurrentSedml);
         masterHdf5.open();
 
-        // Sanity Check
-        for (SedML sedml : hdf5ExecutionResults){
-            Hdf5DataContainer hdf5DataWrapper = hdf5ExecutionResults.getData(sedml);
-            Set<Report> uriSet = hdf5DataWrapper.reportToUriMap.keySet(),
-                    resultsSet = hdf5DataWrapper.reportToResultsMap.keySet();
-            if (uriSet.size() != resultsSet.size()) throw new RuntimeException("Sets are mismatched");
-
-
-            // Attempt to fill the Hdf5
-            try {
+        try {
+            // Sanity Check
+            for (SedML sedml : hdf5ExecutionResults){
+                Hdf5DataContainer hdf5DataWrapper = hdf5ExecutionResults.getData(sedml);
+                Set<Report> uriSet = hdf5DataWrapper.reportToUriMap.keySet(),
+                        resultsSet = hdf5DataWrapper.reportToResultsMap.keySet();
+                if (uriSet.size() != resultsSet.size()) throw new RuntimeException("Sets are mismatched");
                 for (Report report : resultsSet){
                     // Process Parent Groups
                     String path = "";
@@ -104,26 +101,26 @@ public class Hdf5Writer {
                         masterHdf5.closeDataset(currentDatasetId);
                     }
                 }
-            } catch (Exception e) { // Catch runtime exceptions
-                didFail = true;
-                logger.error("Error encountered while writing to BioSim-style HDF5.", e);
-                throw e;
-            } finally {
-                try {
-                    final Level errorLevel = didFail ? Level.ERROR : Level.INFO;
-                    final String message = didFail ?
-                            "HDF5 successfully closed, but there were errors preventing proper execution." :
-                            "HDF5 file successfully written to.";
-                    // Close up the file; lets deliver what we can write and flush out.
-                    masterHdf5.close();
-                    logger.log(errorLevel, message);
-                } catch (HDF5LibraryException e){
-                    masterHdf5.printErrorStack();
-                    logger.error("HDF5 Library Exception encountered while writing out to HDF5 file; Check std::err for stack");
-                    if (!didFail) throw e;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            }
+        } catch (Exception e) { // Catch runtime exceptions
+            didFail = true;
+            logger.error("Error encountered while writing to BioSim-style HDF5.", e);
+            throw e;
+        } finally {
+            try {
+                final Level errorLevel = didFail ? Level.ERROR : Level.INFO;
+                final String message = didFail ?
+                        "HDF5 successfully closed, but there were errors preventing proper execution." :
+                        "HDF5 file successfully written to.";
+                // Close up the file; lets deliver what we can write and flush out.
+                masterHdf5.close();
+                logger.log(errorLevel, message);
+            } catch (HDF5LibraryException e){
+                masterHdf5.printErrorStack();
+                logger.error("HDF5 Library Exception encountered while writing out to HDF5 file; Check std::err for stack");
+                if (!didFail) throw e;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
