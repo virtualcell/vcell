@@ -50,16 +50,19 @@ public class UsersApiTest {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setHost("localhost");
         defaultClient.setPort(testPort);
-
+        String oidcName = "alice";
         UsersResourceApi usersResourceApi = new UsersResourceApi(defaultClient);
         MapUser userToMap = new MapUser();
         User testUser = new User("vcellNagios", new KeyValue("3"));
         userToMap.setUserID("vcellNagios");
         userToMap.setPassword("1700596370261");
+
+
+
         Boolean mapped = usersResourceApi.apiUsersMapUserPost(userToMap);
         assert (mapped.booleanValue());
-
-        String oidcName = usersResourceApi.apiUsersMeGet().getPrincipalName();
+        mapped = usersResourceApi.apiUsersMapUserPost(userToMap);
+        assert (mapped.booleanValue());
 
         UserIdentityJSONSafe userIdentityJSONSafe = usersResourceApi.apiUsersGetIdentityGet();
         UserIdentity userIdentity = adminDBTopLevel.getUserIdentityFromSubjectAndIdentityProvider(oidcName, UserIdentityTable.IdentityProvider.KEYCLOAK,true);
@@ -68,6 +71,11 @@ public class UsersApiTest {
         assert (userIdentityJSONSafe.getUserName().equals("vcellNagios"));
         assert (userIdentityJSONSafe.getUserName().equals(userIdentity.user().getName()));
         assert (userIdentityJSONSafe.getSubject().equals(userIdentity.subject()));
+
+        adminDBTopLevel.deleteUserIdentityFromIdentityProvider(testUser, oidcName, UserIdentityTable.IdentityProvider.KEYCLOAK, true);
+        userIdentityJSONSafe = usersResourceApi.apiUsersGetIdentityGet();
+        assert (userIdentityJSONSafe.getSubject() == null);
+
 //        assert (userIdentity.getUser());
 //        adminDBTopLevel.deleteUserIdentityFromIdentityProvider(testUser, oidcName, UserIdentityTable.IdentityProvider.KEYCLOAK, true);
     }

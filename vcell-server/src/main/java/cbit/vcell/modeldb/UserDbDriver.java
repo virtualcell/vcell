@@ -108,8 +108,8 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 		ResultSet rset;
 		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
 		if (!identities.isEmpty()){
-			sql = "DELETE " + identityProvider.tableColumn.getQualifiedColName() +
-					" FROM " + UserIdentityTable.table.getTableName() +
+			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
+					" SET " + identityProvider.tableColumn.getQualifiedColName() + " = " + "NULL" +
 					" WHERE " + UserIdentityTable.userRef + " = " + user.getID();
 
 			stmt = con.createStatement();
