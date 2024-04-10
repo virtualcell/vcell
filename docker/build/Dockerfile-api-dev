@@ -68,6 +68,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     webDataPort="webDataPort-not-set" \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
+	serverPrefixV0="server-path-prefix-v0-not-set" \
 	protocol="https" \
 	submit_service_host="submit" \
 	workingDir="/usr/local/app"
@@ -88,6 +89,7 @@ ENTRYPOINT java \
 	-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager \
 	-Dlog4j.configurationFile=/usr/local/app/vcell-api.log4j.xml \
 	-Dvcell.server.id="${serverid}" \
+	-Dvcell.serverPrefix.v0="${serverPrefixV0}" \
 	-Dvcell.installDir=/usr/local/app \
 	-Dcli.workingDir="${workingDir}" \
 	-Dvcell.server.dbConnectURL="${dburl}" \

@@ -55,6 +55,6 @@ def rename_published_omex(api_base_url: str, subject_dir: Path) -> None:
 
 if __name__ == "__main__":
     rename_published_omex(
-        api_base_url="https://vcellapi-beta.cam.uchc.edu:8080",
+        api_base_url="https://vcellapi-beta.cam.uchc.edu:8080/api/v0",
         subject_dir=Path("/home/ldrescher/Documents/convertedFiles")
     )

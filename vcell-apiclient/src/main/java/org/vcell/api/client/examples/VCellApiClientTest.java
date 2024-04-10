@@ -24,10 +24,11 @@ public class VCellApiClientTest {
 			}
 			String host = args[0];
 			int port = Integer.parseInt(args[1]);
+			String pathPrefix_v0 = "";
 			String username = args[2];
 			String password = args[3];
 			
-			vcellApiClient = new VCellApiClient(host,port);
+			vcellApiClient = new VCellApiClient(host,port,pathPrefix_v0);
 
 			vcellApiClient.authenticate(username,password,false);
 			

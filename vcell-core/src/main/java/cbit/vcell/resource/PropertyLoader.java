@@ -121,6 +121,7 @@ public class PropertyLoader {
 	public static final String comsolJarDir					= record("vcell.comsol.jardir",ValueType.DIR);
 
 	public static final String vcellServerHost				= record("vcell.serverHost",ValueType.GEN);
+	public static final String vcellServerPrefixV0			= record("vcell.serverPrefix.v0",ValueType.GEN);
 	public static final String sslIgnoreHostMismatch		= record("vcell.ssl.ignoreHostMismatch",ValueType.BOOL);
 	public static final String sslIgnoreCertProblems		= record("vcell.ssl.ignoreCertProblems",ValueType.BOOL);
 

@@ -283,7 +283,8 @@ private void checkClientServerSoftwareVersion(InteractiveContext requester, Clie
 	if (clientServerInfo.getServerType() == ServerType.SERVER_REMOTE) {
 		String apihost = clientServerInfo.getApihost();
 		Integer apiport = clientServerInfo.getApiport();
-		String serverSoftwareVersion = RemoteProxyVCellConnectionFactory.getVCellSoftwareVersion(apihost,apiport);
+		String pathPrefixV0 = clientServerInfo.getPathPrefix_v0();
+		String serverSoftwareVersion = RemoteProxyVCellConnectionFactory.getVCellSoftwareVersion(apihost,apiport,pathPrefixV0);
 		if (serverSoftwareVersion != null && !serverSoftwareVersion.equals(clientSoftwareVersion)) {
 			VCellSoftwareVersion clientVersion = VCellSoftwareVersion.fromString(clientSoftwareVersion);
 			VCellSoftwareVersion serverVersion = VCellSoftwareVersion.fromString(serverSoftwareVersion);
@@ -357,7 +358,9 @@ public void connectAs(InteractiveContext requester, String user, DigestedPasswor
 			break;
 		}
 		case SERVER_REMOTE: {
-			clientServerInfo = ClientServerInfo.createRemoteServerInfo(getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), user, digestedPassword);
+			clientServerInfo = ClientServerInfo.createRemoteServerInfo(
+					getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), getClientServerInfo().getPathPrefix_v0(),
+					user, digestedPassword);
 			break;
 		}
 	}

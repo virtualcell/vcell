@@ -2,6 +2,7 @@ package org.vcell.rest;
 
 import cbit.vcell.modeldb.ApiAccessToken;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
+import cbit.vcell.resource.PropertyLoader;
 import freemarker.template.Configuration;
 import org.restlet.Request;
 import org.restlet.Response;
@@ -274,66 +275,67 @@ public class VCellApiApplication extends WadlApplication {
 		 */	    
 
         String ROOT_URI = javascriptDir.toURI().toString();
+		String PATH_PREFIX = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerPrefixV0);
         String WEBAPP_URI = new File(javascriptDir.getParentFile(),"webapp").toURI().toString();
         System.out.println("using uri="+ROOT_URI+" for scripts directory");
         String SCRIPTS = "scripts";
         
 		Router rootRouter = new Router(getContext());
-		rootRouter.attach("/", new SWVersionRestlet(getContext()));
-		rootRouter.attach("/"+SWVERSION, new SWVersionRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/", new SWVersionRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+SWVERSION, new SWVersionRestlet(getContext()));
 
-		rootRouter.attach("/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
-	    rootRouter.attach("/"+ACCESSTOKENRESOURCE, new AuthenticationTokenRestlet(getContext()));
-	    rootRouter.attach("/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
-	    rootRouter.attach("/"+OPTIMIZATION, OptimizationRunServerResource.class);
-	    rootRouter.attach("/"+OPTIMIZATION+"/{"+OPTIMIZATIONID+"}", OptimizationRunServerResource.class);
-	    rootRouter.attach("/"+PUBLICATION, PublicationsServerResource.class);
-	    rootRouter.attach("/"+PUBLICATION+"/{"+PUBLICATIONID+"}", PublicationServerResource.class);
-		rootRouter.attach("/"+BIOMODEL, BiomodelsServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SBML_DOWNLOAD, BiomodelSBMLServerResource.class);
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+OMEX_DOWNLOAD, BiomodelOMEXServerResource.class);
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+BNGL_DOWNLOAD, BiomodelBNGLServerResource.class);
-		rootRouter.attach("/"+MODELBRICK, BiomodelVCMLModelInfoResource.class);//Expects queryparameters
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+DIAGRAM_DOWNLOAD, BiomodelDiagramServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+SAVESIMULATION, BiomodelSimulationSaveServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STARTSIMULATION, BiomodelSimulationStartServerResource.class);  
-		rootRouter.attach("/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STOPSIMULATION, BiomodelSimulationStopServerResource.class);  
-		rootRouter.attach("/"+SIMSTATUS, SimulationStatusServerResource.class);  
-		rootRouter.attach("/"+SIMTASK, SimulationTasksServerResource.class);  
-		rootRouter.attach("/"+SIMTASK+"/{"+SIMTASKID+"}", SimulationTaskServerResource.class);  
-		rootRouter.attach("/"+SIMDATA+"/{"+SIMDATAID+"}", SimDataServerResource.class);  
-		rootRouter.attach("/"+SIMDATA+"/{"+SIMDATAID+"}/jobindex/{"+JOBINDEX+"}", SimDataValuesServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
+	    rootRouter.attach(PATH_PREFIX+"/"+ACCESSTOKENRESOURCE, new AuthenticationTokenRestlet(getContext()));
+	    rootRouter.attach(PATH_PREFIX+"/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
+	    rootRouter.attach(PATH_PREFIX+"/"+OPTIMIZATION, OptimizationRunServerResource.class);
+	    rootRouter.attach(PATH_PREFIX+"/"+OPTIMIZATION+"/{"+OPTIMIZATIONID+"}", OptimizationRunServerResource.class);
+	    rootRouter.attach(PATH_PREFIX+"/"+PUBLICATION, PublicationsServerResource.class);
+	    rootRouter.attach(PATH_PREFIX+"/"+PUBLICATION+"/{"+PUBLICATIONID+"}", PublicationServerResource.class);
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL, BiomodelsServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}", BiomodelServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}/"+VCML_DOWNLOAD, BiomodelVCMLServerResource.class);
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SBML_DOWNLOAD, BiomodelSBMLServerResource.class);
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}/"+OMEX_DOWNLOAD, BiomodelOMEXServerResource.class);
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}/"+BNGL_DOWNLOAD, BiomodelBNGLServerResource.class);
+		rootRouter.attach(PATH_PREFIX+"/"+MODELBRICK, BiomodelVCMLModelInfoResource.class);//Expects queryparameters
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}/"+DIAGRAM_DOWNLOAD, BiomodelDiagramServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}", BiomodelSimulationServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+SAVESIMULATION, BiomodelSimulationSaveServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STARTSIMULATION, BiomodelSimulationStartServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL+"/{"+BIOMODELID+"}/"+SIMULATION+"/{"+SIMULATIONID+"}/"+STOPSIMULATION, BiomodelSimulationStopServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+SIMSTATUS, SimulationStatusServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+SIMTASK, SimulationTasksServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+SIMTASK+"/{"+SIMTASKID+"}", SimulationTaskServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+SIMDATA+"/{"+SIMDATAID+"}", SimDataServerResource.class);  
+		rootRouter.attach(PATH_PREFIX+"/"+SIMDATA+"/{"+SIMDATAID+"}/jobindex/{"+JOBINDEX+"}", SimDataValuesServerResource.class);  
 		
-		rootRouter.attach("/"+LOGIN, new LoginRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+LOGIN, new LoginRestlet(getContext()));
 		
-		rootRouter.attach("/"+LOGINFORM, new LoginFormRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+LOGINFORM, new LoginFormRestlet(getContext()));
 		
-		rootRouter.attach("/"+REGISTRATIONFORM, new RegistrationFormRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+REGISTRATIONFORM, new RegistrationFormRestlet(getContext()));
 		
-		rootRouter.attach("/"+NEWUSER, new NewUserRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+NEWUSER, new NewUserRestlet(getContext()));
 		
-		rootRouter.attach("/"+NEWUSER_VERIFY, new EmailTokenVerifyRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+NEWUSER_VERIFY, new EmailTokenVerifyRestlet(getContext()));
 		
-		rootRouter.attach("/"+LOSTPASSWORD, new LostPasswordRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+LOSTPASSWORD, new LostPasswordRestlet(getContext()));
 		
-		rootRouter.attach("/"+CONTACTUS, new ContactUsRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+CONTACTUS, new ContactUsRestlet(getContext()));
 
-	    rootRouter.attach("/"+RPC, new RpcRestlet(getContext(),restDatabaseService));
+	    rootRouter.attach(PATH_PREFIX+"/"+RPC, new RpcRestlet(getContext(),restDatabaseService));
 
-	    rootRouter.attach("/"+EVENTS, new EventsRestlet(getContext()));
+	    rootRouter.attach(PATH_PREFIX+"/"+EVENTS, new EventsRestlet(getContext()));
 
-	    rootRouter.attach("/"+HEALTH, new HealthRestlet(getContext()));
+	    rootRouter.attach(PATH_PREFIX+"/"+HEALTH, new HealthRestlet(getContext()));
 
-		rootRouter.attach("/"+ N5DATA + "/{" + N5_SIMID + "}/" + N5_EXPORT, new N5ExportRestlet(getContext()));
-		rootRouter.attach("/" + N5DATA + "/{" + N5_SIMID + "}/" + N5_INFO, new N5GetInfoRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+ N5DATA + "/{" + N5_SIMID + "}/" + N5_EXPORT, new N5ExportRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/" + N5DATA + "/{" + N5_SIMID + "}/" + N5_INFO, new N5GetInfoRestlet(getContext()));
 
-		rootRouter.attach("/"+ADMIN+"/"+ADMIN_JOBS, new AdminJobsRestlet(getContext()));
-		rootRouter.attach("/"+ADMIN+"/"+ADMIN_STATS, new AdminStatsRestlet(getContext(), restDatabaseService));
+		rootRouter.attach(PATH_PREFIX+"/"+ADMIN+"/"+ADMIN_JOBS, new AdminJobsRestlet(getContext()));
+		rootRouter.attach(PATH_PREFIX+"/"+ADMIN+"/"+ADMIN_STATS, new AdminStatsRestlet(getContext(), restDatabaseService));
 
-	    rootRouter.attach("/auth/user", new Restlet(getContext()){
+	    rootRouter.attach(PATH_PREFIX+"/auth/user", new Restlet(getContext()){
 
 			@Override
 			public void handle(Request request, Response response) {
@@ -364,10 +366,10 @@ public class VCellApiApplication extends WadlApplication {
 		final VCellCookieAuthenticator cookieAuthenticator = new VCellCookieAuthenticator(
 				userService, cookieVerifier, getContext(), bCookieOptional, "My cookie realm", "MyExtraSecretKey".getBytes());
 		cookieAuthenticator.setMultiAuthenticating(false);
-		cookieAuthenticator.setLoginPath("/"+LOGIN);
-		cookieAuthenticator.setLogoutPath("/"+LOGOUT);
+		cookieAuthenticator.setLoginPath(PATH_PREFIX+"/"+LOGIN);
+		cookieAuthenticator.setLogoutPath(PATH_PREFIX+"/"+LOGOUT);
 		cookieAuthenticator.setCookieName("org.vcell.auth");
-		cookieAuthenticator.setLoginFormPath("/"+LOGINFORM);
+		cookieAuthenticator.setLoginFormPath(PATH_PREFIX+"/"+LOGINFORM);
 		cookieAuthenticator.setIdentifierFormName(IDENTIFIER_FORMNAME);
 		cookieAuthenticator.setSecretFormName(SECRET_FORMNAME);
 		cookieAuthenticator.setRedirectQueryName(REDIRECTURL_FORMNAME);
