@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (test)
+    VCell API
 
     VCell API
 
@@ -102,8 +102,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -171,8 +171,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -240,8 +240,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -310,7 +310,7 @@ class PublicationResourceApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/publications',
+            resource_path='/api/v1/publications',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -560,7 +560,7 @@ class PublicationResourceApi:
 
         return self.api_client.param_serialize(
             method='DELETE',
-            resource_path='/api/publications/{id}',
+            resource_path='/api/v1/publications/{id}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -818,7 +818,7 @@ class PublicationResourceApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/publications/{id}',
+            resource_path='/api/v1/publications/{id}',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1061,7 +1061,7 @@ class PublicationResourceApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/publications',
+            resource_path='/api/v1/publications',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1131,8 +1131,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1200,8 +1200,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1269,8 +1269,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1339,7 +1339,7 @@ class PublicationResourceApi:
 
         return self.api_client.param_serialize(
             method='PUT',
-            resource_path='/api/publications',
+            resource_path='/api/v1/publications',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

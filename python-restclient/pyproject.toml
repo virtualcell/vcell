@@ -1,29 +1,26 @@
 [tool.poetry]
 name = "vcell_client"
 version = "1.0.0"
-description = "VCell API (test)"
+description = "VCell API"
 authors = ["VCell API Support <vcell_support@uchc.com>"]
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/GIT_USER_ID/GIT_REPO_ID"
-keywords = ["OpenAPI", "OpenAPI-Generator", "VCell API (test)"]
+keywords = ["OpenAPI", "OpenAPI-Generator", "VCell API"]
 include = ["vcell_client/py.typed"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.7"
 
 urllib3 = ">= 1.25.3"
 python-dateutil = ">=2.8.2"
 pydantic = ">=2"
 typing-extensions = ">=4.7.1"
-requests-oauth2client = ">=1.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=7.2.1"
 tox = ">=3.9.0"
-flake8 = ">=5.0.4"
-pandas = ">=2.2.0"
-notebook = ">=7.0.0"
+flake8 = ">=4.0.0"
 
 [build-system]
 requires = ["setuptools"]

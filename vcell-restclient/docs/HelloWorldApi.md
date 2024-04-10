@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost:9000*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**getHelloWorld**](HelloWorldApi.md#getHelloWorld) | **GET** /api/helloworld | Get hello world message. |
-| [**getHelloWorldWithHttpInfo**](HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/helloworld | Get hello world message. |
+| [**getHelloWorld**](HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message. |
+| [**getHelloWorldWithHttpInfo**](HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message. |
 
 
 

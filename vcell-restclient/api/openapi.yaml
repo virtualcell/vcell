@@ -9,12 +9,12 @@ info:
     name: MIT
     url: http://opensource.org/licenses/MIT
   termsOfService: Your terms of service here
-  title: VCell API (test)
+  title: VCell API
   version: 1.0.1
 servers:
 - url: http://localhost:9000
 paths:
-  /api/helloworld:
+  /api/v1/helloworld:
     get:
       operationId: getHelloWorld
       responses:
@@ -28,7 +28,7 @@ paths:
       tags:
       - Hello World
       x-accepts: application/json
-  /api/publications:
+  /api/v1/publications:
     get:
       operationId: getPublications
       responses:
@@ -59,10 +59,10 @@ paths:
                 format: int64
                 type: integer
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -85,10 +85,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -97,7 +97,7 @@ paths:
       - Publication Resource
       x-content-type: application/json
       x-accepts: application/json
-  /api/publications/{id}:
+  /api/v1/publications/{id}:
     delete:
       operationId: deletePublication
       parameters:
@@ -112,10 +112,10 @@ paths:
       responses:
         "204":
           description: No Content
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -145,7 +145,7 @@ paths:
       tags:
       - Publication Resource
       x-accepts: application/json
-  /api/users/me:
+  /api/v1/users/me:
     get:
       responses:
         "200":
@@ -154,10 +154,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user

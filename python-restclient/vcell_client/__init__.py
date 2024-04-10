@@ -3,7 +3,7 @@
 # flake8: noqa
 
 """
-    VCell API (test)
+    VCell API
 
     VCell API
 

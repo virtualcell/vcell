@@ -85,13 +85,13 @@ All URIs are relative to *http://localhost:9000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/helloworld | Get hello world message.
-*PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/publications | Create publication
-*PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
-*PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
-*PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/publications | Get all publications
-*PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/publications | Create publication
-*UsersResourceApi* | [**api_users_me_get**](docs/UsersResourceApi.md#api_users_me_get) | **GET** /api/users/me | 
+*HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
+*PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
+*PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
+*PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
+*PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
+*UsersResourceApi* | [**api_v1_users_me_get**](docs/UsersResourceApi.md#api_v1_users_me_get) | **GET** /api/v1/users/me | 
 
 
 ## Documentation For Models

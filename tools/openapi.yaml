@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.3
 info:
-  title: VCell API (test)
+  title: VCell API
   description: VCell API
   termsOfService: Your terms of service here
   contact:
@@ -15,7 +15,7 @@ info:
 servers:
 - url: http://localhost:9000
 paths:
-  /api/helloworld:
+  /api/v1/helloworld:
     get:
       tags:
       - Hello World
@@ -28,7 +28,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HelloWorldMessage'
-  /api/publications:
+  /api/v1/publications:
     get:
       tags:
       - Publication Resource
@@ -60,10 +60,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -85,14 +85,14 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
-  /api/publications/{id}:
+  /api/v1/publications/{id}:
     get:
       tags:
       - Publication Resource
@@ -127,14 +127,14 @@ paths:
       responses:
         "204":
           description: No Content
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
-  /api/users/me:
+  /api/v1/users/me:
     get:
       tags:
       - Users Resource
@@ -145,10 +145,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user

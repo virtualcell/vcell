@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost:9000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**create_publication**](PublicationResourceApi.md#create_publication) | **POST** /api/publications | Create publication
-[**delete_publication**](PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
-[**get_publication_by_id**](PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
-[**get_publications**](PublicationResourceApi.md#get_publications) | **GET** /api/publications | Get all publications
-[**update_publication**](PublicationResourceApi.md#update_publication) | **PUT** /api/publications | Create publication
+[**create_publication**](PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
+[**delete_publication**](PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
+[**get_publication_by_id**](PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
+[**get_publications**](PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
+[**update_publication**](PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
 
 
 # **create_publication**
@@ -77,8 +77,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -145,8 +145,8 @@ void (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -342,8 +342,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

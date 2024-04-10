@@ -1,5 +1,5 @@
 /**
- * VCell API (test)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -135,7 +135,7 @@ export class HelloWorldService implements HelloWorldServiceInterface {
             }
         }
 
-        let localVarPath = `/api/helloworld`;
+        let localVarPath = `/api/v1/helloworld`;
         return this.httpClient.request<HelloWorldMessage>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

@@ -4,11 +4,11 @@ All URIs are relative to *http://localhost:9000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**api_users_me_get**](UsersResourceApi.md#api_users_me_get) | **GET** /api/users/me | 
+[**api_v1_users_me_get**](UsersResourceApi.md#api_v1_users_me_get) | **GET** /api/v1/users/me | 
 
 
-# **api_users_me_get**
-> User api_users_me_get()
+# **api_v1_users_me_get**
+> User api_v1_users_me_get()
 
 
 
@@ -39,11 +39,11 @@ with vcell_client.ApiClient(configuration) as api_client:
     api_instance = vcell_client.UsersResourceApi(api_client)
 
     try:
-        api_response = api_instance.api_users_me_get()
-        print("The response of UsersResourceApi->api_users_me_get:\n")
+        api_response = api_instance.api_v1_users_me_get()
+        print("The response of UsersResourceApi->api_v1_users_me_get:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->api_users_me_get: %s\n" % e)
+        print("Exception when calling UsersResourceApi->api_v1_users_me_get: %s\n" % e)
 ```
 
 
@@ -68,8 +68,8 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -1,5 +1,5 @@
 /**
- * VCell API (test)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -28,6 +28,6 @@ export interface UsersResourceServiceInterface {
      * 
      * 
      */
-    apiUsersMeGet(extraHttpRequestParams?: any): Observable<User>;
+    apiV1UsersMeGet(extraHttpRequestParams?: any): Observable<User>;
 
 }

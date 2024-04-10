@@ -1,6 +1,6 @@
 # vcell-restclient
 
-VCell API (test)
+VCell API
 
 - API version: 1.0.1
 
@@ -105,20 +105,20 @@ All URIs are relative to *http://localhost:9000*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/helloworld | Get hello world message.
-*HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/helloworld | Get hello world message.
-*PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/publications | Create publication
-*PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/publications | Create publication
-*PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/publications/{id} | Delete publication
-*PublicationResourceApi* | [**deletePublicationWithHttpInfo**](docs/PublicationResourceApi.md#deletePublicationWithHttpInfo) | **DELETE** /api/publications/{id} | Delete publication
-*PublicationResourceApi* | [**getPublicationById**](docs/PublicationResourceApi.md#getPublicationById) | **GET** /api/publications/{id} | Get publication by ID
-*PublicationResourceApi* | [**getPublicationByIdWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/publications/{id} | Get publication by ID
-*PublicationResourceApi* | [**getPublications**](docs/PublicationResourceApi.md#getPublications) | **GET** /api/publications | Get all publications
-*PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/publications | Get all publications
-*PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/publications | Create publication
-*PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/publications | Create publication
-*UsersResourceApi* | [**apiUsersMeGet**](docs/UsersResourceApi.md#apiUsersMeGet) | **GET** /api/users/me | 
-*UsersResourceApi* | [**apiUsersMeGetWithHttpInfo**](docs/UsersResourceApi.md#apiUsersMeGetWithHttpInfo) | **GET** /api/users/me | 
+*HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message.
+*HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message.
+*PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/v1/publications/{id} | Delete publication
+*PublicationResourceApi* | [**deletePublicationWithHttpInfo**](docs/PublicationResourceApi.md#deletePublicationWithHttpInfo) | **DELETE** /api/v1/publications/{id} | Delete publication
+*PublicationResourceApi* | [**getPublicationById**](docs/PublicationResourceApi.md#getPublicationById) | **GET** /api/v1/publications/{id} | Get publication by ID
+*PublicationResourceApi* | [**getPublicationByIdWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/v1/publications/{id} | Get publication by ID
+*PublicationResourceApi* | [**getPublications**](docs/PublicationResourceApi.md#getPublications) | **GET** /api/v1/publications | Get all publications
+*PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications
+*PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication
+*UsersResourceApi* | [**apiV1UsersMeGet**](docs/UsersResourceApi.md#apiV1UsersMeGet) | **GET** /api/v1/users/me | 
+*UsersResourceApi* | [**apiV1UsersMeGetWithHttpInfo**](docs/UsersResourceApi.md#apiV1UsersMeGetWithHttpInfo) | **GET** /api/v1/users/me | 
 
 
 ## Documentation for Models
