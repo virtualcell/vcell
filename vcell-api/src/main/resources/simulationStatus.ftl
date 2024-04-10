@@ -3,8 +3,8 @@
 <title>Simulation Statuses</title>
 </head>
 <body>
-<#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
-<center><h2><a href="/publication">Publications</a>&nbsp;&nbsp;&nbsp;<a href="/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;Simulation Status&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
+<#assign simtasklink="${pathPrefix}/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
+<center><h2><a href="${pathPrefix}/publication">Publications</a>&nbsp;&nbsp;&nbsp;<a href="${pathPrefix}/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;Simulation Status&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
 <form>
 <table><tbody>
 <tr><td>Begin Timestamp</td><td><input type='text' name='submitLow' value='${submitLow!""}'/></td></tr>
@@ -48,14 +48,14 @@
 <#list simStatuses as simStatus>
 
 <#if simStatus.simRep.bioModelLink??>
-	<#assign simlink="/biomodel/${simStatus.simRep.bioModelLink.bioModelKey}/simulation/${simStatus.simRep.key}"/>
+	<#assign simlink="${pathPrefix}/biomodel/${simStatus.simRep.bioModelLink.bioModelKey}/simulation/${simStatus.simRep.key}"/>
 </#if>
 <#if simStatus.simRep.mathModelLink??>
-	<#assign simlink="/biomodel/${simStatus.simRep.mathModelLink.mathModelKey}/simulation/${simStatus.simRep.key}"/>
+	<#assign simlink="${pathPrefix}/biomodel/${simStatus.simRep.mathModelLink.mathModelKey}/simulation/${simStatus.simRep.key}"/>
 </#if>
 
 <tr>
-<td><#if simStatus.simRep.bioModelLink??><a href='/biomodel/${simStatus.simRep.bioModelLink.bioModelKey}'>${simStatus.simRep.bioModelLink.bioModelName!""}</a><#else>unknown</#if></td>
+<td><#if simStatus.simRep.bioModelLink??><a href='${pathPrefix}/biomodel/${simStatus.simRep.bioModelLink.bioModelKey}'>${simStatus.simRep.bioModelLink.bioModelName!""}</a><#else>unknown</#if></td>
 <td><#if simStatus.simRep.bioModelLink??>${simStatus.simRep.bioModelLink.simContextName!""}<#else>unknown</#if></td>
 <td><#if simStatus.simRep.mathModelLink??>"${simStatus.simRep.mathModelLink.mathModelName!""}" (id=${simStatus.simRep.mathModelLink.mathModelKey}) (branch=${simStatus.simRep.mathModelLink.mathModelBranchId})<#else>unknown</#if></td>
 <td>
@@ -75,7 +75,7 @@
 <td>progress ${simStatus.progress!""}</td>
 <td><#if simStatus.hasData><a href='./simdata/${simStatus.simRep.key}'>metadata</a><#else>false</#if></td>
 <td>${simStatus.statusString!""}</td>
-<td><a href='/simtask?simId=${simStatus.simRep.key}&startRow=1&maxRows=100&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on'>tasks</a></td>
+<td><a href='${pathPrefix}/simtask?simId=${simStatus.simRep.key}&startRow=1&maxRows=100&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on'>tasks</a></td>
 <td>message ${simStatus.failedMessage!""}</td>
 <td> operations
 <#if simStatus.runnable>

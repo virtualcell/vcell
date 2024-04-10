@@ -5,16 +5,16 @@
 <title>Simulation Description</title>
 </head>
 <body>
-<#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
-<#assign simstatuslink="/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
-<center><h2><a href="/publication">Publications</a>&nbsp;&nbsp;&nbsp;<a href="/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="${simstatuslink}">Simulation Status</a>&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
+<#assign simtasklink="${pathPrefix}/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
+<#assign simstatuslink="${pathPrefix}/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
+<center><h2><a href="${pathPrefix}/publication">Publications</a>&nbsp;&nbsp;&nbsp;<a href="${pathPrefix}/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="${simstatuslink}">Simulation Status</a>&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
 </center>
 
 <#if simulation.bioModelLink??>
-	<#assign simlink="/biomodel/${simulation.bioModelLink.bioModelKey}/simulation/${simulation.key}"/>
+	<#assign simlink="${pathPrefix}/biomodel/${simulation.bioModelLink.bioModelKey}/simulation/${simulation.key}"/>
 </#if>
 <#if simulation.mathModelLink??>
-	<#assign simlink="/biomodel/${simulation.mathModelLink.mathModelKey}/simulation/${simulation.key}"/>
+	<#assign simlink="${pathPrefix}/biomodel/${simulation.mathModelLink.mathModelKey}/simulation/${simulation.key}"/>
 </#if>
 
 
@@ -23,7 +23,7 @@
 <table>
 <tr><td>Name</td><td><input type="text" name="simname" value="${simulation.name}"></input></td></tr>
 <tr><td>Model</td><td>
-<#if simulation.bioModelLink??>BioModel <a href='/biomodel/${simulation.bioModelLink.bioModelKey}'>&quot;${simulation.bioModelLink.bioModelName!""}&quot;</a>, Application &quot;${simulation.bioModelLink.simContextName!""}&quot;
+<#if simulation.bioModelLink??>BioModel <a href='${pathPrefix}/biomodel/${simulation.bioModelLink.bioModelKey}'>&quot;${simulation.bioModelLink.bioModelName!""}&quot;</a>, Application &quot;${simulation.bioModelLink.simContextName!""}&quot;
 <#else>
 <#if simulation.mathModelLink??>MathModel "${simulation.mathModelLink.mathModelName!""}" (id=${simulation.mathModelLink.mathModelKey}) (branch=${simulation.mathModelLink.mathModelBranchId})
 <#else>
@@ -34,9 +34,9 @@ unknown
 </td></tr>
 <tr><td>Solver</td><td>&quot;${simulation.solverName!""}&quot;</td></tr>
 <tr><td>num jobs</td><td>${simulation.scanCount!""}</td></tr>
-<tr><td>check status</td><td><a href="/simstatus?simId=${simulation.key}&hasData=all&neverran=on&active=on&&completed=on&failed=on&stopped=on&startRow=1&maxRows=200">check status</a></td></tr>
-<tr><td>check jobs</td><td><a href="/simtask?simId=${simulation.key}&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on&startRow=1&maxRows=200">check jobs</a></td></tr>
-<tr><td>data</td><td><a href="/simdata/${simulation.key}">metadata</a></td></tr>
+<tr><td>check status</td><td><a href="${pathPrefix}/simstatus?simId=${simulation.key}&hasData=all&neverran=on&active=on&&completed=on&failed=on&stopped=on&startRow=1&maxRows=200">check status</a></td></tr>
+<tr><td>check jobs</td><td><a href="${pathPrefix}/simtask?simId=${simulation.key}&hasData=all&waiting=on&queued=on&dispatched=on&running=on&completed=on&failed=on&stopped=on&startRow=1&maxRows=200">check jobs</a></td></tr>
+<tr><td>data</td><td><a href="${pathPrefix}/simdata/${simulation.key}">metadata</a></td></tr>
 <tr><td>Overrides</td><td>
 <#if (simulation.overrides?size>0)>
 <#list simulation.overrides as override>
@@ -339,7 +339,7 @@ function formatOverride(pName,overrideType,expression,valuesArray,cardinality){
 					alert("it worked, data is null");
 					return;
 				}
-				var newURL = "/biomodel/"+data.bioModelLink.bioModelKey+"/simulation/"+data.key;
+				var newURL = "${pathPrefix}/biomodel/"+data.bioModelLink.bioModelKey+"/simulation/"+data.key;
 				alert("it worked: oldSimKey="+JSON.stringify(simulation.key)+" newSimKey="+JSON.stringify(data.key)+" origURL=${simlink}  newURL="+newURL);
 				window.location.href = newURL;
 			},
