@@ -15,8 +15,10 @@ import {AuthorizationService} from 'src/app/services/authorization.service';
 })
 export class PublicationListComponent implements OnInit {
   publications = new MatTableDataSource<Publication>();
-  displayedColumns = [ "pubKey", "title", "authors", "year", "citation", "pubmedid", "doi", "endnoteid", "url",
-                       "wittid", "biomodelRefs", "mathmodelRefs", "date"];
+  // displayedColumns = [ "pubKey", "title", "authors", "year", "citation", "pubmedid", "doi", "endnoteid", "url",
+  //   "wittid", "biomodelRefs", "mathmodelRefs", "date"];
+  displayedColumns = [ "title", "authors", "year", "citation", "pubmedid",
+    "biomodelRefs", "mathmodelRefs", "date"];
   editingPublication: Publication | null = null;
   isCurator$: Observable<boolean>;
 
@@ -80,6 +82,8 @@ export class PublicationListComponent implements OnInit {
   }
 
   applyFilterTarget(eventTarget: EventTarget) {
+    // //get publication object from this row
+    // const pub: Publication = eventTarget.;
     const filterValue = (eventTarget as HTMLInputElement).value;
     this.publications.filter = filterValue.toLowerCase();
   }

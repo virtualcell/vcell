@@ -23,7 +23,7 @@
   </ng-container>
   <ng-container matColumnDef="pubmedid">
     <th mat-header-cell *matHeaderCellDef mat-sort-header> Pubmed ID</th>
-    <td mat-cell *matCellDef="let row"> {{ row.pubmedid }}</td>
+    <td mat-cell *matCellDef="let row"> <a href="https://pubmed.ncbi.nlm.nih.gov/{{row.pubmedid}}/">{{ row.pubmedid }}</a></td>
   </ng-container>
   <ng-container matColumnDef="doi">
     <th mat-header-cell *matHeaderCellDef mat-sort-header> DOI</th>
@@ -43,11 +43,21 @@
   </ng-container>
   <ng-container matColumnDef="biomodelRefs">
     <th mat-header-cell *matHeaderCellDef mat-sort-header> Biomodels</th>
-    <td mat-cell *matCellDef="let row"> {{ row.biomodelRefs }}</td>
+    <td mat-cell *matCellDef="let row">
+      <a *ngFor="let ref of row.biomodelRefs"
+         href="https://vcellapi-test.cam.uchc.edu/api/v0/biomodel/{{ref.bmKey}}">
+        {{ ref.bmKey }}
+      </a>
+    </td>
   </ng-container>
   <ng-container matColumnDef="mathmodelRefs">
     <th mat-header-cell *matHeaderCellDef mat-sort-header> Mathmodels</th>
-    <td mat-cell *matCellDef="let row"> {{ row.mathmodelRefs }}</td>
+    <td mat-cell *matCellDef="let row">
+      <a *ngFor="let ref of row.mathmodelRefs"
+         href="https://vcellapi-test.cam.uchc.edu/api/v0/mathmodel/{{ref.mmKey}}">
+        {{ ref.mmKey }}
+      </a>
+    </td>
   </ng-container>
   <ng-container matColumnDef="date">
     <th mat-header-cell *matHeaderCellDef mat-sort-header> Date</th>
