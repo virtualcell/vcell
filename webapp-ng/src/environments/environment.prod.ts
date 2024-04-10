@@ -21,6 +21,7 @@ export const environment = {
     },
     errorPath,
   },
+  apiUri: config.apiUri,
   httpInterceptor: {
     allowedList: [
       {
