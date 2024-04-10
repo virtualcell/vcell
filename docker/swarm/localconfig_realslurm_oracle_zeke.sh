@@ -40,39 +40,55 @@ DATABASE_HOST=$(hostname)
 case $VCELL_SITE in
 	REL)
 		_site_port_offset=0
+		VCELL_API_PREFIX_V0=""
+		VCELL_API_PREFIX_V1=""
 		_applicationId="1471-8022-1038-5553"
 		VCELL_S3_EXPORT_BASEURL=https://vcellapi.cam.uchc.edu
 		;;
 	BETA)
 		_site_port_offset=1
+		VCELL_API_PREFIX_V0="/api/v0"
+		VCELL_API_PREFIX_V1="/api/v1"
 		_applicationId="1471-8022-1038-5552"
 		VCELL_S3_EXPORT_BASEURL=https://vcellapi-beta.cam.uchc.edu
 		;;
 	ALPHA)
 		_site_port_offset=2
+		VCELL_API_PREFIX_V0="/api/v0"
+		VCELL_API_PREFIX_V1="/api/v1"
 		_applicationId="1471-8022-1038-5554"
 		VCELL_S3_EXPORT_BASEURL=https://vcellapi-beta.cam.uchc.edu
 		;;
 	TEST)
 		_site_port_offset=3
+		VCELL_API_PREFIX_V0="/api/v0"
+		VCELL_API_PREFIX_V1="/api/v1"
 		# VCELL_API_PORT_EXTERNAL=8081
 		_applicationId="1471-8022-1038-5555"
 		VCELL_S3_EXPORT_BASEURL=http://localhost
 		;;
 	TEST2)
 		_site_port_offset=4
+		VCELL_API_PREFIX_V0="/api/v0"
+		VCELL_API_PREFIX_V1="/api/v1"
 		_applicationId="1471-8022-1038-5556"
 		;;
 	TEST3)
 		_site_port_offset=5
+		VCELL_API_PREFIX_V0="/api/v0"
+		VCELL_API_PREFIX_V1="/api/v1"
 		_applicationId="1471-8022-1038-5557"
 		;;
 	TEST4)
 		_site_port_offset=6
+		VCELL_API_PREFIX_V0="/api/v0"
+		VCELL_API_PREFIX_V1="/api/v1"
 		_applicationId="1471-8022-1038-5558"
 		;;
 	TEST5)
 		_site_port_offset=7
+		VCELL_API_PREFIX_V0="/api/v0"
+		VCELL_API_PREFIX_V1="/api/v1"
 		_applicationId="1471-8022-1038-5559"
 		;;
 	*)

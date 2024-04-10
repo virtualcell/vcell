@@ -68,10 +68,11 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 
 	private final String apihost;
 	private final Integer apiport;
+	private final String pathPrefix_v0;
 	private final VCellApiClient vcellApiClient;
 	private final static AtomicLong lastProcessedEventTimestamp = new AtomicLong(0);
 	private final static Logger lg = LogManager.getLogger(RemoteProxyVCellConnectionFactory.class);
-	
+
 	private RpcSender rpcSender = new RemoteProxyRpcSender();
 	
 	public class RemoteProxyRpcSender implements RpcSender {
@@ -164,13 +165,15 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 	@Inject
 	public RemoteProxyVCellConnectionFactory(
 			@Named(DependencyConstants.VCELL_API_HOST) String apihost,
-			@Named(DependencyConstants.VCELL_API_PORT) Integer apiport) {
+			@Named(DependencyConstants.VCELL_API_PORT) Integer apiport,
+			@Named(DependencyConstants.VCELL_API_PATH_PREFIX_V0) String pathPrefix_v0) {
 		this.apihost = apihost;
 		this.apiport = apiport;
+		this.pathPrefix_v0 = pathPrefix_v0;
 		boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
 		boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
 		try {
-			this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, bIgnoreCertProblems, bIgnoreHostMismatch);
+			this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, this.pathPrefix_v0, bIgnoreCertProblems, bIgnoreHostMismatch);
 		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
 			throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
 		}
@@ -186,11 +189,11 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	}
 }
 
-public static String getVCellSoftwareVersion(String apihost, Integer apiport) {
+public static String getVCellSoftwareVersion(String apihost, Integer apiport, String pathPrefix_v0) {
 	boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
 	boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
 	try {
-		VCellApiClient tempApiClient = new VCellApiClient(apihost, apiport, bIgnoreCertProblems, bIgnoreHostMismatch);
+		VCellApiClient tempApiClient = new VCellApiClient(apihost, apiport, pathPrefix_v0, bIgnoreCertProblems, bIgnoreHostMismatch);
 		String serverSoftwareVersion = tempApiClient.getServerSoftwareVersion();
 		return serverSoftwareVersion;
 	} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {

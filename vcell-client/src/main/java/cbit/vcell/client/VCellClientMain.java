@@ -57,6 +57,9 @@ public class VCellClientMain implements Callable<Integer> {
     @Option(names = {"--api-host"}, description = "VCell api server host[:port], " +
             "defaults to -Dvcell.serverHost property, or vcellapi.cam.uchc.edu if not specified")
     private String host = System.getProperty(PropertyLoader.vcellServerHost, "vcellapi.cam.uchc.edu");
+    @Option(names = {"--api-prefix-v0"}, description = "VCell api server path prefix for api version 0, " +
+            "defaults to -Dvcell.serverPrefix.v0 property, or /api/v0 if not specified")
+    private String pathPrefixV0 = System.getProperty(PropertyLoader.vcellServerPrefixV0, "/api/v0");
     @Option(names = {"--userid"}, hidden = true, description = "vcell userid")
     private String userid = null;
     @Option(names = {"--password"}, hidden = true, description = "vcell password")
@@ -112,7 +115,7 @@ public class VCellClientMain implements Callable<Integer> {
         }
 
         PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
-        Injector injector = Guice.createInjector(new VCellClientModule(apihost, apiport));
+        Injector injector = Guice.createInjector(new VCellClientModule(apihost, apiport, pathPrefixV0));
         this.vcellClient = injector.getInstance(VCellClient.class);
 
         Thread dynamicClientPropertiesThread = new Thread(() -> BeanUtils.updateDynamicClientProperties());
@@ -137,7 +140,7 @@ public class VCellClientMain implements Callable<Integer> {
         if (password != null && password.length() > 0) {
             digestedPassword = new UserLoginInfo.DigestedPassword(password);
         }
-        ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(apihost, apiport, userid, digestedPassword);
+        ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(apihost, apiport, this.pathPrefixV0, userid, digestedPassword);
 
         try {
             VCMongoMessage.enabled = false;
