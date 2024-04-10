@@ -17,13 +17,6 @@ spec:
   - host: vcellapi-test.cam.uchc.edu
     http:
       paths:
-      - path: /app
-        pathType: Prefix
-        backend:
-          service:
-            name: webapp
-            port:
-              number: 80
       - path: /api/v1/
         pathType: Prefix
         backend:
@@ -45,3 +38,10 @@ spec:
               name: api
               port:
                 number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: webapp
+            port:
+              number: 80

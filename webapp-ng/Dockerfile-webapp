@@ -11,6 +11,8 @@ COPY package.json .
 COPY package-lock.json .
 
 RUN npm install --legacy-peer-deps
+#RUN npm install
+#RUN npx ngcc --properties es2023 browser module main --first-only --create-ivy-entry-points
 
 COPY . .
 
