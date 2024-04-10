@@ -12,7 +12,7 @@ info:
   title: VCell API
   version: 1.0.1
 servers:
-- url: http://localhost:9000
+- url: https://vcellapi-test.cam.uchc.edu
 paths:
   /api/v1/helloworld:
     get:
@@ -59,10 +59,10 @@ paths:
                 format: int64
                 type: integer
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -85,10 +85,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -112,10 +112,10 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -154,10 +154,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user

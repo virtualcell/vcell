@@ -1,6 +1,6 @@
 # UsersResourceApi
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -29,7 +29,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -69,8 +69,8 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## apiV1UsersMeGetWithHttpInfo
 
@@ -93,7 +93,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -135,6 +135,6 @@ ApiResponse<[**User**](User.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 

@@ -1,6 +1,6 @@
 # PublicationResourceApi
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -37,7 +37,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -81,8 +81,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## createPublicationWithHttpInfo
 
@@ -105,7 +105,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -151,8 +151,8 @@ ApiResponse<**Long**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## deletePublication
@@ -175,7 +175,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -218,8 +218,8 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## deletePublicationWithHttpInfo
 
@@ -242,7 +242,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -287,8 +287,8 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## getPublicationById
@@ -310,7 +310,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
@@ -374,7 +374,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
@@ -440,7 +440,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         try {
@@ -500,7 +500,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         try {
@@ -563,7 +563,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -607,8 +607,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## updatePublicationWithHttpInfo
 
@@ -631,7 +631,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -677,6 +677,6 @@ ApiResponse<[**Publication**](Publication.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 

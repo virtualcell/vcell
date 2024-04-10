@@ -35,7 +35,7 @@ import {
 })
 export class HelloWorldService implements HelloWorldServiceInterface {
 
-    protected basePath = 'http://localhost:9000';
+    protected basePath = 'https://vcellapi-test.cam.uchc.edu';
     public defaultHeaders = new HttpHeaders();
     public configuration = new Configuration();
     public encoder: HttpParameterCodec;

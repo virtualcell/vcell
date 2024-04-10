@@ -13,7 +13,7 @@ info:
     url: http://opensource.org/licenses/MIT
   version: 1.0.1
 servers:
-- url: http://localhost:9000
+- url: https://vcellapi-test.cam.uchc.edu
 paths:
   /api/v1/helloworld:
     get:
@@ -60,10 +60,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -85,10 +85,10 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -127,10 +127,10 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -145,10 +145,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user

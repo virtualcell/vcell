@@ -101,7 +101,7 @@ public class HelloWorldApiExample {
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------

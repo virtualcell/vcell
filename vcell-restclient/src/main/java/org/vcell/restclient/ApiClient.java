@@ -205,7 +205,7 @@ public class ApiClient {
   }
 
   protected String getDefaultBaseUri() {
-    return "http://localhost:9000";
+    return "https://vcellapi-test.cam.uchc.edu";
   }
 
   protected HttpClient.Builder createDefaultHttpClientBuilder() {
