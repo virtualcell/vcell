@@ -36,7 +36,7 @@ services:
       - "${VCELL_API_PORT_EXTERNAL}:8080"
       - "${VCELL_DEBUG_PORT_VCELL_API}:8000" # java remote debugging
 #    healthcheck:
-#      test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/health?check=login"]
+#      test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/api/v0/health?check=login"]
 #      interval: 600s
 #      timeout: 30s
 #      retries: 2
@@ -108,7 +108,7 @@ services:
     ports:
       - "${VCELL_DEBUG_PORT_VCELL_SCHED}:8000" # java remote debugging
 #    healthcheck:
-#      test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/health?check=sim"]
+#      test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/api/v0/health?check=sim"]
 #      interval: 600s
 #      timeout: 30s
 #      retries: 2
