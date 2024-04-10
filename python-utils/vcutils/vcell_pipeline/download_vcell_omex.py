@@ -76,7 +76,7 @@ def download_published_omex(api_base_url: str, out_dir: Path) -> None:
 
 if __name__ == "__main__":
     download_published_omex(
-        # api_base_url="https://vcellapi-beta.cam.uchc.edu:8080",
-        api_base_url="https://localhost:8083",
+        api_base_url="https://vcellapi-beta.cam.uchc.edu:8080/api/v0",
+        # api_base_url="https://localhost:8083",
         out_dir=Path("/Users/schaff/Documents/workspace/vcdb/published/biomodel/omex/sbml")
     )

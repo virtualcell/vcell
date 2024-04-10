@@ -96,6 +96,5 @@ public class Hdf5DataExtractor {
             if (!wrappers.containsKey(potentiallyNewReport)) wrappers.put(potentiallyNewReport, new LinkedList<>());
             wrappers.get(potentiallyNewReport).addAll(wrappersToAdd.get(potentiallyNewReport));
         }
-
     }
 }

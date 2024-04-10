@@ -26,7 +26,7 @@ public class ExportMonitorTableModel extends AbstractTableModel {
 	public static final String ID_COLUMN_NAME = "Job ID";
 	public static final String FORMAT_COLUMN_NAME = "Format";
 	public static final String PROGRESS_COLUMN_NAME = "Export Progress";
-	public static final String STATUS_COLUMN_NAME = "Completed ?";
+//	public static final String STATUS_COLUMN_NAME = "Completed ?";
 	public static final String DESTINATION_COLUMN_NAME = "File Location";
 	public static final String RESULT_ID_COLUMN_NAME = "Simulation";
 	private String[] columnNames = null;
@@ -38,7 +38,7 @@ public class ExportMonitorTableModel extends AbstractTableModel {
  */
 public ExportMonitorTableModel() {
 	super();
-	columnNames = new String[] {ID_COLUMN_NAME, FORMAT_COLUMN_NAME, PROGRESS_COLUMN_NAME, STATUS_COLUMN_NAME, DESTINATION_COLUMN_NAME, RESULT_ID_COLUMN_NAME};
+	columnNames = new String[] {ID_COLUMN_NAME, FORMAT_COLUMN_NAME, PROGRESS_COLUMN_NAME, /*STATUS_COLUMN_NAME,*/ DESTINATION_COLUMN_NAME, RESULT_ID_COLUMN_NAME};
 	rows = new Vector();
 }
 /**
@@ -143,9 +143,9 @@ public Class getColumnClass(int columnIndex) {
 		case 0: return Long.class;
 		case 1: return String.class;
 		case 2: return JProgressBar.class;
-		case 3: return Boolean.class;
+//		case 3: return Boolean.class;
+		case 3: return String.class;
 		case 4: return String.class;
-		case 5: return String.class;
 		default: return Object.class;
 	}
 }
@@ -204,8 +204,8 @@ public Object getValueAt(int row, int column) {
 			return es.getJobID();
 		} else if (columnName.equals(FORMAT_COLUMN_NAME)) {
 			return es.getFormat();
-		} else if (columnName.equals(STATUS_COLUMN_NAME)) {
-			return es.getComplete();
+//		} else if (columnName.equals(STATUS_COLUMN_NAME)) {
+//			return es.getComplete();
 		} else if (columnName.equals(PROGRESS_COLUMN_NAME)) {
 			return es.getProgressBar();
 		} else if (columnName.equals(DESTINATION_COLUMN_NAME)) {
@@ -247,6 +247,6 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
 private void setMinRowHeight(int minRowHeight) {
 	int oldValue = fieldMinRowHeight;
 	fieldMinRowHeight = minRowHeight;
-	firePropertyChange("minRowHeight", new Integer(oldValue), new Integer(minRowHeight));
+	firePropertyChange("minRowHeight", oldValue, minRowHeight);
 }
 }

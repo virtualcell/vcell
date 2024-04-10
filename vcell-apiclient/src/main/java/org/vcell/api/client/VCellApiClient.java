@@ -1,39 +1,11 @@
 package org.vcell.api.client;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Locale;
-import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.ProtocolException;
+import com.google.gson.Gson;
+import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
@@ -41,47 +13,44 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContextBuilder;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.conn.ssl.*;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.*;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.util.TextUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.api.client.examples.VCellApiClientTest;
 import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
-import org.vcell.api.common.AccessTokenRepresentation;
-import org.vcell.api.common.BiomodelRepresentation;
-import org.vcell.api.common.SimulationRepresentation;
-import org.vcell.api.common.SimulationTaskRepresentation;
-import org.vcell.api.common.UserInfo;
+import org.vcell.api.common.*;
 import org.vcell.api.common.events.EventWrapper;
 
-import com.google.gson.Gson;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 /**
  * This example demonstrates the use of the {@link ResponseHandler} to simplify
  * the process of processing the HTTP response and releasing associated
  * resources.
  */
-public class VCellApiClient {
+public class VCellApiClient implements AutoCloseable {
 	
 	private static final Logger lg = LogManager.getLogger(VCellApiClient.class);
-	private HttpHost httpHost;
-	private String clientID;
+	private final HttpHost httpHost;
+	private final String pathPrefix_v0;
+	private final String clientID;
 	private CloseableHttpClient httpclient;
 	private HttpClientContext httpClientContext;
 	boolean bIgnoreCertProblems = true;
@@ -133,16 +102,17 @@ public class VCellApiClient {
 		}
 	}
 
-	public VCellApiClient(String host, int port) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-		this(host, port, false, false);
+	public VCellApiClient(String host, int port, String pathPrefix_v0) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+		this(host, port, pathPrefix_v0, false, false);
 	}
 
-	public VCellApiClient(String host, int port, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
-		this(host, port, false, bIgnoreCertProblems, bIgnoreHostMismatch);
+	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
+		this(host, port, pathPrefix_v0, false, bIgnoreCertProblems, bIgnoreHostMismatch);
 	}
 
-	public VCellApiClient(String host, int port, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
+	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
 		this.httpHost = new HttpHost(host,port,"http");
+		this.pathPrefix_v0 = pathPrefix_v0;
 		this.clientID = DEFAULT_CLIENTID;
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
 		this.bIgnoreHostMismatch = bIgnoreHostMismatch;
@@ -201,7 +171,7 @@ public class VCellApiClient {
 
 	public SimulationTaskRepresentation[] getSimTasks(SimTasksQuerySpec simTasksQuerySpec) throws IOException {
 
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/simtask?"+simTasksQuerySpec.getQueryString());
+		HttpGet httpget = new HttpGet(getApiUrlPrefix() + "/simtask?" + simTasksQuerySpec.getQueryString());
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
@@ -218,10 +188,19 @@ public class VCellApiClient {
 		SimulationTaskRepresentation[] simTaskReps = gson.fromJson(simTasksJson,SimulationTaskRepresentation[].class);
 		return simTaskReps;
 	}
-	
+
+	private String getApiUrlPrefix() {
+		final String scheme = "https";
+		if (httpHost.getPort() != 443) {
+			return scheme+"://"+httpHost.getHostName()+":"+httpHost.getPort()+this.pathPrefix_v0;
+		}else{
+			return scheme+"://"+httpHost.getHostName()+this.pathPrefix_v0;
+		}
+	}
+
 	public BiomodelRepresentation[] getBioModels(BioModelsQuerySpec bioModelsQuerySpec) throws IOException {
 		  
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel?"+bioModelsQuerySpec.getQueryString());
+		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel?"+bioModelsQuerySpec.getQueryString());
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
@@ -241,7 +220,7 @@ public class VCellApiClient {
 	
 	public EventWrapper[] getEvents(long beginTimestamp) throws IOException {
 		  
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/events?beginTimestamp="+beginTimestamp);
+		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/events?beginTimestamp="+beginTimestamp);
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
@@ -261,7 +240,7 @@ public class VCellApiClient {
 	
 	public BiomodelRepresentation getBioModel(String bmId) throws IOException {
 		  
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId);
+		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId);
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
@@ -281,7 +260,7 @@ public class VCellApiClient {
 	
 	public String getBioModelVCML(String bmId) throws IOException {
 		  
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/biomodel.vcml");
+		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId+"/biomodel.vcml");
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
@@ -296,7 +275,7 @@ public class VCellApiClient {
 	
 	public SimulationRepresentation getSimulation(String bmId, String simKey) throws IOException {
 		  
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey);
+		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey);
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
@@ -316,7 +295,7 @@ public class VCellApiClient {
 	
 	public String getOptRunJson(String optimizationId,boolean bStop) throws IOException {
 		
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization/"+optimizationId+"?bStop="+bStop);
+		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/optimization/"+optimizationId+"?bStop="+bStop);
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
@@ -332,7 +311,7 @@ public class VCellApiClient {
 
 	public String submitOptimization(String optProblemJson) throws IOException, URISyntaxException {
 		  
-		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/optimization");
+		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/optimization");
 		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
 
 		StringEntity input = new StringEntity(optProblemJson);
@@ -419,7 +398,7 @@ public class VCellApiClient {
 
     public SimulationTaskRepresentation[] startSimulation(String bmId, String simKey) throws IOException {
 		  
-		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey+"/startSimulation");
+		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey+"/startSimulation");
 		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
@@ -443,7 +422,7 @@ public class VCellApiClient {
 	
 	public SimulationTaskRepresentation[] stopSimulation(String bmId, String simKey) throws IOException {
 		  
-		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/biomodel/"+bmId+"/simulation/"+simKey+"/stopSimulation");
+		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey+"/stopSimulation");
 		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
 
 		if (lg.isInfoEnabled()) {
@@ -465,7 +444,7 @@ public class VCellApiClient {
 		// hash the password
 		String digestedPassword = (alreadyDigested)?(password):createdDigestPassword(password);
 		
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/access_token?user_id="+userid+"&user_password="+digestedPassword+"&client_id="+clientID);
+		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/access_token?user_id="+userid+"&user_password="+digestedPassword+"&client_id="+clientID);
 
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve access_token " + httpget.getRequestLine());
@@ -533,7 +512,7 @@ public class VCellApiClient {
 
 	public UserInfo insertUserInfo(UserInfo newUserInfo) throws ClientProtocolException, IOException,IllegalArgumentException {
 		  
-		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/newuser");
+		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/newuser");
 		Gson gson = new Gson();
 		String newUserInfoJSON = gson.toJson(newUserInfo);
 		StringEntity input = new StringEntity(newUserInfoJSON);
@@ -586,7 +565,7 @@ public class VCellApiClient {
 	}
 
 	public void sendLostPassword(String userid) throws ClientProtocolException, IOException {
-		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/lostpassword");
+		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/lostpassword");
 		StringEntity input = new StringEntity(userid);
 		input.setContentType(ContentType.TEXT_PLAIN.getMimeType());
 		httppost.setEntity(input);
@@ -648,7 +627,7 @@ public class VCellApiClient {
 	}
 
 	public Serializable sendRpcMessage(RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest, boolean returnRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) throws ClientProtocolException, IOException {
-		HttpPost httppost = new HttpPost("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/rpc");
+		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/rpc");
 		VCellApiRpcBody vcellapiRpcBody = new VCellApiRpcBody(rpcDestination, rpcRequest, returnRequired, timeoutMS, specialProperties, specialValues);
 		byte[] compressedSerializedRpcBody = null;
 		try {
@@ -779,7 +758,7 @@ public class VCellApiClient {
 
 	public String getServerSoftwareVersion() throws ClientProtocolException, IOException {
 		  
-		HttpGet httpget = new HttpGet("https://"+httpHost.getHostName()+":"+httpHost.getPort()+"/swversion");
+		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/swversion");
 
 		if (lg.isInfoEnabled()) {
 			lg.info("Executing request to retrieve server software version " + httpget.getRequestLine());
