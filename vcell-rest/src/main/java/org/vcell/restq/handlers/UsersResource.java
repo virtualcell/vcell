@@ -10,7 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.jboss.resteasy.reactive.NoCache;
 
-@Path("/api/users")
+@Path("/api/v1/users")
 public class UsersResource {
 
     @Inject

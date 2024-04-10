@@ -24,14 +24,7 @@ spec:
             name: webapp
             port:
               number: 80
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: rest
-            port:
-              number: 80
-      - path: /me/users
+      - path: /api/v1/
         pathType: Prefix
         backend:
           service:
@@ -45,7 +38,7 @@ spec:
             name: s3proxy
             port:
               number: 80
-      - path: /
+      - path: /api/v0/
         pathType: Prefix
         backend:
           service:

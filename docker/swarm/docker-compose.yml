@@ -6,7 +6,7 @@ services:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
       - protocol=https
-      - serverPrefixV0=${VCELL_API_PREFIX_V0}
+      - serverPrefixV0=${VCELL_SERVER_PREFIX_V0}
 
       - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
 
