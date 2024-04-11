@@ -102,7 +102,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIAL_CLAIM[0]));
 }
 
-	public void removeUserIdentity(Connection con, User user, String identity, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
+	public void removeUserIdentity(Connection con, User user, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
 		Statement stmt;
 		String sql;
 		ResultSet rset;
@@ -115,6 +115,12 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			stmt = con.createStatement();
 			rset = stmt.executeQuery(sql);
 			stmt.close();
+		}
+	}
+
+	public void cleanAllUserIdentities(Connection connection, User user) throws SQLException {
+		for(UserIdentityTable.IdentityProvider identityProvider: UserIdentityTable.IdentityProvider.values()){
+			removeUserIdentity(connection, user, identityProvider);
 		}
 	}
 
