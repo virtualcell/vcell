@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.3
 info:
-  title: VCell API
+  title: VCell API (development)
   description: VCell API
   termsOfService: Your terms of service here
   contact:
@@ -186,10 +186,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -211,10 +211,10 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -253,15 +253,15 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
   /api/users/bearerToken:
-    get:
+    post:
       tags:
       - Users Resource
       requestBody:
@@ -282,14 +282,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
+                $ref: '#/components/schemas/AccesTokenRepresentationRecord'
   /api/users/getIdentity:
     get:
       tags:
@@ -301,6 +294,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
   /api/users/mapUser:
     post:
       tags:
@@ -317,6 +317,13 @@ paths:
             text/plain:
               schema:
                 type: boolean
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
   /api/users/me:
     get:
       tags:
@@ -330,6 +337,21 @@ paths:
                 $ref: '#/components/schemas/User'
 components:
   schemas:
+    AccesTokenRepresentationRecord:
+      type: object
+      properties:
+        token:
+          type: string
+        creationDateSeconds:
+          format: int64
+          type: integer
+        expireDateSeconds:
+          format: int64
+          type: integer
+        userId:
+          type: string
+        userKey:
+          type: string
     Application:
       type: object
     BioModel:
