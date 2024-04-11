@@ -29,6 +29,7 @@ public class TestEndpointUtils {
         ApiClient apiClient = new ApiClient();
         String oidcAccessToken = keycloakClient.getAccessToken(oidcUser.name());
         apiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + oidcAccessToken));
+        apiClient.setScheme("http");
         apiClient.setHost("localhost");
         apiClient.setPort(testPort);
         return apiClient;

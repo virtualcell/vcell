@@ -23,7 +23,7 @@ import org.vcell.util.document.User;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 
-@Path("/api/bioModel")
+@Path("/api/v1/bioModel")
 public class BioModelResource {
     private static final User dummyUser = new User("vcellNagios", new KeyValue(new BigDecimal(3))); // replace when OAuth is implemented
     private final BioModelRestDB bioModelRestDB;
@@ -48,23 +48,23 @@ public class BioModelResource {
     // TODO: Specify the media type instead of leaving it as wildcard
     @GET
     @Path("{bioModelID}/vcml_download")
-    @Operation(operationId = "getBioModelVCML", summary = "Get the BioModel in VCML format.")
-    @Produces(MediaType.MEDIA_TYPE_WILDCARD)
+    @Operation(operationId = "getBioModelVCML", summary = "Get the BioModel in VCML format.", hidden = true)
+    @Produces(MediaType.APPLICATION_XML)
     public void getBioModelVCML(@PathParam("bioModelID") String bioModelID){
 
     }
 
     @GET
     @Path("{bioModelID}/sbml_download")
-    @Operation(operationId = "getBioModelSBML", summary = "Get the BioModel in SBML format.")
-    @Produces(MediaType.MEDIA_TYPE_WILDCARD)
+    @Operation(operationId = "getBioModelSBML", summary = "Get the BioModel in SBML format.", hidden = true)
+    @Produces(MediaType.APPLICATION_XML)
     public void getBioModelSBML(@PathParam("bioModelID") String bioModelID){
 
     }
 
     @GET
     @Path("{bioModelID}/omex_download")
-    @Operation(operationId = "getBioModelOMEX", summary = "Get the BioModel in OMEX format.")
+    @Operation(operationId = "getBioModelOMEX", summary = "Get the BioModel in OMEX format.", hidden = true)
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelOMEX(@PathParam("bioModelID") String bioModelID){
 
@@ -72,7 +72,7 @@ public class BioModelResource {
 
     @GET
     @Path("{bioModelID}/bngl_download")
-    @Operation(operationId = "getBioModelBNGL", summary = "Get the BioModel in BNGL format.")
+    @Operation(operationId = "getBioModelBNGL", summary = "Get the BioModel in BNGL format.", hidden = true)
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelBNGL(@PathParam("bioModelID") String bioModelID){
 
@@ -80,7 +80,7 @@ public class BioModelResource {
 
     @GET
     @Path("{bioModelID}/diagram_download")
-    @Operation(operationId = "getBioModelDIAGRAM", summary = "Get the BioModels diagram.")
+    @Operation(operationId = "getBioModelDIAGRAM", summary = "Get the BioModels diagram.", hidden = true)
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelDiagram(@PathParam("bioModelID") String bioModelID){
 

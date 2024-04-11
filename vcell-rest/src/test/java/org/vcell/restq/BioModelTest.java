@@ -33,18 +33,18 @@ public class BioModelTest {
                 .body(vcmlString)
                 .header("Content-Type", MediaType.TEXT_XML)
                 .when()
-                .post("/api/bioModel/upload_bioModel");
+                .post("/api/v1/bioModel/upload_bioModel");
         uploadResponse.then().statusCode(200);
         String uploadedID = uploadResponse.body().print();
 
         Response jsonBody = given()
-                .when().get("/api/bioModel/" + uploadedID);
+                .when().get("/api/v1/bioModel/" + uploadedID);
         jsonBody.then().statusCode(200);
         jsonBody.body().print();
 
         given()
                 .when()
-                .delete("/api/bioModel/" + uploadedID)
+                .delete("/api/v1/bioModel/" + uploadedID)
                 .then()
                 .statusCode(204);
         // insert publication1 as nonpubuser (doesn't have proper permission)

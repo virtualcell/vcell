@@ -27,6 +27,7 @@ public class BioModelApiTest {
     @Test
     public void testAddRemove() throws ApiException, IOException {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setScheme("http");
         defaultClient.setHost("localhost");
         defaultClient.setPort(testPort);
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(defaultClient);
