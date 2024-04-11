@@ -48,13 +48,13 @@ public class TestEndpointUtils {
         MapUser bioModelOwner = new MapUser();
         bioModelOwner.setUserID("vcellNagios");
         bioModelOwner.setPassword("1700596370261");
-        return usersResourceApi.apiUsersMapUserPost(bioModelOwner);
+        return usersResourceApi.setVCellIdentity(bioModelOwner);
     }
 
     public static boolean mapClientToAdminUser(UsersResourceApi usersResourceApi) throws ApiException {
         MapUser bioModelOwner = new MapUser();
         bioModelOwner.setUserID("Administrator");
         bioModelOwner.setPassword("1700596370260");
-        return usersResourceApi.apiUsersMapUserPost(bioModelOwner);
+        return usersResourceApi.setVCellIdentity(bioModelOwner);
     }
 }

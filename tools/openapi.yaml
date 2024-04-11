@@ -189,6 +189,8 @@ paths:
     post:
       tags:
       - Users Resource
+      summary: Get token for legacy API
+      operationId: getLegacyApiToken
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -212,6 +214,8 @@ paths:
     get:
       tags:
       - Users Resource
+      summary: Get mapped VCell identity
+      operationId: getVCellIdentity
       responses:
         "200":
           description: OK
@@ -230,6 +234,8 @@ paths:
     post:
       tags:
       - Users Resource
+      summary: set or replace vcell identity mapping
+      operationId: setVCellIdentity
       requestBody:
         content:
           application/json:
@@ -253,6 +259,8 @@ paths:
     get:
       tags:
       - Users Resource
+      summary: Get current user
+      operationId: getMe
       responses:
         "200":
           description: OK

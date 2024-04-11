@@ -8,6 +8,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.NoCache;
 import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.restq.auth.OldUserService;
@@ -38,6 +39,7 @@ public class UsersResource {
     @Path("/me")
 //    @RolesAllowed("user")
 //    @SecurityRequirement(name = "openId", scopes = {"roles"})
+    @Operation(operationId = "getMe", summary = "Get current user")
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public User me() {
@@ -52,6 +54,7 @@ public class UsersResource {
     @POST
     @Path("/mapUser")
     @RolesAllowed("user")
+    @Operation(operationId = "setVCellIdentity", summary = "set or replace vcell identity mapping")
     @Consumes(MediaType.APPLICATION_JSON)
     public boolean mapUser(MapUser mapUser) throws SQLException, DataAccessException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
@@ -59,6 +62,7 @@ public class UsersResource {
 
     @GET
     @Path("/getIdentity")
+    @Operation(operationId = "getVCellIdentity", summary = "Get mapped VCell identity")
     @RolesAllowed("user")
     public UserIdentityJSONSafe getIdentity() throws SQLException, DataAccessException {
         UserIdentity userIdentity = userRestDB.getUserIdentity(securityIdentity);
@@ -71,6 +75,7 @@ public class UsersResource {
     @POST
     @Path("/bearerToken")
 //    @RolesAllowed("user")
+    @Operation(operationId = "getLegacyApiToken", summary = "Get token for legacy API")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     // Not using user PASSWD because they should already be authenticated with OIDC
     public AccesTokenRepresentationRecord generateBearerToken(@FormParam("user_id") String userID, @FormParam("user_password") String passwd, @FormParam("client_id") String client_id) throws SQLException, DataAccessException {
