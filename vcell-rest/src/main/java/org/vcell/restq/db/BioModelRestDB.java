@@ -24,15 +24,6 @@ public class BioModelRestDB {
         adminDBTopLevel = databaseServerImpl.getAdminDBTopLevel();
     }
 
-
-    public UserIdentity getUserFromAuth0ID(String auth0ID) {
-        try {
-            return adminDBTopLevel.getUserIdentityFromAuth0(auth0ID, true);
-        } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, DataAccessException {
         if (vcellUser==null){
             vcellUser = AuthUtils.DUMMY_USER;
