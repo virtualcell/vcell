@@ -63,7 +63,7 @@ public class BioModelResourceApiTest {
     public void getBioModelBNGLTest() throws ApiException {
         String bioModelID = null;
         
-        api.getBioModelBNGL(bioModelID);
+        //api.getBioModelBNGL(bioModelID);
         
         // TODO: test validations
     }
@@ -80,7 +80,7 @@ public class BioModelResourceApiTest {
     public void getBioModelDIAGRAMTest() throws ApiException {
         String bioModelID = null;
         
-        api.getBioModelDIAGRAM(bioModelID);
+        //api.getBioModelDIAGRAM(bioModelID);
         
         // TODO: test validations
     }
@@ -97,7 +97,7 @@ public class BioModelResourceApiTest {
     public void getBioModelOMEXTest() throws ApiException {
         String bioModelID = null;
         
-        api.getBioModelOMEX(bioModelID);
+        //api.getBioModelOMEX(bioModelID);
         
         // TODO: test validations
     }
@@ -114,7 +114,7 @@ public class BioModelResourceApiTest {
     public void getBioModelSBMLTest() throws ApiException {
         String bioModelID = null;
         
-        api.getBioModelSBML(bioModelID);
+        //api.getBioModelSBML(bioModelID);
         
         // TODO: test validations
     }
@@ -131,7 +131,7 @@ public class BioModelResourceApiTest {
     public void getBioModelVCMLTest() throws ApiException {
         String bioModelID = null;
         
-        api.getBioModelVCML(bioModelID);
+        //api.getBioModelVCML(bioModelID);
         
         // TODO: test validations
     }

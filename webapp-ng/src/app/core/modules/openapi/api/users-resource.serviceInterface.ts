@@ -28,31 +28,31 @@ export interface UsersResourceServiceInterface {
     configuration: Configuration;
 
     /**
-     * 
+     * Get token for legacy API
      * 
      * @param userId 
      * @param userPassword 
      * @param clientId 
      */
-    apiV1UsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
+    getLegacyApiToken(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
 
     /**
-     * 
+     * Get current user
      * 
      */
-    apiV1UsersGetIdentityGet(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
+    getMe(extraHttpRequestParams?: any): Observable<User>;
 
     /**
+     * Get mapped VCell identity
      * 
+     */
+    getVCellIdentity(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
+
+    /**
+     * set or replace vcell identity mapping
      * 
      * @param mapUser 
      */
-    apiV1UsersMapUserPost(mapUser?: MapUser, extraHttpRequestParams?: any): Observable<boolean>;
-
-    /**
-     * 
-     * 
-     */
-    apiV1UsersMeGet(extraHttpRequestParams?: any): Observable<User>;
+    setVCellIdentity(mapUser?: MapUser, extraHttpRequestParams?: any): Observable<boolean>;
 
 }

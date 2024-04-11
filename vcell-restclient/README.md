@@ -123,14 +123,14 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication
-*UsersResourceApi* | [**apiV1UsersBearerTokenPost**](docs/UsersResourceApi.md#apiV1UsersBearerTokenPost) | **POST** /api/v1/users/bearerToken | 
-*UsersResourceApi* | [**apiV1UsersBearerTokenPostWithHttpInfo**](docs/UsersResourceApi.md#apiV1UsersBearerTokenPostWithHttpInfo) | **POST** /api/v1/users/bearerToken | 
-*UsersResourceApi* | [**apiV1UsersGetIdentityGet**](docs/UsersResourceApi.md#apiV1UsersGetIdentityGet) | **GET** /api/v1/users/getIdentity | 
-*UsersResourceApi* | [**apiV1UsersGetIdentityGetWithHttpInfo**](docs/UsersResourceApi.md#apiV1UsersGetIdentityGetWithHttpInfo) | **GET** /api/v1/users/getIdentity | 
-*UsersResourceApi* | [**apiV1UsersMapUserPost**](docs/UsersResourceApi.md#apiV1UsersMapUserPost) | **POST** /api/v1/users/mapUser | 
-*UsersResourceApi* | [**apiV1UsersMapUserPostWithHttpInfo**](docs/UsersResourceApi.md#apiV1UsersMapUserPostWithHttpInfo) | **POST** /api/v1/users/mapUser | 
-*UsersResourceApi* | [**apiV1UsersMeGet**](docs/UsersResourceApi.md#apiV1UsersMeGet) | **GET** /api/v1/users/me | 
-*UsersResourceApi* | [**apiV1UsersMeGetWithHttpInfo**](docs/UsersResourceApi.md#apiV1UsersMeGetWithHttpInfo) | **GET** /api/v1/users/me | 
+*UsersResourceApi* | [**getLegacyApiToken**](docs/UsersResourceApi.md#getLegacyApiToken) | **POST** /api/v1/users/bearerToken | Get token for legacy API
+*UsersResourceApi* | [**getLegacyApiTokenWithHttpInfo**](docs/UsersResourceApi.md#getLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/bearerToken | Get token for legacy API
+*UsersResourceApi* | [**getMe**](docs/UsersResourceApi.md#getMe) | **GET** /api/v1/users/me | Get current user
+*UsersResourceApi* | [**getMeWithHttpInfo**](docs/UsersResourceApi.md#getMeWithHttpInfo) | **GET** /api/v1/users/me | Get current user
+*UsersResourceApi* | [**getVCellIdentity**](docs/UsersResourceApi.md#getVCellIdentity) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
+*UsersResourceApi* | [**getVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#getVCellIdentityWithHttpInfo) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
+*UsersResourceApi* | [**setVCellIdentity**](docs/UsersResourceApi.md#setVCellIdentity) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
+*UsersResourceApi* | [**setVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#setVCellIdentityWithHttpInfo) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
 
 
 ## Documentation for Models

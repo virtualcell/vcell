@@ -4,16 +4,16 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**api_v1_users_bearer_token_post**](UsersResourceApi.md#api_v1_users_bearer_token_post) | **POST** /api/v1/users/bearerToken | 
-[**api_v1_users_get_identity_get**](UsersResourceApi.md#api_v1_users_get_identity_get) | **GET** /api/v1/users/getIdentity | 
-[**api_v1_users_map_user_post**](UsersResourceApi.md#api_v1_users_map_user_post) | **POST** /api/v1/users/mapUser | 
-[**api_v1_users_me_get**](UsersResourceApi.md#api_v1_users_me_get) | **GET** /api/v1/users/me | 
+[**get_legacy_api_token**](UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
+[**get_me**](UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user
+[**get_v_cell_identity**](UsersResourceApi.md#get_v_cell_identity) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
+[**set_v_cell_identity**](UsersResourceApi.md#set_v_cell_identity) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
 
 
-# **api_v1_users_bearer_token_post**
-> AccesTokenRepresentationRecord api_v1_users_bearer_token_post(user_id=user_id, user_password=user_password, client_id=client_id)
+# **get_legacy_api_token**
+> AccesTokenRepresentationRecord get_legacy_api_token(user_id=user_id, user_password=user_password, client_id=client_id)
 
-
+Get token for legacy API
 
 ### Example
 
@@ -41,11 +41,12 @@ with vcell_client.ApiClient(configuration) as api_client:
     client_id = 'client_id_example' # str |  (optional)
 
     try:
-        api_response = api_instance.api_v1_users_bearer_token_post(user_id=user_id, user_password=user_password, client_id=client_id)
-        print("The response of UsersResourceApi->api_v1_users_bearer_token_post:\n")
+        # Get token for legacy API
+        api_response = api_instance.get_legacy_api_token(user_id=user_id, user_password=user_password, client_id=client_id)
+        print("The response of UsersResourceApi->get_legacy_api_token:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->api_v1_users_bearer_token_post: %s\n" % e)
+        print("Exception when calling UsersResourceApi->get_legacy_api_token: %s\n" % e)
 ```
 
 
@@ -78,10 +79,71 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **api_v1_users_get_identity_get**
-> UserIdentityJSONSafe api_v1_users_get_identity_get()
+# **get_me**
+> User get_me()
+
+Get current user
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.user import User
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcellapi-test.cam.uchc.edu"
+)
 
 
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.UsersResourceApi(api_client)
+
+    try:
+        # Get current user
+        api_response = api_instance.get_me()
+        print("The response of UsersResourceApi->get_me:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling UsersResourceApi->get_me: %s\n" % e)
+```
+
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**User**](User.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_v_cell_identity**
+> UserIdentityJSONSafe get_v_cell_identity()
+
+Get mapped VCell identity
 
 ### Example
 
@@ -110,11 +172,12 @@ with vcell_client.ApiClient(configuration) as api_client:
     api_instance = vcell_client.UsersResourceApi(api_client)
 
     try:
-        api_response = api_instance.api_v1_users_get_identity_get()
-        print("The response of UsersResourceApi->api_v1_users_get_identity_get:\n")
+        # Get mapped VCell identity
+        api_response = api_instance.get_v_cell_identity()
+        print("The response of UsersResourceApi->get_v_cell_identity:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->api_v1_users_get_identity_get: %s\n" % e)
+        print("Exception when calling UsersResourceApi->get_v_cell_identity: %s\n" % e)
 ```
 
 
@@ -144,10 +207,10 @@ This endpoint does not need any parameter.
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **api_v1_users_map_user_post**
-> bool api_v1_users_map_user_post(map_user=map_user)
+# **set_v_cell_identity**
+> bool set_v_cell_identity(map_user=map_user)
 
-
+set or replace vcell identity mapping
 
 ### Example
 
@@ -177,11 +240,12 @@ with vcell_client.ApiClient(configuration) as api_client:
     map_user = vcell_client.MapUser() # MapUser |  (optional)
 
     try:
-        api_response = api_instance.api_v1_users_map_user_post(map_user=map_user)
-        print("The response of UsersResourceApi->api_v1_users_map_user_post:\n")
+        # set or replace vcell identity mapping
+        api_response = api_instance.set_v_cell_identity(map_user=map_user)
+        print("The response of UsersResourceApi->set_v_cell_identity:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->api_v1_users_map_user_post: %s\n" % e)
+        print("Exception when calling UsersResourceApi->set_v_cell_identity: %s\n" % e)
 ```
 
 
@@ -211,66 +275,6 @@ Name | Type | Description  | Notes
 **200** | OK |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **api_v1_users_me_get**
-> User api_v1_users_me_get()
-
-
-
-### Example
-
-```python
-import time
-import os
-import vcell_client
-from vcell_client.models.user import User
-from vcell_client.rest import ApiException
-from pprint import pprint
-
-# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
-# See configuration.py for a list of all supported configuration parameters.
-configuration = vcell_client.Configuration(
-    host = "https://vcellapi-test.cam.uchc.edu"
-)
-
-
-# Enter a context with an instance of the API client
-with vcell_client.ApiClient(configuration) as api_client:
-    # Create an instance of the API class
-    api_instance = vcell_client.UsersResourceApi(api_client)
-
-    try:
-        api_response = api_instance.api_v1_users_me_get()
-        print("The response of UsersResourceApi->api_v1_users_me_get:\n")
-        pprint(api_response)
-    except Exception as e:
-        print("Exception when calling UsersResourceApi->api_v1_users_me_get: %s\n" % e)
-```
-
-
-
-### Parameters
-This endpoint does not need any parameter.
-
-### Return type
-
-[**User**](User.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**200** | OK |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -206,11 +206,12 @@ paths:
       x-accepts: application/json
   /api/v1/users/bearerToken:
     post:
+      operationId: getLegacyApiToken
       requestBody:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/_api_v1_users_bearerToken_post_request'
+              $ref: '#/components/schemas/getLegacyApiToken_request'
       responses:
         "200":
           content:
@@ -218,12 +219,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
           description: OK
+      summary: Get token for legacy API
       tags:
       - Users Resource
       x-content-type: application/x-www-form-urlencoded
       x-accepts: application/json
   /api/v1/users/getIdentity:
     get:
+      operationId: getVCellIdentity
       responses:
         "200":
           content:
@@ -238,11 +241,13 @@ paths:
       security:
       - openId:
         - user
+      summary: Get mapped VCell identity
       tags:
       - Users Resource
       x-accepts: application/json
   /api/v1/users/mapUser:
     post:
+      operationId: setVCellIdentity
       requestBody:
         content:
           application/json:
@@ -262,12 +267,14 @@ paths:
       security:
       - openId:
         - user
+      summary: set or replace vcell identity mapping
       tags:
       - Users Resource
       x-content-type: application/json
       x-accepts: text/plain
   /api/v1/users/me:
     get:
+      operationId: getMe
       responses:
         "200":
           content:
@@ -275,6 +282,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: OK
+      summary: Get current user
       tags:
       - Users Resource
       x-accepts: application/json
@@ -550,7 +558,7 @@ components:
         insertDate:
           type: string
       type: object
-    _api_v1_users_bearerToken_post_request:
+    getLegacyApiToken_request:
       properties:
         user_id:
           type: string
