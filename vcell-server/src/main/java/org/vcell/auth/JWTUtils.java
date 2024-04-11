@@ -1,5 +1,6 @@
 package org.vcell.auth;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -47,8 +48,8 @@ public class JWTUtils {
     private static RsaJsonWebKey rsaJsonWebKey = null;
     private static RSAPublicKey rsaPublicKey = null;
     private static RSAPrivateKey rsaPrivateKey = null;
-    private static String privateKeyPath = "/run/secrets/apiprivkey";
-    private static String publicKeyPath = "/run/secrets/apipubkey";
+    private static final String privateKeyPath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPrivateKey);
+    private static final String publicKeyPath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPublicKey);
 
 //    private static String privateKeyPath = "/media/zeke/DiskDrive/Home/Work/CCAM/VCellDummyFiles/apiKeysPK";
 //    private static String publicKeyPath = "/media/zeke/DiskDrive/Home/Work/CCAM/VCellDummyFiles/apiKeys.pem";

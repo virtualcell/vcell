@@ -210,8 +210,8 @@ public class VCellApiMain {
 		Configuration templateConfiguration = new Configuration();
 		templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 
-		RsaJsonWebKey jsonWebKey = JWTUtils.createNewJsonWebKey("k1");
-		JWTUtils.setRsaJsonWebKey(jsonWebKey);
+//		RsaJsonWebKey jsonWebKey = JWTUtils.createNewJsonWebKey("k1");
+//		JWTUtils.setRsaJsonWebKey(jsonWebKey);
 		JWTUtils.setRsaPublicAndPrivateKey();
 
 		lg.trace("create app");
