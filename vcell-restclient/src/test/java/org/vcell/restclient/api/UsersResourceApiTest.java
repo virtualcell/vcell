@@ -41,7 +41,7 @@ public class UsersResourceApiTest {
     @Test
     public void apiUsersMeGetTest() throws ApiException {
         User response = 
-        api.apiUsersMeGet();
+        api.apiV1UsersMeGet();
         
         // TODO: test validations
     }

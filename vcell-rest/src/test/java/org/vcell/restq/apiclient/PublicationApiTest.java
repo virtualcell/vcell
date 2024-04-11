@@ -39,6 +39,7 @@ public class PublicationApiTest {
         String accessToken = keycloakClient.getAccessToken(pubuser);
         Log.warn("TODO: get access token from OIDC server instead of KeycloakTestClient");
         defaultClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + accessToken));
+        defaultClient.setScheme("http");
         defaultClient.setHost("localhost");
         defaultClient.setPort(testPort);
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);

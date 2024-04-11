@@ -1,0 +1,47 @@
+# ingress for api
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vcell-ingress
+  labels:
+    app: vcell-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - vcellapi-test.cam.uchc.edu
+      secretName: letsencrypt-prod-vcell-tls
+  rules:
+  - host: vcellapi-test.cam.uchc.edu
+    http:
+      paths:
+      - path: /api/v1/
+        pathType: Prefix
+        backend:
+          service:
+            name: rest
+            port:
+              number: 80
+      - path: /n5Data
+        pathType: Prefix
+        backend:
+          service:
+            name: s3proxy
+            port:
+              number: 80
+      - path: /api/v0/
+        pathType: Prefix
+        backend:
+          service:
+              name: api
+              port:
+                number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: webapp
+            port:
+              number: 80

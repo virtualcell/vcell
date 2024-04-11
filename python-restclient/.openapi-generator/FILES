@@ -11,8 +11,6 @@ docs/User.md
 docs/UsersResourceApi.md
 pyproject.toml
 test/__init__.py
-test/test_hello_world_api.py
-test/test_hello_world_message.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py

@@ -31,33 +31,3 @@ spec:
             requests:
               memory: "700Mi"
       restartPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: activemqsim
-  name: activemqsim-internal
-spec:
-  ports:
-    - name: "61616"
-      port: 61616
-      targetPort: 61616
-  selector:
-    app: activemqsim
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: activemqsim-loadbalancer
-spec:
-  type: LoadBalancer
-  ports:
-    - name: "61616"
-      port: 61616
-      targetPort: 61616
-    - name: "8161"
-      port: 8161
-      targetPort: 8161
-  selector:
-    app: activemqsim

@@ -1,14 +1,14 @@
 # vcell_client.PublicationResourceApi
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**create_publication**](PublicationResourceApi.md#create_publication) | **POST** /api/publications | Create publication
-[**delete_publication**](PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
-[**get_publication_by_id**](PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
-[**get_publications**](PublicationResourceApi.md#get_publications) | **GET** /api/publications | Get all publications
-[**update_publication**](PublicationResourceApi.md#update_publication) | **PUT** /api/publications | Create publication
+[**create_publication**](PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
+[**delete_publication**](PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
+[**get_publication_by_id**](PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
+[**get_publications**](PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
+[**update_publication**](PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
 
 
 # **create_publication**
@@ -26,10 +26,10 @@ from vcell_client.models.publication import Publication
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 # The client must configure the authentication and authorization parameters
@@ -96,10 +96,10 @@ import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 # The client must configure the authentication and authorization parameters
@@ -165,10 +165,10 @@ from vcell_client.models.publication import Publication
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 
@@ -230,10 +230,10 @@ from vcell_client.models.publication import Publication
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 
@@ -291,10 +291,10 @@ from vcell_client.models.publication import Publication
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 # The client must configure the authentication and authorization parameters

@@ -1,10 +1,10 @@
 # vcell_client.HelloWorldApi
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**get_hello_world**](HelloWorldApi.md#get_hello_world) | **GET** /api/helloworld | Get hello world message.
+[**get_hello_world**](HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
 
 
 # **get_hello_world**
@@ -22,10 +22,10 @@ from vcell_client.models.hello_world_message import HelloWorldMessage
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 

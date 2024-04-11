@@ -1,5 +1,5 @@
 /**
- * VCell API (test)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -35,7 +35,7 @@ import {
 })
 export class PublicationResourceService implements PublicationResourceServiceInterface {
 
-    protected basePath = 'http://localhost:9000';
+    protected basePath = 'https://vcellapi-test.cam.uchc.edu';
     public defaultHeaders = new HttpHeaders();
     public configuration = new Configuration();
     public encoder: HttpParameterCodec;
@@ -151,7 +151,7 @@ export class PublicationResourceService implements PublicationResourceServiceInt
             }
         }
 
-        let localVarPath = `/api/publications`;
+        let localVarPath = `/api/v1/publications`;
         return this.httpClient.request<number>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -215,7 +215,7 @@ export class PublicationResourceService implements PublicationResourceServiceInt
             }
         }
 
-        let localVarPath = `/api/publications/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
+        let localVarPath = `/api/v1/publications/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         return this.httpClient.request<any>('delete', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -273,7 +273,7 @@ export class PublicationResourceService implements PublicationResourceServiceInt
             }
         }
 
-        let localVarPath = `/api/publications/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
+        let localVarPath = `/api/v1/publications/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "number", dataFormat: "int64"})}`;
         return this.httpClient.request<Publication>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -327,7 +327,7 @@ export class PublicationResourceService implements PublicationResourceServiceInt
             }
         }
 
-        let localVarPath = `/api/publications`;
+        let localVarPath = `/api/v1/publications`;
         return this.httpClient.request<Array<Publication>>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -397,7 +397,7 @@ export class PublicationResourceService implements PublicationResourceServiceInt
             }
         }
 
-        let localVarPath = `/api/publications`;
+        let localVarPath = `/api/v1/publications`;
         return this.httpClient.request<Publication>('put', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

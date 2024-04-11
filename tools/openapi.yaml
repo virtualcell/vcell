@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.3
 info:
-  title: VCell API (test)
+  title: VCell API
   description: VCell API
   termsOfService: Your terms of service here
   contact:
@@ -13,9 +13,9 @@ info:
     url: http://opensource.org/licenses/MIT
   version: 1.0.1
 servers:
-- url: http://localhost:9000
+- url: https://vcellapi-test.cam.uchc.edu
 paths:
-  /api/helloworld:
+  /api/v1/helloworld:
     get:
       tags:
       - Hello World
@@ -28,7 +28,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HelloWorldMessage'
-  /api/publications:
+  /api/v1/publications:
     get:
       tags:
       - Publication Resource
@@ -92,7 +92,7 @@ paths:
       security:
       - openId:
         - curator
-  /api/publications/{id}:
+  /api/v1/publications/{id}:
     get:
       tags:
       - Publication Resource
@@ -134,7 +134,7 @@ paths:
       security:
       - openId:
         - curator
-  /api/users/me:
+  /api/v1/users/me:
     get:
       tags:
       - Users Resource

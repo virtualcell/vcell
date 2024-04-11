@@ -57,7 +57,7 @@ public class PublicationResourceTest {
 
         // list publications should be empty initially
         given()
-                .when().get("/api/publications")
+                .when().get("/api/v1/publications")
                 .then()
                 .statusCode(200)
                 .body("$.size()", is(0));
@@ -67,7 +67,7 @@ public class PublicationResourceTest {
                 .body(publication1_json)
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when()
-                .post("/api/publications")
+                .post("/api/v1/publications")
                 .then()
                 .statusCode(401);
 
@@ -76,7 +76,7 @@ public class PublicationResourceTest {
                 .body(publication1_json)
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when()
-                .post("/api/publications")
+                .post("/api/v1/publications")
                 .then()
                 .statusCode(403);
 
@@ -85,7 +85,7 @@ public class PublicationResourceTest {
                 .body(publication1_json)
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when()
-                .post("/api/publications")
+                .post("/api/v1/publications")
                 .then()
                 .statusCode(200);
 
@@ -95,7 +95,7 @@ public class PublicationResourceTest {
 
         // list publications, should return list with publication1
         given()
-                .when().get("/api/publications")
+                .when().get("/api/v1/publications")
                 .then()
                 .statusCode(200)
                 .body("$.size()", is(1))
@@ -113,7 +113,7 @@ public class PublicationResourceTest {
         given()
                 .pathParam("id", pubKey)
                 .when()
-                .get("/api/publications/{id}")
+                .get("/api/v1/publications/{id}")
                 .then()
                 .statusCode(200)
                 .body("title", is("publication 1"))
@@ -130,7 +130,7 @@ public class PublicationResourceTest {
         given().auth().oauth2(keycloakClient.getAccessToken(nonpubuser))
                 .pathParam("id", pubKey)
                 .when()
-                .delete("/api/publications/{id}")
+                .delete("/api/v1/publications/{id}")
                 .then()
                 .statusCode(403);
 
@@ -138,7 +138,7 @@ public class PublicationResourceTest {
         given()
                 .pathParam("id", pubKey)
                 .when()
-                .delete("/api/publications/{id}")
+                .delete("/api/v1/publications/{id}")
                 .then()
                 .statusCode(401);
 
@@ -146,13 +146,13 @@ public class PublicationResourceTest {
         given().auth().oauth2(keycloakClient.getAccessToken(pubuser))
                 .pathParam("id", pubKey)
                 .when()
-                .delete("/api/publications/{id}")
+                .delete("/api/v1/publications/{id}")
                 .then()
                 .statusCode(204);
 
         // verify that list publications is empty
         given()
-                .when().get("/api/publications")
+                .when().get("/api/v1/publications")
                 .then()
                 .statusCode(200)
                 .body("$.size()", is(0));

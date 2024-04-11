@@ -3,9 +3,9 @@
 <title>Publications</title>
 </head>
 <body>
-<#assign biomodelslink="/biomodel?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
-<#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
-<#assign simstatuslink="/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
+<#assign biomodelslink="${pathPrefix}/biomodel?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
+<#assign simtasklink="${pathPrefix}/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
+<#assign simstatuslink="${pathPrefix}/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
 <center><h2>Publications&nbsp;&nbsp;&nbsp;<a href="${biomodelslink}">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="${simstatuslink}">Simulation Status</a>&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
 
 <form>
@@ -20,7 +20,7 @@
 	
 </form>
 
-<form action="/publication/new" method="post">
+<form action="${pathPrefix}/publication/new" method="post">
 <input type="hidden" value="editNew" name="pubop" />
 <input type='submit' value='Create New...' style='font-size:large'>
 </form>
@@ -42,7 +42,7 @@
 </tr>
 <#list publications as pub>
 <tr>
-<td><#if pub.pubKey??><a href="/publication/${pub.pubKey}">${pub.pubKey}</a><#else>-</#if></td>
+<td><#if pub.pubKey??><a href="${pathPrefix}/publication/${pub.pubKey}">${pub.pubKey}</a><#else>-</#if></td>
 <td>${pub.title!""}</td>
 <td>${pub.year!""}</td>
 <td>${pub.citation!""}</td>
@@ -59,7 +59,7 @@
 <#list pub.biomodelReferences as biomodelReference>
 <tr>
 <td>
-&nbsp;<a href='/biomodel/${biomodelReference.bmKey}'>${biomodelReference.name}</a>
+&nbsp;<a href='${pathPrefix}/biomodel/${biomodelReference.bmKey}'>${biomodelReference.name}</a>
 </td>
 </tr>
 </#list>

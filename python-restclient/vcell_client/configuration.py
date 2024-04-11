@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (test)
+    VCell API
 
     VCell API
 
@@ -68,7 +68,7 @@ class Configuration:
                  ) -> None:
         """Constructor
         """
-        self._base_path = "http://localhost:9000" if host is None else host
+        self._base_path = "https://vcellapi-test.cam.uchc.edu" if host is None else host
         """Default Base url
         """
         self.server_index = 0 if server_index is None and host is None else server_index
@@ -372,7 +372,7 @@ class Configuration:
         """
         return [
             {
-                'url': "http://localhost:9000",
+                'url': "https://vcellapi-test.cam.uchc.edu",
                 'description': "No description provided",
             }
         ]

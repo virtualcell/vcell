@@ -5,7 +5,6 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from typing import Optional
 from urllib import parse
 
-from IPython.core.display_functions import display
 from pydantic import BaseModel, StrictStr
 from requests_oauth2client import OAuth2Client, AuthorizationRequest, AuthorizationResponse, BearerToken
 
@@ -70,7 +69,6 @@ def login_interactive_tokens(api_base_url: str, client_id: str, auth_url: str, t
         )
 
         authorization_request: AuthorizationRequest = oauth2client.authorization_request(scope="openid email profile offline_access")
-        display(authorization_request)
 
         webbrowser.open(url=authorization_request.uri, new=1, autoraise=True)
 
@@ -79,7 +77,6 @@ def login_interactive_tokens(api_base_url: str, client_id: str, auth_url: str, t
         authorization_response: AuthorizationResponse = authorization_request.validate_callback(httpd.fullpath)
 
         token: BearerToken = oauth2client.authorization_code(code=authorization_response, validate=False)
-        display(token)
 
         auth_code_response: AuthCodeResponse = AuthCodeResponse(access_token=token.access_token, id_token=str(token.id_token), refresh_token=token.refresh_token)
         return auth_code_response

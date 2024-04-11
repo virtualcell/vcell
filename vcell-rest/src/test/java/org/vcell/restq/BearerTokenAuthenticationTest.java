@@ -13,11 +13,11 @@ public class BearerTokenAuthenticationTest {
     @Test
     public void testUserAccess() {
         RestAssured.given().auth().oauth2(getAccessToken("alice"))
-                .when().get("/api/users/me")
+                .when().get("/api/v1/users/me")
                 .then()
                 .statusCode(200);
         RestAssured.given().auth().oauth2(getAccessToken("bob"))
-                .when().get("/api/users/me")
+                .when().get("/api/v1/users/me")
                 .then()
                 .statusCode(200);
     }

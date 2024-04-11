@@ -1,0 +1,71 @@
+# create kustimization.yaml file
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: stage
+
+images:
+  - name: ghcr.io/virtualcell/vcell-api
+    newTag: dev
+  - name: ghcr.io/virtualcell/vcell-data
+    newTag: dev
+  - name: ghcr.io/virtualcell/vcell-db
+    newTag: dev
+  - name: ghcr.io/virtualcell/vcell-rest
+    newTag: dev
+  - name: ghcr.io/virtualcell/vcell-sched
+    newTag: dev
+  - name: ghcr.io/virtualcell/vcell-submit
+    newTag: dev
+  - name: ghcr.io/virtualcell/vcell-s3proxy
+    newTag: dev
+  - name: ghcr.io/virtualcell/vcell-webapp
+    newTag: dev
+  - name: webcenter/activemq
+    newTag: 5.14.3
+  - name: ghcr.io/virtualcell/vcell-mongo
+    newTag: dev
+
+replicas:
+  - name: api
+    count: 1
+  - name: data
+    count: 1
+  - name: db
+    count: 1
+  - name: rest
+    count: 1
+  - name: s3proxy
+    count: 1
+  - name: sched
+    count: 1
+  - name: submit
+    count: 1
+  - name: webapp
+    count: 1
+  - name: activemqint
+    count: 1
+  - name: activemqsim
+    count: 1
+  - name: mongodb
+    count: 1
+
+resources:
+- vcell-ingress.yaml
+- activemqsim-svc.yaml
+- mongodb-srv.yaml
+- mongodb-pvc.yaml
+- api-certificate.yaml
+- selfsigned-issuer.yaml
+- api-secrets.yaml
+- secret-ghcr.yaml
+- vcell-ssh-secret.yaml
+- rest-secrets.yaml
+- cfs07_vcell_pv.yaml
+- cfs12_vcell_pv.yaml
+- cfs09_vcell_pv.yaml
+- nfs-secondary-pvc.yaml
+- nfs-archive-pvc.yaml
+- nfs-primary-pvc.yaml
+- ../../config/stage
+- ../../base

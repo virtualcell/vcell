@@ -1,17 +1,17 @@
 # UsersResourceApi
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**apiUsersMeGet**](UsersResourceApi.md#apiUsersMeGet) | **GET** /api/users/me |  |
-| [**apiUsersMeGetWithHttpInfo**](UsersResourceApi.md#apiUsersMeGetWithHttpInfo) | **GET** /api/users/me |  |
+| [**apiV1UsersMeGet**](UsersResourceApi.md#apiV1UsersMeGet) | **GET** /api/v1/users/me |  |
+| [**apiV1UsersMeGetWithHttpInfo**](UsersResourceApi.md#apiV1UsersMeGetWithHttpInfo) | **GET** /api/v1/users/me |  |
 
 
 
-## apiUsersMeGet
+## apiV1UsersMeGet
 
-> User apiUsersMeGet()
+> User apiV1UsersMeGet()
 
 
 
@@ -29,15 +29,15 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
-            User result = apiInstance.apiUsersMeGet();
+            User result = apiInstance.apiV1UsersMeGet();
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling UsersResourceApi#apiUsersMeGet");
+            System.err.println("Exception when calling UsersResourceApi#apiV1UsersMeGet");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -72,9 +72,9 @@ This endpoint does not need any parameter.
 | **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
 
-## apiUsersMeGetWithHttpInfo
+## apiV1UsersMeGetWithHttpInfo
 
-> ApiResponse<User> apiUsersMeGet apiUsersMeGetWithHttpInfo()
+> ApiResponse<User> apiV1UsersMeGet apiV1UsersMeGetWithHttpInfo()
 
 
 
@@ -93,17 +93,17 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("http://localhost:9000");
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
-            ApiResponse<User> response = apiInstance.apiUsersMeGetWithHttpInfo();
+            ApiResponse<User> response = apiInstance.apiV1UsersMeGetWithHttpInfo();
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling UsersResourceApi#apiUsersMeGet");
+            System.err.println("Exception when calling UsersResourceApi#apiV1UsersMeGet");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());

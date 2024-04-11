@@ -3,9 +3,9 @@
 <title>Biomodels</title>
 </head>
 <body>
-<#assign publicationslink="/publication?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
-<#assign simtasklink="/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
-<#assign simstatuslink="/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
+<#assign publicationslink="${pathPrefix}/publication?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
+<#assign simtasklink="${pathPrefix}/simtask?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&waiting=on&queued=on&dispatched=on&running=on">
+<#assign simstatuslink="${pathPrefix}/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
 <center><h2><a href="${publicationslink}">Publications</a>&nbsp;&nbsp;&nbsp;BioModels&nbsp;&nbsp;&nbsp;<a href="${simstatuslink}">Simulation Status</a>&nbsp;&nbsp;&nbsp;<a href="${simtasklink}">Simulation Tasks</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
 
 <form>
@@ -49,7 +49,7 @@
 </tr>
 <#list biomodels as biomodel>
 <tr>
-<td><#if biomodel.bmKey??><a href="/biomodel/${biomodel.bmKey}">${biomodel.bmKey}</a><#else>-</#if></td>
+<td><#if biomodel.bmKey??><a href="${pathPrefix}/biomodel/${biomodel.bmKey}">${biomodel.bmKey}</a><#else>-</#if></td>
 <td>${biomodel.name!""}</td>
 <td>${biomodel.ownerName!""}</td>
 <td>${biomodel.savedDate?number_to_date!""}</td>
@@ -61,7 +61,7 @@
 <#if biomodel.applications??>
 <#list biomodel.applications as application>
 &quot;${application.name}&quot; - 
-<#if biomodel.simulations??><#list biomodel.simulations as simulation><#if simulation.mathKey=application.mathKey>&nbsp;&nbsp;<a href='/biomodel/${biomodel.bmKey}/simulation/${simulation.key}'>${simulation.name}</a></#if></#list><#else>--</#if>
+<#if biomodel.simulations??><#list biomodel.simulations as simulation><#if simulation.mathKey=application.mathKey>&nbsp;&nbsp;<a href='${pathPrefix}/biomodel/${biomodel.bmKey}/simulation/${simulation.key}'>${simulation.name}</a></#if></#list><#else>--</#if>
 <br/>
 </#list>
 

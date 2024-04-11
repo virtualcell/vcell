@@ -19,7 +19,7 @@ import org.vcell.util.document.User;
 
 import java.sql.SQLException;
 
-@Path("/api/publications")
+@Path("/api/v1/publications")
 @Produces(MediaType.APPLICATION_JSON)
 public class PublicationResource {
 
