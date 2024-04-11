@@ -1,5 +1,4 @@
 /**
- * VCell API (development)
  * VCell API
  * VCell API
  *
@@ -35,25 +34,25 @@ export interface UsersResourceServiceInterface {
      * @param userPassword 
      * @param clientId 
      */
-    apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
+    apiV1UsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
 
     /**
      * 
      * 
      */
-    apiUsersGetIdentityGet(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
+    apiV1UsersGetIdentityGet(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
 
     /**
      * 
      * 
      * @param mapUser 
      */
-    apiUsersMapUserPost(mapUser?: MapUser, extraHttpRequestParams?: any): Observable<boolean>;
+    apiV1UsersMapUserPost(mapUser?: MapUser, extraHttpRequestParams?: any): Observable<boolean>;
 
     /**
      * 
      * 
      */
-    apiUsersMeGet(extraHttpRequestParams?: any): Observable<User>;
+    apiV1UsersMeGet(extraHttpRequestParams?: any): Observable<User>;
 
 }

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (development)
+    VCell API
 
     VCell API
 
@@ -102,8 +102,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -171,8 +171,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -240,8 +240,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1131,8 +1131,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1200,8 +1200,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1269,8 +1269,8 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(

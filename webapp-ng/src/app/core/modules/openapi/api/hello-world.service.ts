@@ -1,5 +1,4 @@
 /**
- * VCell API (development)
  * VCell API
  * VCell API
  *

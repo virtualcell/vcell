@@ -4,14 +4,14 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**api_users_bearer_token_post**](UsersResourceApi.md#api_users_bearer_token_post) | **POST** /api/users/bearerToken | 
-[**api_users_get_identity_get**](UsersResourceApi.md#api_users_get_identity_get) | **GET** /api/users/getIdentity | 
-[**api_users_map_user_post**](UsersResourceApi.md#api_users_map_user_post) | **POST** /api/users/mapUser | 
-[**api_users_me_get**](UsersResourceApi.md#api_users_me_get) | **GET** /api/users/me | 
+[**api_v1_users_bearer_token_post**](UsersResourceApi.md#api_v1_users_bearer_token_post) | **POST** /api/v1/users/bearerToken | 
+[**api_v1_users_get_identity_get**](UsersResourceApi.md#api_v1_users_get_identity_get) | **GET** /api/v1/users/getIdentity | 
+[**api_v1_users_map_user_post**](UsersResourceApi.md#api_v1_users_map_user_post) | **POST** /api/v1/users/mapUser | 
+[**api_v1_users_me_get**](UsersResourceApi.md#api_v1_users_me_get) | **GET** /api/v1/users/me | 
 
 
-# **api_users_bearer_token_post**
-> AccesTokenRepresentationRecord api_users_bearer_token_post(user_id=user_id, user_password=user_password, client_id=client_id)
+# **api_v1_users_bearer_token_post**
+> AccesTokenRepresentationRecord api_v1_users_bearer_token_post(user_id=user_id, user_password=user_password, client_id=client_id)
 
 
 
@@ -41,11 +41,11 @@ with vcell_client.ApiClient(configuration) as api_client:
     client_id = 'client_id_example' # str |  (optional)
 
     try:
-        api_response = api_instance.api_users_bearer_token_post(user_id=user_id, user_password=user_password, client_id=client_id)
-        print("The response of UsersResourceApi->api_users_bearer_token_post:\n")
+        api_response = api_instance.api_v1_users_bearer_token_post(user_id=user_id, user_password=user_password, client_id=client_id)
+        print("The response of UsersResourceApi->api_v1_users_bearer_token_post:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->api_users_bearer_token_post: %s\n" % e)
+        print("Exception when calling UsersResourceApi->api_v1_users_bearer_token_post: %s\n" % e)
 ```
 
 
@@ -78,8 +78,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **api_users_get_identity_get**
-> UserIdentityJSONSafe api_users_get_identity_get()
+# **api_v1_users_get_identity_get**
+> UserIdentityJSONSafe api_v1_users_get_identity_get()
 
 
 
@@ -93,10 +93,10 @@ from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 # The client must configure the authentication and authorization parameters
@@ -110,11 +110,11 @@ with vcell_client.ApiClient(configuration) as api_client:
     api_instance = vcell_client.UsersResourceApi(api_client)
 
     try:
-        api_response = api_instance.api_users_get_identity_get()
-        print("The response of UsersResourceApi->api_users_get_identity_get:\n")
+        api_response = api_instance.api_v1_users_get_identity_get()
+        print("The response of UsersResourceApi->api_v1_users_get_identity_get:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->api_users_get_identity_get: %s\n" % e)
+        print("Exception when calling UsersResourceApi->api_v1_users_get_identity_get: %s\n" % e)
 ```
 
 
@@ -139,13 +139,13 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **api_users_map_user_post**
-> bool api_users_map_user_post(map_user=map_user)
+# **api_v1_users_map_user_post**
+> bool api_v1_users_map_user_post(map_user=map_user)
 
 
 
@@ -159,10 +159,10 @@ from vcell_client.models.map_user import MapUser
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 # The client must configure the authentication and authorization parameters
@@ -177,11 +177,11 @@ with vcell_client.ApiClient(configuration) as api_client:
     map_user = vcell_client.MapUser() # MapUser |  (optional)
 
     try:
-        api_response = api_instance.api_users_map_user_post(map_user=map_user)
-        print("The response of UsersResourceApi->api_users_map_user_post:\n")
+        api_response = api_instance.api_v1_users_map_user_post(map_user=map_user)
+        print("The response of UsersResourceApi->api_v1_users_map_user_post:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->api_users_map_user_post: %s\n" % e)
+        print("Exception when calling UsersResourceApi->api_v1_users_map_user_post: %s\n" % e)
 ```
 
 
@@ -209,13 +209,13 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **api_users_me_get**
-> User api_users_me_get()
+# **api_v1_users_me_get**
+> User api_v1_users_me_get()
 
 
 
@@ -229,10 +229,10 @@ from vcell_client.models.user import User
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 
@@ -242,8 +242,8 @@ with vcell_client.ApiClient(configuration) as api_client:
     api_instance = vcell_client.UsersResourceApi(api_client)
 
     try:
-        api_response = api_instance.api_users_me_get()
-        print("The response of UsersResourceApi->api_users_me_get:\n")
+        api_response = api_instance.api_v1_users_me_get()
+        print("The response of UsersResourceApi->api_v1_users_me_get:\n")
         pprint(api_response)
     except Exception as e:
         print("Exception when calling UsersResourceApi->api_v1_users_me_get: %s\n" % e)

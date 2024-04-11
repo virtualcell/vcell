@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (development)
+    VCell API
 
     VCell API
 
@@ -52,7 +52,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_bearer_token_post(
+    def api_v1_users_bearer_token_post(
         self,
         user_id: Optional[StrictStr] = None,
         user_password: Optional[StrictStr] = None,
@@ -70,7 +70,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> AccesTokenRepresentationRecord:
-        """api_users_bearer_token_post
+        """api_v1_users_bearer_token_post
 
 
         :param user_id:
@@ -101,7 +101,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_bearer_token_post_serialize(
+        _param = self._api_v1_users_bearer_token_post_serialize(
             user_id=user_id,
             user_password=user_password,
             client_id=client_id,
@@ -127,7 +127,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_bearer_token_post_with_http_info(
+    def api_v1_users_bearer_token_post_with_http_info(
         self,
         user_id: Optional[StrictStr] = None,
         user_password: Optional[StrictStr] = None,
@@ -145,7 +145,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[AccesTokenRepresentationRecord]:
-        """api_users_bearer_token_post
+        """api_v1_users_bearer_token_post
 
 
         :param user_id:
@@ -176,7 +176,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_bearer_token_post_serialize(
+        _param = self._api_v1_users_bearer_token_post_serialize(
             user_id=user_id,
             user_password=user_password,
             client_id=client_id,
@@ -202,7 +202,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_bearer_token_post_without_preload_content(
+    def api_v1_users_bearer_token_post_without_preload_content(
         self,
         user_id: Optional[StrictStr] = None,
         user_password: Optional[StrictStr] = None,
@@ -220,7 +220,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """api_users_bearer_token_post
+        """api_v1_users_bearer_token_post
 
 
         :param user_id:
@@ -251,7 +251,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_bearer_token_post_serialize(
+        _param = self._api_v1_users_bearer_token_post_serialize(
             user_id=user_id,
             user_password=user_password,
             client_id=client_id,
@@ -272,7 +272,7 @@ class UsersResourceApi:
         return response_data.response
 
 
-    def _api_users_bearer_token_post_serialize(
+    def _api_v1_users_bearer_token_post_serialize(
         self,
         user_id,
         user_password,
@@ -336,7 +336,7 @@ class UsersResourceApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/users/bearerToken',
+            resource_path='/api/v1/users/bearerToken',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -353,7 +353,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_get_identity_get(
+    def api_v1_users_get_identity_get(
         self,
         _request_timeout: Union[
             None,
@@ -368,7 +368,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> UserIdentityJSONSafe:
-        """api_users_get_identity_get
+        """api_v1_users_get_identity_get
 
 
         :param _request_timeout: timeout setting for this request. If one
@@ -393,7 +393,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_get_identity_get_serialize(
+        _param = self._api_v1_users_get_identity_get_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -402,8 +402,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -418,7 +418,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_get_identity_get_with_http_info(
+    def api_v1_users_get_identity_get_with_http_info(
         self,
         _request_timeout: Union[
             None,
@@ -433,7 +433,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[UserIdentityJSONSafe]:
-        """api_users_get_identity_get
+        """api_v1_users_get_identity_get
 
 
         :param _request_timeout: timeout setting for this request. If one
@@ -458,7 +458,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_get_identity_get_serialize(
+        _param = self._api_v1_users_get_identity_get_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -467,8 +467,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -483,7 +483,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_get_identity_get_without_preload_content(
+    def api_v1_users_get_identity_get_without_preload_content(
         self,
         _request_timeout: Union[
             None,
@@ -498,7 +498,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """api_users_get_identity_get
+        """api_v1_users_get_identity_get
 
 
         :param _request_timeout: timeout setting for this request. If one
@@ -523,7 +523,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_get_identity_get_serialize(
+        _param = self._api_v1_users_get_identity_get_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -532,8 +532,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -543,7 +543,7 @@ class UsersResourceApi:
         return response_data.response
 
 
-    def _api_users_get_identity_get_serialize(
+    def _api_v1_users_get_identity_get_serialize(
         self,
         _request_auth,
         _content_type,
@@ -586,7 +586,7 @@ class UsersResourceApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/users/getIdentity',
+            resource_path='/api/v1/users/getIdentity',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -603,7 +603,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_map_user_post(
+    def api_v1_users_map_user_post(
         self,
         map_user: Optional[MapUser] = None,
         _request_timeout: Union[
@@ -619,7 +619,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> bool:
-        """api_users_map_user_post
+        """api_v1_users_map_user_post
 
 
         :param map_user:
@@ -646,7 +646,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_map_user_post_serialize(
+        _param = self._api_v1_users_map_user_post_serialize(
             map_user=map_user,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -656,8 +656,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -672,7 +672,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_map_user_post_with_http_info(
+    def api_v1_users_map_user_post_with_http_info(
         self,
         map_user: Optional[MapUser] = None,
         _request_timeout: Union[
@@ -688,7 +688,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[bool]:
-        """api_users_map_user_post
+        """api_v1_users_map_user_post
 
 
         :param map_user:
@@ -715,7 +715,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_map_user_post_serialize(
+        _param = self._api_v1_users_map_user_post_serialize(
             map_user=map_user,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -725,8 +725,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -741,7 +741,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_map_user_post_without_preload_content(
+    def api_v1_users_map_user_post_without_preload_content(
         self,
         map_user: Optional[MapUser] = None,
         _request_timeout: Union[
@@ -757,7 +757,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """api_users_map_user_post
+        """api_v1_users_map_user_post
 
 
         :param map_user:
@@ -784,7 +784,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_map_user_post_serialize(
+        _param = self._api_v1_users_map_user_post_serialize(
             map_user=map_user,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -794,8 +794,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -805,7 +805,7 @@ class UsersResourceApi:
         return response_data.response
 
 
-    def _api_users_map_user_post_serialize(
+    def _api_v1_users_map_user_post_serialize(
         self,
         map_user,
         _request_auth,
@@ -864,7 +864,7 @@ class UsersResourceApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/users/mapUser',
+            resource_path='/api/v1/users/mapUser',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -881,7 +881,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_me_get(
+    def api_v1_users_me_get(
         self,
         _request_timeout: Union[
             None,

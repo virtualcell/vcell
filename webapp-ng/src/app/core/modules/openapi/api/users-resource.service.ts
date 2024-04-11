@@ -1,5 +1,4 @@
 /**
- * VCell API (development)
  * VCell API
  * VCell API
  *
@@ -121,10 +120,10 @@ export class UsersResourceService implements UsersResourceServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<AccesTokenRepresentationRecord>;
-    public apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<AccesTokenRepresentationRecord>>;
-    public apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<AccesTokenRepresentationRecord>>;
-    public apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public apiV1UsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<AccesTokenRepresentationRecord>;
+    public apiV1UsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<AccesTokenRepresentationRecord>>;
+    public apiV1UsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<AccesTokenRepresentationRecord>>;
+    public apiV1UsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -182,7 +181,7 @@ export class UsersResourceService implements UsersResourceServiceInterface {
             }
         }
 
-        let localVarPath = `/api/users/bearerToken`;
+        let localVarPath = `/api/v1/users/bearerToken`;
         return this.httpClient.request<AccesTokenRepresentationRecord>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -200,10 +199,10 @@ export class UsersResourceService implements UsersResourceServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiUsersGetIdentityGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<UserIdentityJSONSafe>;
-    public apiUsersGetIdentityGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<UserIdentityJSONSafe>>;
-    public apiUsersGetIdentityGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<UserIdentityJSONSafe>>;
-    public apiUsersGetIdentityGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public apiV1UsersGetIdentityGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<UserIdentityJSONSafe>;
+    public apiV1UsersGetIdentityGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<UserIdentityJSONSafe>>;
+    public apiV1UsersGetIdentityGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<UserIdentityJSONSafe>>;
+    public apiV1UsersGetIdentityGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -242,7 +241,7 @@ export class UsersResourceService implements UsersResourceServiceInterface {
             }
         }
 
-        let localVarPath = `/api/users/getIdentity`;
+        let localVarPath = `/api/v1/users/getIdentity`;
         return this.httpClient.request<UserIdentityJSONSafe>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -260,10 +259,10 @@ export class UsersResourceService implements UsersResourceServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiUsersMapUserPost(mapUser?: MapUser, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<boolean>;
-    public apiUsersMapUserPost(mapUser?: MapUser, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<HttpResponse<boolean>>;
-    public apiUsersMapUserPost(mapUser?: MapUser, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<HttpEvent<boolean>>;
-    public apiUsersMapUserPost(mapUser?: MapUser, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<any> {
+    public apiV1UsersMapUserPost(mapUser?: MapUser, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<boolean>;
+    public apiV1UsersMapUserPost(mapUser?: MapUser, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<HttpResponse<boolean>>;
+    public apiV1UsersMapUserPost(mapUser?: MapUser, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<HttpEvent<boolean>>;
+    public apiV1UsersMapUserPost(mapUser?: MapUser, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -311,7 +310,7 @@ export class UsersResourceService implements UsersResourceServiceInterface {
             }
         }
 
-        let localVarPath = `/api/users/mapUser`;
+        let localVarPath = `/api/v1/users/mapUser`;
         return this.httpClient.request<boolean>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -329,10 +328,10 @@ export class UsersResourceService implements UsersResourceServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiUsersMeGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<User>;
-    public apiUsersMeGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<User>>;
-    public apiUsersMeGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<User>>;
-    public apiUsersMeGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public apiV1UsersMeGet(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<User>;
+    public apiV1UsersMeGet(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<User>>;
+    public apiV1UsersMeGet(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<User>>;
+    public apiV1UsersMeGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -365,7 +364,7 @@ export class UsersResourceService implements UsersResourceServiceInterface {
             }
         }
 
-        let localVarPath = `/api/users/me`;
+        let localVarPath = `/api/v1/users/me`;
         return this.httpClient.request<User>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

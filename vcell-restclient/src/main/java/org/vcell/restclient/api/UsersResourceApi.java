@@ -1,5 +1,4 @@
 /*
- * VCell API (development)
  * VCell API
  * VCell API
  *
@@ -13,31 +12,45 @@
 
 package org.vcell.restclient.api;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.message.BasicNameValuePair;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Pair;
+
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.MapUser;
 import org.vcell.restclient.model.User;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+
+import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.http.HttpRequest;
+import java.nio.channels.Channels;
+import java.nio.channels.Pipe;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+
 import java.util.ArrayList;
+import java.util.StringJoiner;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
@@ -86,8 +99,8 @@ public class UsersResourceApi {
    * @return AccesTokenRepresentationRecord
    * @throws ApiException if fails to make API call
    */
-  public AccesTokenRepresentationRecord apiUsersBearerTokenPost(String userId, String userPassword, String clientId) throws ApiException {
-    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = apiUsersBearerTokenPostWithHttpInfo(userId, userPassword, clientId);
+  public AccesTokenRepresentationRecord apiV1UsersBearerTokenPost(String userId, String userPassword, String clientId) throws ApiException {
+    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = apiV1UsersBearerTokenPostWithHttpInfo(userId, userPassword, clientId);
     return localVarResponse.getData();
   }
 
@@ -100,8 +113,8 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;AccesTokenRepresentationRecord&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<AccesTokenRepresentationRecord> apiUsersBearerTokenPostWithHttpInfo(String userId, String userPassword, String clientId) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersBearerTokenPostRequestBuilder(userId, userPassword, clientId);
+  public ApiResponse<AccesTokenRepresentationRecord> apiV1UsersBearerTokenPostWithHttpInfo(String userId, String userPassword, String clientId) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1UsersBearerTokenPostRequestBuilder(userId, userPassword, clientId);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -111,7 +124,7 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersBearerTokenPost", localVarResponse);
+          throw getApiException("apiV1UsersBearerTokenPost", localVarResponse);
         }
         return new ApiResponse<AccesTokenRepresentationRecord>(
           localVarResponse.statusCode(),
@@ -129,11 +142,11 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiUsersBearerTokenPostRequestBuilder(String userId, String userPassword, String clientId) throws ApiException {
+  private HttpRequest.Builder apiV1UsersBearerTokenPostRequestBuilder(String userId, String userPassword, String clientId) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/users/bearerToken";
+    String localVarPath = "/api/v1/users/bearerToken";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -174,8 +187,8 @@ public class UsersResourceApi {
    * @return UserIdentityJSONSafe
    * @throws ApiException if fails to make API call
    */
-  public UserIdentityJSONSafe apiUsersGetIdentityGet() throws ApiException {
-    ApiResponse<UserIdentityJSONSafe> localVarResponse = apiUsersGetIdentityGetWithHttpInfo();
+  public UserIdentityJSONSafe apiV1UsersGetIdentityGet() throws ApiException {
+    ApiResponse<UserIdentityJSONSafe> localVarResponse = apiV1UsersGetIdentityGetWithHttpInfo();
     return localVarResponse.getData();
   }
 
@@ -185,8 +198,8 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;UserIdentityJSONSafe&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<UserIdentityJSONSafe> apiUsersGetIdentityGetWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersGetIdentityGetRequestBuilder();
+  public ApiResponse<UserIdentityJSONSafe> apiV1UsersGetIdentityGetWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1UsersGetIdentityGetRequestBuilder();
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -196,7 +209,7 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersGetIdentityGet", localVarResponse);
+          throw getApiException("apiV1UsersGetIdentityGet", localVarResponse);
         }
         return new ApiResponse<UserIdentityJSONSafe>(
           localVarResponse.statusCode(),
@@ -214,11 +227,11 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiUsersGetIdentityGetRequestBuilder() throws ApiException {
+  private HttpRequest.Builder apiV1UsersGetIdentityGetRequestBuilder() throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/users/getIdentity";
+    String localVarPath = "/api/v1/users/getIdentity";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -240,8 +253,8 @@ public class UsersResourceApi {
    * @return Boolean
    * @throws ApiException if fails to make API call
    */
-  public Boolean apiUsersMapUserPost(MapUser mapUser) throws ApiException {
-    ApiResponse<Boolean> localVarResponse = apiUsersMapUserPostWithHttpInfo(mapUser);
+  public Boolean apiV1UsersMapUserPost(MapUser mapUser) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = apiV1UsersMapUserPostWithHttpInfo(mapUser);
     return localVarResponse.getData();
   }
 
@@ -252,8 +265,8 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;Boolean&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Boolean> apiUsersMapUserPostWithHttpInfo(MapUser mapUser) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersMapUserPostRequestBuilder(mapUser);
+  public ApiResponse<Boolean> apiV1UsersMapUserPostWithHttpInfo(MapUser mapUser) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1UsersMapUserPostRequestBuilder(mapUser);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -263,7 +276,7 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersMapUserPost", localVarResponse);
+          throw getApiException("apiV1UsersMapUserPost", localVarResponse);
         }
         return new ApiResponse<Boolean>(
           localVarResponse.statusCode(),
@@ -281,11 +294,11 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiUsersMapUserPostRequestBuilder(MapUser mapUser) throws ApiException {
+  private HttpRequest.Builder apiV1UsersMapUserPostRequestBuilder(MapUser mapUser) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/users/mapUser";
+    String localVarPath = "/api/v1/users/mapUser";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 

@@ -9,12 +9,12 @@ info:
     name: MIT
     url: http://opensource.org/licenses/MIT
   termsOfService: Your terms of service here
-  title: VCell API (development)
+  title: VCell API
   version: 1.0.1
 servers:
 - url: https://vcellapi-test.cam.uchc.edu
 paths:
-  /api/bioModel/upload_bioModel:
+  /api/v1/bioModel/upload_bioModel:
     post:
       operationId: uploadBioModel
       requestBody:
@@ -34,7 +34,7 @@ paths:
       - Bio Model Resource
       x-content-type: text/xml
       x-accepts: text/plain
-  /api/bioModel/{bioModelID}:
+  /api/v1/bioModel/{bioModelID}:
     delete:
       operationId: deleteBioModel
       parameters:
@@ -73,97 +73,7 @@ paths:
       tags:
       - Bio Model Resource
       x-accepts: application/json
-  /api/bioModel/{bioModelID}/bngl_download:
-    get:
-      operationId: getBioModelBNGL
-      parameters:
-      - explode: false
-        in: path
-        name: bioModelID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "204":
-          description: No Content
-      summary: Get the BioModel in BNGL format.
-      tags:
-      - Bio Model Resource
-      x-accepts: application/json
-  /api/bioModel/{bioModelID}/diagram_download:
-    get:
-      operationId: getBioModelDIAGRAM
-      parameters:
-      - explode: false
-        in: path
-        name: bioModelID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "204":
-          description: No Content
-      summary: Get the BioModels diagram.
-      tags:
-      - Bio Model Resource
-      x-accepts: application/json
-  /api/bioModel/{bioModelID}/omex_download:
-    get:
-      operationId: getBioModelOMEX
-      parameters:
-      - explode: false
-        in: path
-        name: bioModelID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "204":
-          description: No Content
-      summary: Get the BioModel in OMEX format.
-      tags:
-      - Bio Model Resource
-      x-accepts: application/json
-  /api/bioModel/{bioModelID}/sbml_download:
-    get:
-      operationId: getBioModelSBML
-      parameters:
-      - explode: false
-        in: path
-        name: bioModelID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "204":
-          description: No Content
-      summary: Get the BioModel in SBML format.
-      tags:
-      - Bio Model Resource
-      x-accepts: application/json
-  /api/bioModel/{bioModelID}/vcml_download:
-    get:
-      operationId: getBioModelVCML
-      parameters:
-      - explode: false
-        in: path
-        name: bioModelID
-        required: true
-        schema:
-          type: string
-        style: simple
-      responses:
-        "204":
-          description: No Content
-      summary: Get the BioModel in VCML format.
-      tags:
-      - Bio Model Resource
-      x-accepts: application/json
-  /api/helloworld:
+  /api/v1/helloworld:
     get:
       operationId: getHelloWorld
       responses:
@@ -208,10 +118,10 @@ paths:
                 format: int64
                 type: integer
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -234,10 +144,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -261,10 +171,10 @@ paths:
       responses:
         "204":
           description: No Content
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -294,13 +204,13 @@ paths:
       tags:
       - Publication Resource
       x-accepts: application/json
-  /api/users/bearerToken:
+  /api/v1/users/bearerToken:
     post:
       requestBody:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/_api_users_bearerToken_post_request'
+              $ref: '#/components/schemas/_api_v1_users_bearerToken_post_request'
       responses:
         "200":
           content:
@@ -312,7 +222,7 @@ paths:
       - Users Resource
       x-content-type: application/x-www-form-urlencoded
       x-accepts: application/json
-  /api/users/getIdentity:
+  /api/v1/users/getIdentity:
     get:
       responses:
         "200":
@@ -321,17 +231,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
       tags:
       - Users Resource
       x-accepts: application/json
-  /api/users/mapUser:
+  /api/v1/users/mapUser:
     post:
       requestBody:
         content:
@@ -345,10 +255,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -356,7 +266,7 @@ paths:
       - Users Resource
       x-content-type: application/json
       x-accepts: text/plain
-  /api/users/me:
+  /api/v1/users/me:
     get:
       responses:
         "200":
@@ -640,7 +550,7 @@ components:
         insertDate:
           type: string
       type: object
-    _api_users_bearerToken_post_request:
+    _api_v1_users_bearerToken_post_request:
       properties:
         user_id:
           type: string
