@@ -106,17 +106,19 @@ public class HealthService {
 	Thread runsimThread;
 	final String host;
 	final int port;
+	final String pathPrefixV0;
 	final boolean bIgnoreCertProblems;
 	final boolean bIgnoreHostMismatch;
 	final String testUserid;
 	final DigestedPassword testPassword;
 
-	public HealthService(RestEventService eventService, String host, int port, 
+	public HealthService(RestEventService eventService, String host, int port, String pathPrefixV0,
 			boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch, 
 			String testUserid, DigestedPassword testPassword) {
 		this.eventService = eventService;
 		this.host = host;
 		this.port = port;
+		this.pathPrefixV0 = pathPrefixV0;
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
 		this.bIgnoreHostMismatch = bIgnoreHostMismatch;
 		this.testUserid = testUserid;
@@ -207,7 +209,7 @@ public class HealthService {
 			long id = loginStartEvent();
 			try {
 				UserLoginInfo userLoginInfo = new UserLoginInfo(testUserid, testPassword);
-				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port);
+				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
 				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 				VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
 				loginSuccess(id);
@@ -233,7 +235,7 @@ public class HealthService {
 			KeyValue savedBioModelKey = null;
 			VCSimulationIdentifier runningSimId = null;
 			try {
-				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port);
+				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
 				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 				
 				String vcmlString = IOUtils.toString(getClass().getResourceAsStream("/TestTemplate.vcml"));
@@ -308,7 +310,7 @@ public class HealthService {
 			}finally {
 				// cleanup
 				try {
-					RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port);
+					RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
 					VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 					if (runningSimId!=null) {
 						try {

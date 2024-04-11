@@ -5,6 +5,8 @@ services:
     environment:
       - softwareVersion=${VCELL_VERSION}
       - serverid=${VCELL_SITE}
+      - protocol=https
+      - serverPrefixV0=${VCELL_API_PREFIX_V0}
 
       - simdataCacheSize=${VCELL_SIMDATA_CACHE_SIZE:-10000000}
 
@@ -34,7 +36,7 @@ services:
       - "${VCELL_API_PORT_EXTERNAL}:8080"
       - "${VCELL_DEBUG_PORT_VCELL_API}:8000" # java remote debugging
 #    healthcheck:
-#      test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/health?check=login"]
+#      test: ["CMD", "curl", "-f", "--insecure", "https://localhost:8080/api/v0/health?check=login"]
 #      interval: 600s
 #      timeout: 30s
 #      retries: 2
@@ -108,7 +110,7 @@ services:
     ports:
       - "${VCELL_DEBUG_PORT_VCELL_SCHED}:8000" # java remote debugging
 #    healthcheck:
-#      test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/health?check=sim"]
+#      test: ["CMD", "curl", "-f", "--insecure", "https://api:8080/api/v0/health?check=sim"]
 #      interval: 600s
 #      timeout: 30s
 #      retries: 2
@@ -120,6 +122,8 @@ services:
       - dbpswd
       - jmspswd
       - source: batchuserkeyfile
+        uid: "10001"
+        gid: "10000"
         mode: 0400
     networks:
       - vcellnet
@@ -203,6 +207,8 @@ services:
       - jmspswd
       - jmsrestpswd # "echo -ne  {activemq console user:passwd} | base64", this is hard-coded in some solvers
       - source: batchuserkeyfile
+        uid: "10001"
+        gid: "10000"
         mode: 0400
     networks:
       - vcellnet

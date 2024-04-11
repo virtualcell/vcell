@@ -81,6 +81,7 @@ public class ErrorUtils {
                 " of the " + (System.getProperty("os.name")) + " operating system";
         String username = null;
         String serverHost = PropertyLoader.getProperty(PropertyLoader.vcellServerHost, null);
+        String serverPrefixV0 = PropertyLoader.getProperty(PropertyLoader.vcellServerPrefixV0, null);
         if(clientServerInfo != null && clientServerInfo.getApihost() != null){
             serverHost = clientServerInfo.getApihost();
             if(clientServerInfo.getUsername() != null){
@@ -100,7 +101,7 @@ public class ErrorUtils {
             throw new RuntimeException(e.getMessage(), e);
         }
         try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build()) {
-            HttpPost httpPost = new HttpPost("https://" + serverHost + "/contactus");
+            HttpPost httpPost = new HttpPost("https://" + serverHost + serverPrefixV0 + "/contactus");
             Gson gson = new Gson();
             ErrorReport errorReport = new ErrorReport(username, message, exceptionMessage, stackTrace, softwareVersion, platform);
             String json = gson.toJson(errorReport);

@@ -128,6 +128,8 @@
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dvcell.serverHost=${compiler:rmiHosts}
+-Dvcell.serverPrefix.v0=${compiler:serverPrefixV0}
+-Dvcell.serverPrefix.v1=${compiler:serverPrefixV1}
 -Dsun.rmi.transport.proxy.eagerHttpFallback=true
 -Djava.rmi.server.disableHttp=false
 -Dhttp.proxySet=true
@@ -164,6 +166,8 @@
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dvcell.serverHost=${compiler:rmiHosts}
+-Dvcell.serverPrefix.v0=${compiler:serverPrefixV0}
+-Dvcell.serverPrefix.v1=${compiler:serverPrefixV1}
 -Dsun.rmi.transport.proxy.eagerHttpFallback=true
 -Djava.rmi.server.disableHttp=false
 -Dhttp.proxySet=true
@@ -194,6 +198,8 @@
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dvcell.serverHost=${compiler:rmiHosts}
+-Dvcell.serverPrefix.v0=${compiler:serverPrefixV0}
+-Dvcell.serverPrefix.v1=${compiler:serverPrefixV1}
 -Dsun.rmi.transport.proxy.eagerHttpFallback=true
 -Djava.rmi.server.disableHttp=false
 -Dhttp.proxySet=true
@@ -225,6 +231,8 @@
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dvcell.serverHost=${compiler:rmiHosts}
+-Dvcell.serverPrefix.v0=${compiler:serverPrefixV0}
+-Dvcell.serverPrefix.v1=${compiler:serverPrefixV1}
 -Dsun.rmi.transport.proxy.eagerHttpFallback=true
 -Djava.rmi.server.disableHttp=false
 -Dhttp.proxySet=true
@@ -251,6 +259,8 @@
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.serverHost=${compiler:rmiHosts}
+-Dvcell.serverPrefix.v0=${compiler:serverPrefixV0}
+-Dvcell.serverPrefix.v1=${compiler:serverPrefixV1}
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dsun.rmi.transport.proxy.eagerHttpFallback=true
 -Djava.rmi.server.disableHttp=false
@@ -278,6 +288,8 @@
         <content>-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.serverHost=${compiler:rmiHosts}
+-Dvcell.serverPrefix.v0=${compiler:serverPrefixV0}
+-Dvcell.serverPrefix.v1=${compiler:serverPrefixV1}
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dsun.rmi.transport.proxy.eagerHttpFallback=true
 -Djava.rmi.server.disableHttp=false

@@ -103,6 +103,7 @@ public class PublicationServerResource extends AbstractServerResource implements
 			}
 
 			String pubop = form.getFirstValue("pubop");
+			String pathPrefix = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerPrefixV0);
 			Map<String, Object> dataModel = new HashMap<String, Object>();
 			if (pubop == null) {
 				return new StringRepresentation(("value of publication 'operation' cannot be null"));
@@ -162,7 +163,7 @@ public class PublicationServerResource extends AbstractServerResource implements
 			} else {
 				return new StringRepresentation(("value of pubop=" + pubop + " not expected").toCharArray());
 			}
-
+			dataModel.put("pathPrefix", pathPrefix);
 			Configuration templateConfiguration = application.getTemplateConfiguration();
 			Representation myRepresentation = new ClientResource(LocalReference.createClapReference("/newpublication.ftl")).get();
 			TemplateRepresentation templateRepresentation = new TemplateRepresentation(myRepresentation, templateConfiguration, dataModel, MediaType.TEXT_HTML);
@@ -223,12 +224,14 @@ public class PublicationServerResource extends AbstractServerResource implements
 		}else {
 			throw new RuntimeException("publication not found");
 		}
-		dataModel.put("loginurl", "/"+VCellApiApplication.LOGINFORM);  // +"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+getRequest().getResourceRef().toUrl());
-		dataModel.put("logouturl", "/"+VCellApiApplication.LOGOUT+"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+Reference.encode(getRequest().getResourceRef().toUrl().toString()));
+		String pathPrefix = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerPrefixV0);
+		dataModel.put("loginurl", pathPrefix+"/"+VCellApiApplication.LOGINFORM);  // +"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+getRequest().getResourceRef().toUrl());
+		dataModel.put("logouturl", pathPrefix+"/"+VCellApiApplication.LOGOUT+"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+Reference.encode(getRequest().getResourceRef().toUrl().toString()));
 		if (vcellUser!=null){
 			dataModel.put("userid",vcellUser.getName());
 		}
 
+		dataModel.put("pathPrefix", pathPrefix);
 		dataModel.put("pubId", getQueryValue(VCellApiApplication.PUBLICATIONID));
 
 		dataModel.put("publication", publication);

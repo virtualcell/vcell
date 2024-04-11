@@ -1,6 +1,7 @@
 /*
  * VCell API (development)
  * VCell API
+ * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
  * Contact: vcell_support@uchc.com
@@ -311,8 +312,8 @@ public class UsersResourceApi {
    * @return User
    * @throws ApiException if fails to make API call
    */
-  public User apiUsersMeGet() throws ApiException {
-    ApiResponse<User> localVarResponse = apiUsersMeGetWithHttpInfo();
+  public User apiV1UsersMeGet() throws ApiException {
+    ApiResponse<User> localVarResponse = apiV1UsersMeGetWithHttpInfo();
     return localVarResponse.getData();
   }
 
@@ -322,8 +323,8 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;User&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<User> apiUsersMeGetWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersMeGetRequestBuilder();
+  public ApiResponse<User> apiV1UsersMeGetWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiV1UsersMeGetRequestBuilder();
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -333,7 +334,7 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersMeGet", localVarResponse);
+          throw getApiException("apiV1UsersMeGet", localVarResponse);
         }
         return new ApiResponse<User>(
           localVarResponse.statusCode(),
@@ -351,11 +352,11 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiUsersMeGetRequestBuilder() throws ApiException {
+  private HttpRequest.Builder apiV1UsersMeGetRequestBuilder() throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/users/me";
+    String localVarPath = "/api/v1/users/me";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 

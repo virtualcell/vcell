@@ -95,7 +95,7 @@ cflee8p55yph        local_mongodb       replicated          1/1                 
 ```
 
 ```bash
-> curl --verbose --insecure "https://vcellapi.cam.uchc.edu/admin/jobs?completed=false&stopped=false&serverId=REL" | jq '.'
+> curl --verbose --insecure "https://vcellapi.cam.uchc.edu/api/v0/admin/jobs?completed=false&stopped=false&serverId=REL" | jq '.'
 (see AdminJobsRestlet for details)
 ```
 

@@ -53,7 +53,7 @@ public static JobRequest createExportJobRequest(User user) {
  * Creation date: (4/3/2001 4:21:34 PM)
  * @return long
  */
-public long getJobID() {
+public long getExportJobID() {
 	return jobID;
 }
 /**

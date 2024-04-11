@@ -1946,7 +1946,7 @@ private void checkUnistSystem() {
 	BioModel modifiedBiomodel = null;
 	try {
 		modifiedBiomodel = ModelUnitConverter.createBioModelWithNewUnitSystem(getSelectedSimContext().getBioModel(), forcedModelUnitSystem);
-	} catch (ExpressionException | XmlParseException e) {
+	} catch (ExpressionException | XmlParseException | GeometryException | ImageException e) {
 		throw new RuntimeException("could not convert units to SBML compatible", e);
 	}
 	vcBioModel = modifiedBiomodel;

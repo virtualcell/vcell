@@ -11,7 +11,7 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.vcell.restq.models.HelloWorldMessage;
 import org.vcell.util.PermissionException;
 
-@Path("/api/helloworld")
+@Path("/api/v1/helloworld")
 @Produces(MediaType.APPLICATION_JSON)
 public class HelloWorld {
 

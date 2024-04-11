@@ -12,7 +12,7 @@ info:
   title: VCell API (development)
   version: 1.0.1
 servers:
-- url: http://localhost:9000
+- url: https://vcellapi-test.cam.uchc.edu
 paths:
   /api/bioModel/upload_bioModel:
     post:
@@ -177,7 +177,7 @@ paths:
       tags:
       - Hello World
       x-accepts: application/json
-  /api/publications:
+  /api/v1/publications:
     get:
       operationId: getPublications
       responses:
@@ -246,7 +246,7 @@ paths:
       - Publication Resource
       x-content-type: application/json
       x-accepts: application/json
-  /api/publications/{id}:
+  /api/v1/publications/{id}:
     delete:
       operationId: deletePublication
       parameters:

@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned-cert
+  namespace: cert-manager-test
+spec:
+  dnsNames:
+    - k8s-in-01.cam.uchc.edu
+  commonName: k8s-in-01.cam.uchc.edu
+  secretName: selfsigned-cert-tls
+  issuerRef:
+    name: test-selfsigned
+    kind: ClusterIssuer

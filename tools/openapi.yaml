@@ -13,7 +13,7 @@ info:
     url: http://opensource.org/licenses/MIT
   version: 1.0.1
 servers:
-- url: http://localhost:9000
+- url: https://vcellapi-test.cam.uchc.edu
 paths:
   /api/bioModel/upload_bioModel:
     post:
@@ -154,7 +154,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HelloWorldMessage'
-  /api/publications:
+  /api/v1/publications:
     get:
       tags:
       - Publication Resource
@@ -218,7 +218,7 @@ paths:
       security:
       - openId:
         - curator
-  /api/publications/{id}:
+  /api/v1/publications/{id}:
     get:
       tags:
       - Publication Resource

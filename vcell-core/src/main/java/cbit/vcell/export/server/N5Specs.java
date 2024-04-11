@@ -11,11 +11,15 @@
 package cbit.vcell.export.server;
 
 import cbit.vcell.math.MathException;
-import cbit.vcell.simdata.VCData;
+import com.google.gson.Gson;
 import org.janelia.saalfeldlab.n5.*;
 import org.vcell.util.DataAccessException;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 
 /**
@@ -30,6 +34,7 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	public final String dataSetName;
 
 	public static String n5Suffix = "n5";
+	public static String maskingMetaDataName = "maskMapping";
 
 	public static enum CompressionLevel{
 		RAW,
@@ -88,31 +93,36 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 		return "N5Specs: [compression: " + format + ", chunking: " + dataType + ", switchRowsColumns: " + "]";
 	}
 
-
-	public static void imageJMetaData(N5FSWriter n5FSWriter, String datasetPath, int numChannels, int zSlices, int timeLength, HashMap<String, Object> additionalMetData) throws MathException, DataAccessException {
-		HashMap<String, Object> metaData = new HashMap<>();
-		metaData.put("name", "TestName");
-		metaData.put("fps", 0.0);
-		metaData.put("frameInterval", 0.0);
-		metaData.put("pixelWidth", 1.0);
-		metaData.put("pixelHeight", 1.0);
-		metaData.put("pixelDepth", 1.0);
-		metaData.put("xOrigin", 0.0);
-		metaData.put("yOrigin", 0.0);
-		metaData.put("zOrigin", 0.0);
-		metaData.put("numChannels", numChannels); //
-		metaData.put("numSlices", zSlices);
-		metaData.put("numFrames", timeLength);
-		metaData.put("type", 2); //https://imagej.nih.gov/ij/developer/api/ij/ij/ImagePlus.html#getType() Grayscale with float types
-		metaData.put("unit", "uM"); //https://imagej.nih.gov/ij/developer/api/ij/ij/measure/Calibration.html#getUnit()
-		metaData.put("properties", additionalMetData);
-
+	public static void writeImageJMetaData(long jobID,long[] dimensions, int[] blockSize, Compression compression, N5FSWriter n5FSWriter, String datasetName, int numChannels, int zSlices,
+										   int timeLength, HashMap<Integer, String> maskMapping) throws MathException, DataAccessException {
 		try {
-			n5FSWriter.setAttributes(datasetPath, metaData);
-		} catch (N5Exception e) {
+			HashMap<String, String> compresssionMap = new HashMap<>(){{put("type", compression.getType().toLowerCase());}};
+			ImageJMetaData imageJMetaData = ImageJMetaData.generateDefaultRecord(dimensions, blockSize, compresssionMap, datasetName, numChannels, zSlices, timeLength, maskMapping);
+			Path path = Path.of(n5FSWriter.getURI().getPath(), String.valueOf(jobID), "attributes.json");
+			Gson gson = n5FSWriter.getGson();
+			String jsonRepresentation = gson.toJson(imageJMetaData, ImageJMetaData.class);
+			FileWriter fileWriter = new FileWriter(path.toFile());
+			fileWriter.write(jsonRepresentation);
+			fileWriter.close();
+		} catch (N5Exception | IOException e) {
 			throw new RuntimeException(e);
 		}
 
+    }
+
+	record ImageJMetaData(long[] dimensions ,int[] blockSize, HashMap<String, String> compression, String dataType, String name, double fps, double frameInterval, double pixelWidth,
+						  double pixelHeight, double pixelDepth, double xOrigin, double yOrigin, double zOrigin, int numChannels, int numSlices, int numFrames,
+						  int type, String unit, HashMap<Integer, String> maskMapping){
+
+		// https://github.com/saalfeldlab/n5
+		//https://imagej.nih.gov/ij/developer/api/ij/ij/ImagePlus.html#getType() Grayscale with float types
+		//https://imagej.nih.gov/ij/developer/api/ij/ij/measure/Calibration.html#getUnit()
+
+		public static ImageJMetaData generateDefaultRecord(long[] dimensions ,int[] blockSize, HashMap<String, String> compression, String dataSetName, int numChannels,
+														   int numSlices, int numFrames, HashMap<Integer, String> maskMapping){
+			return  new ImageJMetaData(dimensions, blockSize, compression, DataType.FLOAT64.name().toLowerCase() ,dataSetName, 0.0, 0.0,
+					1.0, 1.0, 1.0, 0.0, 0.0, 0.0, numChannels, numSlices, numFrames, 2, "uM", maskMapping);
+		}
 	}
 
 

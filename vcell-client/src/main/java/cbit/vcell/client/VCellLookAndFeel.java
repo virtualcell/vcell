@@ -16,6 +16,7 @@ import java.awt.Toolkit;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import cbit.vcell.resource.ResourceUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +33,9 @@ public class VCellLookAndFeel {
 			try {
 				lg.info("Operating system:  " + osi.getOsType());
 				lg.info("About to set the look and feel.  Before setting, we're using: " + UIManager.getLookAndFeel().getName());
-				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+				String lookAndFeelType = OperatingSystemInfo.getInstance().isLinux() ?
+						UIManager.getCrossPlatformLookAndFeelClassName() : UIManager.getSystemLookAndFeelClassName();
+				UIManager.setLookAndFeel(lookAndFeelType);
 			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
 				lg.warn("Error while setting look and feel:", e);
 			}

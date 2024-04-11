@@ -2,12 +2,13 @@ package cbit.vcell.client.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Stack;
 
 public class ExportDataRepresentation {
-    public ArrayList<String> globalJobIDs;
+    public Stack<String> globalJobIDs;
     public HashMap<String, FormatExportDataRepresentation> formatData;
 
-    public ExportDataRepresentation(ArrayList<String> globalJobIDs, HashMap<String, FormatExportDataRepresentation> formatData){
+    public ExportDataRepresentation(Stack<String> globalJobIDs, HashMap<String, FormatExportDataRepresentation> formatData){
         this.globalJobIDs = globalJobIDs;
         this.formatData = formatData;
     }
@@ -33,14 +34,15 @@ public class ExportDataRepresentation {
         public String variables;
         public String startAndEndTime;
 
-        public ArrayList<String> defaultParameterValues;
-        public ArrayList<String> setParameterValues;
+        public ArrayList<String> differentParameterValues;
         public String savedFileName;
+        public String applicationType;
+        public boolean nonSpatial;
 
         public SimulationExportDataRepresentation(String exportDate, String uri, String jobID, String dataID, String simulationName,
                                                   String applicationName, String biomodelName, String variables, String startAndEndTime,
-                                                  ArrayList<String> defaultParameterValues, ArrayList<String> setParameterValues,
-                                                  String savedFileName){
+                                                  ArrayList<String> differentParameterValues,
+                                                  String savedFileName, String applicationType, boolean nonSpatial){
             this.exportDate = exportDate;
             this.uri = uri;
             this.jobID = jobID;
@@ -50,9 +52,10 @@ public class ExportDataRepresentation {
             this.biomodelName = biomodelName;
             this.variables = variables;
             this.startAndEndTime = startAndEndTime;
-            this.defaultParameterValues = defaultParameterValues;
-            this.setParameterValues = setParameterValues;
+            this.differentParameterValues = differentParameterValues;
             this.savedFileName = savedFileName;
+            this.applicationType = applicationType;
+            this.nonSpatial = nonSpatial;
         }
     }
 

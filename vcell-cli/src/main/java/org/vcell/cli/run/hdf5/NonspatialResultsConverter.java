@@ -34,8 +34,8 @@ public class NonspatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonspatialResultsConverter.class);
 
 
-    public static List<Hdf5SedmlResults> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws ExpressionException, PythonStreamException {
-        List<Hdf5SedmlResults> datasetWrappers = new ArrayList<>();
+    public static Map<Report, List<Hdf5SedmlResults>> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws ExpressionException, PythonStreamException {
+        Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
 
         for (Report report : NonspatialResultsConverter.getReports(sedml.getOutputs())){
             Map<DataSet, NonspatialValueHolder> dataSetValues = new LinkedHashMap<>();
@@ -96,8 +96,8 @@ public class NonspatialResultsConverter {
                     NonspatialValueHolder resultsHolder;
 
                     for (TaskJob taskJob : taskJobs) {
-                        SBMLNonspatialSimResults results = nonspatialResultsHash.get(taskJob);
-                        double[] data = results.getDataForSBMLVar(vcellVarId, outputStartTime, outputNumberOfPoints);
+                        SBMLNonspatialSimResults nonspatialResults = nonspatialResultsHash.get(taskJob);
+                        double[] data = nonspatialResults.getDataForSBMLVar(vcellVarId, outputStartTime, outputNumberOfPoints);
 
                         maxLengthOfAllData = Integer.max(maxLengthOfAllData, data.length);
                         if (topLevelTask instanceof RepeatedTask && resultsByVariable.containsKey(var)) { // double[] exists
@@ -137,11 +137,11 @@ public class NonspatialResultsConverter {
                         for (Variable var : resultsByVariable.keySet()){
                             //if (processedDataSet == null) processedDataSet = new NonspatialValueHolder(sedml.getTaskWithId(var.getReference()));
                             if (jobNum >= resultsByVariable.get(var).getNumSets()) continue;
-                            NonspatialValueHolder results = resultsByVariable.get(var);
-                            double[] specficJobDataSet = results.listOfResultSets.get(jobNum);
+                            NonspatialValueHolder nonspatialValue = resultsByVariable.get(var);
+                            double[] specficJobDataSet = nonspatialValue.listOfResultSets.get(jobNum);
                             double datum = datumIndex >= specficJobDataSet.length ? Double.NaN : specficJobDataSet[datumIndex];
                             calc.setArgument(var.getId(), datum);
-                            if (!synthesizedResults.vcSimulation.equals(results.vcSimulation)){
+                            if (!synthesizedResults.vcSimulation.equals(nonspatialValue.vcSimulation)){
                                 logger.warn("Simulations differ across variables; need to fix data structures to accomodate?");
                             }
                         }
@@ -190,10 +190,10 @@ public class NonspatialResultsConverter {
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = shapes;
             }
-
-            datasetWrappers.add(hdf5DatasetWrapper);
+            if (!results.containsKey(report)) results.put(report, new LinkedList<>());
+            results.get(report).add(hdf5DatasetWrapper);
         } // outputs/reports
-        return datasetWrappers;
+        return results;
     }
 
     private static List<Report> getReports(List<Output> outputs){

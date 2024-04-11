@@ -175,8 +175,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<version>${mongo-java-driver.version}</version>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>${mongodb-driver-sync.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -586,7 +586,7 @@
 					<version>0.2.7</version>
 				</dependency>
 			</dependencies>
-		    
+
 				<build>
 					<plugins>
 						<plugin>
@@ -594,7 +594,31 @@
 							<artifactId>download-maven-plugin</artifactId>
 							<version>1.3.0</version>
 							<executions>
-			 					<execution>
+								<execution>
+									<id>install-solvers-linux64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-linux.version}/linux64.tgz</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-solvers-win64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-solvers/releases/download/${solvers-vcell-windows.version}/win64.zip</url>
+										<unpack>true</unpack>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<skipCache>true</skipCache>
+									</configuration>
+								</execution>
+								<execution>
 									<id>install-solvers-mac64</id>
 									<phase>generate-test-resources</phase>
 									<goals>
@@ -607,6 +631,18 @@
 									</configuration>
 								</execution>
 								<execution>
+									<id>install-langevin-win64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-windows.version}/langevin-windows-latest</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64</outputDirectory>
+										<outputFileName>langevin_x64.exe</outputFileName>
+									</configuration>
+								</execution>
+								<execution>
 									<id>install-langevin-mac64</id>
 									<phase>generate-test-resources</phase>
 									<goals>
@@ -615,6 +651,18 @@
 									<configuration>
 										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-latest</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
+										<outputFileName>langevin_x64</outputFileName>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-langevin-linux</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-linux.version}/langevin-ubuntu-latest</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
 								</execution>
@@ -633,6 +681,25 @@
 									<configuration>
 										<target>
 											<chmod file="${project.build.directory}/../../localsolvers/mac64/langevin_x64" perm="755"/>
+										</target>
+									</configuration>
+								</execution>
+								<execution>
+									<id>process-solvers-linux64</id>
+									<phase>process-test-resources</phase>
+									<goals>
+										<goal>run</goal>
+									</goals>
+									<configuration>
+										<target>
+											<chmod file="${project.build.directory}/../../localsolvers/linux64/langevin_x64" perm="755"/>
+											<exec executable="tar">
+												<arg value="xzfh"/>
+												<arg value="${project.build.directory}/../../localsolvers/linux64/linux64.tgz"/>
+												<arg value="-C"/>
+												<arg value="${project.build.directory}/../../localsolvers/linux64"/>
+											</exec>
+											<delete file="${project.build.directory}/../../localsolvers/linux64/linux64.tgz"/>
 										</target>
 									</configuration>
 								</execution>

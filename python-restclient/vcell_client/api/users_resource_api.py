@@ -896,7 +896,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> User:
-        """api_users_me_get
+        """api_v1_users_me_get
 
 
         :param _request_timeout: timeout setting for this request. If one
@@ -921,7 +921,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_me_get_serialize(
+        _param = self._api_v1_users_me_get_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -944,7 +944,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_me_get_with_http_info(
+    def api_v1_users_me_get_with_http_info(
         self,
         _request_timeout: Union[
             None,
@@ -959,7 +959,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[User]:
-        """api_users_me_get
+        """api_v1_users_me_get
 
 
         :param _request_timeout: timeout setting for this request. If one
@@ -984,7 +984,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_me_get_serialize(
+        _param = self._api_v1_users_me_get_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1007,7 +1007,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_me_get_without_preload_content(
+    def api_v1_users_me_get_without_preload_content(
         self,
         _request_timeout: Union[
             None,
@@ -1022,7 +1022,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """api_users_me_get
+        """api_v1_users_me_get
 
 
         :param _request_timeout: timeout setting for this request. If one
@@ -1047,7 +1047,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_me_get_serialize(
+        _param = self._api_v1_users_me_get_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1065,7 +1065,7 @@ class UsersResourceApi:
         return response_data.response
 
 
-    def _api_users_me_get_serialize(
+    def _api_v1_users_me_get_serialize(
         self,
         _request_auth,
         _content_type,
@@ -1107,7 +1107,7 @@ class UsersResourceApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/users/me',
+            resource_path='/api/v1/users/me',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

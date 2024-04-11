@@ -3481,9 +3481,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
     }
 
     public static MathCompareResults testEquivalency(MathSymbolTableFactory mathSymbolTableFactory, MathDescription oldMath, MathDescription newMath){
-
         try {
-
             MathCompareResults invariantResults = newMath.compareInvariantAttributes(oldMath, false);
             if(!invariantResults.isEquivalent()){
                 if(invariantResults.decision.equals(Decision.MathDifferent_VARIABLE_NOT_FOUND_AS_FUNCTION)

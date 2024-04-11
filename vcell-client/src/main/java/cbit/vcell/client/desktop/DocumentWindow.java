@@ -2741,7 +2741,7 @@ public void showViewJobsDialog() {
 public void showViewExportedDataDialog() {
 	DocumentWindowManager dwm = getWindowManager();
 	ExportedDataViewer exportedDataViewer = new ExportedDataViewer();
-	exportedDataViewer.setPreferredSize(new Dimension(1000, 600));
+	exportedDataViewer.setPreferredSize(new Dimension(1030, 590));
 
 	if(viewSpeciesDialog != null) {		// uncomment these 3 lines to allow only one instance of the dialog
 		viewSpeciesDialog.dispose();

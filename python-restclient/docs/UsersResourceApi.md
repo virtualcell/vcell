@@ -1,6 +1,6 @@
 # vcell_client.UsersResourceApi
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -25,10 +25,10 @@ from vcell_client.models.acces_token_representation_record import AccesTokenRepr
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 
@@ -246,7 +246,7 @@ with vcell_client.ApiClient(configuration) as api_client:
         print("The response of UsersResourceApi->api_users_me_get:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->api_users_me_get: %s\n" % e)
+        print("Exception when calling UsersResourceApi->api_v1_users_me_get: %s\n" % e)
 ```
 
 

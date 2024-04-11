@@ -20,7 +20,7 @@ import org.vcell.util.document.User;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 
-@Path("/api/users")
+@Path("/api/v1/users")
 @RequestScoped
 public class UsersResource {
 

@@ -42,6 +42,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import cbit.vcell.export.server.*;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.solver.*;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.UserCancelException;
@@ -687,20 +688,27 @@ private ExportSpecs getExportSpecs() {
 	MathOverrides mathOverrides = getSimulation().getMathOverrides();
 
 	String[] filteredConstants = mathOverrides.getFilteredConstantNames();
-	ArrayList<String> defaultParameterValues = new ArrayList<>();
-	ArrayList<String> setParameterValues = new ArrayList<>();
+	ArrayList<String> differentParameterValues = new ArrayList<>();
 	VCDataIdentifier vcDataIdentifier = getPdeDataContext().getVCDataIdentifier();
 	if (vcDataIdentifier instanceof VCSimulationDataIdentifier){
         for (String filteredConstant : filteredConstants) {
-            defaultParameterValues.add(filteredConstant + ":" + mathOverrides.getDefaultExpression(filteredConstant).infix());
-            setParameterValues.add(filteredConstant + ":" + mathOverrides.getActualExpression(filteredConstant, ((VCSimulationDataIdentifier) vcDataIdentifier).getJobIndex()).infix());
+			String defaultValue = mathOverrides.getDefaultExpression(filteredConstant).infix();
+			String setValue = mathOverrides.getActualExpression(filteredConstant, ((VCSimulationDataIdentifier) vcDataIdentifier).getJobIndex()).infix();
+			if(!defaultValue.equals(setValue)){
+				differentParameterValues.add(filteredConstant + ":" +defaultValue + ":" + setValue);
+			}
         }
 	}
 
 	String serverSavedFileName = getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs ? ((N5Specs) getExportSettings1().getFormatSpecificSpecs()).dataSetName : "";
 
+	boolean nonSpatial = sc.getGeometry().getDimension() == 0;
+	HashMap<Integer, String> subVolumes = new HashMap<>();
+	for(SubVolume subVolume: sc.getGeometry().getGeometrySpec().getSubVolumes()){
+		subVolumes.put(subVolume.getHandle(), subVolume.getName());
+	}
 	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
-			defaultParameterValues, setParameterValues, serverSavedFileName);
+			differentParameterValues, serverSavedFileName, sc.getApplicationType().name(), nonSpatial, subVolumes);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
 	ExportSpecs exportSpecs = new ExportSpecs(
 			vcDataIdentifier,

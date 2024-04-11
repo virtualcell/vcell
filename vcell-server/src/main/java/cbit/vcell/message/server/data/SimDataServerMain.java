@@ -1,12 +1,16 @@
 package cbit.vcell.message.server.data;
 
 import cbit.vcell.resource.LibraryLoaderThread;
+import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import net.sf.ehcache.search.expression.GreaterThanOrEqual;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.dependency.server.VCellServerModule;
+
+import java.lang.annotation.Native;
 
 public class SimDataServerMain {
     public static final Logger lg = LogManager.getLogger(SimDataServerMain.class);
@@ -38,6 +42,12 @@ public class SimDataServerMain {
 
             SimDataServer simDataServer = injector.getInstance(SimDataServer.class);
             simDataServer.init(simDataServiceType);
+
+            try{
+                NativeLib.HDF5.load();
+            } catch(Exception e){
+                lg.error("Unable to load HDF-Group HDF5 Library", e);
+            }
 
         } catch (Exception e) {
             lg.error("VCellApiMain failed", e);

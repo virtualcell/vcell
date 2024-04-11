@@ -1,6 +1,7 @@
 /**
  * VCell API (development)
  * VCell API
+ * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
  * Contact: vcell_support@uchc.com
@@ -35,7 +36,7 @@ import {
 })
 export class HelloWorldService implements HelloWorldServiceInterface {
 
-    protected basePath = 'http://localhost:9000';
+    protected basePath = 'https://vcellapi-test.cam.uchc.edu';
     public defaultHeaders = new HttpHeaders();
     public configuration = new Configuration();
     public encoder: HttpParameterCodec;
@@ -135,7 +136,7 @@ export class HelloWorldService implements HelloWorldServiceInterface {
             }
         }
 
-        let localVarPath = `/api/helloworld`;
+        let localVarPath = `/api/v1/helloworld`;
         return this.httpClient.request<HelloWorldMessage>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

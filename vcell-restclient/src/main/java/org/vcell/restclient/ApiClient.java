@@ -1,6 +1,7 @@
 /*
  * VCell API (development)
  * VCell API
+ * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
  * Contact: vcell_support@uchc.com
@@ -205,7 +206,7 @@ public class ApiClient {
   }
 
   protected String getDefaultBaseUri() {
-    return "http://localhost:9000";
+    return "https://vcellapi-test.cam.uchc.edu";
   }
 
   protected HttpClient.Builder createDefaultHttpClientBuilder() {
