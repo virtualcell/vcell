@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (development)
+    VCell API
 
     VCell API
 
@@ -20,18 +20,23 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictStr
+from pydantic import BaseModel, StrictInt, StrictStr
+from pydantic import Field
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
 
-class HelloWorldMessage(BaseModel):
+class AccessTokenRepresentation(BaseModel):
     """
-    HelloWorldMessage
+    AccessTokenRepresentation
     """ # noqa: E501
-    message: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["message"]
+    token: Optional[StrictStr] = None
+    creation_date_seconds: Optional[StrictInt] = Field(default=None, alias="creationDateSeconds")
+    expire_date_seconds: Optional[StrictInt] = Field(default=None, alias="expireDateSeconds")
+    user_id: Optional[StrictStr] = Field(default=None, alias="userId")
+    user_key: Optional[StrictStr] = Field(default=None, alias="userKey")
+    __properties: ClassVar[List[str]] = ["token", "creationDateSeconds", "expireDateSeconds", "userId", "userKey"]
 
     model_config = {
         "populate_by_name": True,
@@ -50,7 +55,7 @@ class HelloWorldMessage(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of HelloWorldMessage from a JSON string"""
+        """Create an instance of AccessTokenRepresentation from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -73,7 +78,7 @@ class HelloWorldMessage(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Dict) -> Self:
-        """Create an instance of HelloWorldMessage from a dict"""
+        """Create an instance of AccessTokenRepresentation from a dict"""
         if obj is None:
             return None
 
@@ -83,10 +88,14 @@ class HelloWorldMessage(BaseModel):
         # raise errors for additional fields in the input
         for _key in obj.keys():
             if _key not in cls.__properties:
-                raise ValueError("Error due to additional fields (not defined in HelloWorldMessage) in the input: " + _key)
+                raise ValueError("Error due to additional fields (not defined in AccessTokenRepresentation) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "message": obj.get("message")
+            "token": obj.get("token"),
+            "creationDateSeconds": obj.get("creationDateSeconds"),
+            "expireDateSeconds": obj.get("expireDateSeconds"),
+            "userId": obj.get("userId"),
+            "userKey": obj.get("userKey")
         })
         return _obj
 

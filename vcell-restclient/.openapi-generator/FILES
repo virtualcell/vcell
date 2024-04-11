@@ -1,6 +1,7 @@
 .gitignore
 README.md
 api/openapi.yaml
+docs/AccesTokenRepresentationRecord.md
 docs/BioModel.md
 docs/BioModelResourceApi.md
 docs/BiomodelRef.md
@@ -29,6 +30,7 @@ src/main/java/org/vcell/restclient/api/HelloWorldApi.java
 src/main/java/org/vcell/restclient/api/PublicationResourceApi.java
 src/main/java/org/vcell/restclient/api/UsersResourceApi.java
 src/main/java/org/vcell/restclient/model/AbstractOpenApiSchema.java
+src/main/java/org/vcell/restclient/model/AccesTokenRepresentationRecord.java
 src/main/java/org/vcell/restclient/model/BioModel.java
 src/main/java/org/vcell/restclient/model/BiomodelRef.java
 src/main/java/org/vcell/restclient/model/HelloWorldMessage.java
@@ -38,4 +40,3 @@ src/main/java/org/vcell/restclient/model/Publication.java
 src/main/java/org/vcell/restclient/model/Simulation.java
 src/main/java/org/vcell/restclient/model/User.java
 src/main/java/org/vcell/restclient/model/UserIdentityJSONSafe.java
-src/test/java/org/vcell/restclient/model/UserIdentityJSONSafeTest.java

@@ -4,8 +4,8 @@ All URIs are relative to *http://localhost:9000*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**apiUsersBearerTokenGet**](UsersResourceApi.md#apiUsersBearerTokenGet) | **GET** /api/users/bearerToken |  |
-| [**apiUsersBearerTokenGetWithHttpInfo**](UsersResourceApi.md#apiUsersBearerTokenGetWithHttpInfo) | **GET** /api/users/bearerToken |  |
+| [**apiUsersBearerTokenPost**](UsersResourceApi.md#apiUsersBearerTokenPost) | **POST** /api/users/bearerToken |  |
+| [**apiUsersBearerTokenPostWithHttpInfo**](UsersResourceApi.md#apiUsersBearerTokenPostWithHttpInfo) | **POST** /api/users/bearerToken |  |
 | [**apiUsersGetIdentityGet**](UsersResourceApi.md#apiUsersGetIdentityGet) | **GET** /api/users/getIdentity |  |
 | [**apiUsersGetIdentityGetWithHttpInfo**](UsersResourceApi.md#apiUsersGetIdentityGetWithHttpInfo) | **GET** /api/users/getIdentity |  |
 | [**apiUsersMapUserPost**](UsersResourceApi.md#apiUsersMapUserPost) | **POST** /api/users/mapUser |  |
@@ -15,9 +15,9 @@ All URIs are relative to *http://localhost:9000*
 
 
 
-## apiUsersBearerTokenGet
+## apiUsersBearerTokenPost
 
-> String apiUsersBearerTokenGet(userId, userPassword, clientId)
+> AccesTokenRepresentationRecord apiUsersBearerTokenPost(userId, userPassword, clientId)
 
 
 
@@ -28,7 +28,6 @@ All URIs are relative to *http://localhost:9000*
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.UsersResourceApi;
 
@@ -36,17 +35,16 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("http://localhost:9000");
-        
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         String userId = "userId_example"; // String | 
         String userPassword = "userPassword_example"; // String | 
         String clientId = "clientId_example"; // String | 
         try {
-            String result = apiInstance.apiUsersBearerTokenGet(userId, userPassword, clientId);
+            AccesTokenRepresentationRecord result = apiInstance.apiUsersBearerTokenPost(userId, userPassword, clientId);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling UsersResourceApi#apiUsersBearerTokenGet");
+            System.err.println("Exception when calling UsersResourceApi#apiUsersBearerTokenPost");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -67,12 +65,12 @@ public class Example {
 
 ### Return type
 
-**String**
+[**AccesTokenRepresentationRecord**](AccesTokenRepresentationRecord.md)
 
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -83,12 +81,10 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
-## apiUsersBearerTokenGetWithHttpInfo
+## apiUsersBearerTokenPostWithHttpInfo
 
-> ApiResponse<String> apiUsersBearerTokenGet apiUsersBearerTokenGetWithHttpInfo(userId, userPassword, clientId)
+> ApiResponse<AccesTokenRepresentationRecord> apiUsersBearerTokenPost apiUsersBearerTokenPostWithHttpInfo(userId, userPassword, clientId)
 
 
 
@@ -100,7 +96,6 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.UsersResourceApi;
 
@@ -108,19 +103,18 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("http://localhost:9000");
-        
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         String userId = "userId_example"; // String | 
         String userPassword = "userPassword_example"; // String | 
         String clientId = "clientId_example"; // String | 
         try {
-            ApiResponse<String> response = apiInstance.apiUsersBearerTokenGetWithHttpInfo(userId, userPassword, clientId);
+            ApiResponse<AccesTokenRepresentationRecord> response = apiInstance.apiUsersBearerTokenPostWithHttpInfo(userId, userPassword, clientId);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling UsersResourceApi#apiUsersBearerTokenGet");
+            System.err.println("Exception when calling UsersResourceApi#apiUsersBearerTokenPost");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -141,12 +135,12 @@ public class Example {
 
 ### Return type
 
-ApiResponse<**String**>
+ApiResponse<[**AccesTokenRepresentationRecord**](AccesTokenRepresentationRecord.md)>
 
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -157,8 +151,6 @@ ApiResponse<**String**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 
 ## apiUsersGetIdentityGet
@@ -174,6 +166,7 @@ ApiResponse<**String**>
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.UsersResourceApi;
 
@@ -181,6 +174,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("http://localhost:9000");
+        
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
@@ -208,7 +202,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -219,6 +213,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## apiUsersGetIdentityGetWithHttpInfo
 
@@ -234,6 +230,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.UsersResourceApi;
 
@@ -241,6 +238,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("http://localhost:9000");
+        
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
@@ -270,7 +268,7 @@ ApiResponse<[**UserIdentityJSONSafe**](UserIdentityJSONSafe.md)>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -281,6 +279,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## apiUsersMapUserPost
@@ -296,6 +296,7 @@ No authorization required
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.UsersResourceApi;
 
@@ -303,6 +304,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("http://localhost:9000");
+        
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         MapUser mapUser = new MapUser(); // MapUser | 
@@ -334,7 +336,7 @@ public class Example {
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -345,6 +347,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## apiUsersMapUserPostWithHttpInfo
 
@@ -360,6 +364,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.UsersResourceApi;
 
@@ -367,6 +372,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("http://localhost:9000");
+        
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         MapUser mapUser = new MapUser(); // MapUser | 
@@ -400,7 +406,7 @@ ApiResponse<**Boolean**>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -411,6 +417,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## apiUsersMeGet

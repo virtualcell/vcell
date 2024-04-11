@@ -1,5 +1,5 @@
 /**
- * VCell API
+ * VCell API (development)
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -18,6 +18,8 @@ import { HttpClient, HttpHeaders, HttpParams,
 import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
+// @ts-ignore
+import { AccesTokenRepresentationRecord } from '../model/acces-token-representation-record';
 // @ts-ignore
 import { MapUser } from '../model/map-user';
 // @ts-ignore
@@ -118,18 +120,12 @@ export class UsersResourceService implements UsersResourceServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public apiUsersBearerTokenGet(userId?: string, userPassword?: string, clientId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<string>;
-    public apiUsersBearerTokenGet(userId?: string, userPassword?: string, clientId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<string>>;
-    public apiUsersBearerTokenGet(userId?: string, userPassword?: string, clientId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<string>>;
-    public apiUsersBearerTokenGet(userId?: string, userPassword?: string, clientId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<AccesTokenRepresentationRecord>;
+    public apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<AccesTokenRepresentationRecord>>;
+    public apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<AccesTokenRepresentationRecord>>;
+    public apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
-
-        let localVarCredential: string | undefined;
-        // authentication (openId) required
-        localVarCredential = this.configuration.lookupCredential('openId');
-        if (localVarCredential) {
-        }
 
         let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
         if (localVarHttpHeaderAcceptSelected === undefined) {
@@ -186,7 +182,7 @@ export class UsersResourceService implements UsersResourceServiceInterface {
         }
 
         let localVarPath = `/api/users/bearerToken`;
-        return this.httpClient.request<string>('get', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<AccesTokenRepresentationRecord>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
@@ -209,6 +205,12 @@ export class UsersResourceService implements UsersResourceServiceInterface {
     public apiUsersGetIdentityGet(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
+
+        let localVarCredential: string | undefined;
+        // authentication (openId) required
+        localVarCredential = this.configuration.lookupCredential('openId');
+        if (localVarCredential) {
+        }
 
         let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
         if (localVarHttpHeaderAcceptSelected === undefined) {
@@ -263,6 +265,12 @@ export class UsersResourceService implements UsersResourceServiceInterface {
     public apiUsersMapUserPost(mapUser?: MapUser, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
+
+        let localVarCredential: string | undefined;
+        // authentication (openId) required
+        localVarCredential = this.configuration.lookupCredential('openId');
+        if (localVarCredential) {
+        }
 
         let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
         if (localVarHttpHeaderAcceptSelected === undefined) {

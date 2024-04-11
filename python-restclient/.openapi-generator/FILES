@@ -1,6 +1,7 @@
 .github/workflows/python.yml
 .gitignore
 README.md
+docs/AccesTokenRepresentationRecord.md
 docs/BioModel.md
 docs/BioModelResourceApi.md
 docs/BiomodelRef.md
@@ -16,7 +17,6 @@ docs/UserIdentityJSONSafe.md
 docs/UsersResourceApi.md
 pyproject.toml
 test/__init__.py
-test/test_user_identity_json_safe.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py
@@ -29,6 +29,7 @@ vcell_client/api_response.py
 vcell_client/configuration.py
 vcell_client/exceptions.py
 vcell_client/models/__init__.py
+vcell_client/models/acces_token_representation_record.py
 vcell_client/models/bio_model.py
 vcell_client/models/biomodel_ref.py
 vcell_client/models/hello_world_message.py

@@ -1,3 +1,4 @@
+export * from './acces-token-representation-record';
 export * from './bio-model';
 export * from './biomodel-ref';
 export * from './hello-world-message';

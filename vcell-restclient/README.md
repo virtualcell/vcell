@@ -1,6 +1,6 @@
 # vcell-restclient
 
-VCell API
+VCell API (development)
 
 - API version: 1.0.1
 
@@ -133,8 +133,8 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/publications | Get all publications
 *PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/publications | Create publication
 *PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/publications | Create publication
-*UsersResourceApi* | [**apiUsersBearerTokenGet**](docs/UsersResourceApi.md#apiUsersBearerTokenGet) | **GET** /api/users/bearerToken | 
-*UsersResourceApi* | [**apiUsersBearerTokenGetWithHttpInfo**](docs/UsersResourceApi.md#apiUsersBearerTokenGetWithHttpInfo) | **GET** /api/users/bearerToken | 
+*UsersResourceApi* | [**apiUsersBearerTokenPost**](docs/UsersResourceApi.md#apiUsersBearerTokenPost) | **POST** /api/users/bearerToken | 
+*UsersResourceApi* | [**apiUsersBearerTokenPostWithHttpInfo**](docs/UsersResourceApi.md#apiUsersBearerTokenPostWithHttpInfo) | **POST** /api/users/bearerToken | 
 *UsersResourceApi* | [**apiUsersGetIdentityGet**](docs/UsersResourceApi.md#apiUsersGetIdentityGet) | **GET** /api/users/getIdentity | 
 *UsersResourceApi* | [**apiUsersGetIdentityGetWithHttpInfo**](docs/UsersResourceApi.md#apiUsersGetIdentityGetWithHttpInfo) | **GET** /api/users/getIdentity | 
 *UsersResourceApi* | [**apiUsersMapUserPost**](docs/UsersResourceApi.md#apiUsersMapUserPost) | **POST** /api/users/mapUser | 
@@ -145,6 +145,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation for Models
 
+ - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)

@@ -11,11 +11,11 @@
  */
 
 
-export interface MathmodelRef { 
-    mmKey?: number;
-    name?: string;
-    ownerName?: string;
-    ownerKey?: number;
-    versionFlag?: number;
+export interface AccesTokenRepresentationRecord { 
+    token?: string;
+    creationDateSeconds?: number;
+    expireDateSeconds?: number;
+    userId?: string;
+    userKey?: string;
 }
 

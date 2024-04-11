@@ -4,14 +4,14 @@ All URIs are relative to *http://localhost:9000*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**api_users_bearer_token_get**](UsersResourceApi.md#api_users_bearer_token_get) | **GET** /api/users/bearerToken | 
+[**api_users_bearer_token_post**](UsersResourceApi.md#api_users_bearer_token_post) | **POST** /api/users/bearerToken | 
 [**api_users_get_identity_get**](UsersResourceApi.md#api_users_get_identity_get) | **GET** /api/users/getIdentity | 
 [**api_users_map_user_post**](UsersResourceApi.md#api_users_map_user_post) | **POST** /api/users/mapUser | 
 [**api_users_me_get**](UsersResourceApi.md#api_users_me_get) | **GET** /api/users/me | 
 
 
-# **api_users_bearer_token_get**
-> str api_users_bearer_token_get(user_id=user_id, user_password=user_password, client_id=client_id)
+# **api_users_bearer_token_post**
+> AccesTokenRepresentationRecord api_users_bearer_token_post(user_id=user_id, user_password=user_password, client_id=client_id)
 
 
 
@@ -21,6 +21,7 @@ Method | HTTP request | Description
 import time
 import os
 import vcell_client
+from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -30,10 +31,6 @@ configuration = vcell_client.Configuration(
     host = "http://localhost:9000"
 )
 
-# The client must configure the authentication and authorization parameters
-# in accordance with the API server security policy.
-# Examples for each auth method are provided below, use the example that
-# satisfies your auth use case.
 
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
@@ -44,11 +41,11 @@ with vcell_client.ApiClient(configuration) as api_client:
     client_id = 'client_id_example' # str |  (optional)
 
     try:
-        api_response = api_instance.api_users_bearer_token_get(user_id=user_id, user_password=user_password, client_id=client_id)
-        print("The response of UsersResourceApi->api_users_bearer_token_get:\n")
+        api_response = api_instance.api_users_bearer_token_post(user_id=user_id, user_password=user_password, client_id=client_id)
+        print("The response of UsersResourceApi->api_users_bearer_token_post:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->api_users_bearer_token_get: %s\n" % e)
+        print("Exception when calling UsersResourceApi->api_users_bearer_token_post: %s\n" % e)
 ```
 
 
@@ -63,11 +60,11 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-**str**
+[**AccesTokenRepresentationRecord**](AccesTokenRepresentationRecord.md)
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -78,8 +75,6 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**401** | Not Authorized |  -  |
-**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -104,6 +99,10 @@ configuration = vcell_client.Configuration(
     host = "http://localhost:9000"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
 
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
@@ -129,7 +128,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -140,6 +139,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -164,6 +165,10 @@ configuration = vcell_client.Configuration(
     host = "http://localhost:9000"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
 
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
@@ -193,7 +198,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -204,6 +209,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -1,5 +1,5 @@
 /**
- * VCell API (development)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -11,11 +11,11 @@
  */
 
 
-export interface MathmodelRef { 
-    mmKey?: number;
-    name?: string;
-    ownerName?: string;
-    ownerKey?: number;
-    versionFlag?: number;
+export interface AccessTokenRepresentation { 
+    token?: string;
+    creationDateSeconds?: number;
+    expireDateSeconds?: number;
+    userId?: string;
+    userKey?: string;
 }
 

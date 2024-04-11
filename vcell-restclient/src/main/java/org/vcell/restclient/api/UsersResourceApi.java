@@ -1,5 +1,5 @@
 /*
- * VCell API
+ * VCell API (development)
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -21,6 +21,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.MapUser;
 import org.vcell.restclient.model.User;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
@@ -81,11 +82,11 @@ public class UsersResourceApi {
    * @param userId  (optional)
    * @param userPassword  (optional)
    * @param clientId  (optional)
-   * @return String
+   * @return AccesTokenRepresentationRecord
    * @throws ApiException if fails to make API call
    */
-  public String apiUsersBearerTokenGet(String userId, String userPassword, String clientId) throws ApiException {
-    ApiResponse<String> localVarResponse = apiUsersBearerTokenGetWithHttpInfo(userId, userPassword, clientId);
+  public AccesTokenRepresentationRecord apiUsersBearerTokenPost(String userId, String userPassword, String clientId) throws ApiException {
+    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = apiUsersBearerTokenPostWithHttpInfo(userId, userPassword, clientId);
     return localVarResponse.getData();
   }
 
@@ -95,11 +96,11 @@ public class UsersResourceApi {
    * @param userId  (optional)
    * @param userPassword  (optional)
    * @param clientId  (optional)
-   * @return ApiResponse&lt;String&gt;
+   * @return ApiResponse&lt;AccesTokenRepresentationRecord&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> apiUsersBearerTokenGetWithHttpInfo(String userId, String userPassword, String clientId) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersBearerTokenGetRequestBuilder(userId, userPassword, clientId);
+  public ApiResponse<AccesTokenRepresentationRecord> apiUsersBearerTokenPostWithHttpInfo(String userId, String userPassword, String clientId) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = apiUsersBearerTokenPostRequestBuilder(userId, userPassword, clientId);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -109,12 +110,12 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersBearerTokenGet", localVarResponse);
+          throw getApiException("apiUsersBearerTokenPost", localVarResponse);
         }
-        return new ApiResponse<String>(
+        return new ApiResponse<AccesTokenRepresentationRecord>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<String>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<AccesTokenRepresentationRecord>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -127,7 +128,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiUsersBearerTokenGetRequestBuilder(String userId, String userPassword, String clientId) throws ApiException {
+  private HttpRequest.Builder apiUsersBearerTokenPostRequestBuilder(String userId, String userPassword, String clientId) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -156,7 +157,7 @@ public class UsersResourceApi {
     }
     localVarRequestBuilder
         .header("Content-Type", entity.getContentType().getValue())
-        .method("GET", HttpRequest.BodyPublishers
+        .method("POST", HttpRequest.BodyPublishers
             .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray())));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);

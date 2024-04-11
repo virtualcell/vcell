@@ -3,7 +3,7 @@
 # flake8: noqa
 
 """
-    VCell API
+    VCell API (development)
 
     VCell API
 
@@ -35,6 +35,7 @@ from vcell_client.exceptions import ApiAttributeError
 from vcell_client.exceptions import ApiException
 
 # import models into sdk package
+from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.hello_world_message import HelloWorldMessage

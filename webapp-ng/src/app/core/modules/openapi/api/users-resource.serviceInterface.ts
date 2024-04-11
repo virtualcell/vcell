@@ -1,5 +1,5 @@
 /**
- * VCell API
+ * VCell API (development)
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -13,6 +13,7 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
+import { AccesTokenRepresentationRecord } from '../model/models';
 import { MapUser } from '../model/models';
 import { User } from '../model/models';
 import { UserIdentityJSONSafe } from '../model/models';
@@ -33,7 +34,7 @@ export interface UsersResourceServiceInterface {
      * @param userPassword 
      * @param clientId 
      */
-    apiUsersBearerTokenGet(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<string>;
+    apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
 
     /**
      * 

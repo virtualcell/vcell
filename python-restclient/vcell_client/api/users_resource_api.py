@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API
+    VCell API (development)
 
     VCell API
 
@@ -28,6 +28,7 @@ from pydantic import StrictStr
 
 from typing import Optional
 
+from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
 from vcell_client.models.map_user import MapUser
 from vcell_client.models.user import User
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
@@ -51,7 +52,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_bearer_token_get(
+    def api_users_bearer_token_post(
         self,
         user_id: Optional[StrictStr] = None,
         user_password: Optional[StrictStr] = None,
@@ -68,8 +69,8 @@ class UsersResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> str:
-        """api_users_bearer_token_get
+    ) -> AccesTokenRepresentationRecord:
+        """api_users_bearer_token_post
 
 
         :param user_id:
@@ -100,7 +101,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_bearer_token_get_serialize(
+        _param = self._api_users_bearer_token_post_serialize(
             user_id=user_id,
             user_password=user_password,
             client_id=client_id,
@@ -111,9 +112,7 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "str",
-            '401': None,
-            '403': None
+            '200': "AccesTokenRepresentationRecord"
             
         }
         response_data = self.api_client.call_api(
@@ -128,7 +127,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_bearer_token_get_with_http_info(
+    def api_users_bearer_token_post_with_http_info(
         self,
         user_id: Optional[StrictStr] = None,
         user_password: Optional[StrictStr] = None,
@@ -145,8 +144,8 @@ class UsersResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[str]:
-        """api_users_bearer_token_get
+    ) -> ApiResponse[AccesTokenRepresentationRecord]:
+        """api_users_bearer_token_post
 
 
         :param user_id:
@@ -177,7 +176,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_bearer_token_get_serialize(
+        _param = self._api_users_bearer_token_post_serialize(
             user_id=user_id,
             user_password=user_password,
             client_id=client_id,
@@ -188,9 +187,7 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "str",
-            '401': None,
-            '403': None
+            '200': "AccesTokenRepresentationRecord"
             
         }
         response_data = self.api_client.call_api(
@@ -205,7 +202,7 @@ class UsersResourceApi:
 
 
     @validate_call
-    def api_users_bearer_token_get_without_preload_content(
+    def api_users_bearer_token_post_without_preload_content(
         self,
         user_id: Optional[StrictStr] = None,
         user_password: Optional[StrictStr] = None,
@@ -223,7 +220,7 @@ class UsersResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """api_users_bearer_token_get
+        """api_users_bearer_token_post
 
 
         :param user_id:
@@ -254,7 +251,7 @@ class UsersResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._api_users_bearer_token_get_serialize(
+        _param = self._api_users_bearer_token_post_serialize(
             user_id=user_id,
             user_password=user_password,
             client_id=client_id,
@@ -265,9 +262,7 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "str",
-            '401': None,
-            '403': None
+            '200': "AccesTokenRepresentationRecord"
             
         }
         response_data = self.api_client.call_api(
@@ -277,7 +272,7 @@ class UsersResourceApi:
         return response_data.response
 
 
-    def _api_users_bearer_token_get_serialize(
+    def _api_users_bearer_token_post_serialize(
         self,
         user_id,
         user_password,
@@ -337,11 +332,10 @@ class UsersResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
-            'openId'
         ]
 
         return self.api_client.param_serialize(
-            method='GET',
+            method='POST',
             resource_path='/api/users/bearerToken',
             path_params=_path_params,
             query_params=_query_params,
@@ -407,7 +401,9 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "UserIdentityJSONSafe"
+            '200': "UserIdentityJSONSafe",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -470,7 +466,9 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "UserIdentityJSONSafe"
+            '200': "UserIdentityJSONSafe",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -533,7 +531,9 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "UserIdentityJSONSafe"
+            '200': "UserIdentityJSONSafe",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -581,6 +581,7 @@ class UsersResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -654,7 +655,9 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "bool"
+            '200': "bool",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -721,7 +724,9 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "bool"
+            '200': "bool",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -788,7 +793,9 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "bool"
+            '200': "bool",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -852,6 +859,7 @@ class UsersResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'openId'
         ]
 
         return self.api_client.param_serialize(
