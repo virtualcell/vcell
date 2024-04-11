@@ -10,13 +10,12 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.jboss.resteasy.reactive.NoCache;
 import org.vcell.api.common.AccessTokenRepresentation;
-import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.auth.OldUserService;
 import org.vcell.restq.db.OracleAgroalConnectionFactory;
+import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.UserLoginInfo;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -29,12 +28,10 @@ public class UsersResource {
     SecurityIdentity securityIdentity;
     @Inject
     OldUserService oldUserService;
-    private final DatabaseServerImpl databaseServerImpl;
-    private final AdminDBTopLevel adminDBTopLevel;
+    private final UserRestDB userRestDB;
 
-    public UsersResource(OracleAgroalConnectionFactory oracleAgroalConnectionFactory) throws DataAccessException {
-        databaseServerImpl = new DatabaseServerImpl(oracleAgroalConnectionFactory, oracleAgroalConnectionFactory.getKeyFactory());
-        adminDBTopLevel = databaseServerImpl.getAdminDBTopLevel();
+    public UsersResource(OracleAgroalConnectionFactory oracleAgroalConnectionFactory) throws DataAccessException, SQLException {
+        userRestDB = new UserRestDB(oracleAgroalConnectionFactory);
     }
 
     @GET
@@ -54,51 +51,54 @@ public class UsersResource {
 
     @POST
     @Path("/mapUser")
+    @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_JSON)
     public boolean mapUser(MapUser mapUser) throws SQLException, DataAccessException {
-//        MapUser mapUser = MapUser.getRecordFromString(jsonWithUserAndPassword);
-        org.vcell.util.document.User user = adminDBTopLevel.getUser(mapUser.userID, new UserLoginInfo.DigestedPassword(mapUser.password), true, false);
-        if(user == null){
-            return false;
-        }
-        String identity = CustomSecurityIdentityAugmentor.getAuth0ID(securityIdentity);
-        UserIdentityTable.IdentityProvider identityProvider = identity.startsWith("auth0") ? UserIdentityTable.IdentityProvider.AUTH0 : UserIdentityTable.IdentityProvider.KEYCLOAK;
-        adminDBTopLevel.setUserIdentityFromIdentityProvider(user, identity, identityProvider, true);
-        return true;
+        return userRestDB.mapUserIdentity(securityIdentity, mapUser);
     }
 
     @GET
     @Path("/getIdentity")
+    @RolesAllowed("user")
     public UserIdentityJSONSafe getIdentity() throws SQLException, DataAccessException {
-        String identity = securityIdentity.getPrincipal().getName();
-        UserIdentityTable.IdentityProvider identityProvider = identity.startsWith("auth0") ? UserIdentityTable.IdentityProvider.AUTH0 : UserIdentityTable.IdentityProvider.KEYCLOAK;
-        UserIdentity userIdentity = adminDBTopLevel.getUserIdentityFromSubjectAndIdentityProvider(identity, identityProvider, true);
+        UserIdentity userIdentity = userRestDB.getUserIdentity(securityIdentity);
         if(userIdentity == null){
-            return new UserIdentityJSONSafe(null, null, "", null);
+            return new UserIdentityJSONSafe(null, null, null, null);
         }
         return UserIdentityJSONSafe.fromUserIdentity(userIdentity);
     }
 
-    @GET
+    @POST
     @Path("/bearerToken")
-    @RolesAllowed("user")
-    @Produces(MediaType.APPLICATION_JSON)
+//    @RolesAllowed("user")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     // Not using user PASSWD because they should already be authenticated with OIDC
-    public String getBearerToken(@FormParam("user_id") String userID, @FormParam("user_password") String passwd, @FormParam("client_id") String client_id) throws SQLException, DataAccessException {
+    public AccesTokenRepresentationRecord generateBearerToken(@FormParam("user_id") String userID, @FormParam("user_password") String passwd, @FormParam("client_id") String client_id) throws SQLException, DataAccessException {
         if(securityIdentity.isAnonymous()){
-            return null;
+            return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
-        ApiClient apiClient = oldUserService.getApiClient(client_id);
-        UserIdentity identityUser = adminDBTopLevel.getUserIdentityFromSubjectAndIdentityProvider(
-                "", UserIdentityTable.IdentityProvider.KEYCLOAK, true);
-        if(String.valueOf(identityUser.id()).equals(userID)){
-            return null;
+        org.vcell.util.document.User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
+        if(vcellUser == null || !vcellUser.getID().toString().equals(userID)){
+            return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
-        ApiAccessToken apiAccessToken = oldUserService.generateApiAccessToken(apiClient.getKey(), identityUser.user());
-        AccessTokenRepresentation tokenRep = new AccessTokenRepresentation(apiAccessToken.getToken());
-        Gson gson = new Gson();
-        return gson.toJson(tokenRep);
+//        UserIdentity identityUser = new UserIdentity(null, new org.vcell.util.document.User("vcellNagios", new KeyValue("3")), null, null);
+        ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), vcellUser);
+//        AccessTokenRepresentation tokenRep = new AccessTokenRepresentation(apiAccessToken.getToken());
+//        Gson gson = new Gson();
+//        return gson.toJson(tokenRep);
+        return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(new AccessTokenRepresentation(apiAccessToken.getToken()));
+    }
+
+    public record AccesTokenRepresentationRecord(
+            String token,
+            long creationDateSeconds,
+            long expireDateSeconds,
+            String userId,
+            String userKey
+    ){
+        public static AccesTokenRepresentationRecord getRecordFromAccessTokenRepresentation(AccessTokenRepresentation atr){
+            return new AccesTokenRepresentationRecord(atr.token, atr.creationDateSeconds, atr.expireDateSeconds, atr.userId, atr.userKey);
+        }
     }
 
     public record MapUser(
