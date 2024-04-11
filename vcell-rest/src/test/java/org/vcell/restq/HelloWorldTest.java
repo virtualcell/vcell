@@ -27,7 +27,7 @@ public class HelloWorldTest {
 
         // verify that list publications is empty
        given().auth().oauth2(keycloakClient.getAccessToken(nonpubuser))
-                .when().get("/api/helloworld")
+                .when().get("/api/v1/helloworld")
                 .then()
                 .statusCode(200)
                 .body("message", is("Hello Security Roles: [user]"));
