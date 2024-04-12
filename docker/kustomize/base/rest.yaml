@@ -37,11 +37,29 @@ spec:
             - secretRef:
                 name: rest-secrets
           #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
+          env:
+            - name: vcellapi_privatekeyfile
+              value: "/run/secrets/jwt-secret/apiprivkey"
+            - name: vcellapi_publickeyfile
+              value: "/run/secrets/jwt-secret/apipubkey"
           ports:
             - containerPort: 80
+          volumeMounts:
+            - name: jwt-secret
+              mountPath: /run/secrets/jwt-secret
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-secret
+      volumes:
+        - name: jwt-secret
+          secret:
+            items:
+              - key: apiprivkey
+                path: apiprivkey
+              - key: apipubkey
+                path: apipubkey
+            secretName: jwt-secret
+
 ---
 apiVersion: v1
 kind: Service

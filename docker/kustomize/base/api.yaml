@@ -38,12 +38,18 @@ spec:
               value: "/run/secrets/api-secrets/jmspswd"
             - name: dbpswdfile
               value: "/run/secrets/api-secrets/dbpswd"
+            - name: vcellapi_privatekeyfile
+              value: "/run/secrets/jwt-secret/apiprivkey"
+            - name: vcellapi_publickeyfile
+              value: "/run/secrets/jwt-secret/apipubkey"
           ports:
             - containerPort: 8080
             - containerPort: 8000
           volumeMounts:
             - name: api-secrets
               mountPath: /run/secrets/api-secrets
+            - name: jwt-secret
+              mountPath: /run/secrets/jwt-secret
 
             - name: nfs-primary-pvc
               mountPath: /n5DataDir
@@ -73,6 +79,14 @@ spec:
               - key: jmspswd
                 path: jmspswd
             secretName: api-secrets
+        - name: jwt-secret
+          secret:
+            items:
+              - key: apiprivkey
+                path: apiprivkey
+              - key: apipubkey
+                path: apipubkey
+            secretName: jwt-secret
         - name: nfs-primary-pvc
           persistentVolumeClaim:
             claimName: nfs-primary-pvc
