@@ -30,7 +30,7 @@ spec:
               cpu: "200m"
             limits:
               memory: "1000Mi"
-#              cpu: "500m"
+          #              cpu: "500m"
           envFrom:
             - configMapRef:
                 name: rest-config
@@ -38,10 +38,12 @@ spec:
                 name: rest-secrets
           #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
           env:
-            - name: vcellapi_privatekeyfile
-              value: "/run/secrets/jwt-secret/apiprivkey"
-            - name: vcellapi_publickeyfile
-              value: "/run/secrets/jwt-secret/apipubkey"
+            - name: JAVA_OPTS
+              value: >
+                -Dquarkus.http.host=0.0.0.0
+                -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+                -Dvcellapi.privateKey.file=/run/secrets/jwt-secret/apiprivkey
+                -Dvcellapi.publicKey.file=/run/secrets/jwt-secret/apipubkey
           ports:
             - containerPort: 80
           volumeMounts:

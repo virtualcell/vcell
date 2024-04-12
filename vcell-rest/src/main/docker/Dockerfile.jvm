@@ -90,10 +90,12 @@ COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
 USER 185
-ENV vcellapi_privatekeyfile="vcellapi_privatekeyfile-not-set"
-ENV vcellapi_publickeyfile="vcellapi_publickeyfile-not-set"
 
-ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -Dvcellapi.privateKey.file=${vcellapi_privatekeyfile} -Dvcellapi.publicKey.file=${vcellapi_publickeyfile}"
+ENV JAVA_OPTS="\
+-Dquarkus.http.host=0.0.0.0 \
+-Djava.util.logging.manager=org.jboss.logmanager.LogManager \
+-Dvcellapi.privateKey.file=/run/secrets/jwt-secret/apiprivkey \
+-Dvcellapi.publicKey.file=/run/secrets/jwt-secret/apipubkey"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
 
 ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
