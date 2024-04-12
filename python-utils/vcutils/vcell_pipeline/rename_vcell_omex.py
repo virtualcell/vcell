@@ -43,7 +43,10 @@ def rename_published_omex(api_base_url: str, subject_dir: Path) -> None:
             continue
         if file_key in id_to_name_mapping:
             changes_count += 1
-            os.rename(os.path.join(subject_dir, file), os.path.join(subject_dir, id_to_name_mapping[file_key]))
+            new_name = id_to_name_mapping[file_key]
+            if new_name[-5:] != ".omex":
+                new_name += ".omex"
+            os.rename(os.path.join(subject_dir, file), os.path.join(subject_dir, new_name))
         else:
             print(" > No corresponding file to rename with key: {}".format(file_key))
 
@@ -56,5 +59,5 @@ def rename_published_omex(api_base_url: str, subject_dir: Path) -> None:
 if __name__ == "__main__":
     rename_published_omex(
         api_base_url="https://vcellapi-beta.cam.uchc.edu:8080/api/v0",
-        subject_dir=Path("/home/ldrescher/Documents/convertedFiles")
+        subject_dir=Path("/home/ldrescher/VCell/vcdb/pretty_name_exchange/")
     )
