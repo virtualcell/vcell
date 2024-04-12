@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
@@ -44,40 +45,42 @@ public class UsersApiTest {
     OracleAgroalConnectionFactory oracleAgroalConnectionFactory;
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
-    AdminDBTopLevel adminDBTopLevel;
-
     private ApiClient aliceAPIClient;
     private ApiClient bobAPIClient;
 
-//    @AfterEach
+    @BeforeEach
+    public void createClients(){
+        aliceAPIClient = TestEndpointUtils.createAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
+        bobAPIClient = TestEndpointUtils.createAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
+    }
+
+    @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
-//        adminDBTopLevel.removeAllUsersIdentities(TestEndpointUtils.vcellNagiosUser, true);
-//        adminDBTopLevel.removeAllUsersIdentities(TestEndpointUtils.administratorUser, true);
+        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(oracleAgroalConnectionFactory, oracleAgroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
+        adminDBTopLevel.removeAllUsersIdentities(TestEndpointUtils.vcellNagiosUser, true);
+        adminDBTopLevel.removeAllUsersIdentities(TestEndpointUtils.administratorUser, true);
     }
 
     @Test
     public void testMapUser() throws ApiException, SQLException, DataAccessException {
-        adminDBTopLevel = new DatabaseServerImpl(oracleAgroalConnectionFactory, oracleAgroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
-        ApiClient aliceClient = TestEndpointUtils.createAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
-        UsersResourceApi usersResourceApi = new UsersResourceApi(aliceClient);
-        User testUser = new User("vcellNagios", new KeyValue(new BigDecimal(3)));
-        String oidcName = "alice";
-
-        Boolean mapped = TestEndpointUtils.mapClientToNagiosUser(usersResourceApi);
+        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(oracleAgroalConnectionFactory, oracleAgroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
+        UsersResourceApi aliceUserResourceAPI = new UsersResourceApi(aliceAPIClient);
+        Boolean mapped = TestEndpointUtils.mapClientToNagiosUser(aliceUserResourceAPI);
         assert (mapped.booleanValue());
 
-        UserIdentityJSONSafe apiRetrievedIdentity = usersResourceApi.apiUsersGetIdentityGet();
-        UserIdentity dbRetrievedIdentity = adminDBTopLevel.getUserIdentityFromSubjectAndIdentityProvider(oidcName, UserIdentityTable.IdentityProvider.KEYCLOAK,true);
+        UserIdentityJSONSafe apiRetrievedIdentity = aliceUserResourceAPI.apiUsersGetIdentityGet();
+        UserIdentity dbRetrievedIdentity = adminDBTopLevel.getUserIdentityFromSubjectAndIdentityProvider(TestEndpointUtils.TestOIDCUsers.alice.name(),
+                UserIdentityTable.IdentityProvider.KEYCLOAK,true);
         assert (apiRetrievedIdentity != null);
 
-        Assertions.assertEquals(apiRetrievedIdentity.getUserName(), "vcellNagios");
-        Assertions.assertEquals(apiRetrievedIdentity.getSubject(), oidcName);
+        Assertions.assertEquals(apiRetrievedIdentity.getUserName(), TestEndpointUtils.vcellNagiosUser.getName());
+        Assertions.assertEquals(apiRetrievedIdentity.getSubject(), TestEndpointUtils.TestOIDCUsers.alice.name());
 
         Assertions.assertEquals(apiRetrievedIdentity.getUserName(), dbRetrievedIdentity.user().getName());
         Assertions.assertEquals(apiRetrievedIdentity.getSubject(), dbRetrievedIdentity.subject());
 
-        adminDBTopLevel.deleteUserIdentityFromIdentityProvider(testUser, UserIdentityTable.IdentityProvider.KEYCLOAK, true);
-        apiRetrievedIdentity = usersResourceApi.apiUsersGetIdentityGet();
+        adminDBTopLevel.deleteUserIdentityFromIdentityProvider(TestEndpointUtils.vcellNagiosUser, UserIdentityTable.IdentityProvider.KEYCLOAK, true);
+        apiRetrievedIdentity = aliceUserResourceAPI.apiUsersGetIdentityGet();
         assert (apiRetrievedIdentity.getSubject() == null);
 
 //        assert (userIdentity.getUser());
@@ -88,10 +91,8 @@ public class UsersApiTest {
 //    https://quarkus.io/guides/security-testing
     @Test
     public void testOldAPITokenGeneration() throws ApiException {
-        ApiClient aliceClient = TestEndpointUtils.createAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
-        ApiClient bobClient = TestEndpointUtils.createAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
-        UsersResourceApi aliceUserApi = new UsersResourceApi(aliceClient);
-        UsersResourceApi bobUserApi = new UsersResourceApi(bobClient);
+        UsersResourceApi aliceUserApi = new UsersResourceApi(aliceAPIClient);
+        UsersResourceApi bobUserApi = new UsersResourceApi(bobAPIClient);
         TestEndpointUtils.mapClientToNagiosUser(aliceUserApi);
 
         AccesTokenRepresentationRecord token = aliceUserApi.apiUsersBearerTokenPost(TestEndpointUtils.userNagiosID, "", "123");
