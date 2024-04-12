@@ -14,6 +14,6 @@ public class Hdf5SedmlResultsNonspatial extends Hdf5SedmlResultData {
     /**
      * Map of all data contained within a job relevant to HDF5 formatted files
      */
-    public Map<DataSet, List<double[]>> allJobResults = new LinkedHashMap<>();
+    public NonspatialDataMapping dataItems = new NonspatialDataMapping();
     
 }
