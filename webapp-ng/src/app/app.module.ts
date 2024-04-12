@@ -29,6 +29,7 @@ import {environment as env} from '../environments/environment';
 import {PublicationListComponent} from './components/publication-list/publication-list.component';
 import {PublicationEditComponent} from './components/publication-edit/publication-edit.component';
 import {ApiModule} from "./core/modules/openapi";
+import {VcellIdentityComponent} from "./components/vcell-identity/vcell-identity.component";
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import {ApiModule} from "./core/modules/openapi";
     LoadingComponent,
     PublicationListComponent,
     PublicationEditComponent,
+    VcellIdentityComponent,
     ErrorComponent
   ],
   imports: [

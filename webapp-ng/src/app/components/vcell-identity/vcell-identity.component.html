@@ -1,0 +1,13 @@
+<div class="container mt-5" *ngIf="auth.user$ | async as user">
+  <h2>VCell Identity</h2>
+  <p>Current VCell User ID: {{ vcellUserId }}</p>
+
+  <h3>Set VCell Identity</h3>
+  <form (ngSubmit)="setVCellIdentity()">
+    <label for="userid">User ID:</label><br>
+    <input type="text" id="userid" name="userid" [(ngModel)]="mapUser.userID"><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" [(ngModel)]="mapUser.password"><br>
+    <input type="submit" value="Submit">
+  </form>
+</div>
