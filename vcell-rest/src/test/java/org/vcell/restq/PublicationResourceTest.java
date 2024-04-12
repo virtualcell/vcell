@@ -3,7 +3,7 @@ package org.vcell.restq;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
@@ -23,7 +23,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 public class PublicationResourceTest {
 
     @Inject

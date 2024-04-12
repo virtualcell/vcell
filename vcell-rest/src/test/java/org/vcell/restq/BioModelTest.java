@@ -1,6 +1,6 @@
 package org.vcell.restq;
 
-import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.response.Response;
 import jakarta.ws.rs.core.MediaType;
@@ -13,7 +13,7 @@ import java.sql.SQLException;
 
 import static io.restassured.RestAssured.given;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 public class BioModelTest {
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();

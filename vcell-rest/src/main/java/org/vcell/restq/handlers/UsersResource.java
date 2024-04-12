@@ -27,12 +27,12 @@ public class UsersResource {
 
     @Inject
     SecurityIdentity securityIdentity;
-    @Inject
-    OldUserService oldUserService;
+
     private final UserRestDB userRestDB;
 
-    public UsersResource(OracleAgroalConnectionFactory oracleAgroalConnectionFactory) throws DataAccessException, SQLException {
-        userRestDB = new UserRestDB(oracleAgroalConnectionFactory);
+    @Inject
+    public UsersResource(UserRestDB userRestDB) throws DataAccessException, SQLException {
+        this.userRestDB = userRestDB;
     }
 
     @GET

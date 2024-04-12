@@ -1,5 +1,6 @@
 package org.vcell.restq.apiclient;
 
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.apache.commons.io.IOUtils;
@@ -13,7 +14,7 @@ import org.vcell.restclient.model.BioModel;
 
 import java.io.IOException;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 public class BioModelApiTest {
 
     @ConfigProperty(name = "quarkus.oidc.auth-server-url")
