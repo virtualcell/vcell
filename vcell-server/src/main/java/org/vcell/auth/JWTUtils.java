@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,18 +36,20 @@ public class JWTUtils {
     public final static int MAX_JWT_SIZE_BYTES = 4000;
     private final static Logger lg = LogManager.getLogger(JWTUtils.class);
     private static RsaJsonWebKey rsaJsonWebKey = null;
-    private static RSAPublicKey rsaPublicKey = null;
 
     public static String VCELL_JWT_AUDIENCE = "VCellService";
     public static String VCELL_JWT_ISSUER = "VCellService";
 
     static void setRsaJsonWebKey(RsaJsonWebKey rsaJsonWebKey) {
         JWTUtils.rsaJsonWebKey = rsaJsonWebKey;
-        JWTUtils.rsaPublicKey = rsaJsonWebKey.getRsaPublicKey();
     }
 
 
-    public static void createRsaJsonWebKey() throws IOException {
+    synchronized static void createRsaJsonWebKeyIfNeeded() {
+        if (rsaJsonWebKey != null) {
+            return;
+        }
+        try {
             final String privateKeyFilePath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPrivateKey);
             final String publicKeyFilePath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPublicKey);
             // Read public key from file
@@ -68,16 +69,16 @@ public class JWTUtils {
 
             rsaJsonWebKey.setKeyId("k1");
 
-            setRsaJsonWebKey(rsaJsonWebKey);
+            JWTUtils.rsaJsonWebKey = rsaJsonWebKey;
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading public/private key files", e);
+        }
     }
 
 
     public static void setRsaPublicAndPrivateKey() {
     }
 
-    public static void setRsaPublicKey(RSAPublicKey rsaPublicKey) {
-        JWTUtils.rsaPublicKey = rsaPublicKey;
-    }
     public static RsaJsonWebKey createNewJsonWebKey(String keyId) throws JoseException {
         // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
         RsaJsonWebKey rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
@@ -88,6 +89,8 @@ public class JWTUtils {
     }
 
     public static String createToken(User user, NumericDate expirationTime) throws JoseException {
+        createRsaJsonWebKeyIfNeeded();
+
         // Create the Claims, which will be the content of the JWT
         JwtClaims claims = new JwtClaims();
         claims.setIssuer(VCELL_JWT_ISSUER);  // who creates the token and signs it
@@ -138,13 +141,15 @@ public class JWTUtils {
     }
 
     public static boolean verifyJWS(String jwt) throws MalformedClaimException {
+        createRsaJsonWebKeyIfNeeded();
+
         JwtConsumer jwtConsumer = new JwtConsumerBuilder()
                 .setRequireExpirationTime() // the JWT must have an expiration time
                 .setAllowedClockSkewInSeconds(30) // allow some leeway in validating time based claims to account for clock skew
                 .setRequireSubject() // the JWT must have a subject claim
                 .setExpectedIssuer(VCELL_JWT_ISSUER) // whom the JWT needs to have been issued by
                 .setExpectedAudience(VCELL_JWT_AUDIENCE) // to whom the JWT is intended for
-                .setVerificationKey(rsaPublicKey) // verify the signature with the public key
+                .setVerificationKey(rsaJsonWebKey.getPublicKey()) // verify the signature with the public key
                 .setJwsAlgorithmConstraints( // only allow the expected signature algorithm(s) in the given context
                         AlgorithmConstraints.ConstraintType.PERMIT, AlgorithmIdentifiers.RSA_USING_SHA256) // which is only RS256 here
                 .build(); // create the JwtConsumer instance

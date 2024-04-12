@@ -14,7 +14,6 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jose4j.jwk.RsaJsonWebKey;
 import org.restlet.Client;
 import org.restlet.Server;
 import org.restlet.data.Parameter;
@@ -23,7 +22,6 @@ import org.restlet.engine.Engine;
 import org.restlet.ext.wadl.WadlApplication;
 import org.restlet.ext.wadl.WadlComponent;
 import org.restlet.util.Series;
-import org.vcell.auth.JWTUtils;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -222,8 +220,6 @@ public class VCellApiMain {
 		lg.trace("create config");
 		Configuration templateConfiguration = new Configuration();
 		templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
-
-		JWTUtils.createRsaJsonWebKey();
 
 		lg.trace("create app");
 		boolean bIgnoreHostMismatchForHealthService = true; // HealthService connects via localhost, this will never match host in production cert
