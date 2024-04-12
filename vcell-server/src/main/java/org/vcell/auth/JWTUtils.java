@@ -48,11 +48,6 @@ public class JWTUtils {
     private static RsaJsonWebKey rsaJsonWebKey = null;
     private static RSAPublicKey rsaPublicKey = null;
     private static RSAPrivateKey rsaPrivateKey = null;
-    private static final String privateKeyPath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPrivateKey);
-    private static final String publicKeyPath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPublicKey);
-
-//    private static String privateKeyPath = "/media/zeke/DiskDrive/Home/Work/CCAM/VCellDummyFiles/apiKeysPK";
-//    private static String publicKeyPath = "/media/zeke/DiskDrive/Home/Work/CCAM/VCellDummyFiles/apiKeys.pem";
 
     public static String VCELL_JWT_AUDIENCE = "VCellService";
     public static String VCELL_JWT_ISSUER = "VCellService";
@@ -63,6 +58,9 @@ public class JWTUtils {
     }
 
     public static void setRsaPublicAndPrivateKey() {
+        final String privateKeyPath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPrivateKey);
+        final String publicKeyPath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPublicKey);
+
         try (FileReader keyReader = new FileReader(publicKeyPath)) {
             PEMParser pemParser = new PEMParser(keyReader);
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
