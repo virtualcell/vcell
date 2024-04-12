@@ -389,7 +389,7 @@ public class SedmlJob {
 
         Hdf5DataExtractor hdf5Extractor = new Hdf5DataExtractor(this.sedml, solverHandler.taskToTempSimulationMap, this.RESULTS_DIRECTORY_PATH);
 
-        Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(solverHandler.nonSpatialResults, solverHandler.spatialResults);
+        Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(solverHandler.nonSpatialResults, solverHandler.spatialResults, masterHdf5File.isBioSimHdf5);
         masterHdf5File.addResults(this.sedml, partialHdf5File);
 
         for (File tempH5File : solverHandler.spatialResults.values()) {

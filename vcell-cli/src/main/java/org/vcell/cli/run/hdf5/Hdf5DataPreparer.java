@@ -124,7 +124,7 @@ public class Hdf5DataPreparer {
         List<Long> dataDimensionList = new LinkedList<>();
         
         Hdf5SedmlResultsNonspatial dataSourceNonspatial = (Hdf5SedmlResultsNonspatial) datasetWrapper.dataSource;
-        Map<DataSet, List<double[]>> dataSetMap = dataSourceNonspatial.allJobResults;
+        Map<DataSet, List<double[]>> dataSetMap = dataSourceNonspatial.dataItems.getDataSetMappings(report);
         numDataSets = dataSetMap.keySet().size();
         
         for (DataSet dataSet : dataSetMap.keySet()){
@@ -150,7 +150,7 @@ public class Hdf5DataPreparer {
         int bufferOffset = 0;
         
         for (DataSet dataSet : dataSetMap.keySet()) {
-            List<double[]> dataArrays = dataSourceNonspatial.allJobResults.get(dataSet);
+            List<double[]> dataArrays = dataSourceNonspatial.dataItems.get(report, dataSet);
             for (double[] dataArray : dataArrays){
                 if (dataArray.length < numTimePoints){
                     double[] paddedArray = new double[Math.toIntExact(numTimePoints)];
