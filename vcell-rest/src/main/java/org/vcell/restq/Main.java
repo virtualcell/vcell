@@ -4,11 +4,14 @@ import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
+import org.vcell.auth.JWTUtils;
 import org.vcell.db.DatabaseService;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.OracleAgroalConnectionFactory;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+
+import java.io.IOException;
 
 @QuarkusMain
 public class Main {
@@ -159,10 +162,11 @@ public class Main {
             DatabaseService.getInstance().setConnectionFactory(new OracleAgroalConnectionFactory());
         }
 
-        private void setupConfiguration() {
+        private void setupConfiguration() throws IOException {
             // this reconciles the CDI configuration with the PropertyLoader, replacing PropertyLoader's default
             // config provider which is backed by System properties.
             PropertyLoader.setConfigProvider(new CDIVCellConfigProvider());
+            JWTUtils.createRsaJsonWebKey(); // for legacy API JWT token generation and verification
         }
     }
 }

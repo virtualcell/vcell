@@ -223,9 +223,7 @@ public class VCellApiMain {
 		Configuration templateConfiguration = new Configuration();
 		templateConfiguration.setObjectWrapper(new DefaultObjectWrapper());
 
-//		RsaJsonWebKey jsonWebKey = JWTUtils.createNewJsonWebKey("k1");
-//		JWTUtils.setRsaJsonWebKey(jsonWebKey);
-		JWTUtils.setRsaPublicAndPrivateKey();
+		JWTUtils.createRsaJsonWebKey();
 
 		lg.trace("create app");
 		boolean bIgnoreHostMismatchForHealthService = true; // HealthService connects via localhost, this will never match host in production cert
@@ -291,7 +289,9 @@ public class VCellApiMain {
 			PropertyLoader.vcellSMTPHostName,
 			PropertyLoader.vcellSMTPPort,
 			PropertyLoader.vcellSMTPEmailAddress,
-			PropertyLoader.vcellapiKeystoreFile
+			PropertyLoader.vcellapiKeystoreFile,
+			PropertyLoader.vcellapiPublicKey,
+			PropertyLoader.vcellapiPrivateKey
 };
 
 }

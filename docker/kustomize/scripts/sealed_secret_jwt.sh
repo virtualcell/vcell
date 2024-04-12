@@ -22,7 +22,7 @@ PRIV_KEY_FILE_NAME="${TMP_FILE_PREFIX}_vcell_rsa.pem"
 PUB_KEY_FILE_NAME="${TMP_FILE_PREFIX}_vcell_rsa.pub.pem"
 
 # create a new RSA key pair stored in .pem file format
-openssl genrsa -out $PRIV_KEY_FILE_NAME 4096
+openssl genpkey -algorithm RSA -out $PRIV_KEY_FILE_NAME -pkeyopt rsa_keygen_bits:2048
 openssl rsa -pubout -in $PRIV_KEY_FILE_NAME -out $PUB_KEY_FILE_NAME
 
 kubectl create secret generic ${SECRET_NAME} --dry-run=client \
@@ -31,4 +31,4 @@ kubectl create secret generic ${SECRET_NAME} --dry-run=client \
       --namespace="${NAMESPACE}" -o yaml | kubeseal --format yaml
 
 # remove the temporary files
-rm $PRIV_KEY_FILE_NAME $PUB_KEY_FILE_NAME
+#rm $PRIV_KEY_FILE_NAME $PUB_KEY_FILE_NAME
