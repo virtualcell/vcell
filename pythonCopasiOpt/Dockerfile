@@ -1,4 +1,4 @@
-FROM python:3.9-slim-buster
+FROM python:3.10.9-slim-buster
 
 RUN apt -y update && apt -y upgrade &&  \
     apt-get install -y curl
