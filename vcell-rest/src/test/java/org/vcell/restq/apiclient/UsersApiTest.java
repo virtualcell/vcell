@@ -63,7 +63,7 @@ public class UsersApiTest {
         Boolean mapped = TestEndpointUtils.mapClientToNagiosUser(aliceUserResourceAPI);
         assert (mapped.booleanValue());
 
-        UserIdentityJSONSafe apiRetrievedIdentity = aliceUserResourceAPI.apiUsersGetIdentityGet();
+        UserIdentityJSONSafe apiRetrievedIdentity = aliceUserResourceAPI.getVCellIdentity();
         UserIdentity dbRetrievedIdentity = adminDBTopLevel.getUserIdentityFromSubjectAndIdentityProvider(TestEndpointUtils.TestOIDCUsers.alice.name(),
                 UserIdentityTable.IdentityProvider.KEYCLOAK,true);
         assert (apiRetrievedIdentity != null);
@@ -75,7 +75,7 @@ public class UsersApiTest {
         Assertions.assertEquals(apiRetrievedIdentity.getSubject(), dbRetrievedIdentity.subject());
 
         adminDBTopLevel.deleteUserIdentityFromIdentityProvider(TestEndpointUtils.vcellNagiosUser, UserIdentityTable.IdentityProvider.KEYCLOAK, true);
-        apiRetrievedIdentity = aliceUserResourceAPI.apiUsersGetIdentityGet();
+        apiRetrievedIdentity = aliceUserResourceAPI.getVCellIdentity();
         assert (apiRetrievedIdentity.getSubject() == null);
 
 //        assert (userIdentity.getUser());
