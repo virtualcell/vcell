@@ -491,8 +491,8 @@ case $target in
 		exit $?
 		;;
 	all)
-#		build_api && build_rest && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_batch_singularity && build_opt_singularity && build_admin
-		build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_batch_singularity && build_opt_singularity && build_admin
+		build_api && build_rest && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_batch_singularity && build_opt_singularity && build_admin
+#		build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_batch_singularity && build_opt_singularity && build_admin
 		exit $?
 		;;
 	appservices)
