@@ -1,6 +1,6 @@
 # vcell-restclient
 
-VCell API (development)
+VCell API
 
 - API version: 1.0.1
 
@@ -101,46 +101,36 @@ public class BioModelResourceApiExample {
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*BioModelResourceApi* | [**deleteBioModel**](docs/BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
-*BioModelResourceApi* | [**deleteBioModelWithHttpInfo**](docs/BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
-*BioModelResourceApi* | [**getBioModelBNGL**](docs/BioModelResourceApi.md#getBioModelBNGL) | **GET** /api/bioModel/{bioModelID}/bngl_download | Get the BioModel in BNGL format.
-*BioModelResourceApi* | [**getBioModelBNGLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelBNGLWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/bngl_download | Get the BioModel in BNGL format.
-*BioModelResourceApi* | [**getBioModelDIAGRAM**](docs/BioModelResourceApi.md#getBioModelDIAGRAM) | **GET** /api/bioModel/{bioModelID}/diagram_download | Get the BioModels diagram.
-*BioModelResourceApi* | [**getBioModelDIAGRAMWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelDIAGRAMWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/diagram_download | Get the BioModels diagram.
-*BioModelResourceApi* | [**getBioModelOMEX**](docs/BioModelResourceApi.md#getBioModelOMEX) | **GET** /api/bioModel/{bioModelID}/omex_download | Get the BioModel in OMEX format.
-*BioModelResourceApi* | [**getBioModelOMEXWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelOMEXWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/omex_download | Get the BioModel in OMEX format.
-*BioModelResourceApi* | [**getBioModelSBML**](docs/BioModelResourceApi.md#getBioModelSBML) | **GET** /api/bioModel/{bioModelID}/sbml_download | Get the BioModel in SBML format.
-*BioModelResourceApi* | [**getBioModelSBMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelSBMLWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/sbml_download | Get the BioModel in SBML format.
-*BioModelResourceApi* | [**getBioModelVCML**](docs/BioModelResourceApi.md#getBioModelVCML) | **GET** /api/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
-*BioModelResourceApi* | [**getBioModelVCMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
-*BioModelResourceApi* | [**getBiomodelById**](docs/BioModelResourceApi.md#getBiomodelById) | **GET** /api/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
-*BioModelResourceApi* | [**getBiomodelByIdWithHttpInfo**](docs/BioModelResourceApi.md#getBiomodelByIdWithHttpInfo) | **GET** /api/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
-*BioModelResourceApi* | [**uploadBioModel**](docs/BioModelResourceApi.md#uploadBioModel) | **POST** /api/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
-*BioModelResourceApi* | [**uploadBioModelWithHttpInfo**](docs/BioModelResourceApi.md#uploadBioModelWithHttpInfo) | **POST** /api/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
-*HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/helloworld | Get hello world message.
-*HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/helloworld | Get hello world message.
-*PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/publications | Create publication
-*PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/publications | Create publication
-*PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/publications/{id} | Delete publication
-*PublicationResourceApi* | [**deletePublicationWithHttpInfo**](docs/PublicationResourceApi.md#deletePublicationWithHttpInfo) | **DELETE** /api/publications/{id} | Delete publication
-*PublicationResourceApi* | [**getPublicationById**](docs/PublicationResourceApi.md#getPublicationById) | **GET** /api/publications/{id} | Get publication by ID
-*PublicationResourceApi* | [**getPublicationByIdWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/publications/{id} | Get publication by ID
-*PublicationResourceApi* | [**getPublications**](docs/PublicationResourceApi.md#getPublications) | **GET** /api/publications | Get all publications
-*PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/publications | Get all publications
-*PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/publications | Create publication
-*PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/publications | Create publication
-*UsersResourceApi* | [**apiUsersBearerTokenPost**](docs/UsersResourceApi.md#apiUsersBearerTokenPost) | **POST** /api/users/bearerToken | 
-*UsersResourceApi* | [**apiUsersBearerTokenPostWithHttpInfo**](docs/UsersResourceApi.md#apiUsersBearerTokenPostWithHttpInfo) | **POST** /api/users/bearerToken | 
-*UsersResourceApi* | [**apiUsersGetIdentityGet**](docs/UsersResourceApi.md#apiUsersGetIdentityGet) | **GET** /api/users/getIdentity | 
-*UsersResourceApi* | [**apiUsersGetIdentityGetWithHttpInfo**](docs/UsersResourceApi.md#apiUsersGetIdentityGetWithHttpInfo) | **GET** /api/users/getIdentity | 
-*UsersResourceApi* | [**apiUsersMapUserPost**](docs/UsersResourceApi.md#apiUsersMapUserPost) | **POST** /api/users/mapUser | 
-*UsersResourceApi* | [**apiUsersMapUserPostWithHttpInfo**](docs/UsersResourceApi.md#apiUsersMapUserPostWithHttpInfo) | **POST** /api/users/mapUser | 
-*UsersResourceApi* | [**apiUsersMeGet**](docs/UsersResourceApi.md#apiUsersMeGet) | **GET** /api/users/me | 
-*UsersResourceApi* | [**apiUsersMeGetWithHttpInfo**](docs/UsersResourceApi.md#apiUsersMeGetWithHttpInfo) | **GET** /api/users/me | 
+*BioModelResourceApi* | [**deleteBioModel**](docs/BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**deleteBioModelWithHttpInfo**](docs/BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**getBiomodelById**](docs/BioModelResourceApi.md#getBiomodelById) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+*BioModelResourceApi* | [**getBiomodelByIdWithHttpInfo**](docs/BioModelResourceApi.md#getBiomodelByIdWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+*BioModelResourceApi* | [**uploadBioModel**](docs/BioModelResourceApi.md#uploadBioModel) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
+*BioModelResourceApi* | [**uploadBioModelWithHttpInfo**](docs/BioModelResourceApi.md#uploadBioModelWithHttpInfo) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
+*HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message.
+*HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message.
+*PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/v1/publications/{id} | Delete publication
+*PublicationResourceApi* | [**deletePublicationWithHttpInfo**](docs/PublicationResourceApi.md#deletePublicationWithHttpInfo) | **DELETE** /api/v1/publications/{id} | Delete publication
+*PublicationResourceApi* | [**getPublicationById**](docs/PublicationResourceApi.md#getPublicationById) | **GET** /api/v1/publications/{id} | Get publication by ID
+*PublicationResourceApi* | [**getPublicationByIdWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/v1/publications/{id} | Get publication by ID
+*PublicationResourceApi* | [**getPublications**](docs/PublicationResourceApi.md#getPublications) | **GET** /api/v1/publications | Get all publications
+*PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications
+*PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication
+*UsersResourceApi* | [**getLegacyApiToken**](docs/UsersResourceApi.md#getLegacyApiToken) | **POST** /api/v1/users/bearerToken | Get token for legacy API
+*UsersResourceApi* | [**getLegacyApiTokenWithHttpInfo**](docs/UsersResourceApi.md#getLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/bearerToken | Get token for legacy API
+*UsersResourceApi* | [**getMe**](docs/UsersResourceApi.md#getMe) | **GET** /api/v1/users/me | Get current user
+*UsersResourceApi* | [**getMeWithHttpInfo**](docs/UsersResourceApi.md#getMeWithHttpInfo) | **GET** /api/v1/users/me | Get current user
+*UsersResourceApi* | [**getVCellIdentity**](docs/UsersResourceApi.md#getVCellIdentity) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
+*UsersResourceApi* | [**getVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#getVCellIdentityWithHttpInfo) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
+*UsersResourceApi* | [**setVCellIdentity**](docs/UsersResourceApi.md#setVCellIdentity) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
+*UsersResourceApi* | [**setVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#setVCellIdentityWithHttpInfo) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
 
 
 ## Documentation for Models

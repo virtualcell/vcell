@@ -5,6 +5,8 @@ import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.DataSet;
+import org.jlibsedml.Report;
+import org.jlibsedml.SedML;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.util.VCellUtilityHub;
@@ -16,7 +18,7 @@ import java.util.*;
 @Tag("Fast")
 public class Hdf5WriterTest {
 
-    public static Hdf5DataContainer createExampleData() {
+    public static HDF5ExecutionResults createExampleData() {
 
         DataSet t = new DataSet("t","t","t","#null");
         DataSet s0 = new DataSet("s0","s0","s0","#null");
@@ -76,13 +78,17 @@ public class Hdf5WriterTest {
         reportDataSourceNonspatial.allJobResults = reportJob;
 
         Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer();
+        Report report = new Report("simId","simName");
         String uri = "___0_export_NO_scan_test.sedml";
         List<Hdf5SedmlResults> wrappers = new ArrayList<>();
         wrappers.add(plotDatasetWrapper);
         wrappers.add(reportDatasetWrapper);
-        hdf5FileWrapper.uriToResultsMap.put(uri, wrappers);
+        hdf5FileWrapper.reportToUriMap.put(report, uri);
+        hdf5FileWrapper.reportToResultsMap.put(report, wrappers);
 
-        return hdf5FileWrapper;
+        HDF5ExecutionResults results = new HDF5ExecutionResults(true);
+        results.addResults(null, hdf5FileWrapper);
+        return results;
     }
 
     @Test
@@ -90,9 +96,8 @@ public class Hdf5WriterTest {
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
         NativeLib.HDF5.load();
-        Hdf5DataContainer exampleHdf5FileWrapper = Hdf5WriterTest.createExampleData();
+        HDF5ExecutionResults exampleHdf5FileWrapper = Hdf5WriterTest.createExampleData();
         File dir = Files.createTempDir();
         Hdf5Writer.writeHdf5(exampleHdf5FileWrapper, dir);
     }
-
 }

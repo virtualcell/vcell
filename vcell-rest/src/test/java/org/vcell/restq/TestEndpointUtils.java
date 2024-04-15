@@ -29,6 +29,7 @@ public class TestEndpointUtils {
         ApiClient apiClient = new ApiClient();
         String oidcAccessToken = keycloakClient.getAccessToken(oidcUser.name());
         apiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + oidcAccessToken));
+        apiClient.setScheme("http");
         apiClient.setHost("localhost");
         apiClient.setPort(testPort);
         return apiClient;
@@ -47,13 +48,13 @@ public class TestEndpointUtils {
         MapUser bioModelOwner = new MapUser();
         bioModelOwner.setUserID("vcellNagios");
         bioModelOwner.setPassword("1700596370261");
-        return usersResourceApi.apiUsersMapUserPost(bioModelOwner);
+        return usersResourceApi.setVCellIdentity(bioModelOwner);
     }
 
     public static boolean mapClientToAdminUser(UsersResourceApi usersResourceApi) throws ApiException {
         MapUser bioModelOwner = new MapUser();
         bioModelOwner.setUserID("Administrator");
         bioModelOwner.setPassword("1700596370260");
-        return usersResourceApi.apiUsersMapUserPost(bioModelOwner);
+        return usersResourceApi.setVCellIdentity(bioModelOwner);
     }
 }

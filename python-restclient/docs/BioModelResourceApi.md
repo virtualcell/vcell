@@ -1,17 +1,12 @@
 # vcell_client.BioModelResourceApi
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**delete_bio_model**](BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
-[**get_bio_model_bngl**](BioModelResourceApi.md#get_bio_model_bngl) | **GET** /api/bioModel/{bioModelID}/bngl_download | Get the BioModel in BNGL format.
-[**get_bio_model_diagram**](BioModelResourceApi.md#get_bio_model_diagram) | **GET** /api/bioModel/{bioModelID}/diagram_download | Get the BioModels diagram.
-[**get_bio_model_omex**](BioModelResourceApi.md#get_bio_model_omex) | **GET** /api/bioModel/{bioModelID}/omex_download | Get the BioModel in OMEX format.
-[**get_bio_model_sbml**](BioModelResourceApi.md#get_bio_model_sbml) | **GET** /api/bioModel/{bioModelID}/sbml_download | Get the BioModel in SBML format.
-[**get_bio_model_vcml**](BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
-[**get_biomodel_by_id**](BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
-[**upload_bio_model**](BioModelResourceApi.md#upload_bio_model) | **POST** /api/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
+[**delete_bio_model**](BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+[**get_biomodel_by_id**](BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+[**upload_bio_model**](BioModelResourceApi.md#upload_bio_model) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
 
 
 # **delete_bio_model**
@@ -28,10 +23,10 @@ import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 
@@ -46,316 +41,6 @@ with vcell_client.ApiClient(configuration) as api_client:
         api_instance.delete_bio_model(bio_model_id)
     except Exception as e:
         print("Exception when calling BioModelResourceApi->delete_bio_model: %s\n" % e)
-```
-
-
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **bio_model_id** | **str**|  | 
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**204** | No Content |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **get_bio_model_bngl**
-> get_bio_model_bngl(bio_model_id)
-
-Get the BioModel in BNGL format.
-
-### Example
-
-```python
-import time
-import os
-import vcell_client
-from vcell_client.rest import ApiException
-from pprint import pprint
-
-# Defining the host is optional and defaults to http://localhost:9000
-# See configuration.py for a list of all supported configuration parameters.
-configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
-)
-
-
-# Enter a context with an instance of the API client
-with vcell_client.ApiClient(configuration) as api_client:
-    # Create an instance of the API class
-    api_instance = vcell_client.BioModelResourceApi(api_client)
-    bio_model_id = 'bio_model_id_example' # str | 
-
-    try:
-        # Get the BioModel in BNGL format.
-        api_instance.get_bio_model_bngl(bio_model_id)
-    except Exception as e:
-        print("Exception when calling BioModelResourceApi->get_bio_model_bngl: %s\n" % e)
-```
-
-
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **bio_model_id** | **str**|  | 
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**204** | No Content |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **get_bio_model_diagram**
-> get_bio_model_diagram(bio_model_id)
-
-Get the BioModels diagram.
-
-### Example
-
-```python
-import time
-import os
-import vcell_client
-from vcell_client.rest import ApiException
-from pprint import pprint
-
-# Defining the host is optional and defaults to http://localhost:9000
-# See configuration.py for a list of all supported configuration parameters.
-configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
-)
-
-
-# Enter a context with an instance of the API client
-with vcell_client.ApiClient(configuration) as api_client:
-    # Create an instance of the API class
-    api_instance = vcell_client.BioModelResourceApi(api_client)
-    bio_model_id = 'bio_model_id_example' # str | 
-
-    try:
-        # Get the BioModels diagram.
-        api_instance.get_bio_model_diagram(bio_model_id)
-    except Exception as e:
-        print("Exception when calling BioModelResourceApi->get_bio_model_diagram: %s\n" % e)
-```
-
-
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **bio_model_id** | **str**|  | 
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**204** | No Content |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **get_bio_model_omex**
-> get_bio_model_omex(bio_model_id)
-
-Get the BioModel in OMEX format.
-
-### Example
-
-```python
-import time
-import os
-import vcell_client
-from vcell_client.rest import ApiException
-from pprint import pprint
-
-# Defining the host is optional and defaults to http://localhost:9000
-# See configuration.py for a list of all supported configuration parameters.
-configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
-)
-
-
-# Enter a context with an instance of the API client
-with vcell_client.ApiClient(configuration) as api_client:
-    # Create an instance of the API class
-    api_instance = vcell_client.BioModelResourceApi(api_client)
-    bio_model_id = 'bio_model_id_example' # str | 
-
-    try:
-        # Get the BioModel in OMEX format.
-        api_instance.get_bio_model_omex(bio_model_id)
-    except Exception as e:
-        print("Exception when calling BioModelResourceApi->get_bio_model_omex: %s\n" % e)
-```
-
-
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **bio_model_id** | **str**|  | 
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**204** | No Content |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **get_bio_model_sbml**
-> get_bio_model_sbml(bio_model_id)
-
-Get the BioModel in SBML format.
-
-### Example
-
-```python
-import time
-import os
-import vcell_client
-from vcell_client.rest import ApiException
-from pprint import pprint
-
-# Defining the host is optional and defaults to http://localhost:9000
-# See configuration.py for a list of all supported configuration parameters.
-configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
-)
-
-
-# Enter a context with an instance of the API client
-with vcell_client.ApiClient(configuration) as api_client:
-    # Create an instance of the API class
-    api_instance = vcell_client.BioModelResourceApi(api_client)
-    bio_model_id = 'bio_model_id_example' # str | 
-
-    try:
-        # Get the BioModel in SBML format.
-        api_instance.get_bio_model_sbml(bio_model_id)
-    except Exception as e:
-        print("Exception when calling BioModelResourceApi->get_bio_model_sbml: %s\n" % e)
-```
-
-
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **bio_model_id** | **str**|  | 
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**204** | No Content |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **get_bio_model_vcml**
-> get_bio_model_vcml(bio_model_id)
-
-Get the BioModel in VCML format.
-
-### Example
-
-```python
-import time
-import os
-import vcell_client
-from vcell_client.rest import ApiException
-from pprint import pprint
-
-# Defining the host is optional and defaults to http://localhost:9000
-# See configuration.py for a list of all supported configuration parameters.
-configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
-)
-
-
-# Enter a context with an instance of the API client
-with vcell_client.ApiClient(configuration) as api_client:
-    # Create an instance of the API class
-    api_instance = vcell_client.BioModelResourceApi(api_client)
-    bio_model_id = 'bio_model_id_example' # str | 
-
-    try:
-        # Get the BioModel in VCML format.
-        api_instance.get_bio_model_vcml(bio_model_id)
-    except Exception as e:
-        print("Exception when calling BioModelResourceApi->get_bio_model_vcml: %s\n" % e)
 ```
 
 
@@ -401,10 +86,10 @@ from vcell_client.models.bio_model import BioModel
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 
@@ -465,10 +150,10 @@ import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 

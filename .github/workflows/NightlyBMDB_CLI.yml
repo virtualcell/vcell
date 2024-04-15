@@ -67,6 +67,12 @@ jobs:
           poetry install
           poetry run python -m pytest
 
+      - name: build python-restclient package
+        run: |
+          cd python-restclient
+          poetry install
+          poetry run python -m pytest
+
       - name: Setup Java for Build
         uses: actions/setup-java@v2
         with:

@@ -63,6 +63,8 @@ VCELL_VERSION=$(grep VCELL_VERSION\= "$local_config_file" | cut -d"=" -f2)
 VCELL_UPDATE_SITE=$(grep VCELL_UPDATE_SITE "$local_config_file" | cut -d"=" -f2)
 VCELL_API_HOST_EXTERNAL=$(grep VCELL_API_HOST_EXTERNAL "$local_config_file" | cut -d"=" -f2)
 VCELL_API_PORT_EXTERNAL=$(grep VCELL_API_PORT_EXTERNAL "$local_config_file" | cut -d"=" -f2)
+VCELL_API_PREFIX_V0=$(grep VCELL_API_PREFIX_V0 "$local_config_file" | cut -d"=" -f2)
+VCELL_API_PREFIX_V1=$(grep VCELL_API_PREFIX_V1 "$local_config_file" | cut -d"=" -f2)
 VCELL_BIOFORMATS_JAR_FILE=$(grep VCELL_BIOFORMATS_JAR_FILE "$local_config_file" | cut -d"=" -f2)
 VCELL_BIOFORMATS_JAR_URL=$(grep VCELL_BIOFORMATS_JAR_URL "$local_config_file" | cut -d"=" -f2)
 VCELL_CLIENT_APPID=$(grep VCELL_CLIENT_APPID "$local_config_file" | cut -d"=" -f2)
@@ -81,6 +83,8 @@ echo "    -e compiler_vcellVersion=$VCELL_VERSION_NUMBER \\"
 echo "    -e compiler_vcellBuild=$VCELL_BUILD_NUMBER \\"
 echo "    -e compiler_softwareVersionString=$VCELL_VERSION \\"
 echo "    -e compiler_rmiHosts=${VCELL_API_HOST_EXTERNAL}:$VCELL_API_PORT_EXTERNAL \\"
+echo "    -e compiler_serverPrefixV0=$VCELL_API_PREFIX_V0 \\"
+echo "    -e compiler_serverPrefixV1=$VCELL_API_PREFIX_V1 \\"
 echo "    -e compiler_bioformatsJarFile=$VCELL_BIOFORMATS_JAR_FILE \\"
 echo "    -e compiler_bioformatsJarDownloadURL=$VCELL_BIOFORMATS_JAR_URL \\"
 echo "    -e compiler_applicationId=$VCELL_CLIENT_APPID \\"
@@ -102,6 +106,8 @@ if ! sudo docker run --rm --cpus="1.0" \
     -e compiler_vcellBuild="$VCELL_BUILD_NUMBER" \
     -e compiler_softwareVersionString="$VCELL_VERSION" \
     -e compiler_rmiHosts="${VCELL_API_HOST_EXTERNAL}:$VCELL_API_PORT_EXTERNAL" \
+    -e compiler_serverPrefixV0="$VCELL_API_PREFIX_V0" \
+    -e compiler_serverPrefixV1="$VCELL_API_PREFIX_V1" \
     -e compiler_bioformatsJarFile="$VCELL_BIOFORMATS_JAR_FILE" \
     -e compiler_bioformatsJarDownloadURL="$VCELL_BIOFORMATS_JAR_URL" \
     -e compiler_applicationId="$VCELL_CLIENT_APPID" \

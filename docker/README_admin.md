@@ -11,7 +11,7 @@ administration
   	(vcellapi, vcell-node1, vcell-node2)  
   	or (vcellapi-beta, vcell-node3, vcell-node4)
 
-curl https://vcellapi.cam.uchc.edu/health?check=login
+curl https://vcellapi.cam.uchc.edu/api/v0/health?check=login
 
 
 admin logs for docker daemons
@@ -26,7 +26,7 @@ log file is /share/apps/vcell3/htclogs/V_REL_{simid}_{jobid}_{taskid}.slurm.log
 submission script is /share/apps/vcell3/htclogs/V_REL_{simid}_{jobid}_{taskid}.slurm.sub
 
 
-open https://vcellapi.cam.uchc.edu/biomodel (ugly api browser for vcell REST services ... incomplete coverage of API).
+open https://vcellapi.cam.uchc.edu/api/v0/biomodel (ugly api browser for vcell REST services ... incomplete coverage of API).
 
 for activemq website:
 [vcell@vcell-node1 ~  13] $ sudo docker service ls | grep activemq

@@ -1,5 +1,5 @@
 /**
- * VCell API (development)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -28,31 +28,31 @@ export interface UsersResourceServiceInterface {
     configuration: Configuration;
 
     /**
-     * 
+     * Get token for legacy API
      * 
      * @param userId 
      * @param userPassword 
      * @param clientId 
      */
-    apiUsersBearerTokenPost(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
+    getLegacyApiToken(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
 
     /**
-     * 
+     * Get current user
      * 
      */
-    apiUsersGetIdentityGet(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
+    getMe(extraHttpRequestParams?: any): Observable<User>;
 
     /**
+     * Get mapped VCell identity
      * 
+     */
+    getVCellIdentity(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
+
+    /**
+     * set or replace vcell identity mapping
      * 
      * @param mapUser 
      */
-    apiUsersMapUserPost(mapUser?: MapUser, extraHttpRequestParams?: any): Observable<boolean>;
-
-    /**
-     * 
-     * 
-     */
-    apiUsersMeGet(extraHttpRequestParams?: any): Observable<User>;
+    setVCellIdentity(mapUser?: MapUser, extraHttpRequestParams?: any): Observable<boolean>;
 
 }

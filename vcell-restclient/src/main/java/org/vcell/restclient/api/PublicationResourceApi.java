@@ -1,5 +1,5 @@
 /*
- * VCell API (development)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -133,7 +133,7 @@ public class PublicationResourceApi {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/publications";
+    String localVarPath = "/api/v1/publications";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -213,7 +213,7 @@ public class PublicationResourceApi {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/publications/{id}"
+    String localVarPath = "/api/v1/publications/{id}"
         .replace("{id}", ApiClient.urlEncode(id.toString()));
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
@@ -285,7 +285,7 @@ public class PublicationResourceApi {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/publications/{id}"
+    String localVarPath = "/api/v1/publications/{id}"
         .replace("{id}", ApiClient.urlEncode(id.toString()));
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
@@ -351,7 +351,7 @@ public class PublicationResourceApi {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/publications";
+    String localVarPath = "/api/v1/publications";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -418,7 +418,7 @@ public class PublicationResourceApi {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/publications";
+    String localVarPath = "/api/v1/publications";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 

@@ -152,7 +152,7 @@ public class XmlRdfUtil {
 		String end = "\n\n" + ret.substring(ret.indexOf(PubMet.EndDescription0));
 		ret = ret.substring(0, ret.indexOf(PubMet.EndDescription0));
 
-		// https://vcellapi-beta.cam.uchc.edu:8080/biomodel/200301683/diagram
+		// https://vcellapi-beta.cam.uchc.edu:8080/api/v0/biomodel/200301683/diagram
 		// <collex:thumbnail rdf:resource="http://omex-library.org/Monkeyflower_pigmentation_v2.omex/Figure1.png"/>
 		if(diagram.exists()) {
 			ret += PubMet.StartDiagram;

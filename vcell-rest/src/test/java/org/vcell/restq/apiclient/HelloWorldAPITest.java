@@ -28,6 +28,7 @@ public class HelloWorldAPITest {
         String accessToken = keycloakClient.getAccessToken(nonpubuser);
         Log.warn("TODO: get access token from OIDC server instead of KeycloakTestClient");
         defaultClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + accessToken));
+        defaultClient.setScheme("http");
         defaultClient.setHost("localhost");
         defaultClient.setPort(testPort);
 

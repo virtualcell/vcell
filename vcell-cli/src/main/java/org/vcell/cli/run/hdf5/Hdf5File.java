@@ -27,10 +27,11 @@ import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
 public class Hdf5File {
     // NB: Hdf5 group management is ***important***.
     private final static Logger logger = LogManager.getLogger(Hdf5File.class);
+    private static boolean needToCreateFile = true;
 
     final private int H5F_ACC_TRUNC = HDF5Constants.H5F_ACC_TRUNC;
     final private int H5P_DEFAULT = HDF5Constants.H5P_DEFAULT;
-    final private int H5F_ACC_EXCL = HDF5Constants.H5F_ACC_EXCL;
+    final private int H5F_ACC_RDWR = HDF5Constants.H5F_ACC_RDWR;
     final private int H5T_C_S1 = HDF5Constants.H5T_C_S1;
     final private int H5I_INVALID_HID = HDF5Constants.H5I_INVALID_HID;
     final private int H5T_VARIABLE = HDF5Constants.H5T_VARIABLE;
@@ -42,8 +43,6 @@ public class Hdf5File {
     private int fileId;
     private boolean isOpen, allowExceptions;
 
-    
-    // TODO: create actual java Bimap implementation(s) with accompaning java interface (good intro task for new appdevI hires?)
     private Map<Integer, String> idToPathMap;
     private Map<String, Integer> pathToIdMap;
     private Map<Integer, Integer> datasetToDataspaceMap;
@@ -56,12 +55,13 @@ public class Hdf5File {
         this.idToPathMap = new HashMap<Integer, String>();
         this.pathToIdMap = new HashMap<String, Integer>();
         this.datasetToDataspaceMap = new HashMap<>();
+        Hdf5File.needToCreateFile = false;
     }
 
     /**
      * Creates an Hdf5File named "reports.h5" in the provided directory, and will throw exceptions where c-style error codes would be returned.
      * 
-     * @param parentDir the directory to put the Hdf5 file inside of.
+     * @param parentDir the directory to put the Hdf5 file inside.
      */
     public Hdf5File(File parentDir) { //"/home/ldrescher/VCell/hdf5Rebuild/testingDir"
         this(parentDir, true);
@@ -110,7 +110,7 @@ public class Hdf5File {
      * @throws IOException
      */
     public void open() throws HDF5Exception, IOException {
-        this.open(true);
+        this.open(Hdf5File.needToCreateFile);
     }
 
     /**
@@ -123,11 +123,12 @@ public class Hdf5File {
      */
     public int open(boolean overwrite) throws HDF5Exception, IOException {
         String path = this.javaFileTarget.getCanonicalPath();
-        int accessMod = overwrite ? H5F_ACC_TRUNC: H5F_ACC_EXCL;
-        this.fileId = H5.H5Fcreate(path, accessMod, H5P_DEFAULT, H5P_DEFAULT);
+        if (overwrite) this.fileId = H5.H5Fopen(path, H5F_ACC_RDWR, H5P_DEFAULT);
+        else this.fileId = H5.H5Fcreate(path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
         if (this.fileId < 0){
-            String message = "HDF5 File could not be created [H5Fcreate]; HDF5 files can not be generated.";
-            HDF5Exception e = new HDF5Exception(message); // nvestigate if Hdf5Exception would be more appropriate
+            String typeOfOperation = overwrite? "opened [H5Fopen]" : "created [H5Fopened]";
+            String message = "HDF5 File could not be " + typeOfOperation + "; Something is preventing this.";
+            HDF5Exception e = new HDF5Exception(message); // investigate if Hdf5Exception would be more appropriate
             logger.warn("Hdf5 error occured", e);
             if (this.allowExceptions) throw e;
         }

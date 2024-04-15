@@ -10,6 +10,8 @@ import org.vcell.restq.db.OracleAgroalConnectionFactory;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import java.io.IOException;
+
 @QuarkusMain
 public class Main {
     public static void main(String... args) {
@@ -159,7 +161,7 @@ public class Main {
             DatabaseService.getInstance().setConnectionFactory(new OracleAgroalConnectionFactory());
         }
 
-        private void setupConfiguration() {
+        private void setupConfiguration() throws IOException {
             // this reconciles the CDI configuration with the PropertyLoader, replacing PropertyLoader's default
             // config provider which is backed by System properties.
             PropertyLoader.setConfigProvider(new CDIVCellConfigProvider());

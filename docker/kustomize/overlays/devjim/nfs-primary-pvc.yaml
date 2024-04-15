@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  # corresponds to the NFS mount of cfs09:/vcell to /share/apps/vcell3 on swarm nodes
+  name: nfs-primary-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs
+  resources:
+    requests:
+      storage: 1000Gi
+  volumeName: cfs09-vcell-pv

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rest
+  name: rest
+spec:
+  selector:
+    matchLabels:
+      app: rest
+  replicas: 0
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: rest
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10000
+        fsGroup: 10000
+      containers:
+        - name: rest
+          image: ghcr.io/virtualcell/vcell-rest
+          imagePullPolicy: "Always"
+          resources:
+            requests:
+              memory: "400Mi"
+              cpu: "200m"
+            limits:
+              memory: "1000Mi"
+          #              cpu: "500m"
+          envFrom:
+            - configMapRef:
+                name: rest-config
+            - secretRef:
+                name: rest-secrets
+          #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
+          env:
+            - name: JAVA_OPTS
+              value: >
+                -Dquarkus.http.host=0.0.0.0
+                -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+                -Dvcellapi.privateKey.file=/run/secrets/jwt-secret/apiprivkey
+                -Dvcellapi.publicKey.file=/run/secrets/jwt-secret/apipubkey
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: jwt-secret
+              mountPath: /run/secrets/jwt-secret
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: ghcr-secret
+      volumes:
+        - name: jwt-secret
+          secret:
+            items:
+              - key: apiprivkey
+                path: apiprivkey
+              - key: apipubkey
+                path: apipubkey
+            secretName: jwt-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: rest
+  name: rest
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 80
+  selector:
+    app: rest

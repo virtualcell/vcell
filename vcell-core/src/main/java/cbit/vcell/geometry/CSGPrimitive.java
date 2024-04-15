@@ -14,17 +14,16 @@ import org.vcell.util.Matchable;
 
 import cbit.vcell.render.Vect3d;
 
-@SuppressWarnings("serial")
 public class CSGPrimitive extends CSGNode {
 	// all objects fit in unit cube of (-1,-1,-1) to (1,1,1)
-	public static enum PrimitiveType {
+	public enum PrimitiveType {
 		CONE,			// (i.e. y^2+z^2 < (0.5*(x-1))^2 and x<1 and x>-1)
 		CUBE,			// (i.e. x>=-1 and x<=1 and y>=-1 and y<=1 and z>=-1 and z<=1 
 		CYLINDER,		// (i.e. y^2+z^2 < 1 and x<1 and x>-1)
 		SPHERE,		// (i.e. x^2+y^2+z^2 <= 1)
 	};
 	
-	private PrimitiveType type = null;
+	private final PrimitiveType type;
 
 	public CSGPrimitive(String name, PrimitiveType type) {
 		super(name);
@@ -39,17 +38,12 @@ public class CSGPrimitive extends CSGNode {
 		if (!compareEqual0(obj)){
 			return false;
 		}
-		if (!(obj instanceof CSGPrimitive)){
-			return false;
-		}
-		CSGPrimitive csgp = (CSGPrimitive)obj;
-
-		if ((getType().compareTo(csgp.getType())) != 0){
+		if (!(obj instanceof CSGPrimitive csgp)){
 			return false;
 		}
 
-		return true;
-	}
+        return (getType().compareTo(csgp.getType())) == 0;
+    }
 	
 	@Override
 	public CSGNode clone() {
@@ -81,27 +75,23 @@ public class CSGPrimitive extends CSGNode {
 		if (z>1.0){
 			return false;
 		}
-		switch (type){
-		case SPHERE: {
-			double radiusSquared = point.lengthSquared();
-			return radiusSquared <= 1.0;
-		}
-		case CYLINDER: {
-			// already inside unit cube, so only test inside circle
-			double radiusOfCircleSquared = y*y+z*z;
-			return radiusOfCircleSquared <= 1.0;
-		}
-		case CONE: {
-			// already inside unit cube, so only test inside circle
-			double radius = 0.5*(x-1);
-			return y*y+z*z < radius*radius;
-		}
-		case CUBE: {
-			return true;
-		}
-		default:
-			throw new RuntimeException("unknown CSG primative type");
-		}
+
+
+        return switch (type) {
+            case SPHERE -> {
+                double radiusSquared = point.lengthSquared();
+                yield radiusSquared <= 1.0;
+            }
+            case CYLINDER -> { // already inside unit cube, so only test inside circle
+                double radiusOfCircleSquared = y * y + z * z;
+                yield radiusOfCircleSquared <= 1.0;
+            }
+            case CONE -> { // already inside unit cube, so only test inside circle
+                double radius = 0.5 * (x - 1);
+                yield y * y + z * z < radius * radius;
+            }
+            case CUBE -> true;
+        };
 	}
 
 	public PrimitiveType getType() {

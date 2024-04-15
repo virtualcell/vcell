@@ -1,7 +1,7 @@
 package org.vcell.restq.apiclient;
 
 import io.quarkus.logging.Log;
-import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 public class PublicationApiTest {
 
     @ConfigProperty(name = "quarkus.oidc.auth-server-url")
@@ -39,6 +39,7 @@ public class PublicationApiTest {
         String accessToken = keycloakClient.getAccessToken(pubuser);
         Log.warn("TODO: get access token from OIDC server instead of KeycloakTestClient");
         defaultClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + accessToken));
+        defaultClient.setScheme("http");
         defaultClient.setHost("localhost");
         defaultClient.setPort(testPort);
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);

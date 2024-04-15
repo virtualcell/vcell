@@ -1,27 +1,35 @@
 package org.vcell.restq.db;
 
 import cbit.vcell.modeldb.*;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.vcell.restq.auth.AuthUtils;
+import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+@ApplicationScoped
 public class BioModelRestDB {
 
     private final DatabaseServerImpl databaseServerImpl;
     private final SimulationRestDB simulationRestDB;
-    private final AdminDBTopLevel adminDBTopLevel;
+    private final DatabaseServerImpl databaseServer;
 
 
+    @Inject
     public BioModelRestDB(OracleAgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         simulationRestDB = new SimulationRestDB(agroalConnectionFactory);
-        adminDBTopLevel = databaseServerImpl.getAdminDBTopLevel();
+        databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
     }
 
     public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, DataAccessException {
@@ -66,5 +74,21 @@ public class BioModelRestDB {
             throw new ObjectNotFoundException("failed to get biomodel");
         }
         return bioModelReps[0];
+    }
+
+    public KeyValue saveBioModel(User user, String bioModelXML) throws DataAccessException, XmlParseException {
+        if (user == null){
+            throw new PermissionException("vcell user not specified");
+        }
+        String savedModel = databaseServer.saveBioModel(user, new BigString(bioModelXML), null).toString();
+        cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(savedModel));
+        return bioModel.getVersion().getVersionKey();
+    }
+
+    public void deleteBioModel(User user, KeyValue bioModelKey) throws DataAccessException {
+        if (user == null){
+            throw new PermissionException("vcell user not specified");
+        }
+        databaseServerImpl.deleteBioModel(user, bioModelKey);
     }
 }

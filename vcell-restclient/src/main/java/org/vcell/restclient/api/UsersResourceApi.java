@@ -1,5 +1,5 @@
 /*
- * VCell API (development)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -12,31 +12,45 @@
 
 package org.vcell.restclient.api;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.message.BasicNameValuePair;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Pair;
+
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.MapUser;
 import org.vcell.restclient.model.User;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+//import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+
+import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.http.HttpRequest;
+import java.nio.channels.Channels;
+import java.nio.channels.Pipe;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+
 import java.util.ArrayList;
+import java.util.StringJoiner;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
@@ -77,7 +91,7 @@ public class UsersResourceApi {
   }
 
   /**
-   * 
+   * Get token for legacy API
    * 
    * @param userId  (optional)
    * @param userPassword  (optional)
@@ -85,13 +99,13 @@ public class UsersResourceApi {
    * @return AccesTokenRepresentationRecord
    * @throws ApiException if fails to make API call
    */
-  public AccesTokenRepresentationRecord apiUsersBearerTokenPost(String userId, String userPassword, String clientId) throws ApiException {
-    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = apiUsersBearerTokenPostWithHttpInfo(userId, userPassword, clientId);
+  public AccesTokenRepresentationRecord getLegacyApiToken(String userId, String userPassword, String clientId) throws ApiException {
+    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getLegacyApiTokenWithHttpInfo(userId, userPassword, clientId);
     return localVarResponse.getData();
   }
 
   /**
-   * 
+   * Get token for legacy API
    * 
    * @param userId  (optional)
    * @param userPassword  (optional)
@@ -99,8 +113,8 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;AccesTokenRepresentationRecord&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<AccesTokenRepresentationRecord> apiUsersBearerTokenPostWithHttpInfo(String userId, String userPassword, String clientId) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersBearerTokenPostRequestBuilder(userId, userPassword, clientId);
+  public ApiResponse<AccesTokenRepresentationRecord> getLegacyApiTokenWithHttpInfo(String userId, String userPassword, String clientId) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getLegacyApiTokenRequestBuilder(userId, userPassword, clientId);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -110,7 +124,7 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersBearerTokenPost", localVarResponse);
+          throw getApiException("getLegacyApiToken", localVarResponse);
         }
         return new ApiResponse<AccesTokenRepresentationRecord>(
           localVarResponse.statusCode(),
@@ -128,11 +142,11 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiUsersBearerTokenPostRequestBuilder(String userId, String userPassword, String clientId) throws ApiException {
+  private HttpRequest.Builder getLegacyApiTokenRequestBuilder(String userId, String userPassword, String clientId) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/users/bearerToken";
+    String localVarPath = "/api/v1/users/bearerToken";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -168,162 +182,24 @@ public class UsersResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
-   * 
-   * @return UserIdentityJSONSafe
-   * @throws ApiException if fails to make API call
-   */
-  public UserIdentityJSONSafe apiUsersGetIdentityGet() throws ApiException {
-    ApiResponse<UserIdentityJSONSafe> localVarResponse = apiUsersGetIdentityGetWithHttpInfo();
-    return localVarResponse.getData();
-  }
-
-  /**
-   * 
-   * 
-   * @return ApiResponse&lt;UserIdentityJSONSafe&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<UserIdentityJSONSafe> apiUsersGetIdentityGetWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersGetIdentityGetRequestBuilder();
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersGetIdentityGet", localVarResponse);
-        }
-        return new ApiResponse<UserIdentityJSONSafe>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<UserIdentityJSONSafe>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder apiUsersGetIdentityGetRequestBuilder() throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/users/getIdentity";
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Accept", "application/json");
-
-    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
-   * 
-   * 
-   * @param mapUser  (optional)
-   * @return Boolean
-   * @throws ApiException if fails to make API call
-   */
-  public Boolean apiUsersMapUserPost(MapUser mapUser) throws ApiException {
-    ApiResponse<Boolean> localVarResponse = apiUsersMapUserPostWithHttpInfo(mapUser);
-    return localVarResponse.getData();
-  }
-
-  /**
-   * 
-   * 
-   * @param mapUser  (optional)
-   * @return ApiResponse&lt;Boolean&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<Boolean> apiUsersMapUserPostWithHttpInfo(MapUser mapUser) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersMapUserPostRequestBuilder(mapUser);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersMapUserPost", localVarResponse);
-        }
-        return new ApiResponse<Boolean>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Boolean>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder apiUsersMapUserPostRequestBuilder(MapUser mapUser) throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/users/mapUser";
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Content-Type", "application/json");
-    localVarRequestBuilder.header("Accept", "text/plain");
-
-    try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(mapUser);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
-   * 
+   * Get current user
    * 
    * @return User
    * @throws ApiException if fails to make API call
    */
-  public User apiUsersMeGet() throws ApiException {
-    ApiResponse<User> localVarResponse = apiUsersMeGetWithHttpInfo();
+  public User getMe() throws ApiException {
+    ApiResponse<User> localVarResponse = getMeWithHttpInfo();
     return localVarResponse.getData();
   }
 
   /**
-   * 
+   * Get current user
    * 
    * @return ApiResponse&lt;User&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<User> apiUsersMeGetWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = apiUsersMeGetRequestBuilder();
+  public ApiResponse<User> getMeWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getMeRequestBuilder();
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -333,7 +209,7 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("apiUsersMeGet", localVarResponse);
+          throw getApiException("getMe", localVarResponse);
         }
         return new ApiResponse<User>(
           localVarResponse.statusCode(),
@@ -351,17 +227,155 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder apiUsersMeGetRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getMeRequestBuilder() throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/users/me";
+    String localVarPath = "/api/v1/users/me";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Get mapped VCell identity
+   * 
+   * @return UserIdentityJSONSafe
+   * @throws ApiException if fails to make API call
+   */
+  public UserIdentityJSONSafe getVCellIdentity() throws ApiException {
+    ApiResponse<UserIdentityJSONSafe> localVarResponse = getVCellIdentityWithHttpInfo();
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Get mapped VCell identity
+   * 
+   * @return ApiResponse&lt;UserIdentityJSONSafe&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<UserIdentityJSONSafe> getVCellIdentityWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getVCellIdentityRequestBuilder();
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getVCellIdentity", localVarResponse);
+        }
+        return new ApiResponse<UserIdentityJSONSafe>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<UserIdentityJSONSafe>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getVCellIdentityRequestBuilder() throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/getIdentity";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * set or replace vcell identity mapping
+   * 
+   * @param mapUser  (optional)
+   * @return Boolean
+   * @throws ApiException if fails to make API call
+   */
+  public Boolean setVCellIdentity(MapUser mapUser) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = setVCellIdentityWithHttpInfo(mapUser);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * set or replace vcell identity mapping
+   * 
+   * @param mapUser  (optional)
+   * @return ApiResponse&lt;Boolean&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Boolean> setVCellIdentityWithHttpInfo(MapUser mapUser) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = setVCellIdentityRequestBuilder(mapUser);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("setVCellIdentity", localVarResponse);
+        }
+        return new ApiResponse<Boolean>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Boolean>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder setVCellIdentityRequestBuilder(MapUser mapUser) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/mapUser";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "text/plain");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(mapUser);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

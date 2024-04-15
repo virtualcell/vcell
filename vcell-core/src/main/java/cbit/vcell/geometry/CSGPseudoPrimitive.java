@@ -17,7 +17,7 @@ import cbit.vcell.render.Vect3d;
 
 @SuppressWarnings("serial")
 public class CSGPseudoPrimitive extends CSGNode {
-	private String csgObjectName = null;
+	private String csgObjectName;
 	private CSGObject csgObject = null;
 
 	public CSGPseudoPrimitive(String name, String csgObjectName){

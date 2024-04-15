@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.3
 info:
-  title: VCell API (development)
+  title: VCell API
   description: VCell API
   termsOfService: Your terms of service here
   contact:
@@ -13,9 +13,9 @@ info:
     url: http://opensource.org/licenses/MIT
   version: 1.0.1
 servers:
-- url: http://localhost:9000
+- url: https://vcellapi-test.cam.uchc.edu
 paths:
-  /api/bioModel/upload_bioModel:
+  /api/v1/bioModel/upload_bioModel:
     post:
       tags:
       - Bio Model Resource
@@ -33,7 +33,7 @@ paths:
             text/plain:
               schema:
                 type: string
-  /api/bioModel/{bioModelID}:
+  /api/v1/bioModel/{bioModelID}:
     get:
       tags:
       - Bio Model Resource
@@ -66,82 +66,7 @@ paths:
       responses:
         "204":
           description: No Content
-  /api/bioModel/{bioModelID}/bngl_download:
-    get:
-      tags:
-      - Bio Model Resource
-      summary: Get the BioModel in BNGL format.
-      operationId: getBioModelBNGL
-      parameters:
-      - name: bioModelID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-  /api/bioModel/{bioModelID}/diagram_download:
-    get:
-      tags:
-      - Bio Model Resource
-      summary: Get the BioModels diagram.
-      operationId: getBioModelDIAGRAM
-      parameters:
-      - name: bioModelID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-  /api/bioModel/{bioModelID}/omex_download:
-    get:
-      tags:
-      - Bio Model Resource
-      summary: Get the BioModel in OMEX format.
-      operationId: getBioModelOMEX
-      parameters:
-      - name: bioModelID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-  /api/bioModel/{bioModelID}/sbml_download:
-    get:
-      tags:
-      - Bio Model Resource
-      summary: Get the BioModel in SBML format.
-      operationId: getBioModelSBML
-      parameters:
-      - name: bioModelID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-  /api/bioModel/{bioModelID}/vcml_download:
-    get:
-      tags:
-      - Bio Model Resource
-      summary: Get the BioModel in VCML format.
-      operationId: getBioModelVCML
-      parameters:
-      - name: bioModelID
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        "204":
-          description: No Content
-  /api/helloworld:
+  /api/v1/helloworld:
     get:
       tags:
       - Hello World
@@ -154,7 +79,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HelloWorldMessage'
-  /api/publications:
+  /api/v1/publications:
     get:
       tags:
       - Publication Resource
@@ -186,10 +111,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -211,14 +136,14 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
-  /api/publications/{id}:
+  /api/v1/publications/{id}:
     get:
       tags:
       - Publication Resource
@@ -253,17 +178,19 @@ paths:
       responses:
         "204":
           description: No Content
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
-  /api/users/bearerToken:
+  /api/v1/users/bearerToken:
     post:
       tags:
       - Users Resource
+      summary: Get token for legacy API
+      operationId: getLegacyApiToken
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -283,10 +210,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
-  /api/users/getIdentity:
+  /api/v1/users/getIdentity:
     get:
       tags:
       - Users Resource
+      summary: Get mapped VCell identity
+      operationId: getVCellIdentity
       responses:
         "200":
           description: OK
@@ -294,17 +223,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
-  /api/users/mapUser:
+  /api/v1/users/mapUser:
     post:
       tags:
       - Users Resource
+      summary: set or replace vcell identity mapping
+      operationId: setVCellIdentity
       requestBody:
         content:
           application/json:
@@ -317,17 +248,19 @@ paths:
             text/plain:
               schema:
                 type: boolean
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
-  /api/users/me:
+  /api/v1/users/me:
     get:
       tags:
       - Users Resource
+      summary: Get current user
+      operationId: getMe
       responses:
         "200":
           description: OK

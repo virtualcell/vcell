@@ -1,5 +1,5 @@
 /**
- * VCell API (development)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -30,41 +30,6 @@ export interface BioModelResourceServiceInterface {
      * @param bioModelID 
      */
     deleteBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * Get the BioModel in BNGL format.
-     * 
-     * @param bioModelID 
-     */
-    getBioModelBNGL(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * Get the BioModels diagram.
-     * 
-     * @param bioModelID 
-     */
-    getBioModelDIAGRAM(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * Get the BioModel in OMEX format.
-     * 
-     * @param bioModelID 
-     */
-    getBioModelOMEX(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * Get the BioModel in SBML format.
-     * 
-     * @param bioModelID 
-     */
-    getBioModelSBML(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * Get the BioModel in VCML format.
-     * 
-     * @param bioModelID 
-     */
-    getBioModelVCML(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * Get BioModel information in JSON format by ID.

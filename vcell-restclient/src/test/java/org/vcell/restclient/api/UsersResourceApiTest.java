@@ -39,9 +39,9 @@ public class UsersResourceApiTest {
      *          if the Api call fails
      */
     @Test
-    public void apiUsersMeGetTest() throws ApiException {
+    public void getMeTest() throws ApiException {
         User response = 
-        api.apiUsersMeGet();
+        api.getMe();
         
         // TODO: test validations
     }

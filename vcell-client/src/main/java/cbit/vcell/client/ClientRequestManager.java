@@ -46,8 +46,7 @@ import javax.swing.Timer;
 import javax.swing.filechooser.FileFilter;
 
 import cbit.vcell.client.data.*;
-import cbit.vcell.export.server.HumanReadableExportData;
-import cbit.vcell.export.server.N5Specs;
+import cbit.vcell.export.server.*;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
@@ -134,7 +133,6 @@ import cbit.vcell.client.task.SetMathDescription;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.desktop.LoginManager;
-import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CSGObject;
@@ -2524,9 +2522,9 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		if (exportsRecord.contains(evt.getJobID() + "")) {
 			return;
 		}
-		if (evt.getLocation().toLowerCase().endsWith("." + N5Specs.n5Suffix)){
-			return;
-		}
+//		if (evt.getLocation().toLowerCase().endsWith("." + N5Specs.n5Suffix)){
+//			return;
+//		}
 		AsynchClientTask task1 = new AsynchClientTask("Retrieving data from '" + evt.getLocation() + "'",
 				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
@@ -2750,7 +2748,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	private static void updateExportMetaData(final ExportEvent exportEvent){
 		try{
 			if(ResourceUtil.getVcellHome() != null){
-				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new ArrayList<>(), new HashMap<>());
+				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new Stack<>(), new HashMap<>());
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 				// put lock
@@ -2788,9 +2786,10 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							humanReadableExportData.biomodelName,
                             Arrays.toString(exportEvent.getVariableSpecs().getVariableNames()),
 							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()],
-							humanReadableExportData.defaultParameterValues,
-							humanReadableExportData.setParameterValues,
-							humanReadableExportData.serverSavedFileName
+							humanReadableExportData.differentParameterValues,
+							humanReadableExportData.serverSavedFileName,
+							humanReadableExportData.applicationType,
+							humanReadableExportData.nonSpatial
 					);
 
 					formatData.simulationDataMap.put(stringJobID, simulationExportDataRepresentation);
@@ -2887,8 +2886,9 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	public void exportMessage(ExportEvent event) {
 		if (event.getEventTypeID() == ExportEvent.EXPORT_COMPLETE) {
 			// try to download the thing
-			downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);
-
+			if(!Objects.equals(event.getFormat(), ExportFormat.N5.name())){
+				downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);
+			}
 			// create export metadata
 			updateExportMetaData(event);
 		}

@@ -15,8 +15,8 @@ import cbit.vcell.render.Vect3d;
 
 @SuppressWarnings("serial")
 public abstract class CSGTransformation extends CSGNode {
-	private Affine forwardTransform = null;
-	private Affine inverseTransform = null;
+	private Affine forwardTransform;
+	private Affine inverseTransform;
 	private CSGNode child = null;
 	
 	public enum TransformationType {

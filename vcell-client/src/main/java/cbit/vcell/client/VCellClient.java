@@ -355,7 +355,7 @@ public ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo
 			return ClientServerInfo.createLocalServerInfo(userid,digestedPassword);
 		}
 		case SERVER_REMOTE: {
-			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getApihost(), clientServerInfo.getApiport(),userid,digestedPassword);
+			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getApihost(), clientServerInfo.getApiport(), clientServerInfo.getPathPrefix_v0(),userid,digestedPassword);
 		}
 	};
 	return null;

@@ -27,8 +27,9 @@ import {LoadingComponent} from './components/loading/loading.component';
 import {AuthHttpInterceptor, AuthModule} from '@auth0/auth0-angular';
 import {environment as env} from '../environments/environment';
 import {PublicationListComponent} from './components/publication-list/publication-list.component';
-import { PublicationEditComponent } from './components/publication-edit/publication-edit.component';
-import { CustomAuthInterceptor } from './custom-auth-interceptor';
+import {PublicationEditComponent} from './components/publication-edit/publication-edit.component';
+import {ApiModule} from "./core/modules/openapi";
+import {VcellIdentityComponent} from "./components/vcell-identity/vcell-identity.component";
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import { CustomAuthInterceptor } from './custom-auth-interceptor';
     LoadingComponent,
     PublicationListComponent,
     PublicationEditComponent,
+    VcellIdentityComponent,
     ErrorComponent
   ],
   imports: [
@@ -66,6 +68,9 @@ import { CustomAuthInterceptor } from './custom-auth-interceptor';
     MatIconModule,
     MatInputModule,
     MatButtonModule,
+    // ApiModule.forRoot(() => new Configuration({ basePath: env.apiUri })),
+    // ApiModule.forRoot(() => new Configuration({ basePath: 'https://vcellapi-test.cam.uchc.edu' })),
+    ApiModule
   ],
   providers: [
     {

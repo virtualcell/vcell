@@ -3,6 +3,7 @@ package org.vcell.cli.run;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
+import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
 import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.util.FileUtils;
 
@@ -124,7 +125,7 @@ public class ExecutionJob {
      */
     public void executeArchive(boolean isBioSimSedml) throws HDF5Exception, PythonStreamException, ExecutionException {
         try {
-            Hdf5DataContainer masterHdf5File = new Hdf5DataContainer(isBioSimSedml);
+            HDF5ExecutionResults masterHdf5File = new HDF5ExecutionResults(isBioSimSedml);
             this.queueAllSedml();
 
             for (String sedmlLocation : this.sedmlLocations){

@@ -5,7 +5,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.UserIdentity;
 import cbit.vcell.modeldb.UserIdentityTable;
 import io.quarkus.security.identity.SecurityIdentity;
-import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -15,21 +15,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
-import org.vcell.restclient.model.AccessTokenRepresentation;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.db.OracleAgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 public class UsersApiTest {
     @ConfigProperty(name = "quarkus.oidc.auth-server-url")
     String authServerUrl;
@@ -87,7 +82,7 @@ public class UsersApiTest {
 //        adminDBTopLevel.deleteUserIdentityFromIdentityProvider(testUser, oidcName, UserIdentityTable.IdentityProvider.KEYCLOAK, true);
     }
 
-//    https://quarkus.io/guides/security-oidc-bearer-token-authentication#integration-testing-wiremock
+    //    https://quarkus.io/guides/security-oidc-bearer-token-authentication#integration-testing-wiremock
 //    https://quarkus.io/guides/security-testing
     @Test
     public void testOldAPITokenGeneration() throws ApiException {
@@ -95,22 +90,22 @@ public class UsersApiTest {
         UsersResourceApi bobUserApi = new UsersResourceApi(bobAPIClient);
         TestEndpointUtils.mapClientToNagiosUser(aliceUserApi);
 
-        AccesTokenRepresentationRecord token = aliceUserApi.apiUsersBearerTokenPost(TestEndpointUtils.userNagiosID, "", "123");
+        AccesTokenRepresentationRecord token = aliceUserApi.getLegacyApiToken(TestEndpointUtils.userNagiosID, "", "123");
         assert (token != null && !token.getToken().isEmpty());
 
-        token = aliceUserApi.apiUsersBearerTokenPost(TestEndpointUtils.userAdminID, "", "123");
+        token = aliceUserApi.getLegacyApiToken(TestEndpointUtils.userAdminID, "", "123");
         assert (token.getToken() == null);
 
 
         // Bob requests
-        token = bobUserApi.apiUsersBearerTokenPost(TestEndpointUtils.userNagiosID, "", "123");
+        token = bobUserApi.getLegacyApiToken(TestEndpointUtils.userNagiosID, "", "123");
         assert (token.getToken() == null);
 
-        token = bobUserApi.apiUsersBearerTokenPost(TestEndpointUtils.userAdminID, "", "123");
+        token = bobUserApi.getLegacyApiToken(TestEndpointUtils.userAdminID, "", "123");
         assert (token.getToken() == null);
 
         TestEndpointUtils.mapClientToAdminUser(bobUserApi);
-        token = bobUserApi.apiUsersBearerTokenPost(TestEndpointUtils.userAdminID, "", "123");
+        token = bobUserApi.getLegacyApiToken(TestEndpointUtils.userAdminID, "", "123");
         assert (token != null && !token.getToken().isEmpty());
     }
 }

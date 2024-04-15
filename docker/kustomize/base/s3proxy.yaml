@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: s3proxy
+  name: s3proxy
+spec:
+  selector:
+    matchLabels:
+      app: s3proxy
+  replicas: 0
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: s3proxy
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10000
+        fsGroup: 10000
+      containers:
+        - name: s3proxy
+          image: andrewgaul/s3proxy:sha-10469f40c0b27a091fde70ee065bd6ee1c945bca
+          resources:
+            requests:
+              memory: "150Mi"
+              cpu: "200m"
+            limits:
+              memory: "300Mi"
+#              cpu: "500m"
+          envFrom:
+            - configMapRef:
+                name: s3proxy-config
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nfs-primary-pvc
+              mountPath: /data
+              subPath: n5
+      restartPolicy: Always
+      volumes:
+        - name: nfs-primary-pvc
+          persistentVolumeClaim:
+            claimName: nfs-primary-pvc
+            readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: s3proxy
+  name: s3proxy
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 80
+  selector:
+    app: s3proxy

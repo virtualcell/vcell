@@ -1,5 +1,8 @@
 package cbit.vcell.biomodel;
 
+import cbit.image.ImageException;
+import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.BioEvent.EventAssignment;
 import cbit.vcell.math.MathDescription;
@@ -7,14 +10,17 @@ import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -24,25 +30,25 @@ public class ModelUnitConverter {
 
 	public static ModelUnitSystem createSbmlModelUnitSystem() {
 		final String substanceUnit = "umol";
-		String volumeSubstanceSymbol = substanceUnit;
-		String membraneSubstanceSymbol = substanceUnit;
-		String lumpedReactionSubstanceSymbol = substanceUnit;
-		String volumeSymbol = "l";
+		// All three of the following are the same in an SBML Unit system
+		String volumeSubstanceSymbol = substanceUnit; 			// Used to demonstrate difference between VCell and SBML
+		String membraneSubstanceSymbol = substanceUnit;			// Used to demonstrate difference between VCell and SBML
+		String lumpedReactionSubstanceSymbol = substanceUnit;	// Used to demonstrate difference between VCell and SBML
+        String volumeSymbol = "l";
 		String areaSymbol = "dm2";
 		String lengthSymbol = "dm";
 		String timeSymbol = "s";
-		ModelUnitSystem mus = ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol, lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
-		return mus;
+        return ModelUnitSystem.createVCModelUnitSystem(volumeSubstanceSymbol, membraneSubstanceSymbol,
+				lumpedReactionSubstanceSymbol, volumeSymbol, areaSymbol, lengthSymbol, timeSymbol);
 	}
-	public static BioModel createBioModelWithSBMLUnitSystem(BioModel oldBioModel) throws ExpressionException, XmlParseException {
+	public static BioModel createBioModelWithSBMLUnitSystem(BioModel oldBioModel) throws ExpressionException, XmlParseException, ImageException, GeometryException {
 		ModelUnitSystem mus = createSbmlModelUnitSystem();
-		BioModel newBioModel = createBioModelWithNewUnitSystem(oldBioModel, mus);
-		return newBioModel;
+        return createBioModelWithNewUnitSystem(oldBioModel, mus);
 	}
 	
 	
 	public static BioModel createBioModelWithNewUnitSystem(BioModel oldBioModel, ModelUnitSystem newUnitSystem)
-			throws ExpressionException, XmlParseException {
+			throws ExpressionException, XmlParseException, ImageException, GeometryException {
 
 		oldBioModel.refreshDependencies();
 		Map<String, MathDescription> previousMathDescriptionMap = new LinkedHashMap<>();
@@ -75,12 +81,11 @@ public class ModelUnitConverter {
 		
 		for (ReactionStep reactionStep : newBioModel.getModel().getReactionSteps()) {
 			SymbolTable oldSymbolTable = oldBioModel.getModel().getReactionStep(reactionStep.getName());
-			SymbolTable newSymbolTable = reactionStep;
-			for (Parameter p : reactionStep.getKinetics().getUnresolvedParameters()){
-				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p, dimensionless, KMOLE);
+            for (Parameter p : reactionStep.getKinetics().getUnresolvedParameters()){
+				convertVarsWithUnitFactors(oldSymbolTable, reactionStep, p, dimensionless, KMOLE);
 			}
 			for (Parameter p : reactionStep.getKinetics().getKineticsParameters()){
-				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p, dimensionless, KMOLE);
+				convertVarsWithUnitFactors(oldSymbolTable, reactionStep, p, dimensionless, KMOLE);
 			}
 			
 //			We no longer have to deal with conversion factor expressions and try to be smart and simplify/flatten and rebind
@@ -173,7 +178,7 @@ public class ModelUnitConverter {
 			 */
 			// convert rate rules
 			RateRule[] rateRules = simContext.getRateRules();
-			if (rateRules != null && rateRules.length > 0) { 
+			if (rateRules != null && rateRules.length > 0) {
 				for (RateRule rateRule : rateRules) {
 					RateRule oldRateRule = oldSimContext.getRateRule(rateRule.getName());
 					ScopedSymbolTable oldSymbolTable = oldRateRule.getSimulationContext();
@@ -198,6 +203,8 @@ public class ModelUnitConverter {
 					convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldTargetUnit, newTargetUnit, assignmentRuleExpr, dimensionless, KMOLE);
 				}
 			}
+
+			convertGeometryWithUnitFactors(oldSimContext, simContext, dimensionless, KMOLE);
 		}	// end  for - simulationContext
 		newBioModel.refreshDependencies();
 		for (SimulationContext simContext : newBioModel.getSimulationContexts()){
@@ -215,28 +222,28 @@ public class ModelUnitConverter {
 		return newBioModel;
 	}
 
-	private static void convertVarsWithUnitFactors(SymbolTable oldSymbolTable, SymbolTable newSymbolTable, Parameter parameter,
+	private static void convertVarsWithUnitFactors(SymbolTable oldSymbolTable, SymbolTable newSymbolTable, Parameter newParameter,
 												   VCUnitDefinition dimensionless, Model.ReservedSymbol KMOLE) throws ExpressionException {
 		// get old unit
 		VCUnitDefinition oldExprUnit = null;
-		Parameter oldParameter = (Parameter)oldSymbolTable.getEntry(parameter.getName());
+		Parameter oldParameter = (Parameter)oldSymbolTable.getEntry(newParameter.getName());
 		if (oldParameter == null){
-			System.err.println("parameter "+parameter.getName() + " was not found in the old symbol table");
+			System.err.println("parameter "+newParameter.getName() + " was not found in the old symbol table");
 		}else if (oldParameter.getUnitDefinition() == null){
-			System.err.println("parameter "+parameter.getName() + " has a null unit in old model, can't convert");
+			System.err.println("parameter "+newParameter.getName() + " has a null unit in old model, can't convert");
 		}else{
 			oldExprUnit = oldParameter.getUnitDefinition();
 		}
 		
 		// get new unit
 		VCUnitDefinition newExprUnit = null;
-		if (parameter.getUnitDefinition() == null){
-			System.err.println("parameter "+parameter.getName() + " has a null unit in new model, can't convert");
+		if (newParameter.getUnitDefinition() == null){
+			System.err.println("parameter "+newParameter.getName() + " has a null unit in new model, can't convert");
 		}else{
-			newExprUnit = parameter.getUnitDefinition();
+			newExprUnit = newParameter.getUnitDefinition();
 		}
 		
-		convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldExprUnit, newExprUnit, parameter.getExpression(), dimensionless, KMOLE);
+		convertExprWithUnitFactors(oldSymbolTable, newSymbolTable, oldExprUnit, newExprUnit, newParameter.getExpression(), dimensionless, KMOLE);
 	}
 
 	/**
@@ -310,7 +317,6 @@ public class ModelUnitConverter {
 	private static void convertExprWithUnitFactors(SymbolTable oldSymbolTable, SymbolTable newSymbolTable,
 												   VCUnitDefinition oldExprUnit, VCUnitDefinition newExprUnit,
 												   Expression expr, VCUnitDefinition dimensionless, Model.ReservedSymbol KMOLE) throws ExpressionException {
-
 		if (expr == null) {
 			return;
 		}
@@ -373,6 +379,76 @@ public class ModelUnitConverter {
 		Expression origExp = new Expression(expr);
 		expr.substituteInPlace(origExp,flattened);
 	}
+
+	private static void convertGeometryWithUnitFactors(SimulationContext oldSimContext, SimulationContext newSimContext,
+													   VCUnitDefinition dimensionless, Model.ReservedSymbol KMOLE)
+			throws ExpressionException, GeometryException, ImageException {
+		Geometry newGeometry = newSimContext.getGeometry();
+		VCUnitDefinition oldLengthUnit = oldSimContext.getModel().getUnitSystem().getLengthUnit();
+		VCUnitDefinition newLengthUnit = newSimContext.getModel().getUnitSystem().getLengthUnit();
+		VCUnitDefinition oldToNewConversionUnit = newLengthUnit.divideBy(oldLengthUnit);
+		Expression conversionFactor = getDimensionlessScaleFactor(oldToNewConversionUnit, dimensionless, KMOLE);
+
+		double lengthScaleFactor;
+		try {
+			lengthScaleFactor = ModelUnitConverter.round(conversionFactor.evaluateConstant(), 10);
+		} catch (Exception e){
+			throw new RuntimeException("Geometry scaling is unusual; failed to evaluate conversion factor", e);
+		}
+		if (lengthScaleFactor == 1) return;
+
+		// Scale Origin
+		Origin oldOrigin = newGeometry.getOrigin();
+		double correctedX = ModelUnitConverter.round(oldOrigin.getX() * lengthScaleFactor, 10);
+		if (correctedX == 0) correctedX = oldOrigin.getX() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		double correctedY = ModelUnitConverter.round(oldOrigin.getY() * lengthScaleFactor, 10);
+		if (correctedY == 0) correctedY = oldOrigin.getY() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		double correctedZ = ModelUnitConverter.round(oldOrigin.getZ() * lengthScaleFactor, 10);
+		if (correctedZ == 0) correctedZ = oldOrigin.getZ() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		newGeometry.setOrigin(new Origin(correctedX, correctedY, correctedZ));
+
+		// Scale Extent
+		Extent oldExtent = newGeometry.getExtent();
+		correctedX = ModelUnitConverter.round(oldExtent.getX() * lengthScaleFactor, 10);
+		if (correctedX == 0) correctedX = oldExtent.getX() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		correctedY = ModelUnitConverter.round(oldExtent.getY() * lengthScaleFactor, 10);
+		if (correctedY == 0) correctedY = oldExtent.getY() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		correctedZ = ModelUnitConverter.round(oldExtent.getZ() * lengthScaleFactor, 10);
+		if (correctedZ == 0) correctedZ = oldExtent.getZ() * lengthScaleFactor; // to prevent accidentally truncating to 0
+		try {
+			newGeometry.setExtent(new Extent(correctedX, correctedY, correctedZ));
+		} catch (Exception e){
+			throw new RuntimeException("Problem with Extent: ", e);
+		}
+
+		// Scale analytical geometry
+		for (SubVolume subVol : newGeometry.getGeometrySpec().getSubVolumes()){
+			if (!(subVol instanceof AnalyticSubVolume anSubVar)) continue;
+			Expression newAnExpression = anSubVar.getExpression();
+			convertExprWithUnitFactors(oldSimContext, newSimContext, dimensionless, dimensionless, newAnExpression, dimensionless, KMOLE);
+		}
+
+		// Scale Constructed Solid Geometry
+		for (SubVolume subVol : newGeometry.getGeometrySpec().getSubVolumes()){
+			if (!(subVol instanceof CSGObject csg)) continue;
+			csg.rescaleInPlace(lengthScaleFactor);
+		}
+
+		GeometrySurfaceDescription gsd = newGeometry.getGeometrySurfaceDescription();
+		if (gsd != null){
+			newGeometry.getGeometrySpec().getSampledImage().setDirty();
+			gsd.updateAll();
+		}
+		newSimContext.refreshSpatialObjects();
+	}
+
+	private static double round(double value, int places) {
+		if (places < 0) throw new IllegalArgumentException();
+
+		BigDecimal bd = new BigDecimal(Double.toString(value));
+		bd = bd.setScale(places, RoundingMode.HALF_UP);
+		return bd.doubleValue();
+	}
 	
 	public static void main(String[] args) {
 
@@ -429,10 +505,5 @@ public class ModelUnitConverter {
 		System.out.println(a/b+"");
 		b = 1E-26;
 		System.out.println(a/b+"");
-		
-		
-		
-		
-		
 	}
 }

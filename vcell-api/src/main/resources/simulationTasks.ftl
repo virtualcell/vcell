@@ -3,8 +3,8 @@
 <title>Simulation Tasks</title>
 </head>
 <body>
-<#assign simstatuslink="/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
-<center><h2><a href="/publication">Publications</a>&nbsp;&nbsp;&nbsp;<a href="/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="${simstatuslink}">Simulation Status</a>&nbsp;&nbsp;&nbsp;Simulation Tasks&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
+<#assign simstatuslink="${pathPrefix}/simstatus?submitLow=&submitHigh=&startRow=1&maxRows=10&hasData=all&active=on&running=on&completed=on&stopped=on&failed=on">
+<center><h2><a href="${pathPrefix}/publication">Publications</a>&nbsp;&nbsp;&nbsp;<a href="${pathPrefix}/biomodel">BioModels</a>&nbsp;&nbsp;&nbsp;<a href="${simstatuslink}">Simulation Status</a>&nbsp;&nbsp;&nbsp;Simulation Tasks&nbsp;&nbsp;&nbsp;<#if userid?? >(user: ${userid} <a href='${logouturl}'>Log out</a>)<#else>(not logged in <a href='${loginurl}'>sign in</a>)</#if></h2></center><br/><center>
 <form>
 <table><tbody>
 <tr><td>Begin Timestamp</td><td><input type='text' name='submitLow' value='${submitLow!""}'/></td></tr>
@@ -55,14 +55,14 @@
 <#list simTasks as simTask>
 
 <#if simTask.bioModelLink??>
-	<#assign simlink="/biomodel/${simTask.bioModelLink.bioModelKey}/simulation/${simTask.simKey}"/>
+	<#assign simlink="${pathPrefix}/biomodel/${simTask.bioModelLink.bioModelKey}/simulation/${simTask.simKey}"/>
 </#if>
 <#if simTask.mathModelLink??>
-	<#assign simlink="/biomodel/${simTask.mathModelLink.mathModelKey}/simulation/${simTask.simKey}"/>
+	<#assign simlink="${pathPrefix}/biomodel/${simTask.mathModelLink.mathModelKey}/simulation/${simTask.simKey}"/>
 </#if>
 
 <tr>
-<td><#if simTask.bioModelLink??><a href='/biomodel/${simTask.bioModelLink.bioModelKey}'>${simTask.bioModelLink.bioModelName!""}</a><#else>unknown</#if></td>
+<td><#if simTask.bioModelLink??><a href='${pathPrefix}/biomodel/${simTask.bioModelLink.bioModelKey}'>${simTask.bioModelLink.bioModelName!""}</a><#else>unknown</#if></td>
 <td><#if simTask.bioModelLink??>${simTask.bioModelLink.simContextName!""}<#else>unknown</#if></td>
 <td><#if simTask.mathModelLink??>"${simTask.mathModelLink.mathModelName!""}" (id=${simTask.mathModelLink.mathModelKey}) (branch=${simTask.mathModelLink.mathModelBranchId})<#else>unknown</#if></td>
 <td>

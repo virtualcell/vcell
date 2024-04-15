@@ -3,7 +3,7 @@
 <title>Edit Publication</title>
 </head>
 <body>
-<form action="/publication/new" method="post">
+<form action="${pathPrefix}/publication/new" method="post">
 <table>
 	<input type="hidden" value="applyEdit" name="pubop" />
 	<tr><td>pubId</td><td><input type='text' name='pubId' value='${publicationRepr.pubKey}' readonly/></td></tr>

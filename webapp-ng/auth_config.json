@@ -1,0 +1,9 @@
+{
+  "domain": "dev-dzhx7i2db3x3kkvq.us.auth0.com",
+  "clientId": "vlqdkd4MYoJz8nmcJD37MMA7UTEtLeTc",
+  "authorizationParams": {
+    "audience": "https://vcellapi.cam.uchc.edu"
+  },
+  "apiUri": "https://vcellapi-test.cam.uchc.edu",
+  "errorPath": "/error"
+}

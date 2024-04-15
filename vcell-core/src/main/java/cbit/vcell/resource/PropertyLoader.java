@@ -62,7 +62,6 @@ public class PropertyLoader {
 
 	public static final String n5DataDir = record("vcell.n5DataDir.internal", ValueType.DIR);
 	public static final String s3ProxyExternalPort = record("vcell.s3proxy.port.external", ValueType.GEN);
-	public static final String simPerUserMemoryLimitFile	= record("vcell.htc.simPerUserMemLimitFile",ValueType.GEN);
 	public static final String primarySimDataDirInternalProperty	= record("vcell.primarySimdatadir.internal",ValueType.DIR);
 	public static final String secondarySimDataDirInternalProperty	= record("vcell.secondarySimdatadir.internal",ValueType.DIR);
 	public static final String primarySimDataDirExternalProperty	= record("vcell.primarySimdatadir.external",ValueType.GEN);
@@ -122,6 +121,7 @@ public class PropertyLoader {
 	public static final String comsolJarDir					= record("vcell.comsol.jardir",ValueType.DIR);
 
 	public static final String vcellServerHost				= record("vcell.serverHost",ValueType.GEN);
+	public static final String vcellServerPrefixV0			= record("vcell.serverPrefix.v0",ValueType.GEN);
 	public static final String sslIgnoreHostMismatch		= record("vcell.ssl.ignoreHostMismatch",ValueType.BOOL);
 	public static final String sslIgnoreCertProblems		= record("vcell.ssl.ignoreCertProblems",ValueType.BOOL);
 
@@ -280,7 +280,7 @@ public class PropertyLoader {
 	public static final String cliWorkingDir = record("cli.workingDir", ValueType.DIR);
 	public static final String vtkPythonDir = record("vcell.vtk.pythonDir", ValueType.DIR);
 
-	
+	public static final String imageJ = record("vcell.imageJ", ValueType.EXE);
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
 	public static final boolean enableSpringSalad_default_value=true;
 

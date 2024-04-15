@@ -50,9 +50,9 @@ public class Hdf5DataSourceSpatialVarDataItem {
      * @param outputStartTime the start time of the data
      * @param outputNumberOfPoints the total number of data points.
      */
-    public Hdf5DataSourceSpatialVarDataItem(
+    public Hdf5DataSourceSpatialVarDataItem (
             Report sedmlReport, DataSet sedmlDataset, Variable sedmlVariable,
-            int jobIndex, File hdf5File, double outputStartTime, int outputNumberOfPoints, String vcellVarId) {
+            int jobIndex, File hdf5File, double outputStartTime, int outputNumberOfPoints, String vcellVarId) throws MissingDataException {
         this.sedmlReport = sedmlReport;
         this.sedmlDataset = sedmlDataset;
         this.sedmlVariable = sedmlVariable;
@@ -81,7 +81,7 @@ public class Hdf5DataSourceSpatialVarDataItem {
         }
     }
 
-    private void parseMetadata() {
+    private void parseMetadata() throws MissingDataException{
         lg.debug("Fetching metadata");
         try (io.jhdf.HdfFile jhdfFile = new io.jhdf.HdfFile(Paths.get(this.hdf5File.toURI()))) {
             Map<String, Node> children = jhdfFile.getChildren();
@@ -93,7 +93,8 @@ public class Hdf5DataSourceSpatialVarDataItem {
             this.varToDatasetPathMap = new LinkedHashMap<>();
             Map<String, Node> entrySubsets = topLevelGroup.getChildren();
             if (!this.sedmlVariable.getName().equals("t") && !entrySubsets.containsKey(this.sedmlVariable.getName())){
-                throw new RuntimeException(String.format("Output data in file `%s` does not contain results needed for sedml variable `%s`",
+                throw new MissingDataException(String.format("Output data in file `%s` does not contain results needed for sedml variable `%s`. "
+                                + "This is likely because the species requested is not represented well in HDF5, such as a membrane species.",
                         this.hdf5File.getName(), this.sedmlVariable.getName()));
             }
             for (Map.Entry<String, Node> groupEntry : entrySubsets.entrySet()) {

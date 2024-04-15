@@ -18,10 +18,12 @@ public class VCellClientModule extends AbstractModule {
 
     private final String apiHost;
     private final int apiPort;
+    private final String apiPathPrefixV0;
 
-    public VCellClientModule(String apiHost, int apiPort) {
+    public VCellClientModule(String apiHost, int apiPort, String apiPathPrefixV0) {
         this.apiHost = apiHost;
         this.apiPort = apiPort;
+        this.apiPathPrefixV0 = apiPathPrefixV0;
     }
 
     public interface UnimplementedService {
@@ -47,5 +49,6 @@ public class VCellClientModule extends AbstractModule {
 
         bind(String.class).annotatedWith(Names.named(DependencyConstants.VCELL_API_HOST)).toInstance(apiHost);
         bind(Integer.class).annotatedWith(Names.named(DependencyConstants.VCELL_API_PORT)).toInstance(apiPort);
+        bind(String.class).annotatedWith(Names.named(DependencyConstants.VCELL_API_PATH_PREFIX_V0)).toInstance(apiPathPrefixV0);
     }
 }

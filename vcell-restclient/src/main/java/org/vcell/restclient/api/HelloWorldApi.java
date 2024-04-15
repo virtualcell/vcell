@@ -1,5 +1,5 @@
 /*
- * VCell API (development)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -131,7 +131,7 @@ public class HelloWorldApi {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/helloworld";
+    String localVarPath = "/api/v1/helloworld";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 

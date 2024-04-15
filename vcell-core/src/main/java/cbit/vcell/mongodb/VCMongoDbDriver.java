@@ -2,16 +2,15 @@ package cbit.vcell.mongodb;
 
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.VCellExecutorService;
-import com.mongodb.MongoClient;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoException;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.*;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.connection.TransportSettings;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
@@ -69,7 +68,8 @@ public class VCMongoDbDriver {
 	        	if (m==null){
 	        		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
 	        		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
-	        		m = new MongoClient(mongoDbHost,mongoDbPort);
+					String mongoUri = "mongodb://"+mongoDbHost+":"+mongoDbPort;
+					m = MongoClients.create(mongoUri);
 	        	}
 	        	
 	        	MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
@@ -227,7 +227,8 @@ public class VCMongoDbDriver {
 			if (m == null) {
 				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
 				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
-				m = new MongoClient(mongoDbHost, mongoDbPort);
+				String mongoUri = "mongodb://"+mongoDbHost+":"+mongoDbPort;
+				m = MongoClients.create(mongoUri);
 			}
 
 			MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
@@ -265,7 +266,8 @@ public class VCMongoDbDriver {
 			if (m == null) {
 				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
 				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
-				m = new MongoClient(mongoDbHost, mongoDbPort);
+				String mongoUri = "mongodb://"+mongoDbHost+":"+mongoDbPort;
+				m = MongoClients.create(mongoUri);
 			}
 			ByteArrayOutputStream streamToDownloadTo = new ByteArrayOutputStream();
 			MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
@@ -293,7 +295,8 @@ public class VCMongoDbDriver {
 			if (m == null) {
 				String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
 				int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
-				m = new MongoClient(mongoDbHost, mongoDbPort);
+				String mongoUri = "mongodb://"+mongoDbHost+":"+mongoDbPort;
+				m = MongoClients.create(mongoUri);
 			}
 			MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
 			GridFSBucket gridFSBucket = GridFSBuckets.create(db);
@@ -334,7 +337,8 @@ public class VCMongoDbDriver {
 			//
     		String mongoDbHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostInternal);
     		int mongoDbPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortInternal)); // default 27017
-    		m = new MongoClient(mongoDbHost,mongoDbPort);
+			String mongoUri = "mongodb://"+mongoDbHost+":"+mongoDbPort;
+			m = MongoClients.create(mongoUri);
         	String mongoDbDatabaseName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
         	MongoDatabase db = m.getDatabase(mongoDbDatabaseName);
         	String mongoDbLoggingCollectionName = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbLoggingCollection);

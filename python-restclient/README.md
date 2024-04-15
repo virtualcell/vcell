@@ -56,10 +56,10 @@ import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to http://localhost:9000
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "http://localhost:9000"
+    host = "https://vcellapi-test.cam.uchc.edu"
 )
 
 
@@ -80,28 +80,23 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *http://localhost:9000*
+All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
-*BioModelResourceApi* | [**get_bio_model_bngl**](docs/BioModelResourceApi.md#get_bio_model_bngl) | **GET** /api/bioModel/{bioModelID}/bngl_download | Get the BioModel in BNGL format.
-*BioModelResourceApi* | [**get_bio_model_diagram**](docs/BioModelResourceApi.md#get_bio_model_diagram) | **GET** /api/bioModel/{bioModelID}/diagram_download | Get the BioModels diagram.
-*BioModelResourceApi* | [**get_bio_model_omex**](docs/BioModelResourceApi.md#get_bio_model_omex) | **GET** /api/bioModel/{bioModelID}/omex_download | Get the BioModel in OMEX format.
-*BioModelResourceApi* | [**get_bio_model_sbml**](docs/BioModelResourceApi.md#get_bio_model_sbml) | **GET** /api/bioModel/{bioModelID}/sbml_download | Get the BioModel in SBML format.
-*BioModelResourceApi* | [**get_bio_model_vcml**](docs/BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
-*BioModelResourceApi* | [**get_biomodel_by_id**](docs/BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
-*BioModelResourceApi* | [**upload_bio_model**](docs/BioModelResourceApi.md#upload_bio_model) | **POST** /api/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
-*HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/helloworld | Get hello world message.
-*PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/publications | Create publication
-*PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/publications/{id} | Delete publication
-*PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/publications/{id} | Get publication by ID
-*PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/publications | Get all publications
-*PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/publications | Create publication
-*UsersResourceApi* | [**api_users_bearer_token_post**](docs/UsersResourceApi.md#api_users_bearer_token_post) | **POST** /api/users/bearerToken | 
-*UsersResourceApi* | [**api_users_get_identity_get**](docs/UsersResourceApi.md#api_users_get_identity_get) | **GET** /api/users/getIdentity | 
-*UsersResourceApi* | [**api_users_map_user_post**](docs/UsersResourceApi.md#api_users_map_user_post) | **POST** /api/users/mapUser | 
-*UsersResourceApi* | [**api_users_me_get**](docs/UsersResourceApi.md#api_users_me_get) | **GET** /api/users/me | 
+*BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**get_biomodel_by_id**](docs/BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+*BioModelResourceApi* | [**upload_bio_model**](docs/BioModelResourceApi.md#upload_bio_model) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
+*HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
+*PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
+*PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
+*PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
+*PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
+*UsersResourceApi* | [**get_legacy_api_token**](docs/UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
+*UsersResourceApi* | [**get_me**](docs/UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user
+*UsersResourceApi* | [**get_v_cell_identity**](docs/UsersResourceApi.md#get_v_cell_identity) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
+*UsersResourceApi* | [**set_v_cell_identity**](docs/UsersResourceApi.md#set_v_cell_identity) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
 
 
 ## Documentation For Models

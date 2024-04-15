@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.data.LocalReference;
@@ -127,12 +128,14 @@ public class SimulationTasksServerResource extends AbstractServerResource implem
 		
 		SimulationTaskRepresentation[] simTasks = getSimulationTaskRepresentations(vcellUser);
 		Map<String,Object> dataModel = new HashMap<String,Object>();
-		
-		dataModel.put("loginurl", "/"+VCellApiApplication.LOGINFORM);  // +"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+getRequest().getResourceRef().toUrl());
-		dataModel.put("logouturl", "/"+VCellApiApplication.LOGOUT+"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+Reference.encode(getRequest().getResourceRef().toUrl().toString()));
+
+		String pathPrefix = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerPrefixV0);
+		dataModel.put("loginurl", pathPrefix+"/"+VCellApiApplication.LOGINFORM);  // +"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+getRequest().getResourceRef().toUrl());
+		dataModel.put("logouturl", pathPrefix+"/"+VCellApiApplication.LOGOUT+"?"+VCellApiApplication.REDIRECTURL_FORMNAME+"="+Reference.encode(getRequest().getResourceRef().toUrl().toString()));
 		if (vcellUser!=null){
 			dataModel.put("userid",vcellUser.getName());
 		}
+		dataModel.put("pathPrefix", pathPrefix);
 		dataModel.put("userId", getAttribute(PARAM_USER));
 		dataModel.put("simId", getQueryValue(PARAM_SIM_ID));
 		dataModel.put("jobId",  getLongQueryValue(PARAM_JOB_ID));

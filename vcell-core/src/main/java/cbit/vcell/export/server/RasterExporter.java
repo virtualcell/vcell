@@ -478,7 +478,7 @@ public NrrdInfo[] makeRasterData(OutputContext outputContext,JobRequest jobReque
 						throws RemoteException, DataAccessException, IOException {
 	return exportPDEData(
 			outputContext,
-		jobRequest.getJobID(),
+		jobRequest.getExportJobID(),
 		user,
 		dataServerImpl,
 		exportSpecs.getVCDataIdentifier(),
@@ -862,7 +862,7 @@ public ExportOutput[] makeUCDData(OutputContext outputContext,JobRequest jobRequ
 //	for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 		for (int j = timeSpecs.getBeginTimeIndex(); j <= timeSpecs.getEndTimeIndex(); j++){
 			exportServiceImpl.fireExportProgress(
-					jobRequest.getJobID(), vcdID, "UCD",
+					jobRequest.getExportJobID(), vcdID, "UCD",
 					(double)(j-timeSpecs.getBeginTimeIndex())/(double)(timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1));
 			
 //			String fileID = simID + "_Full_" + formatTime(timeSpecs.getAllTimes()[j]) + "time_" + variableSpecs.getVariableNames().length + "vars";
@@ -967,7 +967,7 @@ public ExportOutput[] makeVTKImageData(OutputContext outputContext,JobRequest jo
 	Vector<ExportOutput> exportOutV = new Vector<ExportOutput>();
 	for (int j = timeSpecs.getBeginTimeIndex(); j <= timeSpecs.getEndTimeIndex(); j++){
 		exportServiceImpl.fireExportProgress(
-				jobRequest.getJobID(), vcdID, "VTKIMG",
+				jobRequest.getExportJobID(), vcdID, "VTKIMG",
 				(double)(j-timeSpecs.getBeginTimeIndex())/(double)(timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1));
 
 		StringBuffer sb = new StringBuffer();
@@ -1051,7 +1051,7 @@ public ExportOutput[] makeVTKUnstructuredData_Chombo(OutputContext outputContext
 	ChomboVtkFileWriter chomboVTKFileWriter = new ChomboVtkFileWriter();
 	File[] vtkFiles = chomboVTKFileWriter.writeVtuExportFiles(chomboFiles, tmpDir, new ChomboVtkFileWriter.ProgressListener() {
 		public void progress(double percentDone) {
-			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone);
+			exportServiceImpl.fireExportProgress(jobRequest.getExportJobID(), vcdID, "VTKUNSTR", percentDone);
 		}
 	});
 	
@@ -1080,7 +1080,7 @@ public ExportOutput[] makeVTKUnstructuredData_VCell(OutputContext outputContext,
 	CartesianMeshVtkFileWriter cartesianMeshVtkFileWriter = new CartesianMeshVtkFileWriter();
 	File[] vtkFiles = cartesianMeshVtkFileWriter.writeVtuExportFiles(vcellFiles, tmpDir, new CartesianMeshVtkFileWriter.ProgressListener() {
 		public void progress(double percentDone) {
-			exportServiceImpl.fireExportProgress(jobRequest.getJobID(), vcdID, "VTKUNSTR", percentDone);
+			exportServiceImpl.fireExportProgress(jobRequest.getExportJobID(), vcdID, "VTKUNSTR", percentDone);
 		}
 	});
 	
@@ -1113,7 +1113,7 @@ public ExportOutput[] makeVTKUnstructuredData(OutputContext outputContext,JobReq
 	//for (int i = 0; i < variableSpecs.getVariableNames().length; i++){
 	for (int j = timeSpecs.getBeginTimeIndex(); j <= timeSpecs.getEndTimeIndex(); j++){
 	exportServiceImpl.fireExportProgress(
-	jobRequest.getJobID(), vcdID, "VTKUNSTR",
+	jobRequest.getExportJobID(), vcdID, "VTKUNSTR",
 	(double)(j-timeSpecs.getBeginTimeIndex())/(double)(timeSpecs.getEndTimeIndex()-timeSpecs.getBeginTimeIndex()+1));
 	
 	//String fileID = simID + "_Full_" + formatTime(timeSpecs.getAllTimes()[j]) + "time_" + variableSpecs.getVariableNames().length + "vars";

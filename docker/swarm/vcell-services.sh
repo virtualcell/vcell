@@ -98,14 +98,17 @@ case "${site}" in
 rel)
   head_node="vcellapi.cam.uchc.edu"
   api_port="443"
+  api_path_prefix=""
   ;;
 alpha)
   head_node="vcellapi-beta.cam.uchc.edu"
   api_port="8080"
+  api_path_prefix="/api/v0"
   ;;
 test)
   head_node="vcellapi-test.cam.uchc.edu"
   api_port="443"
+  api_path_prefix="/api/v0"
   ;;
 *)
   echo "site must be one of the following: ${sites[*]}" 1>&2
@@ -212,28 +215,28 @@ fi
 # if command is health, then show health of login and sim checks
 if [[ "${command}" == "health" ]]; then
   echo "-- login check (status should be 'OK') -- "
-  echo "curl https://${head_node}:${api_port}/health?check=login"
-  curl "https://${head_node}:${api_port}/health?check=login"
+  echo "curl https://${head_node}:${api_port}${api_path_prefix}/health?check=login"
+  curl "https://${head_node}:${api_port}${api_path_prefix}/health?check=login"
   retcode=$?
   if [[ ${retcode} -ne 0 ]]; then
     echo "" 1>&2
-    echo "failed to connect to api service at ${head_node}:${api_port}" 1>&2
+    echo "failed to connect to api service at ${head_node}:${api_port} and path prefix ${api_path_prefix}" 1>&2
     exit 1
   fi
   echo ""
   echo ""
   echo "-- sim check (status should be 'OK') -- "
-  echo "curl https://${head_node}:${api_port}/health?check=sim"
-  curl "https://${head_node}:${api_port}/health?check=sim"
+  echo "curl https://${head_node}:${api_port}${api_path_prefix}/health?check=sim"
+  curl "https://${head_node}:${api_port}${api_path_prefix}/health?check=sim"
   retcode=$?
   if [[ ${retcode} -ne 0 ]]; then
     echo "" 1>&2
-    echo "failed to connect to api service at ${head_node}:${api_port}" 1>&2
+    echo "failed to connect to api service at ${head_node}:${api_port} and path prefix ${api_path_prefix}" 1>&2
     exit 1
   fi
   echo ""
   echo ""
   echo "-- for all health events, run the following -- "
-  echo "curl https://${head_node}:${api_port}/health?check=all | jq ."
+  echo "curl https://${head_node}:${api_port}${api_path_prefix}/health?check=all | jq ."
   exit 0
 fi

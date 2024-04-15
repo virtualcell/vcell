@@ -1,11 +1,11 @@
 package org.vcell.restq;
 
-import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.Test;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 public class BearerTokenAuthenticationTest {
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
@@ -13,11 +13,11 @@ public class BearerTokenAuthenticationTest {
     @Test
     public void testUserAccess() {
         RestAssured.given().auth().oauth2(getAccessToken("alice"))
-                .when().get("/api/users/me")
+                .when().get("/api/v1/users/me")
                 .then()
                 .statusCode(200);
         RestAssured.given().auth().oauth2(getAccessToken("bob"))
-                .when().get("/api/users/me")
+                .when().get("/api/v1/users/me")
                 .then()
                 .statusCode(200);
     }
