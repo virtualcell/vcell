@@ -11,7 +11,6 @@ RUN $JAVA_HOME/bin/jlink \
 
 # Define base image and copy in jlink created minimal Java 17 environment
 FROM ubuntu:jammy
-FROM python:3.10.14-slim
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
@@ -49,8 +48,7 @@ LABEL \
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt -y update && apt install -y software-properties-common
-RUN add-apt-repository ppa:deadsnakes/ppa -y
-RUN apt install -y --no-install-recommends curl python3.10-full python3-pip build-essential dnsutils \
+RUN apt install -y --no-install-recommends curl python3.10 python3-pip build-essential dnsutils \
     apt-utils libfreetype6 fontconfig fonts-dejavu
 
 RUN mkdir -p /usr/local/app/vcell/lib && \
