@@ -50,7 +50,7 @@ public class HybridBioModelVisitor extends VisitorAdapter implements VCMultiBioV
 	 */
 	@Override
 	public boolean filterBioModel(BioModel bioModel) {
-		Simulation[] sims = bioModel.getSimulations();
+		Simulation[] sims = bioModel.getSimulationsAsArray();
 		return isSpatialStoch(sims);
 	}
 	
@@ -72,7 +72,7 @@ public class HybridBioModelVisitor extends VisitorAdapter implements VCMultiBioV
 	public void setBioModel(BioModel bioModel, PrintWriter pw) {
 		currentModel = bioModel;
 		applications.clear( );
-		SimulationContext[] scs = currentModel.getSimulationContexts();
+		SimulationContext[] scs = currentModel.getSimulationContextsAsArray();
 		
 		for (SimulationContext sc : scs) {
 			if (isSpatialStoch(sc.getSimulations())) {

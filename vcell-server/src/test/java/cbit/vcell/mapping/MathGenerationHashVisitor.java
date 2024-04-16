@@ -35,7 +35,7 @@ public class MathGenerationHashVisitor implements VCDatabaseVisitor {
 	public void visitBioModel(BioModel bioModel, PrintStream logFilePrintStream) {
 		try {
 			logFilePrintStream.println(bioModel.getVersion().getName()+"  "+bioModel.getVersion().getDate()+"  "+bioModel.getVersion().getVersionKey());
-			SimulationContext[] simContexts = bioModel.getSimulationContexts();
+			SimulationContext[] simContexts = bioModel.getSimulationContextsAsArray();
 			for (int i = 0; i < simContexts.length; i++) {
 				SimulationContext simContext = simContexts[i];
 				try {

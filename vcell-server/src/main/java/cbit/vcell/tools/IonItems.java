@@ -3,7 +3,6 @@ package cbit.vcell.tools;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
@@ -22,8 +21,6 @@ import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -31,22 +28,16 @@ import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VersionFlag;
 
-import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.geometry.GeometryThumbnailImageFactory;
-import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.BioModelSimContextLinkTable;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.BioModelTable;
-import cbit.vcell.modeldb.DBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.LocalUserMetaDbServer;
 import cbit.vcell.modeldb.MathModelSimulationLinkTable;
 import cbit.vcell.modeldb.MathModelTable;
 import cbit.vcell.modeldb.PublicationModelLinkTable;
-import cbit.vcell.modeldb.ServerDocumentManager;
 import cbit.vcell.modeldb.TFTestCaseTable;
 import cbit.vcell.modeldb.TFTestSuiteTable;
 import cbit.vcell.modeldb.UserTable;
@@ -288,8 +279,8 @@ public class IonItems {
 				Simulation[] simsFromFile = null;
 				Simulation[] simsFromDB = null;
 				if(vcDocType == VCDocumentType.BIOMODEL_DOC) {
-					simsFromFile = ((BioModel)vcDocFromFile).getSimulations();
-					simsFromDB = ((BioModel)vcDocFromDB).getSimulations();
+					simsFromFile = ((BioModel)vcDocFromFile).getSimulationsAsArray();
+					simsFromDB = ((BioModel)vcDocFromDB).getSimulationsAsArray();
 				}else {
 					simsFromFile = ((MathModel)vcDocFromFile).getSimulations();
 					simsFromDB = ((MathModel)vcDocFromDB).getSimulations();					
@@ -425,7 +416,7 @@ public class IonItems {
 					if(vcDocType == VCDocumentType.BIOMODEL_DOC) {
 						BioModel bm = cbit.vcell.xml.XmlHelper.XMLToBioModel(new XMLSource(modelXML.toString()));
 						bm.refreshDependencies();
-						sims = bm.getSimulations().clone();
+						sims = bm.getSimulationsAsArray().clone();
 						vcDoc = bm;
 					}else {
 						MathModel mm = cbit.vcell.xml.XmlHelper.XMLToMathModel(new XMLSource(modelXML.toString()));

@@ -17,7 +17,6 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import cbit.image.VCImage;
 import cbit.vcell.mapping.*;
@@ -63,24 +62,23 @@ import cbit.vcell.solver.Simulation;
  *
  * @author:
  */
-@SuppressWarnings("serial")
 public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener,
         Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName {
     public static final String PROPERTY_NAME_SIMULATION_CONTEXTS = "simulationContexts";
     public final static String SIMULATION_CONTEXT_DISPLAY_NAME = "Application";
     public final static String SIMULATION_DISPLAY_NAME = "Simulation";
-    private Version fieldVersion = null;
-    private String fieldName = null;
+    private Version version = null;
+    private String name;
     private String sbmlId = null;
     private String sbmlName = null;
 
     protected transient VetoableChangeSupport vetoPropertyChange;
     protected transient PropertyChangeSupport propertyChange;
-    private Model fieldModel = null;
-    private SimulationContext[] fieldSimulationContexts = new SimulationContext[0];
-    private Simulation[] fieldSimulations = new Simulation[0];
-    private String fieldDescription = new String();
-    private VCMetaData vcMetaData = null;
+    private Model model = null;
+    private final List<SimulationContext> simulationContexts = new ArrayList<>();
+    private final List<Simulation> simulations = new ArrayList<>();
+    private String fieldDescription = "";
+    private VCMetaData vcMetaData;
 
     private final PathwayModel pathwayModel = new PathwayModel();
     private final RelationshipModel relationshipModel = new RelationshipModel();
@@ -88,13 +86,13 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 
     public BioModel(Version version, ModelUnitSystem modelUnitSystem){
         super();
-        fieldName = new String("NoName");
-        vcMetaData = new VCMetaData(this, null);
-        setModel(new Model("unnamed", modelUnitSystem));
-        addVetoableChangeListener(this);
-        addPropertyChangeListener(this);
+        this.name = "NoName";
+        this.vcMetaData = new VCMetaData(this, null);
+        this.setModel(new Model("unnamed", modelUnitSystem));
+        this.addVetoableChangeListener(this);
+        this.addPropertyChangeListener(this);
         try {
-            setVersion(version);
+            this.setVersion(version);
         } catch(PropertyVetoException e){
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -110,22 +108,21 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     public void transformLumpedToDistributed(){
         try {
             for(ReactionStep reactionStep : getModel().getReactionSteps()){
-                if(reactionStep.getKinetics().getKineticsDescription().isLumped()){
-                    Kinetics origKinetics = reactionStep.getKinetics();
-                    // clone it for backup purposes
-                    origKinetics.setReactionStep(null);
-                    Kinetics clonedKinetics = (Kinetics) BeanUtils.cloneSerializable(origKinetics);
-                    origKinetics.setReactionStep(reactionStep);
-                    try {
-                        DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
-                        lg.info("transformed lumped reaction " + reactionStep.getName() + " to distributed");
-                    } catch(Exception e){
-                        lg.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage());
-                        // original kinetics may have been altered when the conversion failed, replace with clone
-                        reactionStep.setKinetics(clonedKinetics);
-                        clonedKinetics.setReactionStep(reactionStep);
-                        refreshDependencies();
-                    }
+                if(!reactionStep.getKinetics().getKineticsDescription().isLumped()) continue;
+                Kinetics origKinetics = reactionStep.getKinetics();
+                // clone it for backup purposes
+                origKinetics.setReactionStep(null);
+                Kinetics clonedKinetics = (Kinetics) BeanUtils.cloneSerializable(origKinetics);
+                origKinetics.setReactionStep(reactionStep);
+                try {
+                    DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
+                    lg.info("transformed lumped reaction " + reactionStep.getName() + " to distributed");
+                } catch(Exception e){
+                    lg.warn("failed to transform lumped reaction " + reactionStep.getName() + " to distributed: " + e.getMessage());
+                    // original kinetics may have been altered when the conversion failed, replace with clone
+                    reactionStep.setKinetics(clonedKinetics);
+                    clonedKinetics.setReactionStep(reactionStep);
+                    this.refreshDependencies();
                 }
             }
         } catch(Exception e){
@@ -136,10 +133,8 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     public SimulationContext addNewSimulationContext(String newSimulationContextName, SimulationContext.Application app) throws java.beans.PropertyVetoException, ExpressionException, GeometryException, ImageException, IllegalMappingException, MappingException{
         Geometry geometry;
         if(Application.SPRINGSALAD == app){
-            boolean compatibleCompartments = true;
-            if(getModel().getStructures().length != 3){
-                compatibleCompartments = false;        // springsalad needs exactly 3 compartments
-            }
+            boolean compatibleCompartments = getModel().getStructures().length == 3;
+            // springsalad needs exactly 3 compartments
             for(Structure struct : getModel().getStructures()){
                 String name = struct.getName();
                 if(!Structure.springStructureSet.contains(name)){
@@ -147,7 +142,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
                     break;
                 }
             }
-            if(compatibleCompartments == false){    // just make a minimal geometry, we'll complain elsewhere
+            if(!compatibleCompartments){    // just make a minimal geometry, we'll complain elsewhere
                 geometry = new Geometry("non-spatial", 0);
                 SimulationContext simContext = new SimulationContext(getModel(), geometry, null, null, app);
                 simContext.setName(newSimulationContextName);
@@ -168,33 +163,25 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             addSimulationContext(simContext);
 
             Double charSize = simContext.getCharacteristicSize();
-            simContext.setCharacteristicSize(Double.valueOf(charSize.doubleValue() / 2.0));
+            simContext.setCharacteristicSize(charSize / 2.0);
             GeometryContext geoContext = simContext.getGeometryContext();
             Model model = geoContext.getModel();
-            cbit.vcell.model.Structure structures[] = model.getStructures();
-            for(int i = 0; i < structures.length; i++){                    // map the compartments
-                cbit.vcell.model.Structure structure = structures[i];
-                if(structure instanceof cbit.vcell.model.Feature){
-                    cbit.vcell.model.Feature feature = (cbit.vcell.model.Feature) structure;
-                    if(feature.getName().equals(SpringStructureEnum.Extracellular.columnName)){
-                        geoContext.assignStructure(feature, geometrySpec.getSubVolume(SpringStructureEnum.Extracellular.columnName));
-                    } else {
-                        geoContext.assignStructure(feature, geometrySpec.getSubVolume(SpringStructureEnum.Intracellular.columnName));
-                    }
-                }
+            cbit.vcell.model.Structure[] structures = model.getStructures();
+            for (Structure structure : structures) {                    // map the compartments
+                if (!(structure instanceof Feature feature)) continue;
+                String subVolumeType = feature.getName().equals(SpringStructureEnum.Extracellular.columnName) ?
+                        SpringStructureEnum.Extracellular.columnName : SpringStructureEnum.Intracellular.columnName;
+                geoContext.assignStructure(feature, geometrySpec.getSubVolume(subVolumeType));
             }
             GeometrySurfaceDescription geometrySurfaceDescription = geometry.getGeometrySurfaceDescription();
             geometrySurfaceDescription.updateAll();
             //SurfaceClass[] surfaceClasses = geometrySurfaceDescription.getSurfaceClasses();
-            for(int i = 0; i < structures.length; i++){                    // map the membrane
-                cbit.vcell.model.Structure structure = structures[i];
-                if(structure instanceof cbit.vcell.model.Membrane){
-                    cbit.vcell.model.Membrane membrane = (cbit.vcell.model.Membrane) structure;
-                    SubVolume svIntra = geometrySpec.getSubVolume(SpringStructureEnum.Intracellular.columnName);
-                    SubVolume svExtra = geometrySpec.getSubVolume(SpringStructureEnum.Extracellular.columnName);
-                    SurfaceClass surfaceClass = geometrySurfaceDescription.getSurfaceClass(svIntra, svExtra);
-                    geoContext.assignStructure(membrane, surfaceClass);
-                }
+            for (Structure structure : structures) {                    // map the membrane
+                if (!(structure instanceof Membrane membrane)) continue;
+                SubVolume svIntra = geometrySpec.getSubVolume(SpringStructureEnum.Intracellular.columnName);
+                SubVolume svExtra = geometrySpec.getSubVolume(SpringStructureEnum.Extracellular.columnName);
+                SurfaceClass surfaceClass = geometrySurfaceDescription.getSurfaceClass(svIntra, svExtra);
+                geoContext.assignStructure(membrane, surfaceClass);
             }
             return simContext;
         } else {
@@ -206,40 +193,30 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         }
     }
 
-    public class VersionableInfo {
-        public final VersionableType versionableType;
-        public final String name;
-        public final KeyValue key;
-
-        public VersionableInfo(VersionableType versionableType, String name, KeyValue key){
-            this.versionableType = versionableType;
-            this.name = name;
-            this.key = key;
-        }
-
+    public record VersionableInfo(VersionableType versionableType, String name, KeyValue key) {
         @Override
-        public boolean equals(Object o){
-            if(this == o) return true;
-            if(o == null || getClass() != o.getClass()) return false;
-            VersionableInfo that = (VersionableInfo) o;
-            return Objects.equals(versionableType, that.versionableType) && Objects.equals(name, that.name);
-        }
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (!(o instanceof VersionableInfo otherInfo)) return false;
+                return Objects.equals(this.versionableType, otherInfo.versionableType)
+                        && Objects.equals(this.name, otherInfo.name);
+            }
 
-        @Override
-        public int hashCode(){
-            return Objects.hash(versionableType, name);
-        }
+            @Override
+            public int hashCode() {
+                return Objects.hash(this.versionableType, this.name);
+            }
 
-        @Override
-        public String toString(){
-            return versionableType.getTypeName() + "(" + name + "):" + key;
+            @Override
+            public String toString() {
+                return this.versionableType.getTypeName() + "(" + this.name + "):" + this.key;
+            }
         }
-    }
 
     public List<VersionableInfo> gatherChildVersionableInfos(){
         Set<VersionableInfo> versionSet = new LinkedHashSet<>();
         versionSet.add(new VersionableInfo(VersionableType.Model, getModel().getName(), getModel().getKey()));
-        for(SimulationContext sc : getSimulationContexts()){
+        for(SimulationContext sc : getSimulationContextsAsArray()){
             versionSet.add(new VersionableInfo(VersionableType.SimulationContext, sc.getName(), sc.getKey()));
             if(sc.getGeometry() != null){
                 Geometry geo = sc.getGeometry();
@@ -254,7 +231,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
                 versionSet.add(new VersionableInfo(VersionableType.MathDescription, math.getName(), math.getKey()));
             }
         }
-        for(Simulation sim : getSimulations()){
+        for(Simulation sim : getSimulationsAsArray()){
             versionSet.add(new VersionableInfo(VersionableType.VCImage, sim.getName(), sim.getKey()));
         }
         return new ArrayList<>(versionSet);
@@ -269,7 +246,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 
     public void visitChildVersionables(Consumer<Versionable> operation){
         operation.accept(getModel());
-        for(SimulationContext sc : getSimulationContexts()){
+        for(SimulationContext sc : getSimulationContextsAsArray()){
             operation.accept(sc);
             if(sc.getGeometry() != null){
                 operation.accept(sc.getGeometry());
@@ -281,7 +258,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
                 operation.accept(sc.getMathDescription());
             }
         }
-        for(Simulation sim : getSimulations()){
+        for(Simulation sim : getSimulationsAsArray()){
             operation.accept(sim);
         }
     }
@@ -295,15 +272,10 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 
 
     public void addSimulation(Simulation simulation) throws java.beans.PropertyVetoException{
-        if(contains(simulation)){
+        if(this.contains(simulation)){
             throw new IllegalArgumentException("BioModel.addSimulation() simulation already present in BioModel");
         }
-        if(getNumSimulations() == 0){
-            setSimulations(new Simulation[]{simulation});
-        } else {
-            setSimulations(ArrayUtils.addElement(fieldSimulations, simulation));
-        }
-
+        this.getSimulations().add(simulation);
     }
 
 
@@ -318,11 +290,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         if(contains(simulationContext)){
             throw new IllegalArgumentException("BioModel.addSimulationContext() simulationContext already present in BioModel");
         }
-        if(getNumSimulationContexts() == 0){
-            setSimulationContexts(new SimulationContext[]{simulationContext});
-        } else {
-            setSimulationContexts(ArrayUtils.addElement(fieldSimulationContexts, simulationContext));
-        }
+        this.getSimulationContexts().add(simulationContext);
     }
 
 
@@ -330,7 +298,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
      */
     public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener){
-        getVetoPropertyChange().addVetoableChangeListener(listener);
+        this.getVetoPropertyChange().addVetoableChangeListener(listener);
     }
 
 
@@ -339,7 +307,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * Creation date: (4/24/2003 3:39:06 PM)
      */
     public void clearVersion(){
-        fieldVersion = null;
+        this.version = null;
     }
 
 
@@ -351,42 +319,18 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @return boolean
      */
     public boolean compareEqual(Matchable obj){
-        if(!(obj instanceof BioModel)){
-            return false;
-        }
-        BioModel bioModel = (BioModel) obj;
-        if(!Compare.isEqualOrNull(getName(), bioModel.getName())){
-            return false;
-        }
-        if(!Compare.isEqualOrNull(getSbmlName(), bioModel.getSbmlName())){
-            return false;
-        }
-        if(!Compare.isEqualOrNull(getSbmlId(), bioModel.getSbmlId())){
-            return false;
-        }
-        if(!Compare.isEqualOrNull(getDescription(), bioModel.getDescription())){
-            return false;
-        }
-        if(!getModel().compareEqual(bioModel.getModel())){
-            return false;
-        }
-        if(!getPathwayModel().compare((HashSet<BioPaxObject>) bioModel.getPathwayModel().getBiopaxObjects())){
-            return false;
-        }
-        if(!(getRelationshipModel()).compare((HashSet<RelationshipObject>) bioModel.getRelationshipModel().getRelationshipObjects(), bioModel)){
-            return false;
-        }
-        if(!Compare.isEqualOrNull(getSimulationContexts(), bioModel.getSimulationContexts())){
-            return false;
-        }
-        if(!Compare.isEqualOrNull(getSimulations(), bioModel.getSimulations())){
-            return false;
-        }
-        if(!getVCMetaData().compareEquals(bioModel.getVCMetaData())){
-            return false;
-        }
+        if(!(obj instanceof BioModel bioModel)) return false;
 
-        return true;
+        return Compare.isEqualOrNull(this.getName(), bioModel.getName())
+                && Compare.isEqualOrNull(this.getSbmlName(), bioModel.getSbmlName())
+                && Compare.isEqualOrNull(this.getSbmlId(), bioModel.getSbmlId())
+                && Compare.isEqualOrNull(this.getDescription(), bioModel.getDescription())
+                && this.getModel().compareEqual(bioModel.getModel())
+                && this.getPathwayModel().compare((HashSet<BioPaxObject>) bioModel.getPathwayModel().getBiopaxObjects())
+                && this.getRelationshipModel().compare((HashSet<RelationshipObject>) bioModel.getRelationshipModel().getRelationshipObjects(), bioModel)
+                && Compare.isEqualOrNull(getSimulationContextsAsArray(), bioModel.getSimulationContextsAsArray())
+                && Compare.isEqualOrNull(getSimulationsAsArray(), bioModel.getSimulationsAsArray())
+                && this.getVCMetaData().compareEquals(bioModel.getVCMetaData());
     }
 
 
@@ -398,43 +342,25 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @return boolean
      */
     public boolean contains(SimulationContext simulationContext){
-        if(simulationContext == null){
+        try{
+            return this.getSimulationContexts().contains(simulationContext);
+        } catch (NullPointerException e){
             throw new IllegalArgumentException("simulationContext was null");
         }
-        SimulationContext simContexts[] = getSimulationContexts();
-        if(simContexts == null){
-            return false;
-        }
-        boolean bFound = false;
-        for(int i = 0; i < simContexts.length; i++){
-            if(simContexts[i] == simulationContext){
-                bFound = true;
-            }
-        }
-        return bFound;
     }
 
 
     public boolean contains(Simulation simulation){
-        if(simulation == null){
+        try {
+            return this.getSimulations().contains(simulation);
+        } catch (NullPointerException e){
             throw new IllegalArgumentException("simulation was null");
         }
-        Simulation sims[] = getSimulations();
-        if(sims == null){
-            return false;
-        }
-        boolean bFound = false;
-        for(int i = 0; i < sims.length; i++){
-            if(sims[i] == simulation){
-                bFound = true;
-            }
-        }
-        return bFound;
     }
 
     public BioModelChildSummary createBioModelChildSummary(){
 
-        SimulationContext[] simContexts = getSimulationContexts();
+        SimulationContext[] simContexts = getSimulationContextsAsArray();
 
         String[] scNames = new String[simContexts.length];
         MathType[] appTypes = new MathType[simContexts.length];
@@ -474,7 +400,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * The fireVetoableChange method was generated to support the vetoPropertyChange field.
      */
     public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException{
-        getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
+        this.getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
     }
 
 
@@ -485,8 +411,8 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @param newVersion cbit.sql.Version
      */
     public void forceNewVersionAnnotation(Version newVersion) throws PropertyVetoException{
-        if(getVersion().getVersionKey().equals(newVersion.getVersionKey())){
-            setVersion(newVersion);
+        if(this.getVersion().getVersionKey().equals(newVersion.getVersionKey())){
+            this.setVersion(newVersion);
         } else {
             throw new RuntimeException("biomodel.forceNewVersionAnnotation failed : version keys not equal");
         }
@@ -501,35 +427,24 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      */
     @Override
     public void gatherIssues(IssueContext issueContext, List<Issue> issueList){
-        long start_time = 0;
-        if(lg.isInfoEnabled()){
-            start_time = System.currentTimeMillis();
-        }
         issueContext = issueContext.newChildContext(ContextType.BioModel, this);
         getModel().gatherIssues(issueContext, issueList);
         if(getNumSimulations() > 1000){
             String message = "VCell BioModels cannot have more than 1000 simulations in total across all applications";
             issueList.add(new Issue(this, issueContext, IssueCategory.InternalError, message, Issue.Severity.ERROR));
         }
-        for(SimulationContext simulationContext : fieldSimulationContexts){
+        for(SimulationContext simulationContext : this.simulationContexts){
             boolean bIgnoreMathDescription = false;
             simulationContext.gatherIssues(issueContext, issueList, bIgnoreMathDescription);
         }
-        if(sbmlName != null && sbmlName.isEmpty()){
+        if(this.sbmlName != null && this.sbmlName.isEmpty()){
             String message = "SbmlName cannot be an empty string.";
             issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
         }
-        if(sbmlId != null && sbmlId.isEmpty()){
+        if(this.sbmlId != null && this.sbmlId.isEmpty()){
             String message = "SbmlId cannot be an empty string.";
             issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
         }
-        if(lg.isInfoEnabled()){
-            long end_time = System.currentTimeMillis();
-//		lg.info("Time spent on Issue detection: " + (end_time - start_time));
-        }
-//	for (Simulation simulation : fieldSimulations) {
-//		simulation.gatherIssues(issueContext,issueList);
-//	}
     }
 
 
@@ -541,7 +456,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      */
     @Deprecated
     public java.lang.String getDescription(){
-        return fieldDescription;
+        return this.fieldDescription;
     }
 
 
@@ -563,7 +478,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @see #setModel
      */
     public cbit.vcell.model.Model getModel(){
-        return fieldModel;
+        return this.model;
     }
 
 
@@ -573,16 +488,16 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @return The name property value.
      * @see #setName
      */
-    public java.lang.String getName(){
-        return fieldName;
+    public String getName(){
+        return this.name;
     }
 
     public String getSbmlId(){
-        return sbmlId;
+        return this.sbmlId;
     }
 
     public String getSbmlName(){
-        return sbmlName;
+        return this.sbmlName;
     }
 
     /**
@@ -592,10 +507,10 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @return int
      */
     public int getNumSimulationContexts(){
-        if(getSimulationContexts() == null){
+        if(getSimulationContextsAsArray() == null){
             return 0;
         }
-        return getSimulationContexts().length;
+        return getSimulationContextsAsArray().length;
     }
 
 
@@ -606,10 +521,10 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @return int
      */
     public int getNumSimulations(){
-        if(getSimulations() == null){
+        if(getSimulationsAsArray() == null){
             return 0;
         }
-        return getSimulations().length;
+        return getSimulationsAsArray().length;
     }
 
 
@@ -617,11 +532,10 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * Accessor for the propertyChange field.
      */
     protected java.beans.PropertyChangeSupport getPropertyChange(){
-        if(propertyChange == null){
-            propertyChange = new java.beans.PropertyChangeSupport(this);
+        if(this.propertyChange == null){
+            this.propertyChange = new java.beans.PropertyChangeSupport(this);
         }
-        ;
-        return propertyChange;
+        return this.propertyChange;
     }
 
 
@@ -632,13 +546,13 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         if(!contains(simulation)){
             throw new IllegalArgumentException("simulation doesn't belong to this BioModel");
         }
-        SimulationContext simContexts[] = getSimulationContexts();
+        SimulationContext[] simContexts = getSimulationContextsAsArray();
         if(simContexts == null){
             return null;
         }
-        for(int i = 0; i < simContexts.length; i++){
-            if(simContexts[i].getMathDescription() == simulation.getMathDescription()){
-                return simContexts[i];
+        for (SimulationContext simContext : simContexts) {
+            if (simContext.getMathDescription() == simulation.getMathDescription()) {
+                return simContext;
             }
         }
         throw new ObjectNotFoundException("could not find Application for simulation " + simulation.getName());
@@ -646,13 +560,23 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 
 
     /**
+     * Gets the simulationContexts property (cbit.vcell.mapping.SimulationContext[]) value as an array.
+     *
+     * @return The simulationContexts property value.
+     * @see #setSimulationContexts
+     */
+    public SimulationContext[] getSimulationContextsAsArray(){
+        return this.simulationContexts.toArray(SimulationContext[]::new);
+    }
+
+    /**
      * Gets the simulationContexts property (cbit.vcell.mapping.SimulationContext[]) value.
      *
      * @return The simulationContexts property value.
      * @see #setSimulationContexts
      */
-    public SimulationContext[] getSimulationContexts(){
-        return fieldSimulationContexts;
+    public List<SimulationContext> getSimulationContexts(){
+        return this.simulationContexts;
     }
 
 
@@ -664,11 +588,11 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @see #setSimulationContexts
      */
     public SimulationContext getSimulationContext(int index){
-        return getSimulationContexts()[index];
+        return getSimulationContextsAsArray()[index];
     }
 
-    public SimulationContext getSimulationContexts(String name){
-        for(SimulationContext simContext : fieldSimulationContexts){
+    public SimulationContext getSimulationContextsAsArray(String name){
+        for(SimulationContext simContext : this.simulationContexts){
             if(simContext.getName().equals(name)){
                 return simContext;
             }
@@ -677,7 +601,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     }
 
     public boolean hasSimulation(String simName){
-        for(Simulation candidate : getSimulations()){
+        for(Simulation candidate : getSimulationsAsArray()){
             if(candidate.getName().contentEquals(simName)){
                 return true;
             }
@@ -686,13 +610,23 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     }
 
     /**
-     * Gets the simulations property (cbit.vcell.solver.Simulation[]) value.
+     * Gets the simulations property (cbit.vcell.solver.Simulation[]) value as an array.
      *
      * @return The simulations property value.
      * @see #setSimulations
      */
-    public Simulation[] getSimulations(){
-        return fieldSimulations;
+    public Simulation[] getSimulationsAsArray(){
+        return this.simulations.toArray(Simulation[]::new);
+    }
+
+    /**
+     * Gets the simulations property (cbit.vcell.solver.Simulation[]) value as an array.
+     *
+     * @return The simulations property value.
+     * @see #setSimulations
+     */
+    public List<Simulation> getSimulations(){
+        return this.simulations;
     }
 
 
@@ -704,7 +638,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @see #setSimulations
      */
     public Simulation getSimulation(int index){
-        return getSimulations()[index];
+        return getSimulationsAsArray()[index];
     }
 
 
@@ -715,21 +649,21 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @param simulationContext cbit.vcell.mapping.SimulationContext
      * @return cbit.vcell.solver.Simulation[]
      */
-    public Simulation[] getSimulations(SimulationContext simulationContext){
+    public Simulation[] getSimulationsAsArray(SimulationContext simulationContext){
         if(simulationContext == null){
             throw new IllegalArgumentException("simulationContext was null");
         }
         if(!contains(simulationContext)){
             throw new IllegalArgumentException("simulationContext doesn't belong to this BioModel");
         }
-        Simulation sims[] = getSimulations();
+        Simulation[] sims = getSimulationsAsArray();
         if(sims == null){
             return null;
         }
-        Vector<Simulation> scSimList = new Vector<Simulation>();
-        for(int i = 0; i < sims.length; i++){
-            if(sims[i].getMathDescription() == simulationContext.getMathDescription()){
-                scSimList.addElement(sims[i]);
+        Vector<Simulation> scSimList = new Vector<>();
+        for (Simulation sim : sims) {
+            if (sim.getMathDescription() == simulationContext.getMathDescription()) {
+                scSimList.addElement(sim);
             }
         }
         Simulation[] scSimArray = new Simulation[scSimList.size()];
@@ -744,7 +678,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @return The version property value.
      */
     public Version getVersion(){
-        return fieldVersion;
+        return this.version;
     }
 
 
@@ -752,11 +686,10 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * Accessor for the vetoPropertyChange field.
      */
     protected java.beans.VetoableChangeSupport getVetoPropertyChange(){
-        if(vetoPropertyChange == null){
-            vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
+        if(this.vetoPropertyChange == null){
+            this.vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
         }
-        ;
-        return vetoPropertyChange;
+        return this.vetoPropertyChange;
     }
 
 
@@ -780,15 +713,14 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         // propagate mathDescription changes from SimulationContexts to Simulations
         //
         if(evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("mathDescription") && evt.getNewValue() != null){
-            if(fieldSimulations != null){
-                for(int i = 0; i < fieldSimulations.length; i++){
-                    if(fieldSimulations[i].getMathDescription() == evt.getOldValue()){
-                        try {
-                            fieldSimulations[i].setMathDescription((MathDescription) evt.getNewValue());
-                        } catch(PropertyVetoException e){
-                            lg.error("error propagating math from SimulationContext '" + ((SimulationContext) evt.getSource()).getName() + "' " +
-                                    "to Simulation '" + fieldSimulations[i].getName(), e);
-                        }
+            if(this.simulations != null){
+                for (Simulation simulation : this.simulations) {
+                    if (simulation.getMathDescription() != evt.getOldValue()) continue;
+                    try {
+                        simulation.setMathDescription((MathDescription) evt.getNewValue());
+                    } catch (PropertyVetoException e) {
+                        lg.error("error propagating math from SimulationContext '" + ((SimulationContext) evt.getSource()).getName() + "' " +
+                                "to Simulation '" + simulation.getName(), e);
                     }
                 }
             }
@@ -802,20 +734,20 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             // unregister for old
             //
             if(evt.getOldValue() != null){
-                Simulation simulations[] = (Simulation[]) evt.getOldValue();
-                for(int i = 0; i < simulations.length; i++){
-                    simulations[i].removeVetoableChangeListener(this);
-                    simulations[i].removePropertyChangeListener(this);
+                Simulation[] simulations = (Simulation[]) evt.getOldValue();
+                for (Simulation simulation : simulations) {
+                    simulation.removeVetoableChangeListener(this);
+                    simulation.removePropertyChangeListener(this);
                 }
             }
             //
             // register for new
             //
             if(evt.getOldValue() != null){
-                Simulation simulations[] = (Simulation[]) evt.getNewValue();
-                for(int i = 0; i < simulations.length; i++){
-                    simulations[i].addVetoableChangeListener(this);
-                    simulations[i].addPropertyChangeListener(this);
+                Simulation[] simulations = (Simulation[]) evt.getNewValue();
+                for (Simulation simulation : simulations) {
+                    simulation.addVetoableChangeListener(this);
+                    simulation.addPropertyChangeListener(this);
                 }
             }
         }
@@ -824,70 +756,70 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             // unregister for old
             //
             if(evt.getOldValue() != null){
-                SimulationContext simulationContexts[] = (SimulationContext[]) evt.getOldValue();
-                for(int i = 0; i < simulationContexts.length; i++){
-                    simulationContexts[i].removeVetoableChangeListener(this);
-                    simulationContexts[i].removePropertyChangeListener(this);
+                SimulationContext[] simulationContexts = (SimulationContext[]) evt.getOldValue();
+                for (SimulationContext simulationContext : simulationContexts) {
+                    simulationContext.removeVetoableChangeListener(this);
+                    simulationContext.removePropertyChangeListener(this);
                 }
             }
             //
             // register for new
             //
             if(evt.getOldValue() != null){
-                SimulationContext simulationContexts[] = (SimulationContext[]) evt.getNewValue();
-                for(int i = 0; i < simulationContexts.length; i++){
-                    simulationContexts[i].addVetoableChangeListener(this);
-                    simulationContexts[i].addPropertyChangeListener(this);
+                SimulationContext[] simulationContexts = (SimulationContext[]) evt.getNewValue();
+                for (SimulationContext simulationContext : simulationContexts) {
+                    simulationContext.addVetoableChangeListener(this);
+                    simulationContext.addPropertyChangeListener(this);
                 }
             }
         }
 
-        if(evt.getSource() == fieldModel && (evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS)
+        if(evt.getSource() == this.model && (evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXTS)
                 || evt.getPropertyName().equals(Model.PROPERTY_NAME_REACTION_STEPS))){
             //remove the relationship objects if the biomodelEntity objects were removed
-            Set<BioModelEntityObject> removedObjects = relationshipModel.getBioModelEntityObjects();
-            for(SpeciesContext sc : fieldModel.getSpeciesContexts()){
+            Set<BioModelEntityObject> removedObjects = this.relationshipModel.getBioModelEntityObjects();
+            for(SpeciesContext sc : this.model.getSpeciesContexts()){
                 removedObjects.remove(sc);
             }
-            for(ReactionStep rs : fieldModel.getReactionSteps()){
+            for(ReactionStep rs : this.model.getReactionSteps()){
                 removedObjects.remove(rs);
             }
-            for(MolecularType mt : fieldModel.getRbmModelContainer().getMolecularTypeList()){
+            for(MolecularType mt : this.model.getRbmModelContainer().getMolecularTypeList()){
                 removedObjects.remove(mt);
             }
-            for(ReactionRule rr : fieldModel.getRbmModelContainer().getReactionRuleList()){
+            for(ReactionRule rr : this.model.getRbmModelContainer().getReactionRuleList()){
                 removedObjects.remove(rr);
             }
-            relationshipModel.removeRelationshipObjects(removedObjects);
+            this.relationshipModel.removeRelationshipObjects(removedObjects);
         }
         // adjust the relationship model when a molecule gets deleted
-        if(evt.getSource() == fieldModel && (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST))){
+        if(evt.getSource() == this.model && (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST))){
             @SuppressWarnings("unchecked")
-            List<MolecularType> oldListCopy = new ArrayList<MolecularType>((List<MolecularType>) evt.getOldValue());
+            List<MolecularType> oldListCopy = new ArrayList<>((List<MolecularType>) evt.getOldValue());
             @SuppressWarnings("unchecked")
             List<MolecularType> newList = (List<MolecularType>) evt.getNewValue();
             if(newList != null && oldListCopy != null && oldListCopy.size() > newList.size()){
                 // something got deleted
                 oldListCopy.removeAll(newList);
                 for(MolecularType removedMt : oldListCopy){
-                    relationshipModel.removeRelationshipObject(removedMt);
+                    this.relationshipModel.removeRelationshipObject(removedMt);
                 }
             }
         }
-        if(evt.getSource() == fieldModel && (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST))){
+        if(evt.getSource() == this.model && (evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_REACTION_RULE_LIST))){
             @SuppressWarnings("unchecked")
-            List<ReactionRule> oldListCopy = new ArrayList<ReactionRule>((List<ReactionRule>) evt.getOldValue());
+            List<ReactionRule> oldListCopy = new ArrayList<>((List<ReactionRule>) evt.getOldValue());
             @SuppressWarnings("unchecked")
             List<ReactionRule> newList = (List<ReactionRule>) evt.getNewValue();
             if(newList != null && oldListCopy != null && oldListCopy.size() > newList.size()){
                 // something got deleted
                 oldListCopy.removeAll(newList);
                 for(ReactionRule removedRr : oldListCopy){
-                    relationshipModel.removeRelationshipObject(removedRr);
+                    this.relationshipModel.removeRelationshipObject(removedRr);
                 }
             }
         }
-        if(evt.getSource() == fieldModel && (evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME))){
+        if(evt.getSource() == this.model && (evt.getPropertyName().equals(Model.PROPERTY_NAME_MODEL_ENTITY_NAME))){
             firePropertyChange(Model.PROPERTY_NAME_MODEL_ENTITY_NAME, evt.getOldValue(), evt.getNewValue());
         }
 
@@ -902,33 +834,31 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * Creation date: (4/12/01 11:24:12 AM)
      */
     public void refreshDependencies(){
-        repairLegacyModelProblems();
-        //
+        this.repairLegacyModelProblems();
         // listen to self
-        //
-        removePropertyChangeListener(this);
-        removeVetoableChangeListener(this);
-        addPropertyChangeListener(this);
-        addVetoableChangeListener(this);
+        this.removePropertyChangeListener(this);
+        this.removeVetoableChangeListener(this);
+        this.addPropertyChangeListener(this);
+        this.addVetoableChangeListener(this);
 
-        fieldModel.refreshDependencies();
-        fieldModel.setVcMetaData(getVCMetaData());
-        for(int i = 0; fieldSimulationContexts != null && i < fieldSimulationContexts.length; i++){
-            fieldSimulationContexts[i].setBioModel(this);
-            fieldSimulationContexts[i].removePropertyChangeListener(this);
-            fieldSimulationContexts[i].removeVetoableChangeListener(this);
-            fieldSimulationContexts[i].addPropertyChangeListener(this);
-            fieldSimulationContexts[i].addVetoableChangeListener(this);
-            fieldSimulationContexts[i].refreshDependencies();
+        this.model.refreshDependencies();
+        this.model.setVcMetaData(getVCMetaData());
+        for (SimulationContext simContext : this.getSimulationContexts()){
+            simContext.setBioModel(this);
+            simContext.removePropertyChangeListener(this);
+            simContext.removeVetoableChangeListener(this);
+            simContext.addPropertyChangeListener(this);
+            simContext.addVetoableChangeListener(this);
+            simContext.refreshDependencies();
         }
-        for(int i = 0; fieldSimulations != null && i < fieldSimulations.length; i++){
-            fieldSimulations[i].removePropertyChangeListener(this);
-            fieldSimulations[i].removeVetoableChangeListener(this);
-            fieldSimulations[i].addPropertyChangeListener(this);
-            fieldSimulations[i].addVetoableChangeListener(this);
-            fieldSimulations[i].refreshDependencies();
+        for (Simulation sim : this.getSimulations()){
+            sim.removePropertyChangeListener(this);
+            sim.removeVetoableChangeListener(this);
+            sim.addPropertyChangeListener(this);
+            sim.addVetoableChangeListener(this);
+            sim.refreshDependencies();
         }
-        updateSimulationOwners();
+        this.updateSimulationOwners();
     }
 
 
@@ -936,15 +866,15 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * The removePropertyChangeListener method was generated to support the propertyChange field.
      */
     public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener){
-        getPropertyChange().removePropertyChangeListener(listener);
+        this.getPropertyChange().removePropertyChangeListener(listener);
     }
 
 
     public void removeSimulation(Simulation simulation) throws java.beans.PropertyVetoException{
-        if(!contains(simulation)){
+        if(!this.contains(simulation)){
             throw new IllegalArgumentException("BioModel.removeSimulation() simulation not present in BioModel");
         }
-        setSimulations(ArrayUtils.removeFirstInstanceOfElement(fieldSimulations, simulation));
+        this.getSimulations().remove(simulation);
     }
 
 
@@ -959,7 +889,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         if(!contains(simulationContext)){
             throw new IllegalArgumentException("BioModel.removeSimulationContext() simulationContext not present in BioModel");
         }
-        setSimulationContexts(ArrayUtils.removeFirstInstanceOfElement(fieldSimulationContexts, simulationContext));
+        this.getSimulationContexts().remove(simulationContext);
     }
 
 
@@ -967,7 +897,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
      */
     public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener){
-        getVetoPropertyChange().removeVetoableChangeListener(listener);
+        this.getVetoPropertyChange().removeVetoableChangeListener(listener);
     }
 
 
@@ -980,9 +910,9 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      */
     @Deprecated
     public void setDescription(java.lang.String description) throws java.beans.PropertyVetoException{
-        String oldValue = fieldDescription;
+        String oldValue = this.fieldDescription;
         fireVetoableChange("description", oldValue, description);
-        fieldDescription = description;
+        this.fieldDescription = description;
         firePropertyChange("description", oldValue, description);
     }
 
@@ -994,8 +924,8 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @see #getModel
      */
     public void setModel(Model model){
-        Model oldValue = fieldModel;
-        fieldModel = model;
+        Model oldValue = this.model;
+        this.model = model;
         if(oldValue != null){
             oldValue.removePropertyChangeListener(this);
         }
@@ -1015,9 +945,9 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @see #getName
      */
     public void setName(java.lang.String name) throws java.beans.PropertyVetoException{
-        String oldValue = fieldName;
+        String oldValue = this.name;
         fireVetoableChange("name", oldValue, name);
-        fieldName = name;
+        this.name = name;
         firePropertyChange("name", oldValue, name);
     }
 
@@ -1037,56 +967,57 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     /**
      * Sets the simulationContexts property (cbit.vcell.mapping.SimulationContext[]) value.
      *
-     * @param simulationContexts The new value for the property.
+     * @param newSimulationContexts The new value for the property.
      * @throws java.beans.PropertyVetoException The exception description.
-     * @see #getSimulationContexts
+     * @see #getSimulationContextsAsArray
      */
-    public void setSimulationContexts(SimulationContext[] simulationContexts) throws java.beans.PropertyVetoException{
-        SimulationContext[] oldValue = fieldSimulationContexts;
-        fireVetoableChange(PROPERTY_NAME_SIMULATION_CONTEXTS, oldValue, simulationContexts);
-        for(int i = 0; oldValue != null && i < oldValue.length; i++){
-//		oldValue[i].removePropertyChangeListener(this);
-//		oldValue[i].removeVetoableChangeListener(this);
-            oldValue[i].setBioModel(null);
+    public void setSimulationContexts(SimulationContext[] newSimulationContexts) throws java.beans.PropertyVetoException{
+        SimulationContext[] oldSimContexts = this.getSimulationContextsAsArray();
+        fireVetoableChange(PROPERTY_NAME_SIMULATION_CONTEXTS, oldSimContexts, newSimulationContexts);
+        for (SimulationContext oldSimContext : oldSimContexts){
+//            oldSimContext.removePropertyChangeListener(this);
+//            oldSimContext.removeVetoableChangeListener(this);
+            oldSimContext.setBioModel(null);
         }
-        fieldSimulationContexts = simulationContexts;
-        for(int i = 0; simulationContexts != null && i < simulationContexts.length; i++){
-//This is done in PropertyChange, not needed here and causes duplication in PropertyChange listener list
-//		simulationContexts[i].addPropertyChangeListener(this);
-//		simulationContexts[i].addVetoableChangeListener(this);
-            simulationContexts[i].setBioModel(this);
+        this.getSimulationContexts().clear();
+        for (SimulationContext newSimContext : newSimulationContexts){
+            this.addSimulationContext(newSimContext);
+//            newSimContext.addPropertyChangeListener(this);
+//            newSimContext.addVetoableChangeListener(this);
+            newSimContext.setBioModel(this);
         }
         updateSimulationOwners();
-        firePropertyChange(PROPERTY_NAME_SIMULATION_CONTEXTS, oldValue, simulationContexts);
+        firePropertyChange(PROPERTY_NAME_SIMULATION_CONTEXTS, oldSimContexts, newSimulationContexts);
     }
 
 
     /**
      * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
      *
-     * @param simulations The new value for the property.
+     * @param newSimulations The new value for the property.
      * @throws java.beans.PropertyVetoException The exception description.
-     * @see #getSimulations
+     * @see #getSimulationsAsArray
      */
-    public void setSimulations(Simulation[] simulations) throws java.beans.PropertyVetoException{
-        Simulation[] oldValue = fieldSimulations;
-        fireVetoableChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
-        for(int i = 0; oldValue != null && i < oldValue.length; i++){
-            oldValue[i].removePropertyChangeListener(this);
-            oldValue[i].removeVetoableChangeListener(this);
-            oldValue[i].setSimulationOwner(null); // make sure old simulation instances have null simulationOwners
+    public void setSimulations(Simulation[] newSimulations) throws java.beans.PropertyVetoException{
+        Simulation[] oldSimulations = this.getSimulationsAsArray();
+        this.fireVetoableChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldSimulations, newSimulations);
+        for (Simulation oldSim : oldSimulations){
+            oldSim.removePropertyChangeListener(this);
+            oldSim.removeVetoableChangeListener(this);
+            oldSim.setSimulationOwner(null); // make sure old simulation instances have null simulationOwners
         }
-        fieldSimulations = simulations;
-        for(int i = 0; simulations != null && i < simulations.length; i++){
-            simulations[i].addPropertyChangeListener(this);
-            simulations[i].addVetoableChangeListener(this);
+        this.getSimulations().clear();
+        for (Simulation newSim : newSimulations){
+            this.addSimulation(newSim);
+            newSim.addPropertyChangeListener(this);
+            newSim.addVetoableChangeListener(this);
         }
-        updateSimulationOwners();
-        firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldValue, simulations);
+        this.updateSimulationOwners();
+        firePropertyChange(PropertyConstants.PROPERTY_NAME_SIMULATIONS, oldSimulations, newSimulations);
     }
 
     private void updateSimulationOwners(){
-        for(Simulation sim : fieldSimulations){
+        for(Simulation sim : this.simulations){
             try {
                 sim.setSimulationOwner(getSimulationContext(sim));
             } catch(ObjectNotFoundException e){
@@ -1104,7 +1035,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
      * @param version cbit.sql.Version
      */
     private void setVersion(Version version) throws PropertyVetoException{
-        this.fieldVersion = version;
+        this.version = version;
         if(version != null){
             setName(version.getName());
             setDescription(version.getAnnot());
@@ -1137,10 +1068,10 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         // don't let SimulationContext's MathDescription be set to null if any Simulations depend on it, can't recover from this
         //
         if(evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("mathDescription") && evt.getNewValue() == null){
-            if(fieldSimulations != null){
-                for(int i = 0; i < fieldSimulations.length; i++){
-                    if(fieldSimulations[i].getMathDescription() == evt.getOldValue()){
-                        throw new PropertyVetoException("error: simulation " + fieldSimulations[i].getName() + " will be orphaned, MathDescription set to null for Application " + ((SimulationContext) evt.getSource()).getName(), evt);
+            if(this.simulations != null){
+                for (Simulation simulation : this.simulations) {
+                    if (simulation.getMathDescription() == evt.getOldValue()) {
+                        throw new PropertyVetoException("error: simulation " + simulation.getName() + " will be orphaned, MathDescription set to null for Application " + ((SimulationContext) evt.getSource()).getName(), evt);
                     }
                 }
             }
@@ -1158,11 +1089,12 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         //
         if(evt.getSource() instanceof Simulation && evt.getPropertyName().equals("mathDescription")){
             MathDescription newMathDescription = (MathDescription) evt.getNewValue();
-            if(fieldSimulationContexts != null){
+            if(this.simulationContexts != null){
                 boolean bMathFound = false;
-                for(int i = 0; i < fieldSimulationContexts.length; i++){
-                    if(fieldSimulationContexts[i].getMathDescription() == newMathDescription){
+                for (SimulationContext simulationContext : this.simulationContexts) {
+                    if (simulationContext.getMathDescription() == newMathDescription) {
                         bMathFound = true;
+                        break;
                     }
                 }
                 if(!bMathFound){
@@ -1174,7 +1106,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             //
             // check for name duplication
             //
-            Simulation simulations[] = (Simulation[]) evt.getNewValue();
+            Simulation[] simulations = (Simulation[]) evt.getNewValue();
             for(int i = 0; i < simulations.length - 1; i++){
                 for(int j = i + 1; j < simulations.length; j++){
                     if(simulations[i].getName().equals(simulations[j].getName())){
@@ -1187,9 +1119,10 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             //
             for(int i = 0; simulations != null && i < simulations.length; i++){
                 boolean bFound = false;
-                for(int j = 0; fieldSimulationContexts != null && j < fieldSimulationContexts.length; j++){
-                    if(simulations[i].getMathDescription() == fieldSimulationContexts[j].getMathDescription()){
+                for (SimulationContext simContext : this.getSimulationContexts()){
+                    if (simulations[i].getMathDescription() == simContext.getMathDescription()) {
                         bFound = true;
+                        break;
                     }
                 }
                 if(!bFound){
@@ -1202,9 +1135,9 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             // check for name duplication
             //
             String simulationName = (String) evt.getNewValue();
-            for(int i = 0; i < fieldSimulations.length; i++){
-                if(fieldSimulations[i].getName().equals(simulationName)){
-                    throw new PropertyVetoException(VCellNames.getName(fieldSimulations[i]) + " with name " + simulationName + " already exists", evt);
+            for (Simulation simulation : this.getSimulations()) {
+                if (simulation.getName().equals(simulationName)) {
+                    throw new PropertyVetoException(VCellNames.getName(simulation) + " with name " + simulationName + " already exists", evt);
                 }
             }
         }
@@ -1212,7 +1145,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             //
             // check for name duplication
             //
-            SimulationContext simulationContexts[] = (SimulationContext[]) evt.getNewValue();
+            SimulationContext[] simulationContexts = (SimulationContext[]) evt.getNewValue();
             for(int i = 0; i < simulationContexts.length - 1; i++){
                 for(int j = i + 1; j < simulationContexts.length; j++){
                     if(simulationContexts[i].getName().equals(simulationContexts[j].getName())){
@@ -1220,22 +1153,22 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
                     }
                 }
             }
-            //
+
             // check for Simulations that don't map to any SimulationContext
-            //
-            for(int i = 0; fieldSimulations != null && i < fieldSimulations.length; i++){
+            for (Simulation sim : this.getSimulations()){
                 boolean bFound = false;
                 for(int j = 0; simulationContexts != null && j < simulationContexts.length; j++){
-                    if(fieldSimulations[i].getMathDescription() == simulationContexts[j].getMathDescription()){
+                    if (sim.getMathDescription() == simulationContexts[j].getMathDescription()) {
                         bFound = true;
+                        break;
                     }
                 }
                 if(!bFound){
-                    throw new PropertyVetoException("Setting SimulationContexts, Simulation \"" + fieldSimulations[i].getName() + "\" has no corresponding MathDescription (so no Application)", evt);
+                    throw new PropertyVetoException("Setting SimulationContexts, Simulation \"" + sim.getName() + "\" has no corresponding MathDescription (so no Application)", evt);
                 }
             }
         } else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlId")){
-            ;        // not editable, we use what we get from the importer
+            // not editable, we use what we get from the importer
         } else if(evt.getSource() == this && evt.getPropertyName().equals("sbmlName")){
             String newName = (String) evt.getNewValue();
             if(newName == null){
@@ -1243,13 +1176,11 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             }
         }
         if(evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals("name") && evt.getNewValue() != null){
-            //
             // check for name duplication
-            //
             String simulationContextName = (String) evt.getNewValue();
-            for(int i = 0; i < fieldSimulationContexts.length; i++){
-                if(fieldSimulationContexts[i].getName().equals(simulationContextName)){
-                    throw new PropertyVetoException(VCellNames.getName(fieldSimulationContexts[i]) + " with name " + simulationContextName + " already exists", evt);
+            for (SimulationContext simulationContext : this.getSimulationContexts()) {
+                if (simulationContext.getName().equals(simulationContextName)) {
+                    throw new PropertyVetoException(VCellNames.getName(simulationContext) + " with name " + simulationContextName + " already exists", evt);
                 }
             }
         }
@@ -1257,7 +1188,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     }
 
     public VCMetaData getVCMetaData(){
-        return vcMetaData;
+        return this.vcMetaData;
     }
 
     public void setVCMetaData(VCMetaData vcMetaData){
@@ -1268,11 +1199,11 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         // (recursively) populate the identifiables with free text annotations if 'bMetaDataPopulated' is false
         if(!bMetadataPopulated){
             String annotationText = this.getDescription();
-            vcMetaData.setFreeTextAnnotation(this, annotationText);
+            this.vcMetaData.setFreeTextAnnotation(this, annotationText);
 
             // now populate from model downwards
-            if(fieldModel != null){
-                fieldModel.populateVCMetadata(bMetadataPopulated);
+            if(this.model != null){
+                this.model.populateVCMetadata(bMetadataPopulated);
             }
         }
     }
@@ -1316,7 +1247,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         }
         if(vcid.getClassName().equals(VCID.CLASS_APPLICATION)){
             String localName = vcid.getLocalName();
-            return getSimulationContexts(localName);
+            return getSimulationContextsAsArray(localName);
         }
         if(vcid.getClassName().equals(VCID.CLASS_SPECIES_CONTEXT_SPEC_PARAMETER)){
             String localName = vcid.getLocalName();
@@ -1328,8 +1259,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
                 if(sc != null){
                     SpeciesContextSpec scs = simContext.getReactionContext().getSpeciesContextSpec(sc);
                     if(scs != null){
-                        SpeciesContextSpec.SpeciesContextSpecParameter scsParam = scs.getParameterFromName(tokens[2]);
-                        return scsParam;
+                        return scs.getParameterFromName(tokens[2]);
                     }
                 }
             }
@@ -1344,8 +1274,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
                 if(struct != null){
                     StructureMapping sm = simContext.getGeometryContext().getStructureMapping(struct);
                     if(sm != null){
-                        StructureMapping.StructureMappingParameter smParam = sm.getParameter(tokens[2]);
-                        return smParam;
+                        return sm.getParameter(tokens[2]);
                     }
                 }
             }
@@ -1356,8 +1285,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             // localName = scParam.getSimulationContext().getName()+"."+scParam.getName();
             SimulationContext simContext = getSimulationContext(tokens[0]);
             if(simContext != null){
-                SimulationContext.SimulationContextParameter scParam = simContext.getSimulationContextParameter(tokens[1]);
-                return scParam;
+                return simContext.getSimulationContextParameter(tokens[1]);
             }
         }
         if(vcid.getClassName().equals(VCID.CLASS_KINETICS_PARAMETER)){
@@ -1366,8 +1294,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             // localName = kParam.getKinetics().getReactionStep().getName()+"."+kParam.getName();
             ReactionStep reactionStep = getModel().getReactionStep(tokens[0]);
             if(reactionStep != null){
-                Kinetics.KineticsParameter kp = reactionStep.getKinetics().getKineticsParameter(tokens[1]);
-                return kp;
+                return reactionStep.getKinetics().getKineticsParameter(tokens[1]);
             }
         }
         if(vcid.getClassName().equals(VCID.CLASS_BIOMODEL)){
@@ -1421,24 +1348,20 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         } else if(identifiable instanceof SpeciesContextSpec){
             localName = ((SpeciesContextSpec) identifiable).getDisplayName();
             className = VCID.CLASS_SPECIES_CONTEXT_SPEC;
-        } else if(identifiable instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
-            SpeciesContextSpec.SpeciesContextSpecParameter scsParam = (SpeciesContextSpec.SpeciesContextSpecParameter) identifiable;
+        } else if(identifiable instanceof SpeciesContextSpec.SpeciesContextSpecParameter scsParam){
             SimulationContext simContext = scsParam.getSimulationContext();
             if(simContext == null){
                 throw new RuntimeException("Entity no longer exist");
             }
             localName = simContext.getName() + "." + scsParam.getSpeciesContext().getName() + "." + scsParam.getName();
             className = VCID.CLASS_SPECIES_CONTEXT_SPEC_PARAMETER;
-        } else if(identifiable instanceof StructureMapping.StructureMappingParameter){
-            StructureMapping.StructureMappingParameter smParam = (StructureMapping.StructureMappingParameter) identifiable;
+        } else if(identifiable instanceof StructureMapping.StructureMappingParameter smParam){
             localName = smParam.getSimulationContext().getName() + "." + smParam.getStructure().getName() + "." + smParam.getName();
             className = VCID.CLASS_STRUCTURE_MAPPING_PARAMETER;
-        } else if(identifiable instanceof SimulationContext.SimulationContextParameter){
-            SimulationContext.SimulationContextParameter scParam = (SimulationContext.SimulationContextParameter) identifiable;
+        } else if(identifiable instanceof SimulationContext.SimulationContextParameter scParam){
             localName = scParam.getSimulationContext().getName() + "." + scParam.getName();
             className = VCID.CLASS_SIMULATION_CONTEXT_PARAMETER;
-        } else if(identifiable instanceof Kinetics.KineticsParameter){
-            Kinetics.KineticsParameter kParam = (Kinetics.KineticsParameter) identifiable;
+        } else if(identifiable instanceof Kinetics.KineticsParameter kParam){
             localName = kParam.getKinetics().getReactionStep().getName() + "." + kParam.getName();
             className = VCID.CLASS_KINETICS_PARAMETER;
         } else if(identifiable instanceof ReactionSpec){
@@ -1458,15 +1381,15 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     }
 
     public Set<Identifiable> getAllIdentifiables(){
-        HashSet<Identifiable> allIdenfiables = new HashSet<Identifiable>();
-        allIdenfiables.addAll(Arrays.asList(fieldModel.getSpecies()));
-        allIdenfiables.addAll(Arrays.asList(fieldModel.getStructures()));
-        allIdenfiables.addAll(Arrays.asList(fieldModel.getReactionSteps()));
+        HashSet<Identifiable> allIdenfiables = new HashSet<>();
+        allIdenfiables.addAll(Arrays.asList(this.model.getSpecies()));
+        allIdenfiables.addAll(Arrays.asList(this.model.getStructures()));
+        allIdenfiables.addAll(Arrays.asList(this.model.getReactionSteps()));
         Set<BioPaxObject> biopaxObjects = getPathwayModel().getBiopaxObjects();
         allIdenfiables.addAll(biopaxObjects);
 
-        allIdenfiables.addAll(Arrays.asList(fieldSimulationContexts));
-        for(SimulationContext sc : fieldSimulationContexts){
+        allIdenfiables.addAll(this.getSimulations());
+        for(SimulationContext sc : this.simulationContexts){
             allIdenfiables.addAll(Arrays.asList(sc.getSimulations()));
             // species context specs and their parameters
             List<SpeciesContextSpec> speciesContextSpecs = Arrays.asList(sc.getReactionContext().getSpeciesContextSpecs());
@@ -1474,7 +1397,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             allIdenfiables.addAll(speciesContextSpecs.stream().flatMap(scs -> Arrays.stream(scs.getParameters()))
                     .filter(p -> p instanceof Identifiable)
                     .map(p -> (Identifiable) p)
-                    .collect(Collectors.toList()));
+                    .toList());
 
             // structure mappings parameters
             List<StructureMapping> structureMappings = Arrays.asList(sc.getGeometryContext().getStructureMappings());
@@ -1482,15 +1405,15 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             allIdenfiables.addAll(structureMappings.stream().flatMap(scs -> Arrays.stream(scs.getParameters()))
                     .filter(p -> p instanceof Identifiable)
                     .map(p -> (Identifiable) p)
-                    .collect(Collectors.toList()));
+                    .toList());
 
             allIdenfiables.addAll(Arrays.asList(sc.getReactionContext().getReactionSpecs()));
 
         }
 
-        allIdenfiables.addAll(fieldModel.getRbmModelContainer().getMolecularTypeList());
-        allIdenfiables.addAll(fieldModel.getRbmModelContainer().getReactionRuleList());
-        allIdenfiables.addAll(fieldModel.getRbmModelContainer().getObservableList());
+        allIdenfiables.addAll(this.model.getRbmModelContainer().getMolecularTypeList());
+        allIdenfiables.addAll(this.model.getRbmModelContainer().getReactionRuleList());
+        allIdenfiables.addAll(this.model.getRbmModelContainer().getObservableList());
         allIdenfiables.add(this);
         return allIdenfiables;
     }
@@ -1518,7 +1441,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     }
 
     public Simulation getSimulation(String name){
-        for(Simulation simulation : fieldSimulations){
+        for(Simulation simulation : this.simulations){
             if(simulation.getName().equals(name)){
                 return simulation;
             }
@@ -1527,7 +1450,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     }
 
     public SimulationContext getSimulationContext(String name){
-        for(SimulationContext simulationContext : fieldSimulationContexts){
+        for(SimulationContext simulationContext : this.simulationContexts){
             if(simulationContext.getName().equals(name)){
                 return simulationContext;
             }
@@ -1536,12 +1459,12 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
     }
 
     public List<SymbolTableEntry> findReferences(SymbolTableEntry symbolTableEntry){
-        ArrayList<SymbolTableEntry> references = new ArrayList<SymbolTableEntry>();
-        HashSet<NameScope> visited = new HashSet<NameScope>();
+        ArrayList<SymbolTableEntry> references = new ArrayList<>();
+        HashSet<NameScope> visited = new HashSet<>();
 
-        fieldModel.getNameScope().findReferences(symbolTableEntry, references, visited);
+        this.model.getNameScope().findReferences(symbolTableEntry, references, visited);
 
-        for(SimulationContext simContext : fieldSimulationContexts){
+        for(SimulationContext simContext : this.simulationContexts){
             simContext.getNameScope().findReferences(symbolTableEntry, references, visited);
         }
         return references;
@@ -1549,11 +1472,11 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 
     // ------------------------------------------------- Pathway and Relationship objects and utility functions
     public PathwayModel getPathwayModel(){
-        return pathwayModel;
+        return this.pathwayModel;
     }
 
     public RelationshipModel getRelationshipModel(){
-        return relationshipModel;
+        return this.relationshipModel;
     }
 
     public static void printObject(BioPaxObject bpo){
@@ -1600,7 +1523,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
 
     public void updateAll(boolean bForceUpgrade) throws MappingException{
         refreshDependencies();
-        for(SimulationContext simulationContext : getSimulationContexts()){
+        for(SimulationContext simulationContext : getSimulationContextsAsArray()){
             simulationContext.updateAll(bForceUpgrade);
         }
     }

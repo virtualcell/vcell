@@ -50,7 +50,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	if (documentWindowManager.getVCDocument() instanceof BioModel) {
 		// try to successfully generate math and geometry region info
 		BioModel bioModel = (BioModel)documentWindowManager.getVCDocument();
-		SimulationContext[] scArray = bioModel.getSimulationContexts();
+		SimulationContext[] scArray = bioModel.getSimulationContextsAsArray();
 		MathDescription[] mathDescArray = (MathDescription[])hashTable.get("mathDescArray");
 		if (scArray!=null && mathDescArray != null) {
 			for (int i = 0; i < scArray.length; i++){
@@ -60,7 +60,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 		
 		Vector<Issue> issueList = new Vector<Issue>();
 		IssueContext issueContext = new IssueContext();
-		Simulation[] sims = bioModel.getSimulations();
+		Simulation[] sims = bioModel.getSimulationsAsArray();
 		for(Simulation sim : sims) {
 		sim.gatherIssues(issueContext, issueList);
 		}

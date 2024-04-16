@@ -55,7 +55,7 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 	protected ArrayList<SimulationContext> computeData() {
 		ArrayList<SimulationContext> simulationContextList = new ArrayList<SimulationContext>();
 		if (bioModel != null){
-			for (SimulationContext simulationContext : bioModel.getSimulationContexts()){
+			for (SimulationContext simulationContext : bioModel.getSimulationContextsAsArray()){
 				if (searchText == null || searchText.length() == 0) {
 					simulationContextList.add(simulationContext);
 				} else {
@@ -219,13 +219,13 @@ public class BioModelEditorApplicationsTableModel extends BioModelEditorRightSid
 		super.bioModelChange(evt);
 		BioModel oldValue = (BioModel) evt.getOldValue();
 		if (oldValue != null) {
-			for (SimulationContext simulationContext : oldValue.getSimulationContexts()) {
+			for (SimulationContext simulationContext : oldValue.getSimulationContextsAsArray()) {
 				simulationContext.removePropertyChangeListener(this);
 			}
 		}
 		BioModel newValue = (BioModel) evt.getNewValue();
 		if (newValue != null) {
-			for (SimulationContext simulationContext : newValue.getSimulationContexts()) {
+			for (SimulationContext simulationContext : newValue.getSimulationContextsAsArray()) {
 				simulationContext.addPropertyChangeListener(this);
 			}
 		}

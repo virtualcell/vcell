@@ -828,7 +828,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 					VCDocument thisDocument = (getDataViewerManager() instanceof DocumentWindowManager?((DocumentWindowManager)getDataViewerManager()).getVCDocument():null);
 					if(thisDocument instanceof BioModel){
 						String thisSimContextName = dataInfoProvider.getSimulationModelInfo().getContextName();
-						SimulationContext[] simContexts = ((BioModel)thisDocument).getSimulationContexts();
+						SimulationContext[] simContexts = ((BioModel)thisDocument).getSimulationContextsAsArray();
 						SimulationContext thisSimulationContext = null;
 						for (int i = 0; i < simContexts.length; i++) {
 							if(thisSimContextName.equals(thisDocument.getName()+"::"+simContexts[i].getName())){

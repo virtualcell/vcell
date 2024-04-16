@@ -31,7 +31,7 @@ public class NfsimExtensionFilter extends SelectorExtensionFilter {
 		//       to only offer the applications / simulations with bngl content
 		// This should be done by creating one or more additional Selector values and add the filtering logic to ChooseFile
 		
-		SimulationContext simContexts[] = bioModel.getSimulationContexts();
+		SimulationContext simContexts[] = bioModel.getSimulationContextsAsArray();
 		Simulation selectedSim = simulationContext.getSimulations(0);
 		//Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
 		SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, 0, null),0);

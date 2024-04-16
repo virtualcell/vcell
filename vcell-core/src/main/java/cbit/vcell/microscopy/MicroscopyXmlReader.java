@@ -96,8 +96,8 @@ public class MicroscopyXmlReader {
 		if (bioModelElement!=null){
 			String docSoftwareVersion = param.getAttributeValue(XMLTags.SoftwareVersionAttrTag);
 			BioModel bioModel  = xmlReader.vcellXMLReader.getBioModel(bioModelElement,(docSoftwareVersion==null?null:VCellSoftwareVersion.fromString(docSoftwareVersion)));
-			if(bioModel != null && bioModel.getSimulations()!=null && bioModel.getSimulations().length > 0){
-				simulationKeyValue = bioModel.getSimulations()[0].getKey();
+			if(bioModel != null && bioModel.getSimulationsAsArray()!=null && bioModel.getSimulationsAsArray().length > 0){
+				simulationKeyValue = bioModel.getSimulationsAsArray()[0].getKey();
 			}
 		}
 		Element timeSeriesExternalDataElement = param.getChild(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);

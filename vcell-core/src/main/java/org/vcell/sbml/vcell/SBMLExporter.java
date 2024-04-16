@@ -1725,7 +1725,7 @@ private void roundTripValidation() throws SBMLValidationException {
 		// make a copy of the original BioModel with only the selected SimulationContext in it.
 		//
 		bioModel = XmlHelper.cloneBioModel(this.vcSelectedSimContext.getBioModel());
-		SimulationContext[] simulationContexts = bioModel.getSimulationContexts();
+		SimulationContext[] simulationContexts = bioModel.getSimulationContextsAsArray();
 		for (SimulationContext simContext : simulationContexts){
 			if (!simContext.getName().equals(this.vcSelectedSimContext.getName())){
 				for (Simulation sim : simContext.getSimulations()){

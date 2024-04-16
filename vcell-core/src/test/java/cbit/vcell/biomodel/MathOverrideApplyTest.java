@@ -122,7 +122,7 @@ public class MathOverrideApplyTest {
 						.lines().collect(Collectors.joining("\n"));
 			}
 			BioModel biomodel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
-			for (SimulationContext simContext : biomodel.getSimulationContexts()){
+			for (SimulationContext simContext : biomodel.getSimulationContextsAsArray()){
 				// filter out simcontexts which do not have math overrides in any simulations
 				boolean bHasMathOverrides = false;
 				for (Simulation sim : simContext.getSimulations()){

@@ -319,7 +319,7 @@ public class FRAPOptData {
 													expFrapStudy.getStartingIndexForRecovery());
 			
 			//change time bound and time step
-			Simulation sim = bioModel.getSimulations()[0];
+			Simulation sim = bioModel.getSimulationsAsArray()[0];
 			
 			ROIDataGenerator roiDataGenerator = getExpFrapStudy().getROIDataGenerator(getLocalWorkspace());
 			sim.getMathDescription().getPostProcessingBlock().addDataGenerator(roiDataGenerator);
@@ -338,9 +338,9 @@ public class FRAPOptData {
 			
 			return referenceSimKeyValue;
 		}catch(Exception e){
-			if(bioModel != null && bioModel.getSimulations() != null){
+			if(bioModel != null && bioModel.getSimulationsAsArray() != null){
 				FRAPStudy.removeExternalDataAndSimulationFiles(
-					bioModel.getSimulations()[0].getVersion().getVersionKey(), null, null, getLocalWorkspace());
+					bioModel.getSimulationsAsArray()[0].getVersion().getVersionKey(), null, null, getLocalWorkspace());
 			}
 			throw e;
 		}

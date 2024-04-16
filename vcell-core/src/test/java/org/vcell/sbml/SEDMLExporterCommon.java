@@ -139,7 +139,7 @@ public abstract class SEDMLExporterCommon {
 		bioModel.updateAll(false);
 
 		Predicate<Simulation> simulationExportFilter = sim -> true;
-		List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
+		List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulationsAsArray()).filter(simulationExportFilter).collect(Collectors.toList());
 
 		// we replace the obsolete solver with the fully supported equivalent
 		for (Simulation simulation : simsToExport) {
@@ -231,7 +231,7 @@ public abstract class SEDMLExporterCommon {
 			assertEquals(1, bioModels.size(), "expecting 1 biomodel in round trip");
 			BioModel importedBioModel = bioModels.get(0);
 
-			boolean hasAnyOverrides = Arrays.stream(bioModel.getSimulations()).anyMatch(s -> s.getMathOverrides().getSize() > 0);
+			boolean hasAnyOverrides = Arrays.stream(bioModel.getSimulationsAsArray()).anyMatch(s -> s.getMathOverrides().getSize() > 0);
 			if (testCase.modelFormat == ModelFormat.SBML && hasAnyOverrides){
 				importedBioModel = ModelUnitConverter.createBioModelWithNewUnitSystem(importedBioModel, bioModel.getModel().getUnitSystem());
 			}

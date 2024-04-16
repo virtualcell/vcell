@@ -126,7 +126,7 @@ public class ServerDocumentManager {
             lg.error(e.getLocalizedMessage(), e);
         }
         forceDirtyIfForeign(user, bioModel.getModel());
-        SimulationContext simulationContexts[] = bioModel.getSimulationContexts();
+        SimulationContext simulationContexts[] = bioModel.getSimulationContextsAsArray();
         for(int i = 0; simulationContexts != null && i < simulationContexts.length; i++){
             forceDirtyIfForeign(user, simulationContexts[i]);
             MathDescription mathDesc = simulationContexts[i].getMathDescription();
@@ -138,7 +138,7 @@ public class ServerDocumentManager {
                 }
             }
         }
-        Simulation[] simulations = bioModel.getSimulations();
+        Simulation[] simulations = bioModel.getSimulationsAsArray();
         for(int i = 0; simulations != null && i < simulations.length; i++){
             forceDirtyIfForeign(user, simulations[i]);
         }
@@ -743,8 +743,8 @@ public class ServerDocumentManager {
         // the workspace is responsible for cleaning up Simulations
         //
         {
-            Simulation sims[] = bioModel.getSimulations();
-            SimulationContext scs[] = bioModel.getSimulationContexts();
+            Simulation sims[] = bioModel.getSimulationsAsArray();
+            SimulationContext scs[] = bioModel.getSimulationContextsAsArray();
             for(int i = 0; sims != null && i < sims.length; i++){
                 boolean bFound = false;
                 for(int j = 0; scs != null && j < scs.length; j++){
@@ -769,8 +769,8 @@ public class ServerDocumentManager {
         //   SimContext->BioModel
         //   VCMetaData->BioModel
         //
-        Simulation simArray[] = bioModel.getSimulations();
-        SimulationContext scArray[] = bioModel.getSimulationContexts();
+        Simulation simArray[] = bioModel.getSimulationsAsArray();
+        SimulationContext scArray[] = bioModel.getSimulationContextsAsArray();
 
 //	Hashtable mathEquivHash = new Hashtable();
         long roundtripTimer = 0;

@@ -59,9 +59,9 @@ public class VcmlValidator {
 
             int i = 0;
             int number_succeeded = 0;
-            for (SimulationContext orig_simContext : orig_biomodel.getSimulationContexts()) {
+            for (SimulationContext orig_simContext : orig_biomodel.getSimulationContextsAsArray()) {
                 MathDescription originalMath = orig_simContext.getMathDescription();
-                SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
+                SimulationContext new_simContext = transformed_biomodel.getSimulationContextsAsArray(orig_simContext.getName());
                 try {
                     if (bTransformKMOLE) BioModelTransforms.restoreOldReservedSymbolsIfNeeded(transformed_biomodel);
                     new_simContext.updateAll(false);

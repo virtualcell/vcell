@@ -340,11 +340,11 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
                                     }
                                 }
                                 bioModel.updateAll(true);
-                                SimulationContext[] simContexts = bioModel.getSimulationContexts();
+                                SimulationContext[] simContexts = bioModel.getSimulationContextsAsArray();
                                 for (int j = 0; j < simContexts.length; j++) {
                                     simContexts[j].clearVersion();
                                 }
-                                Simulation[] sims = bioModel.getSimulations();
+                                Simulation[] sims = bioModel.getSimulationsAsArray();
                                 String[] simNames = new String[sims.length];
                                 for (int j = 0; j < sims.length; j++) {
                                     // prevents parent simulation (from the original mathmodel) reference connection
@@ -390,7 +390,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
                             throw new Exception("BioModel not found");
                         }
                         SimulationContext simContext = null;
-                        for (int j = 0; j < newBioModel.getSimulationContexts().length; j++) {
+                        for (int j = 0; j < newBioModel.getSimulationContextsAsArray().length; j++) {
                             if (newBioModel.getSimulationContext(j).getName().equals(bioTestCase.getSimContextName())) {
                                 simContext = newBioModel.getSimulationContext(j);
                             }
@@ -1036,7 +1036,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
         Simulation[] simArr = null;
         if (rowData[simSelection[0]][MODELTYPE_INDEX].equals("BM")) {
             BioModel bm = currentRequstManager.getDocumentManager().getBioModel((KeyValue) rowData[simSelection[0]][MODELKEY_INDEX]);
-            simArr = bm.getSimulations();
+            simArr = bm.getSimulationsAsArray();
         } else {
             MathModel mm = currentRequstManager.getDocumentManager().getMathModel((KeyValue) rowData[simSelection[0]][MODELKEY_INDEX]);
             simArr = mm.getSimulations();
@@ -1076,7 +1076,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
                     //bioTestCase.
                     BioModelInfo bmInfo = bioTestCase.getBioModelInfo();
                     BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
-                    SimulationContext[] simContextArr = bioModel.getSimulationContexts();
+                    SimulationContext[] simContextArr = bioModel.getSimulationContextsAsArray();
                     if (simContextArr != null && simContextArr.length > 0) {
                         SimulationContext simContext = null;
                         for (int i = 0; i < simContextArr.length; i += 1) {
@@ -1086,7 +1086,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
                             }
                         }
                         if (simContext != null) {
-                            sims = bioModel.getSimulations(simContext);
+                            sims = bioModel.getSimulationsAsArray(simContext);
                             reportTCBuffer.append(
                                     "\tBioModel : " + bmInfo.getVersion().getName() + ", " + bmInfo.getVersion().getDate().toString() + "\n");
                         }
@@ -1166,7 +1166,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
             }
         } else {
             BioModel bioModel = (BioModel) document;
-            Simulation[] sims = bioModel.getSimulations();
+            Simulation[] sims = bioModel.getSimulationsAsArray();
             for (int i = 0; i < sims.length; i++) {
                 if (refSimName.equals(sims[i].getName())) {
                     simulationWorkspaceModelInfo =
@@ -1721,7 +1721,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
     public KeyValue getSimContextKey(BioModelInfo bmInfo, String appName) throws DataAccessException {
         BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
         if (bioModel != null) {
-            SimulationContext simContexts[] = bioModel.getSimulationContexts();
+            SimulationContext simContexts[] = bioModel.getSimulationContextsAsArray();
             for (int i = 0; i < simContexts.length; i++) {
                 if (simContexts[i].getName().equals(appName)) {
                     return simContexts[i].getVersion().getVersionKey();
@@ -2577,14 +2577,14 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
 
         SimulationContext simContext = null;
         BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
-        for (int i = 0; i < bioModel.getSimulationContexts().length; i += 1) {
-            if (bioModel.getSimulationContexts()[i].getName().equals(appName)) {
-                simContext = bioModel.getSimulationContexts()[i];
+        for (int i = 0; i < bioModel.getSimulationContextsAsArray().length; i += 1) {
+            if (bioModel.getSimulationContextsAsArray()[i].getName().equals(appName)) {
+                simContext = bioModel.getSimulationContextsAsArray()[i];
                 break;
             }
         }
         if (simContext != null) {
-            SimulationInfo simInfo = selectSimInfoPrivate(bioModel.getSimulations(simContext));
+            SimulationInfo simInfo = selectSimInfoPrivate(bioModel.getSimulationsAsArray(simContext));
             return new Object[]{simContext.getName(), simInfo};
         } else {
             PopupGenerator.showErrorDialog(TestingFrameworkWindowManager.this, "No simcontext found for biomodel " + bmInfo + " app=" + appName);

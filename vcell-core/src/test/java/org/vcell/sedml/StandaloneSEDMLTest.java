@@ -35,7 +35,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.xml.XMLSource;
@@ -215,7 +214,7 @@ public class StandaloneSEDMLTest {
 	        // so we do a "copy as" to the right type and then delete the original we loaded from the sbml file
 			//
 	        SimulationContext newSimulationContext = null;		// the new application we're making from the old one
-	        if(bioModel.getSimulationContexts().length == 1) {
+	        if(bioModel.getSimulationContextsAsArray().length == 1) {
 	        	SimulationContext oldSimulationContext = bioModel.getSimulationContext(0);
 	        	String newSCName = bioModel.getFreeSimulationContextName();
 	        	newSimulationContext = SimulationContext.copySimulationContext(oldSimulationContext, newSCName, bSpatial, appType);

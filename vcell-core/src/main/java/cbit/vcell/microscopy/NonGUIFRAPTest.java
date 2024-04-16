@@ -408,7 +408,7 @@ public class NonGUIFRAPTest {
 		
 		VCSimulationDataIdentifier vcSimulationDataIdentifier =
 			new VCSimulationDataIdentifier(
-				bioModel.getSimulations()[0].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
+				bioModel.getSimulationsAsArray()[0].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
 				FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
 		PDEDataManager simulationDataManager = new PDEDataManager(null, localWorkspace.getVCDataManager(),vcSimulationDataIdentifier);
 		double[] frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();

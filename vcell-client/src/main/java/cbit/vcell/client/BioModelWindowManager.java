@@ -128,7 +128,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				Geometry newGeom = (Geometry)hashTable.get("doc");
-				for (SimulationContext simulationContext : getBioModel().getSimulationContexts()) {
+				for (SimulationContext simulationContext : getBioModel().getSimulationContextsAsArray()) {
 					if (simulationContext == geometryViewer.getGeometryOwner()) {
 						if(newGeom.getName() == null){
 							newGeom.setName(
@@ -192,7 +192,7 @@ public void addResultsFrame(SimulationWindow simWindow) {
  * Creation date: (6/1/2004 2:33:41 AM)
  */
 private void updateApplicationHash(boolean reset) {
-	SimulationContext[] scs = getBioModel().getSimulationContexts();
+	SimulationContext[] scs = getBioModel().getSimulationContextsAsArray();
 	
 	Enumeration<SimulationContext> en = getApplicationsHash().keys();
 	while (en.hasMoreElements()) {
@@ -464,7 +464,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	// ** events are only generated from server side job statuses **
 	KeyValue simKey = simStatusEvent.getVCSimulationIdentifier().getSimulationKey();
 	// do we have the sim?
-	Simulation[] sims = getBioModel().getSimulations();
+	Simulation[] sims = getBioModel().getSimulationsAsArray();
 	if (sims == null) {
 		// we don't have it
 		return;

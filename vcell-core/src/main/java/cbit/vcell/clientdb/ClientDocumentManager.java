@@ -719,7 +719,7 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 		//
 		// preload SimulationJobStatus for all simulations if any missing from hash.
 		// 
-		Simulation simulations[] = bioModel.getSimulations();
+		Simulation simulations[] = bioModel.getSimulationsAsArray();
 		KeyValue simKeys[] = new KeyValue[simulations.length];
 		for (int i = 0; i < simulations.length; i++){
 			VCSimulationIdentifier vcSimulationIdentifier = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
@@ -749,7 +749,7 @@ private BioModel getBioModelFromDatabaseXML(XMLHolder<BioModel> bioModelXMLHolde
 		if (bm==null){
 			bm = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLHolder.getXmlString()));
 		}
-		cacheSimulations(bm.getSimulations());
+		cacheSimulations(bm.getSimulationsAsArray());
 		// XmlHelper.XMLToBioModel() already calls BioModel.refreshDependencies()
 		//bm.refreshDependencies(); 
 		return bm;
@@ -2094,7 +2094,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 		
-		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
+		SimulationContext[] scArr = savedBioModel.getSimulationContextsAsArray();
 		for (int i = 0; i < scArr.length; i++) {
 			updateGeometryRelatedHashes(scArr[i].getGeometry());
 		}
@@ -2274,7 +2274,7 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 
-		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
+		SimulationContext[] scArr = savedBioModel.getSimulationContextsAsArray();
 		for (int i = 0; i < scArr.length; i++) {
 			updateGeometryRelatedHashes(scArr[i].getGeometry());
 		}
@@ -2657,7 +2657,7 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 		if(vcDocument instanceof MathModel){
 			fieldFunctionContainer_mathDesc_or_simContextV.add(((MathModel)vcDocument).getMathDescription());
 		}else if(vcDocument instanceof BioModel){
-			SimulationContext[] simContextArr = ((BioModel)vcDocument).getSimulationContexts();
+			SimulationContext[] simContextArr = ((BioModel)vcDocument).getSimulationContextsAsArray();
 			for(int i=0;i<simContextArr.length;i+= 1){
 				fieldFunctionContainer_mathDesc_or_simContextV.add(simContextArr[i]);
 			}

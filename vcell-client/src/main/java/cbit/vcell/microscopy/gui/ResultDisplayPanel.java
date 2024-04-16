@@ -358,10 +358,10 @@ public class ResultDisplayPanel extends AdvancedTablePanel
 			if(bestModelIndex != FRAPModel.IDX_MODEL_REACTION_OFF_RATE)
 			{
 				setRunSimButtonEnable(true);
-				if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations() != null && fStudy.getBioModel().getSimulations().length > 0 &&
-				   fStudy.getBioModel().getSimulations()[0] != null && fStudy.getBioModel().getSimulations()[0].getKey() != null &&
+				if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulationsAsArray() != null && fStudy.getBioModel().getSimulationsAsArray().length > 0 &&
+				   fStudy.getBioModel().getSimulationsAsArray()[0] != null && fStudy.getBioModel().getSimulationsAsArray()[0].getKey() != null &&
 				   fStudy.getFrapDataExternalDataInfo() != null && fStudy.getRoiExternalDataInfo() != null &&
-				   FRAPWorkspace.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulations()[0].getKey()))
+				   FRAPWorkspace.areSimulationFilesOK(localWorkspace, fStudy.getBioModel().getSimulationsAsArray()[0].getKey()))
 				{
 					setResultsButtonEnabled(true);
 				}

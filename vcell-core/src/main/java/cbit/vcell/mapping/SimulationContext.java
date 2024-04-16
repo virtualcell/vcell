@@ -930,7 +930,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
         //
         // get free name for new Simulation.
         //
-        Simulation[] sims = bioModel.getSimulations();
+        Simulation[] sims = bioModel.getSimulationsAsArray();
         String newSimName = null;
         for(int i = 0; i < sims.length + 1; i++){
             String proposedName = simNamePrefix + i;
@@ -1196,7 +1196,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
         //
         // get free name for copied Simulation.
         //
-        Simulation sims[] = bioModel.getSimulations();
+        Simulation sims[] = bioModel.getSimulationsAsArray();
         String newSimName = null;
         for(int i = 0; newSimName == null && i < 100; i++){
             String proposedName = "Copy of " + simulation.getName() + ((i > 0) ? (" " + i) : (""));
@@ -1827,7 +1827,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
 
 
     public Simulation[] getSimulations(){
-        return extractLocalSimulations(bioModel.getSimulations());
+        return extractLocalSimulations(bioModel.getSimulationsAsArray());
     }
 
     public Simulation getSimulations(int index){

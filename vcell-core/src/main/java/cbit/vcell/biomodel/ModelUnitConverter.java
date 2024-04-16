@@ -52,7 +52,7 @@ public class ModelUnitConverter {
 
 		oldBioModel.refreshDependencies();
 		Map<String, MathDescription> previousMathDescriptionMap = new LinkedHashMap<>();
-		for (SimulationContext simContext : oldBioModel.getSimulationContexts()){
+		for (SimulationContext simContext : oldBioModel.getSimulationContextsAsArray()){
 			//
 			// force new math generation
 			//
@@ -129,7 +129,7 @@ public class ModelUnitConverter {
 				convertVarsWithUnitFactors(oldSymbolTable, newSymbolTable, p, dimensionless, KMOLE);
 			}
 		}
-		for (SimulationContext simContext : newBioModel.getSimulationContexts()) {
+		for (SimulationContext simContext : newBioModel.getSimulationContextsAsArray()) {
 			SimulationContext oldSimContext = oldBioModel.getSimulationContext(simContext.getName());
 			// ArrayList<Parameter> parameterList = new ArrayList<Parameter>();	
 			for (StructureMapping mapping : simContext.getGeometryContext().getStructureMappings()) {
@@ -207,7 +207,7 @@ public class ModelUnitConverter {
 			convertGeometryWithUnitFactors(oldSimContext, simContext, dimensionless, KMOLE);
 		}	// end  for - simulationContext
 		newBioModel.refreshDependencies();
-		for (SimulationContext simContext : newBioModel.getSimulationContexts()){
+		for (SimulationContext simContext : newBioModel.getSimulationContextsAsArray()){
 			//
 			// force new math generation
 			//

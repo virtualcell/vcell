@@ -140,7 +140,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			oldValue.removePropertyChangeListener(this);
 			oldValue.getModel().removePropertyChangeListener(this);
 			oldValue.getPathwayModel().removePathwayListener(this);
-			for (SimulationContext simulationContext : oldValue.getSimulationContexts()) {
+			for (SimulationContext simulationContext : oldValue.getSimulationContextsAsArray()) {
 				simulationContext.removePropertyChangeListener(this);
 				simulationContext.getDataContext().removePropertyChangeListener(this);
 			}
@@ -149,7 +149,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 			newValue.addPropertyChangeListener(this);
 			newValue.getModel().addPropertyChangeListener(this);
 			newValue.getPathwayModel().addPathwayListener(this);
-			for (SimulationContext simulationContext : newValue.getSimulationContexts()) {
+			for (SimulationContext simulationContext : newValue.getSimulationContextsAsArray()) {
 				simulationContext.addPropertyChangeListener(this);
 				simulationContext.getDataContext().addPropertyChangeListener(this);
 			}
@@ -240,7 +240,7 @@ public class BioModelEditorTreeModel extends DocumentEditorTreeModel implements 
 		}
 		applicationsNode.removeAllChildren();
 		childApplicationsNodeList.clear();
-		SimulationContext[] simulationContexts = bioModel.getSimulationContexts();
+		SimulationContext[] simulationContexts = bioModel.getSimulationContextsAsArray();
 		if (simulationContexts != null && simulationContexts.length > 0) {
 			simulationContexts = simulationContexts.clone();
 			Arrays.sort(simulationContexts, new Comparator<SimulationContext>() {

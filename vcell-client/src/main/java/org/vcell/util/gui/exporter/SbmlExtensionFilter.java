@@ -28,7 +28,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
 
 @SuppressWarnings("serial")
@@ -177,7 +176,7 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 
 			// Select simulation whose overrides need to be exported
 			// If simContext doesn't have simulations, don't pop up simulationSelectionPanel
-			Simulation[] sims = bioModel.getSimulations(selectedSimContext);
+			Simulation[] sims = bioModel.getSimulationsAsArray(selectedSimContext);
 			// display only those simulations that have overrides in the simulationSelectionPanel.
 			Vector<Simulation> orSims = new Vector<Simulation>();
 			for (int s = 0; (sims != null) && (s < sims.length); s++) {

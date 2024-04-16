@@ -86,7 +86,7 @@ public abstract class VCDocumentDecorator {
 		@Override
 		public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
 			bioModel.gatherIssues(issueContext, issueList);
-			for (SimulationContext sc : bioModel.getSimulationContexts()) {
+			for (SimulationContext sc : bioModel.getSimulationContextsAsArray()) {
 				List<SolverFeature> requiredFeatures = buildRequiredFeatures(sc);
 				for (Simulation sim : sc.getSimulations()) {
 					checkRequired(issueContext, issueList, sim, requiredFeatures);

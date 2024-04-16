@@ -13,7 +13,6 @@ package cbit.vcell.client.desktop.biomodel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.ComponentOrientation;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -53,7 +52,6 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableModel;
 
 import org.vcell.util.VCAssert;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
@@ -76,10 +74,8 @@ import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.mapping.AssignmentRule;
 import cbit.vcell.mapping.RateRule;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
-import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel;
 import cbit.vcell.model.EditableSymbolTableEntry;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelUnitSystem;
@@ -204,7 +200,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 				
 				ArrayList<ApplicationSelection> desiredItems = new ArrayList<ApplicationSelection>();
 				desiredItems.add(ApplicationSelection.All);
-				for (SimulationContext simContext : bioModel.getSimulationContexts()){
+				for (SimulationContext simContext : bioModel.getSimulationContextsAsArray()){
 					desiredItems.add(new ApplicationSelection(simContext));
 				}
 				applicationSelectionList.retainAll(desiredItems);
@@ -226,14 +222,14 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		public void setBioModel(BioModel bioModel){
 			if (this.bioModel!=null){
 				this.bioModel.removePropertyChangeListener(this);
-				for (SimulationContext sc : this.bioModel.getSimulationContexts()){
+				for (SimulationContext sc : this.bioModel.getSimulationContextsAsArray()){
 					sc.removePropertyChangeListener(this);
 				}
 			}
 			this.bioModel = bioModel;
 			if (this.bioModel!=null){
 				this.bioModel.addPropertyChangeListener(this);
-				for (SimulationContext sc : this.bioModel.getSimulationContexts()){
+				for (SimulationContext sc : this.bioModel.getSimulationContextsAsArray()){
 					sc.addPropertyChangeListener(this);
 				}
 			}
@@ -278,7 +274,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getSource() == bioModel && evt.getPropertyName().equals("simulationContexts")){
-				for (SimulationContext sc : this.bioModel.getSimulationContexts()){
+				for (SimulationContext sc : this.bioModel.getSimulationContextsAsArray()){
 					sc.removePropertyChangeListener(this);
 					sc.addPropertyChangeListener(this);
 				}
@@ -583,7 +579,7 @@ public class BioModelParametersPanel extends DocumentEditorSubPanel {
 						
 						RateRule rr = null;
 						AssignmentRule ar = null;
-						for (SimulationContext simContext : bioModel.getSimulationContexts()) {
+						for (SimulationContext simContext : bioModel.getSimulationContextsAsArray()) {
 							rr = simContext.getRateRule(ste);
 							ar = simContext.getAssignmentRule(ste);
 							if(rr != null || ar != null) {

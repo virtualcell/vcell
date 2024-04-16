@@ -112,7 +112,7 @@ public class StochtestRunService {
 		    	bioModel.refreshDependencies();
 		    	
 		    	SimulationContext srcSimContext = null;
-		    	for (SimulationContext sc : bioModel.getSimulationContexts()){
+		    	for (SimulationContext sc : bioModel.getSimulationContextsAsArray()){
 		    		if (sc.getKey().equals(stochtestRun.stochtest.simContextRef)){
 		    			srcSimContext = sc;
 		    		}

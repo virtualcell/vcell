@@ -100,7 +100,7 @@ public class SolverHandler {
 
 		Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();
         for(BioModel bioModel : bioModelList) {
-			Simulation[] sims = bioModel.getSimulations();
+			Simulation[] sims = bioModel.getSimulationsAsArray();
 			for(Simulation sim : sims) {
 				if(sim.getImportedTaskID() == null) {
 					continue;
@@ -355,7 +355,7 @@ public class SolverHandler {
 					// continue;
 				}
 				docName = bioModel.getName();
-				tempSims = Arrays.stream(bioModel.getSimulations()).map(s -> origSimulationToTempSimulationMap.get(s)).collect(Collectors.toList());
+				tempSims = Arrays.stream(bioModel.getSimulationsAsArray()).map(s -> origSimulationToTempSimulationMap.get(s)).collect(Collectors.toList());
 
 				Map<TempSimulation, Status> simStatusMap = new LinkedHashMap<>();
 				Map<TempSimulation, Integer> simDurationMap = new LinkedHashMap<>();

@@ -984,10 +984,10 @@ public class FRAPStudy implements Matchable{
     	}
     	else
     	{
-	    	RegionImage regionImage = getBioModel().getSimulationContexts()[0].getGeometry().getGeometrySurfaceDescription().getRegionImage();
+	    	RegionImage regionImage = getBioModel().getSimulationContextsAsArray()[0].getGeometry().getGeometrySurfaceDescription().getRegionImage();
 	    	if(regionImage == null){
-	    		getBioModel().getSimulationContexts()[0].getGeometry().getGeometrySurfaceDescription().updateAll();
-	    		regionImage = getBioModel().getSimulationContexts()[0].getGeometry().getGeometrySurfaceDescription().getRegionImage();
+	    		getBioModel().getSimulationContextsAsArray()[0].getGeometry().getGeometrySurfaceDescription().updateAll();
+	    		regionImage = getBioModel().getSimulationContextsAsArray()[0].getGeometry().getGeometrySurfaceDescription().getRegionImage();
 	    	}
 	    	cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, isize, regionImage);
     	}

@@ -315,7 +315,7 @@ public class MathGenCompareTest {
 			}
 			BioModel biomodel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
 //if (biomodel.getModel().getStructureTopology().isEmpty()) continue;
-			for (SimulationContext simContext : biomodel.getSimulationContexts()){
+			for (SimulationContext simContext : biomodel.getSimulationContextsAsArray()){
 				String test_case_name = filename + ":" + simContext.getName();
 //if (!knownLegacyFaults().containsKey(test_case_name)) continue;
 				appTestCases.add(test_case_name);
@@ -351,7 +351,7 @@ public class MathGenCompareTest {
 		SimulationContext orig_simContext = orig_biomodel.getSimulationContext(simContextName);
 		MathDescription originalMath = orig_simContext.getMathDescription();
 		MathDescription origMathClone = new MathDescription(originalMath); // test round trip to/from MathDescription.readFromDatabase()
-		SimulationContext new_simContext = transformed_biomodel.getSimulationContexts(orig_simContext.getName());
+		SimulationContext new_simContext = transformed_biomodel.getSimulationContextsAsArray(orig_simContext.getName());
 		//new_simContext.setUsingMassConservationModelReduction(false);
 		boolean bKnownMathGenerationFailure = knownMathGenerationFailures().contains(filename_colon_appname);
 		try {
@@ -520,7 +520,7 @@ public class MathGenCompareTest {
 		//
 		BioModel fullBiomodel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
 		fullBiomodel.refreshDependencies();
-		SimulationContext fullSimContext = fullBiomodel.getSimulationContexts(simContextName);
+		SimulationContext fullSimContext = fullBiomodel.getSimulationContextsAsArray(simContextName);
 		fullSimContext.setUsingMassConservationModelReduction(false);
 		fullSimContext.updateAll(false);
 		MathDescription fullMath = fullSimContext.getMathDescription();

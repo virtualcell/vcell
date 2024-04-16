@@ -291,7 +291,7 @@ public class VFrapXmlHelper {
 		DataSymbolType[] channelVFrapImageType = (DataSymbolType[])hashTable.get("channelVFrapImageType");
 		String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
 		
-		SimulationContext simContext = bioModel.getSimulationContexts()[0];
+		SimulationContext simContext = bioModel.getSimulationContextsAsArray()[0];
 		ModelUnitSystem modelUnitSystem = bioModel.getModel().getUnitSystem();
 		for (int i=0; i<channelNames.length; i++) {
 			// TODO: construct dataSymbolName from vFrapConstants::nameFromToken()
@@ -308,7 +308,7 @@ public class VFrapXmlHelper {
 	//
 	public static void ReplaceVFrapNamesWithSymbolNames(BioModel bioModel) throws ExpressionException {
 		
-		SimulationContext simContext = bioModel.getSimulationContexts()[0];
+		SimulationContext simContext = bioModel.getSimulationContextsAsArray()[0];
 		SpeciesContextSpec[] scsArray = simContext.getReactionContext().getSpeciesContextSpecs();
 		for (SpeciesContextSpec scs : scsArray){
 			Expression exp = scs.getInitialConditionParameter().getExpression();	// vFrap('a','c',0.0,'volume')

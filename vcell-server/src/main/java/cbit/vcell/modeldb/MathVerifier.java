@@ -401,14 +401,14 @@ public class MathVerifier {
         //
         // get all Simulations for this model
         //
-        Simulation[] modelSimsFromDB = bioModelFromDB.getSimulations();
+        Simulation[] modelSimsFromDB = bioModelFromDB.getSimulationsAsArray();
 
         //
         // for each application, recompute mathDescription, and verify it is equivalent
         // then check each associated simulation to ensure math overrides are applied in an equivalent manner also.
         //
-        SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContexts();
-        SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContexts();
+        SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContextsAsArray();
+        SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContextsAsArray();
         for(int k = 0; k < simContextsFromDB.length; k++){
             SimulationContext simContextFromDB = simContextsFromDB[k];
             Simulation[] appSimsFromDB = simContextFromDB.getSimulations();
@@ -734,15 +734,15 @@ public class MathVerifier {
         //
         // get all Simulations for this model
         //
-        Simulation modelSimsFromDB[] = bioModelFromDB.getSimulations();
+        Simulation modelSimsFromDB[] = bioModelFromDB.getSimulationsAsArray();
 
         //
         // ---> only for the SimContext we started with...
         // recompute mathDescription, and verify it is equivalent
         // then check each associated simulation to ensure math overrides are applied in an equivalent manner also.
         //
-        SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContexts();
-        SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContexts();
+        SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContextsAsArray();
+        SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContextsAsArray();
         SimulationContext simContextFromDB = null;
         SimulationContext simContextNewMath = null;
         for(int k = 0; k < simContextsFromDB.length; k++){
@@ -1142,14 +1142,14 @@ public class MathVerifier {
                 //
                 // get all Simulations for this model
                 //
-                Simulation[] modelSimsFromDB = bioModelFromDB.getSimulations();
+                Simulation[] modelSimsFromDB = bioModelFromDB.getSimulationsAsArray();
 
                 //
                 // for each application, recompute mathDescription, and verify it is equivalent
                 // then check each associated simulation to ensure math overrides are applied in an equivalent manner also.
                 //
-                SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContexts();
-                SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContexts();
+                SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContextsAsArray();
+                SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContextsAsArray();
                 for(int k = 0; k < simContextsFromDB.length; k++){
                     SimulationContext simContextFromDB = simContextsFromDB[k];
                     Simulation[] appSimsFromDB = simContextFromDB.getSimulations();
@@ -1419,15 +1419,15 @@ public class MathVerifier {
                 //
                 // get all Simulations for this model
                 //
-                Simulation[] modelSimsFromDB = bioModelFromDB.getSimulations();
+                Simulation[] modelSimsFromDB = bioModelFromDB.getSimulationsAsArray();
 
                 //
                 // ---> only for the SimContext we started with...
                 // recompute mathDescription, and verify it is equivalent
                 // then check each associated simulation to ensure math overrides are applied in an equivalent manner also.
                 //
-                SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContexts();
-                SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContexts();
+                SimulationContext[] simContextsFromDB = bioModelFromDB.getSimulationContextsAsArray();
+                SimulationContext[] simContextsNewMath = bioModelNewMath.getSimulationContextsAsArray();
                 SimulationContext simContextFromDB = null;
                 SimulationContext simContextNewMath = null;
                 for(int k = 0; k < simContextsFromDB.length; k++){

@@ -76,7 +76,7 @@ public class SuiteTFRemoveCompiledSolvers  {
 				try{
 					if(tcn instanceof TestCaseNewBioModel){
 						vcDocument = tfwm.getRequestManager().getDocumentManager().getBioModel(tcn.getVersion().getVersionKey());
-						simArr = ((BioModel)vcDocument).getSimulations();
+						simArr = ((BioModel)vcDocument).getSimulationsAsArray();
 					}else if(tcn instanceof TestCaseNewMathModel){
 						vcDocument = tfwm.getRequestManager().getDocumentManager().getMathModel(tcn.getVersion().getVersionKey());
 						simArr = ((MathModel)vcDocument).getSimulations();

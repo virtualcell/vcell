@@ -25,8 +25,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.*;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
@@ -707,7 +705,7 @@ public class ClientRequestManager
 		// clone BioModel as bioModel1 and remove all but appName1
 		BioModel bioModel1 = (BioModel) BeanUtils.cloneSerializable(bioModel);
 		bioModel1.refreshDependencies();
-		SimulationContext[] allSimContexts1 = bioModel1.getSimulationContexts();
+		SimulationContext[] allSimContexts1 = bioModel1.getSimulationContextsAsArray();
 		for (SimulationContext sc : allSimContexts1) {
 			if (!sc.getName().equals(appName1)) {
 				bioModel1.removeSimulationContext(sc);
@@ -717,7 +715,7 @@ public class ClientRequestManager
 		// clone BioModel as bioModel2 and remove all but appName2
 		BioModel bioModel2 = (BioModel) BeanUtils.cloneSerializable(bioModel);
 		bioModel2.refreshDependencies();
-		SimulationContext[] allSimContexts2 = bioModel2.getSimulationContexts();
+		SimulationContext[] allSimContexts2 = bioModel2.getSimulationContextsAsArray();
 		for (SimulationContext sc : allSimContexts2) {
 			if (!sc.getName().equals(appName2)) {
 				bioModel2.removeSimulationContext(sc);
@@ -2192,7 +2190,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							// Get the simContexts in the corresponding BioModel
 							BioModelInfo bioModelInfo = (BioModelInfo) hashTable.get("bioModelInfo");
 							SimulationContext[] simContexts = getDocumentManager().getBioModel(bioModelInfo)
-									.getSimulationContexts();
+									.getSimulationContextsAsArray();
 							if (simContexts != null) { // may throw UserCancelException
 								hashTable.put("simContexts", simContexts);
 							}
@@ -4532,7 +4530,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				if (vcDoc.getDocumentType() == VCDocumentType.BIOMODEL_DOC) {
 					BioModel bioModel = (BioModel) vcDoc;
 					// getDocumentManager().getBioModel(vcDoc.getVersion().getVersionKey());
-					SimulationContext[] simContexts = bioModel.getSimulationContexts();
+					SimulationContext[] simContexts = bioModel.getSimulationContextsAsArray();
 					for (int i = 0; i < simContexts.length; i += 1) {
 						if (bIncludeSimulations) {
 							if (simContexts[i].getGeometry() == null) {

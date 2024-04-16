@@ -222,7 +222,7 @@ public class SEDMLImporter {
 				
 				if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
 					Simulation theSimulation = null;
-					for (Simulation sim : bioModel.getSimulations()) {
+					for (Simulation sim : bioModel.getSimulationsAsArray()) {
 						if (sim.getName().equals(selectedTask.getName())) {
 							logger.trace(" --- selected task - name: " + selectedTask.getName() + ", id: " + selectedTask.getId());
 							sim.setImportedTaskID(selectedTask.getId());
@@ -245,7 +245,7 @@ public class SEDMLImporter {
 				
 				// see first if there is a suitable application type for the specified kisao
 				// if not, we add one by doing a "copy as" to the right type
-				SimulationContext[] existingSimulationContexts = bioModel.getSimulationContexts();
+				SimulationContext[] existingSimulationContexts = bioModel.getSimulationContextsAsArray();
 				SimulationContext matchingSimulationContext = null;
 				for (SimulationContext simContext : existingSimulationContexts) {
 					if (simContext.getApplicationType().equals(appType) && ((simContext.getGeometry().getDimension() > 0) == bSpatial)) {
@@ -319,7 +319,7 @@ public class SEDMLImporter {
 
 			// finally try to pretty up simulation names
 			for (BioModel bm : uniqueBioModels) {
-				Simulation[] sims = bm.getSimulations();
+				Simulation[] sims = bm.getSimulationsAsArray();
 				for (Simulation sim : sims) {
 					String taskId = sim.getImportedTaskID();
 					AbstractTask task = this.sedml.getTaskWithId(taskId);
@@ -340,13 +340,13 @@ public class SEDMLImporter {
 
 
 			for (BioModel doc : uniqueBioModels){
-				for (int i = 0; i < doc.getSimulationContexts().length; i++) {
+				for (int i = 0; i < doc.getSimulationContextsAsArray().length; i++) {
 					if (doc.getSimulationContext(i).getName().startsWith("original_imported_")) {
 						doc.removeSimulationContext(doc.getSimulationContext(i));
 						i--;
 					}
 				}
-				if (doc.getSimulationContexts().length > 0) bioModelList.add(doc);
+				if (doc.getSimulationContextsAsArray().length > 0) bioModelList.add(doc);
 			}
 
 			// try to consolidate SimContexts into fewer (possibly just one) BioModels
@@ -409,8 +409,8 @@ public class SEDMLImporter {
 								rxToAdd.setModel(bioModel.getModel());
 								bioModel.getModel().addReactionStep(rxToAdd);
 								// set the added reactions as disabled in simcontext(s)
-								for (int k = 0; k < bioModel.getSimulationContexts().length; k++) {
-									bioModel.getSimulationContexts()[k].getReactionContext().getReactionSpec(clonedBM.getModel().getReactionSteps()[j]).setReactionMapping(ReactionSpec.EXCLUDED);
+								for (int k = 0; k < bioModel.getSimulationContextsAsArray().length; k++) {
+									bioModel.getSimulationContextsAsArray()[k].getReactionContext().getReactionSpec(clonedBM.getModel().getReactionSteps()[j]).setReactionMapping(ReactionSpec.EXCLUDED);
 								}
 							}
 						}
@@ -440,7 +440,7 @@ public class SEDMLImporter {
 			Element bioModel = root.getChild("BioModel", root.getNamespace());
 			for (int i = 1; i < bioModels.size(); i++) {
 				// get XML of SimContext here and insert into baseXML
-				SimulationContext[] simContexts = bioModels.get(i).getSimulationContexts();
+				SimulationContext[] simContexts = bioModels.get(i).getSimulationContextsAsArray();
 				for (SimulationContext sc : simContexts) {
 					Element scElement = xmlProducer.getXML(sc, bioModels.get(i));
 					XmlUtil.setDefaultNamespace(scElement, root.getNamespace());

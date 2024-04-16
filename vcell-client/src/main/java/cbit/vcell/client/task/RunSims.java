@@ -125,7 +125,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			VCDocument savedDocument = (VCDocument)hashTable.get(SaveDocument.DOC_KEY);
 			Simulation[] allSims = null;
 			if (savedDocument instanceof BioModel) {
-				allSims = ((BioModel)savedDocument).getSimulations();
+				allSims = ((BioModel)savedDocument).getSimulationsAsArray();
 			} else if (savedDocument instanceof MathModel) {
 				allSims = ((MathModel)savedDocument).getSimulations();
 			}

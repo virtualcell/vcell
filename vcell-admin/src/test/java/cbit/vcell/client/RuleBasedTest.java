@@ -52,7 +52,7 @@ public class RuleBasedTest {
 			
 			@Override
 			public void visitBioModel(BioModel bioModel, PrintStream logFilePrintStream) {
-				SimulationContext[] simulationContexts = bioModel.getSimulationContexts();
+				SimulationContext[] simulationContexts = bioModel.getSimulationContextsAsArray();
 				for(SimulationContext simContext : simulationContexts){
 					if ((simContext.getApplicationType() == Application.NETWORK_STOCHASTIC) && simContext.getGeometry().getDimension() == 0){
 						File baseDirectory = createDirFile(simContext);

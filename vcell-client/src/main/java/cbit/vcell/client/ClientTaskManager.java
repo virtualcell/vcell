@@ -113,7 +113,7 @@ public class ClientTaskManager {
 						do {
 							bFound = false;
 							newName = TokenMangler.getNextEnumeratedToken(newName);
-							Simulation[] origSimulations = simulationContext.getBioModel().getSimulations();
+							Simulation[] origSimulations = simulationContext.getBioModel().getSimulationsAsArray();
 							for (int i = 0; i < origSimulations.length; i++) {
 								if(origSimulations[i].getName().equals(newName)) {
 									bFound = true;

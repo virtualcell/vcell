@@ -139,7 +139,7 @@ public class SEDMLExporter {
 			final String SPATIAL_NS_PREFIX = "spatial";
 			ns = Namespace.getNamespace(SBML_NS_PREFIX, SBML_NS);
 			nsList.add(ns);
-			SimulationContext[] simContexts = vcBioModel.getSimulationContexts();
+			SimulationContext[] simContexts = vcBioModel.getSimulationContextsAsArray();
 			for (SimulationContext sc : simContexts) {
 				if (sc.getGeometry() != null && sc.getGeometry().getDimension() > 0) {
 					ns = Namespace.getNamespace(SPATIAL_NS_PREFIX, SPATIAL_NS);
@@ -177,7 +177,7 @@ public class SEDMLExporter {
 
 			if (modelFormat == ModelFormat.VCML) {
 				BioModel prunedBM = XmlHelper.cloneBioModel(vcBioModel);
-				for (Simulation sim : prunedBM.getSimulations()) {
+				for (Simulation sim : prunedBM.getSimulationsAsArray()) {
 					prunedBM.removeSimulation(sim);
 				}
 				String vcmlString = XmlHelper.bioModelToXML(prunedBM);
@@ -185,7 +185,7 @@ public class SEDMLExporter {
 				String modelFileNameAbs = Paths.get(savePath,modelFileNameRel).toString();
 				XmlUtil.writeXMLStringToFile(vcmlString, modelFileNameAbs, false);
 				modelFilePathStrAbsoluteList.add(modelFileNameRel);
-				for (int i = 0; i < vcBioModel.getSimulationContexts().length; i++) {
+				for (int i = 0; i < vcBioModel.getSimulationContextsAsArray().length; i++) {
 					writeModelVCML(modelFileNameRel, vcBioModel.getSimulationContext(i));
 					sedmlRecorder.addTaskRecord(vcBioModel.getSimulationContext(i).getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
 					exportSimulations(i, vcBioModel.getSimulationContext(i), null, null, vcmlLanguageURN);
@@ -210,7 +210,7 @@ public class SEDMLExporter {
 					sedmlRecorder.addTaskRecord(vcBioModel.getName(), TaskType.UNITS, TaskResult.FAILED, e1);
 					throw e1;
 				}
-				SimulationContext[] simContexts = Arrays.stream(vcBioModel.getSimulationContexts())
+				SimulationContext[] simContexts = Arrays.stream(vcBioModel.getSimulationContextsAsArray())
 						.filter(simContextExportFilter).toArray(SimulationContext[]::new);
 
 				if (simContexts.length == 0) {
@@ -1355,7 +1355,7 @@ public class SEDMLExporter {
 
 	public static Map<String, String> getUnsupportedApplicationMap(BioModel bioModel, ModelFormat modelFormat) {
 		HashMap<String, String> unsupportedApplicationMap = new HashMap<>();
-		Arrays.stream(bioModel.getSimulationContexts()).forEach(simContext -> {
+		Arrays.stream(bioModel.getSimulationContextsAsArray()).forEach(simContext -> {
 			if (modelFormat == ModelFormat.SBML) {
 				try {
 					SBMLExporter.validateSimulationContextSupport(simContext);
@@ -1466,7 +1466,7 @@ public class SEDMLExporter {
 			String sOutputDirPath = FileUtils.getFullPathNoEndSeparator(exportFileOrDirectory.getAbsolutePath());
 			String sBaseFileName = FileUtils.getBaseName(exportFileOrDirectory.getAbsolutePath());
 
-			List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulations()).filter(simulationExportFilter).collect(Collectors.toList());
+			List<Simulation> simsToExport = Arrays.stream(bioModel.getSimulationsAsArray()).filter(simulationExportFilter).collect(Collectors.toList());
 
 			// we replace the obsolete solver with the fully supported equivalent
 			for (Simulation simulation : simsToExport) {

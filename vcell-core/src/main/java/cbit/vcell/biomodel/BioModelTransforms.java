@@ -56,7 +56,7 @@ public class BioModelTransforms {
         // restore old values of KMOLE and other ReservedSymbols if present in original Math
         // this ensures that newly generated math descriptions will use the same values
         boolean bHasOldKMOLE = false;
-        for (SimulationContext simulationContext : bioModel.getSimulationContexts()){
+        for (SimulationContext simulationContext : bioModel.getSimulationContextsAsArray()){
             MathDescription orig_math = simulationContext.getMathDescription();
             Variable orig_math_KMOLE = orig_math.getVariable("KMOLE");
             if (orig_math_KMOLE != null && orig_math_KMOLE.getExpression()!=null){
@@ -172,7 +172,7 @@ public class BioModelTransforms {
             }
         }
         Set<Kinetics.KineticsParameter> referencedParameters = new HashSet<>();
-        for (SimulationContext simulationContext : bioModel.getSimulationContexts()){
+        for (SimulationContext simulationContext : bioModel.getSimulationContextsAsArray()){
             final MathDescription math = simulationContext.getMathDescription();
             if (math == null){
                 break;
@@ -289,7 +289,7 @@ public class BioModelTransforms {
             return;
         }
 
-        for (SimulationContext simulationContext : bioModel.getSimulationContexts()){
+        for (SimulationContext simulationContext : bioModel.getSimulationContextsAsArray()){
             MathDescription mathDescription = simulationContext.getMathDescription();
             if (mathDescription==null){
                 continue;
@@ -418,7 +418,7 @@ public class BioModelTransforms {
             throw new RuntimeException("simulation was null");
         }
         SimulationContext simulationContext = null;
-        for (SimulationContext sc : bioModel.getSimulationContexts()) {
+        for (SimulationContext sc : bioModel.getSimulationContextsAsArray()) {
             if (sc.getSimulation(simulation.getName()) == simulation) {
                 simulationContext = sc;
                 break;

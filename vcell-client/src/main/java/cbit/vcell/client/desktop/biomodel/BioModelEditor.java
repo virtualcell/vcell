@@ -53,7 +53,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
@@ -304,7 +303,7 @@ protected void popupMenuActionPerformed(DocumentEditorPopupMenuAction action, St
 	case deleteChoose:
 		try {
 			SimulationContext[] allSimContexts =
-				Arrays.copyOf(getBioModelWindowManager().getVCDocument().getSimulationContexts(), getBioModelWindowManager().getVCDocument().getSimulationContexts().length);
+				Arrays.copyOf(getBioModelWindowManager().getVCDocument().getSimulationContextsAsArray(), getBioModelWindowManager().getVCDocument().getSimulationContextsAsArray().length);
 			Arrays.sort(allSimContexts, new Comparator<SimulationContext>() {
 				@Override
 				public int compare(SimulationContext o1, SimulationContext o2) {
@@ -390,7 +389,7 @@ private void createNewBiomodelFromApp(){
 		String newBMXML = XmlHelper.bioModelToXML(bioModel);
 		BioModel newBioModel = XmlHelper.XMLToBioModel(new XMLSource(newBMXML));
 		newBioModel.clearVersion();
-		SimulationContext[] newBMSimcontexts = newBioModel.getSimulationContexts();
+		SimulationContext[] newBMSimcontexts = newBioModel.getSimulationContextsAsArray();
 		for (int i = 0; i < newBMSimcontexts.length; i++) {
 			if(!newBMSimcontexts[i].getName().equals(simulationContext.getName())){
 				//Remove sims before removing simcontext

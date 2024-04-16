@@ -160,7 +160,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
-	final SimulationContext simContexts[] = bioModel.getSimulationContexts();
+	final SimulationContext simContexts[] = bioModel.getSimulationContextsAsArray();
 	boolean spatialDeterministicSim = false;
 	boolean nonspatialDeterministicSim = false;
 	boolean stochasticSim = false;
@@ -265,9 +265,9 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
 	// put the filter in the hash so the export task knows what to do...
 	hashTable.put(FILE_FILTER, fileFilter);
-	if(fileFilter instanceof SpringSaLaDExtensionFilter && bioModel.getSimulationContexts().length > 0) {
+	if(fileFilter instanceof SpringSaLaDExtensionFilter && bioModel.getSimulationContextsAsArray().length > 0) {
 		if (fileFilter.requiresMoreChoices()) {
-			SimulationContext sc = bioModel.getSimulationContexts()[0];
+			SimulationContext sc = bioModel.getSimulationContextsAsArray()[0];
 			ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable,topLevelWindowManager,currentWindow,sc,selectedFile,selectedFileName);
 			fileFilter.askUser(ctx);
 		}

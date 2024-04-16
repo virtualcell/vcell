@@ -2,27 +2,16 @@ package org.vcell.util.gui.exporter;
 
 import java.awt.Component;
 import java.io.File;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
 import org.vcell.sedml.ModelFormat;
-import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.exporter.ExtensionFilter.ChooseContext;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.export.SpringSaLaDExporter;
 import cbit.vcell.mapping.SimulationContext;
@@ -51,7 +40,7 @@ public class SpringSaLaDExtensionFilter extends SelectorExtensionFilter {
 		parentComponent = c.currentWindow;	// will need it later, hack to center another window in ssldExporter.writeDocumentStringToFile()
 		LinkedHashMap<String, SimulationContext> springSaLaDApplications = new LinkedHashMap<> ();
 		if(bioModel != null) {
-			for(SimulationContext candidate : bioModel.getSimulationContexts()) {
+			for(SimulationContext candidate : bioModel.getSimulationContextsAsArray()) {
 				if(candidate.getApplicationType() == Application.SPRINGSALAD) {
 					springSaLaDApplications.put(candidate.getName(), candidate);
 				}

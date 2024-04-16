@@ -131,7 +131,7 @@ public class RestDatabaseService {
 		BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
 		// copy the simulation as new
 		Simulation origSimulation = null;
-		for (Simulation sim : bioModel.getSimulations()){
+		for (Simulation sim : bioModel.getSimulationsAsArray()){
 			if (sim.getKey().equals(simKey)){
 				origSimulation = sim;
 			}
@@ -161,7 +161,7 @@ public class RestDatabaseService {
 		String newBioModelXML = serverDocumentManager.saveBioModel(new QueryHashtable(), vcellUser, editedBioModelXML, modelName, null);
 		BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(newBioModelXML));
 		Simulation savedSimulation = null;
-		for (Simulation sim : savedBioModel.getSimulations()){
+		for (Simulation sim : savedBioModel.getSimulationsAsArray()){
 			if (sim.getName().equals(newUnsavedSimulation.getName())){
 				savedSimulation = sim;
 			}

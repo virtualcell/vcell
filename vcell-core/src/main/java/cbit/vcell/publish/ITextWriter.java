@@ -949,7 +949,7 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 		document.add(physioChapter);
 	}
 	if (preferences.includeApp()) {
-		SimulationContext simContexts [] = bioModel.getSimulationContexts();
+		SimulationContext simContexts [] = bioModel.getSimulationContextsAsArray();
 		if (simContexts.length > 0) {
 			Chapter simContextsChapter = new Chapter("Applications For " + name, chapterNum++);
 			if (introSection == null) {

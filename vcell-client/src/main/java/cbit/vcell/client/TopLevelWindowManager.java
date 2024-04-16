@@ -355,7 +355,7 @@ public AsynchClientTask[] newDocument(VCDocument.DocumentCreationInfo documentCr
 
 public void prepareDocumentToLoad(VCDocument doc, boolean bInNewWindow) throws Exception {
 	if (doc instanceof BioModel) {
-		Simulation[] simulations = ((BioModel)doc).getSimulations();
+		Simulation[] simulations = ((BioModel)doc).getSimulationsAsArray();
 		ArrayList<VCSimulationIdentifier> simIDs = new ArrayList<VCSimulationIdentifier>();
 		for (int i = 0; i < simulations.length; i++){
 			SimulationInfo simulationInfo = simulations[i].getSimulationInfo();
@@ -536,7 +536,7 @@ private void addWorkspaceGeomSizeSelection(final Hashtable<String, Object> hash,
 			}
 		}
 		if(((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument() instanceof BioModel) {
-			simContexts = ((BioModel)((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument()).getSimulationContexts();
+			simContexts = ((BioModel)((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument()).getSimulationContextsAsArray();
 		}else if (((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument() instanceof MathModel) {
 			simulations = ((MathModel)((DocumentWindowManager)TopLevelWindowManager.this).getVCDocument()).getSimulations();
 		}

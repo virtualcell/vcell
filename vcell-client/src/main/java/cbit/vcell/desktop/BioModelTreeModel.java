@@ -74,7 +74,7 @@ private void addBioModelContents(BioModelNode bioModelNode, BioModel bioModel) {
 			}
 		}
 
-	SimulationContext scArray[] = bioModel.getSimulationContexts();
+	SimulationContext scArray[] = bioModel.getSimulationContextsAsArray();
 	if (scArray!=null){
 		for (int i=0;i<scArray.length;i++){
 			BioModelNode scNode = new BioModelNode(scArray[i],true);
@@ -103,7 +103,7 @@ private void addBioModelContents(BioModelNode bioModelNode, BioModel bioModel) {
 			//
 			// add simulations to simulationContext
 			//
-			Simulation simArray[] = bioModel.getSimulations();
+			Simulation simArray[] = bioModel.getSimulationsAsArray();
 			if (simArray!=null){
 				for (int j=0;j<simArray.length;j++){
 					if (simArray[j].getMathDescription() == scArray[i].getMathDescription()){
@@ -373,12 +373,12 @@ public void setBioModel(cbit.vcell.biomodel.BioModel bioModel) {
 	cbit.vcell.biomodel.BioModel oldValue = fieldBioModel;
 	if (oldValue!=null){
 		oldValue.removePropertyChangeListener(this);
-		SimulationContext SCs[] = oldValue.getSimulationContexts();
+		SimulationContext SCs[] = oldValue.getSimulationContextsAsArray();
 		for (int i = 0; SCs!=null && i < SCs.length; i++){
 			SCs[i].removePropertyChangeListener(this);
 			SCs[i].getGeometryContext().removePropertyChangeListener(this);
 		}
-		Simulation sims[] = oldValue.getSimulations();
+		Simulation sims[] = oldValue.getSimulationsAsArray();
 		for (int i = 0; sims!=null && i < sims.length; i++){
 			sims[i].removePropertyChangeListener(this);
 		}
@@ -387,12 +387,12 @@ public void setBioModel(cbit.vcell.biomodel.BioModel bioModel) {
 	fieldBioModel = bioModel;
 	if (bioModel!=null){
 		bioModel.addPropertyChangeListener(this);
-		SimulationContext SCs[] = bioModel.getSimulationContexts();
+		SimulationContext SCs[] = bioModel.getSimulationContextsAsArray();
 		for (int i = 0; SCs!=null && i < SCs.length; i++){
 			SCs[i].addPropertyChangeListener(this);
 			SCs[i].getGeometryContext().addPropertyChangeListener(this);
 		}
-		Simulation sims[] = bioModel.getSimulations();
+		Simulation sims[] = bioModel.getSimulationsAsArray();
 		for (int i = 0; sims!=null && i < sims.length; i++){
 			sims[i].addPropertyChangeListener(this);
 		}

@@ -410,7 +410,7 @@ public class VCComprehensiveStatistics {
 							continue;
 						}
 						modelStat.count_model ++;
-						for (SimulationContext simContext : bioModel.getSimulationContexts()) {
+						for (SimulationContext simContext : bioModel.getSimulationContextsAsArray()) {
 							modelStat.count_geoDimApplications[simContext.getGeometry().getDimension()] ++;
 							if (simContext.isStoch()) {
 								modelStat.count_app_stochastic ++;
@@ -419,7 +419,7 @@ public class VCComprehensiveStatistics {
 							}
 						}
 						boolean bHasCompletedSim = false;
-						for (Simulation sim : bioModel.getSimulations()) {
+						for (Simulation sim : bioModel.getSimulationsAsArray()) {
 							SimulationStatusPersistent ss = dbServerImpl.getSimulationStatus(sim.getKey());
 							if (ss != null) {
 								for (int scan = 0; scan < sim.getScanCount(); scan ++) {

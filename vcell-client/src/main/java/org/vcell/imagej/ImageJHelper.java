@@ -1354,7 +1354,7 @@ public class ImageJHelper {
 		    		}else {
 		    			ArrayList<IJContextInfo> ijContextInfos = new ArrayList<>();
 		    			if(documentWindowManager instanceof BioModelWindowManager) {
-		    				for(SimulationContext simulationContext:((BioModelWindowManager)documentWindowManager).getBioModel().getSimulationContexts()) {
+		    				for(SimulationContext simulationContext:((BioModelWindowManager)documentWindowManager).getBioModel().getSimulationContextsAsArray()) {
 			    				addSimToIJContextInfo(ijContextInfos, simulationContext.getName(), simulationContext.getMathType(),simulationContext.getGeometryContext().getGeometry().getDimension(),simulationContext.getGeometry().getName(),simulationContext.getSimulations());
 		    				}
 		    				modelInfos.add(new IJModelInfo(documentWindowManager.getVCDocument().getName(), null, IJDocType.bm, true,(documentWindowManager.getUser()==null?null:documentWindowManager.getUser().getName()),null, ijContextInfos));

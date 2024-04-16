@@ -675,11 +675,11 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					//run simulation with native FV solver
 					double[][][] rawSimResults = new NativeFVSolver().solve(fvInputStr);*/
 					
-					simKey = bioModel.getSimulations()[0].getVersion().getVersionKey();
+					simKey = bioModel.getSimulationsAsArray()[0].getVersion().getVersionKey();
 				}catch(Exception e){
-					if(bioModel != null && bioModel.getSimulations() != null){
+					if(bioModel != null && bioModel.getSimulationsAsArray() != null){
 						FRAPStudy.removeExternalDataAndSimulationFiles(
-							bioModel.getSimulations()[0].getVersion().getVersionKey(), null, null, getLocalWorkspace());
+							bioModel.getSimulationsAsArray()[0].getVersion().getVersionKey(), null, null, getLocalWorkspace());
 					}
 					throw e;
 				}

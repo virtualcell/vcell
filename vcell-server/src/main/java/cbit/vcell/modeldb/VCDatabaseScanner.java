@@ -181,7 +181,7 @@ public class VCDatabaseScanner {
      * generate new math description, compare with old, log status
      */
     protected boolean verifyMathDescriptionsUnchanged(BioModel bioModel, PrintWriter printWriter){
-        SimulationContext[] simContexts = bioModel.getSimulationContexts();
+        SimulationContext[] simContexts = bioModel.getSimulationContextsAsArray();
         boolean allGood = true;
         for(SimulationContext sc : simContexts){
             try {
@@ -348,7 +348,7 @@ public class VCDatabaseScanner {
                             databaseVisitor.setBioModel(storedModel, printWriter);
                             printWriter.println("---- " + (j + 1) + " ----> " + storedModel.getName());    //  + bioModelInfos[j].getVersion().getName() + " -----> ");
                             for(BioModel bioModel : databaseVisitor){
-                                SimulationContext[] simContexts = bioModel.getSimulationContexts();
+                                SimulationContext[] simContexts = bioModel.getSimulationContextsAsArray();
                                 for(SimulationContext sc : simContexts){
                                     try {
                                         sc.createNewMathMapping().getMathDescription();

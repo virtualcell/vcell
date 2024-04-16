@@ -72,7 +72,7 @@ public class TestRestServerBlinov extends Restlet{
 					//The imported BioModel is cached as BioModelRep info and are returned when the Resource objects make a 'query'
 					final BioModel bm = XmlHelper.XMLToBioModel(new XMLSource(dirFiles[i]));
 					mapBMidToFileName.put(bm.getVersion().getVersionKey().toString(), dirFiles[i]);
-					final SimulationContext[] simulationContexts = bm.getSimulationContexts();
+					final SimulationContext[] simulationContexts = bm.getSimulationContextsAsArray();
 					SimContextRep[] scr = new SimContextRep[simulationContexts.length];
 					KeyValue[] scrKeys = new KeyValue[simulationContexts.length];
 					for(int j=0;j<simulationContexts.length;j++) {
@@ -81,7 +81,7 @@ public class TestRestServerBlinov extends Restlet{
 						scr[j] = new SimContextRep(scrKeys[j], simulationContexts[j].getVersion().getBranchID(),
 								simulationContexts[j].getName(), simulationContexts[j].getVersion().getOwner(), simulationContexts[j].getModel().getKey());
 					}
-					final Simulation[] simulations = bm.getSimulations();
+					final Simulation[] simulations = bm.getSimulationsAsArray();
 					SimulationRep[] sreps = new SimulationRep[simulations.length];
 					KeyValue[] srepKeys = new KeyValue[simulations.length];
 					for(int j=0;j<simulations.length;j++) {

@@ -82,7 +82,7 @@ public class NFSimMathGenerationHashVisitor implements VCDatabaseVisitor {
 			ArrayList<SimulationContext> origNonspatialStochSimContexts = new ArrayList<SimulationContext>();
 			ArrayList<SimulationContext> origRulebasedSimContexts = new ArrayList<SimulationContext>();
 			
-			SimulationContext[] simContexts = bioModel.getSimulationContexts();
+			SimulationContext[] simContexts = bioModel.getSimulationContextsAsArray();
 			//
 			// find applications which are nonspatial stoch or rulebased.
 			//

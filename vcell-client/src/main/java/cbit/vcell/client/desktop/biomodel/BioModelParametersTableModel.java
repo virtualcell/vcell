@@ -138,7 +138,7 @@ protected List<EditableSymbolTableEntry> computeData() {
 		}
 	}
 	if (bApplications) {
-		for (SimulationContext simContext : bioModel.getSimulationContexts()) {
+		for (SimulationContext simContext : bioModel.getSimulationContextsAsArray()) {
 			if (applicationSelection!=null && (applicationSelection.isAll() || applicationSelection.getSimulationContext()==simContext)){
 				allEditableSymbolTableEntryList.addAll(getApplicationEditableSymbolTableEntryList(simContext));
 			}
@@ -633,7 +633,7 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 				unresolvedEditableSymbolTableEntry.removePropertyChangeListener(this);
 			}
 		}
-		for (SimulationContext simulationContext : oldValue.getSimulationContexts()) {
+		for (SimulationContext simulationContext : oldValue.getSimulationContextsAsArray()) {
 			simulationContext.removePropertyChangeListener(this);
 			simulationContext.getGeometryContext().removePropertyChangeListener(this);
 			for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {
@@ -691,7 +691,7 @@ protected void bioModelChange(PropertyChangeEvent evt) {
 				unresolvedEditableSymbolTableEntry.addPropertyChangeListener(this);
 			}
 		}
-		for (SimulationContext simulationContext : newValue.getSimulationContexts()) {
+		for (SimulationContext simulationContext : newValue.getSimulationContextsAsArray()) {
 			simulationContext.addPropertyChangeListener(this);
 			simulationContext.getGeometryContext().addPropertyChangeListener(this);
 			for (StructureMapping mapping : simulationContext.getGeometryContext().getStructureMappings()) {

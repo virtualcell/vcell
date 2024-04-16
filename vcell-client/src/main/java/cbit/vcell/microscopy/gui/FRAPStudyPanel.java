@@ -952,10 +952,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		{
 			//remove simulation key from simulation, save as doesn't copy simulation files over
 			FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy(); 
-			if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations() != null && fStudy.getBioModel().getSimulations().length > 0 &&
-			   fStudy.getBioModel().getSimulations()[0] != null)
+			if(fStudy.getBioModel() != null && fStudy.getBioModel().getSimulationsAsArray() != null && fStudy.getBioModel().getSimulationsAsArray().length > 0 &&
+			   fStudy.getBioModel().getSimulationsAsArray()[0] != null)
 			{
-				Simulation oldSim = fStudy.getBioModel().getSimulations()[0];
+				Simulation oldSim = fStudy.getBioModel().getSimulationsAsArray()[0];
 				fStudy.getBioModel().removeSimulation(oldSim);
 			}
 		}
@@ -1297,10 +1297,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	public void clearSimulationResults()
 	{
 		if(getFrapWorkspace().getWorkingFrapStudy()!= null && getFrapWorkspace().getWorkingFrapStudy().getBioModel() != null 
-		   && getFrapWorkspace().getWorkingFrapStudy().getBioModel().getSimulations() != null
-		   && getFrapWorkspace().getWorkingFrapStudy().getBioModel().getSimulations().length > 0)
+		   && getFrapWorkspace().getWorkingFrapStudy().getBioModel().getSimulationsAsArray() != null
+		   && getFrapWorkspace().getWorkingFrapStudy().getBioModel().getSimulationsAsArray().length > 0)
 		{
-			Simulation sim = getFrapWorkspace().getWorkingFrapStudy().getBioModel().getSimulations()[0];
+			Simulation sim = getFrapWorkspace().getWorkingFrapStudy().getBioModel().getSimulationsAsArray()[0];
 			try {
 				FRAPStudy.removeSimulationFiles(sim.getVersion().getVersionKey(), getLocalWorkspace());
 			} catch (Exception e) {
@@ -1344,10 +1344,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 				//create export specs
 				Simulation sim = null;
-				if (fStudy.getBioModel()==null || fStudy.getBioModel().getSimulations()==null || fStudy.getBioModel().getSimulations().length < 1 ){
+				if (fStudy.getBioModel()==null || fStudy.getBioModel().getSimulationsAsArray()==null || fStudy.getBioModel().getSimulationsAsArray().length < 1 ){
 					return;
 				}else{
-					sim = fStudy.getBioModel().getSimulations()[0];
+					sim = fStudy.getBioModel().getSimulationsAsArray()[0];
 				}
 				FieldFunctionArguments[] fieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(sim.getMathDescription());
 				FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
@@ -1443,11 +1443,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	protected void refreshPDEDisplay(DisplayChoice choice) throws Exception {
 		Simulation sim = null;
 		FRAPStudy fStudy = getFrapWorkspace().getWorkingFrapStudy();
-		if (fStudy==null || fStudy.getBioModel()==null || fStudy.getBioModel().getSimulations()==null || fStudy.getBioModel().getSimulations().length < 1){
+		if (fStudy==null || fStudy.getBioModel()==null || fStudy.getBioModel().getSimulationsAsArray()==null || fStudy.getBioModel().getSimulationsAsArray().length < 1){
 			return;
 		}
 		
-		sim = fStudy.getBioModel().getSimulations()[0];
+		sim = fStudy.getBioModel().getSimulationsAsArray()[0];
 		
 		FieldFunctionArguments[] fieldFunctionArgs = FieldUtilities.getFieldFunctionArguments(sim.getMathDescription());
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
@@ -1676,11 +1676,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 				else
 				{
-					if(fStudy != null && fStudy.getBioModel() != null && fStudy.getBioModel().getSimulations()!=null &&
-							fStudy.getBioModel().getSimulations().length > 0 && fStudy.getBioModel().getSimulations()[0].getVersion()!= null &&
-							fStudy.getBioModel().getSimulations()[0].getVersion().getVersionKey() != null)
+					if(fStudy != null && fStudy.getBioModel() != null && fStudy.getBioModel().getSimulationsAsArray()!=null &&
+							fStudy.getBioModel().getSimulationsAsArray().length > 0 && fStudy.getBioModel().getSimulationsAsArray()[0].getVersion()!= null &&
+							fStudy.getBioModel().getSimulationsAsArray()[0].getVersion().getVersionKey() != null)
 					{
-						fStudy.getBioModel().getSimulations()[0].getVersion().getVersionKey();
+						fStudy.getBioModel().getSimulationsAsArray()[0].getVersion().getVersionKey();
 					}
 					
 					BioModel bioModel = null;
@@ -1701,8 +1701,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							this.getClientTaskStatusSupport(), false);
 						fStudy.setBioModel(bioModel);
 					}catch(Exception e){
-						if(bioModel != null && bioModel.getSimulations() != null){
-							FRAPStudy.removeExternalDataAndSimulationFiles(bioModel.getSimulations()[0].getVersion().getVersionKey(), null, null, getLocalWorkspace());
+						if(bioModel != null && bioModel.getSimulationsAsArray() != null){
+							FRAPStudy.removeExternalDataAndSimulationFiles(bioModel.getSimulationsAsArray()[0].getVersion().getVersionKey(), null, null, getLocalWorkspace());
 							(getAnalysisResultsPanel()).setResultsButtonEnabled(false);
 						}
 						throw e;

@@ -46,7 +46,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 	if (documentWindowManager.getVCDocument() instanceof BioModel) {
 		// try to successfully generate math and geometry region info
 		BioModel bioModel = (BioModel)documentWindowManager.getVCDocument();
-		SimulationContext scArray[] = bioModel.getSimulationContexts();
+		SimulationContext scArray[] = bioModel.getSimulationContextsAsArray();
 		if (scArray!=null) {
 			MathDescription[] mathDescArray = new MathDescription[scArray.length];
 			for (int i = 0; i < scArray.length; i++){

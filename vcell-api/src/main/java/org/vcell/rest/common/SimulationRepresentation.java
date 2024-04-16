@@ -5,13 +5,11 @@ import java.util.Enumeration;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathSymbolTable;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.ModelException;
@@ -105,7 +103,7 @@ public class SimulationRepresentation {
 
 	private static BioModelLink getBioModelLink(BioModel bioModel, SimulationRep simulationRep){
 		SimulationContext simContext = null;
-		for (SimulationContext sc : bioModel.getSimulationContexts()){
+		for (SimulationContext sc : bioModel.getSimulationContextsAsArray()){
 			if (sc.getMathDescription().getKey().equals(simulationRep.getMathKey())){
 				simContext = sc;
 				break;
@@ -123,7 +121,7 @@ public class SimulationRepresentation {
 	
 	private static ParameterRepresentation[] getParameters(BioModel bioModel, SimulationRep simulationRep) {
 		SimulationContext simContext = null;
-		for (SimulationContext sc : bioModel.getSimulationContexts()){
+		for (SimulationContext sc : bioModel.getSimulationContextsAsArray()){
 			if (sc.getMathDescription().getKey().equals(simulationRep.getMathKey())){
 				simContext = sc;
 				break;

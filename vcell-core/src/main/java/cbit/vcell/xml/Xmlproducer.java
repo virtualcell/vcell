@@ -513,8 +513,8 @@ public Element getXML(BioModel param) throws XmlParseException, ExpressionExcept
 		throw new XmlParseException("An error occurred while processing the BioModel " + name, e);
 	}
 	//Get SimulationContexts
-	if ( param.getSimulationContexts()!=null ){
-		for (int index=0;index<param.getSimulationContexts().length;index++){
+	if ( param.getSimulationContextsAsArray()!=null ){
+		for (int index = 0; index<param.getSimulationContextsAsArray().length; index++){
 			biomodelnode.addContent( getXML(param.getSimulationContext(index),param) );
 		}
 	}
@@ -1652,7 +1652,7 @@ public Element getXML(SimulationContext param, BioModel bioModel) throws XmlPars
 	
 	//Add Simulations to the simulationSpec
 	if (bioModel!=null){
-		cbit.vcell.solver.Simulation simulations[] = bioModel.getSimulations(param);
+		cbit.vcell.solver.Simulation simulations[] = bioModel.getSimulationsAsArray(param);
 		for (int i=0;simulations!=null && i<simulations.length;i++){
 			simulationcontext.addContent(getXML(simulations[i]));
 		}

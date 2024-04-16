@@ -100,14 +100,14 @@ public void setBioModel(BioModel newValue) {
 	BioModel oldValue = bioModel;
 	if (oldValue != null) {
 		oldValue.removePropertyChangeListener(eventHandler);
-		for (SimulationContext simContext : oldValue.getSimulationContexts()) {
+		for (SimulationContext simContext : oldValue.getSimulationContextsAsArray()) {
 			simContext.removePropertyChangeListener(eventHandler);
 		}
 	}
 	bioModel = newValue;
 	if (newValue != null) {
 		newValue.addPropertyChangeListener(eventHandler);
-		for (SimulationContext simContext : newValue.getSimulationContexts()) {
+		for (SimulationContext simContext : newValue.getSimulationContextsAsArray()) {
 			simContext.addPropertyChangeListener(eventHandler);
 		}
 	}
@@ -123,7 +123,7 @@ private void updateInterface() {
 	}
 	applicationsPanel.removeAll();
 	int gridy = 0;
-	SimulationContext[] simulationContexts = bioModel.getSimulationContexts();
+	SimulationContext[] simulationContexts = bioModel.getSimulationContextsAsArray();
 	if (simulationContexts != null) {
 		for (int i = 0; i < simulationContexts.length; i ++) {
 			SimulationContext simContext = simulationContexts[i];

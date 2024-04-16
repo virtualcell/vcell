@@ -222,7 +222,7 @@ public class BatchTester extends VCDatabaseScanner {
 									printWriter.println("Model for " + modelIdent.statusId + " good");
 									databaseVisitor.setBioModel(storedModel, printWriter);
 									for (BioModel bioModel: databaseVisitor) {
-										SimulationContext[] simContexts = bioModel.getSimulationContexts();
+										SimulationContext[] simContexts = bioModel.getSimulationContextsAsArray();
 										for (SimulationContext sc : simContexts) {
 											//try {
 											//long start = System.currentTimeMillis();

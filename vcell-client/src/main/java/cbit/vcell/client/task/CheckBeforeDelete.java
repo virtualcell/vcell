@@ -11,7 +11,6 @@
 package cbit.vcell.client.task;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.TreeSet;
 
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDocument;
@@ -22,7 +21,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.task.CheckBeforeDelete.LOW_PRECISION_SAVE;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -30,8 +28,6 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
 
 /**
  * Insert the type's description here.
@@ -58,7 +54,7 @@ private HashMap<Simulation, LostFlag> checkLostResults(BioModel oldBioModel, Bio
 	//
 	HashMap<Simulation, LostFlag> lostSimResultsMap = new HashMap<>();
 //	Vector<Simulation> lostResultsSimulationList = new Vector<Simulation>();
-	Simulation oldSimulations[] = oldBioModel.getSimulations();
+	Simulation oldSimulations[] = oldBioModel.getSimulationsAsArray();
 	for (int i = 0; i < oldSimulations.length; i++){
 		Simulation oldSimulation = oldSimulations[i];
 		SimulationStatus simStatus = null;
@@ -86,7 +82,7 @@ private HashMap<Simulation, LostFlag> checkLostResults(BioModel oldBioModel, Bio
 			// IGNORE if Simulation has been submitted for running 
 			//
 			boolean bDataInNewEdition = false;
-			Simulation newSimulations[] = newlySavedBioModel.getSimulations();
+			Simulation newSimulations[] = newlySavedBioModel.getSimulationsAsArray();
 			Simulation correspondingSimulation = null;
 			for (int j = 0; j < newSimulations.length; j++){
 				if (newSimulations[j].getName().equals(oldSimulation.getName())){
@@ -441,8 +437,8 @@ public static AsynchClientTask getLowPrecisionConstantsSaveTask() {
 						//and re-save the new document
 						BioModel lpcDoc = (BioModel)hashTable.remove(SaveDocument.DOC_KEY);
 						hashTable.remove("newName");
-						for (int i = 0; i < ((BioModel)lpcDoc).getSimulations().length; i++) {
-							((BioModel)lpcDoc).getSimulations()[i].clearVersion();
+						for (int i = 0; i < ((BioModel)lpcDoc).getSimulationsAsArray().length; i++) {
+							((BioModel)lpcDoc).getSimulationsAsArray()[i].clearVersion();
 						}
 						Hashtable<String, Object> delSimVersionHash = new Hashtable<>();
 						delSimVersionHash.put(CommonTask.DOCUMENT_MANAGER.name,dwm.getRequestManager().getDocumentManager());
