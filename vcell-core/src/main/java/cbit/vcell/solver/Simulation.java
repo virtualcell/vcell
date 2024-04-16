@@ -44,7 +44,6 @@ import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.ReactionContext;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
-import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContextEntity;
 import cbit.vcell.mapping.SpeciesContextSpec;
@@ -61,7 +60,6 @@ import cbit.vcell.solver.SolverDescription.SolverFeature;
  * Creation date: (8/16/2000 11:08:33 PM)
  * @author: John Wagner
  */
-@SuppressWarnings("serial")
 public class Simulation implements Versionable, Matchable, java.beans.VetoableChangeListener, java.io.Serializable, PropertyChangeListener,
 		SimulationContextEntity, IssueSource, Identifiable, Displayable {
 
@@ -91,32 +89,32 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	/**
 	 * Database version of the Simulation.
 	 */
-	private SimulationVersion fieldSimulationVersion = null;
+	private SimulationVersion simulationVersion = null;
 	/**
 	 * Mathematical description of the physiological model.
 	 */
-	private MathDescription fieldMathDescription = null;
+	private MathDescription mathDescription = null;
 	/**
 	 * An ASCII description of the run.
 	 */
-	private java.lang.String fieldDescription = new String();
+	private String description = "";
 	/**
 	 * The name of the run, also used as a version name.
 	 */
-	private java.lang.String fieldName = new String("NoName");
+	private String name = "NoName";
 	/**
 	 * Settings that override those specified in the MathDescription.
 	 */
 	private transient SimulationOwner simulationOwner = null;
 	private DataProcessingInstructions dataProcessingInstructions = null;
-	private MathOverrides fieldMathOverrides = null;
+	private MathOverrides mathOverrides = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private SolverTaskDescription fieldSolverTaskDescription = null;
-	private java.lang.String fieldSimulationIdentifier = null;
-	private MeshSpecification fieldMeshSpecification = null;
-	private boolean fieldIsDirty = false;
-	private String fieldImportedTaskID;
+	private SolverTaskDescription solverTaskDescription = null;
+	private java.lang.String simulationIdentifier = null;
+	private MeshSpecification meshSpecification = null;
+	private boolean isDirty = false;
+	private String importedTaskID;
 
 	public static class Counters {		// SpringSaLaD post processing counters, structure to be determined, will be moved appropriately
 
@@ -223,8 +221,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
 				List<MolecularComponent> mcList = mt.getComponentList();
 				for(MolecularComponent mc : mcList) {
-					sb.append("'").append(mt.getName()).append("' ")
-						.append("Site " + (mc.getIndex()-1)).append(" : ")
+					sb.append("'").append(mt.getName()).append("' ").append("Site ").append(mc.getIndex() - 1).append(" : ")
 						.append("Track Properties true");
 					sb.append("\n");
 				}
@@ -232,26 +229,25 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 		}
 	}
 	
-private Simulation( ) {
-}
+private Simulation() {}
 /**
  * One of three ways to construct a Simulation.  This constructor
  * is used when creating a new Simulation.
  */
 public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDescription, SimulationOwner simulationOwner) {
-	this( );
-	addVetoableChangeListener(this);
-	this.fieldSimulationVersion = argSimulationVersion;
-	if (fieldSimulationVersion != null) {
-		if (fieldSimulationVersion.getParentSimulationReference()!=null){
-			this.fieldSimulationIdentifier = null;
+	this();
+	this.addVetoableChangeListener(this);
+	this.simulationVersion = argSimulationVersion;
+	if (this.simulationVersion != null) {
+		if (this.simulationVersion.getParentSimulationReference() != null){
+			this.simulationIdentifier = null;
 		}else{
-			this.fieldSimulationIdentifier = createSimulationID(fieldSimulationVersion.getVersionKey());
+			this.simulationIdentifier = createSimulationID(this.simulationVersion.getVersionKey());
 		}
 	}
 
-	this.fieldName = argSimulationVersion.getName();
-	this.fieldDescription = argSimulationVersion.getAnnot();
+	this.name = argSimulationVersion.getName();
+	this.description = argSimulationVersion.getAnnot();
 	this.simulationOwner = simulationOwner;
 
 	try {
@@ -260,12 +256,12 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
 		throw new RuntimeException(e.getMessage(), e);
 	}
 	//  Must set the MathDescription before constructing these...
-	if (mathDescription.getGeometry().getDimension()>0){
-		fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());
+	if (mathDescription.getGeometry().getDimension() > 0){
+        this.meshSpecification = new MeshSpecification(mathDescription.getGeometry());
 	}
-	fieldMathOverrides = new MathOverrides(this);
-	fieldSolverTaskDescription = new SolverTaskDescription(this);
-	refreshDependencies();
+    this.mathOverrides = new MathOverrides(this);
+    this.solverTaskDescription = new SolverTaskDescription(this);
+	this.refreshDependencies();
 }
 
 
@@ -274,28 +270,28 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
  * is used when creating a Simulation from the database.
  */
 public Simulation(SimulationVersion simulationVersion, MathDescription mathDescription, CommentStringTokenizer mathOverridesTokenizer, CommentStringTokenizer solverTaskDescriptionTokenizer) throws DataAccessException, PropertyVetoException {
-	this( );
-	addVetoableChangeListener(this);
+	this();
+	this.addVetoableChangeListener(this);
 
-	fieldSimulationVersion = simulationVersion;
+	this.simulationVersion = simulationVersion;
 	if (simulationVersion!=null){
-		fieldName = simulationVersion.getName();
-		fieldDescription = simulationVersion.getAnnot();
+		this.name = simulationVersion.getName();
+		this.description = simulationVersion.getAnnot();
 		if (simulationVersion.getParentSimulationReference()!=null){
-			fieldSimulationIdentifier = null;
+			this.simulationIdentifier = null;
 		}else{
-			fieldSimulationIdentifier = createSimulationID(simulationVersion.getVersionKey());
+			this.simulationIdentifier = createSimulationID(simulationVersion.getVersionKey());
 		}
 	}
 	if (mathDescription != null){
 		setMathDescription(mathDescription);
 		if (mathDescription.getGeometry().getDimension()>0){
-			fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());
+			this.meshSpecification = new MeshSpecification(mathDescription.getGeometry());
 		}
 	}
 	//  Must set the MathDescription before constructing these...
-	fieldMathOverrides = new MathOverrides(this, mathOverridesTokenizer);
-	fieldSolverTaskDescription = new SolverTaskDescription(this, solverTaskDescriptionTokenizer);
+	this.mathOverrides = new MathOverrides(this, mathOverridesTokenizer);
+	this.solverTaskDescription = new SolverTaskDescription(this, solverTaskDescriptionTokenizer);
 	refreshDependencies();
 }
 
@@ -305,7 +301,7 @@ public Simulation(SimulationVersion simulationVersion, MathDescription mathDescr
  * is used when creating a new Simulation.
  */
 public Simulation(MathDescription mathDescription, SimulationOwner simulationOwner) {
-	this( );
+	this();
 	addVetoableChangeListener(this);
 
 	try {
@@ -313,14 +309,14 @@ public Simulation(MathDescription mathDescription, SimulationOwner simulationOwn
 	} catch (java.beans.PropertyVetoException e) {
 		throw new RuntimeException(e.getMessage(), e);
 	}
-	fieldName = mathDescription.getName()+"_"+Math.random();
+	this.name = mathDescription.getName()+"_"+Math.random();
 	this.simulationOwner = simulationOwner;
 	//  Must set the MathDescription before constructing these...
 	if (mathDescription.getGeometry().getDimension()>0){
-		fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());
+		this.meshSpecification = new MeshSpecification(mathDescription.getGeometry());
 	}
-	fieldMathOverrides = new MathOverrides(this);
-	fieldSolverTaskDescription = new SolverTaskDescription(this);
+	this.mathOverrides = new MathOverrides(this);
+	this.solverTaskDescription = new SolverTaskDescription(this);
 
 }
 
@@ -339,37 +335,37 @@ public Simulation(Simulation simulation) {
  * is used when copying a Simulation from an existing one.
  */
 public Simulation(Simulation simulation, boolean bCloneMath) {
-	this( );
-	addVetoableChangeListener(this);
+	this();
+	this.addVetoableChangeListener(this);
 
-	fieldImportedTaskID = simulation.getImportedTaskID();
-	fieldSimulationVersion = null;
-	fieldName = simulation.getName();
-	fieldDescription = simulation.getDescription();
-	fieldSimulationIdentifier = null;
+	this.importedTaskID = simulation.getImportedTaskID();
+	this.simulationVersion = null;
+	this.name = simulation.getName();
+	this.description = simulation.getDescription();
+	this.simulationIdentifier = null;
 	if (bCloneMath){
-		fieldMathDescription = new MathDescription(simulation.getMathDescription());
+		this.mathDescription = new MathDescription(simulation.getMathDescription());
 	}else{
-		fieldMathDescription = simulation.getMathDescription();
+		this.mathDescription = simulation.getMathDescription();
 	}
 	if (simulation.getMeshSpecification()!=null){
-		fieldMeshSpecification = new MeshSpecification(simulation.getMeshSpecification());
+		this.meshSpecification = new MeshSpecification(simulation.getMeshSpecification());
 	}else{
-		fieldMeshSpecification = null;
+		this.meshSpecification = null;
 	}
-	simulationOwner = simulation.getSimulationOwner();
+	this.simulationOwner = simulation.getSimulationOwner();
 	//  Must set the MathDescription before constructing these...
-	fieldMathOverrides = new MathOverrides (this, simulation.getMathOverrides());
-	fieldSolverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
-	dataProcessingInstructions = simulation.dataProcessingInstructions;
-	fieldImportedTaskID = simulation.fieldImportedTaskID;
+	this.mathOverrides = new MathOverrides (this, simulation.getMathOverrides());
+	this.solverTaskDescription = new SolverTaskDescription(this, simulation.getSolverTaskDescription());
+	this.dataProcessingInstructions = simulation.dataProcessingInstructions;
+	this.importedTaskID = simulation.importedTaskID;
 
-	refreshDependencies();
+	this.refreshDependencies();
 }
 
 
 public SimulationOwner getSimulationOwner() {
-	return simulationOwner;
+	return this.simulationOwner;
 }
 
 
@@ -397,7 +393,7 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
  * Creation date: (4/24/2003 3:33:12 PM)
  */
 public void clearVersion() {
-	fieldSimulationVersion = null;
+	this.simulationVersion = null;
 }
 
 
@@ -405,30 +401,11 @@ public void clearVersion() {
  * compareEqual method comment.
  */
 public boolean compareEqual(Matchable object) {
-	if (this == object) {
-		return (true);
-	}
-	if (object != null && object instanceof Simulation) {
-		Simulation simulation = (Simulation) object;
-		//
-		// check for content
-		//
-		if (!compareEqualMathematically(simulation)){
-			return false;
-		}
-		//
-		// check for true equality
-		//
-		if (!Compare.isEqual(getName(),simulation.getName())){
-			return false;
-		}
-		if (!Compare.isEqualOrNull(getDescription(),simulation.getDescription())){
-			return false;
-		}
-		return true;
-	}
-	return false;
-
+	if (this == object) return true;
+	if (!(object instanceof Simulation simulation)) return false;
+	return this.compareEqualMathematically(simulation) // check for content
+			&& Compare.isEqual(getName(),simulation.getName()) // check for true equality
+			&& Compare.isEqualOrNull(getDescription(), simulation.getDescription());
 }
 
 
@@ -436,16 +413,12 @@ public boolean compareEqual(Matchable object) {
  * compareEqual method comment.
  */
 private boolean compareEqualMathematically(Simulation simulation) {
-	if (this == simulation) {
-		return true;
-	}
-	if (!getMathDescription().compareEqual(simulation.getMathDescription())) return (false);
-	if (!getMathOverrides().compareEqual(simulation.getMathOverrides())) return (false);
-	if (!getSolverTaskDescription().compareEqual(simulation.getSolverTaskDescription())) return (false);
-	if (!Compare.isEqualOrNull(getMeshSpecification(),simulation.getMeshSpecification())) return (false);
-	if (!Compare.isEqualOrNull(dataProcessingInstructions, simulation.dataProcessingInstructions)) return (false);
-
-	return true;
+	if (this == simulation) return true;
+    return this.getMathDescription().compareEqual(simulation.getMathDescription())
+			&& this.getMathOverrides().compareEqual(simulation.getMathOverrides())
+			&& this.getSolverTaskDescription().compareEqual(simulation.getSolverTaskDescription())
+			&& Compare.isEqualOrNull(getMeshSpecification(),simulation.getMeshSpecification())
+			&& Compare.isEqualOrNull(this.dataProcessingInstructions, simulation.dataProcessingInstructions);
 }
 
 public static String createSimulationID(KeyValue simKey) {
@@ -457,7 +430,7 @@ public static String createSimulationID(KeyValue simKey) {
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
+	this.getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
 
@@ -465,35 +438,35 @@ public void firePropertyChange(java.lang.String propertyName, java.lang.Object o
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
 public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
+	this.getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 
 
 public void forceNewVersionAnnotation(SimulationVersion newSimulationVersion) throws PropertyVetoException {
-	if (getVersion().getVersionKey().equals(newSimulationVersion.getVersionKey())) {
-		setVersion(newSimulationVersion);
-	} else {
-		throw new RuntimeException("Simulation.forceNewVersionAnnotation failed : version keys not equal");
+	if (this.getVersion().getVersionKey().equals(newSimulationVersion.getVersionKey())) {
+		this.setVersion(newSimulationVersion);
+		return;
 	}
+	throw new RuntimeException("Simulation.forceNewVersionAnnotation failed : version keys not equal");
 }
 
 
 public java.lang.String getDescription() {
-	return fieldDescription;
+	return this.description;
 }
 
 
 public boolean getIsDirty() {
-	return fieldIsDirty;
+	return this.isDirty;
 }
 
 /**
  * Gets the isSpatial property (boolean) value.
- * @return {@link #fieldMathDescription#isSpatial()}
+ * @return {@link #mathDescription#isSpatial()}
  */
 public boolean isSpatial() {
-	assert fieldMathDescription != null ;
-	return fieldMathDescription.isSpatial();
+	assert this.mathDescription != null ;
+	return this.mathDescription.isSpatial();
 }
 
 
@@ -551,9 +524,9 @@ public boolean isSpatial() {
 // jul 2023 danv
 @Deprecated
 public Set<SolverFeature> getRequiredFeatures() {
-	Set<SolverFeature> requiredFeatures = new HashSet<SolverFeature>();
+	Set<SolverFeature> requiredFeatures = new HashSet<>();
 	final MathDescription md = getMathDescription();
-	if (isSpatial()) {
+	if (this.isSpatial()) {
 		requiredFeatures.add(SolverFeature.Feature_Spatial);
 	} else {
 		requiredFeatures.add(SolverFeature.Feature_NonSpatial);
@@ -627,7 +600,7 @@ public KeyValue getKey() {
  * @return The mathDescription property value.
  */
 public MathDescription getMathDescription() {
-	return fieldMathDescription;
+	return this.mathDescription;
 }
 
 
@@ -636,7 +609,7 @@ public MathDescription getMathDescription() {
  * @return The mathOverrides property value.
  */
 public MathOverrides getMathOverrides() {
-	return fieldMathOverrides;
+	return this.mathOverrides;
 }
 
 
@@ -646,7 +619,7 @@ public MathOverrides getMathOverrides() {
  * @see #setMeshSpecification
  */
 public MeshSpecification getMeshSpecification() {
-	return fieldMeshSpecification;
+	return this.meshSpecification;
 }
 
 
@@ -656,7 +629,7 @@ public MeshSpecification getMeshSpecification() {
  * @see #setName
  */
 public java.lang.String getName() {
-	return fieldName;
+	return this.name;
 }
 
 
@@ -664,10 +637,10 @@ public java.lang.String getName() {
  * Accessor for the propertyChange field.
  */
 protected java.beans.PropertyChangeSupport getPropertyChange() {
-	if (propertyChange == null) {
-		propertyChange = new java.beans.PropertyChangeSupport(this);
-	};
-	return propertyChange;
+	if (this.propertyChange == null) {
+        this.propertyChange = new java.beans.PropertyChangeSupport(this);
+	}
+	return this.propertyChange;
 }
 
 
@@ -686,7 +659,7 @@ public int getScanCount() {
  * @return The simulationIdentifier property value.
  */
 public java.lang.String getSimulationID() {
-	return fieldSimulationIdentifier;
+	return this.simulationIdentifier;
 }
 
 
@@ -696,13 +669,8 @@ public java.lang.String getSimulationID() {
  * @return cbit.vcell.solver.SimulationInfo
  */
 public SimulationInfo getSimulationInfo() {
-	if (getVersion() != null) {
-		return new SimulationInfo(
-			getMathDescription().getKey(),
-			getSimulationVersion(),null);
-	} else {
-		return null;
-	}
+	if (this.getVersion() == null) return null;
+	return new SimulationInfo(getMathDescription().getKey(), getSimulationVersion(),null);
 }
 
 
@@ -712,7 +680,7 @@ public SimulationInfo getSimulationInfo() {
  * @return cbit.sql.Version
  */
 public SimulationVersion getSimulationVersion() {
-	return fieldSimulationVersion;
+	return this.simulationVersion;
 }
 
 
@@ -722,7 +690,7 @@ public SimulationVersion getSimulationVersion() {
  * @see #setSolverTaskDescription
  */
 public SolverTaskDescription getSolverTaskDescription() {
-	return fieldSolverTaskDescription;
+	return this.solverTaskDescription;
 }
 
 
@@ -733,35 +701,24 @@ public SolverTaskDescription getSolverTaskDescription() {
  */
 public String getVCML() throws MathException {
 
-	StringBuffer buffer = new StringBuffer();
+	StringBuilder buffer = new StringBuilder();
 
-	String name = (getVersion()!=null)?(getVersion().getName()):"unnamedSimulation";
-	buffer.append(VCML.Simulation+" "+name+" {\n");
+	String name = (this.getVersion() != null) ? this.getVersion().getName() : "unnamedSimulation";
+	buffer.append(VCML.Simulation + " ").append(name).append(" {\n");
 
-	//
 	// write MathDescription
-	//
-	buffer.append(VCML.MathDescription+" "+getMathDescription().getVCML_database()+"\n");
+	buffer.append(VCML.MathDescription + " ").append(getMathDescription().getVCML_database()).append("\n");
 
-	//
 	// write SolverTaskDescription
-	//
-	buffer.append(getSolverTaskDescription().getVCML()+"\n");
+	buffer.append(this.getSolverTaskDescription().getVCML()).append("\n");
 
-	//
 	// write SolverTaskDescription
-	//
-	buffer.append(getMathOverrides().getVCML()+"\n");
+	buffer.append(this.getMathOverrides().getVCML()).append("\n");
 
-	//
 	// write MeshSpecification
-	//
-	if (getMeshSpecification()!=null){
-		buffer.append(getMeshSpecification().getVCML()+"\n");
-	}
+	if (this.getMeshSpecification() != null) buffer.append(this.getMeshSpecification().getVCML()).append("\n");
 
-	buffer.append("}\n");
-	return buffer.toString();
+	return buffer.append("}\n").toString();
 }
 
 
@@ -771,7 +728,7 @@ public String getVCML() throws MathException {
  * @return cbit.sql.Version
  */
 public Version getVersion() {
-	return fieldSimulationVersion;
+	return this.simulationVersion;
 }
 
 
@@ -779,10 +736,10 @@ public Version getVersion() {
  * Accessor for the vetoPropertyChange field.
  */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
-	if (vetoPropertyChange == null) {
-		vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
-	};
-	return vetoPropertyChange;
+	if (this.vetoPropertyChange == null) {
+        this.vetoPropertyChange = new java.beans.VetoableChangeSupport(this);
+	}
+	return this.vetoPropertyChange;
 }
 
 
@@ -798,16 +755,16 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Creation date: (5/11/01 4:00:35 PM)
  */
 public void refreshDependencies() {
-	removeVetoableChangeListener(this);
-	addVetoableChangeListener(this);
-	if (getMeshSpecification()!=null){
-		getMeshSpecification().refreshDependencies();
+	this.removeVetoableChangeListener(this);
+	this.addVetoableChangeListener(this);
+	if (this.getMeshSpecification() != null){
+		this.getMeshSpecification().refreshDependencies();
 	}
-	getSolverTaskDescription().refreshDependencies();
-	getMathOverrides().refreshDependencies();
+	this.getSolverTaskDescription().refreshDependencies();
+	this.getMathOverrides().refreshDependencies();
 
-	getMathDescription().removePropertyChangeListener(this);
-	getMathDescription().addPropertyChangeListener(this);
+	this.getMathDescription().removePropertyChangeListener(this);
+	this.getMathDescription().addPropertyChangeListener(this);
 
 }
 
@@ -815,14 +772,14 @@ public void refreshDependencies() {
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
+	this.getPropertyChange().removePropertyChangeListener(listener);
 }
 
 /**
  * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
  */
 public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(listener);
+	this.getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 
 /**
@@ -831,10 +788,10 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  * @see #getDescription
  */
 public void setDescription(java.lang.String description) throws java.beans.PropertyVetoException {
-	java.lang.String oldValue = fieldDescription;
-	fireVetoableChange("description", oldValue, description);
-	fieldDescription = description;
-	firePropertyChange("description", oldValue, description);
+	String oldValue = this.description;
+	this.fireVetoableChange("description", oldValue, description);
+	this.description = description;
+	this.firePropertyChange("description", oldValue, description);
 }
 
 
@@ -844,51 +801,49 @@ public void setDescription(java.lang.String description) throws java.beans.Prope
  * @see #getIsDirty
  */
 public void setIsDirty(boolean isDirty) {
-	boolean oldValue = fieldIsDirty;
-	fieldIsDirty = isDirty;
-	firePropertyChange("isDirty", oldValue, isDirty);
+	boolean oldValue = this.isDirty;
+	this.isDirty = isDirty;
+	this.firePropertyChange("isDirty", oldValue, isDirty);
 }
 
 
 public void setMathDescription(MathDescription mathDescription) throws java.beans.PropertyVetoException {
-	MathDescription oldValue = fieldMathDescription;
+	MathDescription oldValue = this.mathDescription;
 	fireVetoableChange("mathDescription", oldValue, mathDescription);
-	fieldMathDescription = mathDescription;
+	this.mathDescription = mathDescription;
 
 	if(oldValue != null){
 		oldValue.removePropertyChangeListener(this);
 	}
-	if(fieldMathDescription != null){
-		fieldMathDescription.removePropertyChangeListener(this);
-		fieldMathDescription.addPropertyChangeListener(this);
+	if(this.mathDescription != null){
+		this.mathDescription.removePropertyChangeListener(this);
+		this.mathDescription.addPropertyChangeListener(this);
 	}
-	refreshMeshSpec();
+	this.refreshMeshSpec();
 
-	//
 	// refresh MathOverrides
-	//
-	if (mathDescription!=null && getMathOverrides()!=null && oldValue != fieldMathDescription){
-		getMathOverrides().updateFromMathDescription(true);
+	if (mathDescription != null && this.getMathOverrides() != null && oldValue != this.mathDescription){
+		this.getMathOverrides().updateFromMathDescription(true);
 	}
 
 	//
 	// refresh SolverTaskDescription (reset if oldMath is spatial and newMath is non-spatial .... or opposite).
 	//
-	if (oldValue==null || mathDescription==null || oldValue.isSpatial()!=mathDescription.isSpatial()){
-		fieldSolverTaskDescription = new SolverTaskDescription(this);
+	if (oldValue == null || mathDescription == null || oldValue.isSpatial() != mathDescription.isSpatial()){
+		this.solverTaskDescription = new SolverTaskDescription(this);
 	}
 
-	firePropertyChange("mathDescription", oldValue, mathDescription);
+	this.firePropertyChange("mathDescription", oldValue, mathDescription);
 }
 
 
 public void setMathOverrides(MathOverrides mathOverrides) {
-	MathOverrides oldValue = fieldMathOverrides;
-	fieldMathOverrides = mathOverrides;
+	MathOverrides oldValue = this.mathOverrides;
+	this.mathOverrides = mathOverrides;
 	// update overrides
 	mathOverrides.setSimulation(this);
 	mathOverrides.updateFromMathDescription(false);
-	firePropertyChange("mathOverrides", oldValue, mathOverrides);
+	this.firePropertyChange("mathOverrides", oldValue, mathOverrides);
 }
 
 
@@ -899,10 +854,10 @@ public void setMathOverrides(MathOverrides mathOverrides) {
  * @see #getMeshSpecification
  */
 public void setMeshSpecification(MeshSpecification meshSpecification) throws java.beans.PropertyVetoException {
-	MeshSpecification oldValue = fieldMeshSpecification;
-	fireVetoableChange("meshSpecification", oldValue, meshSpecification);
-	fieldMeshSpecification = meshSpecification;
-	firePropertyChange("meshSpecification", oldValue, meshSpecification);
+	MeshSpecification oldValue = this.meshSpecification;
+	this.fireVetoableChange("meshSpecification", oldValue, meshSpecification);
+	this.meshSpecification = meshSpecification;
+	this.firePropertyChange("meshSpecification", oldValue, meshSpecification);
 }
 
 
@@ -911,11 +866,11 @@ public void setMeshSpecification(MeshSpecification meshSpecification) throws jav
  * @param name The new value for the property.
  * @see #setName
  */
-public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
-	java.lang.String oldValue = fieldName;
-	fireVetoableChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
-	fieldName = name;
-	firePropertyChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
+public void setName(String name) throws java.beans.PropertyVetoException {
+	String oldValue = this.name;
+	this.fireVetoableChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
+	this.name = name;
+	this.firePropertyChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
 }
 
 
@@ -926,59 +881,60 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  * @see #getSolverTaskDescription()
  */
 public void setSolverTaskDescription(SolverTaskDescription solverTaskDescription) throws java.beans.PropertyVetoException {
-	SolverTaskDescription oldValue = fieldSolverTaskDescription;
-	fireVetoableChange(PROPERTY_NAME_SOLVER_TASK_DESCRIPTION, oldValue, solverTaskDescription);
-	fieldSolverTaskDescription = solverTaskDescription;
+	SolverTaskDescription oldValue = this.solverTaskDescription;
+	this.fireVetoableChange(PROPERTY_NAME_SOLVER_TASK_DESCRIPTION, oldValue, solverTaskDescription);
+	this.solverTaskDescription = solverTaskDescription;
 	if (solverTaskDescription != null && solverTaskDescription.getSimulation() != this) {
 		throw new IllegalArgumentException("SolverTaskDescription simulation field points to wrong simulation");
 	}
-	firePropertyChange(PROPERTY_NAME_SOLVER_TASK_DESCRIPTION, oldValue, solverTaskDescription);
+	this.firePropertyChange(PROPERTY_NAME_SOLVER_TASK_DESCRIPTION, oldValue, solverTaskDescription);
 }
 
 
 private void setVersion(SimulationVersion simulationVersion) throws PropertyVetoException {
-	this.fieldSimulationVersion = simulationVersion;
+	this.simulationVersion = simulationVersion;
 	if (simulationVersion != null){
-		setName(simulationVersion.getName());
-		setDescription(simulationVersion.getAnnot());
+		this.setName(simulationVersion.getName());
+		this.setDescription(simulationVersion.getAnnot());
 	}
 }
 
-public static boolean testEquivalency(Simulation memorySimulation, Simulation databaseSimulation, MathCompareResults mathCompareResults) {
+	/**
+	 * Tests equivalency of two sims and their math comparison results
+	 * <p>
+	 * NOTE:
+	 * math overrides are only influence the solution if they actually override something.
+	 * <p>
+	 * if maths are equal/equivalent and overridden parameters (where actual value != default value) are same
+	 * then the MathDescriptions equality/equivalence is upheld.
+	 * otherwise, they are always different
+	 * <p>
+	 * `if (!memorySimulation.getMathOverrides().compareEqualIgnoreDefaults(databaseSimulation.getMathOverrides()))...`
+	 * now only non-defaults are stored in overrides...
+	 * @param memorySimulation simulation in memory
+	 * @param databaseSimulation simulation from db
+	 * @param mathCompareResults the comparison results
+	 * @return the equivlancy as a boolean
+	 */
+	public static boolean testEquivalency(Simulation memorySimulation, Simulation databaseSimulation, MathCompareResults mathCompareResults) {
 
 	if (memorySimulation == databaseSimulation){
 		return true;
 	}
+	return mathCompareResults.isEquivalent()
+			&& memorySimulation.getSolverTaskDescription().compareEqual(databaseSimulation.getSolverTaskDescription())
+			&& Compare.isEqualOrNull(memorySimulation.getMeshSpecification(),databaseSimulation.getMeshSpecification())
+			&& memorySimulation.getMathOverrides().compareEquivalent(databaseSimulation.getMathOverrides());
 
-	if (!mathCompareResults.isEquivalent()){
-		return false;
-	}else{
-		if (!memorySimulation.getSolverTaskDescription().compareEqual(databaseSimulation.getSolverTaskDescription())){
-			return false;
-		}
-		if (!Compare.isEqualOrNull(memorySimulation.getMeshSpecification(),databaseSimulation.getMeshSpecification())){
-			return false;
-		}
-		//
-		// math overrides are only influence the solution if they actually override something.
-		//
-		// if maths are equal/equivalent and overridden parameters (where actual value != default value) are same
-		// then the MathDescriptions equality/equivalence is upheld.
-		// otherwise, they are always different
-		//
-		// if (!memorySimulation.getMathOverrides().compareEqualIgnoreDefaults(databaseSimulation.getMathOverrides())){
-		// now only non-defaults are stored in overrides...
-		if (!memorySimulation.getMathOverrides().compareEquivalent(databaseSimulation.getMathOverrides())){
-			return false;
-		}
-		return true;
-	}
 }
 
 
 public String toString() {
-	String mathStr = (getMathDescription()!=null)?("Math@"+Integer.toHexString(getMathDescription().hashCode())+"("+getMathDescription().getName()+","+getMathDescription().getKey()+")"):"null";
-	return "Simulation@"+Integer.toHexString(hashCode())+"("+getName()+"), "+mathStr;
+	String simStringFormat = "Simulation@%s(%s), %s";
+	String hashString = Integer.toHexString(this.hashCode());
+	if (this.getMathDescription() != null) return String.format(simStringFormat, hashString, this.getName(), "null");
+	String mathStr = "Math@" + Integer.toHexString(this.getMathDescription().hashCode()) + "(" + this.getMathDescription().getName() + "," + getMathDescription().getKey() + ")";
+	return String.format(simStringFormat, hashString, this.getName(), mathStr);
 }
 
 
@@ -996,7 +952,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 
 
 	public DataProcessingInstructions getDataProcessingInstructions() {
-		return dataProcessingInstructions;
+		return this.dataProcessingInstructions;
 	}
 
 
@@ -1007,62 +963,52 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 }
 
 	public boolean isSerialParameterScan() {
-		if (getSolverTaskDescription().isSerialParameterScan() && getScanCount() > 1) {
-			return true;
-		}
-		return false;
-	}
+        return this.getSolverTaskDescription().isSerialParameterScan()
+				&& this.getScanCount() > 1;
+    }
 	public boolean isTimeoutDisabled() {
-		if (getSolverTaskDescription().isTimeoutDisabled()) {
-			return true;
-		}
-		return false;
-	}
+        return this.getSolverTaskDescription().isTimeoutDisabled();
+    }
 	public boolean isBorderExtrapolationDisabled() {
-		if (getSolverTaskDescription().isBorderExtrapolationDisabled()) {
-			return true;
-		}
-		return false;
-	}
+        return this.getSolverTaskDescription().isBorderExtrapolationDisabled();
+    }
 
 	public void propertyChange(PropertyChangeEvent evt) {
 		MathDescription md = getMathDescription();
-		boolean bIsMath = evt.getSource() == md;
-		if(bIsMath && evt.getPropertyName().equals("geometry")){
-			try{
-				refreshMeshSpec();
-			}catch(PropertyVetoException e){
-				throw new RuntimeException(e.getMessage(),e);
-			}
+		boolean isNotMath = evt.getSource() != md;
+		if(isNotMath || !evt.getPropertyName().equals("geometry")) return;
+		try {
+			this.refreshMeshSpec();
+		} catch(PropertyVetoException e){
+			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 
-	private void refreshMeshSpec() throws PropertyVetoException{
-		//
+	private void refreshMeshSpec() throws PropertyVetoException {
 		// refresh MeshSpecification
-		//
-		if (getMathDescription().getGeometry().getDimension()>0){
-			if (getMeshSpecification()!=null){
-				getMeshSpecification().setGeometry(getMathDescription().getGeometry());
-			}else{
-				setMeshSpecification(new MeshSpecification(getMathDescription().getGeometry()));
+		if (this.getMathDescription().getGeometry().getDimension() > 0){
+			if (this.getMeshSpecification() != null){
+				this.getMeshSpecification().setGeometry(getMathDescription().getGeometry());
+			} else {
+				this.setMeshSpecification(new MeshSpecification(getMathDescription().getGeometry()));
 			}
-		}else{
-			setMeshSpecification(null);
+		} else {
+			this.setMeshSpecification(null);
 		}
 	}
 
-	public boolean hasCellCenteredMesh()
-	{
-		return getSolverTaskDescription() != null && getSolverTaskDescription().getSolverDescription() != null
-				&& getSolverTaskDescription().getSolverDescription().hasCellCenteredMesh();
+	public boolean hasCellCenteredMesh(){
+		SolverTaskDescription taskDescription;
+		SolverDescription description;
+		return (taskDescription = this.getSolverTaskDescription()) != null
+				&& (description = taskDescription.getSolverDescription()) != null
+				&& description.hasCellCenteredMesh();
 	}
 
 	public void gatherIssues(IssueContext issueContext, List<Issue> issueList) {
-		
-		MathOverrides mo = getMathOverrides();
-		if(mo!=null && mo.hasUnusedOverrides()) {
-			String msg = "The Simulation '" + getName() + "' has unused Math Overrides.";
+		MathOverrides mo = this.getMathOverrides();
+		if( mo != null && mo.hasUnusedOverrides()) {
+			String msg = "The Simulation '" + this.getName() + "' has unused Math Overrides.";
 			String tip = "Remove the unused Math Overrides.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Simulation_Override_NotFound, msg, tip, Issue.Severity.ERROR));
 		}
@@ -1074,18 +1020,22 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	public Kind getSimulationContextKind() {
 		return SimulationContext.Kind.SIMULATIONS_KIND;
 	}
+
 	public void setImportedTaskID(String id) {
-		fieldImportedTaskID = id;
+        this.importedTaskID = id;
 	}
+
 	public String getImportedTaskID() {
-		return fieldImportedTaskID;
+		return this.importedTaskID;
 	}
 	
 	public static final String typeName = "Simulation";
+
 	@Override
 	public String getDisplayName() {
-		return getName();
+		return this.getName();
 	}
+
 	@Override
 	public String getDisplayType() {
 		return typeName;
