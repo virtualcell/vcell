@@ -442,11 +442,11 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		clipboard.setContents(stringSelection, null);
 	}
 	private void HelpButton_ActionPerformed() {
-		String hLink = "\nhttps://www.yahoo.com\n";
+		String hLink = "\"https://www.yahoo.com\"";
 		String message = "<html>The simulation results of spatial applications may be exported to ImageJ for further ";
-		message += "processing using the compatible N5 format.\n";
-		message += "Use the 'Copy Link' button above to copy the exported data location to the clipboard.\n";
-		message += "Use the vcell macro in ImageJ to download the file within ImageJ for further processing.\n";
+		message += "processing using the compatible N5 format.<br>>";
+		message += "Use the 'Copy Link' button above to copy the exported data location to the clipboard.<br>";
+		message += "Use the vcell macro in ImageJ to download the file within ImageJ for further processing.<br>";
 		message += "The Fiji ImageJ application can be downloaded <a href=hLink>here</a></html>";
 		DialogUtils.showInfoDialog(ExportMonitorPanel.this, "ImageJ Export Help", message);
 	}

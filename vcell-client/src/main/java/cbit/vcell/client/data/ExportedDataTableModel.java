@@ -130,13 +130,16 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
                     }
                 }
 
-                if(tableDataRow.link != null && tableDataRow.link.contains(prefix)) {
-                    String dataSetName = tableDataRow.link.substring(tableDataRow.link.lastIndexOf(prefix) + prefix.length());
-                    if (dataSetName.toLowerCase().contains(lowerCaseSearchText)) {
-                        if (!newData.contains(tableDataRow)) {
-                            newData.add(tableDataRow);
-//                        continue;
-                        }
+                if(tableDataRow.link != null && tableDataRow.link.toLowerCase().contains(lowerCaseSearchText)) {
+                    if (!newData.contains(tableDataRow)) {
+                        newData.add(tableDataRow);
+//                      continue;
+                    }
+                }
+                if(tableDataRow.name != null && tableDataRow.name.toLowerCase().contains(lowerCaseSearchText)) {
+                    if(!newData.contains(tableDataRow)) {
+                        newData.add(tableDataRow);
+                        continue;
                     }
                 }
                 // TODO: we could also iterate through the list of parameters
@@ -175,6 +178,7 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         public String dateExported = null;
         public String format = null;
         public String link = null;
+        public String name = null;      // user given name for the saved dataset
         public String bioModelName = null;
         public String timeSlice = null;
         public String appName = null;
@@ -184,7 +188,7 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         public boolean nonSpatial;
         public String applicationType = null;
 
-        public TableData(String jobID, String simID, String dateExported, String format, String link,
+        public TableData(String jobID, String simID, String dateExported, String format, String link, String name,
                          String bioModelName, String timeSlice, String appName, String simName, String variables,
                          ArrayList<String> differentParameterValues, boolean nonSpatial, String applicationType){
             this.jobID = jobID;
@@ -192,6 +196,7 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
             this.dateExported = dateExported;
             this.format = format;
             this.link = link;
+            this.name = name;
             this.bioModelName = bioModelName;
             this.timeSlice = timeSlice;
             this.appName = appName;

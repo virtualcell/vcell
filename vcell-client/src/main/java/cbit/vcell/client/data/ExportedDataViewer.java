@@ -116,7 +116,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         JPanel searchPane = new JPanel();
         searchPane.setLayout(new GridBagLayout());
 
-        copyButton = new JButton("Copy Export URI");
+        copyButton = new JButton("Copy Link");
         copyButton.setEnabled(false);
         copyButton.addActionListener(this);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -360,10 +360,11 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     private void addRowFromJson(String jobID, String dataFormat, ExportDataRepresentation jsonData){
         ExportDataRepresentation.SimulationExportDataRepresentation simData = jsonData.formatData.get(dataFormat).simulationDataMap.get(jobID);
         ExportedDataTableModel.TableData newRow = new ExportedDataTableModel.TableData(
-                simData.jobID, simData.dataID, simData.exportDate, dataFormat, simData.uri,
+                simData.jobID, simData.dataID, simData.exportDate, dataFormat, simData.uri, simData.savedFileName,
                 simData.biomodelName, simData.startAndEndTime, simData.applicationName, simData.simulationName, simData.variables,
                 simData.differentParameterValues, simData.nonSpatial, simData.applicationType
         );
+//        simData.savedFileName
         tableModel.addRow(newRow);
     }
 
@@ -437,17 +438,26 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         StyledDocument doc = new DefaultStyledDocument();
         addColoredText(doc, "\nVariables List: ", GraphConstants.darkgreen);
         addColoredText(doc, rowData.variables, Color.BLACK);
-        addColoredText(doc, "\n\nSimulation ID:  ", GraphConstants.darkgreen);
+        addColoredText(doc, "\n\nSimulation ID: ", GraphConstants.darkgreen);
         addColoredText(doc, rowData.simID, Color.BLACK);
 
-        String dataSetName = rowData.link;
-        if(dataSetName != null && dataSetName.contains(ExportedDataTableModel.prefix)) {
-            dataSetName = dataSetName.substring(dataSetName.lastIndexOf(ExportedDataTableModel.prefix) + ExportedDataTableModel.prefix.length());
-            if(dataSetName != null && !dataSetName.isEmpty()) {
-                addColoredText(doc, "\nDataset Name:   ", GraphConstants.darkgreen);
-                addColoredText(doc, dataSetName, Color.BLACK);
-            }
+        if(rowData.name != null && !rowData.name.isEmpty()) {
+            addColoredText(doc, "\nName: ", GraphConstants.darkgreen);
+            addColoredText(doc, rowData.name, Color.BLACK);
         }
+        if(rowData.link != null && !rowData.link.isEmpty() && rowData.link.contains(ExportedDataTableModel.prefix)) {
+            addColoredText(doc, "\nLink: ", GraphConstants.darkgreen);
+            addColoredText(doc, rowData.link, Color.BLACK);
+        }
+
+//        String dataSetName = rowData.link;
+//        if(dataSetName != null && dataSetName.contains(ExportedDataTableModel.prefix)) {
+//            dataSetName = dataSetName.substring(dataSetName.lastIndexOf(ExportedDataTableModel.prefix) + ExportedDataTableModel.prefix.length());
+//            if(dataSetName != null && !dataSetName.isEmpty()) {
+//                addColoredText(doc, "\nDataset Name:   ", GraphConstants.darkgreen);
+//                addColoredText(doc, dataSetName, Color.BLACK);
+//            }
+//        }
 
         parameterScrollTableModel.resetData();
         for(int i =0; i < differentParameterValues.size(); i++){
