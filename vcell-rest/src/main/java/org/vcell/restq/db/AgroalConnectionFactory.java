@@ -3,21 +3,28 @@ package org.vcell.restq.db;
 import io.agroal.api.AgroalDataSource;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.db.oracle.OracleKeyFactory;
+import org.vcell.db.postgres.PostgresKeyFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 @ApplicationScoped
-public class OracleAgroalConnectionFactory implements ConnectionFactory {
+public class AgroalConnectionFactory implements ConnectionFactory {
 
     @Inject
-    private AgroalDataSource ds;
+    AgroalDataSource ds;
 
-    private OracleKeyFactory keyFactory = new OracleKeyFactory();
+    @ConfigProperty(name = "vcell.quarkus.db-kind")
+    String db_kind;
+
+
+    public AgroalConnectionFactory() {
+    }
 
     @Override
     public void close() {
@@ -41,11 +48,27 @@ public class OracleAgroalConnectionFactory implements ConnectionFactory {
 
     @Override
     public KeyFactory getKeyFactory() {
-        return keyFactory;
+        if (usePostgresql()) {
+            return new PostgresKeyFactory();
+        }else{
+            return new OracleKeyFactory();
+        }
+    }
+
+    private boolean usePostgresql() {
+        return switch (db_kind) {
+            case "postgresql" -> true;
+            case "oracle" -> false;
+            default -> throw new IllegalStateException("Unexpected value: " + db_kind);
+        };
     }
 
     @Override
     public DatabaseSyntax getDatabaseSyntax() {
-        return DatabaseSyntax.ORACLE;
+        if (usePostgresql()) {
+            return DatabaseSyntax.POSTGRES;
+        } else {
+            return DatabaseSyntax.ORACLE;
+        }
     }
 }

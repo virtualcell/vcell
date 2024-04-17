@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jose4j.jwt.MalformedClaimException;
 import org.vcell.auth.JWTUtils;
-import org.vcell.restq.db.OracleAgroalConnectionFactory;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
@@ -49,8 +49,9 @@ public class OldUserService {
 	private long lastQueryTimestampMS = 0;
 	private final static long MIN_QUERY_TIME_MS = 1000*5; // 5 seconds
 
-	public OldUserService(OracleAgroalConnectionFactory oracleAgroalConnectionFactory) throws DataAccessException {
-		DatabaseServerImpl databaseServer = new DatabaseServerImpl(oracleAgroalConnectionFactory, oracleAgroalConnectionFactory.getKeyFactory());
+	@Inject
+	public OldUserService(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
+		DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
 		this.adminDbTopLevel = databaseServer.getAdminDBTopLevel();
 	}
 

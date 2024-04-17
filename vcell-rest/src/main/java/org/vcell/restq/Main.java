@@ -6,7 +6,7 @@ import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import org.vcell.db.DatabaseService;
 import org.vcell.restq.config.CDIVCellConfigProvider;
-import org.vcell.restq.db.OracleAgroalConnectionFactory;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -158,7 +158,7 @@ public class Main {
         private void setupDatabase() {
             // this reconciles the CDI database with the PropertyLoader, replacing PropertyLoader's default
             // database provider which is backed by System properties.
-            DatabaseService.getInstance().setConnectionFactory(new OracleAgroalConnectionFactory());
+            DatabaseService.getInstance().setConnectionFactory(new AgroalConnectionFactory());
         }
 
         private void setupConfiguration() throws IOException {

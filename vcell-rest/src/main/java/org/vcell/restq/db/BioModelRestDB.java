@@ -26,7 +26,7 @@ public class BioModelRestDB {
 
 
     @Inject
-    public BioModelRestDB(OracleAgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
+    public BioModelRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         simulationRestDB = new SimulationRestDB(agroalConnectionFactory);
         databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());

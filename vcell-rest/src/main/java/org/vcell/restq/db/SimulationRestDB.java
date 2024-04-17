@@ -3,7 +3,6 @@ package org.vcell.restq.db;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
-import jakarta.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
@@ -19,7 +18,7 @@ public class SimulationRestDB {
 
     private final DatabaseServerImpl databaseServerImpl;
 
-    public SimulationRestDB(OracleAgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
+    public SimulationRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
     }
 

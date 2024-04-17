@@ -19,7 +19,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.restq.TestEndpointUtils;
-import org.vcell.restq.db.OracleAgroalConnectionFactory;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 
 import java.sql.SQLException;
@@ -37,7 +37,7 @@ public class UsersApiTest {
 
 
     @Inject
-    OracleAgroalConnectionFactory oracleAgroalConnectionFactory;
+    AgroalConnectionFactory agroalConnectionFactory;
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     private ApiClient aliceAPIClient;
@@ -51,14 +51,14 @@ public class UsersApiTest {
 
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
-        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(oracleAgroalConnectionFactory, oracleAgroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
+        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
         adminDBTopLevel.removeAllUsersIdentities(TestEndpointUtils.vcellNagiosUser, true);
         adminDBTopLevel.removeAllUsersIdentities(TestEndpointUtils.administratorUser, true);
     }
 
     @Test
     public void testMapUser() throws ApiException, SQLException, DataAccessException {
-        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(oracleAgroalConnectionFactory, oracleAgroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
+        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
         UsersResourceApi aliceUserResourceAPI = new UsersResourceApi(aliceAPIClient);
         Boolean mapped = TestEndpointUtils.mapClientToNagiosUser(aliceUserResourceAPI);
         assert (mapped.booleanValue());
