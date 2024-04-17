@@ -1,17 +1,12 @@
 package org.vcell.restq;
 
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.UserIdentityTable;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.MapUser;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-
-import java.math.BigDecimal;
 
 public class TestEndpointUtils {
 
@@ -25,7 +20,7 @@ public class TestEndpointUtils {
         bob;
     }
 
-    public static ApiClient createAPIClient(KeycloakTestClient keycloakClient, int testPort, TestOIDCUsers oidcUser){
+    public static ApiClient createAuthenticatedAPIClient(KeycloakTestClient keycloakClient, int testPort, TestOIDCUsers oidcUser){
         ApiClient apiClient = new ApiClient();
         String oidcAccessToken = keycloakClient.getAccessToken(oidcUser.name());
         apiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + oidcAccessToken));
@@ -44,14 +39,16 @@ public class TestEndpointUtils {
 //        return aliceClient;
 //    }
 
-    public static boolean mapClientToNagiosUser(UsersResourceApi usersResourceApi) throws ApiException {
+    public static boolean mapClientToNagiosUser(ApiClient authenticatedApiClient) throws ApiException {
+        UsersResourceApi usersResourceApi = new UsersResourceApi(authenticatedApiClient);
         MapUser bioModelOwner = new MapUser();
         bioModelOwner.setUserID("vcellNagios");
         bioModelOwner.setPassword("1700596370261");
         return usersResourceApi.setVCellIdentity(bioModelOwner);
     }
 
-    public static boolean mapClientToAdminUser(UsersResourceApi usersResourceApi) throws ApiException {
+    public static boolean mapClientToAdminUser(ApiClient authenticatedApiClient) throws ApiException {
+        UsersResourceApi usersResourceApi = new UsersResourceApi(authenticatedApiClient);
         MapUser bioModelOwner = new MapUser();
         bioModelOwner.setUserID("Administrator");
         bioModelOwner.setPassword("1700596370260");

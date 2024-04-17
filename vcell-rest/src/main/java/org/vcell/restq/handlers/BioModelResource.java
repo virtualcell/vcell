@@ -1,30 +1,21 @@
 package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.BioModelRep;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.vcell.restq.auth.AuthUtils;
 import org.vcell.restq.db.BioModelRestDB;
-import org.vcell.restq.db.OracleAgroalConnectionFactory;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.restq.models.BioModel;
-import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.Optional;
 
 @Path("/api/v1/bioModel")
 public class BioModelResource {
@@ -98,6 +89,9 @@ public class BioModelResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String uploadBioModel(String bioModelXML) throws DataAccessException, XmlParseException {
         User user = userRestDB.getUserFromIdentity(securityIdentity);
+        if (user == null) {
+            throw new WebApplicationException("User not authenticated", 401);
+        }
         KeyValue keyValue = bioModelRestDB.saveBioModel(user, bioModelXML);
         return keyValue.toString();
     }

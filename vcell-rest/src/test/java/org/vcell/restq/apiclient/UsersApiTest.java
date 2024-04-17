@@ -45,8 +45,8 @@ public class UsersApiTest {
 
     @BeforeEach
     public void createClients(){
-        aliceAPIClient = TestEndpointUtils.createAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
-        bobAPIClient = TestEndpointUtils.createAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
+        aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
+        bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
     }
 
     @AfterEach
@@ -59,10 +59,10 @@ public class UsersApiTest {
     @Test
     public void testMapUser() throws ApiException, SQLException, DataAccessException {
         AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
-        UsersResourceApi aliceUserResourceAPI = new UsersResourceApi(aliceAPIClient);
-        Boolean mapped = TestEndpointUtils.mapClientToNagiosUser(aliceUserResourceAPI);
-        assert (mapped.booleanValue());
+        boolean mapped = TestEndpointUtils.mapClientToNagiosUser(aliceAPIClient);
+        assert (mapped);
 
+        UsersResourceApi aliceUserResourceAPI = new UsersResourceApi(aliceAPIClient);
         UserIdentityJSONSafe apiRetrievedIdentity = aliceUserResourceAPI.getVCellIdentity();
         UserIdentity dbRetrievedIdentity = adminDBTopLevel.getUserIdentityFromSubjectAndIdentityProvider(TestEndpointUtils.TestOIDCUsers.alice.name(),
                 UserIdentityTable.IdentityProvider.KEYCLOAK,true);
@@ -86,10 +86,10 @@ public class UsersApiTest {
 //    https://quarkus.io/guides/security-testing
     @Test
     public void testOldAPITokenGeneration() throws ApiException {
-        UsersResourceApi aliceUserApi = new UsersResourceApi(aliceAPIClient);
-        UsersResourceApi bobUserApi = new UsersResourceApi(bobAPIClient);
-        TestEndpointUtils.mapClientToNagiosUser(aliceUserApi);
 
+        TestEndpointUtils.mapClientToNagiosUser(aliceAPIClient);
+
+        UsersResourceApi aliceUserApi = new UsersResourceApi(aliceAPIClient);
         AccesTokenRepresentationRecord token = aliceUserApi.getLegacyApiToken(TestEndpointUtils.userNagiosID, "", "123");
         assert (token != null && !token.getToken().isEmpty());
 
@@ -98,13 +98,14 @@ public class UsersApiTest {
 
 
         // Bob requests
+        UsersResourceApi bobUserApi = new UsersResourceApi(bobAPIClient);
         token = bobUserApi.getLegacyApiToken(TestEndpointUtils.userNagiosID, "", "123");
         assert (token.getToken() == null);
 
         token = bobUserApi.getLegacyApiToken(TestEndpointUtils.userAdminID, "", "123");
         assert (token.getToken() == null);
 
-        TestEndpointUtils.mapClientToAdminUser(bobUserApi);
+        TestEndpointUtils.mapClientToAdminUser(bobAPIClient);
         token = bobUserApi.getLegacyApiToken(TestEndpointUtils.userAdminID, "", "123");
         assert (token != null && !token.getToken().isEmpty());
     }

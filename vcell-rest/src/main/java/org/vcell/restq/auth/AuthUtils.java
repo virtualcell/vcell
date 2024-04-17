@@ -14,6 +14,9 @@ public class AuthUtils {
 
     private static final String devAuth0 = "https://dev-dzhx7i2db3x3kkvq.us.auth0.com/";
     public static UserIdentityTable.IdentityProvider determineIdentityProvider(SecurityIdentity securityIdentity){
+        if (securityIdentity.isAnonymous()) {
+            return null;
+        }
         JsonWebToken jsonWebToken = (JsonWebToken) securityIdentity.getPrincipal();
         String issuer = jsonWebToken.getClaim("iss");
         if(issuer.equals(devAuth0)){

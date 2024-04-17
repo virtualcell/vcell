@@ -4,7 +4,6 @@ import cbit.vcell.modeldb.*;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.AuthUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.handlers.UsersResource;
@@ -23,13 +22,12 @@ public class UserRestDB {
     public final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 
     @Inject
-    public UserRestDB(OracleAgroalConnectionFactory oracleAgroalConnectionFactory) throws DataAccessException {
+    public UserRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
         try {
-            adminDBTopLevel = new AdminDBTopLevel(oracleAgroalConnectionFactory);
+            adminDBTopLevel = new AdminDBTopLevel(agroalConnectionFactory);
         } catch (SQLException e) {
             throw new DataAccessException("database error during initialization", e);
         }
-        JWTUtils.setRsaPublicAndPrivateKey();
     }
 
 
@@ -41,6 +39,9 @@ public class UserRestDB {
 
     // TODO: add some short-lived caching here to avoid repeated database calls
     public UserIdentity getUserIdentity(SecurityIdentity securityIdentity) throws DataAccessException {
+        if (securityIdentity.isAnonymous()){
+            return null;
+        }
         String oidcName = securityIdentity.getPrincipal().getName();
         UserIdentityTable.IdentityProvider identityProvider = AuthUtils.determineIdentityProvider(securityIdentity);
         try {
@@ -51,6 +52,9 @@ public class UserRestDB {
     }
 
     public boolean mapUserIdentity(SecurityIdentity securityIdentity, UsersResource.MapUser mapUser) throws DataAccessException {
+        if (securityIdentity.isAnonymous()){
+            return false;
+        }
         try {
             User user = adminDBTopLevel.getUser(mapUser.userID(), new UserLoginInfo.DigestedPassword(mapUser.password()), true, false);
             if(user == null){
