@@ -264,7 +264,7 @@ private Model getModel(QueryHashtable dbc, ResultSet rset,Connection con,User us
 	//KeyValue ownerRef = new KeyValue(rset.getBigDecimal(ModelTable.ownerRef.toString(), 0));
 	//User owner = new User(ownerName, ownerRef);
 	try {
-		Model model = modelTable.getModel(rset,con);
+		Model model = modelTable.getModel(rset,con,dbSyntax);
 		//model.setOwner(owner);
 		KeyValue modelKey = model.getVersion().getVersionKey();
 		

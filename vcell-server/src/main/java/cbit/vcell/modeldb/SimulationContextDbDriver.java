@@ -784,7 +784,7 @@ public class SimulationContextDbDriver extends DbDriver {
         try {
             ResultSet rset = stmt.executeQuery(sql);
             if(rset.next()){
-                simContext = simContextTable.getSimContext(dbc, con, user, rset, geomDB, modelDB, mathDescDB);
+                simContext = simContextTable.getSimContext(dbc, con, dbSyntax, user, rset, geomDB, modelDB, mathDescDB);
             } else {
                 throw new ObjectNotFoundException("SimulationContext id=" + simContextKey + " not found for user '" + user + "'");
             }

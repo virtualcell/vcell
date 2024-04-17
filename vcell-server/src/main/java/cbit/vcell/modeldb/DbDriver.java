@@ -576,7 +576,7 @@ public abstract class DbDriver {
         KeyValue vKey = curateSpec.getVCDocumentInfo().getVersion().getVersionKey();
 
 
-        Version dbVersion = getVersionFromKeyValue(con, vType, vKey);
+        Version dbVersion = getVersionFromKeyValue(con, dbSyntax, vType, vKey);
         //Must be owner to curate
         if(!dbVersion.getOwner().compareEqual(user)){
             throw new PermissionException("Cannot curate " + vType.getTypeName() + " \"" + dbVersion.getName() + "\" (" + vKey + "), not owned by " + user.getName());
@@ -744,7 +744,7 @@ public abstract class DbDriver {
      *
      * @return java.util.Hashtable
      */
-    private static void findAllChildren(java.sql.Connection con, VersionableTypeVersion vtv, VersionableFamily refs) throws DataAccessException, SQLException{
+    private static void findAllChildren(java.sql.Connection con, DatabaseSyntax dbSyntax, VersionableTypeVersion vtv, VersionableFamily refs) throws DataAccessException, SQLException{
 
         //Get VersionableTypes(tables) which possibly are children of argument vType
         Vector<VersionRef> possibleRefs = VersionTable.getChildVersionableTypes(vtv.getVType());
@@ -802,7 +802,7 @@ public abstract class DbDriver {
                 while (rset.next()) {
                     try {
                         BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-                        Version version = VersionTable.getVersion(rset, getGroupAccessFromGroupID(con, groupid));
+                        Version version = VersionTable.getVersion(rset, dbSyntax, getGroupAccessFromGroupID(con, groupid));
                         VersionableTypeVersion childVTV = new VersionableTypeVersion(vr.getVType(), version);
                         allChildrenVTV.addElement(childVTV);
                     } catch(Throwable e){
@@ -823,7 +823,7 @@ public abstract class DbDriver {
                 //
                 // Check referencingVTV for children to it(Recursion)
                 //
-                findAllChildren(con, childVTV, refs);
+                findAllChildren(con, dbSyntax, childVTV, refs);
             }
         }
     }
@@ -834,7 +834,7 @@ public abstract class DbDriver {
      *
      * @return java.util.Hashtable
      */
-    private static void findAllReferences(java.sql.Connection con, VersionableTypeVersion vtv, VersionableFamily refs) throws DataAccessException, SQLException{
+    private static void findAllReferences(java.sql.Connection con, DatabaseSyntax dbSyntax, VersionableTypeVersion vtv, VersionableFamily refs) throws DataAccessException, SQLException{
 
         //Get VersionableTypes(tables) which possibly have references to argument vType
         Vector<VersionRef> possibleRefs = VersionTable.getReferencingVersionableTypes(vtv.getVType());
@@ -890,7 +890,7 @@ public abstract class DbDriver {
                 while (rset.next()) {
                     try {
                         BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-                        Version version = VersionTable.getVersion(rset, getGroupAccessFromGroupID(con, groupid));
+                        Version version = VersionTable.getVersion(rset, dbSyntax, getGroupAccessFromGroupID(con, groupid));
                         VersionableTypeVersion referencingVTV = new VersionableTypeVersion(vr.getVType(), version);
                         allReferencingVTV.addElement(referencingVTV);
                     } catch(Throwable e){
@@ -911,7 +911,7 @@ public abstract class DbDriver {
                 //
                 // Check referencingVTV for references to it(Recursion)
                 //
-                findAllReferences(con, referencingVTV, refs);
+                findAllReferences(con, dbSyntax, referencingVTV, refs);
             }
         }
     }
@@ -922,11 +922,11 @@ public abstract class DbDriver {
      *
      * @return java.util.Hashtable
      */
-    public static VersionableFamily getAllReferences(java.sql.Connection con, VersionableType vType, KeyValue keyValue) throws DataAccessException, SQLException{
-        VersionableTypeVersion vtv = new VersionableTypeVersion(vType, getVersionFromKeyValue(con, vType, keyValue));
+    public static VersionableFamily getAllReferences(java.sql.Connection con, DatabaseSyntax dbSyntax, VersionableType vType, KeyValue keyValue) throws DataAccessException, SQLException{
+        VersionableTypeVersion vtv = new VersionableTypeVersion(vType, getVersionFromKeyValue(con, dbSyntax, vType, keyValue));
         VersionableFamily refs = new VersionableFamily(vtv);
-        findAllReferences(con, refs.getTarget(), refs);
-        findAllChildren(con, refs.getTarget(), refs);
+        findAllReferences(con, dbSyntax, refs.getTarget(), refs);
+        findAllChildren(con, dbSyntax, refs.getTarget(), refs);
         return refs;
     }
 
@@ -1655,7 +1655,7 @@ public abstract class DbDriver {
                 ArrayList<GeometryInfo> tempInfos = new ArrayList<GeometryInfo>();
                 Set<String> distinctV = new HashSet<String>();
                 while (rset.next()) {
-                    GeometryInfo versionInfo = (GeometryInfo) GeometryTable.table.getInfo(rset, con);
+                    GeometryInfo versionInfo = (GeometryInfo) GeometryTable.table.getInfo(rset, con, dbSyntax);
                     if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
                         tempInfos.add(versionInfo);
                         distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -1818,17 +1818,17 @@ public abstract class DbDriver {
                 } else if(vType.equals(VersionableType.MathModelMetaData)){
                     vInfo = ((MathModelTable) vTable).getInfo(rset, con, dbSyntax);
                 } else if(vType.equals(VersionableType.Simulation)){
-                    vInfo = ((SimulationTable) vTable).getInfo(rset, con);
+                    vInfo = ((SimulationTable) vTable).getInfo(rset, con, dbSyntax);
                 } else if(vType.equals(VersionableType.Geometry)){
-                    vInfo = ((GeometryTable) vTable).getInfo(rset, con);
+                    vInfo = ((GeometryTable) vTable).getInfo(rset, con, dbSyntax);
                 } else if(vType.equals(VersionableType.VCImage)){
                     vInfo = ((ImageTable) vTable).getInfo(rset, con, dbSyntax);
                 } else if(vType.equals(VersionableType.Model)){
-                    vInfo = ((ModelTable) vTable).getInfo(rset, con);
+                    vInfo = ((ModelTable) vTable).getInfo(rset, con, dbSyntax);
                 } else if(vType.equals(VersionableType.SimulationContext)){
-                    vInfo = ((SimContextTable) vTable).getInfo(rset, con);
+                    vInfo = ((SimContextTable) vTable).getInfo(rset, con, dbSyntax);
                 } else if(vType.equals(VersionableType.MathDescription)){
-                    vInfo = ((MathDescTable) vTable).getInfo(rset, con);
+                    vInfo = ((MathDescTable) vTable).getInfo(rset, con, dbSyntax);
                 } else {
                     throw new RuntimeException("VersionInfo not availlable for type '" + vType.getTypeName() + "'");
                 }
@@ -1901,7 +1901,7 @@ public abstract class DbDriver {
      * @param vType    cbit.sql.VersionableType
      * @return cbit.sql.Version
      */
-    private static Version getVersionFromKeyValue(Connection con, VersionableType vType, KeyValue keyValue)
+    private static Version getVersionFromKeyValue(Connection con, DatabaseSyntax dbSyntax, VersionableType vType, KeyValue keyValue)
             throws SQLException, DataAccessException{
         Version version = null;
 //
@@ -1929,7 +1929,7 @@ public abstract class DbDriver {
             java.sql.ResultSet rset = stmt.executeQuery(sql);
             if(rset.next()){
                 BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-                version = VersionTable.getVersion(rset, getGroupAccessFromGroupID(con, groupid));
+                version = VersionTable.getVersion(rset, dbSyntax, getGroupAccessFromGroupID(con, groupid));
             } else {
                 throw new ObjectNotFoundException("Failed to find " + vType.getTypeName() + " (Key=" + keyValue + ")");
             }
@@ -1963,7 +1963,7 @@ public abstract class DbDriver {
             throw new IllegalArgumentException("Improper parameters for groupAddUser userAddToGroupString=" + (userAddToGroupString == null ? "NULL" : userAddToGroupString));
         }
         //
-        Version currentVersion = permissionInit(con, vType, vKey, owner);
+        Version currentVersion = permissionInit(con, dbSyntax, vType, vKey, owner);
 
         // If userAddToGroup is already in group it is an error
         // ----- Also can't add members to GroupAccessAll(Public) (CHANGED!!!) -----
@@ -2108,7 +2108,7 @@ public abstract class DbDriver {
             throw new IllegalArgumentException("Improper parameters for groupRemoveUser userRemoveFromGroupString=" + (userRemoveFromGroupString == null ? "NULL" : userRemoveFromGroupString));
         }
         //
-        Version currentVersion = permissionInit(con, vType, vKey, owner);
+        Version currentVersion = permissionInit(con, dbSyntax, vType, vKey, owner);
 
         //If userRemoveFromGroup is not in group it is an error, or if not a "real" group
         boolean bExists = false;
@@ -2232,7 +2232,7 @@ public abstract class DbDriver {
             throw new IllegalArgumentException("Improper parameters for groupAccessSetPrivate");
         }
         //
-        Version currentVersion = permissionInit(con, vType, vKey, owner);
+        Version currentVersion = permissionInit(con, dbSyntax, vType, vKey, owner);
 
         if(lg.isTraceEnabled())
             lg.trace("DbDriver.groupAccessSetPrivate(owner=" + owner + ", type =" + vType.getTypeName() + ", key=" + vKey + ")");
@@ -2268,7 +2268,7 @@ public abstract class DbDriver {
             throw new IllegalArgumentException("Improper parameters for groupAccessSetPublic");
         }
         //
-        Version currentVersion = permissionInit(con, vType, vKey, owner);
+        Version currentVersion = permissionInit(con, dbSyntax, vType, vKey, owner);
 
         if(lg.isTraceEnabled())
             lg.trace("DbDriver.groupSetPublic(owner=" + owner + ", type =" + vType + ", key=" + vKey + ")");
@@ -2484,14 +2484,14 @@ public abstract class DbDriver {
     }
 
 
-    private static Version permissionInit(Connection con, VersionableType vType, KeyValue vKey, User user) throws DataAccessException, SQLException{
+    private static Version permissionInit(Connection con, DatabaseSyntax dbSyntax, VersionableType vType, KeyValue vKey, User user) throws DataAccessException, SQLException{
 
         if(!vType.getIsTopLevel()){
             throw new IllegalArgumentException("Versionable type " + vType.getTypeName() + " not top level, can't set permission");
         }
 
 
-        Version version = getVersionFromKeyValue(con, vType, vKey);
+        Version version = getVersionFromKeyValue(con, dbSyntax, vType, vKey);
 
         //Must be owner to manipulate group
         if(!version.getOwner().compareEqual(user)){
@@ -3013,7 +3013,7 @@ public abstract class DbDriver {
                     } else {
                         tcAnnot = TokenMangler.getSQLRestoredString(tcAnnot);
                     }
-                    java.util.Date tcDate = VersionTable.getDate(rset, TFTestCaseTable.table.creationDate.getUnqualifiedColName());
+                    java.util.Date tcDate = VersionTable.getDate(rset, dbSyntax, TFTestCaseTable.table.creationDate.getUnqualifiedColName());
 
                     MathModelInfo mmInfo = null;
                     BioModelInfo bmInfo = null;
@@ -3091,7 +3091,7 @@ public abstract class DbDriver {
                     tsVersion = rset.getString(TFTestSuiteTable.table.tsVersion.getUnqualifiedColName());
                     tsVCBuild = rset.getString(TFTestSuiteTable.table.vcBuildVersion.getUnqualifiedColName());
                     tsNumericsBuild = rset.getString(TFTestSuiteTable.table.vcNumericsVersion.getUnqualifiedColName());
-                    tsDate = VersionTable.getDate(rset, TFTestSuiteTable.table.creationDate.getUnqualifiedColName());
+                    tsDate = VersionTable.getDate(rset, dbSyntax, TFTestSuiteTable.table.creationDate.getUnqualifiedColName());
                     tsAnnot = rset.getString(TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName());
                     islocked = rset.getBoolean(TFTestSuiteTable.table.isLocked.getUnqualifiedColName());
                 } else {
@@ -3124,7 +3124,7 @@ public abstract class DbDriver {
      *
      * @return cbit.vcell.numericstest.TestSuiteInfoNew[]
      */
-    public static TestSuiteInfoNew[] testSuiteInfosGet(Connection con, User user) throws SQLException{
+    public static TestSuiteInfoNew[] testSuiteInfosGet(Connection con, DatabaseSyntax dbSyntax, User user) throws SQLException{
 
         if(!user.isTestAccount()){
             throw new PermissionException("User=" + user.getName() + " not allowed TestSuiteInfo");
@@ -3143,7 +3143,7 @@ public abstract class DbDriver {
                 String tsID = rset.getString(TFTestSuiteTable.table.tsVersion.getUnqualifiedColName());
                 String vcBuildS = rset.getString(TFTestSuiteTable.table.vcBuildVersion.getUnqualifiedColName());
                 String vcNumericS = rset.getString(TFTestSuiteTable.table.vcNumericsVersion.getUnqualifiedColName());
-                java.util.Date date = VersionTable.getDate(rset, TFTestSuiteTable.table.creationDate.getUnqualifiedColName());
+                java.util.Date date = VersionTable.getDate(rset, dbSyntax, TFTestSuiteTable.table.creationDate.getUnqualifiedColName());
                 String tsAnnot = rset.getString(TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName());
                 boolean islocked = rset.getBoolean(TFTestSuiteTable.table.isLocked.getUnqualifiedColName());
                 tsiV.add(new TestSuiteInfoNew(tsKey, tsID, vcBuildS, vcNumericS, date, tsAnnot, islocked));

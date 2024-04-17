@@ -55,7 +55,7 @@ private GeometryTable() {
 	addFields(fields);
 }
 
-public Geometry getGeometry(ResultSet rset, Connection con) throws SQLException,DataAccessException,PropertyVetoException{
+public Geometry getGeometry(ResultSet rset, Connection con, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException,PropertyVetoException{
 
 	int dim = rset.getInt(dimension.toString());
 
@@ -68,7 +68,7 @@ public Geometry getGeometry(ResultSet rset, Connection con) throws SQLException,
 	double ez = rset.getBigDecimal(ExtentTable.table.extentZ.toString()).doubleValue();
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	
 	Geometry geometry = new Geometry(version,dim);
 	geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(ox,oy,oz));
@@ -77,10 +77,10 @@ public Geometry getGeometry(ResultSet rset, Connection con) throws SQLException,
 	return geometry;
 }
 
-public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	
 	int dim = rset.getInt(GeometryTable.table.dimension.toString());
 	

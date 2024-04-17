@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -52,7 +53,7 @@ private ApiAccessTokenTable() {
  * @param rset ResultSet
  * @param log SessionLog
  */
-public ApiAccessToken getApiAccessToken(ResultSet rset) throws SQLException, DataAccessException {
+public ApiAccessToken getApiAccessToken(ResultSet rset, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException {
 
 	KeyValue key = new KeyValue(rset.getBigDecimal(id.toString()));
 	String token = rset.getString(accesstoken.toString());
@@ -60,11 +61,11 @@ public ApiAccessToken getApiAccessToken(ResultSet rset) throws SQLException, Dat
 	KeyValue userKey = new KeyValue(rset.getBigDecimal(userref.toString()));
 	String userid = rset.getString(UserTable.table.userid.toString());
 	User user = new User(userid,userKey);
-	java.util.Date creation = VersionTable.getDate(rset,creationDate.toString());
+	java.util.Date creation = VersionTable.getDate(rset,dbSyntax,creationDate.toString());
 	if (creation==null){
 		throw new DataAccessException("could not parse creation date");
 	}
-	java.util.Date expiration = VersionTable.getDate(rset,expireDate.toString());
+	java.util.Date expiration = VersionTable.getDate(rset,dbSyntax,expireDate.toString());
 	if (expiration==null){
 		throw new DataAccessException("could not parse expiration date");
 	}

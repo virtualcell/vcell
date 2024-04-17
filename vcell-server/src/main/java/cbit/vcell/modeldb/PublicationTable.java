@@ -167,7 +167,7 @@ public void setPreparedStatement_PublicationReps(PreparedStatement stmt, User us
 	}
 }
 
-public PublicationRep getPublicationRep(User user, ResultSet rset) throws IllegalArgumentException, SQLException,DataAccessException {
+public PublicationRep getPublicationRep(User user, ResultSet rset, DatabaseSyntax dbSyntax) throws IllegalArgumentException, SQLException,DataAccessException {
 	
 	KeyValue pubKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
 	String title = rset.getString(table.title.toString());
@@ -180,7 +180,7 @@ public PublicationRep getPublicationRep(User user, ResultSet rset) throws Illega
 	String endnoteid = rset.getString(table.endnoteid.toString());
 	String url = rset.getString(table.url.toString());
 	String wittid = rset.getString(table.wittid.toString());
-	java.util.Date pubdate = VersionTable.getDate(rset,table.pubdate.toString());
+	java.util.Date pubdate = VersionTable.getDate(rset,dbSyntax,table.pubdate.toString());
 	
 	String bmRefsString = rset.getString("bmRefs");
 	ArrayList<BioModelReferenceRep> bmRefList = new ArrayList<BioModelReferenceRep>();

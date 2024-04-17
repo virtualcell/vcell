@@ -560,7 +560,7 @@ public BioModelRep[] getBioModelReps(Connection con, User user, String condition
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			BioModelRep bioModelRep = bioModelTable.getBioModelRep(user,rset);
+			BioModelRep bioModelRep = bioModelTable.getBioModelRep(user,rset,dbSyntax);
 			bioModelReps.add(bioModelRep);
 		}
 	} finally {
@@ -589,7 +589,7 @@ public PublicationRep[] getPublicationReps(Connection con, User user, String con
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			PublicationRep publicationRep = publicationTable.getPublicationRep(user,rset);
+			PublicationRep publicationRep = publicationTable.getPublicationRep(user,rset,dbSyntax);
 			publicationReps.add(publicationRep);
 		}
 	} finally {

@@ -21,6 +21,7 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.jwt.consumer.JwtContext;
 import org.jose4j.lang.JoseException;
 import org.vcell.auth.JWTUtils;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -605,7 +606,7 @@ public void setApiAccessTokenStatus(Connection con, KeyValue apiAccessTokenKey, 
 }
 
 
-public ApiAccessToken getApiAccessToken(Connection con, String accessToken) throws SQLException, DataAccessException {
+public ApiAccessToken getApiAccessToken(Connection con, DatabaseSyntax dbSyntax, String accessToken) throws SQLException, DataAccessException {
 	Statement stmt;
 	String sql;
 	ResultSet rset;
@@ -626,7 +627,7 @@ public ApiAccessToken getApiAccessToken(Connection con, String accessToken) thro
 	try {
 		rset = stmt.executeQuery(sql);
 		if (rset.next()) {
-			apiAccessToken = tokenTable.getApiAccessToken(rset);
+			apiAccessToken = tokenTable.getApiAccessToken(rset,dbSyntax);
 		}
 	} finally {
 		stmt.close();

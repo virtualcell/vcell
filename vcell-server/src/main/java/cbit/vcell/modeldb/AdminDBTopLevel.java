@@ -788,7 +788,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         Object lock = new Object();
         Connection con = conFactory.getConnection(lock);
         try {
-            return userDB.getApiAccessToken(con, accessToken);
+            return userDB.getApiAccessToken(con, conFactory.getDatabaseSyntax(), accessToken);
         } catch(Throwable e){
             lg.error("failure in getApiAccessToken()", e);
             if(bEnableRetry && isBadConnection(con)){

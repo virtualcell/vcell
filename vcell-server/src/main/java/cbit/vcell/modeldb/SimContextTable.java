@@ -79,7 +79,7 @@ private SimContextTable() {
 }
 
 
-public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 
 	KeyValue mathRef = null;
 	java.math.BigDecimal mathRefValue = rset.getBigDecimal(SimContextTable.table.mathRef.toString());
@@ -92,7 +92,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con) throws SQLException,Da
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(SimContextTable.table.modelRef.toString()));
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
 	return new SimulationContextInfo(mathRef,geomRef,modelRef,version,VCellSoftwareVersion.fromString(softwareVersion));
@@ -129,12 +129,12 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 }
 
 
-public SimulationContext getSimContext(QueryHashtable dbc, Connection con,User user,ResultSet rset,
+public SimulationContext getSimContext(QueryHashtable dbc, Connection con, DatabaseSyntax dbSyntax, User user,ResultSet rset,
 										GeomDbDriver geomDB,ModelDbDriver modelDB,MathDescriptionDbDriver mathDB) 
 							throws SQLException,DataAccessException, java.beans.PropertyVetoException {
 			
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	KeyValue geomKey = new KeyValue(rset.getBigDecimal(SimContextTable.table.geometryRef.toString()));
 	Geometry geom = (Geometry)geomDB.getVersionable(dbc, con,user, VersionableType.Geometry,geomKey,false);
 	KeyValue modelKey = new KeyValue(rset.getBigDecimal(SimContextTable.table.modelRef.toString()));
