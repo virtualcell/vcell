@@ -215,7 +215,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
                 dataSetNameLabel = new javax.swing.JLabel();
                 dataSetNameLabel.setName("JLabelDatasetName");
                 dataSetNameLabel.setPreferredSize(new java.awt.Dimension(108, 27));
-                dataSetNameLabel.setText("N5 File Name:");
+                dataSetNameLabel.setText("N5 Dataset Name:");
                 // user code begin {1}
                 // user code end
             } catch (java.lang.Throwable ivjExc) {

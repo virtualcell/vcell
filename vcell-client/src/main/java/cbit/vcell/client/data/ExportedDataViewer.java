@@ -61,7 +61,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     private final static Logger lg = LogManager.getLogger(ExportedDataViewer.class);
 
-    public ExportedDataViewer() {
+    public ExportedDataViewer() {    // =============== middle panel ( with the table, Search sub-panel and Copy / Delete )
         int tableHeight = 300;
         int tableWidth = 400;
 
@@ -102,7 +102,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
                                 setIcon(VCellIcons.appRbmNonspIcon);
                                 break;
                     }
-                        //setText("");
 //                        setToolTipText(application.getDescription());
                         setHorizontalTextPosition(SwingConstants.RIGHT);
                     }
@@ -118,6 +117,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
         copyButton = new JButton("Copy Link");
         copyButton.setEnabled(false);
+        copyButton.setToolTipText("Select a table row and press this button to copy the file location to Clipboard");
         copyButton.addActionListener(this);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -128,6 +128,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
         deleteButton = new JButton("Delete Export");
         deleteButton.setEnabled(false);
+        deleteButton.setToolTipText("Select a table row and press the this button to delete the exported file");
         deleteButton.addActionListener(this);
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
@@ -190,8 +191,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         this.setLayout(new BorderLayout());
         this.add(userOptionsPane(), BorderLayout.NORTH);
         add(splitPane);
-//        this.add(tableScrollPane, BorderLayout.CENTER);
-//        this.add(parameterScrollPane, BorderLayout.SOUTH);
 
         todayInterval.addActionListener(this);
         monthInterval.addActionListener(this);
@@ -201,7 +200,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         initalizeTableData();
     }
 
-    private JSplitPane exportDetailsPane(){
+    private JSplitPane exportDetailsPane(){     // ========================== bottom panel ( Export Details panel )
         int height = 200;
         int width = 140;
         exportVariableText = new JTextPane();
@@ -217,7 +216,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         parameterScrollPane.setMaximumSize(new Dimension(width, height));
         parameterScrollPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Parameters "));
 
-
         JScrollPane exportDetails = new JScrollPane(exportVariableText, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         exportDetails.setPreferredSize(new Dimension(width, height));
         exportDetails.setSize(new Dimension(width, height));
@@ -225,15 +223,15 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, exportDetails, parameterScrollPane);
         splitPane.setContinuousLayout(true);
-        splitPane.setResizeWeight(0.5);
+        splitPane.setResizeWeight(0.65);
         splitPane.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Details "));
         return splitPane;
     }
 
-    private JPanel userOptionsPane(){
+    private JPanel userOptionsPane(){       // ========================== top panel (user options)
         refreshButton = new JButton("Refresh");
 
-        JPanel timeIntervalSelector = new JPanel();
+        JPanel timeIntervalSelector = new JPanel();         // ---------- Time Interval sub-panel
         timeIntervalSelector.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Time Interval "));
         timeIntervalSelector.setLayout(new BoxLayout(timeIntervalSelector, BoxLayout.X_AXIS));
 
@@ -248,7 +246,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         timeIntervalSelector.add(yearlyInterval);
         timeIntervalSelector.add(anyInterval);
 
-        JPanel exportFormatFilterPanel = new JPanel();
+        JPanel exportFormatFilterPanel = new JPanel();      // ------------- Export Type sub-panel
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         exportFormatFilterPanel.setBorder(BorderFactory.createTitledBorder(loweredEtchedBorder, " Export Type "));
         exportFormatFilterPanel.setLayout(new GridBagLayout());
@@ -278,21 +276,13 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
-//        gbc.weightx = 1;
-//        gbc.weighty = 1;
-//        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.WEST;
-//        gbc.fill = GridBagConstraints.VERTICAL;
         gbc.insets = new Insets(1, 1, 5, 1);
         topBar.add(exportFormatFilterPanel, gbc);
 
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 0;
-//        gbc.weightx = 1;
-//        gbc.weighty = 1;
-//        gbc.gridwidth = 2;
-//        gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(1, 1, 1, 1);
         topBar.add(timeIntervalSelector, gbc);
 
@@ -308,8 +298,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         gbc = new GridBagConstraints();
         gbc.gridx = 3;
         gbc.gridy = 0;
-//        gbc.weightx = 1;
-//        gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(9, 1, 7, 4);
@@ -364,7 +352,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
                 simData.biomodelName, simData.startAndEndTime, simData.applicationName, simData.simulationName, simData.variables,
                 simData.differentParameterValues, simData.nonSpatial, simData.applicationType
         );
-//        simData.savedFileName
         tableModel.addRow(newRow);
     }
 
@@ -449,15 +436,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             addColoredText(doc, "\nLink: ", GraphConstants.darkgreen);
             addColoredText(doc, rowData.link, Color.BLACK);
         }
-
-//        String dataSetName = rowData.link;
-//        if(dataSetName != null && dataSetName.contains(ExportedDataTableModel.prefix)) {
-//            dataSetName = dataSetName.substring(dataSetName.lastIndexOf(ExportedDataTableModel.prefix) + ExportedDataTableModel.prefix.length());
-//            if(dataSetName != null && !dataSetName.isEmpty()) {
-//                addColoredText(doc, "\nDataset Name:   ", GraphConstants.darkgreen);
-//                addColoredText(doc, dataSetName, Color.BLACK);
-//            }
-//        }
 
         parameterScrollTableModel.resetData();
         for(int i =0; i < differentParameterValues.size(); i++){

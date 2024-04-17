@@ -212,7 +212,7 @@ private ScrollTable getScrollPaneTable() {
 			ivjScrollPaneTable = new ScrollTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			ivjScrollPaneTable.setModel(new ExportMonitorTableModel());
-			ivjScrollPaneTable.setToolTipText("Right Click to copy file location to Clipboard");
+			ivjScrollPaneTable.setToolTipText("Select a row and press the 'Copy Link' button to copy the file location to Clipboard");
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			ivjScrollPaneTable.setScrollTableActionManager(new DefaultScrollTableActionManager(getScrollPaneTable()) {
 				@Override
@@ -400,6 +400,7 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		if(copyButton == null) {
 			copyButton = new JButton("Copy Link");
 			copyButton.setName("CopyButton");
+			copyButton.setToolTipText("Select a table row and press this button to copy the file location to Clipboard");
 			copyButton.addActionListener(ivjEventHandler);
 			copyButton.setEnabled(false);
 		}
@@ -409,6 +410,7 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		if(helpButton == null) {
 			helpButton = new JButton("Help");
 			helpButton.setName("HelpButton");
+			helpButton.setToolTipText("ImageJ N5 format export help");
 			helpButton.addActionListener(ivjEventHandler);
 			helpButton.setEnabled(true);
 		}
@@ -442,12 +444,13 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		clipboard.setContents(stringSelection, null);
 	}
 	private void HelpButton_ActionPerformed() {
-		String hLink = "\"https://www.yahoo.com\"";
+		String hFiji = "\"https://imagej.net/software/fiji/\"";
+		String hPlug = "\"https://sites.imagej.net/VCell-Simulations-Result-Viewer/\"";
 		String message = "<html>The simulation results of spatial applications may be exported to ImageJ for further ";
-		message += "processing using the compatible N5 format.<br>>";
+		message += "processing using the compatible N5 format.<br>";
 		message += "Use the 'Copy Link' button above to copy the exported data location to the clipboard.<br>";
-		message += "Use the vcell macro in ImageJ to download the file within ImageJ for further processing.<br>";
-		message += "The Fiji ImageJ application can be downloaded <a href=hLink>here</a></html>";
+		message += "Use the VCell plugin (available <a href=hPlug>here</a>) in ImageJ to download the file within ImageJ for further processing.<br>";
+		message += "The Fiji ImageJ application can be downloaded <a href=hFiji>here</a></html>";
 		DialogUtils.showInfoDialog(ExportMonitorPanel.this, "ImageJ Export Help", message);
 	}
 	private void ImagejButton_ActionPerformed() {
