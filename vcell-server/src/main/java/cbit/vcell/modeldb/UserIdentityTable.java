@@ -34,14 +34,25 @@ public class UserIdentityTable extends Table {
     public static final Field keycloakSubject = new Field("keycloakSubject", SQLDataType.varchar_128, "");
     public static final Field insertDate	= new Field("insertDate", SQLDataType.date,"NOT NULL");
 
-    public enum IdentityProvider {
-        AUTH0(auth0Subject),
-        KEYCLOAK(keycloakSubject);
-        IdentityProvider(Field tableColumn){
-            this.tableColumn = tableColumn;
+    public static Field getIdentityField(IdentityProvider identityProvider) {
+        switch (identityProvider) {
+            case AUTH0:
+                return auth0Subject;
+            case KEYCLOAK:
+                return keycloakSubject;
+            default:
+                throw new IllegalArgumentException("Unknown identity provider: " + identityProvider);
         }
-        public final Field tableColumn;
     }
+
+    public static Field[] getIdentityFields() {
+        return new Field[] {auth0Subject, keycloakSubject};
+    }
+
+    public enum IdentityProvider {
+        AUTH0,
+        KEYCLOAK;
+     }
 
 
 
@@ -64,7 +75,8 @@ public class UserIdentityTable extends Table {
     public UserIdentity getUserIdentity(ResultSet rset, User user, UserIdentityTable.IdentityProvider identityProvider, String idColName) throws SQLException{
 
         BigDecimal id = rset.getBigDecimal(idColName);
-        String subject =	rset.getString(identityProvider.tableColumn.getUnqualifiedColName());
+        Field identityColumn = getIdentityField(identityProvider);
+        String subject =	rset.getString(identityColumn.getUnqualifiedColName());
         if(subject == null || id == null){
             return null;
         }

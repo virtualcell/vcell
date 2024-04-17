@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 
+import cbit.sql.Field;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
@@ -104,13 +105,12 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 }
 
 	public void removeUserIdentity(Connection con, User user, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
-		Statement stmt;
 		String sql;
-		ResultSet rset;
 		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
+		Field identityField = UserIdentityTable.getIdentityField(identityProvider);
 		if (!identities.isEmpty()){
 			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
-					" SET " + identityProvider.tableColumn.getQualifiedColName() + " = " + "NULL" +
+					" SET " + identityField.getUnqualifiedColName() + " = " + "NULL" +
 					" WHERE " + UserIdentityTable.userRef + " = " + user.getID();
 
 			stmt = con.createStatement();
@@ -134,6 +134,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			identity = "anonymous";
 		}
 		identity = "'" + identity + "'";
+		Field identityField = UserIdentityTable.getIdentityField(identityProvider);
 		if (identities.isEmpty()){
 			if(lg.isTraceEnabled()){
 				lg.trace("UserDbDriver.setUserIdentity. Creating new entry with identity " + identityProvider + " being set.");
@@ -149,7 +150,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 		} else {
 			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
 					" SET " +
-					identityProvider.tableColumn.getQualifiedColName() + " = " + identity +
+					identityField.getUnqualifiedColName() + " = " + identity +
 					"WHERE " + UserIdentityTable.userRef + " = " + user.getID();
 			DbDriver.updateCleanSQL(con, sql);
 		}
@@ -162,15 +163,16 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 		if (lg.isTraceEnabled()) {
 			lg.trace("UserDbDriver.getUserFromUserAuth0ID(userid=" + subject + ")");
 		}
+		Field identityColumn = UserIdentityTable.getIdentityField(identityProvider);
 		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
 				UserTable.table.userid.getQualifiedColName() + "," +
-				identityProvider.tableColumn.getQualifiedColName() + "," +
+				identityColumn.getQualifiedColName() + "," +
 				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
 				UserIdentityTable.table.insertDate.getQualifiedColName() +
 				" FROM " + userTable.getTableName() +
 				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
 				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
-				" WHERE " + identityProvider.tableColumn.getQualifiedColName() + " = '" + subject + "'";
+				" WHERE " + identityColumn.getQualifiedColName() + " = '" + subject + "'";
 
 		if (lg.isTraceEnabled()) {
 			lg.trace(sql);
@@ -203,8 +205,8 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			lg.trace("UserDbDriver.getIdentitiesFromUser(userid=" + user.getName() + ")");
 		}
 		String identityColumns = "";
-		for(UserIdentityTable.IdentityProvider identityProvider: UserIdentityTable.IdentityProvider.values()){
-			identityColumns =  identityProvider.tableColumn.getQualifiedColName() + "," + identityColumns;
+		for(Field identityColumn : UserIdentityTable.getIdentityFields()){
+			identityColumns =  identityColumn.getQualifiedColName() + "," + identityColumns;
 		}
 		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
 				UserTable.table.userid.getQualifiedColName() + "," +
