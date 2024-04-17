@@ -112,10 +112,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
 					" SET " + identityField.getUnqualifiedColName() + " = " + "NULL" +
 					" WHERE " + UserIdentityTable.userRef + " = " + user.getID();
-
-			stmt = con.createStatement();
-			rset = stmt.executeQuery(sql);
-			stmt.close();
+			DbDriver.updateCleanSQL(con, sql);
 		}
 	}
 
