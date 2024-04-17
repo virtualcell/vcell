@@ -83,8 +83,6 @@ public class JWTUtilsTest {
         Files.writeString(temp_privateKey_file, test_privateKey);
         PropertyLoader.setProperty(PropertyLoader.vcellapiPublicKey, temp_publicKey_file.toString());
         PropertyLoader.setProperty(PropertyLoader.vcellapiPrivateKey, temp_privateKey_file.toString());
-
-        JWTUtils.setRsaPublicAndPrivateKey();
     }
 
     @AfterAll

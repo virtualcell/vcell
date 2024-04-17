@@ -7,6 +7,7 @@ import cbit.vcell.modeldb.ApiClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jose4j.jwt.MalformedClaimException;
+import org.jose4j.lang.JoseException;
 import org.vcell.auth.JWTUtils;
 import org.vcell.rest.users.UnverifiedUser;
 import org.vcell.util.DataAccessException;
@@ -93,7 +94,7 @@ public class UserService {
 				lg.warn("token was not valid");
 				return null;
 			}
-		} catch (MalformedClaimException e) {
+		} catch (MalformedClaimException | JoseException e) {
 			lg.error("token was not valid", e);
 			return null;
 		}

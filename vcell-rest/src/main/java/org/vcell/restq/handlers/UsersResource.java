@@ -1,6 +1,7 @@
 package org.vcell.restq.handlers;
 
-import cbit.vcell.modeldb.*;
+import cbit.vcell.modeldb.ApiAccessToken;
+import cbit.vcell.modeldb.UserIdentity;
 import com.google.gson.Gson;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
@@ -11,12 +12,8 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.NoCache;
 import org.vcell.api.common.AccessTokenRepresentation;
-import org.vcell.restq.auth.OldUserService;
-import org.vcell.restq.db.OracleAgroalConnectionFactory;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;

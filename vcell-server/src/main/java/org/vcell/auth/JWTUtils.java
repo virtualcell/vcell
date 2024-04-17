@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 
 public class JWTUtils {
 
+    private final static Logger log = LogManager.getLogger(JWTUtils.class);
+
     public final static int MAX_JWT_SIZE_BYTES = 4000;
     private final static Logger lg = LogManager.getLogger(JWTUtils.class);
     private static RsaJsonWebKey rsaJsonWebKey = null;
@@ -45,13 +47,17 @@ public class JWTUtils {
     }
 
 
-    synchronized static void createRsaJsonWebKeyIfNeeded() {
+    synchronized static void createRsaJsonWebKeyIfNeeded() throws JoseException {
         if (rsaJsonWebKey != null) {
             return;
         }
+        final String privateKeyFilePath = PropertyLoader.getProperty(PropertyLoader.vcellapiPrivateKey, null);
+        final String publicKeyFilePath = PropertyLoader.getProperty(PropertyLoader.vcellapiPublicKey, null);
+        if (privateKeyFilePath == null || publicKeyFilePath == null) {
+            log.warn("No public/private key files found. Generating new keys.");
+            setRsaJsonWebKey(createNewJsonWebKey("k1"));
+        }
         try {
-            final String privateKeyFilePath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPrivateKey);
-            final String publicKeyFilePath = PropertyLoader.getRequiredProperty(PropertyLoader.vcellapiPublicKey);
             // Read public key from file
             FileReader reader = new FileReader(publicKeyFilePath);
             PEMParser pemParser = new PEMParser(reader);
@@ -73,10 +79,6 @@ public class JWTUtils {
         } catch (IOException e) {
             throw new RuntimeException("Error reading public/private key files", e);
         }
-    }
-
-
-    public static void setRsaPublicAndPrivateKey() {
     }
 
     public static RsaJsonWebKey createNewJsonWebKey(String keyId) throws JoseException {
@@ -140,7 +142,7 @@ public class JWTUtils {
         return jwt;
     }
 
-    public static boolean verifyJWS(String jwt) throws MalformedClaimException {
+    public static boolean verifyJWS(String jwt) throws MalformedClaimException, JoseException {
         createRsaJsonWebKeyIfNeeded();
 
         JwtConsumer jwtConsumer = new JwtConsumerBuilder()

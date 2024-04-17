@@ -6,9 +6,11 @@ import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.modeldb.ApiClient;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jose4j.jwt.MalformedClaimException;
+import org.jose4j.lang.JoseException;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
@@ -18,7 +20,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -97,7 +98,7 @@ public class OldUserService {
 				lg.warn("token was not valid");
 				return null;
 			}
-		} catch (MalformedClaimException e) {
+		} catch (MalformedClaimException | JoseException e) {
 			lg.error("token was not valid", e);
 			return null;
 		}
