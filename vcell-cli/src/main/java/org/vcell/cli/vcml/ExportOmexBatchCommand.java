@@ -53,7 +53,6 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
         config.updateLoggers();
 
         try {
-
             logger.debug("Batch export of omex files requested");
             if (inputFilePath == null || !inputFilePath.exists() || !inputFilePath.isDirectory())
                 throw new RuntimeException("inputFilePath '" + (inputFilePath == null ? "" : inputFilePath) + "' is not a 'valid directory'");

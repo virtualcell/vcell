@@ -64,11 +64,11 @@ public class VcmlOmexConverter {
 				bSkipUnsupportedApps,
 				bHasPython,
 				bValidateOmex);
-		if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
+		if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.taskResult() == TaskResult.FAILED)) {
 			logger.info("Combine archive created for `" + input + "`");
 		} else {
 			List<String> errorList = sedmlTaskRecords.stream()
-					.filter((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)
+					.filter((SEDMLTaskRecord r) -> r.taskResult() == TaskResult.FAILED)
 					.map((SEDMLTaskRecord r) -> r.getCSV())
 					.collect(Collectors.toList());
 			String msg = "Failed converting VCML to OMEX archive for `" + input + "`, errors: "+errorList;
@@ -93,7 +93,7 @@ public class VcmlOmexConverter {
 		FilenameFilter filterVcmlFiles = (f, name) -> name.endsWith(".vcml");
 		String[] inputFileNames = inputDir.list(filterVcmlFiles);		// jusr a list of vcml names, like biomodel-185577495.vcml, ...
 		if (inputFileNames == null) throw new RuntimeException("No VCML files found in the directory `" + inputDir + "`");
-		
+
 		logger.debug("Beginning conversion of files in `" + inputDir + "`");
 		for (String inputFileName : inputFileNames) {
 			logger.debug("Beginning conversion of `" + inputFileName + "`");
@@ -115,13 +115,13 @@ public class VcmlOmexConverter {
 						bSkipUnsupportedApps,
 						bHasPython,
 						bValidateOmex);
-				if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)) {
+				if (sedmlTaskRecords.stream().noneMatch((SEDMLTaskRecord r) -> r.taskResult() == TaskResult.FAILED)) {
 					logger.info("Combine archive created for `" + inputFileName + "`");
 				} else {
 					List<String> errorList = sedmlTaskRecords.stream()
-							.filter((SEDMLTaskRecord r) -> r.getTaskResult() == TaskResult.FAILED)
-							.map((SEDMLTaskRecord r) -> r.getCSV())
-							.collect(Collectors.toList());
+							.filter((SEDMLTaskRecord r) -> r.taskResult() == TaskResult.FAILED)
+							.map(SEDMLTaskRecord::getCSV)
+							.toList();
 					String msg = "Failed converting VCML to OMEX archive for `" + inputFileName + "`, errors: " + errorList;
 					logger.error(msg);
 					throw new RuntimeException(msg);

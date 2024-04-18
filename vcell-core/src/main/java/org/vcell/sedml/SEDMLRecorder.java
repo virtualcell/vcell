@@ -25,11 +25,11 @@ public class SEDMLRecorder extends Recorder {
 
 	private final static Logger logger = LogManager.getLogger(SEDMLRecorder.class);
 	
-	private String identifier; 
-	private SEDMLConversion operation;
-	private List<SEDMLTaskRecord> taskLogs = new LinkedList<>();
-	private transient Set<Class<? extends Exception>> exceptionTypes;
-	private transient TextFileRecord jsonFile;
+	private final String identifier;
+	private final SEDMLConversion operation;
+	private final List<SEDMLTaskRecord> taskLogs = new LinkedList<>();
+	private final transient Set<Class<? extends Exception>> exceptionTypes;
+	private final transient TextFileRecord jsonFile;
 	
 
 	/**
@@ -71,27 +71,18 @@ public class SEDMLRecorder extends Recorder {
 
 	/**
 	 * Get the operation type as a string
-	 * @return whether the sedml recorded is for inmport or export.
+	 * @return whether the sedml recorded is for import or export.
 	 */
 	public String getOperationAsString(){
-		String result;
-		switch(this.operation){
-			case EXPORT:
-				result = "Export";
-				break;
-			case IMPORT:
-				result = "Import";
-				break;
-			default:
-				result = null;
-				break;
-		}
-		return result;
+        return switch (this.operation) {
+			case EXPORT -> "Export";
+			case IMPORT -> "Import";
+        };
 	}
 
 	/**
 	 * Gets any already written records
-	 * @return
+	 * @return the task logs
 	 */
 	public List<SEDMLTaskRecord> getRecords() {
 		return this.taskLogs;
@@ -103,7 +94,7 @@ public class SEDMLRecorder extends Recorder {
 	 */
 	public boolean hasErrors() {
 		for (SEDMLTaskRecord taskLog : taskLogs) 
-			if (taskLog.getTaskResult() == TaskResult.FAILED) 
+			if (taskLog.taskResult() == TaskResult.FAILED)
 				return true;
 		return false; 
 	}
@@ -127,13 +118,13 @@ public class SEDMLRecorder extends Recorder {
 	 * @return the csv formatted string
 	 */
 	public String getRecordsAsCSV() {
-		String lines = "\n-----------START-EXPORT-LOG-CSV-----------\n";
-		lines += this.identifier + "," + this.operation + "\n";
+		StringBuilder lines = new StringBuilder("\n-----------START-EXPORT-LOG-CSV-----------\n");
+		lines.append(this.identifier).append(",").append(this.operation).append("\n");
 		for (SEDMLTaskRecord taskLog : taskLogs) {
-			lines += taskLog.getCSV() + "\n";
+			lines.append(taskLog.getCSV()).append("\n");
 		}
-		lines += "------------END-EXPORT-LOG-CSV------------\n";
-		return lines;
+		lines.append("------------END-EXPORT-LOG-CSV------------\n");
+		return lines.toString();
 	}
 
 	/**

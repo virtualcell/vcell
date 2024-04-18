@@ -178,18 +178,18 @@ public abstract class SEDMLExporterCommon {
 			boolean bAnyFailures = false;
 			for (SEDMLTaskRecord sedmlTaskRecord : sedmlTaskRecords) {
 				boolean bFailed = false;
-				switch (sedmlTaskRecord.getTaskType()) {
+				switch (sedmlTaskRecord.taskType()) {
 					case BIOMODEL: {
 						break;
 					}
 					case SIMCONTEXT: {
-						bFailed = sedmlTaskRecord.getTaskResult() == TaskResult.FAILED &&
-								(sedmlTaskRecord.getException() == null || !sedmlTaskRecord.getException().getClass().equals(UnsupportedSbmlExportException.class));
+						bFailed = sedmlTaskRecord.taskResult() == TaskResult.FAILED &&
+								(sedmlTaskRecord.exception()== null || !sedmlTaskRecord.exception().getClass().equals(UnsupportedSbmlExportException.class));
 						break;
 					}
 					case UNITS:
 					case SIMULATION: {
-						bFailed = sedmlTaskRecord.getTaskResult() == TaskResult.FAILED;
+						bFailed = sedmlTaskRecord.taskResult() == TaskResult.FAILED;
 						break;
 					}
 				}
