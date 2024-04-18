@@ -93,11 +93,11 @@ public class LangevinLngvWriter {
 
 	// main work being done here
 	public static String writeLangevinLngv(Simulation simulation, long randomSeed) throws SolverException, DivideByZeroException, ExpressionException {
-		try {
-			System.out.println("VCML ORIGINAL .... START\n"+simulation.getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
-		} catch (MathException e1) {
-			e1.printStackTrace();
-		}
+//		try {
+//			System.out.println("VCML ORIGINAL .... START\n"+simulation.getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
+//		} catch (MathException e1) {
+//			e1.printStackTrace();
+//		}
 		
 		Geometry geometry = simulation.getMathDescription().getGeometry();
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();
@@ -249,7 +249,7 @@ public class LangevinLngvWriter {
 		sb.append("\n");
 			
 		String ret = sb.toString();
-		System.out.println(ret);
+//		System.out.println(ret);
 		
 		return ret;
 	}

@@ -10,8 +10,10 @@
 
 package org.vcell.sbml.vcell;
     
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -237,9 +239,12 @@ public static String getSBMLString(cbit.vcell.mathmodel.MathModel mathModel, lon
 	String sbmlStr = sbmlWriter.writeSBMLToString(sbmlDocument);
 
 	// Error check - use libSBML's document.printError to print to outputstream
-	System.out.println("\n\nSBML Export Error Report");
+	ByteArrayOutputStream err_os = new ByteArrayOutputStream();
+	PrintStream err_stream = new PrintStream(err_os);
+	err_stream.println("SBML Export Error Report");
 	if (sbmlDocument.getErrorCount()>0) {
-		sbmlDocument.printErrors(System.out);
+		sbmlDocument.printErrors(err_stream);
+		lg.warn(err_os.toString(StandardCharsets.UTF_8));
 	}
 
 	return sbmlStr;
