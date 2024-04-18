@@ -60,12 +60,10 @@
       <mountPoint id="1349" root="1114" location="nativelibs/mac64" />
       <mountPoint id="1342" root="1114" location="localsolvers" />
       <mountPoint id="1353" root="1114" location="localsolvers/mac64" />
-      <mountPoint id="2896" root="1114" location="lib" />
       <mountPoint id="1354" root="1116" location="nativelibs" />
       <mountPoint id="1355" root="1116" location="nativelibs/win64" />
       <mountPoint id="1356" root="1116" location="localsolvers" />
       <mountPoint id="1360" root="1116" location="localsolvers/win64" />
-      <mountPoint id="2546" root="1116" location="lib" />
       <mountPoint id="1361" root="1118" location="nativelibs" />
       <mountPoint id="1362" root="1118" location="nativelibs/win32" />
       <mountPoint id="1363" root="1118" location="localsolvers" />
@@ -78,7 +76,6 @@
       <mountPoint id="1376" root="1122" location="nativelibs/linux64" />
       <mountPoint id="1377" root="1122" location="localsolvers" />
       <mountPoint id="1381" root="1122" location="localsolvers/linux64" />
-      <mountPoint id="2727" root="1122" location="lib" />
     </mountPoints>
     <entries>
       <dirEntry mountPoint="719" file="${compiler:vcellLibSourcePath}" subDirectory="maven-jars" />
@@ -86,17 +83,14 @@
       <dirEntry mountPoint="1750" file="${compiler:vcellbngPerlPath}" />
       <dirEntry mountPoint="1349" file="${compiler:vcellNativeLibsDirSourcePath}/mac64" />
       <dirEntry mountPoint="1353" file="${compiler:vcellLocalSolversDirPath}/mac64" fileMode="755" overrideFileMode="true" />
-      <fileEntry mountPoint="2896" file="${compiler:vcellNativeLibsDirSourcePath}/../non-maven-java-libs/org/sbml/libcombine/libCombineOSX/0.2.7/libCombineOSX-0.2.7.jar" />
       <dirEntry mountPoint="1355" file="${compiler:vcellNativeLibsDirSourcePath}/win64" />
       <dirEntry mountPoint="1360" file="${compiler:vcellLocalSolversDirPath}/win64" />
-      <fileEntry mountPoint="2546" file="${compiler:vcellNativeLibsDirSourcePath}/../non-maven-java-libs/org/sbml/libcombine/libCombineWin64/0.2.7/libCombineWin64-0.2.7.jar" />
       <dirEntry mountPoint="1362" file="${compiler:vcellNativeLibsDirSourcePath}/win32" />
       <dirEntry mountPoint="1367" file="${compiler:vcellLocalSolversDirPath}/win32" />
       <dirEntry mountPoint="1369" file="${compiler:vcellNativeLibsDirSourcePath}/linux32" />
       <dirEntry mountPoint="1374" file="${compiler:vcellLocalSolversDirPath}/linux32" fileMode="755" overrideFileMode="true" />
       <dirEntry mountPoint="1376" file="${compiler:vcellNativeLibsDirSourcePath}/linux64" />
       <dirEntry mountPoint="1381" file="${compiler:vcellLocalSolversDirPath}/linux64" fileMode="755" overrideFileMode="true" />
-      <fileEntry mountPoint="2727" file="${compiler:vcellNativeLibsDirSourcePath}/../non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar" />
     </entries>
     <components>
       <component name="Runtime Components" id="2378" changeable="false" downloadable="true">

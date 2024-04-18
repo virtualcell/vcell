@@ -7,13 +7,12 @@
 shopt -s -o nounset
 
 # gather classpath (filenames only), Install4J will add the correct separator
-# assumes platform-specific libCombine jars are placed in lib dir (see <fileEntry>'s in VCell.install4j)
 compiler_vcellClasspathColonSep=`ls -m /vcellclient/vcell-client/target/maven-jars | tr -d '[:space:]' | tr ',' ':'`
-compiler_vcellClasspathColonSep_Win64="${compiler_vcellClasspathColonSep}:libCombineWin64-0.2.7.jar"
+compiler_vcellClasspathColonSep_Win64="${compiler_vcellClasspathColonSep}"
 compiler_vcellClasspathColonSep_Win32="${compiler_vcellClasspathColonSep}"
-compiler_vcellClasspathColonSep_Linux64="${compiler_vcellClasspathColonSep}:libCombineLinux64-0.2.7.jar"
+compiler_vcellClasspathColonSep_Linux64="${compiler_vcellClasspathColonSep}"
 compiler_vcellClasspathColonSep_Linux32="${compiler_vcellClasspathColonSep}"
-compiler_vcellClasspathColonSep_Mac64="${compiler_vcellClasspathColonSep}:libCombineOSX-0.2.7.jar"
+compiler_vcellClasspathColonSep_Mac64="${compiler_vcellClasspathColonSep}"
 
 cd /config
 

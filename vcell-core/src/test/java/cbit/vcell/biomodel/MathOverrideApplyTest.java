@@ -33,7 +33,6 @@ public class MathOverrideApplyTest {
 	public static void setup() throws IOException {
 		previousInstalldirPropertyValue = PropertyLoader.getProperty("vcell.installDir", null);
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
-		NativeLib.combinej.load();
 		codeKnownProblemFile = Files.createTempFile("OverridesApplyTest","code_KnownProblems").toFile();
 		csvKnownProblemFile = Files.createTempFile("OverridesApplyTest","csv_KnownProblems").toFile();
 		System.err.println("code known problem file: "+codeKnownProblemFile.getAbsolutePath());

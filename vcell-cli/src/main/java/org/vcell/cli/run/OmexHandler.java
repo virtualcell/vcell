@@ -1,20 +1,20 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.resource.NativeLib;
-
+import de.unirostock.sems.cbarchive.ArchiveEntry;
+import de.unirostock.sems.cbarchive.CombineArchive;
+import de.unirostock.sems.cbarchive.CombineArchiveException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.sbml.libcombine.CaContent;
-import org.sbml.libcombine.CaListOfContents;
-import org.sbml.libcombine.CaOmexManifest;
-import org.sbml.libcombine.CombineArchive;
+import org.jdom2.JDOMException;
 import org.vcell.cli.CLIUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,16 +30,6 @@ public class OmexHandler {
     // Assuming omexPath will always be absolute path
     // NB: Need to convert class to use Log4j2
     public OmexHandler(String omexPath, String outDir) throws IOException {
-        try {      
-            NativeLib.combinej.load();
-        } catch (UnsatisfiedLinkError ex) {
-            logger.error("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
-            throw ex;
-        } catch (RuntimeException ex) {
-            logger.error("Error occurred while importing libCombine: " + ex.getMessage());
-            throw ex;
-        }
-        
         this.omexPath = omexPath;
         this.outDirPath = outDir;
 
@@ -53,13 +43,17 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
         this.tempPath = RunUtils.getTempDir();
-        this.archive = new CombineArchive();
-        boolean isInitialized = archive.initializeFromArchive(omexPath);
-
-        if (!isInitialized) {
-        	String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
-            logger.error(message);
-            throw new RuntimeException(message);
+        try {
+            this.archive = new CombineArchive(new File(omexPath));
+            if (this.archive.hasErrors()){
+                String message = "Unable to initialise OMEX archive "+this.omexName+": "+this.archive.getErrors();
+                logger.error(message);
+                throw new IOException(message);
+            }
+        }catch (CombineArchiveException | JDOMException | ParseException e) {
+            String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
+            logger.error(message+": "+e.getMessage(), e);
+            throw new IOException(e);
         }
     }
 
@@ -88,19 +82,18 @@ public class OmexHandler {
 
     public ArrayList<String> getSedmlLocationsRelative(){
         ArrayList<String> sedmlList = new ArrayList<>();
-        CaOmexManifest manifest = this.archive.getManifest();
-        CaListOfContents contents = manifest.getListOfContents();
+
+        Collection<ArchiveEntry> entries = this.archive.getEntries();
 
         int masterCount = 0;
-        for (int contentIndex = 0; contentIndex < contents.getNumContents(); contentIndex++) {
-            CaContent contentFile = (CaContent) contents.get(contentIndex);
 
-            if (contentFile.isFormat("sedml") && contentFile.getMaster()) {
-                masterCount++;
-            }
-
-            if(!contentFile.isFormat("sedml") && contentFile.getMaster()) {
-                throw new RuntimeException("No SED-ML's are intended to be executed (non SED-ML file is set to be master)");
+        for (ArchiveEntry entry : entries) {
+            if (entry.isMainEntry()) {
+                if (isSedmlFormat(entry)) {
+                    masterCount++;
+                } else {
+                    throw new RuntimeException("No SED-ML's are intended to be executed (non SED-ML file is set to be master)");
+                }
             }
         }
 
@@ -108,21 +101,24 @@ public class OmexHandler {
             throw new RuntimeException("More than two master SED-ML's found");
         }
 
-        for (int contentIndex = 0; contentIndex < contents.getNumContents(); contentIndex++) {
-            CaContent contentFile = (CaContent) contents.get(contentIndex);
-
+        for (ArchiveEntry entry : entries) {
             if(masterCount == 0 ) {
-                if (contentFile.isFormat("sedml")) {
-                    sedmlList.add(contentFile.getLocation());
+                if (isSedmlFormat(entry)) {
+                    sedmlList.add(entry.getFilePath());
                 }
             } else {
-                if (contentFile.isFormat("sedml") && contentFile.getMaster()) {
-                    sedmlList.add(contentFile.getLocation());
+                if (isSedmlFormat(entry) && entry.isMainEntry()) {
+                    sedmlList.add(entry.getFilePath());
                 }
             }
         }
 
         return sedmlList;
+    }
+
+    private boolean isSedmlFormat(ArchiveEntry entry) {
+        URI format = entry.getFormat();
+        return format.getPath().contains("sedml") || format.getPath().contains("sed-ml");
     }
 
 
@@ -150,10 +146,11 @@ public class OmexHandler {
     }
 
     public void extractOmex() {
-        boolean isExtracted = this.archive.extractTo(this.tempPath);
-        if (!isExtracted) {
-        	String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
-            logger.error(message);
+        try {
+            this.archive.extractTo(new File(this.tempPath));
+        } catch (IOException e) {
+            String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
+            logger.error(message+": "+e.getMessage(), e);
             throw new RuntimeException(message);
         }
     }

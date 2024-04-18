@@ -22,7 +22,6 @@ public class ExecuteImplTest {
     public void test_singleExecOmex() throws Exception {
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         NativeLib.HDF5.load();
-        NativeLib.combinej.load();
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
 
         PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());

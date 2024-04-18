@@ -10,7 +10,6 @@ import cbit.vcell.util.NativeLoader;
  */
 public enum NativeLib {
 	// enum values
-	combinej("combinej", true),
 	HDF5("jhdf5", false,
 			(OperatingSystemInfo.getInstance().isWindows()) ? "msvcr100" : null );
 
