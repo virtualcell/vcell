@@ -1337,9 +1337,9 @@ public class SEDMLExporter {
 			//
 			// an alternative is the use the MetaDataObject classes from CombineArchive library - another day.
 			//
-			if (rdfFilePath != null) {
-				replaceFileInZip(omexFile.toPath(), rdfFilePath, "/metadata.rdf");
-			}
+//			if (rdfFilePath != null) {
+//				replaceFileInZip(omexFile.toPath(), rdfFilePath, "/metadata.rdf");
+//			}
 
 			removeOtherFiles(srcFolder, files);
 
