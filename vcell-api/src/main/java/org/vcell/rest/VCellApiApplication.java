@@ -277,7 +277,7 @@ public class VCellApiApplication extends WadlApplication {
         String ROOT_URI = javascriptDir.toURI().toString();
 		String PATH_PREFIX = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerPrefixV0);
         String WEBAPP_URI = new File(javascriptDir.getParentFile(),"webapp").toURI().toString();
-        System.out.println("using uri="+ROOT_URI+" for scripts directory");
+        getLogger().info("using uri="+ROOT_URI+" for scripts directory");
         String SCRIPTS = "scripts";
         
 		Router rootRouter = new Router(getContext());

@@ -172,7 +172,7 @@ public class MolecularComponent extends RbmElementAbstract implements Matchable,
 		final int MaxListSize = 7;
 		int count = 0;
 		for(String key : usedHere.keySet()) {
-			System.out.println(key);
+			// System.out.println(key);
 			if(count >= MaxListSize) {
 				errMsg += "<br> ... and more.";
 				break;
