@@ -1,6 +1,7 @@
 package org.vcell.restq.db;
 
 import io.agroal.api.AgroalDataSource;
+import io.quarkus.agroal.DataSource;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -16,11 +17,21 @@ import java.sql.SQLException;
 @ApplicationScoped
 public class AgroalConnectionFactory implements ConnectionFactory {
 
-    @Inject
-    AgroalDataSource ds;
 
-    @ConfigProperty(name = "vcell.quarkus.db-kind")
-    String db_kind;
+    @Inject
+    @DataSource("oracle")
+    AgroalDataSource oracle_ds;
+
+    @Inject
+    @DataSource("postgresql")
+    AgroalDataSource postgresql_ds;
+
+    @Inject
+    @DataSource("devservices")
+    AgroalDataSource devservices_ds;
+
+    @ConfigProperty(name = "quarkus.profile")
+    String activeProfile;
 
 
     public AgroalConnectionFactory() {
@@ -36,9 +47,24 @@ public class AgroalConnectionFactory implements ConnectionFactory {
 
     @Override
     public Connection getConnection(Object lock) throws SQLException {
-        Connection conn = ds.getConnection();
-        conn.setAutoCommit(false);
-        return conn;
+        switch (activeProfile) {
+            case "test" -> {
+                Connection conn = devservices_ds.getConnection();
+                conn.setAutoCommit(false);
+                return conn;
+            }
+            case "dev" -> {
+                Connection conn = postgresql_ds.getConnection();
+                conn.setAutoCommit(false);
+                return conn;
+            }
+            case "prod" -> {
+                Connection conn = oracle_ds.getConnection();
+                conn.setAutoCommit(false);
+                return conn;
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + activeProfile);
+        }
     }
 
     @Override
@@ -56,10 +82,11 @@ public class AgroalConnectionFactory implements ConnectionFactory {
     }
 
     private boolean usePostgresql() {
-        return switch (db_kind) {
-            case "postgresql" -> true;
-            case "oracle" -> false;
-            default -> throw new IllegalStateException("Unexpected value: " + db_kind);
+        return switch (activeProfile) {
+            case "test" -> true;
+            case "dev" -> true;
+            case "prod" -> false;
+            default -> throw new IllegalStateException("Unexpected value: " + activeProfile);
         };
     }
 
