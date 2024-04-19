@@ -44,6 +44,7 @@ public class OmexHandler {
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
         this.tempPath = RunUtils.getTempDir();
         try {
+            replaceXmlSchemaNamespaceInArchive(Paths.get(omexPath));
             this.archive = new CombineArchive(new File(omexPath));
             if (this.archive.hasErrors()){
                 String message = "Unable to initialise OMEX archive "+this.omexName+": "+this.archive.getErrors();
@@ -54,6 +55,26 @@ public class OmexHandler {
             String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
             logger.error(message+": "+e.getMessage(), e);
             throw new IOException(e);
+        }
+    }
+
+    private void replaceXmlSchemaNamespaceInArchive(Path zipFilePath) throws IOException {
+        String pathInZip = "/metadata.rdf";
+        try( FileSystem fs = FileSystems.newFileSystem(zipFilePath) ) {
+            Path fileInsideZipPath = fs.getPath(pathInZip);
+//            if (!fileInsideZipPath.toFile().exists()) {
+//                return;
+//            }
+            // copy fileInsideZipPath to temp file
+            Path tempFile = Files.createTempFile("temp", ".rdf");
+            Files.copy(fileInsideZipPath, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            // replace namespace in temp file
+            String content = new String(Files.readAllBytes(tempFile));
+            content = content.replace("xmlns:xmls=", "xmlns:schemaxml=");
+            Files.write(tempFile, content.getBytes());
+            // replace fileInsideZipPath with temp file
+            Files.delete(fileInsideZipPath);
+            Files.copy(tempFile, fileInsideZipPath);
         }
     }
 
