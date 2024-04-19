@@ -19,7 +19,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>3.9.3</quarkus.platform.version>
+    <quarkus.platform.version>3.5.2</quarkus.platform.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.1.2</surefire-plugin.version>
     <surefire-plugin.version>3.2.2</surefire-plugin.version>
@@ -56,11 +56,11 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-openapi</artifactId>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>com.oracle.database.jdbc</groupId>-->
-<!--      <artifactId>ojdbc11</artifactId>-->
-<!--      <version>${ojdbc-bom.version}</version>-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>com.oracle.database.jdbc</groupId>
+      <artifactId>ojdbc11</artifactId>
+      <version>${ojdbc-bom.version}</version>
+    </dependency>
 <!--    <dependency>-->
 <!--      <groupId>io.quarkus</groupId>-->
 <!--      <artifactId>quarkus-jdbc-oracle</artifactId>-->
@@ -68,7 +68,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.7.3</version>
+      <version>${postgresql.version}</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -231,51 +231,51 @@
     </plugins>
   </build>
   <profiles>
-    <profile>
-      <id>pg</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.postgresql</groupId>
-          <artifactId>postgresql</artifactId>
-          <version>42.7.3</version>
-        </dependency>
-        <dependency>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-jdbc-postgresql</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>com.oracle.database.jdbc</groupId>
-          <artifactId>ojdbc11</artifactId>
-          <version>${ojdbc-bom.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-jdbc-oracle</artifactId>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>oracle</id>
-      <activation>
-        <property>
-            <name>oracle</name>
-        </property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>com.oracle.database.jdbc</groupId>
-          <artifactId>ojdbc11</artifactId>
-          <version>${ojdbc-bom.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>io.quarkus</groupId>
-          <artifactId>quarkus-jdbc-oracle</artifactId>
-        </dependency>
-      </dependencies>
-    </profile>
+<!--    <profile>-->
+<!--      <id>pg</id>-->
+<!--      <activation>-->
+<!--        <activeByDefault>true</activeByDefault>-->
+<!--      </activation>-->
+<!--      <dependencies>-->
+<!--        <dependency>-->
+<!--          <groupId>org.postgresql</groupId>-->
+<!--          <artifactId>postgresql</artifactId>-->
+<!--          <version>42.7.3</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--          <groupId>io.quarkus</groupId>-->
+<!--          <artifactId>quarkus-jdbc-postgresql</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--          <groupId>com.oracle.database.jdbc</groupId>-->
+<!--          <artifactId>ojdbc11</artifactId>-->
+<!--          <version>${ojdbc-bom.version}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--          <groupId>io.quarkus</groupId>-->
+<!--          <artifactId>quarkus-jdbc-oracle</artifactId>-->
+<!--        </dependency>-->
+<!--      </dependencies>-->
+<!--    </profile>-->
+<!--    <profile>-->
+<!--      <id>oracle</id>-->
+<!--      <activation>-->
+<!--        <property>-->
+<!--            <name>oracle</name>-->
+<!--        </property>-->
+<!--      </activation>-->
+<!--      <dependencies>-->
+<!--        <dependency>-->
+<!--          <groupId>com.oracle.database.jdbc</groupId>-->
+<!--          <artifactId>ojdbc11</artifactId>-->
+<!--          <version>${ojdbc-bom.version}</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--          <groupId>io.quarkus</groupId>-->
+<!--          <artifactId>quarkus-jdbc-oracle</artifactId>-->
+<!--        </dependency>-->
+<!--      </dependencies>-->
+<!--    </profile>-->
     <profile>
       <id>native</id>
       <activation>

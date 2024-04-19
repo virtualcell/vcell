@@ -240,7 +240,7 @@ public abstract class DbDriver {
             updateCleanSQL(con, sql);
             //Remove all current links to this publication
             sql = "DELETE FROM " + PublicationModelLinkTable.table.getTableName() + " WHERE " + PublicationModelLinkTable.table.pubRef.getUnqualifiedColName() + "=" + pubID.toString();
-            int changed = updateCleanSQL(con, sql);
+            int changed = updateCleanSQL(con, sql, UpdateExpectation.ROW_UPDATE_IS_POSSIBLE);
             //Add link table entry
             if(publicationRep.getBiomodelReferenceReps() != null && publicationRep.getBiomodelReferenceReps().length > 0){
                 for(BioModelReferenceRep bioModelReferenceRep : publicationRep.getBiomodelReferenceReps()){
