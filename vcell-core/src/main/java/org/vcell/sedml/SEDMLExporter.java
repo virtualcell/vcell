@@ -22,6 +22,9 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;
 import cbit.vcell.xml.*;
 import de.unirostock.sems.cbarchive.CombineArchive;
+import de.unirostock.sems.cbarchive.meta.MetaDataObject;
+import de.unirostock.sems.cbarchive.meta.OmexMetaDataObject;
+import de.unirostock.sems.cbarchive.meta.omex.OmexDescription;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1320,6 +1323,11 @@ public class SEDMLExporter {
 					);
 				}
 			}
+			OmexDescription omexDescription = new OmexDescription();
+			omexDescription.setDescription("VCell Simulation Archive");
+			omexDescription.modified.add(new Date());
+			archive.addDescription(new OmexMetaDataObject(omexDescription));
+
 			archive.pack();
 			archive.close();
 
@@ -1329,9 +1337,9 @@ public class SEDMLExporter {
 			//
 			// an alternative is the use the MetaDataObject classes from CombineArchive library - another day.
 			//
-//			if (rdfFilePath != null) {
-//				replaceFileInZip(omexFile.toPath(), rdfFilePath, "/metadata.rdf");
-//			}
+			if (rdfFilePath != null) {
+				replaceFileInZip(omexFile.toPath(), rdfFilePath, "/metadata.rdf");
+			}
 
 			removeOtherFiles(srcFolder, files);
 
@@ -1344,6 +1352,7 @@ public class SEDMLExporter {
 	private static void replaceFileInZip(Path zipFilePath, Path newFilePath, String pathInZip) throws IOException {
 		try( FileSystem fs = FileSystems.newFileSystem(zipFilePath) ) {
 			Path fileInsideZipPath = fs.getPath(pathInZip);
+			Files.delete(fileInsideZipPath);
 			Files.copy(newFilePath, fileInsideZipPath);
 		}
 	}
