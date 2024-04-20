@@ -19,19 +19,12 @@ public class AgroalConnectionFactory implements ConnectionFactory {
 
 
     @Inject
-    AgroalDataSource ds;
+    @DataSource("oracle")
+    AgroalDataSource oracle_ds;
 
-//    @Inject
-//    @DataSource("oracle")
-//    AgroalDataSource oracle_ds;
-
-//    @Inject
-//    @DataSource("postgresql")
-//    AgroalDataSource postgresql_ds;
-
-//    @Inject
-//    @DataSource("devservices")
-//    AgroalDataSource devservices_ds;
+    @Inject
+    @DataSource("postgresql")
+    AgroalDataSource postgresql_ds;
 
     @ConfigProperty(name = "quarkus.profile")
     String activeProfile;
@@ -50,27 +43,15 @@ public class AgroalConnectionFactory implements ConnectionFactory {
 
     @Override
     public Connection getConnection(Object lock) throws SQLException {
-        Connection conn = ds.getConnection();
-        conn.setAutoCommit(false);
-        return conn;
-//        switch (activeProfile) {
-//            case "test" -> {
-//                Connection conn = devservices_ds.getConnection();
-//                conn.setAutoCommit(false);
-//                return conn;
-//            }
-//            case "dev" -> {
-//                Connection conn = postgresql_ds.getConnection();
-//                conn.setAutoCommit(false);
-//                return conn;
-//            }
-//            case "prod" -> {
-//                Connection conn = oracle_ds.getConnection();
-//                conn.setAutoCommit(false);
-//                return conn;
-//            }
-//            default -> throw new IllegalStateException("Unexpected value: " + activeProfile);
-//        }
+        if (usePostgresql()) {
+            Connection conn = postgresql_ds.getConnection();
+            conn.setAutoCommit(false);
+            return conn;
+        } else {
+            Connection conn = oracle_ds.getConnection();
+            conn.setAutoCommit(false);
+            return conn;
+        }
     }
 
     @Override
@@ -80,30 +61,28 @@ public class AgroalConnectionFactory implements ConnectionFactory {
 
     @Override
     public KeyFactory getKeyFactory() {
-        return new PostgresKeyFactory();
-//        if (usePostgresql()) {
-//            return new PostgresKeyFactory();
-//        }else{
-//            return new OracleKeyFactory();
-//        }
+        if (usePostgresql()) {
+            return new PostgresKeyFactory();
+        }else{
+            return new OracleKeyFactory();
+        }
     }
 
-//    private boolean usePostgresql() {
-//        return switch (activeProfile) {
-//            case "test" -> true;
-//            case "dev" -> true;
-//            case "prod" -> false;
-//            default -> throw new IllegalStateException("Unexpected value: " + activeProfile);
-//        };
-//    }
+    private boolean usePostgresql() {
+        return switch (activeProfile) {
+            case "test" -> true;
+            case "dev" -> true;
+            case "prod" -> false;
+            default -> throw new IllegalStateException("Unexpected value: " + activeProfile);
+        };
+    }
 
     @Override
     public DatabaseSyntax getDatabaseSyntax() {
-        return DatabaseSyntax.POSTGRES;
-//        if (usePostgresql()) {
-//            return DatabaseSyntax.POSTGRES;
-//        } else {
-//            return DatabaseSyntax.ORACLE;
-//        }
+        if (usePostgresql()) {
+            return DatabaseSyntax.POSTGRES;
+        } else {
+            return DatabaseSyntax.ORACLE;
+        }
     }
 }
