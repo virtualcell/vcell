@@ -42,7 +42,7 @@ public class JWTUtils {
     public static String VCELL_JWT_AUDIENCE = "VCellService";
     public static String VCELL_JWT_ISSUER = "VCellService";
 
-    static void setRsaJsonWebKey(RsaJsonWebKey rsaJsonWebKey) {
+    public static void setRsaJsonWebKey(RsaJsonWebKey rsaJsonWebKey) {
         JWTUtils.rsaJsonWebKey = rsaJsonWebKey;
     }
 

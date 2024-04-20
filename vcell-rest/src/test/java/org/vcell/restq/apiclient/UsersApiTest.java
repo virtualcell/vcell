@@ -10,7 +10,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jose4j.jwk.RsaJsonWebKey;
+import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.*;
+import org.vcell.auth.JWTUtils;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
@@ -43,9 +46,11 @@ public class UsersApiTest {
     private ApiClient bobAPIClient;
 
     @BeforeEach
-    public void createClients(){
+    public void createClients() throws JoseException {
         aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
         bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
+        RsaJsonWebKey rsaJsonWebKey = JWTUtils.createNewJsonWebKey("k1");
+        JWTUtils.setRsaJsonWebKey(rsaJsonWebKey);
     }
     @BeforeAll
     public static void setupConfig(){
