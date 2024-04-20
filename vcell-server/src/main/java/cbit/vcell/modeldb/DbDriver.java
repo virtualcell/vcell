@@ -4849,7 +4849,7 @@ public abstract class DbDriver {
             }
             int numRowsChanged = s.executeUpdate(sql); // jcs: added logging
             if(numRowsChanged != 1){
-                Level logLevel = (updateExpectation == UpdateExpectation.ROW_UPDATE_IS_POSSIBLE) ? Level.INFO : Level.ERROR;
+                Level logLevel = (updateExpectation == UpdateExpectation.ROW_UPDATE_IS_POSSIBLE) ? Level.TRACE : Level.ERROR;
                 lg.log(logLevel, numRowsChanged + " records changed: " + sql, new StackTraceGenerationException());
             }
             return numRowsChanged;
