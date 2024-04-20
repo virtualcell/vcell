@@ -1,12 +1,19 @@
 package org.vcell.restq;
 
+import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.vcell.restq.config.CDIVCellConfigProvider;
 
 @QuarkusTest
 public class BearerTokenAuthenticationTest {
+    @BeforeAll
+    public static void setupConfig(){
+        PropertyLoader.setConfigProvider(new CDIVCellConfigProvider());
+    }
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 

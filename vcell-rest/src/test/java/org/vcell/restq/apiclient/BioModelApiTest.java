@@ -2,6 +2,7 @@ package org.vcell.restq.apiclient;
 
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -11,6 +12,7 @@ import jakarta.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiClient;
@@ -18,6 +20,7 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.model.BioModel;
 import org.vcell.restq.TestEndpointUtils;
+import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 
@@ -42,6 +45,10 @@ public class BioModelApiTest {
     private ApiClient aliceAPIClient;
     private ApiClient bobAPIClient;
 
+    @BeforeAll
+    public static void setupConfig(){
+        PropertyLoader.setConfigProvider(new CDIVCellConfigProvider());
+    }
 
     @BeforeEach
     public void createClients(){
