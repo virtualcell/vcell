@@ -6,7 +6,7 @@ import cbit.vcell.modeldb.UserIdentity;
 import cbit.vcell.modeldb.UserIdentityTable;
 import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.security.identity.SecurityIdentity;
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -23,7 +23,7 @@ import org.vcell.util.DataAccessException;
 
 import java.sql.SQLException;
 
-@QuarkusIntegrationTest
+@QuarkusTest
 public class UsersApiTest {
     @ConfigProperty(name = "quarkus.oidc.auth-server-url")
     String authServerUrl;
