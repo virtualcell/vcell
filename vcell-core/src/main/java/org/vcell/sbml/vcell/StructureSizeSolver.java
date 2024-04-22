@@ -529,7 +529,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 			}
 			lastSolution = thisSolution;
 		}
-		System.out.println("num of times narrowed = "+numTimesNarrowed);
+		logger.debug("num of times narrowed = "+numTimesNarrowed);
 
 		if (numTimesNarrowed>0){
 			String[] symbols = constraintSolver.getSymbols();
@@ -537,7 +537,7 @@ public static void updateUnitStructureSizes(SimulationContext simContext, Geomet
 			double totalArea = 0;
 			double totalVolume = 0;
 			for (int i = 0; i < symbols.length; i++){
-				System.out.println("solution["+i+"] \""+symbols[i]+"\" = "+solution[i]);
+				logger.debug("solution["+i+"] \""+symbols[i]+"\" = "+solution[i]);
 
 				for (int j = 0; j < structMappings.length; j++){
 					if (symbols[i].equals(TokenMangler.mangleToSName(structMappings[j].getStructure().getName()+"_size"))){

@@ -2,6 +2,8 @@
 README.md
 api.module.ts
 api/api.ts
+api/bio-model-resource.service.ts
+api/bio-model-resource.serviceInterface.ts
 api/hello-world.service.ts
 api/hello-world.serviceInterface.ts
 api/publication-resource.service.ts
@@ -12,11 +14,16 @@ configuration.ts
 encoder.ts
 git_push.sh
 index.ts
+model/acces-token-representation-record.ts
+model/bio-model.ts
 model/biomodel-ref.ts
 model/hello-world-message.ts
+model/map-user.ts
 model/mathmodel-ref.ts
 model/models.ts
 model/publication.ts
+model/simulation.ts
+model/user-identity-json-safe.ts
 model/user.ts
 param.ts
 variables.ts

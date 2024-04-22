@@ -343,7 +343,7 @@ public class GeomDbDriver extends DbDriver {
         //
         Geometry tempGeometry = null;
         try {
-            tempGeometry = geomTable.getGeometry(rset, con);
+            tempGeometry = geomTable.getGeometry(rset, con, dbSyntax);
         } catch(PropertyVetoException e){
             throw new DataAccessException(e.getMessage());
         }

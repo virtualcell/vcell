@@ -15,6 +15,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
@@ -67,23 +68,11 @@ public abstract class VersionTable extends cbit.sql.Table {
 
 	public final Field[] versionFields;
 
-/**
- * VersionTable constructor comment.
- * @param name java.lang.String
- * @param refType java.lang.String
- * @param fields cbit.sql.Field[]
- */
 protected VersionTable(String tableName,String vp) {
 	this(tableName,vp,false);
 }
 
 
-/**
- * VersionTable constructor comment.
- * @param name java.lang.String
- * @param refType java.lang.String
- * @param fields cbit.sql.Field[]
- */
 protected VersionTable(String tableName,String vp,boolean bHasParentSimRef) {
 	super(tableName);
 	this.versionBranchPointRef = new Field(versionBranchPointRef_ColumnName,SQLDataType.integer,vp);
@@ -171,7 +160,7 @@ public static java.util.Vector getChildVersionableTypes(VersionableType vType) {
  * @param rset java.sql.ResultSet
  * @param field cbit.sql.Field
  */
-public static java.util.Date getDate(ResultSet rset, String field) throws java.sql.SQLException {
+public static java.util.Date getDate(ResultSet rset, DatabaseSyntax dbSyntax, String field) throws java.sql.SQLException {
 	java.util.Date date = null;
 	//
 	// Do this stuff because ResultSet only returns java.sql.Date without time information
@@ -180,15 +169,19 @@ public static java.util.Date getDate(ResultSet rset, String field) throws java.s
 	if (DBDate==null || rset.wasNull()){
 		return null;
 	}
-	java.sql.Time DBTime = rset.getTime(field);
-	if (DBTime==null || rset.wasNull()){
-		return null;
-	}
-	java.text.SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US);
-	try{
-		date = sdf.parse(DBDate + " " + DBTime);
-	}catch(ParseException e){
-		throw new RuntimeException("VersionTable.getDate()\n"+e.getClass().getName()+"\n"+e.getMessage());
+	if (dbSyntax == DatabaseSyntax.ORACLE) {
+		java.sql.Time DBTime = rset.getTime(field);
+		if (DBTime == null || rset.wasNull()) {
+			return null;
+		}
+		java.text.SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US);
+		try {
+			date = sdf.parse(DBDate + " " + DBTime);
+		} catch (ParseException e) {
+			throw new RuntimeException("VersionTable.getDate()\n" + e.getClass().getName() + "\n" + e.getMessage());
+		}
+	} else if (dbSyntax == DatabaseSyntax.POSTGRES) {
+		date = new java.util.Date(DBDate.getTime());
 	}
 	return date;
 }
@@ -245,13 +238,7 @@ public static java.util.Vector getReferencingVersionableTypes(VersionableType vT
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.util.Version
- * @param rset ResultSet
- * @param log SessionLog
- */
-public static Version getVersion(ResultSet rset, GroupAccess groupAccess) throws SQLException ,DataAccessException{
+public static Version getVersion(ResultSet rset, DatabaseSyntax dbSyntax, GroupAccess groupAccess) throws SQLException ,DataAccessException{
 	KeyValue vBranchPointRef = null;
 	java.math.BigDecimal vBranchID = null;
 	java.util.Date vDate = null;
@@ -270,7 +257,7 @@ public static Version getVersion(ResultSet rset, GroupAccess groupAccess) throws
 	} else {
 		vBranchID = vBranchIDDB;
 	}
-	vDate = getDate(rset,versionDate_ColumnName);
+	vDate = getDate(rset,dbSyntax,versionDate_ColumnName);
 	if (vDate==null){
 		throw new DataAccessException("could not parse date");
 	}
@@ -321,11 +308,6 @@ public static Version getVersion(ResultSet rset, GroupAccess groupAccess) throws
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @param versionPRef cbit.sql.KeyValue
- */
 protected static String getVersionGroupSQLValue(Version version) {
 	StringBuffer buffer = new StringBuffer();
 	//

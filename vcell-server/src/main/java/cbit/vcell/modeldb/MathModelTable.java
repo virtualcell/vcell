@@ -57,7 +57,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax
 
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	
 	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,MathModelTable.table.childSummarySmall,MathModelTable.table.childSummaryLarge,dbSyntax);
 
@@ -105,7 +105,7 @@ public MathModelMetaData getMathModelMetaData(ResultSet rset, MathModelDbDriver 
 	// Get Version
 	//
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	KeyValue mathModelKey = version.getVersionKey();
 
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
@@ -129,7 +129,7 @@ public MathModelMetaData getMathModelMetaData(ResultSet rset, Connection con, Ke
 	// Get Version
 	//
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version mathModelVersion = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version mathModelVersion = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 
 	KeyValue mathDescrRef = new KeyValue(rset.getBigDecimal(table.mathRef.toString()));
 	

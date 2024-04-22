@@ -70,7 +70,7 @@ public VCImageCompressed getImage(ResultSet rset,Connection con,ImageDataTable i
 	double ez = rset.getBigDecimal(ExtentTable.table.extentZ.toString()).doubleValue();
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	try {
 		org.vcell.util.Extent extent = new org.vcell.util.Extent(ex,ey,ez);
 		VCImageCompressed vcImage = new VCImageCompressed(version,data,extent,nx,ny,nz);
@@ -98,7 +98,7 @@ public VersionInfo getInfo(ResultSet rset, Connection con,DatabaseSyntax dbSynta
 	}
 	
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	
 	int x = rset.getInt(ImageTable.table.numX.toString());
 	int y = rset.getInt(ImageTable.table.numY.toString());

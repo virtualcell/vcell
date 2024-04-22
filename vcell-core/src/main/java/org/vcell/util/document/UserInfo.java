@@ -73,8 +73,8 @@ public boolean equals(Object object) {
 		userInfo = (UserInfo)object;
 	}
 	
-System.out.println("this="+toString());
-System.out.println("other="+userInfo.toString());
+//System.out.println("this="+toString());
+//System.out.println("other="+userInfo.toString());
 	
 	if (toString().equals(userInfo.toString())){
 		return true;

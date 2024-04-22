@@ -62,7 +62,7 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, BioModelDbDriver bio
 	// Get Version
 	//
 	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	KeyValue bioModelKey = version.getVersionKey();
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
@@ -98,7 +98,7 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con, KeyV
 	// Get Version
 	//
 	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
 
@@ -116,7 +116,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax
 
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
 	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	VCellSoftwareVersion vcSoftwareVersion = VCellSoftwareVersion.fromString(softwareVersion);
 	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge,dbSyntax);
@@ -288,11 +288,11 @@ public void setPreparedStatement_BioModelReps(PreparedStatement stmt, User user,
 	}
 }
 
-public BioModelRep getBioModelRep(User user, ResultSet rset) throws IllegalArgumentException, SQLException {
+public BioModelRep getBioModelRep(User user, ResultSet rset, DatabaseSyntax dbSyntax) throws IllegalArgumentException, SQLException {
 	KeyValue bmKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
 	String name = rset.getString(table.name.toString());
 	int privacy = rset.getInt(table.privacy.toString());
-	Date date = getDate(rset, table.versionDate.toString());
+	Date date = getDate(rset, dbSyntax, table.versionDate.toString());
 	String annot = rset.getString(table.versionAnnot.toString());
 	BigDecimal branchID = rset.getBigDecimal(table.versionBranchID.toString());
 	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));

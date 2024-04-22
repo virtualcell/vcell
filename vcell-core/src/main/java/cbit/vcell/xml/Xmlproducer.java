@@ -1917,9 +1917,9 @@ private Element getXML(SpeciesContextSpec param, SimulationContext simContext) {
 			speciesContextSpecElement.addContent(sasElement);
 		}
 	}
-	XMLOutputter outp = new XMLOutputter(Format.getPrettyFormat());
-	String sout = outp.outputString(speciesContextSpecElement);
-	System.out.println(sout);
+//	XMLOutputter outp = new XMLOutputter(Format.getPrettyFormat());
+//	String sout = outp.outputString(speciesContextSpecElement);
+//	System.out.println(sout);
 	
 	// write BoundaryConditions
 	cbit.vcell.parser.Expression exp;

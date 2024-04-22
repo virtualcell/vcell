@@ -431,7 +431,7 @@ VersionableFamily getAllReferences(User user,KeyValue key, VersionableType versi
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.getAllReferences(con,versionableType, key);
+		return DbDriver.getAllReferences(con,conFactory.getDatabaseSyntax(),versionableType, key);
 	} catch (Throwable e) {
 		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {
@@ -885,7 +885,7 @@ TestSuiteInfoNew[] getTestSuiteInfos(User user,boolean bEnableRetry)
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.testSuiteInfosGet(con,user);
+		return DbDriver.testSuiteInfosGet(con,conFactory.getDatabaseSyntax(),user);
 	} catch (Throwable e) {
 		lg.error(e.getMessage(),e);
 		if (bEnableRetry && isBadConnection(con)) {

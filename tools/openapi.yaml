@@ -15,6 +15,57 @@ info:
 servers:
 - url: https://vcellapi-test.cam.uchc.edu
 paths:
+  /api/v1/bioModel/upload_bioModel:
+    post:
+      tags:
+      - Bio Model Resource
+      summary: Upload the BioModel to VCell database. Returns BioModel ID.
+      operationId: uploadBioModel
+      requestBody:
+        content:
+          text/xml:
+            schema:
+              type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/v1/bioModel/{bioModelID}:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Get BioModel information in JSON format by ID.
+      operationId: getBiomodelById
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BioModel'
+    delete:
+      tags:
+      - Bio Model Resource
+      summary: Delete the BioModel from VCell's database.
+      operationId: deleteBioModel
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
   /api/v1/helloworld:
     get:
       tags:
@@ -60,10 +111,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -85,10 +136,10 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -127,17 +178,89 @@ paths:
       responses:
         "204":
           description: No Content
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
+  /api/v1/users/bearerToken:
+    post:
+      tags:
+      - Users Resource
+      summary: Get token for legacy API
+      operationId: getLegacyApiToken
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                user_password:
+                  type: string
+                client_id:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesTokenRepresentationRecord'
+  /api/v1/users/getIdentity:
+    get:
+      tags:
+      - Users Resource
+      summary: Get mapped VCell identity
+      operationId: getVCellIdentity
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIdentityJSONSafe'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/v1/users/mapUser:
+    post:
+      tags:
+      - Users Resource
+      summary: set or replace vcell identity mapping
+      operationId: setVCellIdentity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MapUser'
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: boolean
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
   /api/v1/users/me:
     get:
       tags:
       - Users Resource
+      summary: Get current user
+      operationId: getMe
       responses:
         "200":
           description: OK
@@ -145,15 +268,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        "403":
-          description: Not Allowed
-        "401":
-          description: Not Authorized
-      security:
-      - openId:
-        - user
 components:
   schemas:
+    AccesTokenRepresentationRecord:
+      type: object
+      properties:
+        token:
+          type: string
+        creationDateSeconds:
+          format: int64
+          type: integer
+        expireDateSeconds:
+          format: int64
+          type: integer
+        userId:
+          type: string
+        userKey:
+          type: string
+    Application:
+      type: object
+    BioModel:
+      type: object
+      properties:
+        bmKey:
+          type: string
+        name:
+          type: string
+        privacy:
+          format: int32
+          type: integer
+        groupUsers:
+          type: array
+          items:
+            type: string
+        savedDate:
+          format: int64
+          type: integer
+        annot:
+          type: string
+        branchID:
+          type: string
+        modelKey:
+          type: string
+        ownerName:
+          type: string
+        ownerKey:
+          type: string
+        simulations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Simulation'
+        applications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Application'
     BiomodelRef:
       type: object
       properties:
@@ -178,6 +346,13 @@ components:
       type: object
       properties:
         message:
+          type: string
+    MapUser:
+      type: object
+      properties:
+        userID:
+          type: string
+        password:
           type: string
     MathmodelRef:
       type: object
@@ -234,6 +409,11 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
+    Simulation:
+      type: object
+      properties:
+        name:
+          type: string
     User:
       type: object
       properties:
@@ -251,6 +431,17 @@ components:
           type: array
           items:
             type: string
+    UserIdentityJSONSafe:
+      type: object
+      properties:
+        userName:
+          type: string
+        id:
+          type: number
+        subject:
+          type: string
+        insertDate:
+          type: string
   securitySchemes:
     openId:
       type: openIdConnect

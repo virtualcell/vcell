@@ -30,18 +30,38 @@ spec:
               cpu: "200m"
             limits:
               memory: "1000Mi"
-#              cpu: "500m"
+          #              cpu: "500m"
           envFrom:
             - configMapRef:
                 name: rest-config
             - secretRef:
                 name: rest-secrets
           #          command: [ "/bin/sh", "-c", "env; cat /run/secrets/api-secrets/dbpswd" ]
+          env:
+            - name: JAVA_OPTS
+              value: >
+                -Dquarkus.http.host=0.0.0.0
+                -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+                -Dvcellapi.privateKey.file=/run/secrets/jwt-secret/apiprivkey
+                -Dvcellapi.publicKey.file=/run/secrets/jwt-secret/apipubkey
           ports:
             - containerPort: 80
+          volumeMounts:
+            - name: jwt-secret
+              mountPath: /run/secrets/jwt-secret
       restartPolicy: Always
       imagePullSecrets:
         - name: ghcr-secret
+      volumes:
+        - name: jwt-secret
+          secret:
+            items:
+              - key: apiprivkey
+                path: apiprivkey
+              - key: apipubkey
+                path: apipubkey
+            secretName: jwt-secret
+
 ---
 apiVersion: v1
 kind: Service

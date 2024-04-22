@@ -631,6 +631,102 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         }
     }
 
+    public void setUserIdentityFromIdentityProvider(User user, String identity, UserIdentityTable.IdentityProvider identityProvider, boolean bEnableRetry) throws SQLException, DataAccessException {
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            userDB.setUserIdentity(con, user, identity, identityProvider, conFactory.getKeyFactory());
+        } catch(Throwable e){
+            lg.error("failure in getUserIdentityFromAuth0()", e);
+            if(bEnableRetry && isBadConnection(con)){
+                conFactory.failed(con, lock);
+                setUserIdentityFromIdentityProvider(user, identity, identityProvider, false);
+            } else {
+                handle_DataAccessException_SQLException(e);
+            }
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
+    public void deleteUserIdentityFromIdentityProvider(User user, UserIdentityTable.IdentityProvider identityProvider, boolean bEnableRetry) throws SQLException, DataAccessException {
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            userDB.removeUserIdentity(con, user, identityProvider);
+        } catch(Throwable e){
+            lg.error("failure in getUserIdentityFromAuth0()", e);
+            if(bEnableRetry && isBadConnection(con)){
+                conFactory.failed(con, lock);
+                deleteUserIdentityFromIdentityProvider(user, identityProvider, false);
+            } else {
+                handle_DataAccessException_SQLException(e);
+            }
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
+    public void removeAllUsersIdentities(User user, boolean bEnableRetry) throws SQLException, DataAccessException {
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            userDB.cleanAllUserIdentities(con, user);
+        } catch(Throwable e){
+            lg.error("failure in getUserIdentityFromAuth0()", e);
+            if(bEnableRetry && isBadConnection(con)){
+                conFactory.failed(con, lock);
+                removeAllUsersIdentities(user, false);
+            } else {
+                handle_DataAccessException_SQLException(e);
+            }
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
+    public UserIdentity getUserIdentityFromSubjectAndIdentityProvider(String subject, UserIdentityTable.IdentityProvider identityProvider,boolean bEnableRetry)
+            throws DataAccessException, java.sql.SQLException{
+
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            return userDB.getUserIdentityFromSubjectAndIdentityProvider(con, subject, identityProvider);
+        } catch(Throwable e){
+            lg.error("failure in getUserIdentityFromAuth0()", e);
+            if(bEnableRetry && isBadConnection(con)){
+                conFactory.failed(con, lock);
+                return getUserIdentityFromSubjectAndIdentityProvider(subject, identityProvider, false);
+            } else {
+                handle_DataAccessException_SQLException(e);
+                return null; // never gets here;
+            }
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
+    public ArrayList<UserIdentity> getUserIdentitiesFromUser(User user, boolean bEnableRetry)
+            throws DataAccessException, java.sql.SQLException{
+
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            return userDB.getIdentitiesFromUser(con, user);
+        } catch(Throwable e){
+            lg.error("failure in getUserIdentitiesFromUser()", e);
+            if(bEnableRetry && isBadConnection(con)){
+                conFactory.failed(con, lock);
+                return getUserIdentitiesFromUser(user, false);
+            } else {
+                handle_DataAccessException_SQLException(e);
+                return null; // never gets here;
+            }
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
 
     public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user, Date expirationDate, boolean bEnableRetry)
             throws DataAccessException, java.sql.SQLException, ObjectNotFoundException{
@@ -692,7 +788,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         Object lock = new Object();
         Connection con = conFactory.getConnection(lock);
         try {
-            return userDB.getApiAccessToken(con, accessToken);
+            return userDB.getApiAccessToken(con, conFactory.getDatabaseSyntax(), accessToken);
         } catch(Throwable e){
             lg.error("failure in getApiAccessToken()", e);
             if(bEnableRetry && isBadConnection(con)){

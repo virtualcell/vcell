@@ -105,10 +105,10 @@ public static void readRbmElement(Connection con,Model model,DatabaseSyntax dbSy
 	}
 }
 
-public VersionInfo getInfo(ResultSet rset, Connection con) throws SQLException,DataAccessException {
+public VersionInfo getInfo(ResultSet rset, Connection con, DatabaseSyntax dbSytax) throws SQLException,DataAccessException {
 	
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSytax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
 	return new ModelInfo(version,VCellSoftwareVersion.fromString(softwareVersion));
@@ -142,10 +142,10 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	}
 }
 
-public Model getModel(ResultSet rset, Connection con) throws SQLException,DataAccessException {
+public Model getModel(ResultSet rset, Connection con, DatabaseSyntax dbSyntax) throws SQLException,DataAccessException {
 
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid));
+	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 
 	ModelUnitSystem modelUnitSystem = ModelUnitSystem.createDefaultVCModelUnitSystem();
 	

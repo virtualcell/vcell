@@ -21,7 +21,8 @@ import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.xml.XMLTags;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.util.CommentStringTokenizer;
@@ -36,7 +37,7 @@ import java.util.Vector;
  */
 public class ParameterEstimationTaskXMLPersistence {
 
-	private final static Logger lg = Logger.getLogger(ParameterEstimationTaskXMLPersistence.class);
+	private final static Logger lg = LogManager.getLogger(ParameterEstimationTaskXMLPersistence.class);
 
 	public final static String NameAttribute = XMLTags.NameAttrTag;
 	public final static String AnnotationTag = XMLTags.AnnotationTag;

@@ -222,15 +222,6 @@ public class ChomboFileReader {
 		return chomboDataset;
 	}	
 	
-	public static void main(String[] args){
-		try {
-			ChomboMeshData meshdata = readMesh("C:\\Developer\\eclipse\\workspace\\pyVCell\\ChomboUtils\\SimData\\SimID_85232385_0_.mesh.hdf5","C:\\Developer\\eclipse\\workspace\\pyVCell\\ChomboUtils\\SimData\\SimID_85232385_0_000075.feature_EC.vol0.hdf5");
-			System.out.println("read mesh of dimension "+meshdata.getMesh().getDimension());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	//
 	// Membrane data are stored as a UCHC (or vcell) extension to the normal Chombo Data.
 	// ChomboMembraneVarData was formally called VCellSolution by Fei.

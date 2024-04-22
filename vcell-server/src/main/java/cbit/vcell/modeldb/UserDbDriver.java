@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 
+import cbit.sql.Field;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +22,7 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.jwt.consumer.JwtContext;
 import org.jose4j.lang.JoseException;
 import org.vcell.auth.JWTUtils;
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -101,6 +103,142 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	}
 	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIAL_CLAIM[0]));
 }
+
+	public void removeUserIdentity(Connection con, User user, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
+		String sql;
+		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
+		Field identityField = UserIdentityTable.getIdentityField(identityProvider);
+		if (!identities.isEmpty()){
+			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
+					" SET " + identityField.getUnqualifiedColName() + " = " + "NULL" +
+					" WHERE " + UserIdentityTable.userRef + " = " + user.getID();
+			DbDriver.updateCleanSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_POSSIBLE);
+		}
+	}
+
+	public void cleanAllUserIdentities(Connection connection, User user) throws SQLException {
+		for(UserIdentityTable.IdentityProvider identityProvider: UserIdentityTable.IdentityProvider.values()){
+			removeUserIdentity(connection, user, identityProvider);
+		}
+	}
+
+
+	public void setUserIdentity(Connection con, User user, String identity, UserIdentityTable.IdentityProvider identityProvider, KeyFactory keyFactory) throws SQLException {
+		String sql;
+
+		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
+		if (identity.isEmpty()){
+			identity = "anonymous";
+		}
+		identity = "'" + identity + "'";
+		Field identityField = UserIdentityTable.getIdentityField(identityProvider);
+		if (identities.isEmpty()){
+			if(lg.isTraceEnabled()){
+				lg.trace("UserDbDriver.setUserIdentity. Creating new entry with identity " + identityProvider + " being set.");
+			}
+			sql = "INSERT INTO " + UserIdentityTable.table.getTableName() +
+					" VALUES (" +
+					keyFactory.nextSEQ() + "," +
+					user.getID().toString() + "," +
+					(identityProvider == UserIdentityTable.IdentityProvider.AUTH0 ? identity : "NULL") + "," +
+					(identityProvider == UserIdentityTable.IdentityProvider.KEYCLOAK ? identity : "NULL") + "," +
+					"CURRENT_TIMESTAMP)";
+			DbDriver.updateCleanSQL(con, sql);
+		} else {
+			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
+					" SET " +
+					identityField.getUnqualifiedColName() + " = " + identity +
+					"WHERE " + UserIdentityTable.userRef + " = " + user.getID();
+			DbDriver.updateCleanSQL(con, sql);
+		}
+	}
+
+	public UserIdentity getUserIdentityFromSubjectAndIdentityProvider(Connection con, String subject, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
+		Statement stmt;
+		String sql;
+		ResultSet rset;
+		if (lg.isTraceEnabled()) {
+			lg.trace("UserDbDriver.getUserFromUserAuth0ID(userid=" + subject + ")");
+		}
+		Field identityColumn = UserIdentityTable.getIdentityField(identityProvider);
+		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
+				UserTable.table.userid.getQualifiedColName() + "," +
+				identityColumn.getQualifiedColName() + "," +
+				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
+				UserIdentityTable.table.insertDate.getQualifiedColName() +
+				" FROM " + userTable.getTableName() +
+				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
+				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
+				" WHERE " + identityColumn.getQualifiedColName() + " = '" + subject + "'";
+
+		if (lg.isTraceEnabled()) {
+			lg.trace(sql);
+		}
+		stmt = con.createStatement();
+		UserIdentity resultIdentity = null;
+		try {
+			rset = stmt.executeQuery(sql);
+			while (rset.next()) {
+				BigDecimal userBD = rset.getBigDecimal("user_key");
+				String userID = rset.getString("userid");
+				User userFromDB = new User(userID, new KeyValue(userBD));
+				if(resultIdentity == null) {
+					resultIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider, "identity_key");
+				}else {
+					throw new SQLException("Not expecting more than 1 id for " + identityProvider.name() + "='"+subject+"'");
+				}
+			}
+		} finally {
+			stmt.close();
+		}
+		return resultIdentity;
+	}
+
+	public ArrayList<UserIdentity> getIdentitiesFromUser(Connection con, User user) throws SQLException {
+		Statement stmt;
+		String sql;
+		ResultSet rset;
+		if (lg.isTraceEnabled()) {
+			lg.trace("UserDbDriver.getIdentitiesFromUser(userid=" + user.getName() + ")");
+		}
+		String identityColumns = "";
+		for(Field identityColumn : UserIdentityTable.getIdentityFields()){
+			identityColumns =  identityColumn.getQualifiedColName() + "," + identityColumns;
+		}
+		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
+				UserTable.table.userid.getQualifiedColName() + "," +
+				identityColumns +
+				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
+				UserIdentityTable.table.insertDate.getQualifiedColName() +
+				" FROM " + userTable.getTableName() +
+				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
+				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
+				" WHERE " + UserTable.table.id.getQualifiedColName() + " = " + user.getID();
+
+		if (lg.isTraceEnabled()) {
+			lg.trace(sql);
+		}
+		stmt = con.createStatement();
+		ArrayList<UserIdentity> userIdentities = new ArrayList<>();
+		try {
+			rset = stmt.executeQuery(sql);
+			while (rset.next()) {
+				BigDecimal userBD = rset.getBigDecimal("user_key");
+				String userID = rset.getString("userid");
+				User userFromDB = new User(userID, new KeyValue(userBD));
+				for(UserIdentityTable.IdentityProvider identityProvider: UserIdentityTable.IdentityProvider.values()){
+					UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider, "identity_key");
+					if(userIdentity != null){
+						userIdentities.add(userIdentity);
+					}
+				}
+			}
+		} finally {
+			stmt.close();
+		}
+
+		return userIdentities;
+	}
 /**
  * @param con database connection
  * @param userid
@@ -467,7 +605,7 @@ public void setApiAccessTokenStatus(Connection con, KeyValue apiAccessTokenKey, 
 }
 
 
-public ApiAccessToken getApiAccessToken(Connection con, String accessToken) throws SQLException, DataAccessException {
+public ApiAccessToken getApiAccessToken(Connection con, DatabaseSyntax dbSyntax, String accessToken) throws SQLException, DataAccessException {
 	Statement stmt;
 	String sql;
 	ResultSet rset;
@@ -488,7 +626,7 @@ public ApiAccessToken getApiAccessToken(Connection con, String accessToken) thro
 	try {
 		rset = stmt.executeQuery(sql);
 		if (rset.next()) {
-			apiAccessToken = tokenTable.getApiAccessToken(rset);
+			apiAccessToken = tokenTable.getApiAccessToken(rset,dbSyntax);
 		}
 	} finally {
 		stmt.close();

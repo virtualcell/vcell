@@ -13,10 +13,7 @@
 
 package org.vcell.restclient.model;
 
-
 import org.junit.jupiter.api.Test;
-
-
 /**
  * Model tests for HelloWorldMessage
  */

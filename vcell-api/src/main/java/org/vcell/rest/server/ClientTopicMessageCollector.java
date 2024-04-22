@@ -207,17 +207,6 @@ public void init() {
 	vcMessagingService.addMessageConsumer(topicConsumer);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/5/2004 9:28:52 AM)
- * @param listener cbit.rmi.event.MessageListener
- */
-public void removeMessageListener(MessageListener listener) {
-	listenerList.remove(MessageListener.class, listener);
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (4/19/2004 1:05:20 PM)
@@ -228,11 +217,11 @@ public void setTimeSinceLastMessage(long newTimeSinceLastMessage) {
 }
 
 public void simulationJobStatusChanged(SimulationJobStatusEvent simJobStatusEvent) {
-	System.out.println("jms message collector doesn't listen for SimulationJobStatusEvent");
+	lg.warn("jms message collector doesn't listen for SimulationJobStatusEvent");
 }
 
 public void onWorkerEvent(WorkerEvent event) {	
-	System.out.println("jms message collector doesn't listen for WorkerEvent");
+	lg.warn("jms message collector doesn't listen for WorkerEvent");
 }
 
 

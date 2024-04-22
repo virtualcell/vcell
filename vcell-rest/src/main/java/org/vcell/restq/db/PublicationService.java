@@ -22,7 +22,7 @@ public class PublicationService {
 	private final DatabaseServerImpl databaseServerImpl;
 
 	@Inject
-	public PublicationService(OracleAgroalConnectionFactory connectionFactory) throws DataAccessException {
+	public PublicationService(AgroalConnectionFactory connectionFactory) throws DataAccessException {
 		this.databaseServerImpl = new DatabaseServerImpl(connectionFactory, connectionFactory.getKeyFactory());
 	}
 

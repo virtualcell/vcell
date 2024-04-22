@@ -71,11 +71,11 @@ public class SimulationTable extends VersionTable {
         addFields(fields);
     }
 
-    public VersionInfo getInfo(ResultSet rset, Connection con) throws SQLException, DataAccessException{
+    public VersionInfo getInfo(ResultSet rset, Connection con, DatabaseSyntax dbSyntax) throws SQLException, DataAccessException{
 
         KeyValue mathRef = new KeyValue(rset.getBigDecimal(SimulationTable.table.mathRef.toString()));
         java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-        Version version = getVersion(rset, DbDriver.getGroupAccessFromGroupID(con, groupid));
+        Version version = getVersion(rset, dbSyntax, DbDriver.getGroupAccessFromGroupID(con, groupid));
         SimulationVersion simulationVersion = (SimulationVersion) version;
         String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 
@@ -162,7 +162,7 @@ public class SimulationTable extends VersionTable {
         // Get Version
         //
         java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-        SimulationVersion simulationVersion = (SimulationVersion) getVersion(rset, DbDriver.getGroupAccessFromGroupID(con, groupid));
+        SimulationVersion simulationVersion = (SimulationVersion) getVersion(rset, dbSyntax, DbDriver.getGroupAccessFromGroupID(con, groupid));
 
         java.math.BigDecimal bigD = rset.getBigDecimal(SimulationTable.table.mathRef.toString());
         KeyValue mathKey = null;

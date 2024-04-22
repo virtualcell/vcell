@@ -49,6 +49,8 @@ services:
       - keystorepswd
       - dbpswd
       - jmspswd
+      - apiprivkey
+      - apipubkey
     networks:
       - vcellnet
     depends_on:
@@ -427,3 +429,7 @@ secrets:
     file: ${VCELL_SECRETS_DIR}/keystore.jks
   batchuserkeyfile:
     file: ${VCELL_SECRETS_DIR}/id_rsa.pub
+  apipubkey:
+    file: ${VCELL_SECRETS_DIR}/apiKeys.pem
+  apiprivkey:
+    file: ${VCELL_SECRETS_DIR}/apiKeys

@@ -19,7 +19,7 @@ public class PythonUtils {
         commandList.addAll(Arrays.asList(commands));
         ProcessBuilder pb = new ProcessBuilder(commandList);
         pb.directory(workingDir);
-        System.out.println(pb.command());
+        lg.info(pb.command());
         runAndPrintProcessStreams(pb);
     }
 

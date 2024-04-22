@@ -13,7 +13,10 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
+import { AccesTokenRepresentationRecord } from '../model/models';
+import { MapUser } from '../model/models';
 import { User } from '../model/models';
+import { UserIdentityJSONSafe } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -25,9 +28,31 @@ export interface UsersResourceServiceInterface {
     configuration: Configuration;
 
     /**
+     * Get token for legacy API
      * 
+     * @param userId 
+     * @param userPassword 
+     * @param clientId 
+     */
+    getLegacyApiToken(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
+
+    /**
+     * Get current user
      * 
      */
-    apiV1UsersMeGet(extraHttpRequestParams?: any): Observable<User>;
+    getMe(extraHttpRequestParams?: any): Observable<User>;
+
+    /**
+     * Get mapped VCell identity
+     * 
+     */
+    getVCellIdentity(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
+
+    /**
+     * set or replace vcell identity mapping
+     * 
+     * @param mapUser 
+     */
+    setVCellIdentity(mapUser?: MapUser, extraHttpRequestParams?: any): Observable<boolean>;
 
 }

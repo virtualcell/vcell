@@ -75,20 +75,20 @@ Please follow the [installation](#installation) instruction and execute the foll
 
 import org.vcell.restclient.*;
 import org.vcell.restclient.model.*;
-import org.vcell.restclient.api.HelloWorldApi;
+import org.vcell.restclient.api.BioModelResourceApi;
 
-public class HelloWorldApiExample {
+public class BioModelResourceApiExample {
 
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         // Configure clients using the `defaultClient` object, such as
         // overriding the host and port, timeout, etc.
-        HelloWorldApi apiInstance = new HelloWorldApi(defaultClient);
+        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
+        String bioModelID = "bioModelID_example"; // String | 
         try {
-            HelloWorldMessage result = apiInstance.getHelloWorld();
-            System.out.println(result);
+            apiInstance.deleteBioModel(bioModelID);
         } catch (ApiException e) {
-            System.err.println("Exception when calling HelloWorldApi#getHelloWorld");
+            System.err.println("Exception when calling BioModelResourceApi#deleteBioModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -105,6 +105,12 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*BioModelResourceApi* | [**deleteBioModel**](docs/BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**deleteBioModelWithHttpInfo**](docs/BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**getBiomodelById**](docs/BioModelResourceApi.md#getBiomodelById) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+*BioModelResourceApi* | [**getBiomodelByIdWithHttpInfo**](docs/BioModelResourceApi.md#getBiomodelByIdWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+*BioModelResourceApi* | [**uploadBioModel**](docs/BioModelResourceApi.md#uploadBioModel) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
+*BioModelResourceApi* | [**uploadBioModelWithHttpInfo**](docs/BioModelResourceApi.md#uploadBioModelWithHttpInfo) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
 *HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message.
 *HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message.
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication
@@ -117,17 +123,28 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication
-*UsersResourceApi* | [**apiV1UsersMeGet**](docs/UsersResourceApi.md#apiV1UsersMeGet) | **GET** /api/v1/users/me | 
-*UsersResourceApi* | [**apiV1UsersMeGetWithHttpInfo**](docs/UsersResourceApi.md#apiV1UsersMeGetWithHttpInfo) | **GET** /api/v1/users/me | 
+*UsersResourceApi* | [**getLegacyApiToken**](docs/UsersResourceApi.md#getLegacyApiToken) | **POST** /api/v1/users/bearerToken | Get token for legacy API
+*UsersResourceApi* | [**getLegacyApiTokenWithHttpInfo**](docs/UsersResourceApi.md#getLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/bearerToken | Get token for legacy API
+*UsersResourceApi* | [**getMe**](docs/UsersResourceApi.md#getMe) | **GET** /api/v1/users/me | Get current user
+*UsersResourceApi* | [**getMeWithHttpInfo**](docs/UsersResourceApi.md#getMeWithHttpInfo) | **GET** /api/v1/users/me | Get current user
+*UsersResourceApi* | [**getVCellIdentity**](docs/UsersResourceApi.md#getVCellIdentity) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
+*UsersResourceApi* | [**getVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#getVCellIdentityWithHttpInfo) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
+*UsersResourceApi* | [**setVCellIdentity**](docs/UsersResourceApi.md#setVCellIdentity) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
+*UsersResourceApi* | [**setVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#setVCellIdentityWithHttpInfo) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
 
 
 ## Documentation for Models
 
+ - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
+ - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
+ - [MapUser](docs/MapUser.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
+ - [Simulation](docs/Simulation.md)
  - [User](docs/User.md)
+ - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
 
 
 <a id="documentation-for-authorization"></a>

@@ -1,7 +1,11 @@
 package org.vcell.auth;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwk.RsaJwkGenerator;
@@ -17,8 +21,11 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
 import org.vcell.util.document.User;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.interfaces.RSAPublicKey;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,22 +33,54 @@ import java.util.stream.Collectors;
 
 public class JWTUtils {
 
+    private final static Logger log = LogManager.getLogger(JWTUtils.class);
+
     public final static int MAX_JWT_SIZE_BYTES = 4000;
     private final static Logger lg = LogManager.getLogger(JWTUtils.class);
     private static RsaJsonWebKey rsaJsonWebKey = null;
-    private static RSAPublicKey rsaPublicKey = null;
 
     public static String VCELL_JWT_AUDIENCE = "VCellService";
     public static String VCELL_JWT_ISSUER = "VCellService";
 
     public static void setRsaJsonWebKey(RsaJsonWebKey rsaJsonWebKey) {
         JWTUtils.rsaJsonWebKey = rsaJsonWebKey;
-        JWTUtils.rsaPublicKey = rsaJsonWebKey.getRsaPublicKey();
     }
 
-    public static void setRsaPublicKey(RSAPublicKey rsaPublicKey) {
-        JWTUtils.rsaPublicKey = rsaPublicKey;
+
+    synchronized static void createRsaJsonWebKeyIfNeeded() throws JoseException {
+        if (rsaJsonWebKey != null) {
+            return;
+        }
+        final String privateKeyFilePath = PropertyLoader.getProperty(PropertyLoader.vcellapiPrivateKey, null);
+        final String publicKeyFilePath = PropertyLoader.getProperty(PropertyLoader.vcellapiPublicKey, null);
+        if (privateKeyFilePath == null || publicKeyFilePath == null) {
+            log.warn("No public/private key files found. Generating new keys.");
+            setRsaJsonWebKey(createNewJsonWebKey("k1"));
+        }
+        try {
+            // Read public key from file
+            FileReader reader = new FileReader(publicKeyFilePath);
+            PEMParser pemParser = new PEMParser(reader);
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider(new BouncyCastleProvider());
+            PublicKey publicKey = converter.getPublicKey((org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) pemParser.readObject());
+
+            // Read private key from file
+            reader = new FileReader(privateKeyFilePath);
+            pemParser = new PEMParser(reader);
+            PrivateKey privateKey = converter.getPrivateKey((org.bouncycastle.asn1.pkcs.PrivateKeyInfo) pemParser.readObject());
+
+            // Create RsaJsonWebKey
+            RsaJsonWebKey rsaJsonWebKey = new RsaJsonWebKey((java.security.interfaces.RSAPublicKey) publicKey);
+            rsaJsonWebKey.setPrivateKey(privateKey);
+
+            rsaJsonWebKey.setKeyId("k1");
+
+            JWTUtils.rsaJsonWebKey = rsaJsonWebKey;
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading public/private key files", e);
+        }
     }
+
     public static RsaJsonWebKey createNewJsonWebKey(String keyId) throws JoseException {
         // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
         RsaJsonWebKey rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
@@ -52,6 +91,8 @@ public class JWTUtils {
     }
 
     public static String createToken(User user, NumericDate expirationTime) throws JoseException {
+        createRsaJsonWebKeyIfNeeded();
+
         // Create the Claims, which will be the content of the JWT
         JwtClaims claims = new JwtClaims();
         claims.setIssuer(VCELL_JWT_ISSUER);  // who creates the token and signs it
@@ -79,12 +120,12 @@ public class JWTUtils {
         jws.setPayload(claims.toJson());
 
         // The JWT is signed using the private key
-        jws.setKey(rsaJsonWebKey.getPrivateKey());
+        jws.setKey(rsaJsonWebKey.getRsaPrivateKey());
 
         // Set the Key ID (kid) header because it's just the polite thing to do.
         // We only have one key in this example but a using a Key ID helps
         // facilitate a smooth key rollover process
-        jws.setKeyIdHeaderValue(rsaJsonWebKey.getKeyId());
+//        jws.setKeyIdHeaderValue(rsaJsonWebKey.getKeyId());
 
         // Set the signature algorithm on the JWT/JWS that will integrity protect the claims
         jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
@@ -101,14 +142,16 @@ public class JWTUtils {
         return jwt;
     }
 
-    public static boolean verifyJWS(String jwt) throws MalformedClaimException {
+    public static boolean verifyJWS(String jwt) throws MalformedClaimException, JoseException {
+        createRsaJsonWebKeyIfNeeded();
+
         JwtConsumer jwtConsumer = new JwtConsumerBuilder()
                 .setRequireExpirationTime() // the JWT must have an expiration time
                 .setAllowedClockSkewInSeconds(30) // allow some leeway in validating time based claims to account for clock skew
                 .setRequireSubject() // the JWT must have a subject claim
                 .setExpectedIssuer(VCELL_JWT_ISSUER) // whom the JWT needs to have been issued by
                 .setExpectedAudience(VCELL_JWT_AUDIENCE) // to whom the JWT is intended for
-                .setVerificationKey(rsaPublicKey) // verify the signature with the public key
+                .setVerificationKey(rsaJsonWebKey.getPublicKey()) // verify the signature with the public key
                 .setJwsAlgorithmConstraints( // only allow the expected signature algorithm(s) in the given context
                         AlgorithmConstraints.ConstraintType.PERMIT, AlgorithmIdentifiers.RSA_USING_SHA256) // which is only RS256 here
                 .build(); // create the JwtConsumer instance

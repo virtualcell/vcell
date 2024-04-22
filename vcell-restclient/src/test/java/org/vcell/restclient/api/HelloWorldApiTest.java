@@ -13,7 +13,6 @@
 
 package org.vcell.restclient.api;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.HelloWorldMessage;
@@ -22,7 +21,6 @@ import org.vcell.restclient.model.HelloWorldMessage;
 /**
  * API tests for HelloWorldApi
  */
-@Disabled
 public class HelloWorldApiTest {
 
     private final HelloWorldApi api = new HelloWorldApi();

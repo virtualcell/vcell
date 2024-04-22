@@ -61,6 +61,7 @@ resources:
 - secret-ghcr.yaml
 - vcell-ssh-secret.yaml
 - rest-secrets.yaml
+- jwt-secret.yaml
 - cfs07_vcell_pv.yaml
 - cfs12_vcell_pv.yaml
 - cfs09_vcell_pv.yaml

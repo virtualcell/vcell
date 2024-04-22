@@ -53,11 +53,11 @@ public class MathDescTable extends cbit.vcell.modeldb.VersionTable {
     }
 
 
-    public VersionInfo getInfo(ResultSet rset, Connection con) throws SQLException, org.vcell.util.DataAccessException{
+    public VersionInfo getInfo(ResultSet rset, Connection con, DatabaseSyntax dbSyntax) throws SQLException, org.vcell.util.DataAccessException{
 
         KeyValue geomRef = new KeyValue(rset.getBigDecimal(MathDescTable.table.geometryRef.toString()));
         java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-        Version version = getVersion(rset, DbDriver.getGroupAccessFromGroupID(con, groupid));
+        Version version = getVersion(rset, dbSyntax, DbDriver.getGroupAccessFromGroupID(con, groupid));
         String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 
         return new cbit.vcell.math.MathInfo(geomRef, version, VCellSoftwareVersion.fromString(softwareVersion));
@@ -107,7 +107,7 @@ public class MathDescTable extends cbit.vcell.modeldb.VersionTable {
         // Get Version
         //
         java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
-        Version version = getVersion(rset, DbDriver.getGroupAccessFromGroupID(con, groupid));
+        Version version = getVersion(rset, dbSyntax, DbDriver.getGroupAccessFromGroupID(con, groupid));
 
         //
         // get MathDescription Data (language) (MUST BE READ FIRST)

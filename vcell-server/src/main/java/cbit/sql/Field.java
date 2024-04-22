@@ -67,7 +67,7 @@ public class Field {
 		
 		clob_text("clob","text",BasicDataType.CLOB),
 		
-		date("date","date",BasicDataType.DATE);
+		date("date","timestamp",BasicDataType.DATE);
 		
 		private SQLDataType(String oracleDataType, String postgresDataType, BasicDataType basicDataType){
 			this.oracleDataType = oracleDataType;

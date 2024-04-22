@@ -130,6 +130,10 @@ public class PropertyLoader {
 	public static final String vcellapiKeystoreFile			= record("vcellapi.keystore.file",ValueType.GEN);
 	public static final String vcellapiKeystorePswd			= record("vcellapi.keystore.pswd",ValueType.GEN);
 	public static final String vcellapiKeystorePswdFile		= record("vcellapi.keystore.pswdfile",ValueType.GEN);
+	public static final String vcellapiPublicKey		= record("vcellapi.publicKey.file",ValueType.GEN);
+	public static final String vcellapiPrivateKey		= record("vcellapi.privateKey.file",ValueType.GEN);
+
+
 
 	//Stoch properties
 //	public static final String stochExecutableProperty		= record("vcell.stoch.executable",ValueType.EXE);

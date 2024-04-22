@@ -1,11 +1,14 @@
 package org.vcell.restq;
 
+import cbit.vcell.resource.PropertyLoader;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.util.DataAccessException;
 
 import java.sql.SQLException;
@@ -18,6 +21,11 @@ public class HelloWorldTest {
 
     @Inject
     public ObjectMapper objectMapper;
+
+    @BeforeAll
+    public static void setupConfig(){
+        PropertyLoader.setConfigProvider(new CDIVCellConfigProvider());
+    }
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 

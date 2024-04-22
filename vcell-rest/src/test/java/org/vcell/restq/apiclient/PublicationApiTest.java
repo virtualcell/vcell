@@ -1,16 +1,19 @@
 package org.vcell.restq.apiclient;
 
+import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.api.PublicationResourceApi;
 import org.vcell.restclient.model.Publication;
+import org.vcell.restq.config.CDIVCellConfigProvider;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,6 +28,11 @@ public class PublicationApiTest {
 
     @ConfigProperty(name = "quarkus.http.test-port")
     Integer testPort;
+
+    @BeforeAll
+    public static void setupConfig(){
+        PropertyLoader.setConfigProvider(new CDIVCellConfigProvider());
+    }
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 

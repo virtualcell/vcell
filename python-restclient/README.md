@@ -67,15 +67,14 @@ configuration = vcell_client.Configuration(
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = vcell_client.HelloWorldApi(api_client)
+    api_instance = vcell_client.BioModelResourceApi(api_client)
+    bio_model_id = 'bio_model_id_example' # str | 
 
     try:
-        # Get hello world message.
-        api_response = api_instance.get_hello_world()
-        print("The response of HelloWorldApi->get_hello_world:\n")
-        pprint(api_response)
+        # Delete the BioModel from VCell's database.
+        api_instance.delete_bio_model(bio_model_id)
     except ApiException as e:
-        print("Exception when calling HelloWorldApi->get_hello_world: %s\n" % e)
+        print("Exception when calling BioModelResourceApi->delete_bio_model: %s\n" % e)
 
 ```
 
@@ -85,22 +84,33 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**get_biomodel_by_id**](docs/BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
+*BioModelResourceApi* | [**upload_bio_model**](docs/BioModelResourceApi.md#upload_bio_model) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
 *HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
 *PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
-*UsersResourceApi* | [**api_v1_users_me_get**](docs/UsersResourceApi.md#api_v1_users_me_get) | **GET** /api/v1/users/me | 
+*UsersResourceApi* | [**get_legacy_api_token**](docs/UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
+*UsersResourceApi* | [**get_me**](docs/UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user
+*UsersResourceApi* | [**get_v_cell_identity**](docs/UsersResourceApi.md#get_v_cell_identity) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
+*UsersResourceApi* | [**set_v_cell_identity**](docs/UsersResourceApi.md#set_v_cell_identity) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
 
 
 ## Documentation For Models
 
+ - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
+ - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
+ - [MapUser](docs/MapUser.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
+ - [Simulation](docs/Simulation.md)
  - [User](docs/User.md)
+ - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
 
 
 <a id="documentation-for-authorization"></a>

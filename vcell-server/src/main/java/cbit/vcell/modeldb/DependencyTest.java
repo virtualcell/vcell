@@ -10,6 +10,7 @@
 
 package cbit.vcell.modeldb;
 
+import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.document.VersionableFamily;
 import org.vcell.util.document.VersionableRelationship;
 import org.vcell.util.document.VersionableType;
@@ -52,8 +53,9 @@ public static void main(java.lang.String[] args) {
 		Class.forName("oracle.jdbc.driver.OracleDriver");
 		String url = "jdbc:oracle:thin:@nrcamdb.uchc.edu:1521:orc0";
 		con = java.sql.DriverManager.getConnection(url, "nrcamdbdev", "bogus");
+		DatabaseSyntax dbSyntax = DatabaseSyntax.ORACLE;
 		System.out.println("Search for References to " + rootType.toString() + " id=" + rootKey.toString());
-		VersionableFamily vf = cbit.vcell.modeldb.DbDriver.getAllReferences(con, rootType, rootKey);
+		VersionableFamily vf = cbit.vcell.modeldb.DbDriver.getAllReferences(con, dbSyntax, rootType, rootKey);
 		VersionableRelationship[] dependants = vf.getDependantRelationships();
 		for (int c = 0; c < dependants.length; c += 1) {
 			VersionableRelationship verrel = dependants[c];
