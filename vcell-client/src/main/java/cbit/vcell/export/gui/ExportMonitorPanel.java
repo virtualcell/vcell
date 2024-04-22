@@ -15,11 +15,14 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Optional;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -29,6 +32,10 @@ import javax.swing.table.TableColumn;
 import cbit.vcell.client.data.ExportedDataTableModel;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.xalan.trace.SelectionEvent;
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWDialog;
+import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.client.logicalwindow.LWTitledOptionPaneDialog;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -444,14 +451,28 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		clipboard.setContents(stringSelection, null);
 	}
 	private void HelpButton_ActionPerformed() {
-		String hFiji = "\"https://imagej.net/software/fiji/\"";
-		String hPlug = "\"https://sites.imagej.net/VCell-Simulations-Result-Viewer/\"";
-		String message = "<html>The simulation results of spatial applications may be exported to ImageJ for further ";
+		String message = "The simulation results of spatial applications may be exported to ImageJ for further ";
 		message += "processing using the compatible N5 format.<br>";
 		message += "Use the 'Copy Link' button above to copy the exported data location to the clipboard.<br>";
-		message += "Use the VCell plugin (available <a href=hPlug>here</a>) in ImageJ to download the file within ImageJ for further processing.<br>";
-		message += "The Fiji ImageJ application can be downloaded <a href=hFiji>here</a></html>";
-		DialogUtils.showInfoDialog(ExportMonitorPanel.this, "ImageJ Export Help", message);
+		message += "Use the VCell plugin (available <a href='https://sites.imagej.net/VCell-Simulations-Result-Viewer/'>here</a>)";
+		message += " in ImageJ to download the file within ImageJ for further processing.<br>";
+		message += "The Fiji ImageJ application can be downloaded <a href='https://imagej.net/software/fiji/'>here</a>";
+
+		JEditorPane jep = new JEditorPane("text/html", message);
+		jep.setEditable(false);
+		jep.setOpaque(false);
+		jep.addHyperlinkListener(new HyperlinkListener() {
+			public void hyperlinkUpdate(HyperlinkEvent hle) {
+				if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
+					System.out.println(hle.getURL());
+				}
+			}
+		});
+
+		JPanel p = new JPanel();
+		p.add(jep);
+		DialogUtils.showInfoDialog(ExportMonitorPanel.this, p, "ImageJ Export Help");
+
 	}
 	private void ImagejButton_ActionPerformed() {
 		try {

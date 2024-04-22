@@ -36,22 +36,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
 
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -867,9 +852,41 @@ public class DialogUtils {
                 showOnce(dialog);
             }
         };
-
         VCSwingFunction.executeAsRuntimeException(doer);
     }
+
+    public static void showInfoDialog(final Component requester, final JPanel panel, final String title){
+        checkForNull(requester);
+        LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+        Doer doer = () -> {
+            JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
+            if(OperatingSystemInfo.getInstance().isMac()){
+                //On Mac: problem when one keepOnTop,Modal dialogue shows another keepOnTop,Modal dialogue, second one may go behind initially
+                final JDialog dialog = new JDialog(JOptionPane.getRootFrame(), true);
+                pane.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent event){
+                        Object nvalue = event.getNewValue();
+                        if(event.getPropertyName().equals("value") && nvalue != null && nvalue != JOptionPane.UNINITIALIZED_VALUE){
+                            dialog.setVisible(false);
+                        }
+                    }
+                });
+                dialog.getContentPane().add(pane);
+                dialog.pack();
+                dialog.setAlwaysOnTop(true);
+                dialog.setResizable(true);
+                GeneralGuiUtils.centerOnComponent(dialog, requester);
+                showOnce(dialog);
+            } else {
+                LWDialog dialog = new LWTitledOptionPaneDialog(lwParent, title, pane);
+                dialog.setResizable(true);
+                showOnce(dialog);
+            }
+        };
+        VCSwingFunction.executeAsRuntimeException(doer);
+    }
+
 
     @Deprecated
     public static void showInfoDialogAndResize(final Component requester, final String title, final String message){
