@@ -50,9 +50,9 @@ public class Hdf5DataExtractor {
      * @see NonspatialResultsConverter::convertNonspatialResultsToSedmlFormat
      * @see SpatialResultsConverter::collectSpatialDatasets
      */
-    public Hdf5DataContainer extractHdf5RelevantData(Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResults, Map<TaskJob, File> spatialResults) {
+    public Hdf5DataContainer extractHdf5RelevantData(Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResults, Map<TaskJob, File> spatialResults, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> wrappers = new LinkedHashMap<>();
-        Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer();
+        Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer(isBioSimMode);
         Exception nonSpatialException = null, spatialException = null;
 
         try {

@@ -20,9 +20,14 @@ public class Hdf5WriterTest {
 
     public static HDF5ExecutionResults createExampleData() {
 
+        Report plotReport = new Report("report0", "Plot Report");
+        Report reportReport = new Report("report1", "Report Report");
+
         DataSet t = new DataSet("t","t","t","#null");
         DataSet s0 = new DataSet("s0","s0","s0","#null");
         DataSet s1 = new DataSet("s1", "s1", "s1","#null");
+        plotReport.addDataSet(t); plotReport.addDataSet(s0); plotReport.addDataSet(s1);
+        reportReport.addDataSet(t); reportReport.addDataSet(s0); reportReport.addDataSet(s1);
 
         Hdf5SedmlMetadata plotMetadata = new Hdf5SedmlMetadata();
         plotMetadata._type = "SedPlot2D";
@@ -58,12 +63,9 @@ public class Hdf5WriterTest {
         plotDataSourceNonspatial.scanBounds = new int[0];
         plotDataSourceNonspatial.scanParameterNames = new String[0];
         plotDatasetWrapper.dataSource = plotDataSourceNonspatial;
-        Map<DataSet, List<double[]>> plotJob = new LinkedHashMap<>();
-        plotJob.put(t, Arrays.asList(row_t));
-        plotJob.put(s0, Arrays.asList(row_S0_0));
-        plotJob.put(s1, Arrays.asList(row_S1));
-        plotDataSourceNonspatial.allJobResults = plotJob;
-
+        plotDataSourceNonspatial.dataItems.put(plotReport, t, Arrays.asList(row_t));
+        plotDataSourceNonspatial.dataItems.put(plotReport, s0, Arrays.asList(row_S0_0));
+        plotDataSourceNonspatial.dataItems.put(plotReport, s1, Arrays.asList(row_S1));
 
         Hdf5SedmlResults reportDatasetWrapper = new Hdf5SedmlResults();
         reportDatasetWrapper.datasetMetadata = reportMetadata;
@@ -71,20 +73,21 @@ public class Hdf5WriterTest {
         reportDataSourceNonspatial.scanBounds = new int[] { 2 }; // zero indexed? 
         reportDataSourceNonspatial.scanParameterNames = new String[] { "k1" };
         reportDatasetWrapper.dataSource = reportDataSourceNonspatial;
-        Map<DataSet, List<double[]>> reportJob = new LinkedHashMap<>();
-        reportJob.put(t, Arrays.asList(row_t, row_t, row_t));
-        reportJob.put(s0, Arrays.asList(row_S0_0, row_S0_1, row_S0_2));
-        reportJob.put(s1, Arrays.asList(row_S1, row_S1, row_S1));
-        reportDataSourceNonspatial.allJobResults = reportJob;
+        reportDataSourceNonspatial.dataItems.put(reportReport, t, Arrays.asList(row_t, row_t, row_t));
+        reportDataSourceNonspatial.dataItems.put(reportReport, s0, Arrays.asList(row_S0_0, row_S0_1, row_S0_2));
+        reportDataSourceNonspatial.dataItems.put(reportReport, s1, Arrays.asList(row_S1, row_S1, row_S1));
 
         Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer();
-        Report report = new Report("simId","simName");
-        String uri = "___0_export_NO_scan_test.sedml";
-        List<Hdf5SedmlResults> wrappers = new ArrayList<>();
-        wrappers.add(plotDatasetWrapper);
-        wrappers.add(reportDatasetWrapper);
-        hdf5FileWrapper.reportToUriMap.put(report, uri);
-        hdf5FileWrapper.reportToResultsMap.put(report, wrappers);
+        String uri1 = "___0_export_NO_scan_test_1.sedml";
+        String uri2 = "___0_export_NO_scan_test_2.sedml";
+        List<Hdf5SedmlResults> wrappers1 = new ArrayList<>();
+        List<Hdf5SedmlResults> wrappers2 = new ArrayList<>();
+        wrappers1.add(plotDatasetWrapper);
+        wrappers2.add(reportDatasetWrapper);
+        hdf5FileWrapper.reportToUriMap.put(plotReport, uri1);
+        hdf5FileWrapper.reportToUriMap.put(reportReport, uri2);
+        hdf5FileWrapper.reportToResultsMap.put(plotReport, wrappers1);
+        hdf5FileWrapper.reportToResultsMap.put(reportReport, wrappers2);
 
         HDF5ExecutionResults results = new HDF5ExecutionResults(true);
         results.addResults(null, hdf5FileWrapper);

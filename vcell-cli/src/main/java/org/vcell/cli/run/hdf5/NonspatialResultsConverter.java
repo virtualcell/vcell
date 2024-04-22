@@ -174,11 +174,11 @@ public class NonspatialResultsConverter {
             for (DataSet dataSet : dataSetValues.keySet()){
                 NonspatialValueHolder dataSetValuesSource = dataSetValues.get(dataSet);
 
-                dataSourceNonspatial.allJobResults.put(dataSet, new LinkedList<>());
+                dataSourceNonspatial.dataItems.put(report, dataSet, new LinkedList<>());
                 dataSourceNonspatial.scanBounds = dataSetValuesSource.vcSimulation.getMathOverrides().getScanBounds();
                 dataSourceNonspatial.scanParameterNames = dataSetValuesSource.vcSimulation.getMathOverrides().getScannedConstantNames();
                 for (double[] data : dataSetValuesSource.listOfResultSets) {
-                    dataSourceNonspatial.allJobResults.get(dataSet).add(data);
+                    dataSourceNonspatial.dataItems.get(report, dataSet).add(data);
                     shapes.add(Integer.toString(data.length));
                 }
                 
