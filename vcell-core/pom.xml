@@ -514,6 +514,11 @@
 			<artifactId>commons-codec</artifactId>
 			<version>${commons-codec.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-restclient</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 
     </dependencies>
 	
