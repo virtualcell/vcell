@@ -17,7 +17,7 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 ## getLegacyApiToken
 
-> AccesTokenRepresentationRecord getLegacyApiToken()
+> AccesTokenRepresentationRecord getLegacyApiToken(userId, userPassword, clientId)
 
 Get token for legacy API
 
@@ -37,8 +37,11 @@ public class Example {
         defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String userId = "userId_example"; // String | 
+        String userPassword = "userPassword_example"; // String | 
+        String clientId = "clientId_example"; // String | 
         try {
-            AccesTokenRepresentationRecord result = apiInstance.getLegacyApiToken();
+            AccesTokenRepresentationRecord result = apiInstance.getLegacyApiToken(userId, userPassword, clientId);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling UsersResourceApi#getLegacyApiToken");
@@ -53,7 +56,12 @@ public class Example {
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **userId** | **String**|  | [optional] |
+| **userPassword** | **String**|  | [optional] |
+| **clientId** | **String**|  | [optional] |
 
 ### Return type
 
@@ -66,7 +74,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/x-www-form-urlencoded
 - **Accept**: application/json
 
 ### HTTP response details
@@ -76,7 +84,7 @@ No authorization required
 
 ## getLegacyApiTokenWithHttpInfo
 
-> ApiResponse<AccesTokenRepresentationRecord> getLegacyApiToken getLegacyApiTokenWithHttpInfo()
+> ApiResponse<AccesTokenRepresentationRecord> getLegacyApiToken getLegacyApiTokenWithHttpInfo(userId, userPassword, clientId)
 
 Get token for legacy API
 
@@ -97,8 +105,11 @@ public class Example {
         defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String userId = "userId_example"; // String | 
+        String userPassword = "userPassword_example"; // String | 
+        String clientId = "clientId_example"; // String | 
         try {
-            ApiResponse<AccesTokenRepresentationRecord> response = apiInstance.getLegacyApiTokenWithHttpInfo();
+            ApiResponse<AccesTokenRepresentationRecord> response = apiInstance.getLegacyApiTokenWithHttpInfo(userId, userPassword, clientId);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -115,7 +126,12 @@ public class Example {
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **userId** | **String**|  | [optional] |
+| **userPassword** | **String**|  | [optional] |
+| **clientId** | **String**|  | [optional] |
 
 ### Return type
 
@@ -128,7 +144,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/x-www-form-urlencoded
 - **Accept**: application/json
 
 ### HTTP response details
@@ -319,8 +335,8 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getVCellIdentityWithHttpInfo
 
@@ -385,8 +401,8 @@ ApiResponse<[**UserIdentityJSONSafe**](UserIdentityJSONSafe.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## setVCellIdentity
@@ -453,8 +469,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## setVCellIdentityWithHttpInfo
 
@@ -523,6 +539,6 @@ ApiResponse<**Boolean**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 

@@ -24,6 +24,8 @@ try:
 except ImportError:
     from typing_extensions import Annotated
 
+from pydantic import StrictStr
+
 from typing import Optional
 
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
@@ -52,6 +54,9 @@ class UsersResourceApi:
     @validate_call
     def get_legacy_api_token(
         self,
+        user_id: Optional[StrictStr] = None,
+        user_password: Optional[StrictStr] = None,
+        client_id: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -68,6 +73,12 @@ class UsersResourceApi:
         """Get token for legacy API
 
 
+        :param user_id:
+        :type user_id: str
+        :param user_password:
+        :type user_password: str
+        :param client_id:
+        :type client_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -91,6 +102,9 @@ class UsersResourceApi:
         """ # noqa: E501
 
         _param = self._get_legacy_api_token_serialize(
+            user_id=user_id,
+            user_password=user_password,
+            client_id=client_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -115,6 +129,9 @@ class UsersResourceApi:
     @validate_call
     def get_legacy_api_token_with_http_info(
         self,
+        user_id: Optional[StrictStr] = None,
+        user_password: Optional[StrictStr] = None,
+        client_id: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -131,6 +148,12 @@ class UsersResourceApi:
         """Get token for legacy API
 
 
+        :param user_id:
+        :type user_id: str
+        :param user_password:
+        :type user_password: str
+        :param client_id:
+        :type client_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -154,6 +177,9 @@ class UsersResourceApi:
         """ # noqa: E501
 
         _param = self._get_legacy_api_token_serialize(
+            user_id=user_id,
+            user_password=user_password,
+            client_id=client_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -178,6 +204,9 @@ class UsersResourceApi:
     @validate_call
     def get_legacy_api_token_without_preload_content(
         self,
+        user_id: Optional[StrictStr] = None,
+        user_password: Optional[StrictStr] = None,
+        client_id: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -194,6 +223,12 @@ class UsersResourceApi:
         """Get token for legacy API
 
 
+        :param user_id:
+        :type user_id: str
+        :param user_password:
+        :type user_password: str
+        :param client_id:
+        :type client_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -217,6 +252,9 @@ class UsersResourceApi:
         """ # noqa: E501
 
         _param = self._get_legacy_api_token_serialize(
+            user_id=user_id,
+            user_password=user_password,
+            client_id=client_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -236,6 +274,9 @@ class UsersResourceApi:
 
     def _get_legacy_api_token_serialize(
         self,
+        user_id,
+        user_password,
+        client_id,
         _request_auth,
         _content_type,
         _headers,
@@ -259,6 +300,12 @@ class UsersResourceApi:
         # process the query parameters
         # process the header parameters
         # process the form parameters
+        if user_id is not None:
+            _form_params.append(('user_id', user_id))
+        if user_password is not None:
+            _form_params.append(('user_password', user_password))
+        if client_id is not None:
+            _form_params.append(('client_id', client_id))
         # process the body parameter
 
 
@@ -269,6 +316,19 @@ class UsersResourceApi:
             ]
         )
 
+        # set the HTTP header `Content-Type`
+        if _content_type:
+            _header_params['Content-Type'] = _content_type
+        else:
+            _default_content_type = (
+                self.api_client.select_header_content_type(
+                    [
+                        'application/x-www-form-urlencoded'
+                    ]
+                )
+            )
+            if _default_content_type is not None:
+                _header_params['Content-Type'] = _default_content_type
 
         # authentication setting
         _auth_settings: List[str] = [
@@ -585,8 +645,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -650,8 +710,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -715,8 +775,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -839,8 +899,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -908,8 +968,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -977,8 +1037,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(

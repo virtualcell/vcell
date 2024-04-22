@@ -11,7 +11,7 @@ Method | HTTP request | Description
 
 
 # **get_legacy_api_token**
-> AccesTokenRepresentationRecord get_legacy_api_token()
+> AccesTokenRepresentationRecord get_legacy_api_token(user_id=user_id, user_password=user_password, client_id=client_id)
 
 Get token for legacy API
 
@@ -36,10 +36,13 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.UsersResourceApi(api_client)
+    user_id = 'user_id_example' # str |  (optional)
+    user_password = 'user_password_example' # str |  (optional)
+    client_id = 'client_id_example' # str |  (optional)
 
     try:
         # Get token for legacy API
-        api_response = api_instance.get_legacy_api_token()
+        api_response = api_instance.get_legacy_api_token(user_id=user_id, user_password=user_password, client_id=client_id)
         print("The response of UsersResourceApi->get_legacy_api_token:\n")
         pprint(api_response)
     except Exception as e:
@@ -49,7 +52,12 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **user_id** | **str**|  | [optional] 
+ **user_password** | **str**|  | [optional] 
+ **client_id** | **str**|  | [optional] 
 
 ### Return type
 
@@ -61,7 +69,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/x-www-form-urlencoded
  - **Accept**: application/json
 
 ### HTTP response details
@@ -194,8 +202,8 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -265,8 +273,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
