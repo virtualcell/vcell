@@ -81,8 +81,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## createPublicationWithHttpInfo
 
@@ -151,8 +151,8 @@ ApiResponse<**Long**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## deletePublication
@@ -218,8 +218,8 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## deletePublicationWithHttpInfo
 
@@ -287,8 +287,8 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## getPublicationById
@@ -607,8 +607,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## updatePublicationWithHttpInfo
 
@@ -677,6 +677,6 @@ ApiResponse<[**Publication**](Publication.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 

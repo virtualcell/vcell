@@ -118,10 +118,10 @@ paths:
                 format: int64
                 type: integer
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -144,10 +144,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -171,10 +171,10 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -207,11 +207,6 @@ paths:
   /api/v1/users/bearerToken:
     post:
       operationId: getLegacyApiToken
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/getLegacyApiToken_request'
       responses:
         "200":
           content:
@@ -222,7 +217,6 @@ paths:
       summary: Get token for legacy API
       tags:
       - Users Resource
-      x-content-type: application/x-www-form-urlencoded
       x-accepts: application/json
   /api/v1/users/getIdentity:
     get:
@@ -234,10 +228,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -260,10 +254,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -556,15 +550,6 @@ components:
         subject:
           type: string
         insertDate:
-          type: string
-      type: object
-    getLegacyApiToken_request:
-      properties:
-        user_id:
-          type: string
-        user_password:
-          type: string
-        client_id:
           type: string
       type: object
   securitySchemes:

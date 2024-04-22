@@ -30,11 +30,8 @@ export interface UsersResourceServiceInterface {
     /**
      * Get token for legacy API
      * 
-     * @param userId 
-     * @param userPassword 
-     * @param clientId 
      */
-    getLegacyApiToken(userId?: string, userPassword?: string, clientId?: string, extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
+    getLegacyApiToken(extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
 
     /**
      * Get current user

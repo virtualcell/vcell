@@ -56,7 +56,7 @@ public class UserRestDB {
             return false;
         }
         try {
-            User user = adminDBTopLevel.getUser(mapUser.userID(), new UserLoginInfo.DigestedPassword(mapUser.password()), true, false);
+            User user = adminDBTopLevel.getUser(mapUser.userID(), UserLoginInfo.DigestedPassword.createAlreadyDigested(mapUser.digestedPassword()), true, false);
             if(user == null){
                 return false;
             }

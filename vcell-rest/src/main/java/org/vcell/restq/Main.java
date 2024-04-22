@@ -33,7 +33,7 @@ public class Main {
     public final static String EMAILVERIFYTOKEN_FORMNAME	= "verifytoken";
 
     public static final String IDENTIFIER_FORMNAME = "user";
-    public static final String SECRET_FORMNAME = "password";
+    public static final String SECRET_FORMNAME = "digestedPassword";
     public static final String REDIRECTURL_FORMNAME = "redirecturl";
 
     public static final String LOGINFORM = "loginform";
