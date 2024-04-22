@@ -75,19 +75,15 @@ public class UsersResource {
     @Operation(operationId = "getLegacyApiToken", summary = "Get token for legacy API")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     // Not using user PASSWD because they should already be authenticated with OIDC
-    public AccesTokenRepresentationRecord generateBearerToken(@FormParam("user_id") String userID, @FormParam("user_password") String passwd, @FormParam("client_id") String client_id) throws SQLException, DataAccessException {
+    public AccesTokenRepresentationRecord generateBearerToken() throws SQLException, DataAccessException {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
         org.vcell.util.document.User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-        if(vcellUser == null || !vcellUser.getID().toString().equals(userID)){
+        if(vcellUser == null){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
-//        UserIdentity identityUser = new UserIdentity(null, new org.vcell.util.document.User("vcellNagios", new KeyValue("3")), null, null);
         ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), vcellUser);
-//        AccessTokenRepresentation tokenRep = new AccessTokenRepresentation(apiAccessToken.getToken());
-//        Gson gson = new Gson();
-//        return gson.toJson(tokenRep);
         return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(new AccessTokenRepresentation(apiAccessToken.getToken()));
     }
 
@@ -105,11 +101,7 @@ public class UsersResource {
 
     public record MapUser(
             String userID,
-            String password){
-        public static MapUser getRecordFromString(String jsonString){
-            Gson gson = new Gson();
-            return gson.fromJson(jsonString, MapUser.class);
-        }
+            String digestedPassword){
     }
 
     public record UserIdentityJSONSafe(

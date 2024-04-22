@@ -25,12 +25,6 @@ import org.vcell.restclient.model.UserIdentityJSONSafe;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-//import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -93,28 +87,22 @@ public class UsersResourceApi {
   /**
    * Get token for legacy API
    * 
-   * @param userId  (optional)
-   * @param userPassword  (optional)
-   * @param clientId  (optional)
    * @return AccesTokenRepresentationRecord
    * @throws ApiException if fails to make API call
    */
-  public AccesTokenRepresentationRecord getLegacyApiToken(String userId, String userPassword, String clientId) throws ApiException {
-    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getLegacyApiTokenWithHttpInfo(userId, userPassword, clientId);
+  public AccesTokenRepresentationRecord getLegacyApiToken() throws ApiException {
+    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getLegacyApiTokenWithHttpInfo();
     return localVarResponse.getData();
   }
 
   /**
    * Get token for legacy API
    * 
-   * @param userId  (optional)
-   * @param userPassword  (optional)
-   * @param clientId  (optional)
    * @return ApiResponse&lt;AccesTokenRepresentationRecord&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<AccesTokenRepresentationRecord> getLegacyApiTokenWithHttpInfo(String userId, String userPassword, String clientId) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getLegacyApiTokenRequestBuilder(userId, userPassword, clientId);
+  public ApiResponse<AccesTokenRepresentationRecord> getLegacyApiTokenWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getLegacyApiTokenRequestBuilder();
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -142,7 +130,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder getLegacyApiTokenRequestBuilder(String userId, String userPassword, String clientId) throws ApiException {
+  private HttpRequest.Builder getLegacyApiTokenRequestBuilder() throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -152,27 +140,7 @@ public class UsersResourceApi {
 
     localVarRequestBuilder.header("Accept", "application/json");
 
-    List<NameValuePair> formValues = new ArrayList<>();
-    if (userId != null) {
-        formValues.add(new BasicNameValuePair("user_id", userId.toString()));
-    }
-    if (userPassword != null) {
-        formValues.add(new BasicNameValuePair("user_password", userPassword.toString()));
-    }
-    if (clientId != null) {
-        formValues.add(new BasicNameValuePair("client_id", clientId.toString()));
-    }
-    HttpEntity entity = new UrlEncodedFormEntity(formValues, java.nio.charset.StandardCharsets.UTF_8);
-    ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
-    try {
-        entity.writeTo(formOutputStream);
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    }
-    localVarRequestBuilder
-        .header("Content-Type", entity.getContentType().getValue())
-        .method("POST", HttpRequest.BodyPublishers
-            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray())));
+    localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

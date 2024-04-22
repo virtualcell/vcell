@@ -111,10 +111,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -136,10 +136,10 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -178,10 +178,10 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - curator
@@ -191,18 +191,6 @@ paths:
       - Users Resource
       summary: Get token for legacy API
       operationId: getLegacyApiToken
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                user_id:
-                  type: string
-                user_password:
-                  type: string
-                client_id:
-                  type: string
       responses:
         "200":
           description: OK
@@ -223,10 +211,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -248,10 +236,10 @@ paths:
             text/plain:
               schema:
                 type: boolean
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
