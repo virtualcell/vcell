@@ -22,7 +22,6 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;
 import cbit.vcell.xml.*;
 import de.unirostock.sems.cbarchive.CombineArchive;
-import de.unirostock.sems.cbarchive.meta.MetaDataObject;
 import de.unirostock.sems.cbarchive.meta.OmexMetaDataObject;
 import de.unirostock.sems.cbarchive.meta.omex.OmexDescription;
 import org.apache.commons.io.FilenameUtils;
@@ -1307,12 +1306,15 @@ public class SEDMLExporter {
 				Path filePath = Paths.get(srcFolder, sd);
 				if (sd.endsWith(".rdf")) {
 					rdfFilePath = filePath;
-//					archive.addEntry(
-//							filePath.toFile(),
-//							"./" + sd,
-//							new URI("http://identifiers.org/combine.specifications/omex-metadata"),
-//							false
-//					);
+					// the CombineArchive library does not allow to directly write to the /metadata.rdf file
+					// instead, we copy the file to /metadata.rdf later after the archive is closed
+					//
+					// archive.addEntry(
+					//		filePath.toFile(),
+					//		"./metadata.rdf",
+					//		new URI("http://identifiers.org/combine.specifications/omex-metadata"),
+					//		false
+					//	);
 				}
 				if (sd.endsWith(".png")) {
 					archive.addEntry(
@@ -1323,23 +1325,22 @@ public class SEDMLExporter {
 					);
 				}
 			}
-			OmexDescription omexDescription = new OmexDescription();
-			omexDescription.setDescription("VCell Simulation Archive");
-			omexDescription.modified.add(new Date());
-			archive.addDescription(new OmexMetaDataObject(omexDescription));
+			if (rdfFilePath != null) {
+				// create temporary /metadata.rdf file so that an entry for /metadata.rdf is included in the Manifest
+				OmexDescription omexDescription = new OmexDescription();
+				omexDescription.setDescription("VCell Simulation Archive");
+				omexDescription.modified.add(new Date());
+				archive.addDescription(new OmexMetaDataObject(omexDescription));
+			}
 
 			archive.pack();
 			archive.close();
 
-			//
-			// wait until omex file is closed, and then replace the metadata.rdf file
-			// this is a workaround for the issue that CombineArchive library refuses to overwrite the /metadata.rdf file
-			//
-			// an alternative is the use the MetaDataObject classes from CombineArchive library - another day.
-			//
-//			if (rdfFilePath != null) {
-//				replaceFileInZip(omexFile.toPath(), rdfFilePath, "/metadata.rdf");
-//			}
+			if (rdfFilePath != null) {
+				// now that the OMEX archive is closed and written to disk, open it as a regular zip file
+				// and replace the generated metadata.rdf file with the one we created.
+				replaceMetadataRdfFileInArchive(omexFile.toPath(), rdfFilePath);
+			}
 
 			removeOtherFiles(srcFolder, files);
 
@@ -1349,7 +1350,8 @@ public class SEDMLExporter {
 		return true;
 	}
 
-	private static void replaceFileInZip(Path zipFilePath, Path newFilePath, String pathInZip) throws IOException {
+	private static void replaceMetadataRdfFileInArchive(Path zipFilePath, Path newFilePath) throws IOException {
+		String pathInZip = "./metadata.rdf";
 		try( FileSystem fs = FileSystems.newFileSystem(zipFilePath) ) {
 			Path fileInsideZipPath = fs.getPath(pathInZip);
 			Files.delete(fileInsideZipPath);
