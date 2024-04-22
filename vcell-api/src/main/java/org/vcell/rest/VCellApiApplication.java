@@ -281,6 +281,7 @@ public class VCellApiApplication extends WadlApplication {
         String SCRIPTS = "scripts";
         
 		Router rootRouter = new Router(getContext());
+		rootRouter.attach("/"+SWVERSION, new SWVersionRestlet(getContext())); // for backward compatibility
 		rootRouter.attach(PATH_PREFIX+"/", new SWVersionRestlet(getContext()));
 		rootRouter.attach(PATH_PREFIX+"/"+SWVERSION, new SWVersionRestlet(getContext()));
 
