@@ -46,9 +46,13 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		if (choice == 0) modelFormat = ModelFormat.VCML;
 		System.out.println(modelFormat);
 	}
-	
+
 	@Override
 	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext ignored) throws Exception {
+		this.writeBioModel(documentManager, bioModel, exportFile, ignored, true);
+	}
+
+	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext ignored, boolean bAllowTasklessSedml) throws Exception {
 		String resultString;
 		// export the entire biomodel to a SEDML file (for now, only non-spatial,non-stochastic applns)
 		int sedmlLevel = 1;
@@ -63,7 +67,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 			boolean bRoundTripSBMLValidation = true;
 			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
 			Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
-			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, bRoundTripSBMLValidation, simContextFilter).writeDocumentToString();
+			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, bRoundTripSBMLValidation, simContextFilter, bAllowTasklessSedml).writeDocumentToString();
 			// gather unsupported applications with messages
 		} else {
 			throw new RuntimeException("unsupported Document Type " + Objects.requireNonNull(bioModel).getClass().getName() + " for SedML export");

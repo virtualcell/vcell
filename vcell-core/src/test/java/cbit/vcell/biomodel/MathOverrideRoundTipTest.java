@@ -93,7 +93,7 @@ public class MathOverrideRoundTipTest {
         boolean bWriteOmexArchive = true;
         Optional<PublicationMetadata> publicationMetadata = Optional.empty();
         Predicate<SimulationContext> simContextFilter = (sc) -> true;
-        SEDMLExporter.writeBioModel(bioModel, publicationMetadata, omexFile, ModelFormat.SBML, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
+        SEDMLExporter.writeBioModel(bioModel, publicationMetadata, omexFile, ModelFormat.SBML, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive, true);
 
         SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
         List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);

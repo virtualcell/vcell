@@ -490,7 +490,7 @@ public class RestDatabaseService {
 		try {
 			boolean bCreateOmexArchive = true;
 			SEDMLExporter.writeBioModel(bioModel, publicationMetadata, exportOmexFile, modelFormat, simContextFilter,
-					bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
+					bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive, true);
 			byte[] omexFileBytes = Files.readAllBytes(exportOmexFile.toPath());
 			return new ByteArrayRepresentation(omexFileBytes, BiomodelOMEXResource.OMEX_MEDIATYPE);
 		} finally {

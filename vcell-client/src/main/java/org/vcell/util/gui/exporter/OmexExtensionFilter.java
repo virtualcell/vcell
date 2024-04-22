@@ -48,7 +48,7 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 			}
 			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
 			Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
-			SEDMLExporter.writeBioModel(bioModel, publicationInfo, exportFile, modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
+			SEDMLExporter.writeBioModel(bioModel, publicationInfo, exportFile, modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive, true);
 		}
 	}
 }

@@ -173,7 +173,7 @@ public abstract class SEDMLExporterCommon {
 		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> unsupportedApplications.stream().noneMatch(ua -> ua.applicationName.equals(sc.getName()));
 		try {
 			List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
-					bioModel, publicationMetadata, omexFile, testCase.modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
+					bioModel, publicationMetadata, omexFile, testCase.modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive, true);
 
 			boolean bAnyFailures = false;
 			for (SEDMLTaskRecord sedmlTaskRecord : sedmlTaskRecords) {

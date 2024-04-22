@@ -37,8 +37,8 @@ public class VcmlOmexConverter {
 									  boolean bWriteLogFiles,
 									  boolean bValidateOmex,
 									  boolean bSkipUnsupportedApps,
-									  boolean bAddPublicationInfo)
-			throws SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
+									  boolean bAddPublicationInfo,
+									  boolean bAllowTasklessSedml) throws SEDMLExporter.SEDMLExportException, IOException, OmexPythonUtils.OmexValidationException {
 
 		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
 			throw new RuntimeException("expecting inputFilePath '"+input+"' to be an existing .vcml file");
@@ -63,7 +63,8 @@ public class VcmlOmexConverter {
 				bAddPublicationInfo,
 				bSkipUnsupportedApps,
 				bHasPython,
-				bValidateOmex);
+				bValidateOmex,
+				bAllowTasklessSedml);
 		if (!sedmlTaskRecords.stream().anyMatch((SEDMLTaskRecord r) -> r.taskResult() == TaskResult.FAILED)) {
 			logger.info("Combine archive created for `" + input + "`");
 		} else {
@@ -77,11 +78,17 @@ public class VcmlOmexConverter {
 		}
 	}
 
-
 	public static void convertFilesNoDatabase(File inputDir, File outputDir, ModelFormat modelFormat,
 											  boolean bWriteLogFiles, boolean bValidateOmex,
-											  boolean bSkipUnsupportedApps, boolean bAddPublicationInfo)
-			throws IOException {
+											  boolean bSkipUnsupportedApps, boolean bAddPublicationInfo) {
+		VcmlOmexConverter.convertFilesNoDatabase(inputDir, outputDir, modelFormat, bWriteLogFiles,
+				bValidateOmex, bSkipUnsupportedApps, bAddPublicationInfo, false);
+	}
+
+
+	public static void convertFilesNoDatabase(File inputDir, File outputDir, ModelFormat modelFormat,
+											  boolean bWriteLogFiles, boolean bValidateOmex, boolean bSkipUnsupportedApps,
+											  boolean bAddPublicationInfo, boolean bAllowTasklessSedml) {
 		// Start
 		if (inputDir == null || !inputDir.isDirectory()) throw new RuntimeException("expecting inputFilePath to be an existing directory");
 		final SEDMLEventLog sedmlEventLog;
@@ -114,7 +121,8 @@ public class VcmlOmexConverter {
 						bAddPublicationInfo,
 						bSkipUnsupportedApps,
 						bHasPython,
-						bValidateOmex);
+						bValidateOmex,
+						bAllowTasklessSedml);
 				if (sedmlTaskRecords.stream().noneMatch((SEDMLTaskRecord r) -> r.taskResult() == TaskResult.FAILED)) {
 					logger.info("Combine archive created for `" + inputFileName + "`");
 				} else {

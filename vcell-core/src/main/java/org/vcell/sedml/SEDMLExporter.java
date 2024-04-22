@@ -114,7 +114,7 @@ public class SEDMLExporter {
 	}
 
 	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat,
-				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
+				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter, boolean bAllowTasklessSedml) {
 		
 		double start = System.currentTimeMillis();
 
@@ -148,8 +148,8 @@ public class SEDMLExporter {
 		sedmlModel = sedmlDocument.getSedMLModel();
 		sedmlModel.setAdditionalNamespaces(nsList);
 		
-		this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter);
-		
+		this.translateBioModelToSedML(sPath, sBaseFileName, modelFormat, bRoundTripSBMLValidation, simContextExportFilter, bAllowTasklessSedml);
+
 		double stop = System.currentTimeMillis();
 		Exception timer = new Exception((stop - start) / 1000 + " seconds");
 		// update overall status
@@ -168,7 +168,7 @@ public class SEDMLExporter {
 	}
 
 	private void translateBioModelToSedML(String savePath, String sBaseFileName, ModelFormat modelFormat,
-				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
+				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter, boolean bAllowTasklessSedml) {
 		modelFilePathStrAbsoluteList.clear();
 		try {
 			if (modelFormat == ModelFormat.VCML) {
@@ -184,7 +184,7 @@ public class SEDMLExporter {
 				for (int i = 0; i < vcBioModel.getSimulationContexts().length; i++) {
 					writeModelVCML(modelFileNameRel, vcBioModel.getSimulationContext(i));
 					sedmlRecorder.addTaskRecord(vcBioModel.getSimulationContext(i).getName(), TaskType.SIMCONTEXT, TaskResult.SUCCEEDED, null);
-					exportSimulations(i, vcBioModel.getSimulationContext(i), null, null, vcmlLanguageURN);
+					exportSimulations(i, vcBioModel.getSimulationContext(i), null, null, vcmlLanguageURN, bAllowTasklessSedml);
 				}
 			}
 			if (modelFormat == ModelFormat.SBML) {
@@ -229,7 +229,7 @@ public class SEDMLExporter {
 	
 						if (!sbmlExportFailed) {
 							// simContext was exported successfully, now we try to export its simulations
-							exportSimulations(simContextCnt, simContext, sbmlString, l2gMap, sbmlLanguageURN);
+							exportSimulations(simContextCnt, simContext, sbmlString, l2gMap, sbmlLanguageURN, bAllowTasklessSedml);
 						} else {
 							String separator = "---------------------------------------";
 							logger.error(String.format("SBML Export failed; record dump:\n%s\n%s\n%s",
@@ -265,7 +265,7 @@ public class SEDMLExporter {
 	}
 
 	private void exportSimulations(int simContextCnt, SimulationContext simContext,
-			String sbmlString, Map<Pair<String, String>, String> l2gMap, String languageURN) throws Exception {
+			String sbmlString, Map<Pair<String, String>, String> l2gMap, String languageURN, boolean bAllowTasklessSedml) throws Exception {
 		// -------
 		// create sedml objects (simulation, task, datagenerators, report, plot) for each simulation in simcontext 
 		// -------	
@@ -300,7 +300,9 @@ public class SEDMLExporter {
 				Set<String> dataGeneratorTasksSet = new LinkedHashSet<>();	// tasks not referenced as subtasks by any other (repeated) task; only these will have data generators
 				MathOverrides mathOverrides = vcSimulation.getMathOverrides(); // need to clone so we can manipulate expressions
 				createSEDMLtasks(simContextCnt, l2gMap, simContextName, simContextId,
-						vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides, languageURN);
+						vcSimulation, utcSim, dataGeneratorTasksSet, mathOverrides, languageURN, bAllowTasklessSedml);
+				// Check if we actually made tasks:
+				if (sedmlModel.getTasks().isEmpty() && !bAllowTasklessSedml) throw new RuntimeException("SedML file does not contain required tasks!");
 				
 				// 4 ------->
 				// Create DataGenerators
@@ -646,7 +648,7 @@ public class SEDMLExporter {
 	
 	private void createSEDMLtasks(int simContextCnt, Map<Pair<String, String>, String> l2gMap, String simContextName,
 			String simContextId, Simulation vcSimulation, UniformTimeCourse utcSim,
-			Set<String> dataGeneratorTasksSet, MathOverrides mathOverrides, String languageURN)
+			Set<String> dataGeneratorTasksSet, MathOverrides mathOverrides, String languageURN, boolean bAllowTasklessSedml)
 			throws ExpressionException, MappingException {
 		if(mathOverrides != null && mathOverrides.hasOverrides()) {
 			String[] overridenConstantNames = mathOverrides.getOverridenConstantNames();
@@ -1362,14 +1364,15 @@ public class SEDMLExporter {
 													  Predicate<SimulationContext> simContextExportFilter,
 													  boolean bHasPython,
 													  boolean bValidation,
-													  boolean bCreateOmexArchive
+													  boolean bCreateOmexArchive,
+													  boolean bAllowTasklessSedml
 	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
 		Predicate<Simulation> simulationExportFilter = s -> true;
 		SEDMLEventLog sedmlEventLog = (String entry) -> {};
 		Optional<File> jsonReportFile = Optional.empty();
 		return writeBioModel(
 				bioModel, publicationMetadata, jsonReportFile, exportFileOrDirectory, simulationExportFilter, simContextExportFilter,
-				modelFormat, sedmlEventLog, bHasPython, bValidation, bCreateOmexArchive);
+				modelFormat, sedmlEventLog, bHasPython, bValidation, bCreateOmexArchive, bAllowTasklessSedml);
 	}
 
 	public static List<SEDMLTaskRecord> writeBioModel(File vcmlFilePath,
@@ -1381,7 +1384,8 @@ public class SEDMLExporter {
 													  boolean bAddPublicationInfo,
 													  boolean bSkipUnsupportedApps,
 													  boolean bHasPython,
-													  boolean bValidate
+													  boolean bValidate,
+													  boolean bAllowTasklessSedml
 	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
 
 		// get VCML name from VCML path
@@ -1423,20 +1427,21 @@ public class SEDMLExporter {
 		boolean bCreateOmexArchive = true;
 		return writeBioModel(
 				bioModel, publicationMetadata, jsonReportFile, omexOutputFile, simulationExportFilter, simContextExportFilter,
-				modelFormat, eventLogWriter, bHasPython, bValidate, bCreateOmexArchive);
+				modelFormat, eventLogWriter, bHasPython, bValidate, bCreateOmexArchive, bAllowTasklessSedml);
 	}
 
 	private static List<SEDMLTaskRecord> writeBioModel(BioModel bioModel,
-													  Optional<PublicationMetadata> publicationMetadata,
-													  Optional<File> jsonReportFile,
-													  File exportFileOrDirectory,
-													  Predicate<Simulation> simulationExportFilter,
-													  Predicate<SimulationContext> simContextExportFilter,
-													  ModelFormat modelFormat,
-													  SEDMLEventLog sedmlEventLog,
-													  boolean bHasPython,
-													  boolean bValidate,
-													  boolean bCreateOmexArchive
+													   Optional<PublicationMetadata> publicationMetadata,
+													   Optional<File> jsonReportFile,
+													   File exportFileOrDirectory,
+													   Predicate<Simulation> simulationExportFilter,
+													   Predicate<SimulationContext> simContextExportFilter,
+													   ModelFormat modelFormat,
+													   SEDMLEventLog sedmlEventLog,
+													   boolean bHasPython,
+													   boolean bValidate,
+													   boolean bCreateOmexArchive,
+													   boolean bAllowTasklessSedml
 	) throws SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
 		try {
 			// export the entire biomodel to a SEDML file (all supported applications)
@@ -1480,7 +1485,7 @@ public class SEDMLExporter {
 				jsonReportPath = jsonReportFile.get().getAbsolutePath();
 			}
 			SEDMLExporter sedmlExporter = new SEDMLExporter(sBaseFileName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonReportPath);
-			String sedmlString = sedmlExporter.getSEDMLDocument(sOutputDirPath, sBaseFileName, modelFormat, bValidate, simContextExportFilter).writeDocumentToString();
+			String sedmlString = sedmlExporter.getSEDMLDocument(sOutputDirPath, sBaseFileName, modelFormat, bValidate, simContextExportFilter, bAllowTasklessSedml).writeDocumentToString();
 
 			if (bCreateOmexArchive) {
 

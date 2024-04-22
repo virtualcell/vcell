@@ -31,6 +31,9 @@ public class ExportOmexCommand implements Callable<Integer> {
     @Option(names = { "--add-publication-info" }, defaultValue = "false", description = "retrieve published abstract and citation from pubmed")
     private boolean bAddPublicationInfo;
 
+    @Option(names = { "--allow-taskless-sedml" }, defaultValue = "false", description = "allow SED-ML file to lack task details, making execution impossible.")
+    boolean bAllowTasklessSedml = false;
+
     @Option(names = { "--writeLogFiles" }, defaultValue = "false")
     private boolean bWriteLogFiles;
 
@@ -51,7 +54,7 @@ public class ExportOmexCommand implements Callable<Integer> {
         try {
             logger.debug("Beginning export");
             VcmlOmexConverter.convertOneFile(
-                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps, bAddPublicationInfo);
+                    inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps, bAddPublicationInfo, bAllowTasklessSedml);
             return 0;
         } catch (Exception e) {
             e.printStackTrace();

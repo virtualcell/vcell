@@ -41,6 +41,9 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
     @Option(names = { "--add-publication-info" }, defaultValue = "false", description = "retrieve published abstract and citation from pubmed")
     boolean bAddPublicationInfo = false;
 
+    @Option(names = { "--allow-taskless-sedml" }, defaultValue = "false", description = "allow SED-ML file to lack task details, making execution impossible.")
+    boolean bAllowTasklessSedml = false;
+
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
 
