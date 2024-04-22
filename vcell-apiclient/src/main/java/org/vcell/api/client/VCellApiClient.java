@@ -1,6 +1,7 @@
 package org.vcell.api.client;
 
 import com.google.gson.Gson;
+import com.nimbusds.oauth2.sdk.ParseException;
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -27,6 +28,12 @@ import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.api.common.*;
 import org.vcell.api.common.events.EventWrapper;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.api.UsersResourceApi;
+import org.vcell.restclient.auth.AuthApiClient;
+import org.vcell.restclient.auth.InteractiveLogin;
+import org.vcell.restclient.model.AccesTokenRepresentationRecord;
+import org.vcell.restclient.model.MapUser;
 
 import java.io.*;
 import java.net.URI;
@@ -57,6 +64,7 @@ public class VCellApiClient implements AutoCloseable {
 	boolean bIgnoreHostMismatch = true;
 	boolean bSkipSSL = true;
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
+	private AuthApiClient apiClient = null;
 
 
 	// Create a custom response handler
@@ -477,6 +485,38 @@ public class VCellApiClient implements AutoCloseable {
 		httpClientContext.setUserToken(accessTokenRep.token);
 		
 		return accessTokenRep;
+	}
+
+	public void authenticateWithAuth0() throws URISyntaxException, IOException, ParseException, ApiException {
+		apiClient = InteractiveLogin.login("cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf", new URI("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/authorize"),
+				new URI("http://localhost:9000"));
+		apiClient.setScheme("http");
+//		return apiClient;
+	}
+
+	public boolean isVCellIdentityMapped() throws ApiException {
+		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
+		return usersResourceApi.getVCellIdentity().getUserName() != null;
+	}
+
+	public void mapUserToAuht0(String userID, String password) throws ApiException {
+		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
+		MapUser mapUser = new MapUser();
+		mapUser.setUserID(userID);
+		mapUser.setPassword(password);
+		usersResourceApi.setVCellIdentity(mapUser);
+	}
+
+	public AccessTokenRepresentation getLegacyToken() throws ApiException {
+		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
+		AccesTokenRepresentationRecord accesTokenRepresentationRecord = usersResourceApi.getLegacyApiToken();
+		AccessTokenRepresentation properAccessToken = new AccessTokenRepresentation(accesTokenRepresentationRecord.getToken());
+
+		// Add AuthCache to the execution context
+		httpClientContext = HttpClientContext.create();
+		httpClientContext.setUserToken(properAccessToken.token);
+
+		return properAccessToken;
 	}
 	
 	public void clearAuthentication() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
