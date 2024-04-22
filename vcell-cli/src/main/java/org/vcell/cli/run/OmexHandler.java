@@ -44,7 +44,7 @@ public class OmexHandler {
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
         this.tempPath = RunUtils.getTempDir();
         try {
-            replaceMetadataRdfFile(Paths.get(omexPath));
+            replaceMetadataRdfFiles(Paths.get(omexPath));
             this.archive = new CombineArchive(new File(omexPath));
             if (this.archive.hasErrors()){
                 String message = "Unable to initialise OMEX archive "+this.omexName+": "+this.archive.getErrors();
@@ -58,27 +58,33 @@ public class OmexHandler {
         }
     }
 
-    private void replaceMetadataRdfFile(Path zipFilePath) throws IOException {
-        String pathInZip = "/metadata.rdf";
+    private void replaceMetadataRdfFiles(Path zipFilePath) throws IOException {
         try( FileSystem fs = FileSystems.newFileSystem(zipFilePath) ) {
-            final Path fileInsideZipPath;
-            try {
-                fileInsideZipPath = fs.getPath(pathInZip);
-            } catch (InvalidPathException e) {
-                // there was no /metadata.rdf file in this archive
-                return;
+            for (Path root : fs.getRootDirectories()) {
+                Files.walk(root)
+                        .filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".rdf"))
+                        .forEach(path -> {
+                            try {
+                                // write empty RDF file to temp file and replace the file inside the zip
+                                Path tempFile = Files.createTempFile("temp", ".rdf");
+                                String new_rdf_content =
+                                    """
+                                    <?xml version='1.0' encoding='UTF-8'?>
+                                    <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+                                    </rdf:RDF>
+                                    """;
+                                Files.write(tempFile, new_rdf_content.getBytes());
+                                // replace fileInsideZipPath with temp file
+                                Files.delete(path);
+                                Files.copy(tempFile, path);
+                                Files.delete(tempFile);
+                            } catch (IOException e) {
+                                logger.error("Unable to delete metadata.rdf file from OMEX archive: " + e.getMessage(), e);
+                            }
+                        });
             }
-            // write empty RDF file to temp file and replace the file inside the zip
-            Path tempFile = Files.createTempFile("temp", ".rdf");
-            String new_rdf_content = """
-                    <?xml version='1.0' encoding='UTF-8'?>
-                    <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
-                    </rdf:RDF>
-                    """;
-            Files.write(tempFile, new_rdf_content.getBytes());
-            // replace fileInsideZipPath with temp file
-            Files.delete(fileInsideZipPath);
-            Files.copy(tempFile, fileInsideZipPath);
+
         }
     }
 
