@@ -98,23 +98,25 @@ public class UsersApiTest {
         TestEndpointUtils.mapClientToNagiosUser(aliceAPIClient);
 
         UsersResourceApi aliceUserApi = new UsersResourceApi(aliceAPIClient);
-        AccesTokenRepresentationRecord token = aliceUserApi.getLegacyApiToken(TestEndpointUtils.userNagiosID, "", "123");
+        UsersResourceApi bobUserApi = new UsersResourceApi(bobAPIClient);
+        TestEndpointUtils.mapClientToNagiosUser(aliceAPIClient);
+
+        AccesTokenRepresentationRecord token = aliceUserApi.getLegacyApiToken();
         assert (token != null && !token.getToken().isEmpty());
 
-        token = aliceUserApi.getLegacyApiToken(TestEndpointUtils.userAdminID, "", "123");
+        token = aliceUserApi.getLegacyApiToken();
         assert (token.getToken() == null);
 
 
         // Bob requests
-        UsersResourceApi bobUserApi = new UsersResourceApi(bobAPIClient);
-        token = bobUserApi.getLegacyApiToken(TestEndpointUtils.userNagiosID, "", "123");
+        token = bobUserApi.getLegacyApiToken();
         assert (token.getToken() == null);
 
-        token = bobUserApi.getLegacyApiToken(TestEndpointUtils.userAdminID, "", "123");
+        token = bobUserApi.getLegacyApiToken();
         assert (token.getToken() == null);
 
         TestEndpointUtils.mapClientToAdminUser(bobAPIClient);
-        token = bobUserApi.getLegacyApiToken(TestEndpointUtils.userAdminID, "", "123");
+        token = bobUserApi.getLegacyApiToken();
         assert (token != null && !token.getToken().isEmpty());
     }
 }
