@@ -3,7 +3,11 @@ package org.vcell.auth;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.jose4j.jwa.AlgorithmConstraints;
@@ -67,7 +71,8 @@ public class JWTUtils {
             // Read private key from file
             reader = new FileReader(privateKeyFilePath);
             pemParser = new PEMParser(reader);
-            PrivateKey privateKey = converter.getPrivateKey((org.bouncycastle.asn1.pkcs.PrivateKeyInfo) pemParser.readObject());
+            PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
+            PrivateKey privateKey = converter.getPrivateKey(pemKeyPair.getPrivateKeyInfo());
 
             // Create RsaJsonWebKey
             RsaJsonWebKey rsaJsonWebKey = new RsaJsonWebKey((java.security.interfaces.RSAPublicKey) publicKey);
