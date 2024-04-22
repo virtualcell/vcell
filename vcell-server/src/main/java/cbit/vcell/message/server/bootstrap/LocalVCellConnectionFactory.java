@@ -40,6 +40,7 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 	
 	private ConnectionFactory connectionFactory = null;
 
+
 @Override
 public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws AuthenticationException, ConnectionException {
 	try {
@@ -74,7 +75,12 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	}
 }
 
-/**
+	@Override
+	public VCellConnection createVCellConnectionAuth0(UserLoginInfo userLoginInfo) throws ConnectionException {
+		return null;
+	}
+
+	/**
  * trigger loading of HDF library when running local
  */
 private void linkHDFLib( ) {

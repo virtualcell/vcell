@@ -20,6 +20,7 @@ import cbit.vcell.server.VCellConnectionFactory;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.nimbusds.oauth2.sdk.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.DependencyConstants;
@@ -28,11 +29,13 @@ import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.api.common.events.*;
+import org.vcell.restclient.ApiException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -188,6 +191,22 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 		throw new ConnectionException("failed to connect: "+e.getMessage(), e);
 	}
 }
+
+	@Override
+	public VCellConnection createVCellConnectionAuth0(UserLoginInfo userLoginInfo) throws ConnectionException {
+		try {
+			this.vcellApiClient.authenticateWithAuth0();
+			if(!this.vcellApiClient.isVCellIdentityMapped()) {this.vcellApiClient.mapUserToAuht0(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString());}
+			AccessTokenRepresentation accessTokenRep = this.getVCellApiClient().getLegacyToken();
+			userLoginInfo.setUser(new User(accessTokenRep.userId, new KeyValue(accessTokenRep.getUserKey())));
+			return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender);
+		} catch (IOException e) {
+			throw new ConnectionException("failed to connect: "+e.getMessage(), e);
+		} catch (ApiException | URISyntaxException | ParseException apiException){
+			throw new RuntimeException(apiException);
+		}
+//		return null;
+	}
 
 public static String getVCellSoftwareVersion(String apihost, Integer apiport, String pathPrefix_v0) {
 	boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
