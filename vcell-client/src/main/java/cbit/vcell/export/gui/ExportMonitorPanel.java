@@ -16,6 +16,8 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Optional;
@@ -451,26 +453,65 @@ private void setExportMonitorTableModel1(ExportMonitorTableModel newValue) {
 		clipboard.setContents(stringSelection, null);
 	}
 	private void HelpButton_ActionPerformed() {
-		String message = "The simulation results of spatial applications may be exported to ImageJ for further ";
-		message += "processing using the compatible N5 format.<br>";
-		message += "Use the 'Copy Link' button above to copy the exported data location to the clipboard.<br>";
-		message += "Use the VCell plugin (available <a href='https://sites.imagej.net/VCell-Simulations-Result-Viewer/'>here</a>)";
-		message += " in ImageJ to download the file within ImageJ for further processing.<br>";
-		message += "The Fiji ImageJ application can be downloaded <a href='https://imagej.net/software/fiji/'>here</a>";
-
-		JEditorPane jep = new JEditorPane("text/html", message);
-		jep.setEditable(false);
-		jep.setOpaque(false);
-		jep.addHyperlinkListener(new HyperlinkListener() {
+		String strFiji = "The simulation results of spatial applications may be exported to ImageJ for further ";
+		strFiji += "processing using the compatible N5 format.<br>";
+		strFiji += "Use the 'Copy Link' button above to copy the exported data location to the clipboard.<br>";
+		strFiji += "The Fiji ImageJ application can be downloaded from the ";
+		strFiji += "<a href='https://imagej.net/software/fiji/'>Fiji ImageJ website</a>";
+		JEditorPane jepFiji = new JEditorPane("text/html", strFiji);
+		jepFiji.setEditable(false);
+		jepFiji.setOpaque(false);
+		jepFiji.addHyperlinkListener(new HyperlinkListener() {
 			public void hyperlinkUpdate(HyperlinkEvent hle) {
 				if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
-					System.out.println(hle.getURL());
+					URL url = hle.getURL();
+					System.out.println(url);
+					if (Desktop.isDesktopSupported()) {
+						try {
+							Desktop.getDesktop().browse(url.toURI());
+						} catch(IOException | URISyntaxException e) {
+							System.out.println(e.getMessage());
+						}
+					}
+				}
+			}
+		});
+		String strPlugin = "Use the VCell plugin in ImageJ to download the exported file for further processing.<br>";
+		strPlugin += "Click <a href='https://sites.imagej.net/VCell-Simulations-Result-Viewer/'>here</a> to copy the ";
+		strPlugin += "VCell plugin to the Clipboard";
+
+		JEditorPane jepPlugin = new JEditorPane("text/html", strPlugin);
+		jepPlugin.setEditable(false);
+		jepPlugin.setOpaque(false);
+		jepPlugin.addHyperlinkListener(new HyperlinkListener() {
+			public void hyperlinkUpdate(HyperlinkEvent hle) {
+				if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
+					URL url = hle.getURL();
+					System.out.println(url);
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection stringSelection = new StringSelection(url.toString());
+					clipboard.setContents(stringSelection, null);
 				}
 			}
 		});
 
 		JPanel p = new JPanel();
-		p.add(jep);
+		p.setLayout(new GridBagLayout());
+
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(1, 1, 5, 1);
+		p.add(jepFiji, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.insets = new Insets(1, 1, 1, 1);
+		p.add(jepPlugin, gbc);
+
 		DialogUtils.showInfoDialog(ExportMonitorPanel.this, p, "ImageJ Export Help");
 
 	}

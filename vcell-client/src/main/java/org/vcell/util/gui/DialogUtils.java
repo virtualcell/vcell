@@ -824,67 +824,48 @@ public class DialogUtils {
 
     public static void showInfoDialog(final Component requester, final String title, final String message){
         checkForNull(requester);
-        LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
         Doer doer = () -> {
             JPanel panel = MessagePanelFactory.createSimple(message);
-            JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
-            if(OperatingSystemInfo.getInstance().isMac()){
-                //On Mac: problem when one keepOnTop,Modal dialogue shows another keepOnTop,Modal dialogue, second one may go behind initially
-                final JDialog dialog = new JDialog(JOptionPane.getRootFrame(), true);
-                pane.addPropertyChangeListener(new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent event){
-                        Object nvalue = event.getNewValue();
-                        if(event.getPropertyName().equals("value") && nvalue != null && nvalue != JOptionPane.UNINITIALIZED_VALUE){
-                            dialog.setVisible(false);
-                        }
-                    }
-                });
-                dialog.getContentPane().add(pane);
-                dialog.pack();
-                dialog.setAlwaysOnTop(true);
-                dialog.setResizable(true);
-                GeneralGuiUtils.centerOnComponent(dialog, requester);
-                showOnce(dialog);
-            } else {
-                LWDialog dialog = new LWTitledOptionPaneDialog(lwParent, title, pane);
-                dialog.setResizable(true);
-                showOnce(dialog);
-            }
+            showInfoDialogInternal(requester, panel, title);
         };
         VCSwingFunction.executeAsRuntimeException(doer);
     }
 
     public static void showInfoDialog(final Component requester, final JPanel panel, final String title){
         checkForNull(requester);
-        LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
         Doer doer = () -> {
-            JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
-            if(OperatingSystemInfo.getInstance().isMac()){
-                //On Mac: problem when one keepOnTop,Modal dialogue shows another keepOnTop,Modal dialogue, second one may go behind initially
-                final JDialog dialog = new JDialog(JOptionPane.getRootFrame(), true);
-                pane.addPropertyChangeListener(new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent event){
-                        Object nvalue = event.getNewValue();
-                        if(event.getPropertyName().equals("value") && nvalue != null && nvalue != JOptionPane.UNINITIALIZED_VALUE){
-                            dialog.setVisible(false);
-                        }
-                    }
-                });
-                dialog.getContentPane().add(pane);
-                dialog.pack();
-                dialog.setAlwaysOnTop(true);
-                dialog.setResizable(true);
-                GeneralGuiUtils.centerOnComponent(dialog, requester);
-                showOnce(dialog);
-            } else {
-                LWDialog dialog = new LWTitledOptionPaneDialog(lwParent, title, pane);
-                dialog.setResizable(true);
-                showOnce(dialog);
-            }
+            showInfoDialogInternal(requester, panel, title);
         };
         VCSwingFunction.executeAsRuntimeException(doer);
+    }
+
+    // use the public methods above when calling from elsewhere, never directly this
+    private static void showInfoDialogInternal(final Component requester, final JPanel panel, final String title) {
+        LWContainerHandle lwParent = LWNamespace.findLWOwner(requester);
+        JOptionPane pane = new JOptionPane(panel, JOptionPane.INFORMATION_MESSAGE);
+        if(OperatingSystemInfo.getInstance().isMac()){
+            //On Mac: problem when one keepOnTop,Modal dialogue shows another keepOnTop,Modal dialogue, second one may go behind initially
+            final JDialog dialog = new JDialog(JOptionPane.getRootFrame(), true);
+            pane.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent event){
+                    Object nvalue = event.getNewValue();
+                    if(event.getPropertyName().equals("value") && nvalue != null && nvalue != JOptionPane.UNINITIALIZED_VALUE){
+                        dialog.setVisible(false);
+                    }
+                }
+            });
+            dialog.getContentPane().add(pane);
+            dialog.pack();
+            dialog.setAlwaysOnTop(true);
+            dialog.setResizable(true);
+            GeneralGuiUtils.centerOnComponent(dialog, requester);
+            showOnce(dialog);
+        } else {
+            LWDialog dialog = new LWTitledOptionPaneDialog(lwParent, title, pane);
+            dialog.setResizable(true);
+            showOnce(dialog);
+        }
     }
 
 
@@ -892,7 +873,6 @@ public class DialogUtils {
     public static void showInfoDialogAndResize(final Component requester, final String title, final String message){
         showInfoDialog(requester, title, message);
     }
-
 
     public static String showInputDialog0(final Component requester, final String message, final String initialValue) throws UtilCancelException{
         //TODO: rename showInputDialog after trunk merge

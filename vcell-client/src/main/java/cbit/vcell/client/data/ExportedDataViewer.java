@@ -383,6 +383,17 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             clipboard.setContents(new StringSelection(tableData.link), null);
         } else if(e.getSource().equals(deleteButton)) {
             // TODO: add delete code here
+            int row = editorScrollTable.getSelectedRow();
+            ExportedDataTableModel.TableData tableData = tableModel.getValueAt(row);
+
+            // load json file exportMetaData.json in C:\Users\MyName\.vcell (use Visual Studio Code to visualize)
+            // delete the globalJobIS
+            // delete the entry with that ID
+            // save the json back to file
+
+            // class with all the stuff is ExportDataRepresentation
+
+
 
         } else if(e.getSource() instanceof JCheckBox && formatButtonGroup.contains(e.getSource())) {
             initalizeTableData();
