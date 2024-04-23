@@ -64,7 +64,6 @@ ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
 # Copy JAR files
 COPY ./vcell-cli/target/vcell-cli-0.0.1-SNAPSHOT.jar \
      ./vcell-cli/target/maven-jars/*.jar \
-     ./non-maven-java-libs/org/sbml/libcombine/libCombineLinux64/0.2.7/libCombineLinux64-0.2.7.jar \
      /usr/local/app/vcell/lib/
 
 # Install required python-packages

@@ -265,11 +265,11 @@ public class NFsimXMLWriter {
 	static HashSet<BondSites> reactionReactantBondSites = new HashSet<BondSites>();
 
 	public static Element writeNFsimXML(SimulationTask origSimTask, long randomSeed, NFsimSimulationOptions nfsimSimulationOptions, boolean bUseLocationMarks) throws SolverException {
-		try {
-			System.out.println("VCML ORIGINAL .... START\n"+origSimTask.getSimulation().getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
-		} catch (MathException e1) {
-			lg.error(e1);
-		}
+//		try {
+//			System.out.println("VCML ORIGINAL .... START\n"+origSimTask.getSimulation().getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
+//		} catch (MathException e1) {
+//			lg.error(e1);
+//		}
 		SimulationTask clonedSimTask = null;
 		try {
 			clonedSimTask = (SimulationTask) BeanUtils.cloneSerializable(origSimTask);
@@ -376,7 +376,7 @@ public class NFsimXMLWriter {
 								ParticleComponentStateDefinition markSet = productMolTypePattern.getMolecularType().getComponentList().get(1).getComponentStateDefinitions().get(1);
 								productMolTypePattern.getMolecularComponentPatternList().get(1).setComponentStatePattern(new ParticleComponentStatePattern(markSet));
 							}
-							System.out.println(productPattern.getName());
+//							System.out.println(productPattern.getName());
 							if (clonedMathDesc.getVariable(productPattern.getName())==null){
 								clonedMathDesc.addVariable(productPattern);
 							}
@@ -384,11 +384,11 @@ public class NFsimXMLWriter {
 						}
 					}
 				}
-				try {
-					System.out.println("===============================\n ----------- VCML HACKED .... START\n"+clonedMathDesc.getVCML_database()+"\nVCML HACKED .... END\n====================\n");
-				} catch (MathException e1) {
-					lg.error(e1);
-				}
+//				try {
+//					System.out.println("===============================\n ----------- VCML HACKED .... START\n"+clonedMathDesc.getVCML_database()+"\nVCML HACKED .... END\n====================\n");
+//				} catch (MathException e1) {
+//					lg.error(e1);
+//				}
 			}catch (Exception e){
 				throw new SolverException("failed to apply location mark transformation: "+e.getMessage(), e);
 			}
@@ -520,7 +520,9 @@ public class NFsimXMLWriter {
 						listOfParametersElement.addContent(parameterElement);
 					}
 				}catch (ExpressionException e){
-					System.out.println("ParticleJumpProcess "+particleJumpProcess.getName()+" = "+substitutedValExpr.infix()+" does not have a constant value");
+					lg.error("ParticleJumpProcess "+particleJumpProcess.getName()+" = "+substitutedValExpr.infix()+" does not have a constant value", e);
+					// TODO(Dan): should this be an exception?
+//					throw new SolverException("ParticleJumpProcess "+particleJumpProcess.getName()+" = "+substitutedValExpr.infix()+" does not have a constant value", e);
 				}
 			}
 			
@@ -818,7 +820,9 @@ public class NFsimXMLWriter {
 				try {
 					value = substitutedValExpr.evaluateConstant();
 				}catch (ExpressionException e){
-					System.out.println("constant or function "+var.getName()+" = "+substitutedValExpr.infix()+" does not have a constant value");
+					lg.error("constant or function "+var.getName()+" = "+substitutedValExpr.infix()+" does not have a constant value", e);
+					// TODO(Dan): should this be an exception?
+//					throw new SolverException("constant or function "+var.getName()+" = "+substitutedValExpr.infix()+" does not have a constant value", e);
 				}
 				if (value!=null) {
 					continue;		// parameter, see getListOfParameters() above

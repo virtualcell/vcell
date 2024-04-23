@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
 import org.vcell.model.rbm.RuleAnalysisReport.AddBondOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.AddMolecularTypeOperation;
@@ -18,6 +20,8 @@ import org.vcell.model.rbm.RuleAnalysisReport.DeleteParticipantOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.Operation;
 
 public class RuleAnalysis {
+
+	private final static Logger lg = LogManager.getLogger(RuleAnalysis.class);
 		
 	public static int INDEX_OFFSET = 1;
 	
@@ -317,10 +321,10 @@ public class RuleAnalysis {
 		// print unmatched entries
 		//
 		for (MolecularTypeEntry mte : unmatchedReactantMolecularTypeEntries){
-			System.out.println("unmatched reactant "+getID(mte));
+			lg.info("unmatched reactant "+getID(mte));
 		}
 		for (MolecularTypeEntry mte : unmatchedProductMolecularTypeEntries){
-			System.out.println("unmatched product "+getID(mte));
+			lg.info("unmatched product "+getID(mte));
 		}
 		//
 		// verify unique match and print matches

@@ -99,12 +99,13 @@ public class ExecutionJob {
             this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "IO error with OmexHandler");
             logger.error(error);
             throw new RuntimeException(error, e);
-        } catch (Exception e) { 
-            omexHandler.deleteExtractedOmex();
+        } catch (Exception e) {
             String error = e.getMessage() + ", error for archive " + inputFilePath;
+            logger.error(error);
+            if (omexHandler!=null) omexHandler.deleteExtractedOmex();
             this.cliRecorder.writeErrorList(bioModelBaseName);
             this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "unknown error with the archive file");
-            logger.error(error);
+
             throw new RuntimeException(error, e);
         } 
         

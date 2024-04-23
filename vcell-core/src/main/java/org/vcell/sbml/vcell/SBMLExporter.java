@@ -61,6 +61,7 @@ import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
@@ -93,6 +94,11 @@ import java.util.stream.Collectors;
  * @author: Anuradha Lakshminarayana
  */
 public class SBMLExporter {
+
+	static {
+		// set the log level to warn to avoid debug logging which causes runtime errors in JSBML
+		org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN);
+	}
 
 	public static boolean bWriteDebugFiles = false;
 
@@ -1691,6 +1697,7 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 	}
 
 	// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
+	org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN); // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
 	ASTNode mathNode = ASTNode.readMathMLFromString(expMathMLStr);
 	return mathNode;
 }
@@ -2252,6 +2259,7 @@ private void addGeometry() throws SbmlException {
 				Expression expr = ((AnalyticSubVolume)vcGeomClasses[i]).getExpression();
 				try {
 					String mathMLStr = ExpressionMathMLPrinter.getMathML(expr, true, MathType.BOOLEAN, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
+					org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN); // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
 					ASTNode mathMLNode = ASTNode.readMathMLFromString(mathMLStr);
 					analyticVol.setMath(mathMLNode);
 				} catch (Exception e) {

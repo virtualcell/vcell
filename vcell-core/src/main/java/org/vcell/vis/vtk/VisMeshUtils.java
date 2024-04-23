@@ -139,7 +139,7 @@ public class VisMeshUtils {
 	}
 
 	private static void addCellDataToVtuXml(Document meshFileXmlDocument, String dataName, double[] data) {
-		System.out.println("\n\n\n\n\n\n");
+//		System.out.println("\n\n\n\n\n\n");
 		double rangeMin = Double.POSITIVE_INFINITY;
 		double rangeMax = Double.NEGATIVE_INFINITY;
 		for (int i=0;i<data.length;i++){
@@ -198,7 +198,7 @@ public class VisMeshUtils {
 	}
 	
 	private static void addPointDataToVtuXml(Document meshFileXmlDocument, String dataName, double[] data) {
-		System.out.println("\n\n\n\n\n\n");
+//		System.out.println("\n\n\n\n\n\n");
 		double rangeMin = Double.POSITIVE_INFINITY;
 		double rangeMax = Double.NEGATIVE_INFINITY;
 		for (int i=0;i<data.length;i++){

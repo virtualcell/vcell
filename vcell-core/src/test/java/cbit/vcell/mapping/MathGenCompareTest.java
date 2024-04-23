@@ -38,7 +38,6 @@ public class MathGenCompareTest {
 	public static void setup() throws IOException {
 		previousInstalldirPropertyValue = PropertyLoader.getProperty(PropertyLoader.installationRoot, null);
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
-		NativeLib.combinej.load();
 		codeKnownProblemFile = Files.createTempFile("MathGenCompareTest","code_KnownProblems").toFile();
 		csvKnownProblemFile = Files.createTempFile("MathGenCompareTest","csv_KnownProblems").toFile();
 		System.err.println("code known problem file: "+codeKnownProblemFile.getAbsolutePath());

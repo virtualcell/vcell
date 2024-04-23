@@ -25,7 +25,7 @@ public class DefaultNameSpaces {
 	public static final NameSpace RDF = defaultMap.register("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 	public static final NameSpace RDFS = defaultMap.register("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
 	public static final NameSpace OWL = defaultMap.register("owl", "http://www.w3.org/2002/07/owl#");
-	public static final NameSpace XMLS = defaultMap.register("xmls", "http://www.w3.org/2001/XMLSchema#");
+	public static final NameSpace XMLS = defaultMap.register("schemaxml", "http://www.w3.org/2001/XMLSchema#");
 	public static final NameSpace XSD = defaultMap.register("xsd", "http://www.w3.org/2001/XMLSchema#");
 	public static final NameSpace DUBLIN_CORE = defaultMap.register("dc", "http://purl.org/dc/elements/1.1/");
 //	public static final NameSpace DC_TERMS = defaultMap.register("dcterms", "http://purl.org/dc/terms/");	

@@ -91,7 +91,6 @@ public abstract class SEDMLExporterCommon {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
 		previousWorkingdirPropertyValue = PropertyLoader.getProperty(PropertyLoader.cliWorkingDir, null);
 		PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, "../vcell-cli-utils");
-		NativeLib.combinej.load();
 		previousWriteDebugFiles = SBMLExporter.bWriteDebugFiles;
 		SBMLExporter.bWriteDebugFiles = bDebug;
 	}
