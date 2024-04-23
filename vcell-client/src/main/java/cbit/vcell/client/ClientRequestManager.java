@@ -2522,9 +2522,9 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		if (exportsRecord.contains(evt.getJobID() + "")) {
 			return;
 		}
-//		if (evt.getLocation().toLowerCase().endsWith("." + N5Specs.n5Suffix)){
-//			return;
-//		}
+		if (evt.getLocation().toLowerCase().endsWith("." + N5Specs.n5Suffix)){
+			return;
+		}
 		AsynchClientTask task1 = new AsynchClientTask("Retrieving data from '" + evt.getLocation() + "'",
 				AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
