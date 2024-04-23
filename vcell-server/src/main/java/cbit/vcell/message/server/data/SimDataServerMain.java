@@ -76,8 +76,7 @@ public class SimDataServerMain {
             PropertyLoader.exportBaseDirInternalProperty,
             PropertyLoader.simdataCacheSizeProperty,
             PropertyLoader.vcellapiKeystoreFile,
-            PropertyLoader.vcellapiKeystorePswdFile,
-            PropertyLoader.webDataServerPort
+            PropertyLoader.vcellapiKeystorePswdFile
     };
 
 

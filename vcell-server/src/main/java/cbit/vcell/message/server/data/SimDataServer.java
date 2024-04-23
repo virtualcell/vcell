@@ -74,9 +74,6 @@ public SimDataServer() throws Exception {
 	dataSetControllerImpl.addDataJobListener(this);
 	// add export listener
 	exportServiceImpl.addExportListener(this);
-
-	SimDataWebService simDataWebService = new SimDataWebService(dataServerImpl);
-	simDataWebService.startWebService();
 }
 
 public void init(SimDataServiceType serviceType) throws Exception {
