@@ -53,7 +53,7 @@ public class UsersResource {
     @RolesAllowed("user")
     @Operation(operationId = "setVCellIdentity", summary = "set or replace vcell identity mapping")
     @Consumes(MediaType.APPLICATION_JSON)
-    public boolean mapUser(MapUser mapUser) throws SQLException, DataAccessException {
+    public boolean mapUser(UserLoginInfoForMapping mapUser) throws SQLException, DataAccessException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
     }
 
@@ -84,7 +84,7 @@ public class UsersResource {
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
         ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), vcellUser);
-        return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(new AccessTokenRepresentation(apiAccessToken.getToken()));
+        return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
     }
 
     public record AccesTokenRepresentationRecord(
@@ -94,8 +94,8 @@ public class UsersResource {
             String userId,
             String userKey
     ){
-        public static AccesTokenRepresentationRecord getRecordFromAccessTokenRepresentation(AccessTokenRepresentation atr){
-            return new AccesTokenRepresentationRecord(atr.token, atr.creationDateSeconds, atr.expireDateSeconds, atr.userId, atr.userKey);
+        public static AccesTokenRepresentationRecord getRecordFromAccessTokenRepresentation(ApiAccessToken atr){
+            return new AccesTokenRepresentationRecord(atr.getToken(), atr.getCreationDate().getTime(), atr.getExpiration().getTime(), atr.getUser().getName(), atr.getUser().getID().toString());
         }
     }
 

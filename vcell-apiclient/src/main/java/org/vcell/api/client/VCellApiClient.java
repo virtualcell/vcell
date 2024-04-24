@@ -34,6 +34,7 @@ import org.vcell.restclient.auth.AuthApiClient;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.MapUser;
+import org.vcell.restclient.model.UserLoginInfoForMapping;
 
 import java.io.*;
 import java.net.URI;
@@ -198,7 +199,7 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	private String getApiUrlPrefix() {
-		final String scheme = "https";
+		final String scheme = httpHost.getSchemeName();
 		if (httpHost.getPort() != 443) {
 			return scheme+"://"+httpHost.getHostName()+":"+httpHost.getPort()+this.pathPrefix_v0;
 		}else{
@@ -494,9 +495,13 @@ public class VCellApiClient implements AutoCloseable {
 //		return apiClient;
 	}
 
-	public boolean isVCellIdentityMapped() throws ApiException {
+	public String getAuth0MappedUser() throws ApiException {
 		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
-		return usersResourceApi.getVCellIdentity().getUserName() != null;
+		return usersResourceApi.getVCellIdentity().getUserName();
+	}
+
+	public boolean isVCellIdentityMapped() throws ApiException {
+		return getAuth0MappedUser() != null;
 	}
 
 	public void mapUserToAuht0(String userID, String password) throws ApiException {
@@ -507,16 +512,15 @@ public class VCellApiClient implements AutoCloseable {
 		usersResourceApi.setVCellIdentity(userLoginInfoForMapping);
 	}
 
-	public AccessTokenRepresentation getLegacyToken() throws ApiException {
+	public AccesTokenRepresentationRecord getLegacyToken() throws ApiException {
 		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
 		AccesTokenRepresentationRecord accesTokenRepresentationRecord = usersResourceApi.getLegacyApiToken();
-		AccessTokenRepresentation properAccessToken = new AccessTokenRepresentation(accesTokenRepresentationRecord.getToken());
 
 		// Add AuthCache to the execution context
 		httpClientContext = HttpClientContext.create();
-		httpClientContext.setUserToken(properAccessToken.token);
+		httpClientContext.setUserToken(accesTokenRepresentationRecord.getToken());
 
-		return properAccessToken;
+		return accesTokenRepresentationRecord;
 	}
 	
 	public void clearAuthentication() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
