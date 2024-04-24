@@ -18,4 +18,8 @@ import java.io.IOException;
 public interface VCellConnectionFactory {
     VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException, AuthenticationException, IOException;
     VCellConnection createVCellConnectionAuth0(UserLoginInfo userLoginInfo) throws ConnectionException;
+    boolean isVCellIdentityMappedToAuth0Identity();
+    void mapVCellIdentityToAuth0Identity(UserLoginInfo userLoginInfo);
+    void auth0SignIn();
+    String getAuth0MappedUser();
 }

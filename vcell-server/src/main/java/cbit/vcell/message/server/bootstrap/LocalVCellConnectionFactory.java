@@ -80,6 +80,26 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 		return null;
 	}
 
+	@Override
+	public boolean isVCellIdentityMappedToAuth0Identity() {
+		return false;
+	}
+
+	@Override
+	public void mapVCellIdentityToAuth0Identity(UserLoginInfo userLoginInfo) {
+
+	}
+
+	@Override
+	public void auth0SignIn() {
+
+	}
+
+	@Override
+	public String getAuth0MappedUser() {
+		return "";
+	}
+
 	/**
  * trigger loading of HDF library when running local
  */
