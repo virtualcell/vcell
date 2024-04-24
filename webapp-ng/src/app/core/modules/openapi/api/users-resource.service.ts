@@ -21,11 +21,11 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { AccesTokenRepresentationRecord } from '../model/acces-token-representation-record';
 // @ts-ignore
-import { MapUser } from '../model/map-user';
-// @ts-ignore
 import { User } from '../model/user';
 // @ts-ignore
 import { UserIdentityJSONSafe } from '../model/user-identity-json-safe';
+// @ts-ignore
+import { UserLoginInfoForMapping } from '../model/user-login-info-for-mapping';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -270,14 +270,14 @@ export class UsersResourceService implements UsersResourceServiceInterface {
 
     /**
      * set or replace vcell identity mapping
-     * @param mapUser 
+     * @param userLoginInfoForMapping 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public setVCellIdentity(mapUser?: MapUser, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<boolean>;
-    public setVCellIdentity(mapUser?: MapUser, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<HttpResponse<boolean>>;
-    public setVCellIdentity(mapUser?: MapUser, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<HttpEvent<boolean>>;
-    public setVCellIdentity(mapUser?: MapUser, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<any> {
+    public setVCellIdentity(userLoginInfoForMapping?: UserLoginInfoForMapping, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<boolean>;
+    public setVCellIdentity(userLoginInfoForMapping?: UserLoginInfoForMapping, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<HttpResponse<boolean>>;
+    public setVCellIdentity(userLoginInfoForMapping?: UserLoginInfoForMapping, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<HttpEvent<boolean>>;
+    public setVCellIdentity(userLoginInfoForMapping?: UserLoginInfoForMapping, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -329,7 +329,7 @@ export class UsersResourceService implements UsersResourceServiceInterface {
         return this.httpClient.request<boolean>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: mapUser,
+                body: userLoginInfoForMapping,
                 responseType: <any>responseType_,
                 withCredentials: this.configuration.withCredentials,
                 headers: localVarHeaders,

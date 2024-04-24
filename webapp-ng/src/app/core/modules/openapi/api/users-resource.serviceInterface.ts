@@ -14,9 +14,9 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { AccesTokenRepresentationRecord } from '../model/models';
-import { MapUser } from '../model/models';
 import { User } from '../model/models';
 import { UserIdentityJSONSafe } from '../model/models';
+import { UserLoginInfoForMapping } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -48,8 +48,8 @@ export interface UsersResourceServiceInterface {
     /**
      * set or replace vcell identity mapping
      * 
-     * @param mapUser 
+     * @param userLoginInfoForMapping 
      */
-    setVCellIdentity(mapUser?: MapUser, extraHttpRequestParams?: any): Observable<boolean>;
+    setVCellIdentity(userLoginInfoForMapping?: UserLoginInfoForMapping, extraHttpRequestParams?: any): Observable<boolean>;
 
 }
