@@ -5,6 +5,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.MapUser;
+import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -41,17 +42,17 @@ public class TestEndpointUtils {
 
     public static boolean mapClientToNagiosUser(ApiClient authenticatedApiClient) throws ApiException {
         UsersResourceApi usersResourceApi = new UsersResourceApi(authenticatedApiClient);
-        MapUser bioModelOwner = new MapUser();
+        UserLoginInfoForMapping bioModelOwner = new UserLoginInfoForMapping();
         bioModelOwner.setUserID("vcellNagios");
-        bioModelOwner.setPassword("1700596370261");
+        bioModelOwner.setDigestedPassword("CD181552B879A2F29D10434D8ACF692B6C8126F9");
         return usersResourceApi.setVCellIdentity(bioModelOwner);
     }
 
     public static boolean mapClientToAdminUser(ApiClient authenticatedApiClient) throws ApiException {
         UsersResourceApi usersResourceApi = new UsersResourceApi(authenticatedApiClient);
-        MapUser bioModelOwner = new MapUser();
+        UserLoginInfoForMapping bioModelOwner = new UserLoginInfoForMapping();
         bioModelOwner.setUserID("Administrator");
-        bioModelOwner.setPassword("1700596370260");
+        bioModelOwner.setDigestedPassword("A93453F7962799355608EC89D33D3249474E538F");
         return usersResourceApi.setVCellIdentity(bioModelOwner);
     }
 }
