@@ -139,12 +139,12 @@ Class | Method | HTTP request | Description
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
- - [MapUser](docs/MapUser.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
  - [Simulation](docs/Simulation.md)
  - [User](docs/User.md)
  - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
+ - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
 
 
 <a id="documentation-for-authorization"></a>

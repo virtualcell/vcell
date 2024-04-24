@@ -18,9 +18,9 @@ import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
-import org.vcell.restclient.model.MapUser;
 import org.vcell.restclient.model.User;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
+import org.vcell.restclient.model.UserLoginInfoForMapping;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -282,24 +282,24 @@ public class UsersResourceApi {
   /**
    * set or replace vcell identity mapping
    * 
-   * @param mapUser  (optional)
+   * @param userLoginInfoForMapping  (optional)
    * @return Boolean
    * @throws ApiException if fails to make API call
    */
-  public Boolean setVCellIdentity(MapUser mapUser) throws ApiException {
-    ApiResponse<Boolean> localVarResponse = setVCellIdentityWithHttpInfo(mapUser);
+  public Boolean setVCellIdentity(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = setVCellIdentityWithHttpInfo(userLoginInfoForMapping);
     return localVarResponse.getData();
   }
 
   /**
    * set or replace vcell identity mapping
    * 
-   * @param mapUser  (optional)
+   * @param userLoginInfoForMapping  (optional)
    * @return ApiResponse&lt;Boolean&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Boolean> setVCellIdentityWithHttpInfo(MapUser mapUser) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = setVCellIdentityRequestBuilder(mapUser);
+  public ApiResponse<Boolean> setVCellIdentityWithHttpInfo(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = setVCellIdentityRequestBuilder(userLoginInfoForMapping);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -327,7 +327,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder setVCellIdentityRequestBuilder(MapUser mapUser) throws ApiException {
+  private HttpRequest.Builder setVCellIdentityRequestBuilder(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -339,7 +339,7 @@ public class UsersResourceApi {
     localVarRequestBuilder.header("Accept", "text/plain");
 
     try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(mapUser);
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(userLoginInfoForMapping);
       localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
     } catch (IOException e) {
       throw new ApiException(e);

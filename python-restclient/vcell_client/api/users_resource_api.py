@@ -27,9 +27,9 @@ except ImportError:
 from typing import Optional
 
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
-from vcell_client.models.map_user import MapUser
 from vcell_client.models.user import User
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
+from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 
 from vcell_client.api_client import ApiClient
 from vcell_client.api_response import ApiResponse
@@ -585,8 +585,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -650,8 +650,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -715,8 +715,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -788,7 +788,7 @@ class UsersResourceApi:
     @validate_call
     def set_v_cell_identity(
         self,
-        map_user: Optional[MapUser] = None,
+        user_login_info_for_mapping: Optional[UserLoginInfoForMapping] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -805,8 +805,8 @@ class UsersResourceApi:
         """set or replace vcell identity mapping
 
 
-        :param map_user:
-        :type map_user: MapUser
+        :param user_login_info_for_mapping:
+        :type user_login_info_for_mapping: UserLoginInfoForMapping
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -830,7 +830,7 @@ class UsersResourceApi:
         """ # noqa: E501
 
         _param = self._set_v_cell_identity_serialize(
-            map_user=map_user,
+            user_login_info_for_mapping=user_login_info_for_mapping,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -839,8 +839,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -857,7 +857,7 @@ class UsersResourceApi:
     @validate_call
     def set_v_cell_identity_with_http_info(
         self,
-        map_user: Optional[MapUser] = None,
+        user_login_info_for_mapping: Optional[UserLoginInfoForMapping] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -874,8 +874,8 @@ class UsersResourceApi:
         """set or replace vcell identity mapping
 
 
-        :param map_user:
-        :type map_user: MapUser
+        :param user_login_info_for_mapping:
+        :type user_login_info_for_mapping: UserLoginInfoForMapping
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -899,7 +899,7 @@ class UsersResourceApi:
         """ # noqa: E501
 
         _param = self._set_v_cell_identity_serialize(
-            map_user=map_user,
+            user_login_info_for_mapping=user_login_info_for_mapping,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -908,8 +908,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -926,7 +926,7 @@ class UsersResourceApi:
     @validate_call
     def set_v_cell_identity_without_preload_content(
         self,
-        map_user: Optional[MapUser] = None,
+        user_login_info_for_mapping: Optional[UserLoginInfoForMapping] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -943,8 +943,8 @@ class UsersResourceApi:
         """set or replace vcell identity mapping
 
 
-        :param map_user:
-        :type map_user: MapUser
+        :param user_login_info_for_mapping:
+        :type user_login_info_for_mapping: UserLoginInfoForMapping
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -968,7 +968,7 @@ class UsersResourceApi:
         """ # noqa: E501
 
         _param = self._set_v_cell_identity_serialize(
-            map_user=map_user,
+            user_login_info_for_mapping=user_login_info_for_mapping,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -977,8 +977,8 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
-            '403': None,
-            '401': None
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -990,7 +990,7 @@ class UsersResourceApi:
 
     def _set_v_cell_identity_serialize(
         self,
-        map_user,
+        user_login_info_for_mapping,
         _request_auth,
         _content_type,
         _headers,
@@ -1015,8 +1015,8 @@ class UsersResourceApi:
         # process the header parameters
         # process the form parameters
         # process the body parameter
-        if map_user is not None:
-            _body_params = map_user
+        if user_login_info_for_mapping is not None:
+            _body_params = user_login_info_for_mapping
 
 
         # set the HTTP header `Accept`

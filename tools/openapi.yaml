@@ -111,10 +111,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -136,10 +136,10 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -178,10 +178,10 @@ paths:
       responses:
         "204":
           description: No Content
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - curator
@@ -211,10 +211,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -228,7 +228,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MapUser'
+              $ref: '#/components/schemas/UserLoginInfoForMapping'
       responses:
         "200":
           description: OK
@@ -236,10 +236,10 @@ paths:
             text/plain:
               schema:
                 type: boolean
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -335,13 +335,6 @@ components:
       properties:
         message:
           type: string
-    MapUser:
-      type: object
-      properties:
-        userID:
-          type: string
-        password:
-          type: string
     MathmodelRef:
       type: object
       properties:
@@ -429,6 +422,13 @@ components:
         subject:
           type: string
         insertDate:
+          type: string
+    UserLoginInfoForMapping:
+      type: object
+      properties:
+        userID:
+          type: string
+        digestedPassword:
           type: string
   securitySchemes:
     openId:

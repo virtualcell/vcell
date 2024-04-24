@@ -319,8 +319,8 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getVCellIdentityWithHttpInfo
 
@@ -385,13 +385,13 @@ ApiResponse<[**UserIdentityJSONSafe**](UserIdentityJSONSafe.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## setVCellIdentity
 
-> Boolean setVCellIdentity(mapUser)
+> Boolean setVCellIdentity(userLoginInfoForMapping)
 
 set or replace vcell identity mapping
 
@@ -413,9 +413,9 @@ public class Example {
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
-        MapUser mapUser = new MapUser(); // MapUser | 
+        UserLoginInfoForMapping userLoginInfoForMapping = new UserLoginInfoForMapping(); // UserLoginInfoForMapping | 
         try {
-            Boolean result = apiInstance.setVCellIdentity(mapUser);
+            Boolean result = apiInstance.setVCellIdentity(userLoginInfoForMapping);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling UsersResourceApi#setVCellIdentity");
@@ -433,7 +433,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **mapUser** | [**MapUser**](MapUser.md)|  | [optional] |
+| **userLoginInfoForMapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | [optional] |
 
 ### Return type
 
@@ -453,12 +453,12 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## setVCellIdentityWithHttpInfo
 
-> ApiResponse<Boolean> setVCellIdentity setVCellIdentityWithHttpInfo(mapUser)
+> ApiResponse<Boolean> setVCellIdentity setVCellIdentityWithHttpInfo(userLoginInfoForMapping)
 
 set or replace vcell identity mapping
 
@@ -481,9 +481,9 @@ public class Example {
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
-        MapUser mapUser = new MapUser(); // MapUser | 
+        UserLoginInfoForMapping userLoginInfoForMapping = new UserLoginInfoForMapping(); // UserLoginInfoForMapping | 
         try {
-            ApiResponse<Boolean> response = apiInstance.setVCellIdentityWithHttpInfo(mapUser);
+            ApiResponse<Boolean> response = apiInstance.setVCellIdentityWithHttpInfo(userLoginInfoForMapping);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -503,7 +503,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **mapUser** | [**MapUser**](MapUser.md)|  | [optional] |
+| **userLoginInfoForMapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | [optional] |
 
 ### Return type
 
@@ -523,6 +523,6 @@ ApiResponse<**Boolean**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 

@@ -194,13 +194,13 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **set_v_cell_identity**
-> bool set_v_cell_identity(map_user=map_user)
+> bool set_v_cell_identity(user_login_info_for_mapping=user_login_info_for_mapping)
 
 set or replace vcell identity mapping
 
@@ -210,7 +210,7 @@ set or replace vcell identity mapping
 import time
 import os
 import vcell_client
-from vcell_client.models.map_user import MapUser
+from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -229,11 +229,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.UsersResourceApi(api_client)
-    map_user = vcell_client.MapUser() # MapUser |  (optional)
+    user_login_info_for_mapping = vcell_client.UserLoginInfoForMapping() # UserLoginInfoForMapping |  (optional)
 
     try:
         # set or replace vcell identity mapping
-        api_response = api_instance.set_v_cell_identity(map_user=map_user)
+        api_response = api_instance.set_v_cell_identity(user_login_info_for_mapping=user_login_info_for_mapping)
         print("The response of UsersResourceApi->set_v_cell_identity:\n")
         pprint(api_response)
     except Exception as e:
@@ -246,7 +246,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **map_user** | [**MapUser**](MapUser.md)|  | [optional] 
+ **user_login_info_for_mapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | [optional] 
 
 ### Return type
 
@@ -265,8 +265,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
