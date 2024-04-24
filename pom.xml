@@ -64,7 +64,6 @@
 		<module>vcell-util</module>
 		<module>vcell-vmicro</module>
 		<module>vcell-cli</module>
-		<module>vcell-web</module>
 		<module>vcell-rest</module>
         <module>vcell-restclient</module>
     </modules>
