@@ -99,10 +99,10 @@ public class UsersResource {
         }
     }
 
-    public record MapUser(
+    public record UserLoginInfoForMapping(
             String userID,
-            String digestedPassword){
-    }
+            String digestedPassword
+    ){ }
 
     public record UserIdentityJSONSafe(
             String userName,

@@ -501,10 +501,10 @@ public class VCellApiClient implements AutoCloseable {
 
 	public void mapUserToAuht0(String userID, String password) throws ApiException {
 		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
-		MapUser mapUser = new MapUser();
-		mapUser.setUserID(userID);
-		mapUser.setPassword(password);
-		usersResourceApi.setVCellIdentity(mapUser);
+		UserLoginInfoForMapping userLoginInfoForMapping = new UserLoginInfoForMapping();
+		userLoginInfoForMapping.setUserID(userID);
+		userLoginInfoForMapping.setDigestedPassword(password);
+		usersResourceApi.setVCellIdentity(userLoginInfoForMapping);
 	}
 
 	public AccessTokenRepresentation getLegacyToken() throws ApiException {

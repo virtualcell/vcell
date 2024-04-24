@@ -51,7 +51,7 @@ public class UserRestDB {
         }
     }
 
-    public boolean mapUserIdentity(SecurityIdentity securityIdentity, UsersResource.MapUser mapUser) throws DataAccessException {
+    public boolean mapUserIdentity(SecurityIdentity securityIdentity, UsersResource.UserLoginInfoForMapping mapUser) throws DataAccessException {
         if (securityIdentity.isAnonymous()){
             return false;
         }
