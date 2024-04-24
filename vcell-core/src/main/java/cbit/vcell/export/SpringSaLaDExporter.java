@@ -344,7 +344,7 @@ public class SpringSaLaDExporter {
 			sb.append("\n");
 
 			String ret = sb.toString();
-			System.out.println(ret);
+//			System.out.println(ret);
 			return ret;
 		} catch(Exception ex) {
 			ex.printStackTrace(System.out);

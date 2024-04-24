@@ -270,7 +270,7 @@ public class SBMLAnnotationUtil {
 							// check if 'child' is oldStyle VCellInfo element.
 							vcellSpecificElement = processOldStyleVCellInfo(child);
 							if (vcellSpecificElement == null) {
-								System.out.println("Unknown VCellInfo annotation type : '" + child.getName());
+								lg.warn("Unknown VCellInfo annotation type : '" + child.getName());
 							}
 						}	// if - else (child is VCellRelatedInfoTag)
 					}	// for - numChildren

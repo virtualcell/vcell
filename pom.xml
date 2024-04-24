@@ -103,6 +103,7 @@
 		<biojava.version>6.0.4</biojava.version>
 		<biomodels-wslib.version>1.21</biomodels-wslib.version>
 		<colt.version>1.2.0</colt.version>
+		<combine-archive.version>1.4.1</combine-archive.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<commons-codec.version>1.11</commons-codec.version>
 		<commons-compress.version>1.21</commons-compress.version>
@@ -192,12 +193,6 @@
 
 
 	<repositories>
-		<!-- VCell inline maven repo for jar libs not available in public repository -->
-		<repository>
-			<id>project-repo</id>
-			<!-- <url>file:${vcell.basedir}${file.separator}non-maven-java-libs</url> -->
-			<url>file:${project.basedir}${file.separator}..${file.separator}non-maven-java-libs</url>
-		</repository>
 		<!-- needed for javax.media.jai -->
 		<repository>
 			<id>com.springsource.repository.bundles.external</id>

@@ -68,10 +68,10 @@ public class VCellDataTest {
 
 			String domainName = mesh.meshRegionInfo.getVolumeDomainNames().get(0);
 
-			System.out.println("making visMesh for domain " + domainName + " of [" + mesh.meshRegionInfo.getVolumeDomainNames() + "]");
+			//System.out.println("making visMesh for domain " + domainName + " of [" + mesh.meshRegionInfo.getVolumeDomainNames() + "]");
 			boolean bVolume = true;
 			VisMesh visMesh = cartesianMeshMapping.fromMeshData(mesh, domainName, bVolume);
-			System.out.println("visMesh: " + visMesh);
+			//System.out.println("visMesh: " + visMesh);
 		} finally {
 			meshFile.delete();
 			meshMetricsFile.delete();

@@ -255,8 +255,8 @@ public class RulebasedTransformer implements SimContextTransformer {
 //			}
 			
 			if(!sTheirs.equals(sOurs)) {
-				System.out.println(sTheirs);
-				System.out.println(sOurs);
+//				System.out.println(sTheirs);
+//				System.out.println(sOurs);
 				char[] sTheirsChars = sTheirs.toCharArray();
 				char[] sOursChars = sOurs.toCharArray();
 				int firstMismatchIndex = -1;
@@ -275,7 +275,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				throw new RuntimeException("Rule not matching\n" + sTheirs.substring(startingIndex, endingIndexTheirs) + "\n" + sOurs.substring(startingIndex, endingIndexOurs));
 //				BeanUtils.sendRemoteLogMessage(null, sTheirs + "\n" + sOurs);
 			} else {
-				System.out.println("good match ");
+//				System.out.println("good match ");
 			}
 		}
 	}
@@ -521,7 +521,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 		} catch (ClassNotFoundException | IOException e) {
 			lg.error(e);
 		}
-		System.out.println("Finished RuleBased Transformer.");
+//		System.out.println("Finished RuleBased Transformer.");
 	}
 	
 	private Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new LinkedHashMap<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>>();
@@ -567,7 +567,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			Pair<SpeciesContext, Expression> value = entry.getValue();
 			SpeciesContext sc = value.one;
 			Expression initial = value.two;
-			System.out.println("key: " + key.fakeParameterName + ",   species: " + sc.getName() + ", initial: " + initial.infix());
+//			System.out.println("key: " + key.fakeParameterName + ",   species: " + sc.getName() + ", initial: " + initial.infix());
 		}
 		
 		BNGInput bngInput = new BNGInput(input);
@@ -642,7 +642,9 @@ public class RulebasedTransformer implements SimContextTransformer {
 			String molecule_id_str = moleculeElement.getAttributeValue("id");
 			String molecule_name_str = moleculeElement.getAttributeValue("name");
 			List<MolecularTypePattern> mtpList = sp.getMolecularTypePatterns(molecule_name_str);
-			if(mtpList.isEmpty()) System.out.println("!!! Missing molecule " + molecule_name_str);
+			if(mtpList.isEmpty()) {
+				lg.error("Missing molecule " + molecule_name_str);
+			}
 			MolecularTypePattern mtp = null;
 			for(MolecularTypePattern mtpCandidate : mtpList) {
 				if(mtpUsedAlreadyList.contains(mtpCandidate)) {
@@ -652,7 +654,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				mtpUsedAlreadyList.add(mtpCandidate);
 				break;
 			}
-			System.out.println("     molecule  id=" + molecule_id_str + ", name=" + molecule_name_str);
+//			System.out.println("     molecule  id=" + molecule_id_str + ", name=" + molecule_name_str);
 			keyMap.put(molecule_id_str, mtp);
 
 			Element listOfComponentsElement = moleculeElement.getChild("ListOfComponents", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
@@ -823,7 +825,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			}
 			throw new RuntimeException("Operations not matching for rule\n" + s1 + "\n" + s2 + "\n");
 		} else {
-			System.out.println("Operations matching for rule");
+//			System.out.println("Operations matching for rule");
 		}
 	}
 	
@@ -874,7 +876,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				rulesForwardMap.put(rr, rar);
 			}
 			rar.symmetryFactor = symmetry_factor_double;
-			System.out.println("rule id=" + rule_id_str + ", name=" + rule_name_str + ", symmetry factor=" + symmetry_factor_str);
+//			System.out.println("rule id=" + rule_id_str + ", name=" + rule_name_str + ", symmetry factor=" + symmetry_factor_str);
 			keyMap.put(rule_id_str, rr);
 			
 			Element listOfReactantPatternsElement = reactionRuleElement.getChild("ListOfReactantPatterns", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
@@ -924,7 +926,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 //				if(source_object == null) System.out.println("!!! Missing map source " + source_id_str);
 				
 				if(source_object != null) {		//  target_object may be null
-					System.out.println("      target=" + target_object + " source=" + source_object);
+//					System.out.println("      target=" + target_object + " source=" + source_object);
 					Pair<RbmObject, RbmObject> mapEntry = new Pair<RbmObject, RbmObject> (target_object, source_object);
 					rar.objmappingList.add(mapEntry);
 				}
@@ -935,7 +937,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 			// ListOfOperations
 			Element listOfOperationsElement = reactionRuleElement.getChild("ListOfOperations", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			List<Element> operationsChildren = new ArrayList<Element>();
-			System.out.println("ListOfOperations");
+//			System.out.println("ListOfOperations");
 			operationsChildren = listOfOperationsElement.getChildren("StateChange", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			for (Element operationsElement : operationsChildren) {
 				String finalState_str = operationsElement.getAttributeValue("finalState");
@@ -948,7 +950,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 					rar.operationsList.add(sco);
 				}
 			}
-			System.out.println("AddBond, DeleteBond");
+//			System.out.println("AddBond, DeleteBond");
 			operationsChildren = listOfOperationsElement.getChildren("AddBond", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			for (Element operationsElement : operationsChildren) {
 				String site1_str = operationsElement.getAttributeValue("site1");
@@ -977,7 +979,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 					rar.operationsList.add(dbo);
 				}
 			}
-			System.out.println("AddOperation");
+//			System.out.println("AddOperation");
 			operationsChildren = listOfOperationsElement.getChildren("Add", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			for (Element operationsElement : operationsChildren) {
 				String id_str = operationsElement.getAttributeValue("id");
@@ -989,7 +991,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 					rar.operationsList.add(ao);
 				}
 			}
-			System.out.println("DeleteMolecules");
+//			System.out.println("DeleteMolecules");
 			operationsChildren = listOfOperationsElement.getChildren("Delete", Namespace.getNamespace("http://www.sbml.org/sbml/level3"));
 			for (Element operationsElement : operationsChildren) {
 				String id_str = operationsElement.getAttributeValue("id");
@@ -1007,7 +1009,7 @@ public class RulebasedTransformer implements SimContextTransformer {
 				}
 			}
 		}
-		System.out.println("done parsing xml file");
+//		System.out.println("done parsing xml file");
 	}
 }
 

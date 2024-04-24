@@ -104,7 +104,7 @@ public abstract class VCReactionProxy {
             final Model model = getModel();
             for(Entry<String, Integer> es : reactants.entrySet()){
                 SpeciesContext speciesContext = model.getSpeciesContext(es.getKey());
-                System.out.println(speciesContext.getName());
+//                System.out.println(speciesContext.getName());
             }
         }
 

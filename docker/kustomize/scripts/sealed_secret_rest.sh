@@ -29,7 +29,7 @@ SWAGGER_CLIENT_SECRET=$6
 
 
 kubectl create secret generic ${SECRET_NAME} --dry-run=client \
-      --from-literal=quarkus.datasource.password="${DATABASE_PASSWORD}" \
+      --from-literal=quarkus.datasource.oracle.password="${DATABASE_PASSWORD}" \
       --from-literal=quarkus.oidc.client-id="${OIDC_CLIENT_ID}" \
       --from-literal=quarkus.oidc.credentials.secret="${OIDC_CLIENT_SECRET}" \
       --from-literal=quarkus.swagger-ui.oauth-client-id="${SWAGGER_CLIENT_ID}" \

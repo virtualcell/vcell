@@ -17,11 +17,13 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.*;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;
 import cbit.vcell.xml.*;
+import de.unirostock.sems.cbarchive.CombineArchive;
+import de.unirostock.sems.cbarchive.meta.OmexMetaDataObject;
+import de.unirostock.sems.cbarchive.meta.omex.OmexDescription;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,8 +43,6 @@ import org.sbml.jsbml.Parameter;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
 import org.sbml.jsbml.xml.XMLNode;
-import org.sbml.libcombine.CombineArchive;
-import org.sbml.libcombine.KnownFormats;
 import org.vcell.sbml.OmexPythonUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
@@ -59,8 +59,8 @@ import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.net.URI;
+import java.nio.file.*;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -997,7 +997,7 @@ public class SEDMLExporter {
 			for (int i = 0; i < cs.length; i++){
 				Expression exp = cs[i].getExpression();
 				exp = Expression.div(exp, expFact).simplifyJSCL();
-				values.add(new Double(exp.evaluateConstant()));
+				values.add(exp.evaluateConstant());
 			}
 			r = new VectorRange(rangeId, values);
 			rt.addRange(r);
@@ -1261,86 +1261,104 @@ public class SEDMLExporter {
 	
 
     public boolean createOmexArchive(String srcFolder, String sFileName) {
-    try {
-		try {
-			NativeLib.combinej.load();
-		} catch (UnsatisfiedLinkError ex) {
-			logger.error("Unable to link to native 'libCombine' lib, check native lib: " + ex.getMessage());
-			throw ex;
-		} catch (Exception ex) {
-			String msg = "Error occurred while importing libCombine: " + ex.getMessage();
-			logger.error(msg, ex);
-			throw new RuntimeException(msg, ex);
-		}
-
-		CombineArchive archive = new CombineArchive();
-
-    	
-		for (String sd : sedmlFilePathStrAbsoluteList) {
-			String s = Paths.get(srcFolder, sd).toString();
-			archive.addFile(
-					s,
-					"./" + sd, // target file name
-					KnownFormats.lookupFormat("sedml"),
-					true // mark file as master
-			);
-    	}
-		for (String sd : modelFilePathStrAbsoluteList) {
-			archive.addFile(
-					Paths.get(srcFolder, sd).toString(),
-					"./" + sd, // target file name
-					KnownFormats.lookupFormat("sbml"),
-					false // mark file as master
-			);
-    	}
-
-		archive.addFile(
-				Paths.get(srcFolder, sFileName + ".vcml").toString(),
-				"./" + sFileName + ".vcml",
-				"http://purl.org/NET/mediatypes/application/vcml+xml",
-				false
-		);
-		
-        String[] files;
-        File dir = new File(srcFolder);
-        files = dir.list();
-        for(String sd : files) {
-        	if (sd.endsWith(".rdf")) {
-        		archive.addFile(	
-        				Paths.get(srcFolder, sd).toString(),
-        				"./" + sd,
-        				"http://identifiers.org/combine.specifications/omex-metadata",
-        				false
-        		);
-            } else if(sd.endsWith(".png")) {
-                archive.addFile(
-                        Paths.get(srcFolder, sd).toString(),
-                        "./" + sd,
-                        "http://purl.org/NET/mediatypes/image/png",
-                        false
-                );
-        	}
-        }
-
 		// writing into combine archive, deleting file if already exists with same name
 		String omexPath = Paths.get(srcFolder, sFileName + ".omex").toString();
 		File omexFile = new File(omexPath);
 		if(omexFile.exists()) {
 			omexFile.delete();
 		}
-		boolean isCreated = archive.writeToFile(omexPath);
-		if (!isCreated){
-			throw new RuntimeException("Unable to create omex archive '" + omexPath + "'.");
+
+		try ( CombineArchive archive = new CombineArchive(omexFile); ) {
+
+    	
+			for (String sd : sedmlFilePathStrAbsoluteList) {
+				File s = Paths.get(srcFolder, sd).toFile();
+				archive.addEntry(
+						s,
+						"./" + sd, // target file name
+						new URI("http://identifiers.org/combine.specifications/sed-ml"),
+						true // mark file as master
+				);
+			}
+			for (String sd : modelFilePathStrAbsoluteList) {
+				archive.addEntry(
+						Paths.get(srcFolder, sd).toFile(),
+						"./" + sd, // target file name
+						new URI("http://identifiers.org/combine.specifications/sbml"),
+						false // mark file as master
+				);
+			}
+
+			archive.addEntry(
+					Paths.get(srcFolder, sFileName + ".vcml").toFile(),
+					"./" + sFileName + ".vcml",
+					new URI("http://purl.org/NET/mediatypes/application/vcml+xml"),
+					false
+			);
+
+			File dir = new File(srcFolder);
+			String[] files = dir.list();
+			if (files == null) {
+				throw new RuntimeException("createZipArchive: No files found in directory: " + srcFolder);
+			}
+			Path rdfFilePath = null;
+			for(String sd : files) {
+				Path filePath = Paths.get(srcFolder, sd);
+				if (sd.endsWith(".rdf")) {
+					rdfFilePath = filePath;
+					// the CombineArchive library does not allow to directly write to the /metadata.rdf file
+					// instead, we copy the file to /metadata.rdf later after the archive is closed
+					//
+					// archive.addEntry(
+					//		filePath.toFile(),
+					//		"./metadata.rdf",
+					//		new URI("http://identifiers.org/combine.specifications/omex-metadata"),
+					//		false
+					//	);
+				}
+				if (sd.endsWith(".png")) {
+					archive.addEntry(
+							filePath.toFile(),
+							"./" + sd,
+							new URI("http://purl.org/NET/mediatypes/image/png"),
+							false
+					);
+				}
+			}
+			if (rdfFilePath != null) {
+				// create temporary /metadata.rdf file so that an entry for /metadata.rdf is included in the Manifest
+				OmexDescription omexDescription = new OmexDescription();
+				omexDescription.setDescription("VCell Simulation Archive");
+				omexDescription.modified.add(new Date());
+				archive.addDescription(new OmexMetaDataObject(omexDescription));
+			}
+
+			archive.pack();
+			archive.close();
+
+			if (rdfFilePath != null) {
+				// now that the OMEX archive is closed and written to disk, open it as a regular zip file
+				// and replace the generated metadata.rdf file with the one we created.
+				replaceMetadataRdfFileInArchive(omexFile.toPath(), rdfFilePath);
+			}
+
+			removeOtherFiles(srcFolder, files);
+
+		} catch (Exception e) {
+			throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());
 		}
+		return true;
+	}
 
-		removeOtherFiles(srcFolder, files);
+	private static void replaceMetadataRdfFileInArchive(Path zipFilePath, Path newFilePath) throws IOException {
+		String pathInZip = "./metadata.rdf";
+		try( FileSystem fs = FileSystems.newFileSystem(zipFilePath) ) {
+			Path fileInsideZipPath = fs.getPath(pathInZip);
+			Files.delete(fileInsideZipPath);
+			Files.copy(newFilePath, fileInsideZipPath);
+		}
+	}
 
-    } catch (Exception e) {
-    	throw new RuntimeException("createZipArchive threw exception: " + e.getMessage());        
-    }
-    return true;
-}
-    
 	private static void removeOtherFiles(String outputDir, String[] files) {
     	boolean isDeleted = false;
         for (String sd : files) {
