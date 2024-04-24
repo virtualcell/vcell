@@ -382,8 +382,8 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 		try {
 			String apihost = getClientServerInfo().getApihost();
 			Integer apiport = getClientServerInfo().getApiport();
-			setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), apihost, apiport, ConnectionStatus.INITIALIZING));
-			newVCellConnection = vcellConnectionFactory.createVCellConnection(getClientServerInfo().getUserLoginInfo());
+			setConnectionStatus(new ClientConnectionStatus(vcellConnectionFactory.getAuth0MappedUser(), apihost, apiport, ConnectionStatus.INITIALIZING));
+			newVCellConnection = vcellConnectionFactory.createVCellConnectionAuth0(getClientServerInfo().getUserLoginInfo());
 			requester.clearConnectWarning();
 			reconnectStat = ReconnectStatus.NOT;
 		}catch(Exception e) {
