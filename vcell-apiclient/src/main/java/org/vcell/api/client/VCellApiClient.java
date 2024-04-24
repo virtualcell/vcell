@@ -33,7 +33,6 @@ import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.auth.AuthApiClient;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
-import org.vcell.restclient.model.MapUser;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 
 import java.io.*;
@@ -495,13 +494,13 @@ public class VCellApiClient implements AutoCloseable {
 //		return apiClient;
 	}
 
-	public String getAuth0MappedUser() throws ApiException {
+	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
 		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
 		return usersResourceApi.getVCellIdentity().getUserName();
 	}
 
 	public boolean isVCellIdentityMapped() throws ApiException {
-		return getAuth0MappedUser() != null;
+		return getVCellUserNameFromAuth0Mapping() != null;
 	}
 
 	public void mapUserToAuht0(String userID, String password) throws ApiException {

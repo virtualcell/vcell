@@ -235,7 +235,7 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	@Override
 	public String getAuth0MappedUser() {
         try {
-            return vcellApiClient.getAuth0MappedUser();
+            return vcellApiClient.getVCellUserNameFromAuth0Mapping();
         } catch (ApiException e) {
             throw new RuntimeException(e);
         }
