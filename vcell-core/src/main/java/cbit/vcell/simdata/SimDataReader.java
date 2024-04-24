@@ -9,23 +9,14 @@
  */
 
 package cbit.vcell.simdata;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.zip.ZipEntry;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.vcell.util.DataAccessException;
 
-import cbit.vcell.math.InsideVariable;
-import cbit.vcell.math.OutsideVariable;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.HObject;
+import java.io.*;
+import java.util.Arrays;
+import java.util.zip.ZipEntry;
 
 
 /**
@@ -131,93 +122,26 @@ public void close(){
 	}
 }
 
-private void getNextDataAtCurrentTimeChombo(double[][] returnValues)  throws Exception {
-	if (zipFilenNames == null || zipFilenNames[masterTimeIndex] == null) {
-		return;
-	}
-	if (currentZipFile == null || !currentZipFileName.equals(zipFilenNames[masterTimeIndex])) {
-		close();
-		currentZipFile = new ZipFile(zipFilenNames[masterTimeIndex]);
-		currentZipFileName=zipFilenNames[masterTimeIndex];
-	}
-	File tempFile = null;
-	FileFormat solFile = null;
-	try {
-		tempFile = DataSet.createTempHdf5File(currentZipFile, simDataFileNames[masterTimeIndex]);
-		
-		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-		solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
-		solFile.open();
-	
-		for(int k = 0; k < varNames.length; ++ k) {
-			try {
-				boolean bExtrapolatedValue = false;
-				String varName = varNames[k];
-				if (varName.endsWith(InsideVariable.INSIDE_VARIABLE_SUFFIX))
-				{
-					bExtrapolatedValue = true;
-					varName = varName.substring(0, varName.lastIndexOf(InsideVariable.INSIDE_VARIABLE_SUFFIX));
-				}
-				else if (varName.endsWith(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX))
-				{
-					bExtrapolatedValue = true;
-					varName = varName.substring(0, varName.lastIndexOf(OutsideVariable.OUTSIDE_VARIABLE_SUFFIX));
-				}
-				double[] sol = null;
-				if (bExtrapolatedValue)
-				{
-					sol = DataSet.readChomboExtrapolatedValues(varName, solFile);
-				}
-				else
-				{
-					String varPath = Hdf5Utils.getVarSolutionPath(varNames[k]);
-					HObject solObj = FileFormat.findObject(solFile, varPath);
-					if (solObj instanceof Dataset) {
-						Dataset dataset = (Dataset)solObj;
-						sol = (double[]) dataset.read();
-					}
-				}
-				if (sol != null)
-				{
-					for(int l = 0;l < varIndexes[k].length; ++ l) {
-						int idx = varIndexes[k][l];					
-						double val =  sol[idx];					
-						returnValues[k][l] = val;
-					}
-				}
-			} catch (Exception e) {
-				throw new DataAccessException(e.getMessage(), e);
-			}
-		}
-	} finally {
-		try {
-			if (solFile != null) {
-				solFile.close();
-			}
-			if (tempFile != null) {
-				if (!tempFile.delete()) {
-					System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
-				}
-			}
-		} catch(Exception e) {
-			// ignore
-		}
-	}
-	
-	++ masterTimeIndex;
-	if (masterTimeIndex >= times.length) {
-		close();
-	}
-}
-
-/**
+	/**
  * Insert the method's description here.
  * Creation date: (10/26/2004 10:18:50 AM)
  */
 public void getNextDataAtCurrentTime(double[][] returnValues) throws IOException, DataAccessException {
 	if (isChombo) {
 		try {
-			getNextDataAtCurrentTimeChombo(returnValues);
+			if (zipFilenNames == null || zipFilenNames[masterTimeIndex] == null) {
+				return;
+			}
+			if (currentZipFile == null || !currentZipFileName.equals(zipFilenNames[masterTimeIndex])) {
+				close();
+				currentZipFile = new ZipFile(zipFilenNames[masterTimeIndex]);
+				currentZipFileName=zipFilenNames[masterTimeIndex];
+			}
+			ChomboSimDataReader.getNextDataAtCurrentTimeChombo(returnValues, currentZipFile, varNames, varIndexes, simDataFileNames, masterTimeIndex);
+			++ masterTimeIndex;
+			if (masterTimeIndex >= times.length) {
+				close();
+			}
 		} catch (Exception e) {
 			throw new DataAccessException(e.getMessage(), e);
 		}
