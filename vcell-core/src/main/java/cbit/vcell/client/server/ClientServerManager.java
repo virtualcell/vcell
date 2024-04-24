@@ -392,24 +392,12 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 				throw e;
 			}
 		}
-	} catch (AuthenticationException aexc) {
-		lg.error(aexc);
-		requester.showErrorDialog(aexc.getMessage());
 	} catch (ConnectionException cexc) {
 		String msg = badConnectMessage(badConnStr) + "\n" + cexc.getMessage();
 		lg.error(cexc);
 		ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
 		if (reconnectStat != ReconnectStatus.SUBSEQUENT) {
 			requester.showConnectWarning(msg);
-		}
-	} catch (HttpResponseException httpexc) {
-		lg.error(httpexc);
-		if (httpexc.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
-			requester.showErrorDialog("Invalid Userid or Password\n\n"+httpexc.getMessage());
-		}else {
-			String msg = "Exception: "+httpexc.getMessage() + "\n\n" + badConnectMessage(badConnStr);
-			ErrorUtils.sendRemoteLogMessage(getClientServerInfo().getUserLoginInfo(),msg);
-			requester.showErrorDialog(msg);
 		}
 	} catch (Exception exc) {
 		lg.error(exc.getMessage(), exc);
