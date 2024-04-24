@@ -270,7 +270,6 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 			if (!vcellConnectionFactory.isVCellIdentityMappedToAuth0Identity()){
 				// pop up with ability to input login info
 				loginAuth0(getRequestManager(), clientServerInfo, currWindowManager);
-				vcellConnectionFactory.mapVCellIdentityToAuth0Identity(clientServerInfo.getUserLoginInfo());
 			}
 			else{
 				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, vcellConnectionFactory.getAuth0MappedUser(), null);
