@@ -15,13 +15,17 @@ on:
         required: true
         default: '23'
       vcell_site:
-        description: 'rel or alpha'
+        description: 'rel or alpha or test'
         required: true
         default: 'alpha'
       server_only:
         description: 'Deploy only the server components?'
         required: true
         default: 'false'
+      deployment_type:
+        description: 'swarm or kubernetes (choose kubernetes for vcell_site="test")'
+        required: true
+        default: 'swarm'
 jobs:
   build:
     name: Build client installers
@@ -195,29 +199,67 @@ jobs:
         singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
         singularity pull $BATCH_SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
         singularity pull $OPT_SINGULARITY_FILENAME   oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
-    - name: deploy to site
+    - name: deploy to kubernetes site
+      if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
       run: |
         set -ux
         cd docker/swarm
         ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         if ${{ github.event.inputs.server_only != 'true' }}; then
-          ./deploy-action.sh \
-            --ssh-user ${{ secrets.CD_FULL_USER }} --install-singularity --build-installers --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
-            ${VCELL_MANAGER_NODE} \
-            ./${VCELL_CONFIG_FILE_NAME} ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
-            ./docker-compose.yml        ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
-            vcell${VCELL_SITE}
+          # build and install the client installers and the singularity images (kubernetes cluster deployments are separate)
+          ./deploy-action-kubernetes.sh \
+              --ssh-user ${{ secrets.CD_FULL_USER }} \
+              --install-singularity \
+              --build-installers \
+              --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
+              ${VCELL_MANAGER_NODE} \
+              ./${VCELL_CONFIG_FILE_NAME}
           export VCELL_SITE_CAMEL=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
           ssh ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} \
             installer_deploy_dir=$VCELL_INSTALLER_REMOTE_DIR vcell_siteCamel=$VCELL_SITE_CAMEL vcell_version=$VCELL_VERSION vcell_build=$VCELL_BUILD \
             'bash -s' < link-installers.sh
         else
-          ./deploy-action.sh \
-            --ssh-user ${{ secrets.CD_FULL_USER }} --install-singularity  \
-            ${VCELL_MANAGER_NODE} \
-            ./${VCELL_CONFIG_FILE_NAME} ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
-            ./docker-compose.yml        ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
-            vcell${VCELL_SITE}        
+          # build and install only the singularity images (kubernetes cluster deployments are separate)
+          ./deploy-action-kubernetes.sh \
+              --ssh-user ${{ secrets.CD_FULL_USER }} \
+              --install-singularity  \
+              ${VCELL_MANAGER_NODE} \
+              ./${VCELL_CONFIG_FILE_NAME}
+        fi
+    - name: deploy to swarm site
+      if: ${{ github.event.inputs.deployment_type == 'swarm' }}
+      run: |
+        set -ux
+        cd docker/swarm
+        ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
+        if ${{ github.event.inputs.server_only != 'true' }}; then
+          # build and install the client installers, singularity images, and docker swarm configuration
+          ./deploy-action-swarm.sh \
+              --ssh-user ${{ secrets.CD_FULL_USER }} \
+              --install-singularity \
+              --build-installers \
+              --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
+              ${VCELL_MANAGER_NODE} \
+              ./${VCELL_CONFIG_FILE_NAME} \
+              ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
+              ./docker-compose.yml \
+              ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
+              vcell${VCELL_SITE}
+          export VCELL_SITE_CAMEL=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
+          ssh ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} \
+            installer_deploy_dir=$VCELL_INSTALLER_REMOTE_DIR vcell_siteCamel=$VCELL_SITE_CAMEL vcell_version=$VCELL_VERSION vcell_build=$VCELL_BUILD \
+            'bash -s' < link-installers.sh
+        else
+          # build and install only the singularity images and docker swarm configuration
+          ./deploy-action-swarm.sh \
+              --ssh-user ${{ secrets.CD_FULL_USER }} \
+              --install-singularity  \
+              ${VCELL_MANAGER_NODE} \
+              ./${VCELL_CONFIG_FILE_NAME} \
+              ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
+              ./docker-compose.yml \
+              ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
+              vcell${VCELL_SITE}        
         fi
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3

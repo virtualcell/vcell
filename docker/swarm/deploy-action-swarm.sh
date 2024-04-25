@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-shopt -s -o nounset
+set -ux
 
 show_help() {
 	echo "Deploys or updates a deployment of VCell on remote Docker swarm cluster"
 	echo ""
-	echo "usage: deploy.sh [OPTIONS] REQUIRED-ARGUMENTS"
+	echo "usage: deploy-action-swarm.sh [OPTIONS] REQUIRED-ARGUMENTS"
 	echo ""
 	echo "  REQUIRED-ARGUMENTS"
 	echo "    manager-node          swarm node with manager role ( vcellapi.cam.uchc.edu or vcellapi-beta.cam.uchc.edu )"
@@ -36,23 +36,26 @@ show_help() {
 	echo ""
 	echo "    --build-installers    optionally build client installers and place in ./generated_installers dir"
 	echo ""
-	echo "    --installer-deploy-dir /path/to/intstaller/dir"
+	echo "    --installer-deploy-dir /path/to/installer/dir"
 	echo "                          directory for installers accessible to users"
 	echo "                          typically a web-accessible location to download the client installers for each platform"
 	echo ""
-	echo "    --link-installers     optionally create symbolic links for newly created client installers"
-	echo "                          for permanent 'latest' web links fr each platform"
-	echo ""
-	echo "    --install-singularity  optionally install singularity image on each compute node in 'vcell' SLURM partition"
+	echo "    --install-singularity  optionally install batch and opt singularity images on each compute node in 'vcell' SLURM partition"
 	echo ""
 	echo ""
 	echo "example:"
 	echo ""
-	echo "deploy.sh --ssh-user vcell --ssh-key ~/.ssh/schaff_rsa \\"
-	echo "  vcell-service.cam.uchc.edu \\"
-	echo "  ./server.config /usr/local/deploy/Test/server_01.config \\"
-	echo "  ./docker-compose.yml /usr/local/deploy/Test/docker-compose_01.yml \\"
-	echo "  vcelltest"
+	echo "deploy-action-swarm.sh \\"
+	echo "   --ssh-user vcell \\"
+	echo "   --ssh-key ~/.ssh/schaff_rsa \\"
+	echo "   --install_singularity \\"
+	echo "   --build_installers --installer_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/Rel \\"
+	echo "   vcellapi.cam.uchc.edu \\"
+	echo "   ./server.config \\"
+	echo "   /usr/local/deploy/Test/server_01.config \\"
+	echo "   ./docker-compose.yml \\"
+	echo "   /usr/local/deploy/Test/docker-compose_01.yml \\"
+	echo "   vcellrel"
 	exit 1
 }
 
@@ -64,7 +67,7 @@ ssh_user=$(whoami)
 ssh_key=
 installer_deploy_dir=
 build_installers=false
-link_installers=false
+#link_installers=false
 install_singularity=false
 while :; do
 	case $1 in
@@ -89,9 +92,6 @@ while :; do
 			;;
 		--build-installers)
 			build_installers=true
-			;;
-		--link-installers)
-			link_installers=true
 			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2
@@ -124,31 +124,28 @@ batch_singularity_image_external=$(grep VCELL_BATCH_SINGULARITY_IMAGE_EXTERNAL "
 opt_singularity_filename=$(grep VCELL_OPT_SINGULARITY_FILENAME "$local_config_file" | cut -d"=" -f2)
 opt_singularity_image_external=$(grep VCELL_OPT_SINGULARITY_IMAGE_EXTERNAL "$local_config_file" | cut -d"=" -f2)
 #partitionName=$(grep VCELL_SLURM_PARTITION "$local_config_file" | cut -d"=" -f2)
-batchHost=$(grep VCELL_BATCH_HOST $local_config_file | cut -d"=" -f2)
+batchHost=$(grep VCELL_BATCH_HOST "$local_config_file" | cut -d"=" -f2)
 slurm_singularity_central_dir=$(grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR "$local_config_file" | cut -d"=" -f2)
 
 
 echo ""
 echo "coping $local_config_file to $manager_node:$remote_config_file as user $ssh_user"
 cmd="scp $ssh_key $local_config_file $ssh_user@$manager_node:$remote_config_file"
-echo $cmd
 ($cmd) || (echo "failed to upload config file" && exit 1)
 
 echo ""
 echo "coping $local_compose_file to $manager_node:$remote_compose_file as user $ssh_user"
 cmd="scp $ssh_key $local_compose_file $ssh_user@$manager_node:$remote_compose_file"
-echo "$cmd"
 ($cmd) || (echo "failed to upload docker-compose file" && exit 1)
 
 
 #
-# install the singularity image on the cluster nodes
+# install the singularity images on the cluster nodes
 #
 if [ "$install_singularity" == "true" ]; then
 
 	echo ""
-	cmd="pushd ../build/singularity-vm"
-	pushd ../build/singularity-vm || (echo "failed to pushd to ../build/singularity-vm"; exit 1)
+	pushd ../build/singularity-vm || (echo "pushd ../build/singularity-vm failed"; exit 1)
 	echo ""
 	echo "CURRENT DIRECTORY IS $PWD"
 
@@ -158,20 +155,24 @@ if [ "$install_singularity" == "true" ]; then
 	echo ""
 
 	if [ ! -e "./${batch_singularity_filename}" ]; then
-		echo "failed to find batch local singularity image file $batch_singularity_filename in ./singularity-vm directory"
-		exit 1
-	fi
-	if [ ! -e "./${opt_singularity_filename}" ]; then
-		echo "failed to find opt local singularity image file $opt_singularity_filename in ./singularity-vm directory"
+		echo "failed to find local batch singularity image file $batch_singularity_filename in ./singularity-vm directory"
 		exit 1
 	fi
 
-	echo "mkdir -p ${slurm_singularity_central_dir}"
-	mkdir -p "${slurm_singularity_central_dir}"
-	echo "cp ./${batch_singularity_filename} ${slurm_singularity_central_dir}"
-	cp "./${batch_singularity_filename}" "${slurm_singularity_central_dir}"
-	echo "cp ./${opt_singularity_filename} ${slurm_singularity_central_dir}"
-	cp "./${opt_singularity_filename}" "${slurm_singularity_central_dir}"
+	if ! scp "./${batch_singularity_filename}" "$ssh_user@$manager_node:${slurm_singularity_central_dir}"; then
+    echo "failed to copy batch singularity image to server"
+    exit 1
+  fi
+
+	if [ ! -e "./${opt_singularity_filename}" ]; then
+		echo "failed to find local opt singularity image file $opt_singularity_filename in ./singularity-vm directory"
+		exit 1
+	fi
+
+	if ! scp "./${opt_singularity_filename}" "$ssh_user@$manager_node:${slurm_singularity_central_dir}"; then
+	  echo "failed to copy opt singularity image to server"
+	  exit 1
+	fi
 
 	echo "popd"
 	popd || (echo "popd failed"; exit 1)
@@ -185,19 +186,17 @@ echo ""
 echo "deploying stack $stack_name to $manager_node using config in $manager_node:$remote_config_file"
 localmachine=$(hostname)
 if [ "$localmachine" == "$manager_node" ]; then
-	echo "env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
 	if ! env $(xargs < "$remote_config_file") docker stack deploy -c "$remote_compose_file" "$stack_name";
 	then echo "failed to deploy stack" && exit 1; fi
 else
-	cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name"
-	echo "$cmd"
+	cmd="ssh $ssh_key -t $ssh_user@$manager_node sudo env \$(cat $remote_config_file | xargs) docker stack deploy -c $remote_compose_file $stack_name --with-registry-auth"
 	($cmd) || (echo "failed to deploy stack" && exit 1)
 fi
 
 #
 # if --build-installers, then generate client installers, placing then in ./generated_installers
 #    if --installer-deploy-dir, then also copy installers to $installer_deploy_dir
-#        if --link-installers, then also link installers to version independent installer names for each platform
+#  *** unimplemented *** (if --link-installers, then also link installers to version independent installer names for each platform)
 #
 if [ "$build_installers" == "true" ]; then
 	#
@@ -209,50 +208,26 @@ if [ "$build_installers" == "true" ]; then
 		# vcell_build=19
 		# version=7_0_0_19
 		version=$(echo "${vcell_version}_${vcell_build}" | tr '.' _)
-		if ! cp "./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
-			"./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.dat"/* \
+		if ! scp "./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
 			"./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh" \
 			"./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg" \
-			"./generated_installers/VCell_${vcell_siteCamel}_windows_${version}_32bit.exe" \
+			"./generated_installers/VCell_${vcell_siteCamel}_windows-x32_${version}_32bit.exe" \
 			"./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
 			"./generated_installers/updates.xml" \
+			"./generated_installers/updates_linux32.xml" \
+			"./generated_installers/updates_linux64.xml" \
+			"./generated_installers/updates_mac64.xml" \
+			"./generated_installers/updates_win32.xml" \
+			"./generated_installers/updates_win64.xml" \
 			"./generated_installers/output.txt" \
 			"./generated_installers/md5sums" \
-				"${installer_deploy_dir}";
+			"./generated_installers/sha256sums" \
+				"$ssh_user@$manager_node:${installer_deploy_dir}";
 		then
 			echo "failed to copy installers"; 
 			exit 1;
 		fi
 
-		#
-		# if --link-installers, then create symbolic links from permanent paths to most recent installers (for durable web urls).
-		#
-		if [ "$link_installers" == "true" ]; then
-
-			pushd "${installer_deploy_dir}" || (echo "pushd to ${installer_deploy_dir} failed"; exit 1)
-
-			if ! ln -sf "VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
-				  "VCell_${vcell_siteCamel}_windows-x64_latest_64bit.exe";
-			then echo "failed to create symbolic link for Win64 installer"; exit 1; fi
-
-			if ! ln -sf "VCell_${vcell_siteCamel}_unix_${version}_32bit.sh" \
-				  "VCell_${vcell_siteCamel}_unix_latest_32bit.sh";
-			then echo "failed to create symbolic link for Linux32 installer"; exit 1; fi
-
-			if ! ln -sf "VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg" \
-				  "VCell_${vcell_siteCamel}_macos_latest_64bit.dmg";
-			then echo "failed to create symbolic link for Macos installer"; exit 1; fi
-
-			if ! ln -sf "VCell_${vcell_siteCamel}_windows_${version}_32bit.exe" \
-				  "VCell_${vcell_siteCamel}_windows_latest_32bit.exe";
-			then echo "failed to create symbolic link for Win32 installer"; exit 1; fi
-
-			if ! ln -sf "VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
-				  "VCell_${vcell_siteCamel}_unix_latest_64bit.sh";
-			then echo "failed to create symbolic link for Linux64 installer"; exit 1; fi
-
-			popd || (echo "popd failed"; exit 1)
-		fi
 	fi
 fi
 
@@ -260,5 +235,3 @@ fi
 echo "exited normally"
 
 exit 0
-
-
