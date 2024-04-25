@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **user_id** | **str** |  | [optional] 
-**digested_password** | **str** |  | [optional] 
+**password** | **str** |  | [optional] 
 
 ## Example
 

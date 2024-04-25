@@ -544,12 +544,12 @@ components:
       type: object
     UserLoginInfoForMapping:
       example:
-        digestedPassword: digestedPassword
+        password: password
         userID: userID
       properties:
         userID:
           type: string
-        digestedPassword:
+        password:
           type: string
       type: object
   securitySchemes:

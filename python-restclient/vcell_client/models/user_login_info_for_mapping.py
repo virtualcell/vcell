@@ -32,8 +32,8 @@ class UserLoginInfoForMapping(BaseModel):
     UserLoginInfoForMapping
     """ # noqa: E501
     user_id: Optional[StrictStr] = Field(default=None, alias="userID")
-    digested_password: Optional[StrictStr] = Field(default=None, alias="digestedPassword")
-    __properties: ClassVar[List[str]] = ["userID", "digestedPassword"]
+    password: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["userID", "password"]
 
     model_config = {
         "populate_by_name": True,
@@ -89,7 +89,7 @@ class UserLoginInfoForMapping(BaseModel):
 
         _obj = cls.model_validate({
             "userID": obj.get("userID"),
-            "digestedPassword": obj.get("digestedPassword")
+            "password": obj.get("password")
         })
         return _obj
 

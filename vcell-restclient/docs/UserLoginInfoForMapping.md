@@ -8,7 +8,7 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**userID** | **String** |  |  [optional] |
-|**digestedPassword** | **String** |  |  [optional] |
+|**password** | **String** |  |  [optional] |
 
 
 

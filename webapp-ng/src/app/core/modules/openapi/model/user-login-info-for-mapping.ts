@@ -13,6 +13,6 @@
 
 export interface UserLoginInfoForMapping { 
     userID?: string;
-    digestedPassword?: string;
+    password?: string;
 }
 

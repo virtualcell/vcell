@@ -217,7 +217,7 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	@Override
 	public void mapVCellIdentityToAuth0Identity(UserLoginInfo userLoginInfo) {
 		try{
-			vcellApiClient.mapUserToAuht0(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString());
+			vcellApiClient.mapUserToAuth0(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getClearTextPassword());
 		} catch (ApiException e){
 			throw new RuntimeException(e);
 		}

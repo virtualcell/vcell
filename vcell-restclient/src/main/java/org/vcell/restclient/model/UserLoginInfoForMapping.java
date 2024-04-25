@@ -33,15 +33,15 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  */
 @JsonPropertyOrder({
   UserLoginInfoForMapping.JSON_PROPERTY_USER_I_D,
-  UserLoginInfoForMapping.JSON_PROPERTY_DIGESTED_PASSWORD
+  UserLoginInfoForMapping.JSON_PROPERTY_PASSWORD
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class UserLoginInfoForMapping {
   public static final String JSON_PROPERTY_USER_I_D = "userID";
   private String userID;
 
-  public static final String JSON_PROPERTY_DIGESTED_PASSWORD = "digestedPassword";
-  private String digestedPassword;
+  public static final String JSON_PROPERTY_PASSWORD = "password";
+  private String password;
 
   public UserLoginInfoForMapping() { 
   }
@@ -71,28 +71,28 @@ public class UserLoginInfoForMapping {
   }
 
 
-  public UserLoginInfoForMapping digestedPassword(String digestedPassword) {
-    this.digestedPassword = digestedPassword;
+  public UserLoginInfoForMapping password(String password) {
+    this.password = password;
     return this;
   }
 
    /**
-   * Get digestedPassword
-   * @return digestedPassword
+   * Get password
+   * @return password
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DIGESTED_PASSWORD)
+  @JsonProperty(JSON_PROPERTY_PASSWORD)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getDigestedPassword() {
-    return digestedPassword;
+  public String getPassword() {
+    return password;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DIGESTED_PASSWORD)
+  @JsonProperty(JSON_PROPERTY_PASSWORD)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDigestedPassword(String digestedPassword) {
-    this.digestedPassword = digestedPassword;
+  public void setPassword(String password) {
+    this.password = password;
   }
 
 
@@ -109,12 +109,12 @@ public class UserLoginInfoForMapping {
     }
     UserLoginInfoForMapping userLoginInfoForMapping = (UserLoginInfoForMapping) o;
     return Objects.equals(this.userID, userLoginInfoForMapping.userID) &&
-        Objects.equals(this.digestedPassword, userLoginInfoForMapping.digestedPassword);
+        Objects.equals(this.password, userLoginInfoForMapping.password);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(userID, digestedPassword);
+    return Objects.hash(userID, password);
   }
 
   @Override
@@ -122,7 +122,7 @@ public class UserLoginInfoForMapping {
     StringBuilder sb = new StringBuilder();
     sb.append("class UserLoginInfoForMapping {\n");
     sb.append("    userID: ").append(toIndentedString(userID)).append("\n");
-    sb.append("    digestedPassword: ").append(toIndentedString(digestedPassword)).append("\n");
+    sb.append("    password: ").append(toIndentedString(password)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -175,9 +175,9 @@ public class UserLoginInfoForMapping {
       joiner.add(String.format("%suserID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getUserID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `digestedPassword` to the URL query string
-    if (getDigestedPassword() != null) {
-      joiner.add(String.format("%sdigestedPassword%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDigestedPassword()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `password` to the URL query string
+    if (getPassword() != null) {
+      joiner.add(String.format("%spassword%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPassword()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

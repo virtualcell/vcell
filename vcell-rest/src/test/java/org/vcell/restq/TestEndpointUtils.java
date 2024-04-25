@@ -44,7 +44,7 @@ public class TestEndpointUtils {
         UsersResourceApi usersResourceApi = new UsersResourceApi(authenticatedApiClient);
         UserLoginInfoForMapping bioModelOwner = new UserLoginInfoForMapping();
         bioModelOwner.setUserID("vcellNagios");
-        bioModelOwner.setDigestedPassword("CD181552B879A2F29D10434D8ACF692B6C8126F9");
+        bioModelOwner.setPassword("1700596370261");
         return usersResourceApi.setVCellIdentity(bioModelOwner);
     }
 
@@ -52,7 +52,7 @@ public class TestEndpointUtils {
         UsersResourceApi usersResourceApi = new UsersResourceApi(authenticatedApiClient);
         UserLoginInfoForMapping bioModelOwner = new UserLoginInfoForMapping();
         bioModelOwner.setUserID("Administrator");
-        bioModelOwner.setDigestedPassword("A93453F7962799355608EC89D33D3249474E538F");
+        bioModelOwner.setPassword("1700596370260");
         return usersResourceApi.setVCellIdentity(bioModelOwner);
     }
 }

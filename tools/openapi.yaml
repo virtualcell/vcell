@@ -428,7 +428,7 @@ components:
       properties:
         userID:
           type: string
-        digestedPassword:
+        password:
           type: string
   securitySchemes:
     openId:

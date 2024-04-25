@@ -101,7 +101,7 @@ public class UsersResource {
 
     public record UserLoginInfoForMapping(
             String userID,
-            String digestedPassword
+            String password
     ){ }
 
     public record UserIdentityJSONSafe(
