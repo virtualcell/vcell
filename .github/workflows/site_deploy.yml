@@ -50,7 +50,7 @@ jobs:
          	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
         else if [ "${{ github.event.inputs.vcell_site }}" == "test" ]; then\
-         	echo "VCELL_MANAGER_NODE=vcellapi-test.cam.uchc.edu" >> $GITHUB_ENV;\
+         	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Test"" >> $GITHUB_ENV;\
         else echo "Unknown site name ${{ github.event.inputs.vcell_site }}"; exit 1; fi; fi; fi
     - name: setup ssh-agent
