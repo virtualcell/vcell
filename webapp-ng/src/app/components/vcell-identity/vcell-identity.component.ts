@@ -31,7 +31,7 @@ export class VcellIdentityComponent implements OnInit {
   }
 
   public setVCellIdentity() {
-    console.log("setVCellIdentity() mapUser = "+this.mapUser.userID+","+this.mapUser.digestedPassword);
+    console.log("setVCellIdentity() mapUser = "+this.mapUser.userID+","+this.mapUser.password);
     this.usersResourceService.setVCellIdentity(this.mapUser).subscribe((response) => {
       if (response) {
         this.getVCellIdentity();
