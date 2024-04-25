@@ -30,30 +30,9 @@ public class UserIdentityTable extends Table {
     public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
     public static final Field userRef = new Field("userRef", SQLDataType.integer, "NOT NULL " + UserTable.REF_TYPE);
-    public static final Field auth0Subject = new Field("auth0Subject", SQLDataType.varchar_128, "");
-    public static final Field keycloakSubject = new Field("keycloakSubject", SQLDataType.varchar_128, "");
+    public static final Field authSubject = new Field("authSubject", SQLDataType.varchar_128, "NOT NULL");
+    public static final Field authIssuer = new Field("authIssuer", SQLDataType.varchar_128, "NOT NULL");
     public static final Field insertDate	= new Field("insertDate", SQLDataType.date,"NOT NULL");
-
-    public static Field getIdentityField(IdentityProvider identityProvider) {
-        switch (identityProvider) {
-            case AUTH0:
-                return auth0Subject;
-            case KEYCLOAK:
-                return keycloakSubject;
-            default:
-                throw new IllegalArgumentException("Unknown identity provider: " + identityProvider);
-        }
-    }
-
-    public static Field[] getIdentityFields() {
-        return new Field[] {auth0Subject, keycloakSubject};
-    }
-
-    public enum IdentityProvider {
-        AUTH0,
-        KEYCLOAK;
-     }
-
 
 
     public static final UserIdentityTable table = new UserIdentityTable();
@@ -63,20 +42,20 @@ public class UserIdentityTable extends Table {
      */
     private UserIdentityTable(){
         super(TABLE_NAME);
-        Field[] fields = {userRef, auth0Subject, keycloakSubject, insertDate};
+        Field[] fields = {userRef, authSubject, authIssuer, insertDate};
         addFields(fields);
     }
 
-    public UserIdentity getUserIdentity(ResultSet rset, User user, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
-        return getUserIdentity(rset, user, identityProvider, this.id.getUnqualifiedColName());
+    public UserIdentity getUserIdentity(ResultSet rset, User user) throws SQLException {
+        return getUserIdentity(rset, user, this.id.getUnqualifiedColName());
     }
 
 
-    public UserIdentity getUserIdentity(ResultSet rset, User user, UserIdentityTable.IdentityProvider identityProvider, String idColName) throws SQLException{
+    public UserIdentity getUserIdentity(ResultSet rset, User user, String idColName) throws SQLException{
 
         BigDecimal id = rset.getBigDecimal(idColName);
-        Field identityColumn = getIdentityField(identityProvider);
-        String subject =	rset.getString(identityColumn.getUnqualifiedColName());
+        String subject = rset.getString(authSubject.getUnqualifiedColName());
+        String issuer =	rset.getString(authIssuer.getUnqualifiedColName());
         if(subject == null || id == null){
             return null;
         }
@@ -87,7 +66,7 @@ public class UserIdentityTable extends Table {
         java.sql.Time DBTime = rset.getTime(insertDate.getUnqualifiedColName());
         LocalDateTime insertDate =    LocalDateTime.of(DBDate.toLocalDate(), DBTime.toLocalTime());
 
-        UserIdentity userIdentity = new UserIdentity(id, user, subject, insertDate);
+        UserIdentity userIdentity = new UserIdentity(id, user, subject, issuer, insertDate);
 
         return userIdentity;
     }

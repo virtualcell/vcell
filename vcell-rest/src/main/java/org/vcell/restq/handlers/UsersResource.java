@@ -2,7 +2,6 @@ package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.ApiAccessToken;
 import cbit.vcell.modeldb.UserIdentity;
-import com.google.gson.Gson;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
@@ -11,12 +10,12 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.NoCache;
-import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.List;
 
 @Path("/api/v1/users")
 @RequestScoped
@@ -61,12 +60,15 @@ public class UsersResource {
     @Path("/getIdentity")
     @Operation(operationId = "getVCellIdentity", summary = "Get mapped VCell identity")
     @RolesAllowed("user")
-    public UserIdentityJSONSafe getIdentity() throws SQLException, DataAccessException {
-        UserIdentity userIdentity = userRestDB.getUserIdentity(securityIdentity);
-        if(userIdentity == null){
+    public UserIdentityJSONSafe getIdentity() throws DataAccessException {
+        List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
+        if (userIdentities.isEmpty()){
             return new UserIdentityJSONSafe(null, null, null, null);
+        } else if (userIdentities.size() > 1){
+            throw new DataAccessException("Multiple identities found for user");
+        } else {
+            return UserIdentityJSONSafe.fromUserIdentity(userIdentities.get(0));
         }
-        return UserIdentityJSONSafe.fromUserIdentity(userIdentity);
     }
 
     @POST

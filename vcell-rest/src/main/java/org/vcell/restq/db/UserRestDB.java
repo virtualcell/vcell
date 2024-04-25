@@ -4,7 +4,7 @@ import cbit.vcell.modeldb.*;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.vcell.restq.auth.AuthUtils;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
@@ -14,6 +14,7 @@ import org.vcell.util.document.UserLoginInfo;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 
 @ApplicationScoped
 public class UserRestDB {
@@ -33,19 +34,24 @@ public class UserRestDB {
 
     // TODO: add some short-lived caching here to avoid repeated database calls
     public User getUserFromIdentity(SecurityIdentity securityIdentity) throws DataAccessException {
-        UserIdentity userIdentity = getUserIdentity(securityIdentity);
-        return userIdentity == null ? null : userIdentity.user();
+        List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
+        if (userIdentities == null || userIdentities.isEmpty()){
+            return null;
+        }
+        if (userIdentities.size() > 1){
+            throw new DataAccessException("multiple identities found for user");
+        }
+        return userIdentities.get(0).user();
     }
 
     // TODO: add some short-lived caching here to avoid repeated database calls
-    public UserIdentity getUserIdentity(SecurityIdentity securityIdentity) throws DataAccessException {
+    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws DataAccessException {
         if (securityIdentity.isAnonymous()){
             return null;
         }
-        String oidcName = securityIdentity.getPrincipal().getName();
-        UserIdentityTable.IdentityProvider identityProvider = AuthUtils.determineIdentityProvider(securityIdentity);
+        JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
         try {
-            return adminDBTopLevel.getUserIdentityFromSubjectAndIdentityProvider(oidcName, identityProvider, true);
+            return adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(jwt.getSubject(), jwt.getIssuer(), true);
         } catch (SQLException e) {
             throw new DataAccessException("database error while retrieving user identity: "+e.getMessage(), e);
         }
@@ -56,13 +62,12 @@ public class UserRestDB {
             return false;
         }
         try {
-            User user = adminDBTopLevel.getUser(mapUser.userID(), UserLoginInfo.DigestedPassword.createAlreadyDigested(mapUser.digestedPassword()), true, false);
+            User user = adminDBTopLevel.getUser(mapUser.userID(), new UserLoginInfo.DigestedPassword(mapUser.password()), true, false);
             if(user == null){
                 return false;
             }
-            String identity = CustomSecurityIdentityAugmentor.getAuth0ID(securityIdentity);
-            UserIdentityTable.IdentityProvider identityProvider = AuthUtils.determineIdentityProvider(securityIdentity);
-            adminDBTopLevel.setUserIdentityFromIdentityProvider(user, identity, identityProvider, true);
+            JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
+            adminDBTopLevel.setUserIdentityFromIdentityProvider(user, jwt.getSubject(), jwt.getIssuer(), true);
             return true;
         } catch (SQLException e) {
             throw new DataAccessException("database error while mapping user identity: "+e.getMessage(), e);
