@@ -38,7 +38,7 @@ show_help() {
 	exit 1
 }
 
-if [[ $# -lt 6 ]]; then
+if [[ $# -lt 2 ]]; then
     show_help
 fi
 
@@ -77,7 +77,7 @@ while :; do
 	shift
 done
 
-if [[ $# -ne 6 ]] ; then
+if [[ $# -ne 2 ]] ; then
     show_help
 fi
 
