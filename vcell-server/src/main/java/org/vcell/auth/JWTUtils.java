@@ -1,11 +1,9 @@
 package org.vcell.auth;
 
 import cbit.vcell.resource.PropertyLoader;
+import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -192,4 +190,11 @@ public class JWTUtils {
         }
     }
 
+    public static JwtClaims getClaimsFromUntrustedToken(String jwt) throws InvalidJwtException {
+        JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+                .setSkipSignatureVerification()
+                .setVerificationKey(rsaJsonWebKey.getPublicKey()) // wrong key
+                .build();
+        return jwtConsumer.processToClaims(jwt);
+    }
 }

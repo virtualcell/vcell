@@ -8,8 +8,9 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.vcell.restq.auth.AuthUtils;
+import org.vcell.restq.Main;
 import org.vcell.restq.db.PublicationService;
+import org.vcell.restq.db.UserRestDB;
 import org.vcell.restq.models.Publication;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -29,6 +30,9 @@ public class PublicationResource {
     SecurityIdentity securityIdentity;
 
     @Inject
+    UserRestDB userRestDB;
+
+    @Inject
     public PublicationResource(PublicationService publicationService) {
         this.publicationService = publicationService;
     }
@@ -37,15 +41,27 @@ public class PublicationResource {
     @Path("{id}")
     @Operation(operationId = "getPublicationById", summary = "Get publication by ID")
     public Publication get_by_id(@PathParam("id") Long publicationID) throws SQLException, DataAccessException {
-        return publicationService.getPublication(new KeyValue(publicationID.toString()), AuthUtils.PUBLICATION_USER);
+        try {
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
+            if (vcellUser == null) {
+                vcellUser = Main.DUMMY_USER;
+            }
+            return publicationService.getPublication(new KeyValue(publicationID.toString()), vcellUser);
+        } catch (DataAccessException | SQLException e) {
+            Log.error(e);
+            throw new RuntimeException("failed to retrieve publications from VCell Database : " + e.getMessage(), e);
+        }
+
     }
 
     @GET
     @Operation(operationId = "getPublications", summary = "Get all publications")
     public Publication[] get_list() {
-        // look into using Oso for Authorization (future).
-        User vcellUser = AuthUtils.PUBLICATION_USER;
         try {
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
+            if (vcellUser == null) {
+                vcellUser = Main.DUMMY_USER;
+            }
             return publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, vcellUser);
         } catch (PermissionException ee) {
             Log.error(ee);
@@ -60,10 +76,13 @@ public class PublicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("curator")
     @Operation(operationId = "createPublication", summary = "Create publication")
-    public Long add(Publication publication) {
+    public Long add(Publication publication) throws DataAccessException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
-        User vcellUser = AuthUtils.PUBLICATION_USER;
         try {
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
+            if (vcellUser == null) {
+                throw new PermissionException("vcell user not specified");
+            }
             KeyValue key = publicationService.savePublication(publication, vcellUser);
             return Long.parseLong(key.toString());
         } catch (PermissionException ee) {
@@ -82,8 +101,11 @@ public class PublicationResource {
     @Operation(operationId = "updatePublication", summary = "Create publication")
     public Publication update(Publication publication) {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
-        User vcellUser = AuthUtils.PUBLICATION_USER;
         try {
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
+            if (vcellUser == null) {
+                throw new PermissionException("vcell user not specified");
+            }
             Publication pub = publicationService.updatePublication(publication, vcellUser);
             return pub;
         } catch (PermissionException ee) {
@@ -101,8 +123,11 @@ public class PublicationResource {
     @RolesAllowed("curator")
     @Operation(operationId = "deletePublication", summary = "Delete publication")
     public void delete(@PathParam("id") Long publicationID) {
-        User vcellUser = AuthUtils.PUBLICATION_USER;
         try {
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
+            if (vcellUser == null) {
+                throw new PermissionException("vcell user not specified");
+            }
             int numRecordsDeleted = publicationService.deletePublication(new KeyValue(publicationID.toString()), vcellUser);
             if (numRecordsDeleted != 1) {
                 throw new ObjectNotFoundException("failed to delete publication, record not found");

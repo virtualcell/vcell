@@ -4,17 +4,20 @@ import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.api.PublicationResourceApi;
 import org.vcell.restclient.model.Publication;
+import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
+import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.util.DataAccessException;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,10 +32,29 @@ public class PublicationApiTest {
     @ConfigProperty(name = "quarkus.http.test-port")
     Integer testPort;
 
+    @Inject
+    AgroalConnectionFactory agroalConnectionFactory;
+
+    private ApiClient aliceAPIClient;
+    private ApiClient bobAPIClient;
+
+
     @BeforeAll
     public static void setupConfig(){
         PropertyLoader.setConfigProvider(new CDIVCellConfigProvider());
     }
+
+    @BeforeEach
+    public void createClients(){
+        aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
+        bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
+    }
+
+    @AfterEach
+    public void removeOIDCMappings() throws SQLException, DataAccessException {
+        TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
+    }
+
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
@@ -40,6 +62,8 @@ public class PublicationApiTest {
     public void testAddListRemove() throws ApiException {
         String pubuser = "alice";
         String nonpubuser = "bob";
+        TestEndpointUtils.mapClientToAdminUser(aliceAPIClient);
+        TestEndpointUtils.mapClientToNagiosUser(bobAPIClient);
 
         Log.debug("authServerUrl: " + authServerUrl + " to be used later instead of keycloakClient");
 

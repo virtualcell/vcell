@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.vcell.restq.Main;
 import org.vcell.restq.db.BioModelRestDB;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.restq.models.BioModel;
@@ -37,6 +38,9 @@ public class BioModelResource {
     @Produces(MediaType.APPLICATION_JSON)
     public BioModel getBioModelInfo(@PathParam("bioModelID") String bioModelID) throws SQLException, DataAccessException, ExpressionException {
         User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
+        if (vcellUser == null) {
+            vcellUser = Main.DUMMY_USER;
+        }
         BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
         return BioModel.fromBioModelRep(bioModelRep);
     }
@@ -101,6 +105,9 @@ public class BioModelResource {
     @Operation(operationId = "deleteBioModel", summary = "Delete the BioModel from VCell's database.")
     public void deleteBioModel(@PathParam("bioModelID") String bioModelID) throws DataAccessException {
         User user = userRestDB.getUserFromIdentity(securityIdentity);;
+        if (user == null) {
+            throw new WebApplicationException("User not authenticated", 401);
+        }
         bioModelRestDB.deleteBioModel(user, new KeyValue(bioModelID));
     }
 }

@@ -6,7 +6,6 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.vcell.restq.auth.AuthUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -33,9 +32,6 @@ public class BioModelRestDB {
     }
 
     public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, DataAccessException {
-        if (vcellUser==null){
-            vcellUser = AuthUtils.DUMMY_USER;
-        }
         ArrayList<String> conditions = new ArrayList<String>();
         if (bmKey != null){
             conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bmKey.toString() + ")");

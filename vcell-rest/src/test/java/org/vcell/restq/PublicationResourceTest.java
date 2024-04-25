@@ -8,11 +8,12 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.vcell.restq.auth.AuthUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.junit.jupiter.api.*;
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
 import org.vcell.restq.config.CDIVCellConfigProvider;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.db.PublicationService;
 import org.vcell.restq.models.BiomodelRef;
 import org.vcell.restq.models.MathmodelRef;
@@ -28,23 +29,45 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 @QuarkusTest
 public class PublicationResourceTest {
+    @ConfigProperty(name = "quarkus.http.test-port")
+    Integer testPort;
 
     @Inject
     public ObjectMapper objectMapper;
     @Inject
     PublicationService publicationService;
 
+    @Inject
+    AgroalConnectionFactory agroalConnectionFactory;
+
+    private ApiClient aliceAPIClient;
+    private ApiClient bobAPIClient;
+
     @BeforeAll
     public static void setupConfig(){
         PropertyLoader.setConfigProvider(new CDIVCellConfigProvider());
     }
 
+    @BeforeEach
+    public void createClients(){
+        aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
+        bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
+    }
+
+    @AfterEach
+    public void removeOIDCMappings() throws SQLException, DataAccessException {
+        TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
+    }
+
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @Test
-    public void testAddListRemove() throws JsonProcessingException, SQLException, DataAccessException {
+    public void testAddListRemove() throws JsonProcessingException, SQLException, DataAccessException, ApiException {
         String pubuser = "alice";
         String nonpubuser = "bob";
+        TestEndpointUtils.mapClientToAdminUser(aliceAPIClient);
+        TestEndpointUtils.mapClientToNagiosUser(bobAPIClient);
+
         // create a test publication using org.vcell.rest.model.Publication and add it to the list
         Publication publication1 = new Publication(
                 null,
@@ -97,7 +120,7 @@ public class PublicationResourceTest {
                 .then()
                 .statusCode(200);
 
-        Publication[] publications = publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, AuthUtils.PUBLICATION_USER);
+        Publication[] publications = publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, Main.DUMMY_USER);
         Assertions.assertEquals(1, publications.length);
         Long pubKey = publications[0].pubKey();
 

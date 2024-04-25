@@ -58,9 +58,7 @@ public class BioModelApiTest {
 
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
-        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
-        adminDBTopLevel.removeAllUsersIdentities(TestEndpointUtils.vcellNagiosUser, true);
-        adminDBTopLevel.removeAllUsersIdentities(TestEndpointUtils.administratorUser, true);
+        TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
     }
 
 
