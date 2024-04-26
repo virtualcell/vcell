@@ -9,36 +9,17 @@
  */
 
 package org.vcell.vis.io;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Vector;
-import java.util.zip.ZipEntry;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-//import java.util.zip.ZipFile;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
+import cbit.vcell.simdata.ChomboSimDataReader;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.util.List;
+import java.util.Vector;
 
 public class DataSet implements java.io.Serializable
 {
@@ -213,7 +194,10 @@ public class DataSet implements java.io.Serializable
 		
 			if(is != null && zipFile!=null && isChombo(zipFile)){
 				try {
-					readHdf5SolutionMetaData(is);
+					List<DataBlock> dataBlockList = ChomboFileReader.readHdf5SolutionMetaData(is);
+					for (DataBlock dataBlock : dataBlockList) {
+						this.dataBlockList.addElement(dataBlock);
+					}
 				} catch (Exception e) {
 					throw new IOException(e.getMessage(),e);
 				}
@@ -240,115 +224,8 @@ public class DataSet implements java.io.Serializable
 	private boolean isChombo(File zipFile){
 		return zipFile.getName().endsWith(".hdf5.zip");
 	}
-	
-	private static File createTempHdf5File(InputStream is) throws IOException
-	{
-		OutputStream out = null;
-		try{
-			File tempFile = File.createTempFile("temp", "hdf5");
-			out=new FileOutputStream(tempFile);
-			byte buf[] = new byte[1024];
-			int len;
-			while((len=is.read(buf))>0) {
-				out.write(buf,0,len);
-			}
-			return tempFile;
-		}
-		finally
-		{
-			try {
-				if (out != null) {
-					out.close();
-				}
-			} catch (Exception ex) {
-				// ignore
-			}
-		}
-	}
-	
-	static File createTempHdf5File(ZipFile zipFile, String fileName) throws IOException
-	{
-		InputStream is = null;
-		try
-		{
-			ZipEntry dataEntry = zipFile.getEntry(fileName);
-			is = zipFile.getInputStream((ZipArchiveEntry) dataEntry);		
-			return createTempHdf5File(is);
-		}
-		finally
-		{
-			try
-			{
-				if (is != null)
-				{
-					is.close();
-				}
-			}
-			catch (Exception ex)
-			{
-				// ignore
-			}
-		}
-	}
-	
-	
-	private void readHdf5SolutionMetaData(InputStream is) throws Exception
-	{
-		File tempFile = null;
-		FileFormat solFile = null;
-		try{
-			tempFile = createTempHdf5File(is);
-			
-			FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-			solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
-			solFile.open();
-			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
-			Group rootGroup = (Group)rootNode.getUserObject();
-			Group solGroup = (Group)rootGroup.getMemberList().get(0);
-	
-			List<HObject> memberList = solGroup.getMemberList();
-			for (HObject member : memberList)
-			{
-				if (!(member instanceof Dataset)){
-					continue;
-				}
-				Dataset dataset = (Dataset)member;
-				String dsname = dataset.getName();
-				int vt = -1;
-				String domain = null;
-				List<Attribute> solAttrList = dataset.getMetadata();
-				for (Attribute attr : solAttrList)
-				{
-					String attrName = attr.getName();
-					if(attrName.equals("variable type")){
-						Object obj = attr.getValue();
-						vt = ((int[])obj)[0];
-					} else if (attrName.equals("domain")) {
-						Object obj = attr.getValue();
-						domain = ((String[])obj)[0];
-					}
-				}
-				long[] dims = dataset.getDims();
-				String varName = domain == null ? dsname : domain + Variable.COMBINED_IDENTIFIER_SEPARATOR + dsname;
-				dataBlockList.addElement(DataBlock.createDataBlock(varName, vt, (int) dims[0], 0));
-			}
-		} finally {
-			try {
-				if (solFile != null) {
-					solFile.close();
-				}
-				if (tempFile != null) {
-					if (!tempFile.delete()) {
-						System.err.println("couldn't delete temp file " + tempFile);
-					}
-				}
-			} catch(Exception e) {
-				// ignore
-			}
-		}
-	}
-	
-	
+
+
 	public static void writeNew(File file, String[] varNameArr, VariableType[] varTypeArr, org.vcell.util.ISize size, double[][] dataArr) throws IOException {
 		
 		FileOutputStream fos = null;

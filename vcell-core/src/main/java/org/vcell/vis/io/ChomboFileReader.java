@@ -1,15 +1,19 @@
 package org.vcell.vis.io;
 
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.zip.ZipEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import cbit.vcell.math.Variable;
 import ncsa.hdf.object.h5.H5CompoundDS;
 import ncsa.hdf.object.h5.H5ScalarDS;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.vcell.vis.chombo.ChomboBoundaries;
 import org.vcell.vis.chombo.ChomboBoundaries.BorderCellInfo;
 import org.vcell.vis.chombo.ChomboBoundaries.MeshMetrics;
@@ -40,8 +44,116 @@ public class ChomboFileReader {
 	private static final String MESH_ATTR_ORIGIN = "origin";
 	private static final String MESH_ATTR_EXTENT = "extent";
 
+    public static File createTempHdf5File(InputStream is) throws IOException
+    {
+        OutputStream out = null;
+        try{
+            File tempFile = File.createTempFile("temp", "hdf5");
+            out=new FileOutputStream(tempFile);
+            byte buf[] = new byte[1024];
+            int len;
+            while((len=is.read(buf))>0) {
+                out.write(buf,0,len);
+            }
+            return tempFile;
+        }
+        finally
+        {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (Exception ex) {
+                // ignore
+            }
+        }
+    }
 
-	/**
+    static File createTempHdf5File(ZipFile zipFile, String fileName) throws IOException
+    {
+        InputStream is = null;
+        try
+        {
+            ZipEntry dataEntry = zipFile.getEntry(fileName);
+            is = zipFile.getInputStream((ZipArchiveEntry) dataEntry);
+            return createTempHdf5File(is);
+        }
+        finally
+        {
+            try
+            {
+                if (is != null)
+                {
+                    is.close();
+                }
+            }
+            catch (Exception ex)
+            {
+                // ignore
+            }
+        }
+    }
+
+    public static List<DataBlock> readHdf5SolutionMetaData(InputStream is) throws Exception
+    {
+        File tempFile = null;
+        FileFormat solFile = null;
+        ArrayList<DataBlock> dataBlockList = new ArrayList<>();
+        try{
+            tempFile = createTempHdf5File(is);
+
+            FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+            solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
+            solFile.open();
+            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
+            Group rootGroup = (Group)rootNode.getUserObject();
+            Group solGroup = (Group)rootGroup.getMemberList().get(0);
+
+            List<HObject> memberList = solGroup.getMemberList();
+            for (HObject member : memberList)
+            {
+                if (!(member instanceof Dataset)){
+                    continue;
+                }
+                Dataset dataset = (Dataset)member;
+                String dsname = dataset.getName();
+                int vt = -1;
+                String domain = null;
+                List<Attribute> solAttrList = dataset.getMetadata();
+                for (Attribute attr : solAttrList)
+                {
+                    String attrName = attr.getName();
+                    if(attrName.equals("variable type")){
+                        Object obj = attr.getValue();
+                        vt = ((int[])obj)[0];
+                    } else if (attrName.equals("domain")) {
+                        Object obj = attr.getValue();
+                        domain = ((String[])obj)[0];
+                    }
+                }
+                long[] dims = dataset.getDims();
+                String varName = domain == null ? dsname : domain + Variable.COMBINED_IDENTIFIER_SEPARATOR + dsname;
+                dataBlockList.add(DataBlock.createDataBlock(varName, vt, (int) dims[0], 0));
+            }
+            return dataBlockList;
+        } finally {
+            try {
+                if (solFile != null) {
+                    solFile.close();
+                }
+                if (tempFile != null) {
+                    if (!tempFile.delete()) {
+                        System.err.println("couldn't delete temp file " + tempFile);
+                    }
+                }
+            } catch(Exception e) {
+                // ignore
+            }
+        }
+    }
+
+
+    /**
 	 * Z = boolean
 	 [B = byte
 	 [S = short
