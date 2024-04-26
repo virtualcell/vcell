@@ -9,29 +9,16 @@
  */
 
 package cbit.vcell.simdata;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Vector;
-//import java.util.zip.ZipEntry;
-//import java.util.zip.ZipFile;
-
-import cbit.vcell.solvers.mb.MovingBoundaryReader;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
 
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.SimulationData.SolverDataType;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.vis.io.ChomboFileReader;
+
+import java.io.*;
+import java.util.Vector;
 
 public class DataSet implements java.io.Serializable
 {

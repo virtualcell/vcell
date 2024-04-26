@@ -10,11 +10,37 @@ import org.vcell.util.DataAccessException;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
 
 public class ChomboSimDataReader {
+    private static final String HDF5_GROUP_SOLUTION = "/solution";
+    private static final String HDF5_GROUP_EXTRAPOLATED_VOLUMES = "/extrapolated_volumes";
+    private static final String HDF5_GROUP_DIRECTORY_SEPARATOR = "/";
+
+    /**
+     * Creates a relative path to the solution to the variable specified
+     *
+     * @param varName the name of the variable to path to.
+     * @return the relative path
+     */
+    public static String getVarSolutionPath(String varName){
+        return HDF5_GROUP_SOLUTION + HDF5_GROUP_DIRECTORY_SEPARATOR + Variable.getNameFromCombinedIdentifier(varName);
+    }
+
+    /**
+     * Creates a relative path to the extrapolated values of a given variable name.
+     *
+     * @param varName name of the variable to path to
+     * @return the relative path
+     */
+    public static String getVolVarExtrapolatedValuesPath(String varName){
+        return HDF5_GROUP_EXTRAPOLATED_VOLUMES + HDF5_GROUP_DIRECTORY_SEPARATOR + "__" + Variable.getNameFromCombinedIdentifier(varName) + "_extrapolated__";
+    }
+
+
     public static void getNextDataAtCurrentTimeChombo(double[][] returnValues, ZipFile currentZipFile, String[] varNames, int[][] varIndexes, String[] simDataFileNames, int masterTimeIndex)  throws Exception {
         File tempFile = null;
         FileFormat solFile = null;
@@ -46,7 +72,7 @@ public class ChomboSimDataReader {
                     }
                     else
                     {
-                        String varPath = Hdf5Utils.getVarSolutionPath(varNames[k]);
+                        String varPath = getVarSolutionPath(varNames[k]);
                         HObject solObj = FileFormat.findObject(solFile, varPath);
                         if (solObj instanceof Dataset) {
                             Dataset dataset = (Dataset)solObj;
@@ -157,7 +183,7 @@ public class ChomboSimDataReader {
             solFile.open();
             if (varName != null)
             {
-                String varPath = Hdf5Utils.getVarSolutionPath(varName);
+                String varPath = getVarSolutionPath(varName);
                 HObject solObj = FileFormat.findObject(solFile, varPath);
                 if (solObj instanceof Dataset)
                 {
@@ -218,7 +244,7 @@ public class ChomboSimDataReader {
         double data[] = null;
         if (varName != null)
         {
-            String varPath = Hdf5Utils.getVolVarExtrapolatedValuesPath(varName);
+            String varPath = getVolVarExtrapolatedValuesPath(varName);
             HObject solObj = FileFormat.findObject(solFile, varPath);
             if (solObj == null)
             {
