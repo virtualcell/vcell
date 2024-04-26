@@ -96,7 +96,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 
     void testquery(){
         try {
-//		VH5TypedPath<H5ScalarDS> path = new VH5TypedPath<>(root, H5ScalarDS.class,"boundaries");
+//		MovingBoundardyVH5TypedPath<H5ScalarDS> path = new MovingBoundardyVH5TypedPath<>(root, H5ScalarDS.class,"boundaries");
 //		H5ScalarDS hsd = path.get();
 //		hsd.init( );
 //		int[] si = hsd.getSelectedIndex();
@@ -107,17 +107,17 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 //		sdims[0] = 1;
 //		Object o2 = hsd.read();
 //		System.out.println(o2);
-//		VH5TypedPath<String[]> dpath = new VH5TypedPath<>(root, String[].class,"boundaries");
+//		MovingBoundardyVH5TypedPath<String[]> dpath = new MovingBoundardyVH5TypedPath<>(root, String[].class,"boundaries");
 //		String[] d = dpath.get();
 //		System.out.println(d);
 
 
-//		VH5Path path = new VH5Path(root,"generationTimes");
+//		MovingBoundardyVH5Path path = new MovingBoundardyVH5Path(root,"generationTimes");
 //		Object o = path.getData();
 //		H5ScalarDS hsd = (H5ScalarDS) o;
 //		Object o2 = hsd.read();
 //		System.out.println(o2);
-//		VH5TypedPath<H5CompoundDS> dpath = new VH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class,"elements");
+//		MovingBoundardyVH5TypedPath<H5CompoundDS> dpath = new MovingBoundardyVH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class,"elements");
 //		H5CompoundDS cds = dpath.get();
 //		cds.init();
 //		selectPlane(cds,50,50,0);
@@ -127,7 +127,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 //		int id = dts[0].open();
 //		o = cds.getData( );
 //
-//		//VH5Path path2 = new VH5Path(root,"elements","volumePointsX");
+//		//MovingBoundardyVH5Path path2 = new MovingBoundardyVH5Path(root,"elements","volumePointsX");
 //	//	o = path2.getData();
 //		System.out.println(o);
 //
@@ -141,40 +141,40 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
     }
 
     private double[] getDoubleArray(String... names){
-        VH5TypedPath<double[]> dpath = new VH5TypedPath<double[]>(root, double[].class, names);
+        MovingBoundardyVH5TypedPath<double[]> dpath = new MovingBoundardyVH5TypedPath<double[]>(root, double[].class, names);
         return dpath.get();
     }
 
     private double singleDouble(String... names){
         double[] a = getDoubleArray(names);
         if(a.length != 1){
-            throw new MovingBoundaryResultException(VH5Path.concat(names) + " is not single element array");
+            throw new MovingBoundaryResultException(MovingBoundardyVH5Path.concat(names) + " is not single element array");
         }
         return a[0];
     }
 
     private long[] getLongArray(String... names){
-        VH5TypedPath<long[]> dpath = new VH5TypedPath<long[]>(root, long[].class, names);
+        MovingBoundardyVH5TypedPath<long[]> dpath = new MovingBoundardyVH5TypedPath<long[]>(root, long[].class, names);
         return dpath.get();
     }
 
     private long singleLong(String... names){
         long[] a = getLongArray(names);
         if(a.length != 1){
-            throw new MovingBoundaryResultException(VH5Path.concat(names) + " is not single element array");
+            throw new MovingBoundaryResultException(MovingBoundardyVH5Path.concat(names) + " is not single element array");
         }
         return a[0];
     }
 
     private int[] getIntArray(String... names){
-        VH5TypedPath<int[]> dpath = new VH5TypedPath<int[]>(root, int[].class, names);
+        MovingBoundardyVH5TypedPath<int[]> dpath = new MovingBoundardyVH5TypedPath<int[]>(root, int[].class, names);
         return dpath.get();
     }
 
     private int singleInt(String... names){
         int[] a = getIntArray(names);
         if(a.length != 1){
-            throw new MovingBoundaryResultException(VH5Path.concat(names) + " is not single element array");
+            throw new MovingBoundaryResultException(MovingBoundardyVH5Path.concat(names) + " is not single element array");
         }
         return a[0];
     }
@@ -400,10 +400,10 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
         final H5CompoundDS species;
 
         PlaneNodes() throws Exception{
-            VH5TypedPath<H5CompoundDS> dpath = new VH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "elements");
+            MovingBoundardyVH5TypedPath<H5CompoundDS> dpath = new MovingBoundardyVH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "elements");
             elements = dpath.get();
             elements.read();
-            dpath = new VH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "species");
+            dpath = new MovingBoundardyVH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "species");
             species = dpath.get();
             species.read();
         }
@@ -441,7 +441,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 
             VCAssert.assertTrue(timeIndex >= 0, "negative time index");
             validateTimeIndex(timeIndex);
-            VH5TypedPath<H5ScalarDS> path = new VH5TypedPath<>(root, H5ScalarDS.class, "boundaries");
+            MovingBoundardyVH5TypedPath<H5ScalarDS> path = new MovingBoundardyVH5TypedPath<>(root, H5ScalarDS.class, "boundaries");
             H5ScalarDS hsd = path.get();
             hsd.init();
             long[] start = hsd.getStartDims();

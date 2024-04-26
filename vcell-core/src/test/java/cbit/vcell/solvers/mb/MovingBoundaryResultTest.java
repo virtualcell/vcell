@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 @Disabled
 @Tag("Fast")
-public class MovingBoundaryResultTest extends H5Client {
+public class MovingBoundaryResultTest extends MovingBoundaryH5Client {
     private static String fname  = FILE;
 	MovingBoundaryReader mbr;
     public MovingBoundaryResultTest() {

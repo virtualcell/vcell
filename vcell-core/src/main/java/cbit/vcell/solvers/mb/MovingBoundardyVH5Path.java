@@ -24,18 +24,18 @@ import ncsa.hdf.object.h5.H5CompoundDS;
  *
  * @author GWeatherby
  */
-public class VH5Path {
+public class MovingBoundardyVH5Path {
 
     protected Object target;
     protected Exception exc;
-    protected static final Logger lg = LogManager.getLogger(VH5Path.class);
+    protected static final Logger lg = LogManager.getLogger(MovingBoundardyVH5Path.class);
 
 
     /**
      * @param g     staring point, not null
      * @param names path to search
      */
-    public VH5Path(Group g, String... names){
+    public MovingBoundardyVH5Path(Group g, String... names){
         target = null;
         exc = null;
         try {
