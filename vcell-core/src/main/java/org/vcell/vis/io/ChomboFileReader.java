@@ -1,10 +1,19 @@
 package org.vcell.vis.io;
 
-import java.io.File;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import cbit.vcell.math.Variable;
+import ncsa.hdf.object.h5.H5CompoundDS;
+import ncsa.hdf.object.h5.H5ScalarDS;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.vcell.vis.chombo.ChomboBoundaries;
 import org.vcell.vis.chombo.ChomboBoundaries.BorderCellInfo;
 import org.vcell.vis.chombo.ChomboBoundaries.MeshMetrics;
@@ -34,7 +43,186 @@ public class ChomboFileReader {
 	private static final String MESH_ATTR_DIMENSION = "dimension";
 	private static final String MESH_ATTR_ORIGIN = "origin";
 	private static final String MESH_ATTR_EXTENT = "extent";
-	
+
+    public static File createTempHdf5File(InputStream is) throws IOException
+    {
+        OutputStream out = null;
+        try{
+            File tempFile = File.createTempFile("temp", "hdf5");
+            out=new FileOutputStream(tempFile);
+            byte buf[] = new byte[1024];
+            int len;
+            while((len=is.read(buf))>0) {
+                out.write(buf,0,len);
+            }
+            return tempFile;
+        }
+        finally
+        {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (Exception ex) {
+                // ignore
+            }
+        }
+    }
+
+    static File createTempHdf5File(ZipFile zipFile, String fileName) throws IOException
+    {
+        InputStream is = null;
+        try
+        {
+            ZipEntry dataEntry = zipFile.getEntry(fileName);
+            is = zipFile.getInputStream((ZipArchiveEntry) dataEntry);
+            return createTempHdf5File(is);
+        }
+        finally
+        {
+            try
+            {
+                if (is != null)
+                {
+                    is.close();
+                }
+            }
+            catch (Exception ex)
+            {
+                // ignore
+            }
+        }
+    }
+
+    public static List<DataBlock> readHdf5SolutionMetaData(InputStream is) throws Exception
+    {
+        File tempFile = null;
+        FileFormat solFile = null;
+        ArrayList<DataBlock> dataBlockList = new ArrayList<>();
+        try{
+            tempFile = createTempHdf5File(is);
+
+            FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+            solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
+            solFile.open();
+            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
+            Group rootGroup = (Group)rootNode.getUserObject();
+            Group solGroup = (Group)rootGroup.getMemberList().get(0);
+
+            List<HObject> memberList = solGroup.getMemberList();
+            for (HObject member : memberList)
+            {
+                if (!(member instanceof Dataset)){
+                    continue;
+                }
+                Dataset dataset = (Dataset)member;
+                String dsname = dataset.getName();
+                int vt = -1;
+                String domain = null;
+                List<Attribute> solAttrList = dataset.getMetadata();
+                for (Attribute attr : solAttrList)
+                {
+                    String attrName = attr.getName();
+                    if(attrName.equals("variable type")){
+                        Object obj = attr.getValue();
+                        vt = ((int[])obj)[0];
+                    } else if (attrName.equals("domain")) {
+                        Object obj = attr.getValue();
+                        domain = ((String[])obj)[0];
+                    }
+                }
+                long[] dims = dataset.getDims();
+                String varName = domain == null ? dsname : domain + Variable.COMBINED_IDENTIFIER_SEPARATOR + dsname;
+                dataBlockList.add(DataBlock.createDataBlock(varName, vt, (int) dims[0], 0));
+            }
+            return dataBlockList;
+        } finally {
+            try {
+                if (solFile != null) {
+                    solFile.close();
+                }
+                if (tempFile != null) {
+                    if (!tempFile.delete()) {
+                        System.err.println("couldn't delete temp file " + tempFile);
+                    }
+                }
+            } catch(Exception e) {
+                // ignore
+            }
+        }
+    }
+
+
+    /**
+	 * Z = boolean
+	 [B = byte
+	 [S = short
+	 [I = int
+	 [J = long
+	 [F = float
+	 [D = double
+	 [C = char
+	 [L = any non-primitives(Object)
+	 * @author schaff
+	 *
+	 */
+	static abstract class DataColumn {
+		private String colName;
+		public DataColumn(String name){
+			this.colName = name;
+		}
+		public abstract int getNumRows();
+		public abstract double getValue(int index);
+	}
+
+	static class IntColumn extends DataColumn {
+		int[] data;
+		public IntColumn(String name, int[] data){
+			super(name);
+			this.data = data;
+		}
+		@Override
+		public int getNumRows(){
+			return data.length;
+		}
+		@Override
+		public double getValue(int index){
+			return data[index];
+		}
+	}
+
+	static class LongColumn extends DataColumn {
+		long[] data;
+		public LongColumn(String name, long[] data){
+			super(name);
+			this.data = data;
+		}
+		@Override
+		public int getNumRows(){
+			return data.length;
+		}
+		@Override
+		public double getValue(int index){
+			return data[index];
+		}
+	}
+
+	static class DoubleColumn extends DataColumn {
+		double[] data;
+		public DoubleColumn(String name, double[] data){
+			super(name);
+			this.data = data;
+		}
+		@Override
+		public int getNumRows(){
+			return data.length;
+		}
+		@Override
+		public double getValue(int index){
+			return data[index];
+		}
+	}
+
 	private static ChomboMeshData readMesh(String meshFileName, String vol0FileName) throws Exception{
 		
 		ChomboMesh chomboMesh = new ChomboMesh();
@@ -52,11 +240,11 @@ public class ChomboFileReader {
 			
 			DefaultMutableTreeNode meshRootNode = (DefaultMutableTreeNode)meshFile.getRootNode();
 			Group meshRootGroup = (Group)meshRootNode.getUserObject();
-			Group meshGroup = Hdf5Reader.getChildGroup(meshRootGroup,"mesh");
+			Group meshGroup = getChildGroup(meshRootGroup,"mesh");
 			
-			chomboMesh.setDimension(Hdf5Reader.getIntAttribute(meshGroup,MESH_ATTR_DIMENSION));		
-			chomboMesh.setExtent(Hdf5Reader.getVect3DAttribute(meshGroup,MESH_ATTR_EXTENT,1.0));
-			chomboMesh.setOrigin(Hdf5Reader.getVect3DAttribute(meshGroup,MESH_ATTR_ORIGIN,0.0));
+			chomboMesh.setDimension(getIntAttribute(meshGroup,MESH_ATTR_DIMENSION));
+			chomboMesh.setExtent(getVect3DAttribute(meshGroup,MESH_ATTR_EXTENT,1.0));
+			chomboMesh.setOrigin(getVect3DAttribute(meshGroup,MESH_ATTR_ORIGIN,0.0));
 			
 			// it's very wasteful here, but what can I do?
 			CartesianMeshChombo cartesianMeshChombo = CartesianMeshChombo.readMeshFile(new File(meshFileName));
@@ -65,10 +253,10 @@ public class ChomboFileReader {
 				chomboMesh.addFeaturePhase(fpv.feature, fpv.iphase);
 			}
 			
-			//Hdf5Reader.DataColumn[] metricsColumns = Hdf5Reader.getDataTable(meshGroup,METRICS_DATASET);
+			//DataColumn[] metricsColumns = getDataTable(meshGroup,METRICS_DATASET);
 			if (chomboMesh.getDimension()==2){
-				Hdf5Reader.DataColumn[] segmentColumns = Hdf5Reader.getDataTable(meshGroup,"segments");
-				Hdf5Reader.DataColumn[] verticesColumns = Hdf5Reader.getDataTable(meshGroup,"vertices");
+				DataColumn[] segmentColumns = getDataTable(meshGroup,"segments");
+				DataColumn[] verticesColumns = getDataTable(meshGroup,"vertices");
 				ChomboBoundaries boundaries = chomboMesh.getBoundaries();
 				int numVertices = verticesColumns[0].getNumRows();
 				int numSegments = segmentColumns[0].getNumRows();
@@ -85,7 +273,7 @@ public class ChomboFileReader {
 					boundaries.addSegment(new ChomboBoundaries.Segment(chomboIndex, v1, v2));
 				}
 			}else if (chomboMesh.getDimension()==3){
-				Hdf5Reader.DataColumn[] surfaceTriangleColumns = Hdf5Reader.getDataTable(meshGroup,"surface triangles");
+				DataColumn[] surfaceTriangleColumns = getDataTable(meshGroup,"surface triangles");
 				ChomboBoundaries boundaries = chomboMesh.getBoundaries();
 				int numTriangles = surfaceTriangleColumns[0].getNumRows();
 				for (int row=0;row<numTriangles;row++){
@@ -108,7 +296,7 @@ public class ChomboFileReader {
 					SurfaceTriangle surfaceTriangle = new SurfaceTriangle(index, face, p0_index,p1_index,p2_index);
 					boundaries.addSurfaceTriangle(surfaceTriangle);
 				}
-				Hdf5Reader.DataColumn[] metricsColumns = Hdf5Reader.getDataTable(meshGroup,"membrane elements");
+				DataColumn[] metricsColumns = getDataTable(meshGroup,"membrane elements");
 				MeshMetrics meshMetrics = boundaries.getMeshMetrics();
 				int numMeshMetrics = metricsColumns[0].getNumRows();
 				for (int row=0;row<numMeshMetrics;row++){
@@ -145,15 +333,15 @@ public class ChomboFileReader {
 			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)vol0File.getRootNode();
 			Group rootGroup = (Group)rootNode.getUserObject();
 			
-			Group level0Group = Hdf5Reader.getChildGroup(rootGroup, "level_0");
-			double time = Hdf5Reader.getDoubleAttribute(level0Group, "time");
+			Group level0Group = getChildGroup(rootGroup, "level_0");
+			double time = getDoubleAttribute(level0Group, "time");
 			ChomboMeshData chomboMeshData = new ChomboMeshData(chomboMesh, time);
 
-			int numComponents = Hdf5Reader.getIntAttribute(rootGroup, "num_components");
-			int numLevels = Hdf5Reader.getIntAttribute(rootGroup, "num_levels");
+			int numComponents = getIntAttribute(rootGroup, "num_components");
+			int numLevels = getIntAttribute(rootGroup, "num_levels");
 			int fractionComponentIndex = -1;
 			for (int i=0;i<numComponents;i++){
-				String compName = Hdf5Reader.getStringAttribute(rootGroup, "component_"+i);
+				String compName = getStringAttribute(rootGroup, "component_"+i);
 				chomboMeshData.addComponentName(compName);
 				if (compName.equals("fraction-0")){
 					fractionComponentIndex = i;
@@ -161,28 +349,28 @@ public class ChomboFileReader {
 				}
 			}
 			for (int i=0;i<numLevels;i++){
-				Group levelGroup = Hdf5Reader.getChildGroup(rootGroup, "level_"+i);
+				Group levelGroup = getChildGroup(rootGroup, "level_"+i);
 				int refinement = 2;
 				if (i==0){
 					refinement = 1;
 				}
 				ChomboLevel chomboLevel = new ChomboLevel(chomboMesh, i, refinement);
-				Hdf5Reader.DataColumn[] boxColumns = Hdf5Reader.getDataTable(levelGroup, "boxes");
+				DataColumn[] boxColumns = getDataTable(levelGroup, "boxes");
 				int[] lo_i, lo_j, lo_k, hi_i, hi_j, hi_k;
 				if (chomboMesh.getDimension()==2){
-					lo_i = ((Hdf5Reader.IntColumn)boxColumns[0]).data;
-					lo_j = ((Hdf5Reader.IntColumn)boxColumns[1]).data;
-					hi_i = ((Hdf5Reader.IntColumn)boxColumns[2]).data;
-					hi_j = ((Hdf5Reader.IntColumn)boxColumns[3]).data;
+					lo_i = ((IntColumn)boxColumns[0]).data;
+					lo_j = ((IntColumn)boxColumns[1]).data;
+					hi_i = ((IntColumn)boxColumns[2]).data;
+					hi_j = ((IntColumn)boxColumns[3]).data;
 					lo_k = new int[boxColumns[0].getNumRows()];
 					hi_k = new int[boxColumns[0].getNumRows()];
 				}else{
-					lo_i = ((Hdf5Reader.IntColumn)boxColumns[0]).data;
-					lo_j = ((Hdf5Reader.IntColumn)boxColumns[1]).data;
-					lo_k = ((Hdf5Reader.IntColumn)boxColumns[2]).data;
-					hi_i = ((Hdf5Reader.IntColumn)boxColumns[3]).data;
-					hi_j = ((Hdf5Reader.IntColumn)boxColumns[4]).data;
-					hi_k = ((Hdf5Reader.IntColumn)boxColumns[5]).data;
+					lo_i = ((IntColumn)boxColumns[0]).data;
+					lo_j = ((IntColumn)boxColumns[1]).data;
+					lo_k = ((IntColumn)boxColumns[2]).data;
+					hi_i = ((IntColumn)boxColumns[3]).data;
+					hi_j = ((IntColumn)boxColumns[4]).data;
+					hi_k = ((IntColumn)boxColumns[5]).data;
 				}				
 				for (int b=0; b<boxColumns[0].getNumRows(); b++){
 					ChomboBox chomboBox = new ChomboBox(chomboLevel,lo_i[b],hi_i[b],lo_j[b],hi_j[b],lo_k[b],hi_k[b],chomboMesh.getDimension());
@@ -192,9 +380,9 @@ public class ChomboFileReader {
 				//
 				// read the variables
 				//
-				Hdf5Reader.DataColumn[] data = Hdf5Reader.getDataTable(levelGroup,"data:datatype=0");
-				Hdf5Reader.DataColumn[] offsets = Hdf5Reader.getDataTable(levelGroup,"data:offsets=0");
-				ChomboLevelData chomboLevelData = new ChomboLevelData(i,fractionComponentIndex,((Hdf5Reader.DoubleColumn)data[0]).data,((Hdf5Reader.LongColumn)offsets[0]).data);
+				DataColumn[] data = getDataTable(levelGroup,"data:datatype=0");
+				DataColumn[] offsets = getDataTable(levelGroup,"data:offsets=0");
+				ChomboLevelData chomboLevelData = new ChomboLevelData(i,fractionComponentIndex,((DoubleColumn)data[0]).data,((LongColumn)offsets[0]).data);
 				chomboMeshData.addLevelData(chomboLevelData);
 			}
 			
@@ -234,7 +422,7 @@ public class ChomboFileReader {
 		{
 			try
 			{
-				Group vcellGroup = Hdf5Reader.getChildGroup(rootGroup, group);
+				Group vcellGroup = getChildGroup(rootGroup, group);
 				if (vcellGroup != null)
 				{
 					List<HObject> children = vcellGroup.getMemberList();
@@ -265,6 +453,112 @@ public class ChomboFileReader {
 			{
 				// it is ok if there is no vcell group
 			}
+		}
+	}
+
+	private static Attribute getAttribute(Group group, String name) throws Exception{
+		List<Attribute> attributes = group.getMetadata();
+		for (Attribute attr : attributes){
+			if (attr.getName().equals(name)){
+				return attr;
+			}
+		}
+		throw new RuntimeException("failed to find attribute "+name);
+	}
+
+	private static double getDoubleAttribute(Group group, String name) throws Exception{
+		Attribute attr = getAttribute(group,name);
+		return ((double[])attr.getValue())[0];
+	}
+
+	private static float getFloatAttribute(Group group, String name) throws Exception{
+		Attribute attr = getAttribute(group,name);
+		return ((float[])attr.getValue())[0];
+	}
+
+	private static int getIntAttribute(Group group, String name) throws Exception{
+		Attribute attr = getAttribute(group,name);
+		return ((int[])attr.getValue())[0];
+	}
+
+	private static String getStringAttribute(Group group, String name) throws Exception{
+		Attribute attr = getAttribute(group,name);
+		return ((String[])attr.getValue())[0];
+	}
+
+	private static Vect3D getVect3DAttribute(Group group, String name, double defaultZ) throws Exception{
+		String str = getStringAttribute(group, name);
+		return parseAttrString(str,defaultZ);
+	}
+
+	private static Group getChildGroup(Group group, String name){
+		List<HObject> memberList = group.getMemberList();
+		for (HObject member : memberList) {
+			if (member.getName().equals(name)){
+				if (member instanceof Group) {
+					return (Group)member;
+				}else{
+					throw new RuntimeException("expecting type Group for group member '"+name+"'");
+				}
+			}
+		}
+		throw new RuntimeException("child group '"+name+"' not found");
+	}
+
+	private static DataColumn[] getDataTable(Group group, String name) throws Exception{
+		List<HObject> memberList = group.getMemberList();
+		for (HObject member : memberList) {
+			if (member.getName().equals(name)){
+				if (member instanceof H5CompoundDS) {
+					H5CompoundDS compoundDataSet = (H5CompoundDS) member;
+					Vector columnValueArrays = (Vector)compoundDataSet.read();
+					String[] columnNames = compoundDataSet.getMemberNames();
+					ArrayList<DataColumn> dataColumns = new ArrayList<DataColumn>();
+					for (int c=0;c<columnNames.length;c++){
+						Object column = columnValueArrays.get(c);
+						if (column instanceof int[]){
+							dataColumns.add(new IntColumn(columnNames[c], (int[])columnValueArrays.get(c)));
+						}else if (column instanceof double[]){
+							dataColumns.add(new DoubleColumn(columnNames[c], (double[])columnValueArrays.get(c)));
+						}else{
+							throw new RuntimeException("unexpected type '"+column.getClass().getName()+"' for group member '"+name+"'");
+						}
+					}
+					return dataColumns.toArray(new DataColumn[0]);
+				}else if (member instanceof H5ScalarDS){
+					H5ScalarDS compoundDataSet = (H5ScalarDS) member;
+					Object column = compoundDataSet.read();
+					if (column instanceof int[]){
+						return new DataColumn[] { new IntColumn("col", (int[])column) };
+					}else if (column instanceof double[]){
+						return new DataColumn[] { new DoubleColumn("col", (double[])column) };
+					}else if (column instanceof long[]){
+						return new DataColumn[] { new LongColumn("col", (long[])column) };
+					}else{
+						throw new RuntimeException("unexpected type '"+column.getClass().getName()+"' for group member '"+name+"'");
+					}
+				}else{
+					throw new RuntimeException("expecting type H5CompoundDS for group member '"+name+"', found type "+member.getClass().getName());
+				}
+			}
+		}
+		throw new RuntimeException("group member '"+name+"' not found");
+	}
+
+	private static Vect3D parseAttrString(String attrString, double defaultZ){
+		StringTokenizer st = new StringTokenizer(attrString, "{,} ");
+		List<Double> valueList = new ArrayList<Double>();
+		while (st.hasMoreTokens())
+		{
+			String token = st.nextToken();
+			valueList.add(Double.parseDouble(token));
+		}
+		if (valueList.size()==2){
+			return new Vect3D(valueList.get(0),valueList.get(1),defaultZ);
+		}else if (valueList.size()==3){
+			return new Vect3D(valueList.get(0),valueList.get(1),valueList.get(2));
+		}else{
+			throw new RuntimeException("cannot parse, unexpected array size "+valueList.size());
 		}
 	}
 }

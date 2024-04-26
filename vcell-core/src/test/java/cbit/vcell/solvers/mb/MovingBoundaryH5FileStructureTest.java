@@ -45,7 +45,7 @@ import org.vcell.util.CastingUtils;
  * @version 2.4
  */
 @Tag("Fast")
-public class H5FileStructure extends H5Client {
+public class MovingBoundaryH5FileStructureTest extends MovingBoundaryH5Client {
     private static String fname = FILE;
     private static long[] dims2D = {20, 10};
     private static long[] dims3D = {20, 10, 5};
@@ -110,7 +110,7 @@ public class H5FileStructure extends H5Client {
             Dataset ds = CastingUtils.downcast(Dataset.class, obj);
             if(ds != null && ds.getName().equals("elements")){
 //            if (ds != null && ds.getName().equals("boundaries")) {
-                VH5Dataset vds = new VH5Dataset(ds);
+                MovingBoundaryVH5Dataset vds = new MovingBoundaryVH5Dataset(ds);
                 vds.info();
                 vds.meta();
             }

@@ -1,17 +1,18 @@
 package org.vcell.cli.run.hdf5;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.jlibsedml.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jlibsedml.DataSet;
+import org.jlibsedml.Report;
+import org.jlibsedml.VariableSymbol;
+
+import java.util.*;
 
 /**
  * Static data preparation class for Hdf5 files
  */
 public class Hdf5DataPreparer {
-    private final static Logger logger = LogManager.getLogger(Hdf5File.class);
+    private final static Logger logger = LogManager.getLogger(Hdf5DataPreparer.class);
 
     public static class Hdf5PreparedData{
         public String sedmlId;
@@ -37,7 +38,7 @@ public class Hdf5DataPreparer {
     }
 
     /**
-     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with spatial data for writing out to Hdf5 format via Hdf5Writer
+     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with spatial data for writing out to Hdf5 format via BiosimulationsHdf5Writer
      * 
      * @param datasetWrapper the data relevant to an HDF5 output file
      * @return the prepared spatial data
@@ -111,7 +112,7 @@ public class Hdf5DataPreparer {
     }
 
     /**
-     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with nonspatial data for writing out to Hdf5 format via Hdf5Writer
+     * Reads a `Hdf5DatasetWrapper` contents and generates `Hdf5PreparedData` with nonspatial data for writing out to Hdf5 format via BiosimulationsHdf5Writer
      * 
      * @param datasetWrapper the data relevant to an hdf5 output file
      * @return the prepared nonspatial data

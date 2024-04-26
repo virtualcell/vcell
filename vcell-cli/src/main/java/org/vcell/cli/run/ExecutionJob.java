@@ -1,24 +1,21 @@
 package org.vcell.cli.run;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
+import org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
-import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.util.FileUtils;
-
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-
-import org.vcell.cli.run.hdf5.Hdf5Writer;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+
+import static org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer.BiosimulationsHdfWriterException;
 
 /**
  * Contains the code necessary to execute an Omex archive in VCell
@@ -124,7 +121,7 @@ public class ExecutionJob {
      * @throws IOException if there are system I/O issues
      * @throws ExecutionException if an execution specfic error occurs
      */
-    public void executeArchive(boolean isBioSimSedml) throws HDF5Exception, PythonStreamException, ExecutionException {
+    public void executeArchive(boolean isBioSimSedml) throws BiosimulationsHdfWriterException, PythonStreamException, ExecutionException {
         try {
             HDF5ExecutionResults masterHdf5File = new HDF5ExecutionResults(isBioSimSedml);
             this.queueAllSedml();
@@ -145,7 +142,7 @@ public class ExecutionJob {
                 if (hasSucceeded) logger.info("Processing of SedML succeeded.\n" + stats.toString());
                 else logger.error("Processing of SedML has failed.\n" + stats.toString());
             }
-            Hdf5Writer.writeHdf5(masterHdf5File, new File(this.outputDir));
+            BiosimulationsHdf5Writer.writeHdf5(masterHdf5File, new File(this.outputDir));
             
         } catch(PythonStreamException e){
             logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);

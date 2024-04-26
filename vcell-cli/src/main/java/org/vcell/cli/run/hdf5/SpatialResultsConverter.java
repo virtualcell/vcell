@@ -1,10 +1,9 @@
 package org.vcell.cli.run.hdf5;
 
 
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.TempSimulation;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
@@ -12,17 +11,14 @@ import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.run.PythonCalls;
 import org.vcell.cli.run.Status;
 import org.vcell.cli.run.TaskJob;
-import org.vcell.util.DataAccessException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
 public class SpatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(SpatialResultsConverter.class);
 
-    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws DataAccessException, IOException, HDF5Exception, ExpressionException, PythonStreamException {
+    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws PythonStreamException {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
         List<Report> allReports = SpatialResultsConverter.getReports(sedml.getOutputs());
 

@@ -9,7 +9,7 @@ import ncsa.hdf.object.Group;
 import ncsa.hdf.object.h5.H5ScalarDS;
 
 /**
- * extends VH5Path to include type checking and data conversion. Throws exception if data not found, or
+ * extends MovingBoundardyVH5Path to include type checking and data conversion. Throws exception if data not found, or
  * not of correct type, and no implemented conversion works.
  * <p>
  * Single value primitives should be retrieved by requesting array and verifying it's a single element
@@ -17,9 +17,9 @@ import ncsa.hdf.object.h5.H5ScalarDS;
  * @param <T> type of returned data. primitives not supported, autoboxing not supported
  * @author GWeatherby
  */
-public class VH5TypedPath<T> extends VH5Path {
+public class MovingBoundardyVH5TypedPath<T> extends MovingBoundardyVH5Path {
 
-    public VH5TypedPath(Group g, Class<T> clzz, String... names){
+    public MovingBoundardyVH5TypedPath(Group g, Class<T> clzz, String... names){
         super(g, names);
         Objects.requireNonNull(clzz);
         if(clzz.isPrimitive()){

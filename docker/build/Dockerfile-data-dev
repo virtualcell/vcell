@@ -58,7 +58,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     export_baseurl="export-baseurl-not-set" \
     simdatadir_external=/path/to/external/simdata/ \
     simdataCacheSize="simdataCacheSize-not-set" \
-    webDataPort="webDataPort-not-set" \
     servertype="servertype-not-set" \
     s3ProxyPortExternal="80" \
     s3export_baseURL="s3-export-baseurl-not-set"
@@ -110,6 +109,5 @@ ENTRYPOINT java \
 	-Dvcell.mongodb.host.internal=${mongodb_host_internal} \
 	-Dvcell.mongodb.port.internal=${mongodb_port_internal} \
 	-Dvcell.mongodb.database=${mongodb_database} \
-	-Dvcelldata.web.server.port=${webDataPort} \
 	-cp "./lib/*" cbit.vcell.message.server.data.SimDataServerMain \
 	"${servertype}"

@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Disabled
 @Tag("Fast")
-public class VH5PathTest extends H5Client {
+public class MovingBoundardyVH5PathTest extends MovingBoundaryH5Client {
     private static String fname  = FILE;
 	private FileFormat testFile = null;
 	private Group root = null;
@@ -65,25 +65,25 @@ public class VH5PathTest extends H5Client {
     	// create the file and add groups ans dataset into the file
     	try {
     		Group root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
-    		VH5Path vpath = new VH5Path(root, "elements" ,"volume");
+    		MovingBoundardyVH5Path vpath = new MovingBoundardyVH5Path(root, "elements" ,"volume");
     		System.out.println(vpath.foundType());
-    		VH5TypedPath<double[]> tpath = new VH5TypedPath<double[]>(root, double[].class,"elements" ,"volume");
+    		MovingBoundardyVH5TypedPath<double[]> tpath = new MovingBoundardyVH5TypedPath<double[]>(root, double[].class,"elements" ,"volume");
     		double[] e = tpath.get();
     		System.out.println(e[0]);
-    		VH5Path bpPath = new VH5Path(root, "elements" ,"boundaryPosition");
+    		MovingBoundardyVH5Path bpPath = new MovingBoundardyVH5Path(root, "elements" ,"boundaryPosition");
     		Object data = bpPath.getData();
     		System.out.println(data.getClass().getSimpleName());
-    		VH5Path vpPath = new VH5Path(root, "elements" ,"volumePoints");
+    		MovingBoundardyVH5Path vpPath = new MovingBoundardyVH5Path(root, "elements" ,"volumePoints");
     		data = vpPath.getData();
     		System.out.println(data.getClass().getSimpleName());
 
-//    		VH5TypedPath<String[]> spath = new VH5TypedPath<String[]>(root, String[].class,"elements" ,"front description");
-    		VH5TypedPath<String> spath = new VH5TypedPath<String>(root, String.class,"elements" ,"front description");
+//    		MovingBoundardyVH5TypedPath<String[]> spath = new MovingBoundardyVH5TypedPath<String[]>(root, String[].class,"elements" ,"front description");
+    		MovingBoundardyVH5TypedPath<String> spath = new MovingBoundardyVH5TypedPath<String>(root, String.class,"elements" ,"front description");
 //    		String[] sdata = spath.get();
 //    		System.out.println(sdata[0]);
     		System.out.println(spath.get( ));
 
-    		VH5Path xpath = new VH5Path(root, "elements" ,"front description");
+    		MovingBoundardyVH5Path xpath = new MovingBoundardyVH5Path(root, "elements" ,"front description");
     		Object o = xpath.getData();
     		System.out.println(o);
     		dtype("elements","endX");
@@ -94,15 +94,15 @@ public class VH5PathTest extends H5Client {
     		dtype("solverTimeStep");
     		dtype("timeStep");
     		dtype("timeStepTimes");
-			VH5TypedPath<int[]> ipath = new VH5TypedPath<int[]>(root, int[].class,"lastTimeIndex");
+			MovingBoundardyVH5TypedPath<int[]> ipath = new MovingBoundardyVH5TypedPath<int[]>(root, int[].class,"lastTimeIndex");
     		System.out.println(Arrays.toString(ipath.get()));
-			VH5TypedPath<long[]> lpath = new VH5TypedPath<long[]>(root, long[].class,"elements","numX");
+			MovingBoundardyVH5TypedPath<long[]> lpath = new MovingBoundardyVH5TypedPath<long[]>(root, long[].class,"elements","numX");
     		System.out.println(Arrays.toString(lpath.get()));
 //			System.out.println("-------");
-//    		VH5TypedPath<H5ScalarDS> spath = new VH5TypedPath<H5ScalarDS>(root, H5ScalarDS.class,"endTime");
+//    		MovingBoundardyVH5TypedPath<H5ScalarDS> spath = new MovingBoundardyVH5TypedPath<H5ScalarDS>(root, H5ScalarDS.class,"endTime");
 //			H5ScalarDS ds = spath.get( );
 //			Object o = ds.read();
-//			VH5Dataset vds = new VH5Dataset(ds);
+//			MovingBoundaryVH5Dataset vds = new MovingBoundaryVH5Dataset(ds);
 //			vds.info();
 
     		/*
@@ -117,7 +117,7 @@ public class VH5PathTest extends H5Client {
     }
 
     private void dtype(String ...name) {
-		VH5TypedPath<double[]> dpath = new VH5TypedPath<double[]>(root, double[].class,name);
+		MovingBoundardyVH5TypedPath<double[]> dpath = new MovingBoundardyVH5TypedPath<double[]>(root, double[].class,name);
 		System.out.println(StringUtils.join(name,'/') + ' ' + Arrays.toString(dpath.get()));
     }
 
@@ -125,7 +125,7 @@ public class VH5PathTest extends H5Client {
     @Test
     public void badType () {
 		assertThrows(UnsupportedOperationException.class, () -> {
-			VH5TypedPath<int[]> ipath = new VH5TypedPath<int[]>(root, int[].class,"elements" ,"volume");
+			MovingBoundardyVH5TypedPath<int[]> ipath = new MovingBoundardyVH5TypedPath<int[]>(root, int[].class,"elements" ,"volume");
 			System.out.println(ipath);
 		});
 	}
@@ -133,7 +133,7 @@ public class VH5PathTest extends H5Client {
     @Test
     public void primType () {
 		assertThrows(UnsupportedOperationException.class, () -> {
-			VH5TypedPath<Integer> ipath = new VH5TypedPath<Integer>(root, int.class,"elements" ,"volume");
+			MovingBoundardyVH5TypedPath<Integer> ipath = new MovingBoundardyVH5TypedPath<Integer>(root, int.class,"elements" ,"volume");
 			System.out.println(ipath);
 		});
 	}

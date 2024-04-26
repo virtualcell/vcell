@@ -9,41 +9,16 @@
  */
 
 package cbit.vcell.simdata;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Vector;
-//import java.util.zip.ZipEntry;
-import java.util.zip.ZipEntry;
-//import java.util.zip.ZipFile;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipFile;
-
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.SimulationData.SolverDataType;
-import cbit.vcell.solvers.CartesianMeshMovingBoundary.MBSDataGroup;
-import cbit.vcell.solvers.CartesianMeshMovingBoundary.MSBDataAttribute;
-import cbit.vcell.solvers.CartesianMeshMovingBoundary.MSBDataAttributeValue;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.util.Vector;
 
 public class DataSet implements java.io.Serializable
 {
@@ -85,7 +60,7 @@ double[] getData(String varName, File zipFile, Double time, SolverDataType solve
 	if (solverDataType == SolverDataType.MBSData)
 	{
 		try {
-			data = readMBSData(varName, time);
+			data = MovingBoundarySimDataReader.readMBSData(fileName, dataBlockList, varName, time);
 		} catch(Exception e) {
 			throw new IOException(e.getMessage(), e);
 		}
@@ -94,7 +69,7 @@ double[] getData(String varName, File zipFile, Double time, SolverDataType solve
 	{
 		if (zipFile != null && isChombo(zipFile)) {
 			try {
-				data = readHdf5VariableSolution(zipFile, new File(fileName).getName(), varName);
+				data = ChomboSimDataReader.readHdf5VariableSolution(zipFile, new File(fileName).getName(), varName);
 			} catch(Exception e) {
 				throw new IOException(e.getMessage(), e);
 			}
@@ -250,7 +225,7 @@ int[] getVariableTypeIntegers() {
  * Creation date: (6/23/2004 9:37:26 AM)
  * @return java.util.zip.ZipFile
  */
-protected static ZipFile openZipFile(File zipFile) throws IOException {
+public static ZipFile openZipFile(File zipFile) throws IOException {
 	for (int i = 0; i < 20; i ++) {
 		try {
 			return new org.apache.commons.compress.archivers.zip.ZipFile(zipFile);
@@ -288,7 +263,7 @@ void read(File file, File zipFile, SolverDataType solverDataType) throws IOExcep
 		if (solverDataType == SolverDataType.MBSData)
 		{
 			try {
-				readMBSDataMetadata();
+				MovingBoundarySimDataReader.readMBSDataMetadata(fileName, dataBlockList);
 			} catch (Exception e) {
 				throw new IOException(e.getMessage(),e);
 			}
@@ -324,7 +299,7 @@ void read(File file, File zipFile, SolverDataType solverDataType) throws IOExcep
 		
 			if(is != null && zipFile!=null && isChombo(zipFile)){
 				try {
-					readHdf5SolutionMetaData(is);
+					ChomboSimDataReader.readHdf5SolutionMetaData(is, dataBlockList);
 				} catch (Exception e) {
 					throw new IOException(e.getMessage(),e);
 				}
@@ -349,187 +324,12 @@ void read(File file, File zipFile, SolverDataType solverDataType) throws IOExcep
 	}
 }
 
-private static boolean isChombo(File zipFile){
+public static boolean isChombo(File zipFile){
 	return zipFile.getName().endsWith(".hdf5.zip");
 }
 
-private static File createTempHdf5File(InputStream is) throws IOException
-{
-	OutputStream out = null;
-	try{
-		File tempFile = File.createTempFile("temp", "hdf5");
-		out=new FileOutputStream(tempFile);
-		byte buf[] = new byte[1024];
-		int len;
-		while((len=is.read(buf))>0) {
-			out.write(buf,0,len);
-		}
-		return tempFile;
-	}
-	finally
-	{
-		try {
-			if (out != null) {
-				out.close();
-			}
-		} catch (Exception ex) {
-			// ignore
-		}
-	}
-}
 
-static File createTempHdf5File(ZipFile zipFile, String fileName) throws IOException
-{
-	InputStream is = null;
-	try
-	{
-		ZipEntry dataEntry = zipFile.getEntry(fileName);
-		is = zipFile.getInputStream((ZipArchiveEntry) dataEntry);		
-		return createTempHdf5File(is);
-	}
-	finally
-	{
-		try
-		{
-			if (is != null)
-			{
-				is.close();
-			}
-		}
-		catch (Exception ex)
-		{
-			// ignore
-		}
-	}
-}
-
-
-private static File createTempHdf5File(File zipFile, String fileName) throws IOException
-{
-	ZipFile zipZipFile = null;
-	try
-	{
-		zipZipFile = openZipFile(zipFile);		
-		return createTempHdf5File(zipZipFile, fileName);
-	}
-	finally
-	{
-		try
-		{
-			if (zipZipFile != null)
-			{
-				zipZipFile.close();
-			}
-		}
-		catch (Exception ex)
-		{
-			// ignore
-		}
-	}
-}
-
-private void readHdf5SolutionMetaData(InputStream is) throws Exception
-{
-	File tempFile = null;
-	FileFormat solFile = null;
-	try{
-		tempFile = createTempHdf5File(is);
-		
-		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-		solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
-		solFile.open();
-		DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
-		Group rootGroup = (Group)rootNode.getUserObject();
-		List<HObject> solGroups = rootGroup.getMemberList();
-
-		for (HObject memberGroup : solGroups)
-		{
-			if (memberGroup instanceof Group && memberGroup.getName().equals("solution"))
-			{
-				Group solGroup = (Group) memberGroup;
-				List<HObject> memberList = solGroup.getMemberList();
-				for (HObject member : memberList)
-				{
-					if (!(member instanceof Dataset)){
-						continue;
-					}
-					Dataset dataset = (Dataset)member;
-					String dsname = dataset.getName();
-					int vt = -1;
-					String domain = null;
-					List<Attribute> solAttrList = dataset.getMetadata();
-					for (Attribute attr : solAttrList)
-					{
-						String attrName = attr.getName();
-						if(attrName.equals("variable type")){
-							Object obj = attr.getValue();
-							vt = ((int[])obj)[0];
-						} else if (attrName.equals("domain")) {
-							Object obj = attr.getValue();
-							domain = ((String[])obj)[0];
-						}
-					}
-					long[] dims = dataset.getDims();
-					String varName = domain == null ? dsname : domain + Variable.COMBINED_IDENTIFIER_SEPARATOR + dsname;
-					dataBlockList.addElement(DataBlock.createDataBlock(varName, vt, (int) dims[0], 0));
-				}
-				break;
-			}
-		}
-	} finally {
-		try {
-			if (solFile != null) {
-				solFile.close();
-			}
-			if (tempFile != null) {
-				if (!tempFile.delete()) {
-					System.err.println("couldn't delete temp file " + tempFile);
-				}
-			}
-		} catch(Exception e) {
-			// ignore
-		}
-	}
-}
-
-
-static double[] readHdf5VariableSolution(File zipfile, String fileName, String varName) throws Exception{
-	
-	File tempFile = null;
-	FileFormat solFile = null;
-	try{
-		tempFile = createTempHdf5File(zipfile, fileName);
-		
-		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-		solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
-		solFile.open();
-		if (varName != null)
-		{
-			String varPath = Hdf5Utils.getVarSolutionPath(varName);
-			HObject solObj = FileFormat.findObject(solFile, varPath);
-			if (solObj instanceof Dataset)
-			{
-				Dataset dataset = (Dataset)solObj;
-				return (double[]) dataset.read();
-			}
-		}
-	} finally {
-		try {
-			if (solFile != null) {
-				solFile.close();
-			}
-			if (tempFile != null) {
-				if (!tempFile.delete()) {
-					System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
-				}
-			}
-		} catch(Exception e) {
-			// ignore
-		}
-	}
-	return null;
-}
-public static void writeNew(File file, String[] varNameArr, VariableType[] varTypeArr, org.vcell.util.ISize size, double[][] dataArr) throws IOException {
+	public static void writeNew(File file, String[] varNameArr, VariableType[] varTypeArr, org.vcell.util.ISize size, double[][] dataArr) throws IOException {
 	
 	FileOutputStream fos = null;
 	BufferedOutputStream bos = null;
@@ -580,289 +380,4 @@ public static void writeNew(File file, String[] varNameArr, VariableType[] varTy
 	}
 }
 
-	static double[] readChomboExtrapolatedValues(String varName, File pdeFile, File zipFile) throws IOException {
-		double[] data = null;
-		if (zipFile != null && isChombo(zipFile)) {
-			File tempFile = null;
-			FileFormat solFile = null;
-			try{
-				tempFile = createTempHdf5File(zipFile, pdeFile.getName());
-				
-				FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-				solFile = fileFormat.createInstance(tempFile.getAbsolutePath(), FileFormat.READ);
-				solFile.open();
-				data = readChomboExtrapolatedValues(varName, solFile);
-			} catch(Exception e) {
-				throw new IOException(e.getMessage(), e);
-			} finally {
-				try {
-					if (solFile != null) {
-						solFile.close();
-					}
-					if (tempFile != null) {
-						if (!tempFile.delete()) {
-							System.err.println("couldn't delete temp file " + tempFile.getAbsolutePath());
-						}
-					}
-				} catch(Exception e) {
-					// ignore
-				}
-			}
-		}
-		return data;
-	}
-	
-	static double[] readChomboExtrapolatedValues(String varName, FileFormat solFile) throws Exception {
-		double data[] = null;
-		if (varName != null)
-		{
-			String varPath = Hdf5Utils.getVolVarExtrapolatedValuesPath(varName);
-			HObject solObj = FileFormat.findObject(solFile, varPath);
-			if (solObj == null)
-			{
-				throw new IOException("Extrapolated values for variable '" + varName + "' does not exist in the results.");
-			}
-			if (solObj instanceof Dataset)
-			{
-				Dataset dataset = (Dataset)solObj;
-				return (double[]) dataset.read();
-			}
-		}
-		return data;
-	}
-	
-	private void readMBSDataMetadata() throws Exception
-	{
-		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-		FileFormat solFile = null;
-		try {
-			solFile = fileFormat.createInstance(fileName, FileFormat.READ);
-			solFile.open();
-			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
-			Group rootGroup = (Group)rootNode.getUserObject();
-			Group solutionGroup = null;
-			for (Object member : rootGroup.getMemberList())
-			{
-				String memberName = ((HObject)member).getName();
-				if (member instanceof Group)
-				{
-					MBSDataGroup group = MBSDataGroup.valueOf(memberName);
-					if (group == MBSDataGroup.Solution)
-					{
-						solutionGroup = (Group) member;
-						break;
-					}
-				}
-			}
-			if (solutionGroup == null)
-			{
-				throw new Exception("Group " + MBSDataGroup.Solution + " not found");
-			}
-			
-			// find any timeGroup
-			Group timeGroup = null;
-			for (Object member : solutionGroup.getMemberList())
-			{
-				String memberName = ((HObject)member).getName();
-				if (member instanceof Group && memberName.startsWith("time"))
-				{
-					timeGroup = (Group) member;
-					break;
-				}
-			}
-			
-			if (timeGroup == null)
-			{
-				throw new Exception("No time group found");
-			}
-			
-			// find all the datasets in that time group
-			for (Object member : timeGroup.getMemberList())
-			{
-				if (member instanceof Dataset)
-				{
-					List<Attribute> solAttrList = ((Dataset)member).getMetadata();
-					int size = 0;
-					String varName = null;
-					VariableType varType = null;
-					for (Attribute attr : solAttrList)
-					{
-						String attrName = attr.getName();
-						Object attrValue = attr.getValue();
-						if(attrName.equals(MSBDataAttribute.name.name()))
-						{
-							varName = ((String[]) attrValue)[0];
-						}
-						else if (attrName.equals(MSBDataAttribute.size.name()))
-						{
-							size = ((int[]) attrValue)[0];
-						}
-						else if (attrName.equals(MSBDataAttribute.type.name()))
-						{
-							String vt = ((String[]) attrValue)[0];
-							if (vt.equals(MSBDataAttributeValue.Point.name()))
-							{
-								varType = VariableType.POINT_VARIABLE;
-							}
-							else if (vt.equals(MSBDataAttributeValue.Volume.name()))
-							{
-								varType = VariableType.VOLUME;
-							}
-							else if (vt.equals(MSBDataAttributeValue.PointSubDomain.name()))
-							{
-								// Position for PointSubdomain
-							}
-						}
-					}
-					if (varType == VariableType.VOLUME)
-					{
-						// only display volume
-						dataBlockList.addElement(DataBlock.createDataBlock(varName, varType.getType(), size, 0));
-					}
-					if (varType == VariableType.POINT_VARIABLE)
-					{
-						// only display volume
-						dataBlockList.addElement(DataBlock.createDataBlock(varName, varType.getType(), size, 0));
-					}
-					
-				}
-			}
-		}
-		finally
-		{
-				if (solFile != null)
-				{
-					try {
-						solFile.close();
-					} catch (Exception e) {
-						// ignore
-					}
-				}
-		}
-	}
-	
-	private double[] readMBSData(String varName, Double time) throws Exception {
-		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-		FileFormat solFile = null;
-		double[] data = null;
-		try {
-			solFile = fileFormat.createInstance(fileName, FileFormat.READ);
-			solFile.open();
-			DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
-			Group rootGroup = (Group)rootNode.getUserObject();
-			Group solutionGroup = null;
-			for (Object member : rootGroup.getMemberList())
-			{
-				String memberName = ((HObject)member).getName();
-				if (member instanceof Group)
-				{
-					MBSDataGroup group = MBSDataGroup.valueOf(memberName);
-					if (group == MBSDataGroup.Solution)
-					{
-						solutionGroup = (Group) member;
-						break;
-					}
-				}
-			}
-			if (solutionGroup == null)
-			{
-				throw new Exception("Group " + MBSDataGroup.Solution + " not found");
-			}
-			
-			int varIndex = -1;
-			int size = 0;
-			for (int i = 0; i < dataBlockList.size(); ++ i)
-			{
-				DataBlock dataBlock = dataBlockList.get(i);
-				if (dataBlock.getVarName().equals(varName))
-				{
-					varIndex = i;
-					size = dataBlock.getSize();
-					break;
-				}
-			}
-			
-			if (varIndex == -1)
-			{
-				throw new Exception("Variable " + varName + " not found");
-			}
-			
-			// find time group for that time
-			Group timeGroup = null;
-			for (Object member : solutionGroup.getMemberList())
-			{
-				if (member instanceof Group)
-				{
-					Group group = (Group)member;
-					List<Attribute> dsAttrList = group.getMetadata();
-					Attribute timeAttribute = null;
-					for (Attribute attr : dsAttrList)
-					{
-						if (attr.getName().equals(MSBDataAttribute.time.name()))
-						{
-							timeAttribute = attr;
-							break;
-						}
-					}
-					if (timeAttribute != null)
-					{
-						double t = ((double[]) timeAttribute.getValue())[0];
-						if (Math.abs(t - time) < 1e-8)
-						{
-							timeGroup = group;
-							break;
-						}
-					}
-				}
-			}
-			
-			if (timeGroup == null)
-			{
-				throw new Exception("No time group found for time=" + time);
-			}
-			
-			// find variable dataset
-			Dataset varDataset = null;
-			for (Object member : timeGroup.getMemberList())
-			{
-				if (member instanceof Dataset)
-				{
-					List<Attribute> dsAttrList = ((Dataset)member).getMetadata();
-					String var = null;
-					for (Attribute attr : dsAttrList)
-					{
-						if (attr.getName().equals(MSBDataAttribute.name.name()))
-						{
-							var = ((String[]) attr.getValue())[0];
-							break;
-						}
-					}
-					if (var != null && var.equals(varName))
-					{
-						varDataset = (Dataset) member;
-						break;
-					}
-				}
-			}
-			if (varDataset == null)
-			{
-				throw new Exception("Data for Variable " + varName + " at time " + time + " not found");
-			}
-			
-			data = new double[size];
-			System.arraycopy((double[])varDataset.getData(), 0, data, 0, size);
-			return data;
-		}
-		finally
-		{
-				if (solFile != null)
-				{
-					try {
-						solFile.close();
-					} catch (Exception e) {
-						// ignore
-					}
-				}
-		}		
-	}
 }

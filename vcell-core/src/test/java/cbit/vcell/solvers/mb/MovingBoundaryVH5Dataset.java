@@ -18,10 +18,10 @@ import ncsa.hdf.object.h5.H5CompoundDS;
 import ncsa.hdf.object.h5.H5Datatype;
 import ncsa.hdf.object.h5.H5ScalarDS;
 
-public class VH5Dataset {
+public class MovingBoundaryVH5Dataset {
     private final Dataset dataset;
 
-    public VH5Dataset(Dataset dataset){
+    public MovingBoundaryVH5Dataset(Dataset dataset){
         super();
         this.dataset = dataset;
         dataset.init();
@@ -77,7 +77,7 @@ public class VH5Dataset {
 //		 dt = dt.getBasetype();
         System.out.println(nt.getFullName());
         System.out.println(nt.getDatatypeDescription());
-        System.out.println(H5Client.parseMeta(dt));
+        System.out.println(MovingBoundaryH5Client.parseMeta(dt));
 
 //		 ds.init();
 //		 int did = ds.open();

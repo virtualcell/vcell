@@ -1,23 +1,13 @@
 package cbit.vcell.simdata;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.zip.ZipEntry;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.mongodb.VCMongoMessage;
+import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.object.*;
+import ncsa.hdf.object.h5.H5CompoundDS;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-//import java.util.zip.ZipFile;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.vcell.chombo.ChomboBox;
 import org.vcell.util.DataAccessException;
@@ -26,19 +16,12 @@ import org.vcell.util.FileUtils;
 import org.vcell.util.Origin;
 import org.vcell.util.document.VCDataIdentifier;
 
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.mongodb.VCMongoMessage;
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-import ncsa.hdf.object.h5.H5CompoundDS;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.io.*;
+import java.util.*;
+import java.util.zip.ZipEntry;
 
-public class SimulationDataSpatialHdf5
+public class ChomboSimpleSimDataReader_NotUsed
 {
 	public static class SimLogFileEntry
 	{
@@ -168,7 +151,7 @@ public class SimulationDataSpatialHdf5
 	private long logFileLength = 0;	
 	private ChomboMesh chomboMesh;
 	
-	public SimulationDataSpatialHdf5(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) 
+	public ChomboSimpleSimDataReader_NotUsed(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir)
 			throws IOException, DataAccessException 
 	{
 		this.vcDataId = argVCDataID;
@@ -184,11 +167,11 @@ public class SimulationDataSpatialHdf5
 						"does not exist in primary [" + primaryUserDir + "] or secondary [" + secondaryUserDir + "] user directory .");
 			}
 		}
-		VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.SimulationDataSpatialHdf5() <<EXIT>>");
+		VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.ChomboSimpleSimDataReader_NotUsed() <<EXIT>>");
 	}
 	
 	public synchronized void readVarAndFunctionDataIdentifiers() throws Exception {
-		VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.readVarAndFunctionDataIdentifiers Entry");
+		VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.readVarAndFunctionDataIdentifiers Entry");
 		readLogFile();
 		if(chomboMesh == null){
 			chomboMesh = readMeshFile(new File(userDirectory, getMeshFileName()));
@@ -371,15 +354,15 @@ public class SimulationDataSpatialHdf5
 		if (logFile == null)
 		{
 			logFile = new File(userDirectory, getLogFileName());
-			VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.getLogFile() <<ENTER>> calling logile.exists()");
+			VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.getLogFile() <<ENTER>> calling logile.exists()");
 			if (logFile.exists())
 			{
-				VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.getLogFile() <<EXIT>> file found");
+				VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.getLogFile() <<EXIT>> file found");
 			}
 			else
 			{
 				logFile = null;
-				VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.getLogFile() <<EXIT>> file found");
+				VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.getLogFile() <<EXIT>> file found");
 			}
 			
 		}
@@ -391,16 +374,16 @@ public class SimulationDataSpatialHdf5
 	 * @throws IOException 
 	 */
 	private synchronized void readLogFile() throws DataAccessException, IOException {
-		VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.readLog() <<ENTER>>");
+		VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.readLog() <<ENTER>>");
 		if (logFile == null){
-			VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.readLog() log file not found <<EXIT-Exception>>");
+			VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.readLog() log file not found <<EXIT-Exception>>");
 			throw new DataAccessException("log file not found for " + vcDataId);
 		}
-		VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.readLog() logFile exists");
+		VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.readLog() logFile exists");
 		long length = logFile.length();
 		long lastModified = logFile.lastModified();
 		if (lastModified == logFileLastModified && logFileLength == length) {
-			VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.readLog() hasn't been modified ... <<EXIT>>");
+			VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.readLog() hasn't been modified ... <<EXIT>>");
 			return;
 		}
 		
@@ -414,13 +397,13 @@ public class SimulationDataSpatialHdf5
 		//
 		String logfileContent = FileUtils.readFileToString(logFile);
 		if (logfileContent.length() != logFileLength){
-			System.out.println("SimulationDataSpatialHdf5.readLog(), read "+logfileContent.length()+" of "+logFileLength+" bytes of log file");
+			System.out.println("ChomboSimpleSimDataReader_NotUsed.readLog(), read "+logfileContent.length()+" of "+logFileLength+" bytes of log file");
 		}
 		
 		StringTokenizer st = new StringTokenizer(logfileContent);
 		// so parse into 'dataFilenames' and 'dataTimes' arrays
 		if (st.countTokens() % 4 != 0) {
-			throw new DataAccessException("SimulationDataSpatialHdf5.readLog(), tokens in each line should be factor of 4");
+			throw new DataAccessException("ChomboSimpleSimDataReader_NotUsed.readLog(), tokens in each line should be factor of 4");
 		}
 
 		while (st.hasMoreTokens()){
@@ -430,7 +413,7 @@ public class SimulationDataSpatialHdf5
 			double time = Double.parseDouble(st.nextToken());
 			logfileEntryList.add(new SimLogFileEntry(iteration, simFileName, zipFileName, time));
 		}
-		VCMongoMessage.sendTrace("SimulationDataSpatialHdf5.readLog() <<EXIT>>");
+		VCMongoMessage.sendTrace("ChomboSimpleSimDataReader_NotUsed.readLog() <<EXIT>>");
 	}
 
 	public double[] getDataTimes() {

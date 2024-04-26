@@ -1,32 +1,29 @@
 package org.vcell.cli.run.hdf5;
-//import ncsa.hdf.hdf5lib.*;
-
-import java.io.File;
-import java.io.IOException;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
-
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer.BiosimulationsHdfWriterException;
+
 /**
  * Class to handle Hdf5 creation, data, and assist with I/O.
  */
-public class Hdf5File {
+public class BiosimulationsHdf5File {
     // NB: Hdf5 group management is ***important***.
-    private final static Logger logger = LogManager.getLogger(Hdf5File.class);
+    private final static Logger logger = LogManager.getLogger(BiosimulationsHdf5File.class);
     private static boolean needToCreateFile = true;
 
     final private int H5F_ACC_TRUNC = HDF5Constants.H5F_ACC_TRUNC;
@@ -47,7 +44,7 @@ public class Hdf5File {
     private Map<String, Integer> pathToIdMap;
     private Map<Integer, Integer> datasetToDataspaceMap;
     
-    private Hdf5File(){
+    private BiosimulationsHdf5File(){
         this.fileId = HDF5Constants.H5I_INVALID_HID;
         this.isOpen = false;
 
@@ -55,26 +52,26 @@ public class Hdf5File {
         this.idToPathMap = new HashMap<Integer, String>();
         this.pathToIdMap = new HashMap<String, Integer>();
         this.datasetToDataspaceMap = new HashMap<>();
-        Hdf5File.needToCreateFile = false;
+        BiosimulationsHdf5File.needToCreateFile = false;
     }
 
     /**
-     * Creates an Hdf5File named "reports.h5" in the provided directory, and will throw exceptions where c-style error codes would be returned.
+     * Creates an BiosimulationsHdf5File named "reports.h5" in the provided directory, and will throw exceptions where c-style error codes would be returned.
      * 
      * @param parentDir the directory to put the Hdf5 file inside.
      */
-    public Hdf5File(File parentDir) { //"/home/ldrescher/VCell/hdf5Rebuild/testingDir"
+    public BiosimulationsHdf5File(File parentDir) { //"/home/ldrescher/VCell/hdf5Rebuild/testingDir"
         this(parentDir, true);
     }
 
     /**
-     * The main constructor for Hdf5File. Note the special interpretation of allowExceptions.
+     * The main constructor for BiosimulationsHdf5File. Note the special interpretation of allowExceptions.
      * 
      * @param parentDir the directory to put the Hdf5 file inside of.
      * @param allowExceptions Whether to interperate C-style error codes as exceptions or let the user handle them.
      *                        Hdf5 Library-produced exceptions will still be generated regardless.
      */
-    public Hdf5File(File parentDir, boolean allowExceptions){
+    public BiosimulationsHdf5File(File parentDir, boolean allowExceptions){
         this(parentDir, "reports.h5", allowExceptions);
     }
 
@@ -90,14 +87,14 @@ public class Hdf5File {
     }
 
     /**
-     * Complete constructor of `Hdf5File`
+     * Complete constructor of `BiosimulationsHdf5File`
      * 
      * @param parentDir the directory to put the Hdf5 file inside.
      * @param filename name of the h5 file to write.
      * @param allowExceptions Whether to interpret C-style error codes as exceptions or let the user handle them.
      *                        Hdf5 Library-produced exceptions will still be generated regardless.
      */
-    public Hdf5File(File parentDir, String filename, boolean allowExceptions){
+    public BiosimulationsHdf5File(File parentDir, String filename, boolean allowExceptions){
         this();
         this.javaFileTarget = new File(parentDir, filename);
         this.allowExceptions = allowExceptions;
@@ -109,8 +106,8 @@ public class Hdf5File {
      * @throws HDF5LibraryException
      * @throws IOException
      */
-    public void open() throws HDF5Exception, IOException {
-        this.open(Hdf5File.needToCreateFile);
+    public void open() throws BiosimulationsHdf5Writer.BiosimulationsHdfWriterException, IOException {
+        this.open(BiosimulationsHdf5File.needToCreateFile);
     }
 
     /**
@@ -121,24 +118,29 @@ public class Hdf5File {
      * @throws HDF5LibraryException
      * @throws IOException
      */
-    public int open(boolean overwrite) throws HDF5Exception, IOException {
-        String path = this.javaFileTarget.getCanonicalPath();
-        if (overwrite) this.fileId = H5.H5Fopen(path, H5F_ACC_RDWR, H5P_DEFAULT);
-        else this.fileId = H5.H5Fcreate(path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-        if (this.fileId < 0){
-            String typeOfOperation = overwrite? "opened [H5Fopen]" : "created [H5Fopened]";
+    public int open(boolean overwrite) throws BiosimulationsHdfWriterException, IOException {
+        try {
+            String path = this.javaFileTarget.getCanonicalPath();
+            if (overwrite) this.fileId = H5.H5Fopen(path, H5F_ACC_RDWR, H5P_DEFAULT);
+            else this.fileId = H5.H5Fcreate(path, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        } catch (HDF5LibraryException e) {
+            throw new BiosimulationsHdf5Writer.BiosimulationsHdfWriterException("HDF5 Library Exception", e);
+        }
+        if (this.fileId < 0) {
+            String typeOfOperation = overwrite ? "opened [H5Fopen]" : "created [H5Fopened]";
             String message = "HDF5 File could not be " + typeOfOperation + "; Something is preventing this.";
-            HDF5Exception e = new HDF5Exception(message); // investigate if Hdf5Exception would be more appropriate
+            IOException e = new IOException(message); // investigate if Hdf5Exception would be more appropriate
             logger.warn("Hdf5 error occured", e);
             if (this.allowExceptions) throw e;
         }
+
         this.isOpen = true;
         return this.fileId;
     }
 
     /**
      * Add a group to the Hdf5 file based on a given path. If the group exists, the group_id will be returned.
-     * 
+     *
      * @param groupPath the unix-style path *relative from the Hdf5 root (known as "/")* to place the group at
      *                  while hdf5 does allow with relative pathing from other groups, VCell does not support that at this time.
      * @return the group ID
@@ -378,24 +380,28 @@ public class Hdf5File {
         return H5.H5Dclose(datasetId);
     }
 
-    public int close() throws HDF5Exception {
+    public int close() throws BiosimulationsHdfWriterException {
         if (!this.isOpen) return 0;
         //this.fileId = HDF5Constants.H5I_INVALID_HID;
         this.isOpen = false;
 
-        // Don't forget to close datasets (and their dataspaces)
-        for (int datasetId : this.datasetToDataspaceMap.keySet()){
-            this.closeDataset(datasetId);
-        }
+        try {
+            // Don't forget to close datasets (and their dataspaces)
+            for (int datasetId : this.datasetToDataspaceMap.keySet()){
+                this.closeDataset(datasetId);
+            }
 
-        // Don't forget to close all groups
-        for (int groupId : this.idToPathMap.keySet()){
-            H5.H5Gclose(groupId);
-        }
-        this.idToPathMap.clear();
-        this.pathToIdMap.clear();
+            // Don't forget to close all groups
+            for (int groupId : this.idToPathMap.keySet()){
+                H5.H5Gclose(groupId);
+            }
+            this.idToPathMap.clear();
+            this.pathToIdMap.clear();
 
-        return this.fileId < 0 ? this.fileId : (this.fileId = H5.H5Fclose(this.fileId));
+            return this.fileId < 0 ? this.fileId : (this.fileId = H5.H5Fclose(this.fileId));
+        } catch (HDF5Exception e) {
+            throw new BiosimulationsHdfWriterException(e.getMessage(),e);
+        }
     }
 
 

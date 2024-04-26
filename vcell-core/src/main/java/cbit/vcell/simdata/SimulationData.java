@@ -792,6 +792,7 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 	ODEDataInfo odeDataInfo = new ODEDataInfo(vcDataId.getOwner(), vcDataId.getID(), lastModified);
 	VCAssert.assertFalse(odeSimData == null, "should have returned null already");
 	byte[] hdf5FileBytes = null;
+	// try to open non-spatial stochastic MultiTrialStats HDF5 file
 	File hdf5File = new File(file.getParent(),file.getName()+"_hdf5");
 	if(hdf5File.exists()) {
 		hdf5FileBytes = Files.readAllBytes(hdf5File.toPath());
@@ -1611,7 +1612,7 @@ private synchronized void readMesh(File meshFile,File membraneMeshMetricsFile) t
 	// read meshFile,MembraneMeshMetrics and parse into 'mesh' object
 	//
 	if(isChombo()){
-//		SimulationDataSpatialHdf5 simulationDataSpatialHdf5 = new SimulationDataSpatialHdf5(vcDataId,userDirectory,null);
+//		ChomboSimpleSimDataReader_NotUsed simulationDataSpatialHdf5 = new ChomboSimpleSimDataReader_NotUsed(vcDataId,userDirectory,null);
 //		simulationDataSpatialHdf5.readVarAndFunctionDataIdentifiers();
 		mesh = CartesianMeshChombo.readMeshFile(meshFile);
 		// test serialization
@@ -2016,7 +2017,7 @@ public VCDataIdentifier getVcDataId() {
 			throw new DataAccessException("data not found for variable " + varName);
 		}
 		final String varNameInDataSet = dsi.getQualifiedName();
-		double data[] = DataSet.readChomboExtrapolatedValues(varNameInDataSet, pdeFile, zipFile);
+		double data[] = ChomboSimDataReader.readChomboExtrapolatedValues(varNameInDataSet, pdeFile, zipFile);
 		VariableType variableType = VariableType.MEMBRANE;
 		PDEDataInfo pdeDataInfo = new PDEDataInfo(vcDataId.getOwner(),vcDataId.getID(),varName,time,lastModified);
 		return data == null ? null : new SimDataBlock(pdeDataInfo,data,variableType);

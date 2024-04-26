@@ -9,40 +9,6 @@
  */
 
 package cbit.vcell.solver.ode.gui;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ItemEvent;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Vector;
-
-import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-
-import org.sbml.jsbml.UnitDefinition;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.gui.CollapsiblePanel;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
@@ -62,9 +28,15 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
 import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
-import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.util.ColumnDescription;
-import ncsa.hdf.object.HObject;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.gui.CollapsiblePanel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.awt.geom.Point2D;
+import java.util.*;
 
 /**
  * Insert the type's description here.  What we want to do with this
@@ -1046,9 +1018,9 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 						allData[i+1] = getMyDataInterface().extractColumn(columnName);
 						String columnNameAsCount = columnName + AbstractMathMapping.MATH_VAR_SUFFIX_SPECIES_COUNT;
 //						if(valueToIndexMap.containsKey(columnNameAsCount)) {
-//							allDataMin[i+1] = getMyDataInterface().extractColumn(columnName, ODEDataInterface.PlotType.Min);
-//							allDataMax[i+1] = getMyDataInterface().extractColumn(columnName, ODEDataInterface.PlotType.Max);
-//							allDataStd[i+1] = getMyDataInterface().extractColumn(columnName, ODEDataInterface.PlotType.Std);
+//							allDataMin[i+1] = getMyDataInterface().extractColumn(columnName, ODEDataInterface.SummaryStatisticType.Min);
+//							allDataMax[i+1] = getMyDataInterface().extractColumn(columnName, ODEDataInterface.SummaryStatisticType.Max);
+//							allDataStd[i+1] = getMyDataInterface().extractColumn(columnName, ODEDataInterface.SummaryStatisticType.Std);
 //						}
 					}
 					yNames[i] = (String)((DefaultListModel)getYAxisChoice().getModel()).elementAt(i);

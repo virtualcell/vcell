@@ -1,33 +1,19 @@
 package org.vcell.cli.run.hdf5;
 
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TempSimulation;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-
-import org.jlibsedml.SedML;
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.Output;
-import org.jlibsedml.Report;
-import org.jlibsedml.Variable;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.RepeatedTask;
-import org.jlibsedml.Task;
-import org.jlibsedml.SubTask;
-import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.DataSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.run.PythonCalls;
 import org.vcell.cli.run.Status;
-import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.cli.run.TaskJob;
-import org.vcell.util.DataAccessException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 
-import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
 public class NonspatialResultsConverter {

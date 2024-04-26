@@ -1,48 +1,53 @@
 package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.resource.NativeLib;
-import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
-
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
 import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
-import java.util.*;
+
 import java.io.File;
 import java.io.IOException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Static class for writing out Hdf5 formatted files
  */
-public class Hdf5Writer {
+public class BiosimulationsHdf5Writer {
 
-    private final static Logger logger = LogManager.getLogger(Hdf5Writer.class);
+    public static class BiosimulationsHdfWriterException extends Exception {
+        private static final long serialVersionUID = 1L;
+        public BiosimulationsHdfWriterException(String message, Exception e) {
+            super(message, e);
+        }
+    }
 
-    private Hdf5Writer(){} // Static class = no instances allowed
+    private final static Logger logger = LogManager.getLogger(BiosimulationsHdf5Writer.class);
+
+    private BiosimulationsHdf5Writer(){} // Static class = no instances allowed
 
     /**
      * Writes an HDF5 formatted file given a hdf5FileWrapper and a destination to write the file to.
      * 
      * @param hdf5ExecutionResults the wrapper of hdf5 relevant data
      * @param outDirForCurrentSedml the directory to place the report file into, NOT the report file itself.
-     * @throws HDF5Exception if there is an expection thrown from hdf5 while using the library.
+     * @throws BiosimulationsHdfWriterException if there is an expection thrown from hdf5 while using the library.
      * @throws IOException if the computer encounteres an unexepcted system IO problem
      */
-    public static void writeHdf5(HDF5ExecutionResults hdf5ExecutionResults, File outDirForCurrentSedml) throws HDF5Exception, IOException {
+    public static void writeHdf5(HDF5ExecutionResults hdf5ExecutionResults, File outDirForCurrentSedml) throws BiosimulationsHdfWriterException, IOException {
         boolean didFail = false;
-        Hdf5File masterHdf5;
+        BiosimulationsHdf5File masterHdf5;
 
         // Boot Hdf5 Library
         NativeLib.HDF5.load();
 
         // Create and open the Hdf5 file
         logger.info("Creating hdf5 file `reports.h5` in" + outDirForCurrentSedml.getAbsolutePath());
-        masterHdf5 = new Hdf5File(outDirForCurrentSedml);
+        masterHdf5 = new BiosimulationsHdf5File(outDirForCurrentSedml);
         masterHdf5.open();
 
         try {
@@ -102,10 +107,11 @@ public class Hdf5Writer {
                     }
                 }
             }
-        } catch (Exception e) { // Catch runtime exceptions
+        } catch (HDF5Exception e) { // Catch runtime exceptions
             didFail = true;
-            logger.error("Error encountered while writing to BioSim-style HDF5.", e);
-            throw e;
+            String message = "Error encountered while writing to BioSim-style HDF5.";
+            logger.error(message, e);
+            throw new BiosimulationsHdfWriterException(message, e);
         } finally {
             try {
                 final Level errorLevel = didFail ? Level.ERROR : Level.INFO;
@@ -115,10 +121,11 @@ public class Hdf5Writer {
                 // Close up the file; lets deliver what we can write and flush out.
                 masterHdf5.close();
                 logger.log(errorLevel, message);
-            } catch (HDF5LibraryException e){
+            } catch (BiosimulationsHdfWriterException e){
                 masterHdf5.printErrorStack();
-                logger.error("HDF5 Library Exception encountered while writing out to HDF5 file; Check std::err for stack");
-                if (!didFail) throw e;
+                String message = "HDF5 Library Exception encountered while writing out to HDF5 file; Check std::err for stack";
+                logger.error(message);
+                if (!didFail) throw new BiosimulationsHdfWriterException(message, e);
             } catch (Exception e) {
                 e.printStackTrace();
             }

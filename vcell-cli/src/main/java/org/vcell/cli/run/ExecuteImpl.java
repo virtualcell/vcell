@@ -2,7 +2,6 @@ package org.vcell.cli.run;
 
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecordable;
@@ -21,6 +20,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import static org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer.BiosimulationsHdfWriterException;
 
 public class ExecuteImpl {
     
@@ -65,7 +66,7 @@ public class ExecuteImpl {
                     if (inputFileName.endsWith("omex"))
                         runSingleExecOmex(inputFile, outputDir, cliLogger,
                                 bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
-                } catch (ExecutionException | RuntimeException | HDF5Exception e){
+                } catch (ExecutionException e){
                     logger.error("Error caught executing batch mode", e);
                     Tracer.failure(e, "Error caught executing batch mode");
                     failedFiles.add(inputFileName);
@@ -105,7 +106,7 @@ public class ExecuteImpl {
 
     private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bKeepTempFiles,
                                           boolean bExactMatchOnly, boolean bSmallMeshOverride)
-            throws IOException, ExecutionException, PythonStreamException, HDF5Exception, InterruptedException {
+            throws IOException, ExecutionException, PythonStreamException, InterruptedException, BiosimulationsHdfWriterException {
         String bioModelBaseName = inputFile.getName().substring(0, inputFile.getName().indexOf(".")); // ".omex"??
         Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
         final boolean bEncapsulateOutput = true;
@@ -230,7 +231,7 @@ public class ExecuteImpl {
 
     private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride, boolean bBioSimMode)
-            throws ExecutionException, PythonStreamException, IOException, InterruptedException, HDF5Exception {
+            throws ExecutionException, PythonStreamException, IOException, InterruptedException, BiosimulationsHdfWriterException {
 
         ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder,
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);

@@ -1,20 +1,9 @@
 package cbit.vcell.client.data;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.VCDataIdentifier;
-
-import com.google.common.io.Files;
-
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.MultiTrialNonspatialStochSimDataReader;
+import cbit.vcell.simdata.SummaryStatisticType;
 import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationModelInfo.DataSymbolMetadataResolver;
@@ -22,10 +11,12 @@ import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-import ncsa.hdf.object.h5.H5ScalarDS;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.VCDataIdentifier;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 
 class ODEDataInterfaceImpl implements ODEDataInterface {
 	
@@ -107,117 +98,13 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 	}
 	
 	@Override
-	public LinkedHashMap<String, Integer> parseHDF5File() {
-		FileFormat hdf5FileFormat = null;
-		File to = null;
-		LinkedHashMap<String, Integer> valueToIndexMap = new LinkedHashMap<>();
-		try {
-			ODESolverResultSet osrs = getOdeSolverResultSet();
-			if(osrs instanceof ODESimData) {
-				byte[] hdf5FileBytes = ((ODESimData)getOdeSolverResultSet()).getHdf5FileBytes();
-				if(hdf5FileBytes != null) {
-					to = File.createTempFile("odeStats_"+simulationModelInfo.getSimulationName(), ".hdf5");
-					Files.write(hdf5FileBytes, to);
-					FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-					if (fileFormat == null){
-						throw new Exception("Cannot find HDF5 FileFormat.");
-					}
-					// open the file with read-only access	
-					hdf5FileFormat = fileFormat.createInstance(to.getAbsolutePath(), FileFormat.READ);
-					// open the file and retrieve the file structure
-					hdf5FileFormat.open();
-					Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)hdf5FileFormat.getRootNode()).getUserObject();
-					List<HObject> postProcessMembers = ((Group)root).getMemberList();
-
-					HObject varNames = null;
-					for(HObject nextHObject : postProcessMembers) {
-						if(nextHObject.getName().equals("VarNames")) {
-							varNames = nextHObject;
-							break;
-						// SimTimes
-						// StatMax
-						// StatMean
-						// StatMin
-						// StatStdDev
-						// VarNames
-						}
-					}
-					H5ScalarDS h5ScalarDS = (H5ScalarDS)varNames;
-					h5ScalarDS.init();
-					try {
-						long[] dims = h5ScalarDS.getDims();
-						System.out.println("---"+varNames.getName()+" "+varNames.getClass().getName()+" Dimensions="+Arrays.toString(dims));
-						Object obj = h5ScalarDS.read();
-						String[] values = (String[])obj;
-						for(int i=0; i<values.length; i++) {
-							String value = values[i];
-							valueToIndexMap.put(value, i);
-						}
-						
-					} catch(Exception e) {
-					}
-				}
-			}
-		} catch (Exception e) {
-		} finally {
-			if(hdf5FileFormat != null) {try{hdf5FileFormat.close();}catch(Exception e2) {e2.printStackTrace();}}
-			if(to != null){try{to.delete();}catch(Exception e2) {e2.printStackTrace();}}
+	public double[] extractColumn(String columnName, SummaryStatisticType summaryStatisticType) throws ExpressionException,ObjectNotFoundException {
+		ODESolverResultSet osrs = getOdeSolverResultSet();
+		if(osrs instanceof ODESimData) {
+			return MultiTrialNonspatialStochSimDataReader.extractColumn((ODESimData)osrs, columnName, summaryStatisticType);
+		} else {
+			return null;
 		}
-		return valueToIndexMap;
-	}
-	
-	@Override
-	public double[] extractColumn(String columnName, PlotType plotType) throws ExpressionException,ObjectNotFoundException {
-		FileFormat hdf5FileFormat = null;
-		File to = null;
-		try {
-			ODESolverResultSet osrs = getOdeSolverResultSet();
-			if(osrs instanceof ODESimData) {
-				byte[] hdf5FileBytes = ((ODESimData)getOdeSolverResultSet()).getHdf5FileBytes();
-				if(hdf5FileBytes != null) {
-					to = File.createTempFile("odeStats_"+simulationModelInfo.getSimulationName(), ".hdf5");
-					Files.write(hdf5FileBytes, to);
-					FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-					if (fileFormat == null){
-						throw new Exception("Cannot find HDF5 FileFormat.");
-					}
-					// open the file with read-only access	
-					hdf5FileFormat = fileFormat.createInstance(to.getAbsolutePath(), FileFormat.READ);
-					// open the file and retrieve the file structure
-					hdf5FileFormat.open();
-					Group root = (Group)((javax.swing.tree.DefaultMutableTreeNode)hdf5FileFormat.getRootNode()).getUserObject();
-					List<HObject> postProcessMembers = ((Group)root).getMemberList();
-					for(HObject nextHObject : postProcessMembers) {
-						System.out.println(nextHObject.getName()+"   "+nextHObject.getClass().getName());
-						H5ScalarDS h5ScalarDS = (H5ScalarDS)nextHObject;
-						h5ScalarDS.init();
-						try {
-							long[] dims = h5ScalarDS.getDims();
-							System.out.println("---"+nextHObject.getName()+" "+nextHObject.getClass().getName()+" Dimensions="+Arrays.toString(dims));
-							Object obj = h5ScalarDS.read();
-							if(dims.length == 2) {
-								double[] columns = new double[(int)dims[1]];
-								for(int row=0;row<dims[0];row++) {
-									System.arraycopy(obj, row*columns.length, columns, 0, columns.length);
-									System.out.println(Arrays.toString(columns));
-								}
-								return null;
-//								return columns;
-							} else {
-								return null;
-							}
-						} catch(Exception e) {
-							return null;
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-		} finally {
-			if(hdf5FileFormat != null) {try{hdf5FileFormat.close();}catch(Exception e2) {e2.printStackTrace();}}
-			if(to != null){try{to.delete();}catch(Exception e2) {e2.printStackTrace();}}
-		}
-		return null;
 	}
 
 	@Override

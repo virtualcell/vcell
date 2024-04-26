@@ -10,8 +10,17 @@
 
 package cbit.vcell.message.server.bootstrap;
 
-import java.io.File;
-
+import cbit.vcell.export.server.ExportServiceImpl;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.ConnectionException;
+import cbit.vcell.server.VCellConnection;
+import cbit.vcell.server.VCellConnectionFactory;
+import cbit.vcell.simdata.Cachetable;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
@@ -21,17 +30,7 @@ import org.vcell.util.AuthenticationException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.export.server.ExportServiceImpl;
-import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.ConnectionException;
-import cbit.vcell.server.VCellConnection;
-import cbit.vcell.server.VCellConnectionFactory;
-import cbit.vcell.simdata.Cachetable;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import ncsa.hdf.object.FileFormat;
+import java.io.File;
 /**
  * This type was created in VisualAge.
  */
@@ -67,7 +66,7 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 		SimulationDatabaseDirect simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, bCache);
 		ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 		LocalVCellConnection vcConn = new LocalVCellConnection(userLoginInfo, simulationDatabase, dataSetControllerImpl, exportServiceImpl);
-		linkHDFLib();
+		NativeLib.HDF5.load();
 		return vcConn; 
 	} catch (Throwable exc) {
 		lg.error(exc.getMessage(), exc);
@@ -100,18 +99,4 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 		return "";
 	}
 
-	/**
- * trigger loading of HDF library when running local
- */
-private void linkHDFLib( ) {
-	try { //lifted from hdf5group website
-		Class<?> fileclass = Class.forName("ncsa.hdf.object.h5.H5File");
-		FileFormat fileformat = (FileFormat)fileclass.newInstance();
-		if (fileformat != null) {
-			FileFormat.addFileFormat(FileFormat.FILE_TYPE_HDF5, fileformat);
-		}
-	} catch(Throwable t) {
-		lg.error(t);
-	}
-}
 }

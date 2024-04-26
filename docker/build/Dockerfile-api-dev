@@ -65,7 +65,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	smtp_port="smtp-port-not-set" \
 	smtp_emailaddress="smtp-emailaddress-not-set" \
     simdataCacheSize="simdataCacheSize-not-set" \
-    webDataPort="webDataPort-not-set" \
 	ssl_ignoreHostMismatch=true \
 	ssl_ignoreCertProblems=false \
 	serverPrefixV0="server-path-prefix-v0-not-set" \
@@ -115,7 +114,6 @@ ENTRYPOINT java \
 	-Dvcellapi.keystore.pswdfile="${keystorepswdfile}" \
 	-Dvcell.smtp.hostName="${smtp_hostname}" \
 	-Dvcell.smtp.port="${smtp_port}" \
-	-Dvcelldata.web.server.port=${webDataPort} \
 	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
 	-Dvcell.ssl.ignoreHostMismatch="${ssl_ignoreHostMismatch}" \
 	-Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \

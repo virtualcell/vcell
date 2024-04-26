@@ -3,20 +3,22 @@ package org.vcell.cli.run.hdf5;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import org.jlibsedml.DataSet;
 import org.jlibsedml.Report;
-import org.jlibsedml.SedML;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.util.VCellUtilityHub;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer.BiosimulationsHdfWriterException;
 
 @Tag("Fast")
-public class Hdf5WriterTest {
+public class BiosimulationsHdf5WriterTest {
 
     public static HDF5ExecutionResults createExampleData() {
 
@@ -95,12 +97,12 @@ public class Hdf5WriterTest {
     }
 
     @Test
-    public void test() throws HDF5Exception, IOException {
+    public void test() throws BiosimulationsHdfWriterException, IOException {
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
         NativeLib.HDF5.load();
-        HDF5ExecutionResults exampleHdf5FileWrapper = Hdf5WriterTest.createExampleData();
+        HDF5ExecutionResults exampleHdf5FileWrapper = BiosimulationsHdf5WriterTest.createExampleData();
         File dir = Files.createTempDir();
-        Hdf5Writer.writeHdf5(exampleHdf5FileWrapper, dir);
+        BiosimulationsHdf5Writer.writeHdf5(exampleHdf5FileWrapper, dir);
     }
 }
