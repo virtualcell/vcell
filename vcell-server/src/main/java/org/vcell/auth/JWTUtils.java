@@ -4,6 +4,7 @@ import cbit.vcell.resource.PropertyLoader;
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -58,6 +59,7 @@ public class JWTUtils {
         if (privateKeyFilePath == null || publicKeyFilePath == null) {
             log.warn("No public/private key files found. Generating new keys.");
             setRsaJsonWebKey(createNewJsonWebKey("k1"));
+            return;
         }
         try {
             // Read public key from file
@@ -69,8 +71,16 @@ public class JWTUtils {
             // Read private key from file
             reader = new FileReader(privateKeyFilePath);
             pemParser = new PEMParser(reader);
-            PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
-            PrivateKey privateKey = converter.getPrivateKey(pemKeyPair.getPrivateKeyInfo());
+            Object keyPairObject = pemParser.readObject();
+            final PrivateKeyInfo privateKeyInfo;
+            if (keyPairObject instanceof PEMKeyPair pemKeyPair) {
+                privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
+            } else if (keyPairObject instanceof org.bouncycastle.asn1.pkcs.PrivateKeyInfo pkcsPrivateKeyInfo) {
+                privateKeyInfo = pkcsPrivateKeyInfo;
+            } else {
+                throw new RuntimeException("Error reading private key file");
+            }
+            PrivateKey privateKey = converter.getPrivateKey(privateKeyInfo);
 
             // Create RsaJsonWebKey
             RsaJsonWebKey rsaJsonWebKey = new RsaJsonWebKey((java.security.interfaces.RSAPublicKey) publicKey);
