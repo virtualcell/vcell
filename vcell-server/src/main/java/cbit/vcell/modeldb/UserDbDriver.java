@@ -152,7 +152,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				UserIdentityTable.table.id.getQualifiedColName() + " as user_identity_key " + "," +
 				UserIdentityTable.insertDate.getQualifiedColName() +
 				" FROM " + userTable.getTableName() +
-				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
+				" JOIN " + UserIdentityTable.table.getTableName() +
 				" ON " + UserIdentityTable.table.userRef.getUnqualifiedColName()+"="+userTable.id.getQualifiedColName() +
 				" WHERE " + UserIdentityTable.authSubject.getUnqualifiedColName() + " = '" + subject + "'" +
 				" AND " + UserIdentityTable.authIssuer.getUnqualifiedColName() + " = '" + issuer + "'";
@@ -191,7 +191,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				UserIdentityTable.table.id.getQualifiedColName() + " as user_identity_key " + "," +
 				UserIdentityTable.insertDate.getQualifiedColName() +
 				" FROM " + userTable.getTableName() +
-				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
+				" JOIN " + UserIdentityTable.table.getTableName() +
 				" ON " + UserIdentityTable.table.userRef.getUnqualifiedColName()+"="+userTable.id.getQualifiedColName() +
 				" WHERE " + UserIdentityTable.userRef.getUnqualifiedColName() + "=" + user.getID().toString();
 
