@@ -1,10 +1,6 @@
 package org.vcell.restq.apiclient;
 
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.UserIdentity;
 import cbit.vcell.resource.PropertyLoader;
-import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
@@ -27,7 +23,6 @@ import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 
 import java.sql.SQLException;
-import java.util.List;
 
 @QuarkusTest
 public class UsersApiTest {
@@ -36,10 +31,6 @@ public class UsersApiTest {
 
     @ConfigProperty(name = "quarkus.http.test-port")
     Integer testPort;
-
-    @Inject
-    SecurityIdentity securityIdentity;
-
 
     @Inject
     AgroalConnectionFactory agroalConnectionFactory;
@@ -67,31 +58,46 @@ public class UsersApiTest {
 
     @Test
     public void testMapUser() throws ApiException, SQLException, DataAccessException, InvalidJwtException, MalformedClaimException {
-        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
-        boolean mapped = TestEndpointUtils.mapClientToNagiosUser(aliceAPIClient);
-        assert (mapped);
+        UsersResourceApi aliceUsersResourceApi = new UsersResourceApi(aliceAPIClient);
 
-        UsersResourceApi aliceUserResourceAPI = new UsersResourceApi(aliceAPIClient);
-        UserIdentityJSONSafe apiRetrievedIdentity = aliceUserResourceAPI.getVCellIdentity();
+        // map once, true - map twice return false
+        boolean mapped = aliceUsersResourceApi.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        Assertions.assertTrue(mapped);
+        mapped = aliceUsersResourceApi.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        Assertions.assertTrue(mapped);
+
+        // when already mapped, try to map with different user, return false (will reject mapping)
+        mapped = aliceUsersResourceApi.setVCellIdentity(TestEndpointUtils.administratorUserLoginInfo);
+        Assertions.assertFalse(mapped);
+
+        // when already mapped, try to unmap with different user, return false (will reject mapping)
+        // then unmap with mapped user - true first time, false second time
+        boolean unmapped = aliceUsersResourceApi.clearVCellIdentity(TestEndpointUtils.administratorUserLoginInfo.getUserID());
+        Assertions.assertFalse(unmapped);
+        unmapped = aliceUsersResourceApi.clearVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
+        Assertions.assertTrue(unmapped);
+        unmapped = aliceUsersResourceApi.clearVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
+        Assertions.assertFalse(unmapped);
+
+        // not mapped, getIdentity() should throw exception ApiException with 404
+        Assertions.assertThrows(ApiException.class, aliceUsersResourceApi::getVCellIdentity);
+
+        // map again, true
+        mapped = aliceUsersResourceApi.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        Assertions.assertTrue(mapped);
+
+        // getIdentity() should return the mapped user
+        UserIdentityJSONSafe apiRetrievedIdentity = aliceUsersResourceApi.getVCellIdentity();
         Assertions.assertNotNull(apiRetrievedIdentity);
 
+        // verify that getIdentity() return subject is the same as the subject in the token
         String oidcAccessToken = keycloakClient.getAccessToken(TestEndpointUtils.TestOIDCUsers.alice.name());
         JwtClaims claims = JWTUtils.getClaimsFromUntrustedToken(oidcAccessToken);
-        List<UserIdentity> dbRetrievedIdentity = adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(claims.getSubject(), claims.getIssuer(),true);
+        Assertions.assertEquals(claims.getSubject(), apiRetrievedIdentity.getSubject());
 
-        Assertions.assertEquals(apiRetrievedIdentity.getUserName(), TestEndpointUtils.vcellNagiosUser.getName());
-
-        Assertions.assertEquals(apiRetrievedIdentity.getUserName(), dbRetrievedIdentity.get(0).user().getName());
-        Assertions.assertEquals(apiRetrievedIdentity.getSubject(), dbRetrievedIdentity.get(0).subject());
-        Assertions.assertEquals(claims.getSubject(), dbRetrievedIdentity.get(0).subject());
-        Assertions.assertEquals(claims.getIssuer(), dbRetrievedIdentity.get(0).issuer());
-
-        adminDBTopLevel.deleteUserIdentity(TestEndpointUtils.vcellNagiosUser, claims.getSubject(), claims.getIssuer(), true);
-        apiRetrievedIdentity = aliceUserResourceAPI.getVCellIdentity();
-        assert (apiRetrievedIdentity.getSubject() == null);
-
-//        assert (userIdentity.getUser());
-//        adminDBTopLevel.deleteUserIdentityFromIdentityProvider(testUser, oidcName, UserIdentityTable.IdentityProvider.KEYCLOAK, true);
+        // cleanup, remove mapping
+        aliceUsersResourceApi.clearVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
+        Assertions.assertThrows(ApiException.class, () -> aliceUsersResourceApi.getVCellIdentity());
     }
 
     //    https://quarkus.io/guides/security-oidc-bearer-token-authentication#integration-testing-wiremock
@@ -99,11 +105,13 @@ public class UsersApiTest {
     @Test
     public void testOldAPITokenGeneration() throws ApiException {
 
-        TestEndpointUtils.mapClientToNagiosUser(aliceAPIClient);
+        UsersResourceApi usersResourceApi1 = new UsersResourceApi(aliceAPIClient);
+        usersResourceApi1.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
 
         UsersResourceApi aliceUserApi = new UsersResourceApi(aliceAPIClient);
         UsersResourceApi bobUserApi = new UsersResourceApi(bobAPIClient);
-        TestEndpointUtils.mapClientToNagiosUser(aliceAPIClient);
+        UsersResourceApi usersResourceApi = new UsersResourceApi(aliceAPIClient);
+        usersResourceApi.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
 
         AccesTokenRepresentationRecord token = aliceUserApi.getLegacyApiToken();
         Assertions.assertNotNull(token);
@@ -114,7 +122,8 @@ public class UsersApiTest {
         token = bobUserApi.getLegacyApiToken();
         assert (token.getToken() == null);
 
-        TestEndpointUtils.mapClientToAdminUser(bobAPIClient);
+        UsersResourceApi usersResourceApi2 = new UsersResourceApi(bobAPIClient);
+        usersResourceApi2.setVCellIdentity(TestEndpointUtils.administratorUserLoginInfo);
         token = bobUserApi.getLegacyApiToken();
         Assertions.assertNotNull(token);
         Assertions.assertFalse(token.getToken().isEmpty());

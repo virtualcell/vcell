@@ -12,6 +12,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.db.PublicationService;
@@ -65,8 +66,10 @@ public class PublicationResourceTest {
     public void testAddListRemove() throws JsonProcessingException, SQLException, DataAccessException, ApiException {
         String pubuser = "alice";
         String nonpubuser = "bob";
-        TestEndpointUtils.mapClientToAdminUser(aliceAPIClient);
-        TestEndpointUtils.mapClientToNagiosUser(bobAPIClient);
+        boolean mapped = new UsersResourceApi(aliceAPIClient).setVCellIdentity(TestEndpointUtils.administratorUserLoginInfo);
+        Assertions.assertTrue(mapped);
+        mapped = new UsersResourceApi(bobAPIClient).setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        Assertions.assertTrue(mapped);
 
         // create a test publication using org.vcell.rest.model.Publication and add it to the list
         Publication publication1 = new Publication(

@@ -50,6 +50,9 @@ public class UserRestDB {
             return null;
         }
         JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
+        if (jwt == null) {
+            throw new DataAccessException("securityIdentity is missing jwt");
+        }
         String subject = jwt.getSubject();
         String issuer = jwt.getIssuer();
         if (subject == null) {
@@ -75,6 +78,9 @@ public class UserRestDB {
                 return false;
             }
             JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
+            if (jwt == null) {
+                throw new DataAccessException("securityIdentity is missing jwt");
+            }
             String subject = jwt.getSubject();
             String issuer = jwt.getIssuer();
             if (subject == null) {
@@ -83,8 +89,60 @@ public class UserRestDB {
             if (issuer == null) {
                 throw new DataAccessException("securityIdentity is missing issuer");
             }
+
+            // check existing mappings, if already mapped to this user, return true
+            List<UserIdentity> userIdentities = adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
+            for (UserIdentity userIdentity : userIdentities) {
+                if (userIdentity.user().getID().equals(user.getID())) {
+                    return true;
+                }
+            }
+
+            // check existing mappings, if already mapped to a different user, return false (can't remap)
+            for (UserIdentity userIdentity : userIdentities) {
+                if (!userIdentity.user().getID().equals(user.getID())) {
+                    return false;
+                }
+            }
+
             adminDBTopLevel.setUserIdentityFromIdentityProvider(user, subject, issuer, true);
             return true;
+        } catch (SQLException e) {
+            throw new DataAccessException("database error while mapping user identity: "+e.getMessage(), e);
+        }
+    }
+
+    public boolean unmapUserIdentity(SecurityIdentity securityIdentity, String userName) throws DataAccessException {
+        if (securityIdentity.isAnonymous()){
+            return false;
+        }
+        try {
+            JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
+            if (jwt == null) {
+                return false;
+            }
+            String subject = jwt.getSubject();
+            String issuer = jwt.getIssuer();
+            if (subject == null) {
+                throw new DataAccessException("securityIdentity is missing subject");
+            }
+            if (issuer == null) {
+                throw new DataAccessException("securityIdentity is missing issuer");
+            }
+
+            User user = null;
+            List<UserIdentity> userIdentities = adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
+            for (UserIdentity userIdentity : userIdentities) {
+                if (userIdentity.user().getName().equals(userName)) {
+                    user = userIdentity.user();
+                }
+            }
+            if (user == null) {
+                return false;
+            }
+
+            // remove existing mapping for this user, true = success
+            return adminDBTopLevel.deleteUserIdentity(user, subject, issuer, true);
         } catch (SQLException e) {
             throw new DataAccessException("database error while mapping user identity: "+e.getMessage(), e);
         }

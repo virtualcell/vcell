@@ -104,13 +104,14 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIAL_CLAIM[0]));
 }
 
-	public void removeUserIdentity(Connection con, User user, String authSubject, String authIssuer) throws SQLException {
+	public boolean removeUserIdentity(Connection con, User user, String authSubject, String authIssuer) throws SQLException {
 		String sql = "DELETE FROM " + UserIdentityTable.table.getTableName() +
 				" WHERE " +
 					UserIdentityTable.authSubject + " = " + "'"+authSubject+"'" + " AND " +
 					UserIdentityTable.authIssuer + " = " + "'"+authIssuer+"'" + " AND " +
 					UserIdentityTable.userRef + " = " + user.getID().toString();
-		DbDriver.updateCleanSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_POSSIBLE);
+		int numRowsDeleted = DbDriver.updateCleanSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_POSSIBLE);
+		return numRowsDeleted > 0;
 	}
 
 	public void mapUserIdentity(Connection con, User user, String authSubject, String authIssuer, KeyFactory keyFactory) throws SQLException {

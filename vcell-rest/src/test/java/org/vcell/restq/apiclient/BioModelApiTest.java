@@ -1,7 +1,5 @@
 package org.vcell.restq.apiclient;
 
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -11,13 +9,11 @@ import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.BioModel;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
@@ -67,7 +63,9 @@ public class BioModelApiTest {
     //TODO: Add endpoint that retrieves all BM affiliated with user, then use that for testing
     @Test
     public void testAddRemove() throws ApiException, IOException, XmlParseException, PropertyVetoException {
-        TestEndpointUtils.mapClientToNagiosUser(aliceAPIClient);
+        boolean mapped = new UsersResourceApi(aliceAPIClient).setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        Assertions.assertTrue(mapped);
+
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
 
         String vcmlString = IOUtils.toString(getClass().getResourceAsStream("/TestVCML.vcml"));

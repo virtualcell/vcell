@@ -643,22 +643,23 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         }
     }
 
-    public void deleteUserIdentity(User user, String authSubject, String authIssuer, boolean bEnableRetry) throws SQLException, DataAccessException {
+    public boolean deleteUserIdentity(User user, String authSubject, String authIssuer, boolean bEnableRetry) throws SQLException, DataAccessException {
         Object lock = new Object();
         Connection con = conFactory.getConnection(lock);
         try {
-            userDB.removeUserIdentity(con, user, authSubject, authIssuer);
+            return userDB.removeUserIdentity(con, user, authSubject, authIssuer);
         } catch(Throwable e){
             lg.error("failure in getUserIdentityFromAuth0()", e);
             if(bEnableRetry && isBadConnection(con)){
                 conFactory.failed(con, lock);
-                deleteUserIdentity(user, authSubject, authIssuer, false);
+                return deleteUserIdentity(user, authSubject, authIssuer, false);
             } else {
                 handle_DataAccessException_SQLException(e);
             }
         } finally {
             conFactory.release(con, lock);
         }
+        return false; // should never get here
     }
 
     public List<UserIdentity> getUserIdentitiesFromSubjectAndIssuer(String subject, String issuer, boolean bEnableRetry)

@@ -11,6 +11,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
@@ -62,8 +63,10 @@ public class PublicationApiTest {
     public void testAddListRemove() throws ApiException {
         String pubuser = "alice";
         String nonpubuser = "bob";
-        TestEndpointUtils.mapClientToAdminUser(aliceAPIClient);
-        TestEndpointUtils.mapClientToNagiosUser(bobAPIClient);
+        boolean mapped = new UsersResourceApi(aliceAPIClient).setVCellIdentity(TestEndpointUtils.administratorUserLoginInfo);
+        Assertions.assertTrue(mapped);
+        mapped = new UsersResourceApi(bobAPIClient).setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        Assertions.assertTrue(mapped);
 
         Log.debug("authServerUrl: " + authServerUrl + " to be used later instead of keycloakClient");
 

@@ -8,6 +8,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -50,10 +51,19 @@ public class UsersResource {
     @POST
     @Path("/mapUser")
     @RolesAllowed("user")
-    @Operation(operationId = "setVCellIdentity", summary = "set or replace vcell identity mapping")
+    @Operation(operationId = "setVCellIdentity", summary = "set vcell identity mapping")
     @Consumes(MediaType.APPLICATION_JSON)
-    public boolean mapUser(UserLoginInfoForMapping mapUser) throws SQLException, DataAccessException {
+    public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
+    }
+
+    @PUT
+    @Path("/unmapUser/{userName}")
+    @RolesAllowed("user")
+    @Operation(operationId = "clearVCellIdentity", summary = "remove vcell identity mapping")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public boolean unmapUser(String userName) throws DataAccessException {
+        return userRestDB.unmapUserIdentity(securityIdentity, userName);
     }
 
     @GET
@@ -67,9 +77,9 @@ public class UsersResource {
     public UserIdentityJSONSafe getIdentity() throws DataAccessException {
         List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
         if (userIdentities.isEmpty()){
-            return null;
+            throw new WebApplicationException("Identity not found", Response.Status.NOT_FOUND);
         } else if (userIdentities.size() > 1){
-            throw new DataAccessException("Multiple identities found for user");
+            throw new WebApplicationException("Multiple identities found for user", Response.Status.INTERNAL_SERVER_ERROR);
         } else {
             return UserIdentityJSONSafe.fromUserIdentity(userIdentities.get(0));
         }
