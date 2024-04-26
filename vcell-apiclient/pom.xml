@@ -135,5 +135,10 @@
   <artifactId>jaxb-impl</artifactId>
   <version>2.3.0</version>
 </dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-restclient</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

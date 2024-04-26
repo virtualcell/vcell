@@ -191,18 +191,6 @@ paths:
       - Users Resource
       summary: Get token for legacy API
       operationId: getLegacyApiToken
-      requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                user_id:
-                  type: string
-                user_password:
-                  type: string
-                client_id:
-                  type: string
       responses:
         "200":
           description: OK
@@ -218,7 +206,7 @@ paths:
       operationId: getVCellIdentity
       responses:
         "200":
-          description: OK
+          description: "Successful, returning the identity"
           content:
             application/json:
               schema:
@@ -227,6 +215,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "404":
+          description: Identity not found
       security:
       - openId:
         - user
@@ -234,13 +224,13 @@ paths:
     post:
       tags:
       - Users Resource
-      summary: set or replace vcell identity mapping
+      summary: set vcell identity mapping
       operationId: setVCellIdentity
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MapUser'
+              $ref: '#/components/schemas/UserLoginInfoForMapping'
       responses:
         "200":
           description: OK
@@ -268,6 +258,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+  /api/v1/users/unmapUser/{userName}:
+    put:
+      tags:
+      - Users Resource
+      summary: remove vcell identity mapping
+      operationId: clearVCellIdentity
+      parameters:
+      - name: userName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: boolean
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
 components:
   schemas:
     AccesTokenRepresentationRecord:
@@ -346,13 +362,6 @@ components:
       type: object
       properties:
         message:
-          type: string
-    MapUser:
-      type: object
-      properties:
-        userID:
-          type: string
-        password:
           type: string
     MathmodelRef:
       type: object
@@ -441,6 +450,13 @@ components:
         subject:
           type: string
         insertDate:
+          type: string
+    UserLoginInfoForMapping:
+      type: object
+      properties:
+        userID:
+          type: string
+        password:
           type: string
   securitySchemes:
     openId:

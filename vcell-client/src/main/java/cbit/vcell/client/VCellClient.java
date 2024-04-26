@@ -21,6 +21,13 @@ import javax.swing.SwingUtilities;
 
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.vcell.api.client.VCellApiClient;
+import org.vcell.api.common.AccessTokenRepresentation;
+import org.vcell.restclient.api.UsersResourceApi;
+import org.vcell.restclient.auth.AuthApiClient;
+import org.vcell.restclient.model.AccesTokenRepresentationRecord;
+import org.vcell.restclient.model.MapUser;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
@@ -254,8 +261,24 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		}
 		
 	};
-	
-	AsynchClientTask task2b  = new AsynchClientTask("Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+	AsynchClientTask task2b = new AsynchClientTask("Login With Auth0...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			vcellConnectionFactory.auth0SignIn();
+			DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
+			if (!vcellConnectionFactory.isVCellIdentityMappedToAuth0Identity()){
+				// pop up with ability to input login info
+				loginAuth0(getRequestManager(), clientServerInfo, currWindowManager);
+			}
+			else{
+				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, vcellConnectionFactory.getAuth0MappedUser(), null);
+				getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
+			}
+		}
+	};
+
+	AsynchClientTask task2c  = new AsynchClientTask("Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -279,6 +302,60 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 
 	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task2b, task3};
 	ClientTaskDispatcher.dispatch(null, hash, taskArray);
+}
+
+public void loginAuth0(final RequestManager requestManager, final ClientServerInfo clientServerInfo, final DocumentWindowManager documentWindowManager){
+	final LoginManager loginManager = new LoginManager();
+	LoginDelegate loginDelegate = new LoginDelegate() {
+
+		// legacy login to map the user to an Auth0 account
+		public void login(final String userid, final UserLoginInfo.DigestedPassword digestedPassword)
+		{
+			AsynchClientTask task1 = new AsynchClientTask("connect to server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, userid, digestedPassword);
+					vcellConnectionFactory.mapVCellIdentityToAuth0Identity(newClientServerInfo.getUserLoginInfo());
+					requestManager.connectToServer(documentWindowManager, newClientServerInfo);
+				}
+			};
+
+			AsynchClientTask task2 = new AsynchClientTask("logging in", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
+					loginManager.close();
+					if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
+						VCellClient.this.loginAuth0(requestManager,clientServerInfo, documentWindowManager);
+					}
+					else {
+						ErrorUtils.setLoginInfo(clientServerInfo.getUserLoginInfo());
+					}
+				}
+			};
+			ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] { task1, task2} );
+		}
+
+		public void registerRequest() {
+			loginManager.close();
+			// They don't have an existing VCell user, so we automatically create one based on what Auth0 provides us, or let them input a VCell username
+		}
+
+		public void lostPasswordRequest(String userid) {
+			// Lost legacy password
+		}
+
+		public void userCancel(){
+			loginManager.close();
+			PopupGenerator.showInfoDialog(documentWindowManager,
+					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");
+		}
+	};
+
+	loginManager.showLoginDialog(documentWindowManager.getComponent(), documentWindowManager, loginDelegate);
+
 }
 
 public void login(final RequestManager requestManager, final ClientServerInfo clientServerInfo, final DocumentWindowManager currWindowManager){

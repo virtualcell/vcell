@@ -25,6 +25,7 @@ public class UserLoginInfo implements Serializable {
 
 	private String userName;
 	private DigestedPassword digestedPassword;// obfuscate password
+	private transient String password; // clear text password
 	private AccessTokenRepresentation access_token;
 	private String os_name;// os.name Operating system name
 	private String os_arch;// os.arch Operating system architecture
@@ -105,13 +106,19 @@ public class UserLoginInfo implements Serializable {
 
 	public static class DigestedPassword implements Serializable {
 		private String digestedPasswordStr;
+		private transient String clearTextPassword;
 
 		private DigestedPassword() {
 
 		}
 
 		public DigestedPassword(String clearTextPassword) {
+			this.clearTextPassword = clearTextPassword;
 			this.digestedPasswordStr = createdDigestPassword(clearTextPassword);
+		}
+
+		public String getClearTextPassword() {
+			return clearTextPassword;
 		}
 
 		private static String createdDigestPassword(String clearTextPassword) {

@@ -20,6 +20,7 @@ import cbit.vcell.server.VCellConnectionFactory;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.nimbusds.oauth2.sdk.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.DependencyConstants;
@@ -28,11 +29,14 @@ import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.api.common.events.*;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -189,7 +193,55 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	}
 }
 
-public static String getVCellSoftwareVersion(String apihost, Integer apiport, String pathPrefix_v0) {
+	@Override
+	public VCellConnection createVCellConnectionAuth0(UserLoginInfo userLoginInfo) {
+		try {
+			AccesTokenRepresentationRecord accessTokenRep = this.getVCellApiClient().getLegacyToken();
+			userLoginInfo.setUser(new User(accessTokenRep.getUserId(), new KeyValue(accessTokenRep.getUserKey())));
+			return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender);
+		} catch (ApiException apiException){
+			throw new RuntimeException(apiException);
+		}
+//		return null;
+	}
+
+	@Override
+	public boolean isVCellIdentityMappedToAuth0Identity() {
+		try{
+			return vcellApiClient.isVCellIdentityMapped();
+		} catch (ApiException e){
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public void mapVCellIdentityToAuth0Identity(UserLoginInfo userLoginInfo) {
+		try{
+			vcellApiClient.mapUserToAuth0(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getClearTextPassword());
+		} catch (ApiException e){
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public void auth0SignIn() {
+		try{
+			vcellApiClient.authenticateWithAuth0();
+		} catch (ApiException | URISyntaxException | IOException | ParseException e){
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public String getAuth0MappedUser() {
+        try {
+            return vcellApiClient.getVCellUserNameFromAuth0Mapping();
+        } catch (ApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+	public static String getVCellSoftwareVersion(String apihost, Integer apiport, String pathPrefix_v0) {
 	boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
 	boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
 	try {

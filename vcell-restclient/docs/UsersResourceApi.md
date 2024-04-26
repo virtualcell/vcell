@@ -4,20 +4,160 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**clearVCellIdentity**](UsersResourceApi.md#clearVCellIdentity) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping |
+| [**clearVCellIdentityWithHttpInfo**](UsersResourceApi.md#clearVCellIdentityWithHttpInfo) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping |
 | [**getLegacyApiToken**](UsersResourceApi.md#getLegacyApiToken) | **POST** /api/v1/users/bearerToken | Get token for legacy API |
 | [**getLegacyApiTokenWithHttpInfo**](UsersResourceApi.md#getLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/bearerToken | Get token for legacy API |
 | [**getMe**](UsersResourceApi.md#getMe) | **GET** /api/v1/users/me | Get current user |
 | [**getMeWithHttpInfo**](UsersResourceApi.md#getMeWithHttpInfo) | **GET** /api/v1/users/me | Get current user |
 | [**getVCellIdentity**](UsersResourceApi.md#getVCellIdentity) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity |
 | [**getVCellIdentityWithHttpInfo**](UsersResourceApi.md#getVCellIdentityWithHttpInfo) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity |
-| [**setVCellIdentity**](UsersResourceApi.md#setVCellIdentity) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping |
-| [**setVCellIdentityWithHttpInfo**](UsersResourceApi.md#setVCellIdentityWithHttpInfo) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping |
+| [**setVCellIdentity**](UsersResourceApi.md#setVCellIdentity) | **POST** /api/v1/users/mapUser | set vcell identity mapping |
+| [**setVCellIdentityWithHttpInfo**](UsersResourceApi.md#setVCellIdentityWithHttpInfo) | **POST** /api/v1/users/mapUser | set vcell identity mapping |
 
+
+
+## clearVCellIdentity
+
+> Boolean clearVCellIdentity(userName)
+
+remove vcell identity mapping
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String userName = "userName_example"; // String | 
+        try {
+            Boolean result = apiInstance.clearVCellIdentity(userName);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#clearVCellIdentity");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **userName** | **String**|  | |
+
+### Return type
+
+**Boolean**
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: text/plain
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
+
+## clearVCellIdentityWithHttpInfo
+
+> ApiResponse<Boolean> clearVCellIdentity clearVCellIdentityWithHttpInfo(userName)
+
+remove vcell identity mapping
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String userName = "userName_example"; // String | 
+        try {
+            ApiResponse<Boolean> response = apiInstance.clearVCellIdentityWithHttpInfo(userName);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#clearVCellIdentity");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **userName** | **String**|  | |
+
+### Return type
+
+ApiResponse<**Boolean**>
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: text/plain
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## getLegacyApiToken
 
-> AccesTokenRepresentationRecord getLegacyApiToken(userId, userPassword, clientId)
+> AccesTokenRepresentationRecord getLegacyApiToken()
 
 Get token for legacy API
 
@@ -37,11 +177,8 @@ public class Example {
         defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
-        String userId = "userId_example"; // String | 
-        String userPassword = "userPassword_example"; // String | 
-        String clientId = "clientId_example"; // String | 
         try {
-            AccesTokenRepresentationRecord result = apiInstance.getLegacyApiToken(userId, userPassword, clientId);
+            AccesTokenRepresentationRecord result = apiInstance.getLegacyApiToken();
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling UsersResourceApi#getLegacyApiToken");
@@ -56,12 +193,7 @@ public class Example {
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **userId** | **String**|  | [optional] |
-| **userPassword** | **String**|  | [optional] |
-| **clientId** | **String**|  | [optional] |
+This endpoint does not need any parameter.
 
 ### Return type
 
@@ -74,7 +206,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/x-www-form-urlencoded
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 ### HTTP response details
@@ -84,7 +216,7 @@ No authorization required
 
 ## getLegacyApiTokenWithHttpInfo
 
-> ApiResponse<AccesTokenRepresentationRecord> getLegacyApiToken getLegacyApiTokenWithHttpInfo(userId, userPassword, clientId)
+> ApiResponse<AccesTokenRepresentationRecord> getLegacyApiToken getLegacyApiTokenWithHttpInfo()
 
 Get token for legacy API
 
@@ -105,11 +237,8 @@ public class Example {
         defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
-        String userId = "userId_example"; // String | 
-        String userPassword = "userPassword_example"; // String | 
-        String clientId = "clientId_example"; // String | 
         try {
-            ApiResponse<AccesTokenRepresentationRecord> response = apiInstance.getLegacyApiTokenWithHttpInfo(userId, userPassword, clientId);
+            ApiResponse<AccesTokenRepresentationRecord> response = apiInstance.getLegacyApiTokenWithHttpInfo();
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -126,12 +255,7 @@ public class Example {
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **userId** | **String**|  | [optional] |
-| **userPassword** | **String**|  | [optional] |
-| **clientId** | **String**|  | [optional] |
+This endpoint does not need any parameter.
 
 ### Return type
 
@@ -144,7 +268,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/x-www-form-urlencoded
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 ### HTTP response details
@@ -334,9 +458,10 @@ This endpoint does not need any parameter.
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | OK |  -  |
+| **200** | Successful, returning the identity |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Identity not found |  -  |
 
 ## getVCellIdentityWithHttpInfo
 
@@ -400,16 +525,17 @@ ApiResponse<[**UserIdentityJSONSafe**](UserIdentityJSONSafe.md)>
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | OK |  -  |
+| **200** | Successful, returning the identity |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Identity not found |  -  |
 
 
 ## setVCellIdentity
 
-> Boolean setVCellIdentity(mapUser)
+> Boolean setVCellIdentity(userLoginInfoForMapping)
 
-set or replace vcell identity mapping
+set vcell identity mapping
 
 ### Example
 
@@ -429,9 +555,9 @@ public class Example {
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
-        MapUser mapUser = new MapUser(); // MapUser | 
+        UserLoginInfoForMapping userLoginInfoForMapping = new UserLoginInfoForMapping(); // UserLoginInfoForMapping | 
         try {
-            Boolean result = apiInstance.setVCellIdentity(mapUser);
+            Boolean result = apiInstance.setVCellIdentity(userLoginInfoForMapping);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling UsersResourceApi#setVCellIdentity");
@@ -449,7 +575,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **mapUser** | [**MapUser**](MapUser.md)|  | [optional] |
+| **userLoginInfoForMapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | [optional] |
 
 ### Return type
 
@@ -474,9 +600,9 @@ public class Example {
 
 ## setVCellIdentityWithHttpInfo
 
-> ApiResponse<Boolean> setVCellIdentity setVCellIdentityWithHttpInfo(mapUser)
+> ApiResponse<Boolean> setVCellIdentity setVCellIdentityWithHttpInfo(userLoginInfoForMapping)
 
-set or replace vcell identity mapping
+set vcell identity mapping
 
 ### Example
 
@@ -497,9 +623,9 @@ public class Example {
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
-        MapUser mapUser = new MapUser(); // MapUser | 
+        UserLoginInfoForMapping userLoginInfoForMapping = new UserLoginInfoForMapping(); // UserLoginInfoForMapping | 
         try {
-            ApiResponse<Boolean> response = apiInstance.setVCellIdentityWithHttpInfo(mapUser);
+            ApiResponse<Boolean> response = apiInstance.setVCellIdentityWithHttpInfo(userLoginInfoForMapping);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -519,7 +645,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **mapUser** | [**MapUser**](MapUser.md)|  | [optional] |
+| **userLoginInfoForMapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | [optional] |
 
 ### Return type
 

@@ -47,6 +47,13 @@ public class CustomSecurityIdentityAugmentor implements SecurityIdentityAugmento
         return identity.getPrincipal().getName();
     }
 
+    public static JsonWebToken getJsonWebToken(SecurityIdentity identity){
+        if (identity.isAnonymous()) {
+            return null;
+        }
+        return (JsonWebToken) identity.getPrincipal();
+    }
+
     private Set<String> getRolesFromToken(JsonWebToken jwt) {
         if (jwt.containsClaim("vcellapi.cam.uchc.edu/roles")) {
             return getRolesFromAuth0Token(jwt);

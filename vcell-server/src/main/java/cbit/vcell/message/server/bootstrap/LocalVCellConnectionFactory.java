@@ -40,6 +40,7 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 	
 	private ConnectionFactory connectionFactory = null;
 
+
 @Override
 public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws AuthenticationException, ConnectionException {
 	try {
@@ -74,7 +75,32 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	}
 }
 
-/**
+	@Override
+	public VCellConnection createVCellConnectionAuth0(UserLoginInfo userLoginInfo) throws ConnectionException {
+		return null;
+	}
+
+	@Override
+	public boolean isVCellIdentityMappedToAuth0Identity() {
+		return false;
+	}
+
+	@Override
+	public void mapVCellIdentityToAuth0Identity(UserLoginInfo userLoginInfo) {
+
+	}
+
+	@Override
+	public void auth0SignIn() {
+
+	}
+
+	@Override
+	public String getAuth0MappedUser() {
+		return "";
+	}
+
+	/**
  * trigger loading of HDF library when running local
  */
 private void linkHDFLib( ) {

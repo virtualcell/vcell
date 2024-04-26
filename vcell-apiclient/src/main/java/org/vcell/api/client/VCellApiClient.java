@@ -1,6 +1,7 @@
 package org.vcell.api.client;
 
 import com.google.gson.Gson;
+import com.nimbusds.oauth2.sdk.ParseException;
 import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -27,6 +28,13 @@ import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.api.common.*;
 import org.vcell.api.common.events.EventWrapper;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.api.UsersResourceApi;
+import org.vcell.restclient.auth.AuthApiClient;
+import org.vcell.restclient.auth.InteractiveLogin;
+import org.vcell.restclient.model.AccesTokenRepresentationRecord;
+import org.vcell.restclient.model.UserIdentityJSONSafe;
+import org.vcell.restclient.model.UserLoginInfoForMapping;
 
 import java.io.*;
 import java.net.URI;
@@ -57,6 +65,7 @@ public class VCellApiClient implements AutoCloseable {
 	boolean bIgnoreHostMismatch = true;
 	boolean bSkipSSL = true;
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
+	private AuthApiClient apiClient = null;
 
 
 	// Create a custom response handler
@@ -111,7 +120,7 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
-		this.httpHost = new HttpHost(host,port,"http");
+		this.httpHost = new HttpHost(host,port,(bSkipSSL?"http":"https"));
 		this.pathPrefix_v0 = pathPrefix_v0;
 		this.clientID = DEFAULT_CLIENTID;
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
@@ -190,7 +199,7 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	private String getApiUrlPrefix() {
-		final String scheme = "https";
+		final String scheme = httpHost.getSchemeName();
 		if (httpHost.getPort() != 443) {
 			return scheme+"://"+httpHost.getHostName()+":"+httpHost.getPort()+this.pathPrefix_v0;
 		}else{
@@ -477,6 +486,49 @@ public class VCellApiClient implements AutoCloseable {
 		httpClientContext.setUserToken(accessTokenRep.token);
 		
 		return accessTokenRep;
+	}
+
+	public void authenticateWithAuth0() throws URISyntaxException, IOException, ParseException, ApiException {
+		apiClient = InteractiveLogin.login("cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf", new URI("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/authorize"),
+				new URI(this.httpHost.getSchemeName()+"://"+this.httpHost.getHostName()+":"+this.httpHost.getPort()));
+		apiClient.setScheme(this.httpHost.getSchemeName());
+	}
+
+	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
+		try {
+			UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
+			UserIdentityJSONSafe vcellIdentity = usersResourceApi.getVCellIdentity();
+			return vcellIdentity.getUserName();
+		}catch (ApiException e){
+			if (e.getCode() == 404){
+				return null;
+			}else{
+				throw e;
+			}
+		}
+	}
+
+	public boolean isVCellIdentityMapped() throws ApiException {
+		return getVCellUserNameFromAuth0Mapping() != null;
+	}
+
+	public void mapUserToAuth0(String userID, String password) throws ApiException {
+		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
+		UserLoginInfoForMapping userLoginInfoForMapping = new UserLoginInfoForMapping();
+		userLoginInfoForMapping.setUserID(userID);
+		userLoginInfoForMapping.setPassword(password);
+		usersResourceApi.setVCellIdentity(userLoginInfoForMapping);
+	}
+
+	public AccesTokenRepresentationRecord getLegacyToken() throws ApiException {
+		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
+		AccesTokenRepresentationRecord accesTokenRepresentationRecord = usersResourceApi.getLegacyApiToken();
+
+		// Add AuthCache to the execution context
+		httpClientContext = HttpClientContext.create();
+		httpClientContext.setUserToken(accesTokenRepresentationRecord.getToken());
+
+		return accesTokenRepresentationRecord;
 	}
 	
 	public void clearAuthentication() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{

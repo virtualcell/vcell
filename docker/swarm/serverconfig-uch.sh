@@ -173,7 +173,7 @@ VCELL_SSH_CMD_RESTORE_TIMEOUT=5
 
 #
 # write out the environment file to be for:
-# 1. deployment actions (e.g. deploy-action.sh)
+# 1. deployment actions (e.g. deploy-action-swarm.sh or deploy-action-kubernetes.sh)
 # 2. runtime environment for the docker stack run command
 #
 cat <<EOF >"$_outputfile"

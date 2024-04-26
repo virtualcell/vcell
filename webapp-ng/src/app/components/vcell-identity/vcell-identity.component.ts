@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {AuthService} from '@auth0/auth0-angular';
-import {MapUser} from 'src/app/core/modules/openapi/model/models';
+import {UserLoginInfoForMapping} from 'src/app/core/modules/openapi/model/models';
 import {UsersResourceService} from "../../core/modules/openapi";
 
 @Component({
@@ -10,7 +10,7 @@ import {UsersResourceService} from "../../core/modules/openapi";
 })
 export class VcellIdentityComponent implements OnInit {
   vcellUserId: string = 'not-set';
-  mapUser: MapUser = new class implements MapUser {
+  mapUser: UserLoginInfoForMapping = new class implements UserLoginInfoForMapping {
     password: string;
     userID: string;
   };

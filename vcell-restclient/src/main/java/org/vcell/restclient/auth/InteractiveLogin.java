@@ -61,9 +61,10 @@ public class InteractiveLogin {
 
         OIDCTokens oidcTokens = exchangeCodeForTokens(authorizationResponse, oidcProviderMetadata.getTokenEndpointURI(), new ClientID(clientID), scope, redirectURI, codeVerifier);
         String accessToken = oidcTokens.getAccessToken().getValue();
+        String idToken = oidcTokens.getIDTokenString();
 
         AuthApiClient authApiClient = new AuthApiClient(apiBaseUri, oidcProviderMetadata.getTokenEndpointURI(), oidcTokens.getAccessToken(), oidcTokens.getRefreshToken());
-        authApiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + accessToken));
+        authApiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + idToken));
         return authApiClient;
     }
 

@@ -2,21 +2,23 @@ package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.ApiAccessToken;
 import cbit.vcell.modeldb.UserIdentity;
-import com.google.gson.Gson;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.jboss.resteasy.reactive.NoCache;
-import org.vcell.api.common.AccessTokenRepresentation;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.List;
 
 @Path("/api/v1/users")
 @RequestScoped
@@ -40,33 +42,47 @@ public class UsersResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public User me() {
-        try{
-            return User.fromSecurityIdentity(securityIdentity);
+        if (securityIdentity.isAnonymous()){
+            return new User("anonymous", null, null, null);
         }
-        catch (Exception e){
-            return new User(e.getMessage(), null, null, null);
-        }
+        return User.fromSecurityIdentity(securityIdentity);
     }
 
     @POST
     @Path("/mapUser")
     @RolesAllowed("user")
-    @Operation(operationId = "setVCellIdentity", summary = "set or replace vcell identity mapping")
+    @Operation(operationId = "setVCellIdentity", summary = "set vcell identity mapping")
     @Consumes(MediaType.APPLICATION_JSON)
-    public boolean mapUser(MapUser mapUser) throws SQLException, DataAccessException {
+    public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
+    }
+
+    @PUT
+    @Path("/unmapUser/{userName}")
+    @RolesAllowed("user")
+    @Operation(operationId = "clearVCellIdentity", summary = "remove vcell identity mapping")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public boolean unmapUser(String userName) throws DataAccessException {
+        return userRestDB.unmapUserIdentity(securityIdentity, userName);
     }
 
     @GET
     @Path("/getIdentity")
     @Operation(operationId = "getVCellIdentity", summary = "Get mapped VCell identity")
     @RolesAllowed("user")
-    public UserIdentityJSONSafe getIdentity() throws SQLException, DataAccessException {
-        UserIdentity userIdentity = userRestDB.getUserIdentity(securityIdentity);
-        if(userIdentity == null){
-            return new UserIdentityJSONSafe(null, null, null, null);
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
+            @APIResponse(responseCode = "404", description = "Identity not found")
+    })
+    public UserIdentityJSONSafe getIdentity() throws DataAccessException {
+        List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
+        if (userIdentities.isEmpty()){
+            throw new WebApplicationException("Identity not found", Response.Status.NOT_FOUND);
+        } else if (userIdentities.size() > 1){
+            throw new WebApplicationException("Multiple identities found for user", Response.Status.INTERNAL_SERVER_ERROR);
+        } else {
+            return UserIdentityJSONSafe.fromUserIdentity(userIdentities.get(0));
         }
-        return UserIdentityJSONSafe.fromUserIdentity(userIdentity);
     }
 
     @POST
@@ -75,20 +91,16 @@ public class UsersResource {
     @Operation(operationId = "getLegacyApiToken", summary = "Get token for legacy API")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     // Not using user PASSWD because they should already be authenticated with OIDC
-    public AccesTokenRepresentationRecord generateBearerToken(@FormParam("user_id") String userID, @FormParam("user_password") String passwd, @FormParam("client_id") String client_id) throws SQLException, DataAccessException {
+    public AccesTokenRepresentationRecord generateBearerToken() throws SQLException, DataAccessException {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
         org.vcell.util.document.User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-        if(vcellUser == null || !vcellUser.getID().toString().equals(userID)){
+        if(vcellUser == null){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
-//        UserIdentity identityUser = new UserIdentity(null, new org.vcell.util.document.User("vcellNagios", new KeyValue("3")), null, null);
         ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), vcellUser);
-//        AccessTokenRepresentation tokenRep = new AccessTokenRepresentation(apiAccessToken.getToken());
-//        Gson gson = new Gson();
-//        return gson.toJson(tokenRep);
-        return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(new AccessTokenRepresentation(apiAccessToken.getToken()));
+        return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
     }
 
     public record AccesTokenRepresentationRecord(
@@ -98,19 +110,15 @@ public class UsersResource {
             String userId,
             String userKey
     ){
-        public static AccesTokenRepresentationRecord getRecordFromAccessTokenRepresentation(AccessTokenRepresentation atr){
-            return new AccesTokenRepresentationRecord(atr.token, atr.creationDateSeconds, atr.expireDateSeconds, atr.userId, atr.userKey);
+        public static AccesTokenRepresentationRecord getRecordFromAccessTokenRepresentation(ApiAccessToken atr){
+            return new AccesTokenRepresentationRecord(atr.getToken(), atr.getCreationDate().getTime(), atr.getExpiration().getTime(), atr.getUser().getName(), atr.getUser().getID().toString());
         }
     }
 
-    public record MapUser(
+    public record UserLoginInfoForMapping(
             String userID,
-            String password){
-        public static MapUser getRecordFromString(String jsonString){
-            Gson gson = new Gson();
-            return gson.fromJson(jsonString, MapUser.class);
-        }
-    }
+            String password
+    ){ }
 
     public record UserIdentityJSONSafe(
             String userName,

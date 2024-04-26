@@ -18,18 +18,12 @@ import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
-import org.vcell.restclient.model.MapUser;
 import org.vcell.restclient.model.User;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
+import org.vcell.restclient.model.UserLoginInfoForMapping;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
-//import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
@@ -91,30 +85,96 @@ public class UsersResourceApi {
   }
 
   /**
+   * remove vcell identity mapping
+   * 
+   * @param userName  (required)
+   * @return Boolean
+   * @throws ApiException if fails to make API call
+   */
+  public Boolean clearVCellIdentity(String userName) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = clearVCellIdentityWithHttpInfo(userName);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * remove vcell identity mapping
+   * 
+   * @param userName  (required)
+   * @return ApiResponse&lt;Boolean&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Boolean> clearVCellIdentityWithHttpInfo(String userName) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = clearVCellIdentityRequestBuilder(userName);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("clearVCellIdentity", localVarResponse);
+        }
+        return new ApiResponse<Boolean>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Boolean>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder clearVCellIdentityRequestBuilder(String userName) throws ApiException {
+    // verify the required parameter 'userName' is set
+    if (userName == null) {
+      throw new ApiException(400, "Missing the required parameter 'userName' when calling clearVCellIdentity");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/unmapUser/{userName}"
+        .replace("{userName}", ApiClient.urlEncode(userName.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "text/plain");
+
+    localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
    * Get token for legacy API
    * 
-   * @param userId  (optional)
-   * @param userPassword  (optional)
-   * @param clientId  (optional)
    * @return AccesTokenRepresentationRecord
    * @throws ApiException if fails to make API call
    */
-  public AccesTokenRepresentationRecord getLegacyApiToken(String userId, String userPassword, String clientId) throws ApiException {
-    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getLegacyApiTokenWithHttpInfo(userId, userPassword, clientId);
+  public AccesTokenRepresentationRecord getLegacyApiToken() throws ApiException {
+    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getLegacyApiTokenWithHttpInfo();
     return localVarResponse.getData();
   }
 
   /**
    * Get token for legacy API
    * 
-   * @param userId  (optional)
-   * @param userPassword  (optional)
-   * @param clientId  (optional)
    * @return ApiResponse&lt;AccesTokenRepresentationRecord&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<AccesTokenRepresentationRecord> getLegacyApiTokenWithHttpInfo(String userId, String userPassword, String clientId) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getLegacyApiTokenRequestBuilder(userId, userPassword, clientId);
+  public ApiResponse<AccesTokenRepresentationRecord> getLegacyApiTokenWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getLegacyApiTokenRequestBuilder();
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -142,7 +202,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder getLegacyApiTokenRequestBuilder(String userId, String userPassword, String clientId) throws ApiException {
+  private HttpRequest.Builder getLegacyApiTokenRequestBuilder() throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -152,27 +212,7 @@ public class UsersResourceApi {
 
     localVarRequestBuilder.header("Accept", "application/json");
 
-    List<NameValuePair> formValues = new ArrayList<>();
-    if (userId != null) {
-        formValues.add(new BasicNameValuePair("user_id", userId.toString()));
-    }
-    if (userPassword != null) {
-        formValues.add(new BasicNameValuePair("user_password", userPassword.toString()));
-    }
-    if (clientId != null) {
-        formValues.add(new BasicNameValuePair("client_id", clientId.toString()));
-    }
-    HttpEntity entity = new UrlEncodedFormEntity(formValues, java.nio.charset.StandardCharsets.UTF_8);
-    ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
-    try {
-        entity.writeTo(formOutputStream);
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    }
-    localVarRequestBuilder
-        .header("Content-Type", entity.getContentType().getValue())
-        .method("POST", HttpRequest.BodyPublishers
-            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray())));
+    localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
@@ -312,26 +352,26 @@ public class UsersResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * set or replace vcell identity mapping
+   * set vcell identity mapping
    * 
-   * @param mapUser  (optional)
+   * @param userLoginInfoForMapping  (optional)
    * @return Boolean
    * @throws ApiException if fails to make API call
    */
-  public Boolean setVCellIdentity(MapUser mapUser) throws ApiException {
-    ApiResponse<Boolean> localVarResponse = setVCellIdentityWithHttpInfo(mapUser);
+  public Boolean setVCellIdentity(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = setVCellIdentityWithHttpInfo(userLoginInfoForMapping);
     return localVarResponse.getData();
   }
 
   /**
-   * set or replace vcell identity mapping
+   * set vcell identity mapping
    * 
-   * @param mapUser  (optional)
+   * @param userLoginInfoForMapping  (optional)
    * @return ApiResponse&lt;Boolean&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Boolean> setVCellIdentityWithHttpInfo(MapUser mapUser) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = setVCellIdentityRequestBuilder(mapUser);
+  public ApiResponse<Boolean> setVCellIdentityWithHttpInfo(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = setVCellIdentityRequestBuilder(userLoginInfoForMapping);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -359,7 +399,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder setVCellIdentityRequestBuilder(MapUser mapUser) throws ApiException {
+  private HttpRequest.Builder setVCellIdentityRequestBuilder(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -371,7 +411,7 @@ public class UsersResourceApi {
     localVarRequestBuilder.header("Accept", "text/plain");
 
     try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(mapUser);
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(userLoginInfoForMapping);
       localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
     } catch (IOException e) {
       throw new ApiException(e);

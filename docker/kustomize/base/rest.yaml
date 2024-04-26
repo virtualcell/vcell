@@ -40,12 +40,14 @@ spec:
           env:
             - name: JAVA_OPTS
               value: >
+                -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
                 -Dquarkus.http.host=0.0.0.0
                 -Djava.util.logging.manager=org.jboss.logmanager.LogManager
                 -Dvcellapi.privateKey.file=/run/secrets/jwt-secret/apiprivkey
                 -Dvcellapi.publicKey.file=/run/secrets/jwt-secret/apipubkey
           ports:
             - containerPort: 80
+            - containerPort: 5005
           volumeMounts:
             - name: jwt-secret
               mountPath: /run/secrets/jwt-secret

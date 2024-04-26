@@ -34,7 +34,7 @@ docker run -p 5432:5432 \
       --detach \
       --name ${CONTAINER_NAME} \
       --env "POSTGRES_PASSWORD=quarkus" \
-      --env "POSTGRES_DB=mydb" \
+      --env "POSTGRES_DB=postgres" \
       --env "POSTGRES_USER=quarkus" \
       -v "${SCRIPT_DIR}"/init.sql:/docker-entrypoint-initdb.d/init.sql \
       postgres:14.2

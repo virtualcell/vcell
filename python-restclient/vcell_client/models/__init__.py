@@ -19,9 +19,9 @@ from vcell_client.models.acces_token_representation_record import AccesTokenRepr
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.hello_world_message import HelloWorldMessage
-from vcell_client.models.map_user import MapUser
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.publication import Publication
 from vcell_client.models.simulation import Simulation
 from vcell_client.models.user import User
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
+from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping

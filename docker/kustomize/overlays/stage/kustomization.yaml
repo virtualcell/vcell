@@ -6,25 +6,25 @@ namespace: stage
 
 images:
   - name: ghcr.io/virtualcell/vcell-api
-    newTag: 7.5.0.131
+    newTag: 7.5.0.133.5
   - name: ghcr.io/virtualcell/vcell-data
-    newTag: 7.5.0.131
+    newTag: 7.5.0.133.5
   - name: ghcr.io/virtualcell/vcell-db
-    newTag: 7.5.0.131
+    newTag: 7.5.0.133.5
   - name: ghcr.io/virtualcell/vcell-rest
-    newTag: 7.5.0.131
+    newTag: 7.5.0.133.5
   - name: ghcr.io/virtualcell/vcell-sched
-    newTag: 7.5.0.131
+    newTag: 7.5.0.133.5
   - name: ghcr.io/virtualcell/vcell-submit
-    newTag: 7.5.0.131
+    newTag: 7.5.0.133.5
   - name: ghcr.io/virtualcell/vcell-s3proxy
-    newTag: 7.5.0.131
+    newTag: 7.5.0.133.5
   - name: ghcr.io/virtualcell/vcell-webapp
-    newTag: 7.5.0.131
+    newTag: 7.5.0.133.5
   - name: webcenter/activemq
     newTag: 5.14.3
   - name: ghcr.io/virtualcell/vcell-mongo
-    newTag: 7.5.0.131
+    newTag: 7.5.0.133.5
 
 replicas:
   - name: api

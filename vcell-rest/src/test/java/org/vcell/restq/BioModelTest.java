@@ -1,8 +1,6 @@
 package org.vcell.restq;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -14,12 +12,10 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
@@ -53,8 +49,7 @@ public class BioModelTest {
 
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
-        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
-        adminDBTopLevel.removeAllUsersIdentities(TestEndpointUtils.vcellNagiosUser, true);
+        TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
     }
 
     // TODO: Right now the biomodel endpoint doesn't implement authentication, but when it does it'll need to
@@ -68,7 +63,8 @@ public class BioModelTest {
         vcmlString = XmlHelper.bioModelToXML(bioModel);
         // create a test publication using org.vcell.rest.model.Publication and add it to the list
 
-        TestEndpointUtils.mapClientToNagiosUser(aliceAPIClient);
+        boolean mapped = new UsersResourceApi(aliceAPIClient).setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        Assertions.assertTrue(mapped);
 
         // insert publication1 as user
         Response uploadResponse = given()

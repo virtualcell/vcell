@@ -75,7 +75,7 @@ CREATE TABLE loadmodelstat(id bigint PRIMARY KEY,bioModelRef bigint REFERENCES v
 CREATE TABLE vc_userlogininfo(id bigint PRIMARY KEY,userRef bigint NOT NULL REFERENCES vc_userinfo(id) ON DELETE CASCADE,loginCount bigint NOT NULL,lastLogin timestamp NOT NULL,osarch varchar(32) NOT NULL,osname varchar(32) NOT NULL,osvers varchar(32) NOT NULL,clientVers varchar(32) NOT NULL,serverVers varchar(32) NOT NULL,javavers varchar(32) NOT NULL, CONSTRAINT ulinfo_unique UNIQUE(userRef,osarch,osname,osvers,clientVers,serverVers,javavers));
 CREATE TABLE vc_metadata(id bigint PRIMARY KEY,bioModelRef bigint NOT NULL REFERENCES vc_biomodel(id) ON DELETE CASCADE,vcMetaDataLarge text ,vcMetaDataSmall varchar(4000) );
 CREATE TABLE vc_simdelfromdisk(deldate varchar(20) ,userid varchar(255) NOT NULL,userkey bigint ,simid bigint ,simpref bigint ,simdate varchar(20) ,simname varchar(255) NOT NULL,status varchar(10) ,numfiles bigint ,totalsize bigint );
-CREATE TABLE vc_useridentity(id bigint PRIMARY KEY,userRef bigint NOT NULL REFERENCES vc_userinfo(id),auth0Subject varchar(128) ,keycloakSubject varchar(128) ,insertDate timestamp NOT NULL);
+CREATE TABLE vc_useridentity(id bigint PRIMARY KEY,userRef bigint NOT NULL REFERENCES vc_userinfo(id),authSubject varchar(128) NOT NULL,authIssuer varchar(128) NOT NULL,insertDate timestamp NOT NULL);
 
 CREATE VIEW public.dual AS SELECT CAST('X' as varchar) AS dummy;
 
@@ -91,8 +91,10 @@ CREATE INDEX simcstat_simcref ON vc_simcontextstat(simContextRef);
 INSERT INTO vc_userinfo VALUES ( 0,'void','1700596370242','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'B9BDD75BC5382CA83D5AB82172A98D869555899C' );
 INSERT INTO vc_userinfo VALUES ( 2,'Administrator','1700596370260','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'CD181552B879A2F29D10434D8ACF692B6C8126F9' );
 INSERT INTO vc_userinfo VALUES ( 3,'vcellNagios','1700596370261','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'A93453F7962799355608EC89D33D3249474E538F' );
-INSERT INTO vc_useridentity VALUES ( 78, 2,'auth0|65cb6311365d79c2fb96a005', null, CURRENT_TIMESTAMP);
-INSERT INTO vc_group VALUES (4,1,0,0,1);
-INSERT INTO vc_group VALUES (5,0,0,0,0);
-INSERT INTO vc_available VALUES (6,current_timestamp,'true',NULL,NULL);
-INSERT INTO vc_apiclient VALUES (7,'defaultApiClient','85133f8d-26f7-4247-8356-d175399fc2e6','98d000d6-adff-4f8f-a00e-6c28dbd8c571');
+INSERT INTO vc_userinfo VALUES ( 4,'VCellSupport','1714152297847','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'C525EF5192F5DF966D0C891224EC5412FC6FD518' );
+INSERT INTO vc_group VALUES (5,1,0,0,1);
+INSERT INTO vc_group VALUES (6,0,0,0,0);
+INSERT INTO vc_available VALUES (7,current_timestamp,'true',NULL,NULL);
+INSERT INTO vc_apiclient VALUES (8,'defaultApiClient','85133f8d-26f7-4247-8356-d175399fc2e6','98d000d6-adff-4f8f-a00e-6c28dbd8c571');
+INSERT INTO vc_useridentity VALUES ( 9, 2,'auth0|65cb6311365d79c2fb96a005', 'https://dev-dzhx7i2db3x3kkvq.us.auth0.com/', CURRENT_TIMESTAMP);
+INSERT INTO vc_specialusers VALUES ( 10,'publication',2,NULL);

@@ -24,6 +24,7 @@ import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.server.RestDatabaseService;
+import org.vcell.util.CompressionUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
@@ -116,7 +117,7 @@ public final class RpcRestlet extends Restlet {
 				}
 				
 				req.bufferEntity();
-				Serializable rpcRequestBodyObject = VCellApiClient.fromCompressedSerialized(req.getEntity().getStream());
+				Serializable rpcRequestBodyObject = CompressionUtils.fromCompressedSerialized(req.getEntity().getStream().readAllBytes());
 				
 				if (!(rpcRequestBodyObject instanceof VCellApiRpcBody)) {
 					throw new RuntimeException("expecting post content of type VCellApiRpcBody");

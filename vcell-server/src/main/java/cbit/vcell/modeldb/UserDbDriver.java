@@ -10,7 +10,6 @@
 
 package cbit.vcell.modeldb;
 
-import cbit.sql.Field;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
@@ -40,6 +39,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -104,116 +104,59 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIAL_CLAIM[0]));
 }
 
-	public void removeUserIdentity(Connection con, User user, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
-		String sql;
-		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
-		Field identityField = UserIdentityTable.getIdentityField(identityProvider);
-		if (!identities.isEmpty()){
-			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
-					" SET " + identityField.getUnqualifiedColName() + " = " + "NULL" +
-					" WHERE " + UserIdentityTable.userRef + " = " + user.getID();
-			DbDriver.updateCleanSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_POSSIBLE);
-		}
+	public boolean removeUserIdentity(Connection con, User user, String authSubject, String authIssuer) throws SQLException {
+		String sql = "DELETE FROM " + UserIdentityTable.table.getTableName() +
+				" WHERE " +
+					UserIdentityTable.authSubject + " = " + "'"+authSubject+"'" + " AND " +
+					UserIdentityTable.authIssuer + " = " + "'"+authIssuer+"'" + " AND " +
+					UserIdentityTable.userRef + " = " + user.getID().toString();
+		int numRowsDeleted = DbDriver.updateCleanSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_POSSIBLE);
+		return numRowsDeleted > 0;
 	}
 
-	public void cleanAllUserIdentities(Connection connection, User user) throws SQLException {
-		for(UserIdentityTable.IdentityProvider identityProvider: UserIdentityTable.IdentityProvider.values()){
-			removeUserIdentity(connection, user, identityProvider);
-		}
-	}
-
-
-	public void setUserIdentity(Connection con, User user, String identity, UserIdentityTable.IdentityProvider identityProvider, KeyFactory keyFactory) throws SQLException {
+	public void mapUserIdentity(Connection con, User user, String authSubject, String authIssuer, KeyFactory keyFactory) throws SQLException {
 		String sql;
 
-		ArrayList<UserIdentity> identities = getIdentitiesFromUser(con, user);
-		if (identity.isEmpty()){
-			identity = "anonymous";
-		}
-		identity = "'" + identity + "'";
-		Field identityField = UserIdentityTable.getIdentityField(identityProvider);
-		if (identities.isEmpty()){
-			if(lg.isTraceEnabled()){
-				lg.trace("UserDbDriver.setUserIdentity. Creating new entry with identity " + identityProvider + " being set.");
-			}
-			sql = "INSERT INTO " + UserIdentityTable.table.getTableName() +
-					" VALUES (" +
-					keyFactory.nextSEQ() + "," +
-					user.getID().toString() + "," +
-					(identityProvider == UserIdentityTable.IdentityProvider.AUTH0 ? identity : "NULL") + "," +
-					(identityProvider == UserIdentityTable.IdentityProvider.KEYCLOAK ? identity : "NULL") + "," +
-					"CURRENT_TIMESTAMP)";
-			DbDriver.updateCleanSQL(con, sql);
-		} else {
-			sql = "UPDATE " + UserIdentityTable.table.getTableName() +
-					" SET " +
-					identityField.getUnqualifiedColName() + " = " + identity +
-					"WHERE " + UserIdentityTable.userRef + " = " + user.getID();
-			DbDriver.updateCleanSQL(con, sql);
-		}
-	}
-
-	public UserIdentity getUserIdentityFromSubjectAndIdentityProvider(Connection con, String subject, UserIdentityTable.IdentityProvider identityProvider) throws SQLException {
-		Statement stmt;
-		String sql;
-		ResultSet rset;
-		if (lg.isTraceEnabled()) {
-			lg.trace("UserDbDriver.getUserFromUserAuth0ID(userid=" + subject + ")");
-		}
-		Field identityColumn = UserIdentityTable.getIdentityField(identityProvider);
-		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
-				UserTable.table.userid.getQualifiedColName() + "," +
-				identityColumn.getQualifiedColName() + "," +
-				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
-				UserIdentityTable.table.insertDate.getQualifiedColName() +
-				" FROM " + userTable.getTableName() +
-				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
-				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
-				" WHERE " + identityColumn.getQualifiedColName() + " = '" + subject + "'";
-
-		if (lg.isTraceEnabled()) {
-			lg.trace(sql);
-		}
-		stmt = con.createStatement();
-		UserIdentity resultIdentity = null;
-		try {
-			rset = stmt.executeQuery(sql);
-			while (rset.next()) {
-				BigDecimal userBD = rset.getBigDecimal("user_key");
-				String userID = rset.getString("userid");
-				User userFromDB = new User(userID, new KeyValue(userBD));
-				if(resultIdentity == null) {
-					resultIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider, "identity_key");
-				}else {
-					throw new SQLException("Not expecting more than 1 id for " + identityProvider.name() + "='"+subject+"'");
+		List<UserIdentity> identities = getUserIdentitiesFromUser(con, user);
+		for (UserIdentity identity : identities) {
+			if (identity.subject().equals(authSubject) && identity.issuer().equals(authIssuer)) {
+				if (lg.isTraceEnabled()) {
+					lg.trace("UserDbDriver.addUserIdentity. Identity already exists with (user, issuer, subject) = ("+user.getName()+", "+authIssuer+", "+authSubject+")");
 				}
+				return;
 			}
-		} finally {
-			stmt.close();
 		}
-		return resultIdentity;
+		if(lg.isTraceEnabled()){
+			lg.trace("UserDbDriver.setUserIdentity. Creating new entry with (issuer, subject) = ("+authIssuer+", "+authSubject+")");
+		}
+		sql = "INSERT INTO " + UserIdentityTable.table.getTableName() +
+				" VALUES (" +
+				keyFactory.nextSEQ() + "," +
+				user.getID().toString() + "," +
+				"'"+authSubject+"'" + "," +
+				"'"+authIssuer+"'" + "," +
+				"CURRENT_TIMESTAMP)";
+		DbDriver.updateCleanSQL(con, sql, DbDriver.UpdateExpectation.ROW_UPDATE_IS_EXPECTED);
 	}
 
-	public ArrayList<UserIdentity> getIdentitiesFromUser(Connection con, User user) throws SQLException {
+	public List<UserIdentity> getUserIdentitiesFromSubjectAndIssuer(Connection con, String subject, String issuer) throws SQLException {
 		Statement stmt;
 		String sql;
 		ResultSet rset;
 		if (lg.isTraceEnabled()) {
-			lg.trace("UserDbDriver.getIdentitiesFromUser(userid=" + user.getName() + ")");
+			lg.trace("UserDbDriver.getUserIdentityFromSubjectAndIssuer(userid=" + subject + ")");
 		}
-		String identityColumns = "";
-		for(Field identityColumn : UserIdentityTable.getIdentityFields()){
-			identityColumns =  identityColumn.getQualifiedColName() + "," + identityColumns;
-		}
-		sql = 	"SELECT DISTINCT " + UserTable.table.id.getQualifiedColName() +" as user_key" + "," +
-				UserTable.table.userid.getQualifiedColName() + "," +
-				identityColumns +
-				UserIdentityTable.table.id.getQualifiedColName() + " as identity_key" + "," +
-				UserIdentityTable.table.insertDate.getQualifiedColName() +
+		sql = 	"SELECT " + UserTable.table.userid.getUnqualifiedColName() + "," +
+				UserIdentityTable.userRef.getUnqualifiedColName() + "," +
+				UserIdentityTable.authSubject.getUnqualifiedColName() + "," +
+				UserIdentityTable.authIssuer.getUnqualifiedColName() + "," +
+				UserIdentityTable.table.id.getQualifiedColName() + " as user_identity_key " + "," +
+				UserIdentityTable.insertDate.getQualifiedColName() +
 				" FROM " + userTable.getTableName() +
-				" LEFT JOIN " + UserIdentityTable.table.getTableName() +
-				" ON " + UserIdentityTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
-				" WHERE " + UserTable.table.id.getQualifiedColName() + " = " + user.getID();
+				" JOIN " + UserIdentityTable.table.getTableName() +
+				" ON " + UserIdentityTable.table.userRef.getUnqualifiedColName()+"="+userTable.id.getQualifiedColName() +
+				" WHERE " + UserIdentityTable.authSubject.getUnqualifiedColName() + " = '" + subject + "'" +
+				" AND " + UserIdentityTable.authIssuer.getUnqualifiedColName() + " = '" + issuer + "'";
 
 		if (lg.isTraceEnabled()) {
 			lg.trace(sql);
@@ -223,20 +166,53 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 		try {
 			rset = stmt.executeQuery(sql);
 			while (rset.next()) {
-				BigDecimal userBD = rset.getBigDecimal("user_key");
-				String userID = rset.getString("userid");
+				BigDecimal userBD = rset.getBigDecimal(UserIdentityTable.userRef.getUnqualifiedColName());
+				String userID = rset.getString(UserTable.table.userid.getUnqualifiedColName());
 				User userFromDB = new User(userID, new KeyValue(userBD));
-				for(UserIdentityTable.IdentityProvider identityProvider: UserIdentityTable.IdentityProvider.values()){
-					UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, identityProvider, "identity_key");
-					if(userIdentity != null){
-						userIdentities.add(userIdentity);
-					}
-				}
+				UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, "user_identity_key");
+				userIdentities.add(userIdentity);
 			}
 		} finally {
 			stmt.close();
 		}
+		return userIdentities;
+	}
 
+	public List<UserIdentity> getUserIdentitiesFromUser(Connection con, User user) throws SQLException {
+		Statement stmt;
+		String sql;
+		ResultSet rset;
+		if (lg.isTraceEnabled()) {
+			lg.trace("UserDbDriver.getIdentitiesFromUser(userid=" + user.getName() + ")");
+		}
+		sql = 	"SELECT " + UserTable.table.userid.getUnqualifiedColName() + "," +
+				UserIdentityTable.userRef.getUnqualifiedColName() + "," +
+				UserIdentityTable.authSubject.getUnqualifiedColName() + "," +
+				UserIdentityTable.authIssuer.getUnqualifiedColName() + "," +
+				UserIdentityTable.table.id.getQualifiedColName() + " as user_identity_key " + "," +
+				UserIdentityTable.insertDate.getQualifiedColName() +
+				" FROM " + userTable.getTableName() +
+				" JOIN " + UserIdentityTable.table.getTableName() +
+				" ON " + UserIdentityTable.table.userRef.getUnqualifiedColName()+"="+userTable.id.getQualifiedColName() +
+				" WHERE " + UserIdentityTable.userRef.getUnqualifiedColName() + "=" + user.getID().toString();
+
+		if (lg.isTraceEnabled()) {
+			lg.trace(sql);
+		}
+		stmt = con.createStatement();
+		ArrayList<UserIdentity> userIdentities = new ArrayList<>();
+		try {
+			rset = stmt.executeQuery(sql);
+			while (rset.next()) {
+				BigDecimal userBD = rset.getBigDecimal(UserIdentityTable.userRef.getUnqualifiedColName());
+				String userID = rset.getString(UserTable.table.userid.getUnqualifiedColName());
+				User userFromDB = new User(userID, new KeyValue(userBD));
+				UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, "user_identity_key");
+				userIdentities.add(userIdentity);
+			}
+		} finally {
+			stmt.close();
+		}
 		return userIdentities;
 	}
 /**

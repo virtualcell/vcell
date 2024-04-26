@@ -123,14 +123,16 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication
+*UsersResourceApi* | [**clearVCellIdentity**](docs/UsersResourceApi.md#clearVCellIdentity) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
+*UsersResourceApi* | [**clearVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#clearVCellIdentityWithHttpInfo) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 *UsersResourceApi* | [**getLegacyApiToken**](docs/UsersResourceApi.md#getLegacyApiToken) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 *UsersResourceApi* | [**getLegacyApiTokenWithHttpInfo**](docs/UsersResourceApi.md#getLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 *UsersResourceApi* | [**getMe**](docs/UsersResourceApi.md#getMe) | **GET** /api/v1/users/me | Get current user
 *UsersResourceApi* | [**getMeWithHttpInfo**](docs/UsersResourceApi.md#getMeWithHttpInfo) | **GET** /api/v1/users/me | Get current user
 *UsersResourceApi* | [**getVCellIdentity**](docs/UsersResourceApi.md#getVCellIdentity) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
 *UsersResourceApi* | [**getVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#getVCellIdentityWithHttpInfo) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
-*UsersResourceApi* | [**setVCellIdentity**](docs/UsersResourceApi.md#setVCellIdentity) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
-*UsersResourceApi* | [**setVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#setVCellIdentityWithHttpInfo) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
+*UsersResourceApi* | [**setVCellIdentity**](docs/UsersResourceApi.md#setVCellIdentity) | **POST** /api/v1/users/mapUser | set vcell identity mapping
+*UsersResourceApi* | [**setVCellIdentityWithHttpInfo**](docs/UsersResourceApi.md#setVCellIdentityWithHttpInfo) | **POST** /api/v1/users/mapUser | set vcell identity mapping
 
 
 ## Documentation for Models
@@ -139,12 +141,12 @@ Class | Method | HTTP request | Description
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
- - [MapUser](docs/MapUser.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
  - [Simulation](docs/Simulation.md)
  - [User](docs/User.md)
  - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
+ - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
 
 
 <a id="documentation-for-authorization"></a>
