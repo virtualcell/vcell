@@ -56,9 +56,6 @@ public class UserIdentityTable extends Table {
         BigDecimal id = rset.getBigDecimal(idColName);
         String subject = rset.getString(authSubject.getUnqualifiedColName());
         String issuer =	rset.getString(authIssuer.getUnqualifiedColName());
-        if(subject == null || id == null){
-            return null;
-        }
         //
         // Format Date
         //
@@ -66,8 +63,6 @@ public class UserIdentityTable extends Table {
         java.sql.Time DBTime = rset.getTime(insertDate.getUnqualifiedColName());
         LocalDateTime insertDate =    LocalDateTime.of(DBDate.toLocalDate(), DBTime.toLocalTime());
 
-        UserIdentity userIdentity = new UserIdentity(id, user, subject, issuer, insertDate);
-
-        return userIdentity;
+        return new UserIdentity(id, user, subject, issuer, insertDate);
     }
 }

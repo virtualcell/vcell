@@ -227,11 +227,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
-          description: OK
+          description: "Successful, returning the identity"
         "401":
           description: Not Authorized
         "403":
           description: Not Allowed
+        "404":
+          description: Identity not found
       security:
       - openId:
         - user

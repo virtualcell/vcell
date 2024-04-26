@@ -9,6 +9,8 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.jboss.resteasy.reactive.NoCache;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
@@ -39,12 +41,10 @@ public class UsersResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public User me() {
-        try{
-            return User.fromSecurityIdentity(securityIdentity);
+        if (securityIdentity.isAnonymous()){
+            return new User("anonymous", null, null, null);
         }
-        catch (Exception e){
-            return new User(e.getMessage(), null, null, null);
-        }
+        return User.fromSecurityIdentity(securityIdentity);
     }
 
     @POST
@@ -60,10 +60,14 @@ public class UsersResource {
     @Path("/getIdentity")
     @Operation(operationId = "getVCellIdentity", summary = "Get mapped VCell identity")
     @RolesAllowed("user")
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
+            @APIResponse(responseCode = "404", description = "Identity not found")
+    })
     public UserIdentityJSONSafe getIdentity() throws DataAccessException {
         List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
         if (userIdentities.isEmpty()){
-            return new UserIdentityJSONSafe(null, null, null, null);
+            return null;
         } else if (userIdentities.size() > 1){
             throw new DataAccessException("Multiple identities found for user");
         } else {

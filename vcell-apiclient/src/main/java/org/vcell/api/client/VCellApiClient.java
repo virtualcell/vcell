@@ -495,8 +495,17 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
-		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
-		return usersResourceApi.getVCellIdentity().getUserName();
+		try {
+			UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
+			UserIdentityJSONSafe vcellIdentity = usersResourceApi.getVCellIdentity();
+			return vcellIdentity.getUserName();
+		}catch (ApiException e){
+			if (e.getCode() == 404){
+				return null;
+			}else{
+				throw e;
+			}
+		}
 	}
 
 	public boolean isVCellIdentityMapped() throws ApiException {

@@ -50,8 +50,16 @@ public class UserRestDB {
             return null;
         }
         JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
+        String subject = jwt.getSubject();
+        String issuer = jwt.getIssuer();
+        if (subject == null) {
+            throw new DataAccessException("securityIdentity is missing subject");
+        }
+        if (issuer == null) {
+            throw new DataAccessException("securityIdentity is missing issuer");
+        }
         try {
-            return adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(jwt.getSubject(), jwt.getIssuer(), true);
+            return adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
         } catch (SQLException e) {
             throw new DataAccessException("database error while retrieving user identity: "+e.getMessage(), e);
         }
@@ -67,7 +75,15 @@ public class UserRestDB {
                 return false;
             }
             JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
-            adminDBTopLevel.setUserIdentityFromIdentityProvider(user, jwt.getSubject(), jwt.getIssuer(), true);
+            String subject = jwt.getSubject();
+            String issuer = jwt.getIssuer();
+            if (subject == null) {
+                throw new DataAccessException("securityIdentity is missing subject");
+            }
+            if (issuer == null) {
+                throw new DataAccessException("securityIdentity is missing issuer");
+            }
+            adminDBTopLevel.setUserIdentityFromIdentityProvider(user, subject, issuer, true);
             return true;
         } catch (SQLException e) {
             throw new DataAccessException("database error while mapping user identity: "+e.getMessage(), e);

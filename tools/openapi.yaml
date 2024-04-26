@@ -206,7 +206,7 @@ paths:
       operationId: getVCellIdentity
       responses:
         "200":
-          description: OK
+          description: "Successful, returning the identity"
           content:
             application/json:
               schema:
@@ -215,6 +215,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "404":
+          description: Identity not found
       security:
       - openId:
         - user
