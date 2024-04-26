@@ -33,6 +33,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.auth.AuthApiClient;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
+import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 
 import java.io.*;
@@ -119,7 +120,7 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
-		this.httpHost = new HttpHost(host,port,"http");
+		this.httpHost = new HttpHost(host,port,(bSkipSSL?"http":"https"));
 		this.pathPrefix_v0 = pathPrefix_v0;
 		this.clientID = DEFAULT_CLIENTID;
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
@@ -489,9 +490,8 @@ public class VCellApiClient implements AutoCloseable {
 
 	public void authenticateWithAuth0() throws URISyntaxException, IOException, ParseException, ApiException {
 		apiClient = InteractiveLogin.login("cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf", new URI("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/authorize"),
-				new URI("http://localhost:9000"));
-		apiClient.setScheme("http");
-//		return apiClient;
+				new URI(this.httpHost.getSchemeName()+"://"+this.httpHost.getHostName()+":"+this.httpHost.getPort()));
+		apiClient.setScheme(this.httpHost.getSchemeName());
 	}
 
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
