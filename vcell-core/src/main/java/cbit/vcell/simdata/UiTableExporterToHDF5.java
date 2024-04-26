@@ -1,47 +1,18 @@
 package cbit.vcell.simdata;
 
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ListIterator;
-
 import cbit.vcell.math.ReservedVariable;
-import org.apache.commons.lang.ArrayUtils;
-
-import cbit.vcell.math.Variable;
 import ncsa.hdf.hdf5lib.H5;
 import ncsa.hdf.hdf5lib.HDF5Constants;
 import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
 import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
 
-public class Hdf5Utils {
-	private static final String HDF5_GROUP_SOLUTION = "/solution";
-	private static final String HDF5_GROUP_EXTRAPOLATED_VOLUMES = "/extrapolated_volumes";
-	private static final String HDF5_GROUP_DIRECTORY_SEPARATOR = "/";
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
 
-	/**
-	 * Creates a relative path to the solution to the variable specified
-	 * 
-	 * @param varName the name of the variable to path to.
-	 * @return the relative path
-	 */
-	public static String getVarSolutionPath(String varName){
-		return HDF5_GROUP_SOLUTION + HDF5_GROUP_DIRECTORY_SEPARATOR + Variable.getNameFromCombinedIdentifier(varName); 
-	}
-	
-	/**
-	 * Creates a relative path to the extrapolated values of a given variable name.
-	 * 
-	 * @param varName name of the variable to path to
-	 * @return the relative path
-	 */
-	public static String getVolVarExtrapolatedValuesPath(String varName){
-		return HDF5_GROUP_EXTRAPOLATED_VOLUMES + HDF5_GROUP_DIRECTORY_SEPARATOR + "__" + Variable.getNameFromCombinedIdentifier(varName) + "_extrapolated__"; 
-	}
-
+public class UiTableExporterToHDF5 {
     public static File exportTableToHDF5(boolean bHistogram, String blankCellValue, int[] columns, int[] rows, String xVarColumnName, String hdf5DescriptionText, String[] columnNames, String[] paramScanParamNames, Double[][] paramScanParamValues, Object[][] rowColValues) throws Exception {
 		int hdf5FileID = -1;//Used if HDF5 format
 		File hdf5TempFile = null;
@@ -119,10 +90,10 @@ public class Hdf5Utils {
 				if(selectedColCount == 0) {
 					continue;
 				}
-				int jobGroupID = -1;//(int) Hdf5Utils.createGroup(hdf5FileID, "Set "+k);
+				int jobGroupID = -1;//(int) UiTableExporterToHDF5.createGroup(hdf5FileID, "Set "+k);
 						//writeHDF5Dataset(hdf5FileID, "Set "+k, null, null, false);
-				HDF5WriteHelper help0 = null;//Hdf5Utils.createDataset(jobGroupID, "data", new long[] {selectedColCount,rows.length});
-						//(HDF5WriteHelper) Hdf5Utils.writeHDF5Dataset(jobGroupID, "data", new long[] {selectedColCount,rows.length}, new Object[] {}, false);
+				HDF5WriteHelper help0 = null;//UiTableExporterToHDF5.createDataset(jobGroupID, "data", new long[] {selectedColCount,rows.length});
+						//(HDF5WriteHelper) UiTableExporterToHDF5.writeHDF5Dataset(jobGroupID, "data", new long[] {selectedColCount,rows.length}, new Object[] {}, false);
 				//((DefaultTableModel)getScrollPaneTable().getModel()).getDataVector()
 				double[] fromData = new double[rows.length*selectedColCount];
 				int actualLength = -1;
@@ -195,11 +166,11 @@ public class Hdf5Utils {
 					//writeHDF5Dataset(help0.hdf5DatasetValuesID, null, null, objArr, false);
 				insertAttribute(help0.hdf5DatasetValuesID, "_type", "ODE Data Export");//.writeHDF5Dataset(help0.hdf5DatasetValuesID, "_type", null, "ODE Data Export", true);
 				insertAttributes(help0.hdf5DatasetValuesID,"dataSetDataTypes", dataTypes);//.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetDataTypes", null, dataTypes, true);
-				insertAttributes(help0.hdf5DatasetValuesID,"dataSetIds",dataIDs);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetIds", null,dataIDs , true);
-				insertAttributes(help0.hdf5DatasetValuesID,"dataSetLabels",dataLabels);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetLabels", null,dataLabels , true);
-				insertAttributes(help0.hdf5DatasetValuesID,"dataSetNames",dataNames);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetNames", null,dataNames , true);
-				insertAttributes(help0.hdf5DatasetValuesID,"dataSetShapes",dataShapes);//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetShapes", null,dataShapes , true);
-				insertAttribute(help0.hdf5DatasetValuesID,"id","report");//Hdf5Utils.writeHDF5Dataset(help0.hdf5DatasetValuesID, "id", null,"report" , true);
+				insertAttributes(help0.hdf5DatasetValuesID,"dataSetIds",dataIDs);//UiTableExporterToHDF5.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetIds", null,dataIDs , true);
+				insertAttributes(help0.hdf5DatasetValuesID,"dataSetLabels",dataLabels);//UiTableExporterToHDF5.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetLabels", null,dataLabels , true);
+				insertAttributes(help0.hdf5DatasetValuesID,"dataSetNames",dataNames);//UiTableExporterToHDF5.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetNames", null,dataNames , true);
+				insertAttributes(help0.hdf5DatasetValuesID,"dataSetShapes",dataShapes);//UiTableExporterToHDF5.writeHDF5Dataset(help0.hdf5DatasetValuesID, "dataSetShapes", null,dataShapes , true);
+				insertAttribute(help0.hdf5DatasetValuesID,"id","report");//UiTableExporterToHDF5.writeHDF5Dataset(help0.hdf5DatasetValuesID, "id", null,"report" , true);
 				if(paramNames.size() != 0) {
 					insertAttributes(help0.hdf5DatasetValuesID,"paramNames",paramNames);
 					insertAttributes(help0.hdf5DatasetValuesID,"paramValues",paramValues);
@@ -222,7 +193,7 @@ public class Hdf5Utils {
     /**
 	 * Helper class to ensure HDF5 documents are closed properly.
 	 */
-	public static class HDF5WriteHelper {
+	private static class HDF5WriteHelper {
 		/**
 		 * The id number of the hdf5 dataspace
 		 */
@@ -263,7 +234,7 @@ public class Hdf5Utils {
 	 * @return a HDF5 Writer helper class to store the relevant values
 	 * @throws HDF5Exception if the hdf5 library encounters something unusual
 	 */
-	public static HDF5WriteHelper createDataset(int hdf5GroupID,String datasetName,long[] dims) throws HDF5Exception{
+	private static HDF5WriteHelper createDataset(int hdf5GroupID,String datasetName,long[] dims) throws HDF5Exception{
 		//Create dataset and return it, must be closed when finished
 		long[] datasetDimensions = dims;
 		int hdf5DataspaceIDValues = H5.H5Screate_simple(datasetDimensions.length, datasetDimensions, null);
@@ -279,7 +250,7 @@ public class Hdf5Utils {
 	 * @return the new group's ID number
 	 * @throws HDF5Exception if the hdf5 library encounters something unusual
 	 */
-	public static int createGroup(int hdf5GroupID,String groupName) throws HDF5Exception{
+	private static int createGroup(int hdf5GroupID,String groupName) throws HDF5Exception{
 		return H5.H5Gcreate(hdf5GroupID, (String)groupName,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
 	}
 
@@ -298,7 +269,7 @@ public class Hdf5Utils {
 	 * @throws IllegalArgumentException
 	 * @throws HDF5Exception
 	 */
-	public static void copySlice(int copyToDataSet,double[] copyFromData,long[] copyToStart,long[] copyToLength,long[] copyFromDims,long[] copyFromStart,long[] copyFromLength,int dataspaceID) throws NullPointerException, IllegalArgumentException, HDF5Exception {
+	private static void copySlice(int copyToDataSet,double[] copyFromData,long[] copyToStart,long[] copyToLength,long[] copyFromDims,long[] copyFromStart,long[] copyFromLength,int dataspaceID) throws NullPointerException, IllegalArgumentException, HDF5Exception {
 		int hdf5DataspaceIDSlice = H5.H5Screate_simple(copyFromDims.length, copyFromDims, null);
 		//Select the generated sliceData to copy-from
 		H5.H5Sselect_hyperslab(hdf5DataspaceIDSlice, HDF5Constants.H5S_SELECT_SET, copyFromStart, null, copyFromLength, null);
@@ -319,7 +290,7 @@ public class Hdf5Utils {
 	 * @throws NullPointerException (unsure how this occurs)
 	 * @throws HDF5Exception if the hdf5 library encounters something unusual
 	 */
-	public static void insertAttribute(int hdf5GroupID,String attributeName,String data) throws NullPointerException, HDF5Exception {
+	private static void insertAttribute(int hdf5GroupID,String attributeName,String data) throws NullPointerException, HDF5Exception {
 		//insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
 		//String[] attr = data.toArray(new String[0]);
 
@@ -347,7 +318,7 @@ public class Hdf5Utils {
 	 * @throws NullPointerException (unsure how this occurs)
 	 * @throws HDF5Exception if the hdf5 library encounters something unusual
 	 */
-	public static void insertAttributes(int hdf5GroupID,String attributeName,List<String> data) throws NullPointerException, HDF5Exception {
+	private static void insertAttributes(int hdf5GroupID,String attributeName,List<String> data) throws NullPointerException, HDF5Exception {
 		String[] attr = data.toArray(new String[0]);
 		long[] dims = new long[] {attr.length}; // Always an array of length == 1
 		StringBuffer sb = new StringBuffer();
@@ -386,127 +357,4 @@ public class Hdf5Utils {
 		H5.H5Tclose(h5attrcs1);
 	}
 
-	private static ByteBuffer getByteBuffer(byte[] bytes, int index, int times) {
-		return ByteBuffer.wrap(bytes, index * times, times).order(ByteOrder.LITTLE_ENDIAN);
-	}
-
-	private static byte[] byteArray(double[] doubleArray) {
-		int times = Double.SIZE / Byte.SIZE;
-		byte[] bytes = new byte[doubleArray.length * times];
-		for (int i = 0; i < doubleArray.length; i++) {
-			getByteBuffer(bytes, i, times).putDouble(doubleArray[i]);
-		}
-		return bytes;
-	}
-
-	/**
-	 * Insert an attribute at the specified group where the data are multiple vnumerical values
-	 * 
-	 * @param hdf5GroupID the id of the group to apply the attribute to
-	 * @param attributeName name of the attribute
-	 * @param data the numerical data to apply
-	 * @throws NullPointerException (unsure how this occurs)
-	 * @throws HDF5Exception if the hdf5 library encounters something unusual
-	 */
-	public static void insertAttributes(int hdf5GroupID,String attributeName,double[] data) throws NullPointerException, HDF5Exception {
-		long[] dims = new long[] {data.length};
-		StringBuffer sb = new StringBuffer();
-		//https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
-		int dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
-		int attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, HDF5Constants.H5T_NATIVE_DOUBLE, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
-		H5.H5Awrite (attribute_id, HDF5Constants.H5T_NATIVE_DOUBLE, byteArray(data));
-		H5.H5Sclose(dataspace_id);
-		H5.H5Aclose(attribute_id);
-	}
-
-//	public static void insertString(int hdf5GroupID,String dataspaceName,long[] dims,String data) throws NullPointerException, HDF5Exception {
-//		insertStrings(hdf5GroupID, dataspaceName, dims,new ArrayList<String>(Arrays.asList(new String[] {data})));
-//	}
-
-	/**
-	 * Insert a dataset at the specififed group where the data are strings
-	 * 
-	 * @param hdf5GroupID the id of the group to apply the dataset to
-	 * @param datasetName name of the dataset
-	 * @param dims dimentional meansurements 
-	 * @param data the data to fill the dataset
-	 * @throws NullPointerException (unsure how this occurs)
-	 * @throws HDF5Exception if the hdf5 library encounters something unusual
-	 */
-	public static void insertStrings(int hdf5GroupID,String datasetName,long[] dims,List<String> data) throws NullPointerException, HDF5Exception {
-		int largestStrLen = 0;
-		for(int i=0;i<data.size();i++) {
-			largestStrLen = Math.max(largestStrLen, data.get(i).length());
-		}
-		byte[] bytes = new byte[largestStrLen*data.size()];
-		int index = 0;
-		for(int i=0;i<data.size();i++) {
-			System.arraycopy(data.get(i).getBytes(), 0, bytes, index, data.get(i).length());
-			index+= largestStrLen;
-		}
-		int h5tcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
-		H5.H5Tset_size(h5tcs1, largestStrLen);
-		int hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-		int hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, datasetName,h5tcs1, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-		//final byte[] bytes = allStringSB.toString().getBytes();
-		H5.H5Dwrite(hdf5DatasetID, h5tcs1, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, bytes);
-		H5.H5Tclose(h5tcs1);
-		H5.H5Dclose(hdf5DatasetID);
-		H5.H5Sclose(hdf5DataspaceID);
-	}
-
-	/**
-	 * Insert a dataset at the specififed group where the data are integers
-	 * 
-	 * @param hdf5GroupID the id of the group to apply the dataset to
-	 * @param datasetName name of the dataset
-	 * @param dims dimentional meansurements 
-	 * @param data the data to fill the dataset
-	 * @throws NullPointerException (unsure how this occurs)
-	 * @throws HDF5Exception if the hdf5 library encounters something unusual
-	 */
-	public static void insertInts(int hdf5GroupID,String dataspaceName,long[] dims,int[] data) throws NullPointerException, HDF5Exception {
-		int hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-		int hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_INT, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-		H5.H5Dwrite_int(hdf5DatasetID, HDF5Constants.H5T_NATIVE_INT, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (int[])data);
-		H5.H5Dclose(hdf5DatasetID);
-		H5.H5Sclose(hdf5DataspaceID);
-	}
-
-	/**
-	 * Insert a dataset at the specififed group where the data are doubles (as an array)
-	 * 
-	 * @param hdf5GroupID the id of the group to apply the dataset to
-	 * @param datasetName name of the dataset
-	 * @param dims dimentional meansurements 
-	 * @param data the data to fill the dataset
-	 * @throws NullPointerException (unsure how this occurs)
-	 * @throws HDF5Exception if the hdf5 library encounters something unusual
-	 */
-	public static void insertDoubles(int hdf5GroupID,String dataspaceName,long[] dims,double[] data) throws NullPointerException, HDF5Exception {
-		int hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-		int hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-		H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])data);
-		H5.H5Dclose(hdf5DatasetID);
-		H5.H5Sclose(hdf5DataspaceID);
-	}
-
-	/**
-	 * Insert a dataset at the specififed group where the data are doubles (as a java List)
-	 * 
-	 * @param hdf5GroupID the id of the group to apply the dataset to
-	 * @param datasetName name of the dataset
-	 * @param dims dimentional meansurements 
-	 * @param data the data to fill the dataset
-	 * @throws NullPointerException (unsure how this occurs)
-	 * @throws HDF5Exception if the hdf5 library encounters something unusual
-	 */
-	public static void insertDoubles(int hdf5GroupID,String dataspaceName,long[] dims,List<Double> data) throws NullPointerException, HDF5Exception {
-		double[] hdfData = ArrayUtils.toPrimitive(((ArrayList<Double>)data).toArray(new Double[0]));
-		int hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-		int hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
-		H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, hdfData);
-		H5.H5Dclose(hdf5DatasetID);
-		H5.H5Sclose(hdf5DataspaceID);
-	}
 }

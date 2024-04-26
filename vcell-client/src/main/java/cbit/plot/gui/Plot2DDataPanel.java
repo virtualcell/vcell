@@ -16,7 +16,7 @@ import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.simdata.Hdf5Utils;
+import cbit.vcell.simdata.UiTableExporterToHDF5;
 import cbit.vcell.solver.Simulation;
 import com.google.common.io.Files;
 import org.apache.logging.log4j.LogManager;
@@ -361,7 +361,7 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
 				}
 			}
 
-			File hdf5TempFile = Hdf5Utils.exportTableToHDF5(bHistogram, blankCellValue, columns, rows, xVarColumnName, hdf5DescriptionText, columnNames, paramScanParamNames, paramScanParamValues, rowColValues);
+			File hdf5TempFile = UiTableExporterToHDF5.exportTableToHDF5(bHistogram, blankCellValue, columns, rows, xVarColumnName, hdf5DescriptionText, columnNames, paramScanParamNames, paramScanParamValues, rowColValues);
 
 			while(true) {
 				JFileChooser jfc = new JFileChooser();
