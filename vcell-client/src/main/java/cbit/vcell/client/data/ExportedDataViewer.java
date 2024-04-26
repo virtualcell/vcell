@@ -371,6 +371,32 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         }
     }
 
+    private void deleteRowsFromJson() {
+        // TODO: add delete code here
+//        int row = editorScrollTable.getSelectedRow();
+        Map<String, ExportedDataTableModel.TableData> deleteMap = new LinkedHashMap<>();
+        int rows[] = editorScrollTable.getSelectedRows();
+        if(rows == null || rows.length == 0) {
+            throw new RuntimeException("Nothing to delete");
+        }
+        for(int i=0; i<rows.length; i++) {
+            int row = rows[i];
+            ExportedDataTableModel.TableData tableDataEntry = tableModel.getValueAt(row);
+            String jobID = tableDataEntry.jobID;
+            deleteMap.put(jobID, tableDataEntry);   // we may need a set with just the jobID
+        }
+
+
+
+        // load json file exportMetaData.json in C:\Users\MyName\.vcell (use Visual Studio Code to visualize)
+        // delete the globalJobIS
+        // delete the entry with that ID
+        // save the json back to file
+
+        // class with all the stuff is ExportDataRepresentation
+
+
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -382,18 +408,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(tableData.link), null);
         } else if(e.getSource().equals(deleteButton)) {
-            // TODO: add delete code here
-            int row = editorScrollTable.getSelectedRow();
-            ExportedDataTableModel.TableData tableData = tableModel.getValueAt(row);
-
-            // load json file exportMetaData.json in C:\Users\MyName\.vcell (use Visual Studio Code to visualize)
-            // delete the globalJobIS
-            // delete the entry with that ID
-            // save the json back to file
-
-            // class with all the stuff is ExportDataRepresentation
-
-
+            deleteRowsFromJson();
 
         } else if(e.getSource() instanceof JCheckBox && formatButtonGroup.contains(e.getSource())) {
             initalizeTableData();
