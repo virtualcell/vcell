@@ -85,6 +85,78 @@ public class UsersResourceApi {
   }
 
   /**
+   * remove vcell identity mapping
+   * 
+   * @param userName  (required)
+   * @return Boolean
+   * @throws ApiException if fails to make API call
+   */
+  public Boolean clearVCellIdentity(String userName) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = clearVCellIdentityWithHttpInfo(userName);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * remove vcell identity mapping
+   * 
+   * @param userName  (required)
+   * @return ApiResponse&lt;Boolean&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Boolean> clearVCellIdentityWithHttpInfo(String userName) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = clearVCellIdentityRequestBuilder(userName);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("clearVCellIdentity", localVarResponse);
+        }
+        return new ApiResponse<Boolean>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Boolean>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder clearVCellIdentityRequestBuilder(String userName) throws ApiException {
+    // verify the required parameter 'userName' is set
+    if (userName == null) {
+      throw new ApiException(400, "Missing the required parameter 'userName' when calling clearVCellIdentity");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/unmapUser/{userName}"
+        .replace("{userName}", ApiClient.urlEncode(userName.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "text/plain");
+
+    localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
    * Get token for legacy API
    * 
    * @return AccesTokenRepresentationRecord
@@ -280,7 +352,7 @@ public class UsersResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * set or replace vcell identity mapping
+   * set vcell identity mapping
    * 
    * @param userLoginInfoForMapping  (optional)
    * @return Boolean
@@ -292,7 +364,7 @@ public class UsersResourceApi {
   }
 
   /**
-   * set or replace vcell identity mapping
+   * set vcell identity mapping
    * 
    * @param userLoginInfoForMapping  (optional)
    * @return ApiResponse&lt;Boolean&gt;

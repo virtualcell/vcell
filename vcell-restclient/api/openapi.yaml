@@ -263,7 +263,7 @@ paths:
       security:
       - openId:
         - user
-      summary: set or replace vcell identity mapping
+      summary: set vcell identity mapping
       tags:
       - Users Resource
       x-content-type: application/json
@@ -282,6 +282,35 @@ paths:
       tags:
       - Users Resource
       x-accepts: application/json
+  /api/v1/users/unmapUser/{userName}:
+    put:
+      operationId: clearVCellIdentity
+      parameters:
+      - explode: false
+        in: path
+        name: userName
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                type: boolean
+          description: OK
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
+      summary: remove vcell identity mapping
+      tags:
+      - Users Resource
+      x-accepts: text/plain
 components:
   schemas:
     AccesTokenRepresentationRecord:

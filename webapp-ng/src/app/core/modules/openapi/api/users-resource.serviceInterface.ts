@@ -28,6 +28,13 @@ export interface UsersResourceServiceInterface {
     configuration: Configuration;
 
     /**
+     * remove vcell identity mapping
+     * 
+     * @param userName 
+     */
+    clearVCellIdentity(userName: string, extraHttpRequestParams?: any): Observable<boolean>;
+
+    /**
      * Get token for legacy API
      * 
      */
@@ -46,7 +53,7 @@ export interface UsersResourceServiceInterface {
     getVCellIdentity(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
 
     /**
-     * set or replace vcell identity mapping
+     * set vcell identity mapping
      * 
      * @param userLoginInfoForMapping 
      */

@@ -93,10 +93,11 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
+*UsersResourceApi* | [**clear_v_cell_identity**](docs/UsersResourceApi.md#clear_v_cell_identity) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 *UsersResourceApi* | [**get_legacy_api_token**](docs/UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 *UsersResourceApi* | [**get_me**](docs/UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user
 *UsersResourceApi* | [**get_v_cell_identity**](docs/UsersResourceApi.md#get_v_cell_identity) | **GET** /api/v1/users/getIdentity | Get mapped VCell identity
-*UsersResourceApi* | [**set_v_cell_identity**](docs/UsersResourceApi.md#set_v_cell_identity) | **POST** /api/v1/users/mapUser | set or replace vcell identity mapping
+*UsersResourceApi* | [**set_v_cell_identity**](docs/UsersResourceApi.md#set_v_cell_identity) | **POST** /api/v1/users/mapUser | set vcell identity mapping
 
 
 ## Documentation For Models

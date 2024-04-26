@@ -224,7 +224,7 @@ paths:
     post:
       tags:
       - Users Resource
-      summary: set or replace vcell identity mapping
+      summary: set vcell identity mapping
       operationId: setVCellIdentity
       requestBody:
         content:
@@ -258,6 +258,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+  /api/v1/users/unmapUser/{userName}:
+    put:
+      tags:
+      - Users Resource
+      summary: remove vcell identity mapping
+      operationId: clearVCellIdentity
+      parameters:
+      - name: userName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: boolean
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
 components:
   schemas:
     AccesTokenRepresentationRecord:
