@@ -27,9 +27,12 @@ public class InteractiveLogin {
 
     private InteractiveLogin() {
     }
-
-
     public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri) throws URISyntaxException, IOException, ParseException {
+        URI successRedirectURI = new URI(apiBaseUri+"/login_success");
+        return login(clientID, authServerUri, apiBaseUri, successRedirectURI);
+    }
+
+    public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri, URI successRedirectURI) throws URISyntaxException, IOException, ParseException {
 
         // Retrieve OpenID Provider Metadata
         URI metadata_endpoint = new URI(authServerUri + "/.well-known/openid-configuration");
@@ -53,7 +56,7 @@ public class InteractiveLogin {
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             // set up web server to receive redirect and send URL to system browser - will be redirected back to http://localhost:9999/oidc_test_callback
             System.out.println("launched browser with login window, will intercept the authentication response sent to local web server");
-            authorizationResponse = getAuthorizationResponseAutomated(localHttpServerPort, callback_endpoint_path, authRequestURI);
+            authorizationResponse = getAuthorizationResponseAutomated(localHttpServerPort, callback_endpoint_path, authRequestURI, successRedirectURI);
         } else {
             // manual copy/paste of redirect URL into browser, and copy/paste of redirect URL back into console
             authorizationResponse = getAuthorizationResponseManual(authRequestURI);
@@ -82,7 +85,7 @@ public class InteractiveLogin {
         return authorizationResponse;
     }
 
-    private static AuthorizationResponse getAuthorizationResponseAutomated(int localHttpServerPort, String callback_endpoint_path, URI authRequestURI) throws IOException, ParseException {
+    private static AuthorizationResponse getAuthorizationResponseAutomated(int localHttpServerPort, String callback_endpoint_path, URI authRequestURI, URI successRedirectURI) throws IOException, ParseException {
         AuthorizationResponse authorizationResponse;
         final BlockingQueue<String> authorizationCodeURIQueue = new LinkedBlockingQueue<>(1);
 
@@ -100,6 +103,11 @@ public class InteractiveLogin {
                 System.out.println("received redirect URI with authorization code from web server");
                 authorizationCodeURIQueue.add(exchange.getRequestURI().toString());
                 System.out.println("added redirect URI to queue");
+                // redirect the user to https://vcellapi-test.cam.uchc.edu with a 303 status
+                exchange.getResponseHeaders().add("Location", String.valueOf(successRedirectURI));
+                //exchange.getResponseHeaders().add("Location", "https://vcellapi-test.cam.uchc.edu/login_success");
+                exchange.sendResponseHeaders(303, -1);
+                exchange.close();
             });
 
             httpServer.setExecutor(null);
