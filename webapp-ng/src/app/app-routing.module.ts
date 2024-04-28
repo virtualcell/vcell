@@ -5,6 +5,7 @@ import { ProfileComponent } from './pages/profile/profile.component';
 import { ErrorComponent } from './pages/error/error.component';
 import { AuthGuard } from '@auth0/auth0-angular';
 import { PublicationListComponent } from './components/publication-list/publication-list.component';
+import {LoginSuccessComponent} from "./pages/login-success/login-success.component";
 
 const routes: Routes = [
   {
@@ -25,6 +26,11 @@ const routes: Routes = [
     path: '',
     component: HomeComponent,
     pathMatch: 'full',
+  },
+  {
+    path: 'login_success',
+    component: LoginSuccessComponent,
+    canActivate: [AuthGuard],
   },
 ];
 
