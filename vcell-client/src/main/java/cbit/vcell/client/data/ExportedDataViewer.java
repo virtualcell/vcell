@@ -372,7 +372,6 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
     }
 
     private void deleteRowsFromJson() {
-        // TODO: add delete code here
 //        int row = editorScrollTable.getSelectedRow();
         Map<String, ExportedDataTableModel.TableData> deleteMap = new LinkedHashMap<>();
         int rows[] = editorScrollTable.getSelectedRows();
@@ -383,18 +382,68 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             int row = rows[i];
             ExportedDataTableModel.TableData tableDataEntry = tableModel.getValueAt(row);
             String jobID = tableDataEntry.jobID;
-            deleteMap.put(jobID, tableDataEntry);   // we may need a set with just the jobID
+            deleteMap.put(jobID, tableDataEntry);
         }
 
+        ExportDataRepresentation edr = getJsonData();
+        if(edr == null) {
+            throw new RuntimeException("ExportDataRepresentation object is NULL or missing");
+        }
+
+        for (Map.Entry<String, ExportedDataTableModel.TableData> toDeleteEntry : deleteMap.entrySet()) {
+            String toDeleteJobID = toDeleteEntry.getKey();
+            String toDeleteFormat = toDeleteEntry.getValue().format;
+
+            String candidateJobID = null;
+            String candidateFormat = null;
+
+            boolean successDeleteID = false;
+            for(String globalJobID : edr.globalJobIDs) {
+                String[] tokens = globalJobID.split(",");
+                candidateJobID = tokens[0];
+                candidateFormat = tokens[1];
+                if(toDeleteJobID.equals(candidateJobID) && toDeleteFormat.equals(candidateFormat)) {
+                    successDeleteID = edr.globalJobIDs.remove(globalJobID);
+                    break;
+                }
+            }
+            if(successDeleteID == false) {
+                throw new RuntimeException("Unable to Delete 'globalJobID': " + toDeleteJobID + "," + toDeleteFormat);
+            }
 
 
-        // load json file exportMetaData.json in C:\Users\MyName\.vcell (use Visual Studio Code to visualize)
-        // delete the globalJobIS
-        // delete the entry with that ID
+            ExportDataRepresentation.FormatExportDataRepresentation candidateData = edr.formatData.get(candidateFormat);
+            HashMap<String, ExportDataRepresentation.SimulationExportDataRepresentation> candidateSimulationDataMap = candidateData.simulationDataMap;
+            ExportDataRepresentation.SimulationExportDataRepresentation candidateValue = candidateData.simulationDataMap.remove(toDeleteJobID);
+            // proba
+//            for(Map.Entry<String, ExportDataRepresentation.SimulationExportDataRepresentation> candidateEntry : candidateSimulationDataMap.entrySet()) {
+//                String key = candidateEntry.getKey();
+//                ExportDataRepresentation.SimulationExportDataRepresentation value = candidateEntry.getValue();
+//                if(toDeleteJobID.equals(key)) {
+//                    ExportDataRepresentation.SimulationExportDataRepresentation candidateValue = candidateData.simulationDataMap.remove(toDeleteJobID);
+//                }
+//            }
+            if(candidateValue == null) {
+                throw new RuntimeException("ExportDataRepresentation.SimulationExportDataRepresentation missing for 'globalJobID': " + toDeleteJobID + "," + toDeleteFormat);
+            }
+
+
+            ArrayList<String> candidateFormatJobIDs = candidateData.formatJobIDs;
+            boolean removed = candidateFormatJobIDs.remove(toDeleteJobID);
+            if(removed == false) {
+                throw new RuntimeException("Unable to Delete 'formatJobID': " + toDeleteJobID + "," + toDeleteFormat);
+            }
+
+
+            System.out.println("Done");
+       }
+
+
         // save the json back to file
 
-        // class with all the stuff is ExportDataRepresentation
+        // reload json and refresh table
 
+        // TODO: make threads
 
     }
 
