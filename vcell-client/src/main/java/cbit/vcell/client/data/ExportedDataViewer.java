@@ -356,7 +356,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         tableModel.addRow(newRow);
     }
 
-    public ExportDataRepresentation getJsonData(){
+    static private ExportDataRepresentation getJsonData() {
         try{
             File jsonFile = new File(ResourceUtil.getVcellHome(), ClientRequestManager.EXPORT_METADATA_FILENAME);
             String jsonString = jsonFile.exists() ? new String(Files.readAllBytes(jsonFile.toPath())) : "";
@@ -371,7 +371,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             return null;
         }
     }
-    public void setJsonData(ExportDataRepresentation edr) {
+    static private void setJsonData(ExportDataRepresentation edr) {
         try {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             File jsonFile = new File(ResourceUtil.getVcellHome(), ClientRequestManager.EXPORT_METADATA_FILENAME);
@@ -428,35 +428,17 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             ExportDataRepresentation.FormatExportDataRepresentation candidateData = edr.formatData.get(candidateFormat);
             HashMap<String, ExportDataRepresentation.SimulationExportDataRepresentation> candidateSimulationDataMap = candidateData.simulationDataMap;
             ExportDataRepresentation.SimulationExportDataRepresentation candidateValue = candidateData.simulationDataMap.remove(toDeleteJobID);
-            // proba
-//            for(Map.Entry<String, ExportDataRepresentation.SimulationExportDataRepresentation> candidateEntry : candidateSimulationDataMap.entrySet()) {
-//                String key = candidateEntry.getKey();
-//                ExportDataRepresentation.SimulationExportDataRepresentation value = candidateEntry.getValue();
-//                if(toDeleteJobID.equals(key)) {
-//                    ExportDataRepresentation.SimulationExportDataRepresentation candidateValue = candidateData.simulationDataMap.remove(toDeleteJobID);
-//                }
-//            }
             if(candidateValue == null) {
                 throw new RuntimeException("ExportDataRepresentation.SimulationExportDataRepresentation missing for 'globalJobID': " + toDeleteJobID + "," + toDeleteFormat);
             }
-
 
             ArrayList<String> candidateFormatJobIDs = candidateData.formatJobIDs;
             boolean removed = candidateFormatJobIDs.remove(toDeleteJobID);
             if(removed == false) {
                 throw new RuntimeException("Unable to Delete 'formatJobID': " + toDeleteJobID + "," + toDeleteFormat);
             }
-
-
-            System.out.println("Done");
        }
-
-
-        // save the json back to file
         setJsonData(edr);
-
-        // TODO: make threads
-
     }
 
     @Override
@@ -496,6 +478,24 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
+
+        int[] rows = editorScrollTable.getSelectedRows();
+        if(rows == null || rows.length == 0) {
+            copyButton.setEnabled(false);
+            deleteButton.setEnabled(false);
+            parameterScrollTableModel.resetData();
+            parameterScrollTableModel.refreshData();
+            exportVariableText.setText("");
+            return;
+        } else if(rows.length > 1) {
+            copyButton.setEnabled(false);
+            deleteButton.setEnabled(true);
+            parameterScrollTableModel.resetData();
+            parameterScrollTableModel.refreshData();
+            exportVariableText.setText("");
+            return;
+        }
+
         int row = editorScrollTable.getSelectedRow();
         ExportedDataTableModel.TableData rowData = tableModel.getValueAt(row);
         copyButton.setEnabled(rowData == null ? false : true);
