@@ -199,7 +199,7 @@ jobs:
         singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
         singularity pull $BATCH_SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
         singularity pull $OPT_SINGULARITY_FILENAME   oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
-    - name: deploy to kubernetes site
+    - name: deploy installers and singularity to kubernetes site
       if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
       run: |
         set -ux
@@ -226,6 +226,19 @@ jobs:
               ${VCELL_MANAGER_NODE} \
               ./${VCELL_CONFIG_FILE_NAME}
         fi
+    - name: Call webhook to deploy to kubernetes cluster (overlay 'stage')
+      if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
+      env:
+        GHCR_USERNAME: "${{ secrets.GHCR_USERNAME }}"
+        GHCR_TOKEN: "${{ secrets.GHCR_TOKEN }}"
+        BRANCH: "stage"
+      run: |
+        git_sha=$(git rev-parse --short "$GITHUB_SHA")
+        echo '{"ref": "main","inputs":{"overlay": "'$BRANCH'","tag":"'${{github.ref_name}}'"}}' >body
+        curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yml/dispatches' \
+          -H 'Authorization: Bearer ${{ secrets.GHCR_TOKEN }}' \
+          -H 'Content-Type: application/json' \
+          --data "@body"
     - name: deploy to swarm site
       if: ${{ github.event.inputs.deployment_type == 'swarm' }}
       run: |
