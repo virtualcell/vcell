@@ -28,6 +28,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileWriter;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -355,7 +356,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         tableModel.addRow(newRow);
     }
 
-    public ExportDataRepresentation getJsonData(){
+    static private ExportDataRepresentation getJsonData() {
         try{
             File jsonFile = new File(ResourceUtil.getVcellHome(), ClientRequestManager.EXPORT_METADATA_FILENAME);
             String jsonString = jsonFile.exists() ? new String(Files.readAllBytes(jsonFile.toPath())) : "";
@@ -370,7 +371,75 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             return null;
         }
     }
+    static private void setJsonData(ExportDataRepresentation edr) {
+        try {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            File jsonFile = new File(ResourceUtil.getVcellHome(), ClientRequestManager.EXPORT_METADATA_FILENAME);
+            String json = gson.toJson(edr, ExportDataRepresentation.class);
+            FileWriter jsonFileWriter = new FileWriter(jsonFile);
+            jsonFileWriter.write(json);
+            jsonFileWriter.close();
+        } catch (Exception e) {
+            lg.error("Failed to save export metadata JSON:", e);
+        }
+    }
 
+    private void deleteRowsFromJson() {
+//        int row = editorScrollTable.getSelectedRow();
+        Map<String, ExportedDataTableModel.TableData> deleteMap = new LinkedHashMap<>();
+        int rows[] = editorScrollTable.getSelectedRows();
+        if(rows == null || rows.length == 0) {
+            throw new RuntimeException("Nothing to delete");
+        }
+        for(int i=0; i<rows.length; i++) {
+            int row = rows[i];
+            ExportedDataTableModel.TableData tableDataEntry = tableModel.getValueAt(row);
+            String jobID = tableDataEntry.jobID;
+            deleteMap.put(jobID, tableDataEntry);
+        }
+
+        ExportDataRepresentation edr = getJsonData();
+        if(edr == null) {
+            throw new RuntimeException("ExportDataRepresentation object is NULL or missing");
+        }
+
+        for (Map.Entry<String, ExportedDataTableModel.TableData> toDeleteEntry : deleteMap.entrySet()) {
+            String toDeleteJobID = toDeleteEntry.getKey();
+            String toDeleteFormat = toDeleteEntry.getValue().format;
+
+            String candidateJobID = null;
+            String candidateFormat = null;
+
+            boolean successDeleteID = false;
+            for(String globalJobID : edr.globalJobIDs) {
+                String[] tokens = globalJobID.split(",");
+                candidateJobID = tokens[0];
+                candidateFormat = tokens[1];
+                if(toDeleteJobID.equals(candidateJobID) && toDeleteFormat.equals(candidateFormat)) {
+                    successDeleteID = edr.globalJobIDs.remove(globalJobID);
+                    break;
+                }
+            }
+            if(successDeleteID == false) {
+                throw new RuntimeException("Unable to Delete 'globalJobID': " + toDeleteJobID + "," + toDeleteFormat);
+            }
+
+
+            ExportDataRepresentation.FormatExportDataRepresentation candidateData = edr.formatData.get(candidateFormat);
+            HashMap<String, ExportDataRepresentation.SimulationExportDataRepresentation> candidateSimulationDataMap = candidateData.simulationDataMap;
+            ExportDataRepresentation.SimulationExportDataRepresentation candidateValue = candidateData.simulationDataMap.remove(toDeleteJobID);
+            if(candidateValue == null) {
+                throw new RuntimeException("ExportDataRepresentation.SimulationExportDataRepresentation missing for 'globalJobID': " + toDeleteJobID + "," + toDeleteFormat);
+            }
+
+            ArrayList<String> candidateFormatJobIDs = candidateData.formatJobIDs;
+            boolean removed = candidateFormatJobIDs.remove(toDeleteJobID);
+            if(removed == false) {
+                throw new RuntimeException("Unable to Delete 'formatJobID': " + toDeleteJobID + "," + toDeleteFormat);
+            }
+       }
+        setJsonData(edr);
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -382,19 +451,8 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(new StringSelection(tableData.link), null);
         } else if(e.getSource().equals(deleteButton)) {
-            // TODO: add delete code here
-            int row = editorScrollTable.getSelectedRow();
-            ExportedDataTableModel.TableData tableData = tableModel.getValueAt(row);
-
-            // load json file exportMetaData.json in C:\Users\MyName\.vcell (use Visual Studio Code to visualize)
-            // delete the globalJobIS
-            // delete the entry with that ID
-            // save the json back to file
-
-            // class with all the stuff is ExportDataRepresentation
-
-
-
+            deleteRowsFromJson();
+            initalizeTableData();
         } else if(e.getSource() instanceof JCheckBox && formatButtonGroup.contains(e.getSource())) {
             initalizeTableData();
         } else if(e.getSource().equals(todayInterval)) {
@@ -420,6 +478,24 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
+
+        int[] rows = editorScrollTable.getSelectedRows();
+        if(rows == null || rows.length == 0) {
+            copyButton.setEnabled(false);
+            deleteButton.setEnabled(false);
+            parameterScrollTableModel.resetData();
+            parameterScrollTableModel.refreshData();
+            exportVariableText.setText("");
+            return;
+        } else if(rows.length > 1) {
+            copyButton.setEnabled(false);
+            deleteButton.setEnabled(true);
+            parameterScrollTableModel.resetData();
+            parameterScrollTableModel.refreshData();
+            exportVariableText.setText("");
+            return;
+        }
+
         int row = editorScrollTable.getSelectedRow();
         ExportedDataTableModel.TableData rowData = tableModel.getValueAt(row);
         copyButton.setEnabled(rowData == null ? false : true);
