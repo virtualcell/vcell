@@ -28,6 +28,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileWriter;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -370,6 +371,18 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             return null;
         }
     }
+    public void setJsonData(ExportDataRepresentation edr) {
+        try {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            File jsonFile = new File(ResourceUtil.getVcellHome(), ClientRequestManager.EXPORT_METADATA_FILENAME);
+            String json = gson.toJson(edr, ExportDataRepresentation.class);
+            FileWriter jsonFileWriter = new FileWriter(jsonFile);
+            jsonFileWriter.write(json);
+            jsonFileWriter.close();
+        } catch (Exception e) {
+            lg.error("Failed to save export metadata JSON:", e);
+        }
+    }
 
     private void deleteRowsFromJson() {
 //        int row = editorScrollTable.getSelectedRow();
@@ -440,8 +453,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
 
 
         // save the json back to file
-
-        // reload json and refresh table
+        setJsonData(edr);
 
         // TODO: make threads
 
@@ -458,7 +470,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             clipboard.setContents(new StringSelection(tableData.link), null);
         } else if(e.getSource().equals(deleteButton)) {
             deleteRowsFromJson();
-
+            initalizeTableData();
         } else if(e.getSource() instanceof JCheckBox && formatButtonGroup.contains(e.getSource())) {
             initalizeTableData();
         } else if(e.getSource().equals(todayInterval)) {
