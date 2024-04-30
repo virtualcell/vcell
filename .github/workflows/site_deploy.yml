@@ -235,7 +235,7 @@ jobs:
       run: |
         git_sha=$(git rev-parse --short "$GITHUB_SHA")
         echo '{"ref": "main","inputs":{"overlay": "'$BRANCH'","tag":"'${{github.ref_name}}'"}}' >body
-        curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yml/dispatches' \
+        curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yaml/dispatches' \
           -H 'Authorization: Bearer ${{ secrets.GHCR_TOKEN }}' \
           -H 'Content-Type: application/json' \
           --data "@body"
