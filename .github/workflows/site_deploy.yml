@@ -229,8 +229,8 @@ jobs:
     - name: Call webhook to deploy to kubernetes cluster (overlay 'stage')
       if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
       env:
-        GHCR_USERNAME: "${{ secrets.GHCR_USERNAME }}"
-        GHCR_TOKEN: "${{ secrets.GHCR_TOKEN }}"
+        GHCR_USERNAME: "${{ secrets.ACTION_USER }}"
+        GHCR_TOKEN: "${{ secrets.ACTION_TOKEN }}"
         BRANCH: "stage"
       run: |
         git_sha=$(git rev-parse --short "$GITHUB_SHA")
