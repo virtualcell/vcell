@@ -20,7 +20,7 @@ export interface BioModel {
     savedDate?: number;
     annot?: string;
     branchID?: string;
-    modelKey?: string;
+    physModelKey?: string;
     ownerName?: string;
     ownerKey?: string;
     simulations?: Array<Simulation>;

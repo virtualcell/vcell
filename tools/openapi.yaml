@@ -324,7 +324,7 @@ components:
           type: string
         branchID:
           type: string
-        modelKey:
+        physModelKey:
           type: string
         ownerName:
           type: string

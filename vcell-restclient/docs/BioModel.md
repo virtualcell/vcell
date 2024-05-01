@@ -14,7 +14,7 @@
 |**savedDate** | **Long** |  |  [optional] |
 |**annot** | **String** |  |  [optional] |
 |**branchID** | **String** |  |  [optional] |
-|**modelKey** | **String** |  |  [optional] |
+|**physModelKey** | **String** |  |  [optional] |
 |**ownerName** | **String** |  |  [optional] |
 |**ownerKey** | **String** |  |  [optional] |
 |**simulations** | [**List&lt;Simulation&gt;**](Simulation.md) |  |  [optional] |

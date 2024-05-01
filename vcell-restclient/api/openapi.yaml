@@ -339,6 +339,7 @@ components:
     BioModel:
       example:
         branchID: branchID
+        physModelKey: physModelKey
         bmKey: bmKey
         ownerName: ownerName
         name: name
@@ -349,7 +350,6 @@ components:
         annot: annot
         ownerKey: ownerKey
         savedDate: 6
-        modelKey: modelKey
         simulations:
         - name: name
         - name: name
@@ -375,7 +375,7 @@ components:
           type: string
         branchID:
           type: string
-        modelKey:
+        physModelKey:
           type: string
         ownerName:
           type: string
