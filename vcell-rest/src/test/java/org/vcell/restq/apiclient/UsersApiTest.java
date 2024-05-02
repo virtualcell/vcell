@@ -59,37 +59,37 @@ public class UsersApiTest {
     }
 
     @Test
-    public void testMapUser() throws ApiException, SQLException, DataAccessException, InvalidJwtException, MalformedClaimException {
+    public void testMapUser() throws ApiException, InvalidJwtException, MalformedClaimException {
         UsersResourceApi aliceUsersResourceApi = new UsersResourceApi(aliceAPIClient);
 
         // map once, true - map twice return false
-        boolean mapped = aliceUsersResourceApi.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        boolean mapped = aliceUsersResourceApi.mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
         Assertions.assertTrue(mapped);
-        mapped = aliceUsersResourceApi.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        mapped = aliceUsersResourceApi.mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
         Assertions.assertTrue(mapped);
 
         // when already mapped, try to map with different user, return false (will reject mapping)
-        mapped = aliceUsersResourceApi.setVCellIdentity(TestEndpointUtils.administratorUserLoginInfo);
+        mapped = aliceUsersResourceApi.mapUser(TestEndpointUtils.administratorUserLoginInfo);
         Assertions.assertFalse(mapped);
 
         // when already mapped, try to unmap with different user, return false (will reject mapping)
         // then unmap with mapped user - true first time, false second time
-        boolean unmapped = aliceUsersResourceApi.clearVCellIdentity(TestEndpointUtils.administratorUserLoginInfo.getUserID());
+        boolean unmapped = aliceUsersResourceApi.unmapUser(TestEndpointUtils.administratorUserLoginInfo.getUserID());
         Assertions.assertFalse(unmapped);
-        unmapped = aliceUsersResourceApi.clearVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
+        unmapped = aliceUsersResourceApi.unmapUser(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
         Assertions.assertTrue(unmapped);
-        unmapped = aliceUsersResourceApi.clearVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
+        unmapped = aliceUsersResourceApi.unmapUser(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
         Assertions.assertFalse(unmapped);
 
         // not mapped, getIdentity() should throw exception ApiException with 404
-        Assertions.assertThrows(ApiException.class, aliceUsersResourceApi::getVCellIdentity);
+        Assertions.assertThrows(ApiException.class, aliceUsersResourceApi::getMappedUser);
 
         // map again, true
-        mapped = aliceUsersResourceApi.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        mapped = aliceUsersResourceApi.mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
         Assertions.assertTrue(mapped);
 
         // getIdentity() should return the mapped user
-        UserIdentityJSONSafe apiRetrievedIdentity = aliceUsersResourceApi.getVCellIdentity();
+        UserIdentityJSONSafe apiRetrievedIdentity = aliceUsersResourceApi.getMappedUser();
         Assertions.assertNotNull(apiRetrievedIdentity);
 
         // verify that getIdentity() return subject is the same as the subject in the token
@@ -98,10 +98,10 @@ public class UsersApiTest {
         Assertions.assertEquals(claims.getSubject(), apiRetrievedIdentity.getSubject());
 
         // cleanup, remove mapping
-        aliceUsersResourceApi.clearVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
-        Assertions.assertThrows(ApiException.class, () -> aliceUsersResourceApi.getVCellIdentity());
+        aliceUsersResourceApi.unmapUser(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
+        Assertions.assertThrows(ApiException.class, () -> aliceUsersResourceApi.getMappedUser());
     }
-    
+
     @Test
     public void testNewUser() throws ApiException, SQLException, DataAccessException, InvalidJwtException, MalformedClaimException {
         UsersResourceApi aliceUsersResourceApi = new UsersResourceApi(aliceAPIClient);
@@ -133,12 +133,12 @@ public class UsersApiTest {
     public void testOldAPITokenGeneration() throws ApiException {
 
         UsersResourceApi usersResourceApi1 = new UsersResourceApi(aliceAPIClient);
-        usersResourceApi1.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        usersResourceApi1.mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
 
         UsersResourceApi aliceUserApi = new UsersResourceApi(aliceAPIClient);
         UsersResourceApi bobUserApi = new UsersResourceApi(bobAPIClient);
         UsersResourceApi usersResourceApi = new UsersResourceApi(aliceAPIClient);
-        usersResourceApi.setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        usersResourceApi.mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
 
         AccesTokenRepresentationRecord token = aliceUserApi.getLegacyApiToken();
         Assertions.assertNotNull(token);
@@ -150,7 +150,7 @@ public class UsersApiTest {
         assert (token.getToken() == null);
 
         UsersResourceApi usersResourceApi2 = new UsersResourceApi(bobAPIClient);
-        usersResourceApi2.setVCellIdentity(TestEndpointUtils.administratorUserLoginInfo);
+        usersResourceApi2.mapUser(TestEndpointUtils.administratorUserLoginInfo);
         token = bobUserApi.getLegacyApiToken();
         Assertions.assertNotNull(token);
         Assertions.assertFalse(token.getToken().isEmpty());

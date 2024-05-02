@@ -53,7 +53,7 @@ public class UsersResource {
     @POST
     @Path("/mapUser")
     @RolesAllowed("user")
-    @Operation(operationId = "setVCellIdentity", summary = "set vcell identity mapping")
+    @Operation(operationId = "mapUser", summary = "map vcell user")
     @Consumes(MediaType.APPLICATION_JSON)
     public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
@@ -92,20 +92,22 @@ public class UsersResource {
     @PUT
     @Path("/unmapUser/{userName}")
     @RolesAllowed("user")
-    @Operation(operationId = "clearVCellIdentity", summary = "remove vcell identity mapping")
+    @Operation(operationId = "unmapUser", summary = "remove vcell identity mapping")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public boolean unmapUser(String userName) throws DataAccessException {
         return userRestDB.unmapUserIdentity(securityIdentity, userName);
     }
 
     @GET
-    @Path("/getIdentity")
-    @Operation(operationId = "getVCellIdentity", summary = "Get mapped VCell identity")
+    @Path("/mappedUser")
+    @Operation(operationId = "getMappedUser", summary = "Get mapped VCell identity")
     @RolesAllowed("user")
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
             @APIResponse(responseCode = "404", description = "Identity not found")
     })
+    @Produces(MediaType.APPLICATION_JSON)
     public UserIdentityJSONSafe getIdentity() throws DataAccessException {
         List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
         if (userIdentities.isEmpty()){
@@ -122,6 +124,7 @@ public class UsersResource {
 //    @RolesAllowed("user")
     @Operation(operationId = "getLegacyApiToken", summary = "Get token for legacy API")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
     // Not using user PASSWD because they should already be authenticated with OIDC
     public AccesTokenRepresentationRecord generateBearerToken() throws SQLException, DataAccessException {
         if(securityIdentity.isAnonymous()){

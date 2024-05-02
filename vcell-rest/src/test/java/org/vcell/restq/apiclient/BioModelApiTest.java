@@ -63,7 +63,7 @@ public class BioModelApiTest {
     //TODO: Add endpoint that retrieves all BM affiliated with user, then use that for testing
     @Test
     public void testAddRemove() throws ApiException, IOException, XmlParseException, PropertyVetoException {
-        boolean mapped = new UsersResourceApi(aliceAPIClient).setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        boolean mapped = new UsersResourceApi(aliceAPIClient).mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
         Assertions.assertTrue(mapped);
 
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);

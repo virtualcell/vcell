@@ -198,34 +198,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
-  /api/v1/users/getIdentity:
-    get:
-      tags:
-      - Users Resource
-      summary: Get mapped VCell identity
-      operationId: getVCellIdentity
-      responses:
-        "200":
-          description: "Successful, returning the identity"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserIdentityJSONSafe'
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-        "404":
-          description: Identity not found
-      security:
-      - openId:
-        - user
   /api/v1/users/mapUser:
     post:
       tags:
       - Users Resource
-      summary: set vcell identity mapping
-      operationId: setVCellIdentity
+      summary: map vcell user
+      operationId: mapUser
       requestBody:
         content:
           application/json:
@@ -238,6 +216,28 @@ paths:
             text/plain:
               schema:
                 type: boolean
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/v1/users/mappedUser:
+    get:
+      tags:
+      - Users Resource
+      summary: Get mapped VCell identity
+      operationId: getMappedUser
+      responses:
+        "200":
+          description: "Successful, returning the identity"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIdentityJSONSafe'
+        "404":
+          description: Identity not found
         "401":
           description: Not Authorized
         "403":
@@ -286,7 +286,7 @@ paths:
       tags:
       - Users Resource
       summary: remove vcell identity mapping
-      operationId: clearVCellIdentity
+      operationId: unmapUser
       parameters:
       - name: userName
         in: path
@@ -297,13 +297,13 @@ paths:
         "200":
           description: OK
           content:
-            text/plain:
+            application/json:
               schema:
                 type: boolean
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user

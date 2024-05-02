@@ -66,9 +66,9 @@ public class PublicationResourceTest {
     public void testAddListRemove() throws JsonProcessingException, SQLException, DataAccessException, ApiException {
         String pubuser = "alice";
         String nonpubuser = "bob";
-        boolean mapped = new UsersResourceApi(aliceAPIClient).setVCellIdentity(TestEndpointUtils.administratorUserLoginInfo);
+        boolean mapped = new UsersResourceApi(aliceAPIClient).mapUser(TestEndpointUtils.administratorUserLoginInfo);
         Assertions.assertTrue(mapped);
-        mapped = new UsersResourceApi(bobAPIClient).setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        mapped = new UsersResourceApi(bobAPIClient).mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
         Assertions.assertTrue(mapped);
 
         // create a test publication using org.vcell.rest.model.Publication and add it to the list

@@ -497,7 +497,7 @@ public class VCellApiClient implements AutoCloseable {
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
 		try {
 			UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
-			UserIdentityJSONSafe vcellIdentity = usersResourceApi.getVCellIdentity();
+			UserIdentityJSONSafe vcellIdentity = usersResourceApi.getMappedUser();
 			return vcellIdentity.getUserName();
 		}catch (ApiException e){
 			if (e.getCode() == 404){
@@ -517,7 +517,7 @@ public class VCellApiClient implements AutoCloseable {
 		UserLoginInfoForMapping userLoginInfoForMapping = new UserLoginInfoForMapping();
 		userLoginInfoForMapping.setUserID(userID);
 		userLoginInfoForMapping.setPassword(password);
-		usersResourceApi.setVCellIdentity(userLoginInfoForMapping);
+		usersResourceApi.mapUser(userLoginInfoForMapping);
 	}
 
 	public AccesTokenRepresentationRecord getLegacyToken() throws ApiException {
