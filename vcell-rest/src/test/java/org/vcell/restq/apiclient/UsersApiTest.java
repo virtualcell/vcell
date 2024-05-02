@@ -116,11 +116,11 @@ public class UsersApiTest {
         userRegistrationInfo.emailNotification(true);
 
         // should work the first time
-        aliceUsersResourceApi.newUser(userRegistrationInfo);
+        aliceUsersResourceApi.mapNewUser(userRegistrationInfo);
         Assertions.assertEquals(newUserID, aliceUsersResourceApi.getMappedUser().getUserName());
 
         // should fail the second time (user already exists)
-        Assertions.assertThrowsExactly(ApiException.class, () -> aliceUsersResourceApi.newUser(userRegistrationInfo), "userid already used");
+        Assertions.assertThrowsExactly(ApiException.class, () -> aliceUsersResourceApi.mapNewUser(userRegistrationInfo), "userid already used");
 
         // cleanup, remove mapping
         aliceUsersResourceApi.unmapUser(newUserID);
