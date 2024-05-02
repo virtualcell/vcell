@@ -257,7 +257,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/Identity'
   /api/v1/users/newUser:
     post:
       tags:
@@ -386,6 +386,23 @@ components:
       properties:
         message:
           type: string
+    Identity:
+      type: object
+      properties:
+        principal_name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            type: string
+        credentials:
+          type: array
+          items:
+            type: string
     MathmodelRef:
       type: object
       properties:
@@ -446,23 +463,6 @@ components:
       properties:
         name:
           type: string
-    User:
-      type: object
-      properties:
-        principal_name:
-          type: string
-        roles:
-          type: array
-          items:
-            type: string
-        attributes:
-          type: array
-          items:
-            type: string
-        credentials:
-          type: array
-          items:
-            type: string
     UserIdentityJSONSafe:
       type: object
       properties:

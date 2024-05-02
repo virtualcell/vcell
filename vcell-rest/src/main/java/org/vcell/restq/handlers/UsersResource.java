@@ -43,11 +43,11 @@ public class UsersResource {
     @Operation(operationId = "getMe", summary = "Get current user")
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
-    public User me() {
+    public Identity me() {
         if (securityIdentity.isAnonymous()){
-            return new User("anonymous", null, null, null);
+            return new Identity("anonymous", null, null, null);
         }
-        return User.fromSecurityIdentity(securityIdentity);
+        return Identity.fromSecurityIdentity(securityIdentity);
     }
 
     @POST
@@ -126,7 +126,7 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     // Not using user PASSWD because they should already be authenticated with OIDC
-    public AccesTokenRepresentationRecord generateBearerToken() throws SQLException, DataAccessException {
+    public AccesTokenRepresentationRecord generateBearerToken() throws DataAccessException {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
@@ -174,14 +174,14 @@ public class UsersResource {
         }
     }
 
-    public record User(
+    public record Identity(
             String principal_name,
             String[] roles,
             String[] attributes,
             String[] credentials
     ) {
-        static User fromSecurityIdentity(SecurityIdentity securityIdentity) {
-            return new User(
+        static Identity fromSecurityIdentity(SecurityIdentity securityIdentity) {
+            return new Identity(
                     securityIdentity.getPrincipal().getName(),
                     securityIdentity.getRoles().toArray(String[]::new),
                     securityIdentity.getAttributes().keySet().stream()
