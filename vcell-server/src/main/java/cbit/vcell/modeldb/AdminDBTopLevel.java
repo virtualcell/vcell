@@ -948,7 +948,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
      * @param newUserInfo cbit.sql.UserInfo
      * @return cbit.sql.UserInfo
      */
-    KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLException, UseridIDExistsException{
+    public KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLException, UseridIDExistsException{
 
         Object lock = new Object();
         Connection con = conFactory.getConnection(lock);

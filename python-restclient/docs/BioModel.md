@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 **saved_date** | **int** |  | [optional] 
 **annot** | **str** |  | [optional] 
 **branch_id** | **str** |  | [optional] 
-**model_key** | **str** |  | [optional] 
+**phys_model_key** | **str** |  | [optional] 
 **owner_name** | **str** |  | [optional] 
 **owner_key** | **str** |  | [optional] 
 **simulations** | [**List[Simulation]**](Simulation.md) |  | [optional] 

@@ -9,15 +9,17 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.jboss.resteasy.reactive.NoCache;
+import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.UseridIDExistsException;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.List;
 
 @Path("/api/v1/users")
@@ -30,7 +32,7 @@ public class UsersResource {
     private final UserRestDB userRestDB;
 
     @Inject
-    public UsersResource(UserRestDB userRestDB) throws DataAccessException, SQLException {
+    public UsersResource(UserRestDB userRestDB) {
         this.userRestDB = userRestDB;
     }
 
@@ -41,39 +43,71 @@ public class UsersResource {
     @Operation(operationId = "getMe", summary = "Get current user")
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
-    public User me() {
+    public Identity me() {
         if (securityIdentity.isAnonymous()){
-            return new User("anonymous", null, null, null);
+            return new Identity("anonymous", null, null, null);
         }
-        return User.fromSecurityIdentity(securityIdentity);
+        return Identity.fromSecurityIdentity(securityIdentity);
     }
 
     @POST
     @Path("/mapUser")
     @RolesAllowed("user")
-    @Operation(operationId = "setVCellIdentity", summary = "set vcell identity mapping")
+    @Operation(operationId = "mapUser", summary = "map vcell user")
     @Consumes(MediaType.APPLICATION_JSON)
     public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
     }
 
+    @POST
+    @Path("/newUser")
+    @RolesAllowed("user")
+    @Operation(operationId = "mapNewUser", summary = "create vcell user")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
+            @APIResponse(responseCode = "409", description = "VCell Identity not mapped, userid already exists")
+    })
+    public void mapNewUser(UserRegistrationInfo userRegistrationInfo) {
+        JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
+        if (jwt == null) {
+            throw new WebApplicationException("securityIdentity is missing jwt", Response.Status.INTERNAL_SERVER_ERROR);
+        }
+        String subject = jwt.getSubject();
+        String issuer = jwt.getIssuer();
+        String email = jwt.getClaim("email");
+        String name = jwt.getClaim("name");
+        if (subject == null || issuer == null) {
+            throw new WebApplicationException("securityIdentity is missing subject or issuer", Response.Status.INTERNAL_SERVER_ERROR);
+        }
+        try {
+            userRestDB.createUserIdentity(subject, issuer, email, name, userRegistrationInfo);
+        } catch (UseridIDExistsException e) {
+            throw new WebApplicationException("userid already used", Response.Status.CONFLICT);
+        } catch (DataAccessException e) {
+            throw new WebApplicationException("database error while creating user identity: "+e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PUT
     @Path("/unmapUser/{userName}")
     @RolesAllowed("user")
-    @Operation(operationId = "clearVCellIdentity", summary = "remove vcell identity mapping")
+    @Operation(operationId = "unmapUser", summary = "remove vcell identity mapping")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public boolean unmapUser(String userName) throws DataAccessException {
         return userRestDB.unmapUserIdentity(securityIdentity, userName);
     }
 
     @GET
-    @Path("/getIdentity")
-    @Operation(operationId = "getVCellIdentity", summary = "Get mapped VCell identity")
+    @Path("/mappedUser")
+    @Operation(operationId = "getMappedUser", summary = "Get mapped VCell identity")
     @RolesAllowed("user")
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
             @APIResponse(responseCode = "404", description = "Identity not found")
     })
+    @Produces(MediaType.APPLICATION_JSON)
     public UserIdentityJSONSafe getIdentity() throws DataAccessException {
         List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
         if (userIdentities.isEmpty()){
@@ -90,8 +124,9 @@ public class UsersResource {
 //    @RolesAllowed("user")
     @Operation(operationId = "getLegacyApiToken", summary = "Get token for legacy API")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
     // Not using user PASSWD because they should already be authenticated with OIDC
-    public AccesTokenRepresentationRecord generateBearerToken() throws SQLException, DataAccessException {
+    public AccesTokenRepresentationRecord generateBearerToken() throws DataAccessException {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
@@ -120,6 +155,14 @@ public class UsersResource {
             String password
     ){ }
 
+    public record UserRegistrationInfo(
+            String userID,
+            String title,
+            String organization,
+            String country,
+            Boolean emailNotification
+    ){ }
+
     public record UserIdentityJSONSafe(
             String userName,
             BigDecimal id,
@@ -131,14 +174,14 @@ public class UsersResource {
         }
     }
 
-    public record User(
+    public record Identity(
             String principal_name,
             String[] roles,
             String[] attributes,
             String[] credentials
     ) {
-        static User fromSecurityIdentity(SecurityIdentity securityIdentity) {
-            return new User(
+        static Identity fromSecurityIdentity(SecurityIdentity securityIdentity) {
+            return new Identity(
                     securityIdentity.getPrincipal().getName(),
                     securityIdentity.getRoles().toArray(String[]::new),
                     securityIdentity.getAttributes().keySet().stream()

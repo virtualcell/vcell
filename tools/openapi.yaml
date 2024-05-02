@@ -198,34 +198,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
-  /api/v1/users/getIdentity:
-    get:
-      tags:
-      - Users Resource
-      summary: Get mapped VCell identity
-      operationId: getVCellIdentity
-      responses:
-        "200":
-          description: "Successful, returning the identity"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserIdentityJSONSafe'
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-        "404":
-          description: Identity not found
-      security:
-      - openId:
-        - user
   /api/v1/users/mapUser:
     post:
       tags:
       - Users Resource
-      summary: set vcell identity mapping
-      operationId: setVCellIdentity
+      summary: map vcell user
+      operationId: mapUser
       requestBody:
         content:
           application/json:
@@ -245,6 +223,28 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/users/mappedUser:
+    get:
+      tags:
+      - Users Resource
+      summary: Get mapped VCell identity
+      operationId: getMappedUser
+      responses:
+        "200":
+          description: "Successful, returning the identity"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIdentityJSONSafe'
+        "404":
+          description: Identity not found
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
   /api/v1/users/me:
     get:
       tags:
@@ -257,13 +257,36 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/Identity'
+  /api/v1/users/newUser:
+    post:
+      tags:
+      - Users Resource
+      summary: create vcell user
+      operationId: mapNewUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationInfo'
+      responses:
+        "200":
+          description: "Successful, returning the identity"
+        "409":
+          description: "VCell Identity not mapped, userid already exists"
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
   /api/v1/users/unmapUser/{userName}:
     put:
       tags:
       - Users Resource
       summary: remove vcell identity mapping
-      operationId: clearVCellIdentity
+      operationId: unmapUser
       parameters:
       - name: userName
         in: path
@@ -274,13 +297,13 @@ paths:
         "200":
           description: OK
           content:
-            text/plain:
+            application/json:
               schema:
                 type: boolean
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -324,7 +347,7 @@ components:
           type: string
         branchID:
           type: string
-        modelKey:
+        physModelKey:
           type: string
         ownerName:
           type: string
@@ -363,6 +386,23 @@ components:
       properties:
         message:
           type: string
+    Identity:
+      type: object
+      properties:
+        principal_name:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            type: string
+        credentials:
+          type: array
+          items:
+            type: string
     MathmodelRef:
       type: object
       properties:
@@ -423,23 +463,6 @@ components:
       properties:
         name:
           type: string
-    User:
-      type: object
-      properties:
-        principal_name:
-          type: string
-        roles:
-          type: array
-          items:
-            type: string
-        attributes:
-          type: array
-          items:
-            type: string
-        credentials:
-          type: array
-          items:
-            type: string
     UserIdentityJSONSafe:
       type: object
       properties:
@@ -458,6 +481,19 @@ components:
           type: string
         password:
           type: string
+    UserRegistrationInfo:
+      type: object
+      properties:
+        userID:
+          type: string
+        title:
+          type: string
+        organization:
+          type: string
+        country:
+          type: string
+        emailNotification:
+          type: boolean
   securitySchemes:
     openId:
       type: openIdConnect

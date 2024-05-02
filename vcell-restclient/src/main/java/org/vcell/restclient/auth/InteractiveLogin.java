@@ -19,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -43,8 +45,24 @@ public class InteractiveLogin {
 
         State state = new State();
 
-        // must be registered as http://localhost:9999/oidc_test_callback in Auth0 redirect URI.
-        int localHttpServerPort = 9999;
+        // all ports must be registered as http://localhost:<port>/oidc_test_callback in Auth0 redirect URI.
+        // specific ports (ending with 111) are chosen from dynamic/private port range 49152-65535
+        // to avoid conflicts with other services and be tolerated by firewalls.
+        //
+        // corresponding redirect URI registration in Auth0:
+        //   http://localhost:51111/oidc_test_callback,http://localhost:52111/oidc_test_callback,
+        //   http://localhost:53111/oidc_test_callback,http://localhost:54111/oidc_test_callback,
+        //   http://localhost:55111/oidc_test_callback,http://localhost:56111/oidc_test_callback,
+        //   http://localhost:57111/oidc_test_callback,http://localhost:58111/oidc_test_callback,
+        //   http://localhost:59111/oidc_test_callback,http://localhost:60111/oidc_test_callback,
+        //   http://localhost:61111/oidc_test_callback,http://localhost:62111/oidc_test_callback,
+        //   http://localhost:63111/oidc_test_callback,http://localhost:64111/oidc_test_callback,
+        //   http://localhost:65111/oidc_test_callback
+
+        // selected ports which are registered
+        List<Integer> auth0_redirect_ports = Arrays.asList(51111, 52111, 53111, 54111, 55111, 56111, 57111, 58111, 59111,
+                60111, 61111, 62111, 63111, 64111, 65111);
+        int localHttpServerPort = findAvailablePort(auth0_redirect_ports);
         String callback_endpoint_path = "/oidc_test_callback";
 
         URI redirectURI = new URI("http://" + "localhost" + ":" + localHttpServerPort + callback_endpoint_path);
@@ -69,6 +87,18 @@ public class InteractiveLogin {
         AuthApiClient authApiClient = new AuthApiClient(apiBaseUri, oidcProviderMetadata.getTokenEndpointURI(), oidcTokens.getAccessToken(), oidcTokens.getRefreshToken());
         authApiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + idToken));
         return authApiClient;
+    }
+
+    static int findAvailablePort(List<Integer> potentialPorts) {
+        for (int port: potentialPorts) {
+            try (ServerSocket serverSocket = new ServerSocket(port)) {
+                // The port is available
+                return port;
+            } catch (IOException e) {
+                // The port is not available
+            }
+        }
+        throw new IllegalStateException("Could not find an available dynamic port (49152-65535) to receive authorization code from Authentication provider");
     }
 
     private static AuthorizationResponse getAuthorizationResponseManual(URI authRequestURI) throws IOException, ParseException {

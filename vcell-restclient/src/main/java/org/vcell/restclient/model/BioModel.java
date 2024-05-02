@@ -42,7 +42,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   BioModel.JSON_PROPERTY_SAVED_DATE,
   BioModel.JSON_PROPERTY_ANNOT,
   BioModel.JSON_PROPERTY_BRANCH_I_D,
-  BioModel.JSON_PROPERTY_MODEL_KEY,
+  BioModel.JSON_PROPERTY_PHYS_MODEL_KEY,
   BioModel.JSON_PROPERTY_OWNER_NAME,
   BioModel.JSON_PROPERTY_OWNER_KEY,
   BioModel.JSON_PROPERTY_SIMULATIONS,
@@ -71,8 +71,8 @@ public class BioModel {
   public static final String JSON_PROPERTY_BRANCH_I_D = "branchID";
   private String branchID;
 
-  public static final String JSON_PROPERTY_MODEL_KEY = "modelKey";
-  private String modelKey;
+  public static final String JSON_PROPERTY_PHYS_MODEL_KEY = "physModelKey";
+  private String physModelKey;
 
   public static final String JSON_PROPERTY_OWNER_NAME = "ownerName";
   private String ownerName;
@@ -272,28 +272,28 @@ public class BioModel {
   }
 
 
-  public BioModel modelKey(String modelKey) {
-    this.modelKey = modelKey;
+  public BioModel physModelKey(String physModelKey) {
+    this.physModelKey = physModelKey;
     return this;
   }
 
    /**
-   * Get modelKey
-   * @return modelKey
+   * Get physModelKey
+   * @return physModelKey
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MODEL_KEY)
+  @JsonProperty(JSON_PROPERTY_PHYS_MODEL_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getModelKey() {
-    return modelKey;
+  public String getPhysModelKey() {
+    return physModelKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MODEL_KEY)
+  @JsonProperty(JSON_PROPERTY_PHYS_MODEL_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setModelKey(String modelKey) {
-    this.modelKey = modelKey;
+  public void setPhysModelKey(String physModelKey) {
+    this.physModelKey = physModelKey;
   }
 
 
@@ -432,7 +432,7 @@ public class BioModel {
         Objects.equals(this.savedDate, bioModel.savedDate) &&
         Objects.equals(this.annot, bioModel.annot) &&
         Objects.equals(this.branchID, bioModel.branchID) &&
-        Objects.equals(this.modelKey, bioModel.modelKey) &&
+        Objects.equals(this.physModelKey, bioModel.physModelKey) &&
         Objects.equals(this.ownerName, bioModel.ownerName) &&
         Objects.equals(this.ownerKey, bioModel.ownerKey) &&
         Objects.equals(this.simulations, bioModel.simulations) &&
@@ -441,7 +441,7 @@ public class BioModel {
 
   @Override
   public int hashCode() {
-    return Objects.hash(bmKey, name, privacy, groupUsers, savedDate, annot, branchID, modelKey, ownerName, ownerKey, simulations, applications);
+    return Objects.hash(bmKey, name, privacy, groupUsers, savedDate, annot, branchID, physModelKey, ownerName, ownerKey, simulations, applications);
   }
 
   @Override
@@ -455,7 +455,7 @@ public class BioModel {
     sb.append("    savedDate: ").append(toIndentedString(savedDate)).append("\n");
     sb.append("    annot: ").append(toIndentedString(annot)).append("\n");
     sb.append("    branchID: ").append(toIndentedString(branchID)).append("\n");
-    sb.append("    modelKey: ").append(toIndentedString(modelKey)).append("\n");
+    sb.append("    physModelKey: ").append(toIndentedString(physModelKey)).append("\n");
     sb.append("    ownerName: ").append(toIndentedString(ownerName)).append("\n");
     sb.append("    ownerKey: ").append(toIndentedString(ownerKey)).append("\n");
     sb.append("    simulations: ").append(toIndentedString(simulations)).append("\n");
@@ -546,9 +546,9 @@ public class BioModel {
       joiner.add(String.format("%sbranchID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBranchID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `modelKey` to the URL query string
-    if (getModelKey() != null) {
-      joiner.add(String.format("%smodelKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getModelKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `physModelKey` to the URL query string
+    if (getPhysModelKey() != null) {
+      joiner.add(String.format("%sphysModelKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPhysModelKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `ownerName` to the URL query string

@@ -63,9 +63,9 @@ public class PublicationApiTest {
     public void testAddListRemove() throws ApiException {
         String pubuser = "alice";
         String nonpubuser = "bob";
-        boolean mapped = new UsersResourceApi(aliceAPIClient).setVCellIdentity(TestEndpointUtils.administratorUserLoginInfo);
+        boolean mapped = new UsersResourceApi(aliceAPIClient).mapUser(TestEndpointUtils.administratorUserLoginInfo);
         Assertions.assertTrue(mapped);
-        mapped = new UsersResourceApi(bobAPIClient).setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        mapped = new UsersResourceApi(bobAPIClient).mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
         Assertions.assertTrue(mapped);
 
         Log.debug("authServerUrl: " + authServerUrl + " to be used later instead of keycloakClient");

@@ -218,32 +218,9 @@ paths:
       tags:
       - Users Resource
       x-accepts: application/json
-  /api/v1/users/getIdentity:
-    get:
-      operationId: getVCellIdentity
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserIdentityJSONSafe'
-          description: "Successful, returning the identity"
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-        "404":
-          description: Identity not found
-      security:
-      - openId:
-        - user
-      summary: Get mapped VCell identity
-      tags:
-      - Users Resource
-      x-accepts: application/json
   /api/v1/users/mapUser:
     post:
-      operationId: setVCellIdentity
+      operationId: mapUser
       requestBody:
         content:
           application/json:
@@ -252,7 +229,7 @@ paths:
       responses:
         "200":
           content:
-            text/plain:
+            application/json:
               schema:
                 type: boolean
           description: OK
@@ -263,11 +240,34 @@ paths:
       security:
       - openId:
         - user
-      summary: set vcell identity mapping
+      summary: map vcell user
       tags:
       - Users Resource
       x-content-type: application/json
-      x-accepts: text/plain
+      x-accepts: application/json
+  /api/v1/users/mappedUser:
+    get:
+      operationId: getMappedUser
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIdentityJSONSafe'
+          description: "Successful, returning the identity"
+        "404":
+          description: Identity not found
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+      summary: Get mapped VCell identity
+      tags:
+      - Users Resource
+      x-accepts: application/json
   /api/v1/users/me:
     get:
       operationId: getMe
@@ -276,15 +276,40 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/Identity'
           description: OK
       summary: Get current user
       tags:
       - Users Resource
       x-accepts: application/json
+  /api/v1/users/newUser:
+    post:
+      operationId: mapNewUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationInfo'
+      responses:
+        "200":
+          description: "Successful, returning the identity"
+        "409":
+          description: "VCell Identity not mapped, userid already exists"
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+      summary: create vcell user
+      tags:
+      - Users Resource
+      x-content-type: application/json
+      x-accepts: application/json
   /api/v1/users/unmapUser/{userName}:
     put:
-      operationId: clearVCellIdentity
+      operationId: unmapUser
       parameters:
       - explode: false
         in: path
@@ -296,21 +321,21 @@ paths:
       responses:
         "200":
           content:
-            text/plain:
+            application/json:
               schema:
                 type: boolean
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
       summary: remove vcell identity mapping
       tags:
       - Users Resource
-      x-accepts: text/plain
+      x-accepts: application/json
 components:
   schemas:
     AccesTokenRepresentationRecord:
@@ -339,6 +364,7 @@ components:
     BioModel:
       example:
         branchID: branchID
+        physModelKey: physModelKey
         bmKey: bmKey
         ownerName: ownerName
         name: name
@@ -349,7 +375,6 @@ components:
         annot: annot
         ownerKey: ownerKey
         savedDate: 6
-        modelKey: modelKey
         simulations:
         - name: name
         - name: name
@@ -375,7 +400,7 @@ components:
           type: string
         branchID:
           type: string
-        modelKey:
+        physModelKey:
           type: string
         ownerName:
           type: string
@@ -422,6 +447,34 @@ components:
       properties:
         message:
           type: string
+      type: object
+    Identity:
+      example:
+        credentials:
+        - credentials
+        - credentials
+        roles:
+        - roles
+        - roles
+        principal_name: principal_name
+        attributes:
+        - attributes
+        - attributes
+      properties:
+        principal_name:
+          type: string
+        roles:
+          items:
+            type: string
+          type: array
+        attributes:
+          items:
+            type: string
+          type: array
+        credentials:
+          items:
+            type: string
+          type: array
       type: object
     MathmodelRef:
       example:
@@ -529,34 +582,6 @@ components:
         name:
           type: string
       type: object
-    User:
-      example:
-        credentials:
-        - credentials
-        - credentials
-        roles:
-        - roles
-        - roles
-        principal_name: principal_name
-        attributes:
-        - attributes
-        - attributes
-      properties:
-        principal_name:
-          type: string
-        roles:
-          items:
-            type: string
-          type: array
-        attributes:
-          items:
-            type: string
-          type: array
-        credentials:
-          items:
-            type: string
-          type: array
-      type: object
     UserIdentityJSONSafe:
       example:
         subject: subject
@@ -582,6 +607,25 @@ components:
           type: string
         password:
           type: string
+      type: object
+    UserRegistrationInfo:
+      example:
+        emailNotification: true
+        country: country
+        organization: organization
+        title: title
+        userID: userID
+      properties:
+        userID:
+          type: string
+        title:
+          type: string
+        organization:
+          type: string
+        country:
+          type: string
+        emailNotification:
+          type: boolean
       type: object
   securitySchemes:
     openId:

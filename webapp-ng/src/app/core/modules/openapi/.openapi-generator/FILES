@@ -18,12 +18,13 @@ model/acces-token-representation-record.ts
 model/bio-model.ts
 model/biomodel-ref.ts
 model/hello-world-message.ts
+model/identity.ts
 model/mathmodel-ref.ts
 model/models.ts
 model/publication.ts
 model/simulation.ts
 model/user-identity-json-safe.ts
 model/user-login-info-for-mapping.ts
-model/user.ts
+model/user-registration-info.ts
 param.ts
 variables.ts

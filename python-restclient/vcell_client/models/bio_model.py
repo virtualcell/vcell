@@ -39,12 +39,12 @@ class BioModel(BaseModel):
     saved_date: Optional[StrictInt] = Field(default=None, alias="savedDate")
     annot: Optional[StrictStr] = None
     branch_id: Optional[StrictStr] = Field(default=None, alias="branchID")
-    model_key: Optional[StrictStr] = Field(default=None, alias="modelKey")
+    phys_model_key: Optional[StrictStr] = Field(default=None, alias="physModelKey")
     owner_name: Optional[StrictStr] = Field(default=None, alias="ownerName")
     owner_key: Optional[StrictStr] = Field(default=None, alias="ownerKey")
     simulations: Optional[List[Simulation]] = None
     applications: Optional[List[Union[str, Any]]] = None
-    __properties: ClassVar[List[str]] = ["bmKey", "name", "privacy", "groupUsers", "savedDate", "annot", "branchID", "modelKey", "ownerName", "ownerKey", "simulations", "applications"]
+    __properties: ClassVar[List[str]] = ["bmKey", "name", "privacy", "groupUsers", "savedDate", "annot", "branchID", "physModelKey", "ownerName", "ownerKey", "simulations", "applications"]
 
     model_config = {
         "populate_by_name": True,
@@ -113,7 +113,7 @@ class BioModel(BaseModel):
             "savedDate": obj.get("savedDate"),
             "annot": obj.get("annot"),
             "branchID": obj.get("branchID"),
-            "modelKey": obj.get("modelKey"),
+            "physModelKey": obj.get("physModelKey"),
             "ownerName": obj.get("ownerName"),
             "ownerKey": obj.get("ownerKey"),
             "simulations": [Simulation.from_dict(_item) for _item in obj.get("simulations")] if obj.get("simulations") is not None else None,

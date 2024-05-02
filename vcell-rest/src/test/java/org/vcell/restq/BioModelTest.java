@@ -63,7 +63,7 @@ public class BioModelTest {
         vcmlString = XmlHelper.bioModelToXML(bioModel);
         // create a test publication using org.vcell.rest.model.Publication and add it to the list
 
-        boolean mapped = new UsersResourceApi(aliceAPIClient).setVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo);
+        boolean mapped = new UsersResourceApi(aliceAPIClient).mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
         Assertions.assertTrue(mapped);
 
         // insert publication1 as user
