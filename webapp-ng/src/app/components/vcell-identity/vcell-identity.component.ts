@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {AuthService} from '@auth0/auth0-angular';
-import {UserLoginInfoForMapping} from 'src/app/core/modules/openapi/model/models';
+import {UserLoginInfoForMapping, UserRegistrationInfo} from 'src/app/core/modules/openapi/model/models';
 import {UsersResourceService} from "../../core/modules/openapi";
 
 @Component({
@@ -9,10 +9,17 @@ import {UsersResourceService} from "../../core/modules/openapi";
   styleUrls: ['./vcell-identity.component.less'],
 })
 export class VcellIdentityComponent implements OnInit {
-  vcellUserId: string = 'not-set';
+  vcellUserId: string | null;
   mapUser: UserLoginInfoForMapping = new class implements UserLoginInfoForMapping {
     password: string;
     userID: string;
+  };
+  newUser: UserRegistrationInfo = new class implements UserRegistrationInfo {
+    userID: string;
+    organization: string;
+    title: string;
+    country: string;
+    emailNotification: boolean;
   };
 
   constructor(
@@ -21,20 +28,39 @@ export class VcellIdentityComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.getVCellIdentity();
+    this.getMappedUser();
   }
 
-  getVCellIdentity() {
-    this.usersResourceService.getVCellIdentity().subscribe((identity) => {
+  getMappedUser() {
+    this.usersResourceService.getMappedUser().subscribe((identity) => {
       this.vcellUserId = identity.userName;
     });
   }
 
-  public setVCellIdentity() {
+  public setMappedUser() {
     console.log("setVCellIdentity() mapUser = "+this.mapUser.userID+","+this.mapUser.password);
-    this.usersResourceService.setVCellIdentity(this.mapUser).subscribe((response) => {
+    this.usersResourceService.mapUser(this.mapUser).subscribe((response) => {
       if (response) {
-        this.getVCellIdentity();
+        this.getMappedUser();
+      }
+    });
+  }
+
+  clearMappedUser() {
+    this.usersResourceService.unmapUser(this.vcellUserId).subscribe((response) => {
+      if (response) {
+        this.vcellUserId = null;
+      }
+    }, error => {
+      console.error('Error clearing VCell identity', error);
+    });
+  }
+
+  mapNewUser() {
+    console.log("setVCellIdentity() mapNewUser = "+this.newUser.userID);
+    this.usersResourceService.mapNewUser(this.newUser).subscribe((response) => {
+      if (response) {
+        this.getMappedUser();
       }
     });
   }

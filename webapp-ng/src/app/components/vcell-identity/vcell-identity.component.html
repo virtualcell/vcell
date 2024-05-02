@@ -1,13 +1,34 @@
 <div class="container mt-5" *ngIf="auth.user$ | async as user">
-  <h2>VCell Identity</h2>
-  <p>Current VCell User ID: {{ vcellUserId }}</p>
+  <h2>VCell Userid</h2>
 
-  <h3>Set VCell Identity</h3>
-  <form (ngSubmit)="setVCellIdentity()">
-    <label for="userid">User ID:</label><br>
-    <input type="text" id="userid" name="userid" [(ngModel)]="mapUser.userID"><br>
-    <label for="password">Password:</label><br>
-    <input type="password" id="password" name="password" [(ngModel)]="mapUser.password"><br>
-    <input type="submit" value="Submit">
-  </form>
+  <div *ngIf="vcellUserId; else setIdentity">
+    <p>VCell User ID: {{ vcellUserId }}</p>
+    <button (click)="clearMappedUser()">Clear VCell User ID</button>
+  </div>
+
+  <ng-template #setIdentity>
+    <h3>Map to existing VCell userid or Create a new one</h3>
+
+    <!-- Form for mapping to an existing VCell user -->
+    <form (ngSubmit)="setMappedUser()">
+      <h3>Map to existing VCell userid</h3>
+      <label for="userid">User ID:</label><br>
+      <input type="text" id="userid" name="userid" [(ngModel)]="mapUser.userID"><br>
+      <label for="password">Password:</label><br>
+      <input type="password" id="password" name="password" [(ngModel)]="mapUser.password"><br>
+      <input type="submit" value="Submit">
+    </form>
+
+    <!-- Form for creating a new VCell user -->
+    <form (ngSubmit)="mapNewUser()">
+      <h3>Create a new VCell userid</h3>
+      <label for="newUserid">User ID:</label><br>
+      <input type="text" id="newUserid" name="newUserid" [(ngModel)]="newUser.userID"><br>
+      <input type="text" id="country" name="country" [(ngModel)]="newUser.country"><br>
+      <input type="text" id="title" name="title" [(ngModel)]="newUser.title"><br>
+      <input type="text" id="organization" name="organization" [(ngModel)]="newUser.organization"><br>
+      <input type="checkbox" id="email_notification" name="email notification" [(ngModel)]="newUser.emailNotification"><br>
+      <input type="submit" value="Submit">
+    </form>
+  </ng-template>
 </div>
