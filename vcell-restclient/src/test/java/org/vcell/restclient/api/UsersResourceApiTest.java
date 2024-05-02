@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.model.Identity;
 import org.vcell.restclient.model.User;
 
 
@@ -40,7 +41,7 @@ public class UsersResourceApiTest {
      */
     @Test
     public void getMeTest() throws ApiException {
-        User response = 
+        Identity response =
         api.getMe();
         
         // TODO: test validations

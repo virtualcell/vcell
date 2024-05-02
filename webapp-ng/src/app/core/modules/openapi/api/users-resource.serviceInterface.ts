@@ -14,9 +14,10 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { AccesTokenRepresentationRecord } from '../model/models';
-import { User } from '../model/models';
+import { Identity } from '../model/models';
 import { UserIdentityJSONSafe } from '../model/models';
 import { UserLoginInfoForMapping } from '../model/models';
+import { UserRegistrationInfo } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -28,35 +29,42 @@ export interface UsersResourceServiceInterface {
     configuration: Configuration;
 
     /**
-     * remove vcell identity mapping
-     * 
-     * @param userName 
-     */
-    clearVCellIdentity(userName: string, extraHttpRequestParams?: any): Observable<boolean>;
-
-    /**
      * Get token for legacy API
      * 
      */
     getLegacyApiToken(extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
 
     /**
-     * Get current user
-     * 
-     */
-    getMe(extraHttpRequestParams?: any): Observable<User>;
-
-    /**
      * Get mapped VCell identity
      * 
      */
-    getVCellIdentity(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
+    getMappedUser(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
 
     /**
-     * set vcell identity mapping
+     * Get current user
+     * 
+     */
+    getMe(extraHttpRequestParams?: any): Observable<Identity>;
+
+    /**
+     * create vcell user
+     * 
+     * @param userRegistrationInfo 
+     */
+    mapNewUser(userRegistrationInfo?: UserRegistrationInfo, extraHttpRequestParams?: any): Observable<{}>;
+
+    /**
+     * map vcell user
      * 
      * @param userLoginInfoForMapping 
      */
-    setVCellIdentity(userLoginInfoForMapping?: UserLoginInfoForMapping, extraHttpRequestParams?: any): Observable<boolean>;
+    mapUser(userLoginInfoForMapping?: UserLoginInfoForMapping, extraHttpRequestParams?: any): Observable<boolean>;
+
+    /**
+     * remove vcell identity mapping
+     * 
+     * @param userName 
+     */
+    unmapUser(userName: string, extraHttpRequestParams?: any): Observable<boolean>;
 
 }

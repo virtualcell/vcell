@@ -18,9 +18,10 @@ import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
-import org.vcell.restclient.model.User;
+import org.vcell.restclient.model.Identity;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
+import org.vcell.restclient.model.UserRegistrationInfo;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,78 +85,6 @@ public class UsersResourceApi {
     return operationId + " call failed with: " + statusCode + " - " + body;
   }
 
-  /**
-   * remove vcell identity mapping
-   * 
-   * @param userName  (required)
-   * @return Boolean
-   * @throws ApiException if fails to make API call
-   */
-  public Boolean clearVCellIdentity(String userName) throws ApiException {
-    ApiResponse<Boolean> localVarResponse = clearVCellIdentityWithHttpInfo(userName);
-    return localVarResponse.getData();
-  }
-
-  /**
-   * remove vcell identity mapping
-   * 
-   * @param userName  (required)
-   * @return ApiResponse&lt;Boolean&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<Boolean> clearVCellIdentityWithHttpInfo(String userName) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = clearVCellIdentityRequestBuilder(userName);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("clearVCellIdentity", localVarResponse);
-        }
-        return new ApiResponse<Boolean>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Boolean>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder clearVCellIdentityRequestBuilder(String userName) throws ApiException {
-    // verify the required parameter 'userName' is set
-    if (userName == null) {
-      throw new ApiException(400, "Missing the required parameter 'userName' when calling clearVCellIdentity");
-    }
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/v1/users/unmapUser/{userName}"
-        .replace("{userName}", ApiClient.urlEncode(userName.toString()));
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Accept", "text/plain");
-
-    localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.noBody());
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
   /**
    * Get token for legacy API
    * 
@@ -222,23 +151,88 @@ public class UsersResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Get current user
+   * Get mapped VCell identity
    * 
-   * @return User
+   * @return UserIdentityJSONSafe
    * @throws ApiException if fails to make API call
    */
-  public User getMe() throws ApiException {
-    ApiResponse<User> localVarResponse = getMeWithHttpInfo();
+  public UserIdentityJSONSafe getMappedUser() throws ApiException {
+    ApiResponse<UserIdentityJSONSafe> localVarResponse = getMappedUserWithHttpInfo();
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Get mapped VCell identity
+   * 
+   * @return ApiResponse&lt;UserIdentityJSONSafe&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<UserIdentityJSONSafe> getMappedUserWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getMappedUserRequestBuilder();
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getMappedUser", localVarResponse);
+        }
+        return new ApiResponse<UserIdentityJSONSafe>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<UserIdentityJSONSafe>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getMappedUserRequestBuilder() throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/mappedUser";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Get current user
+   * 
+   * @return Identity
+   * @throws ApiException if fails to make API call
+   */
+  public Identity getMe() throws ApiException {
+    ApiResponse<Identity> localVarResponse = getMeWithHttpInfo();
     return localVarResponse.getData();
   }
 
   /**
    * Get current user
    * 
-   * @return ApiResponse&lt;User&gt;
+   * @return ApiResponse&lt;Identity&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<User> getMeWithHttpInfo() throws ApiException {
+  public ApiResponse<Identity> getMeWithHttpInfo() throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = getMeRequestBuilder();
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -251,10 +245,10 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getMe", localVarResponse);
         }
-        return new ApiResponse<User>(
+        return new ApiResponse<Identity>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<User>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Identity>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -287,24 +281,24 @@ public class UsersResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Get mapped VCell identity
+   * create vcell user
    * 
-   * @return UserIdentityJSONSafe
+   * @param userRegistrationInfo  (optional)
    * @throws ApiException if fails to make API call
    */
-  public UserIdentityJSONSafe getVCellIdentity() throws ApiException {
-    ApiResponse<UserIdentityJSONSafe> localVarResponse = getVCellIdentityWithHttpInfo();
-    return localVarResponse.getData();
+  public void mapNewUser(UserRegistrationInfo userRegistrationInfo) throws ApiException {
+    mapNewUserWithHttpInfo(userRegistrationInfo);
   }
 
   /**
-   * Get mapped VCell identity
+   * create vcell user
    * 
-   * @return ApiResponse&lt;UserIdentityJSONSafe&gt;
+   * @param userRegistrationInfo  (optional)
+   * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<UserIdentityJSONSafe> getVCellIdentityWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getVCellIdentityRequestBuilder();
+  public ApiResponse<Void> mapNewUserWithHttpInfo(UserRegistrationInfo userRegistrationInfo) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = mapNewUserRequestBuilder(userRegistrationInfo);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -314,14 +308,19 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("getVCellIdentity", localVarResponse);
+          throw getApiException("mapNewUser", localVarResponse);
         }
-        return new ApiResponse<UserIdentityJSONSafe>(
+        return new ApiResponse<Void>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<UserIdentityJSONSafe>() {}) // closes the InputStream
+          null
         );
       } finally {
+        // Drain the InputStream
+        while (localVarResponse.body().read() != -1) {
+            // Ignore
+        }
+        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -332,17 +331,23 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder getVCellIdentityRequestBuilder() throws ApiException {
+  private HttpRequest.Builder mapNewUserRequestBuilder(UserRegistrationInfo userRegistrationInfo) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/users/getIdentity";
+    String localVarPath = "/api/v1/users/newUser";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
+    localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
 
-    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(userRegistrationInfo);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
@@ -352,26 +357,26 @@ public class UsersResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * set vcell identity mapping
+   * map vcell user
    * 
    * @param userLoginInfoForMapping  (optional)
    * @return Boolean
    * @throws ApiException if fails to make API call
    */
-  public Boolean setVCellIdentity(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
-    ApiResponse<Boolean> localVarResponse = setVCellIdentityWithHttpInfo(userLoginInfoForMapping);
+  public Boolean mapUser(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = mapUserWithHttpInfo(userLoginInfoForMapping);
     return localVarResponse.getData();
   }
 
   /**
-   * set vcell identity mapping
+   * map vcell user
    * 
    * @param userLoginInfoForMapping  (optional)
    * @return ApiResponse&lt;Boolean&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Boolean> setVCellIdentityWithHttpInfo(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = setVCellIdentityRequestBuilder(userLoginInfoForMapping);
+  public ApiResponse<Boolean> mapUserWithHttpInfo(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = mapUserRequestBuilder(userLoginInfoForMapping);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -381,7 +386,7 @@ public class UsersResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("setVCellIdentity", localVarResponse);
+          throw getApiException("mapUser", localVarResponse);
         }
         return new ApiResponse<Boolean>(
           localVarResponse.statusCode(),
@@ -399,7 +404,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder setVCellIdentityRequestBuilder(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+  private HttpRequest.Builder mapUserRequestBuilder(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -408,7 +413,7 @@ public class UsersResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Content-Type", "application/json");
-    localVarRequestBuilder.header("Accept", "text/plain");
+    localVarRequestBuilder.header("Accept", "application/json");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(userLoginInfoForMapping);
@@ -416,6 +421,78 @@ public class UsersResourceApi {
     } catch (IOException e) {
       throw new ApiException(e);
     }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * remove vcell identity mapping
+   * 
+   * @param userName  (required)
+   * @return Boolean
+   * @throws ApiException if fails to make API call
+   */
+  public Boolean unmapUser(String userName) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = unmapUserWithHttpInfo(userName);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * remove vcell identity mapping
+   * 
+   * @param userName  (required)
+   * @return ApiResponse&lt;Boolean&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Boolean> unmapUserWithHttpInfo(String userName) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = unmapUserRequestBuilder(userName);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("unmapUser", localVarResponse);
+        }
+        return new ApiResponse<Boolean>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Boolean>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder unmapUserRequestBuilder(String userName) throws ApiException {
+    // verify the required parameter 'userName' is set
+    if (userName == null) {
+      throw new ApiException(400, "Missing the required parameter 'userName' when calling unmapUser");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/unmapUser/{userName}"
+        .replace("{userName}", ApiClient.urlEncode(userName.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
