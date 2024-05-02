@@ -17,12 +17,14 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
+import org.vcell.restclient.model.UserRegistrationInfo;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 
 import java.sql.SQLException;
+import java.util.Random;
 
 @QuarkusTest
 public class UsersApiTest {
@@ -98,6 +100,31 @@ public class UsersApiTest {
         // cleanup, remove mapping
         aliceUsersResourceApi.clearVCellIdentity(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
         Assertions.assertThrows(ApiException.class, () -> aliceUsersResourceApi.getVCellIdentity());
+    }
+    
+    @Test
+    public void testNewUser() throws ApiException, SQLException, DataAccessException, InvalidJwtException, MalformedClaimException {
+        UsersResourceApi aliceUsersResourceApi = new UsersResourceApi(aliceAPIClient);
+
+        // map once, true - map twice return false
+        String newUserID = "userid_"+Math.abs(new Random().nextInt());
+        var userRegistrationInfo = new UserRegistrationInfo();
+        userRegistrationInfo.setUserID(newUserID);
+        userRegistrationInfo.setTitle("title");
+        userRegistrationInfo.setOrganization("organization");
+        userRegistrationInfo.setCountry("country");
+        userRegistrationInfo.emailNotification(true);
+
+        // should work the first time
+        aliceUsersResourceApi.newUser(userRegistrationInfo);
+        Assertions.assertEquals(newUserID, aliceUsersResourceApi.getMappedUser().getUserName());
+
+        // should fail the second time (user already exists)
+        Assertions.assertThrowsExactly(ApiException.class, () -> aliceUsersResourceApi.newUser(userRegistrationInfo), "userid already used");
+
+        // cleanup, remove mapping
+        aliceUsersResourceApi.unmapUser(newUserID);
+        Assertions.assertThrows(ApiException.class, () -> aliceUsersResourceApi.getMappedUser());
     }
 
     //    https://quarkus.io/guides/security-oidc-bearer-token-authentication#integration-testing-wiremock

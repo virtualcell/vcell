@@ -1,6 +1,9 @@
 package org.vcell.restq.db;
 
-import cbit.vcell.modeldb.*;
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.ApiAccessToken;
+import cbit.vcell.modeldb.ApiClient;
+import cbit.vcell.modeldb.UserIdentity;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -8,13 +11,16 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @ApplicationScoped
 public class UserRestDB {
@@ -109,6 +115,26 @@ public class UserRestDB {
             return true;
         } catch (SQLException e) {
             throw new DataAccessException("database error while mapping user identity: "+e.getMessage(), e);
+        }
+    }
+
+    public void createUserIdentity(String subject, String issuer, String email, String name, UsersResource.UserRegistrationInfo userRegistrationInfo) throws UseridIDExistsException, DataAccessException {
+        UserInfo newUserInfo = new UserInfo();
+        newUserInfo.userid = userRegistrationInfo.userID();
+        newUserInfo.email = email;
+        newUserInfo.notify = userRegistrationInfo.emailNotification();
+        newUserInfo.wholeName = name;
+        newUserInfo.country = userRegistrationInfo.country();
+        newUserInfo.company = userRegistrationInfo.organization();
+        newUserInfo.title = userRegistrationInfo.title();
+        newUserInfo.digestedPassword0 = new UserLoginInfo.DigestedPassword(UUID.randomUUID().toString());
+        newUserInfo.insertDate = new Date();
+        try {
+            KeyValue newUserKey = adminDBTopLevel.insertUserInfo(newUserInfo, true);
+            User user = new User(newUserInfo.userid, newUserKey);
+            adminDBTopLevel.setUserIdentityFromIdentityProvider(user, subject, issuer, true);
+        } catch (SQLException e) {
+            throw new DataAccessException("Database exception", e);
         }
     }
 

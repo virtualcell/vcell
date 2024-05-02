@@ -258,6 +258,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+  /api/v1/users/newUser:
+    post:
+      tags:
+      - Users Resource
+      summary: create vcell user
+      operationId: mapNewUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationInfo'
+      responses:
+        "200":
+          description: "Successful, returning the identity"
+        "409":
+          description: "VCell Identity not mapped, userid already exists"
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
   /api/v1/users/unmapUser/{userName}:
     put:
       tags:
@@ -458,6 +481,19 @@ components:
           type: string
         password:
           type: string
+    UserRegistrationInfo:
+      type: object
+      properties:
+        userID:
+          type: string
+        title:
+          type: string
+        organization:
+          type: string
+        country:
+          type: string
+        emailNotification:
+          type: boolean
   securitySchemes:
     openId:
       type: openIdConnect

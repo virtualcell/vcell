@@ -9,15 +9,17 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.jboss.resteasy.reactive.NoCache;
+import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.UseridIDExistsException;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.List;
 
 @Path("/api/v1/users")
@@ -30,7 +32,7 @@ public class UsersResource {
     private final UserRestDB userRestDB;
 
     @Inject
-    public UsersResource(UserRestDB userRestDB) throws DataAccessException, SQLException {
+    public UsersResource(UserRestDB userRestDB) {
         this.userRestDB = userRestDB;
     }
 
@@ -55,6 +57,36 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_JSON)
     public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
+    }
+
+    @POST
+    @Path("/newUser")
+    @RolesAllowed("user")
+    @Operation(operationId = "mapNewUser", summary = "create vcell user")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
+            @APIResponse(responseCode = "409", description = "VCell Identity not mapped, userid already exists")
+    })
+    public void mapNewUser(UserRegistrationInfo userRegistrationInfo) {
+        JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
+        if (jwt == null) {
+            throw new WebApplicationException("securityIdentity is missing jwt", Response.Status.INTERNAL_SERVER_ERROR);
+        }
+        String subject = jwt.getSubject();
+        String issuer = jwt.getIssuer();
+        String email = jwt.getClaim("email");
+        String name = jwt.getClaim("name");
+        if (subject == null || issuer == null) {
+            throw new WebApplicationException("securityIdentity is missing subject or issuer", Response.Status.INTERNAL_SERVER_ERROR);
+        }
+        try {
+            userRestDB.createUserIdentity(subject, issuer, email, name, userRegistrationInfo);
+        } catch (UseridIDExistsException e) {
+            throw new WebApplicationException("userid already used", Response.Status.CONFLICT);
+        } catch (DataAccessException e) {
+            throw new WebApplicationException("database error while creating user identity: "+e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PUT
@@ -118,6 +150,14 @@ public class UsersResource {
     public record UserLoginInfoForMapping(
             String userID,
             String password
+    ){ }
+
+    public record UserRegistrationInfo(
+            String userID,
+            String title,
+            String organization,
+            String country,
+            Boolean emailNotification
     ){ }
 
     public record UserIdentityJSONSafe(
