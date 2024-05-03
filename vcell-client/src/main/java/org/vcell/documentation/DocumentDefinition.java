@@ -12,7 +12,7 @@ package org.vcell.documentation;
 
 import java.io.File;
 
-public class DocumentDefinition {
+public class DocumentDefinition implements DocReferenceTarget {
 	private File sourceFile;
 	private String target;
 	private String label;

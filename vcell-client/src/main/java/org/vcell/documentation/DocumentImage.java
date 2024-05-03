@@ -12,7 +12,7 @@ package org.vcell.documentation;
 
 import java.io.File;
 
-public class DocumentImage {
+public class DocumentImage implements DocReferenceTarget {
 	private File sourceFile;
 	private String target;
 	private int fileWidth;

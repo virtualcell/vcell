@@ -17,30 +17,26 @@ import java.nio.file.Paths;
 import java.util.List;
 
 
-public class HtmlWriter implements DocumentWriter {
+public class JavaHelpHtmlWriter implements DocumentWriter {
     private final static String tocHTMLFileName = "VCellHelpTOC.html";
     private final static String helpSetFileName = "HelpSet.hs";
     private final static String javaHelp_helpSearchConfigFile = "helpSearchConfig.txt";
     private final static String helpSearchFolderName = "JavaHelpSearch";
     private final static String mapFileName = "Map.jhm";
-
+    private final static String definitionFilePath = "topics/ch_9/Appendix/";
 
 
     private final File docSourceDir;
     private final File docTargetDir;
-    private final String definitionXMLFileName;
-    private final String definitionFilePath;
     private final String tocFileName;
 
-    public HtmlWriter(File docSourceDir, File docTargetDir, String definitionXMLFileName, String definitionFilePath, String tocFileName) {
+    public JavaHelpHtmlWriter(File docSourceDir, File docTargetDir, String tocFileName) {
         this.docSourceDir = docSourceDir;
         this.docTargetDir = docTargetDir;
-        this.definitionXMLFileName = definitionXMLFileName;
-        this.definitionFilePath = definitionFilePath;
         this.tocFileName = tocFileName;
     }
 
-    public void writePages(Documentation documentation) {
+    private void writePages(Documentation documentation) {
         for(DocumentPage documentPage : documentation.getDocumentPages()) {
             File htmlFile = getTargetFile(documentPage.getTemplateFile());
             htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
@@ -53,7 +49,7 @@ public class HtmlWriter implements DocumentWriter {
         }
     }
 
-    public void writeHTML(Documentation documentation, DocumentPage documentPage, File htmlFile) throws Exception
+    private void writeHTML(Documentation documentation, DocumentPage documentPage, File htmlFile) throws Exception
     {
         try (PrintWriter pw = new PrintWriter(htmlFile)) {
             //start html
@@ -113,7 +109,7 @@ public class HtmlWriter implements DocumentWriter {
         }
     }
 
-    public void printComponent(Documentation documentation, DocTextComponent docComp, File directory, PrintWriter pw, File sourceHtmlFile) throws Exception {
+    private void printComponent(Documentation documentation, DocTextComponent docComp, File directory, PrintWriter pw, File sourceHtmlFile) throws Exception {
         if (docComp instanceof DocText text){
             if (text.getBold()) {
                 pw.print("<b>" + text.getText() + "</b>");
@@ -136,11 +132,10 @@ public class HtmlWriter implements DocumentWriter {
             {
                 DocumentPage docPage = documentation.getDocumentPage(docLink);
                 if (docPage==null){
-                    if(docLink.getTarget().equals(definitionXMLFileName.replace(".xml", "")))
+                    if(docLink.getTarget().equals(DocumentCompiler.definitionTarget))
                     {
                         File workingDefinitionDir= new File(docTargetDir, definitionFilePath);
-                        File htmlFile = new File(workingDefinitionDir, definitionXMLFileName);
-                        htmlFile = new File(htmlFile.getPath().replace(".xml",".html"));
+                        File htmlFile = new File(workingDefinitionDir, DocumentCompiler.definitionTarget+".html");
                         String relativePathToTarget = getHelpRelativePath(directory, htmlFile);
                         pw.print("<a href=\""+relativePathToTarget+"\">");
                     }
@@ -206,15 +201,7 @@ public class HtmlWriter implements DocumentWriter {
         }
     }
 
-    public void buildHtmlIndex(Documentation documentation, Element rootElement) throws IOException {
-        File htmlTOCFile=new File(docTargetDir,tocHTMLFileName);
-        PrintWriter tocPrintWriter = new PrintWriter(htmlTOCFile);
-        buildIndexHtml(documentation, rootElement,0,tocPrintWriter);
-        tocPrintWriter.close();
-    }
-
-    @Override
-    public void writeDefinitions(Documentation documentation) {
+    private void writeDefinitions(Documentation documentation) {
         if(documentation.getDocumentDefinitions() != null && documentation.getDocumentDefinitions().length > 0)
         {
             DocumentDefinition[] documentDefinitions = documentation.getDocumentDefinitions();
@@ -230,10 +217,14 @@ public class HtmlWriter implements DocumentWriter {
 
     }
 
-    @Override
-    public void copyHelpSet() throws IOException {
+    private void copyHelpSet() throws IOException {
         //FileUtils.copyFile(new File(docSourceDir, helpSetFileName),new File(docTargetDir, helpSetFileName));
         FileUtils.copyFile(new File(docSourceDir, helpSetFileName), new File(docTargetDir, helpSetFileName), true, true, 4 * 1024);
+    }
+
+    private void copyTableOfContents() throws IOException {
+        // copy the Table of Contents unchanged from the source to the target directory.
+        FileUtils.copyFile(new File(docSourceDir, tocFileName),new File(docTargetDir, tocFileName));
     }
 
     private void writeDefinitionHTML(DocumentDefinition[] docDefs, File htmlFile) throws Exception
@@ -272,8 +263,7 @@ public class HtmlWriter implements DocumentWriter {
         }
     }
 
-    @Override
-    public void generateHelpMap(Documentation documentation) throws Exception
+    private void generateHelpMap(Documentation documentation) throws Exception
     {
         File mapFile =  new File(docTargetDir, mapFileName);
 
@@ -297,8 +287,8 @@ public class HtmlWriter implements DocumentWriter {
             }
             //add definitions to map
             Element definitionElement = new Element(VCellDocTags.mapID_tag);
-            definitionElement.setAttribute(VCellDocTags.target_attr, definitionXMLFileName.replace(".xml",""));
-            definitionElement.setAttribute(VCellDocTags.url_attr, definitionFilePath /*+ File.separator*/ + definitionXMLFileName.replace(".xml", ".html"));
+            definitionElement.setAttribute(VCellDocTags.target_attr, DocumentCompiler.definitionTarget);
+            definitionElement.setAttribute(VCellDocTags.url_attr, definitionFilePath /*+ File.separator*/ + DocumentCompiler.definitionTarget+".html");
             mapElement.addContent(definitionElement);
             //convert mapdocument to string
             Document mapDoc = new Document();
@@ -315,8 +305,7 @@ public class HtmlWriter implements DocumentWriter {
     }
 
 
-    @Override
-    public void processTOC(Documentation documentation) throws Exception
+    private void generateWebIndexHtml(Documentation documentation) throws Exception
     {
         File tocSourceFile =  new File(docSourceDir, tocFileName);
         //
@@ -328,11 +317,13 @@ public class HtmlWriter implements DocumentWriter {
             throw new RuntimeException("expecting "+VCellDocTags.toc_tag+" in file "+tocSourceFile.getPath());
         }
 
-        // copy the Table of Contents to the target directory.
-        FileUtils.copyFile(new File(docSourceDir, tocFileName),new File(docTargetDir, tocFileName));
         //System.out.println("Calling buildHtmlIndex");
-        buildHtmlIndex(documentation, root);
+        File htmlTOCFile=new File(docTargetDir,tocHTMLFileName);
+        PrintWriter tocPrintWriter = new PrintWriter(htmlTOCFile);
+        buildIndexHtml(documentation, root,0,tocPrintWriter);
+        tocPrintWriter.close();
     }
+
 
     private void buildIndexHtml(Documentation documentation, Element element, int level,PrintWriter tocPrintWriter) {
         if (element.getName().equals(VCellDocTags.tocitem_tag)){
@@ -368,8 +359,7 @@ public class HtmlWriter implements DocumentWriter {
     }
 
 
-    @Override
-    public void generateHelpSearch() throws Exception {
+    private void generateHelpSearch() throws Exception {
         File helpSearchDir = new File(docTargetDir, helpSearchFolderName);
         File topicsDir = new File(docTargetDir, "topics");
         if (helpSearchDir.exists()) {
@@ -397,17 +387,26 @@ public class HtmlWriter implements DocumentWriter {
     }
 
 
-
     private File getTargetFile(File sourceFile){
-        return new File(getTargetDirectory(sourceFile.getParentFile()), sourceFile.getName());
-    }
-
-    private File getTargetDirectory(File sourceDir){
-        return new File(sourceDir.getPath().replace(docSourceDir.getPath(),docTargetDir.getPath()));
+        File targetDir = new File(sourceFile.getParentFile().getPath().replace(docSourceDir.getPath(), docTargetDir.getPath()));
+        return new File(targetDir, sourceFile.getName());
     }
 
     private static String getHelpRelativePath(File sourceDir, File targetFile) {
         return Paths.get(sourceDir.getPath()).relativize(Paths.get(targetFile.getPath())).toString();
     }
 
+    @Override
+    public void writeFiles(Documentation documentation) throws Exception {
+        writeDefinitions(documentation);
+        writePages(documentation);
+
+        copyTableOfContents();
+        copyHelpSet();
+
+        generateHelpMap(documentation);
+        generateHelpSearch();
+
+        generateWebIndexHtml(documentation);
+    }
 }

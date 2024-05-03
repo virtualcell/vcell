@@ -19,7 +19,6 @@ import org.vcell.util.FileUtils;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class DocumentCompiler {
@@ -29,8 +28,8 @@ public class DocumentCompiler {
 	private final static int maxImgHeight = 600;
 	private final static String imageFilePath = "topics/image/";
 	private final static String tocFileName = "TOC.xml";
-	private final static String definitionFilePath = "topics/ch_9/Appendix/";
 	private final static String definitionXMLFileName = "Definitions.xml";
+	public final static String definitionTarget = "Definitions";
 
 	private final File docTargetDir;
 	private final File docSourceDir;
@@ -63,19 +62,11 @@ public class DocumentCompiler {
 				throw new RuntimeException("document target directory "+docTargetDir.getPath()+" isn't a directory");
 			}
 			DocumentCompiler docCompiler = new DocumentCompiler(docSourceDir, docTargetDir);
-			DocumentWriter documentWriter = new HtmlWriter(docSourceDir, docTargetDir, definitionXMLFileName, definitionFilePath, tocFileName);
 			Documentation documentation = docCompiler.parseDocumentation();
 
+			DocumentWriter documentWriter = new JavaHelpHtmlWriter(docSourceDir, docTargetDir, tocFileName);
+			documentWriter.writeFiles(documentation);
 			//write document definitions
-			documentWriter.writeDefinitions(documentation);
-			//write document pages
-			documentWriter.writePages(documentation);
-
-			documentWriter.generateHelpMap(documentation);
-			documentWriter.processTOC(documentation);
-
-			documentWriter.copyHelpSet();
-			documentWriter.generateHelpSearch();
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 		}
@@ -216,9 +207,8 @@ public class DocumentCompiler {
 			if (target!=null){
 				// first look for a documentPage as the target, else check if it is a Definition page.
 				DocumentPage targetDocPage = documentation.getDocumentPage(new DocLink(target,target));
-				String definitionPageTarget = definitionXMLFileName.replace(".xml","");
 				if (targetDocPage==null){
-					if (!target.equals(definitionPageTarget)){
+					if (!target.equals(definitionTarget)){
 						throw new RuntimeException("table of contents referencing nonexistant target '"+target+"'");
 					}
 				}else{
@@ -345,9 +335,5 @@ public class DocumentCompiler {
 				}
 			}
 		}
-	}
-
-	private String getHelpRelativePath(File sourceDir, File targetFile) {
-		return Paths.get(sourceDir.getPath()).relativize(Paths.get(targetFile.getPath())).toString();
 	}
 }

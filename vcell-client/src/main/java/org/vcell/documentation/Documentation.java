@@ -17,7 +17,7 @@ public class Documentation {
 	private ArrayList<DocumentPage> documentPages = new ArrayList<DocumentPage>();
 	private ArrayList<DocumentImage> documentImages = new ArrayList<DocumentImage>();
 	private ArrayList<DocumentDefinition> documentDefinitions = new ArrayList<DocumentDefinition>();
-	private HashSet<Object> referencedTargets = new HashSet<Object>();
+	private HashSet<DocReferenceTarget> referencedTargets = new HashSet<>();
 	
 	public DocumentPage getDocumentPage(DocLink docLink) {
 		for (DocumentPage docPage : documentPages){
