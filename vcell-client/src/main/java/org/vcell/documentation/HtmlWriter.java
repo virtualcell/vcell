@@ -1,8 +1,13 @@
 package org.vcell.documentation;
 
+import cbit.util.xml.XmlUtil;
+import com.sun.java.help.search.Indexer;
+import org.jdom.Document;
 import org.jdom.Element;
+import org.vcell.util.FileUtils;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -14,17 +19,25 @@ import java.util.List;
 
 public class HtmlWriter implements DocumentWriter {
     private final static String tocHTMLFileName = "VCellHelpTOC.html";
+    private final static String helpSetFileName = "HelpSet.hs";
+    private final static String javaHelp_helpSearchConfigFile = "helpSearchConfig.txt";
+    private final static String helpSearchFolderName = "JavaHelpSearch";
+    private final static String mapFileName = "Map.jhm";
+
+
 
     private final File docSourceDir;
     private final File docTargetDir;
     private final String definitionXMLFileName;
     private final String definitionFilePath;
+    private final String tocFileName;
 
-    public HtmlWriter(File docSourceDir, File docTargetDir, String definitionXMLFileName, String definitionFilePath) {
+    public HtmlWriter(File docSourceDir, File docTargetDir, String definitionXMLFileName, String definitionFilePath, String tocFileName) {
         this.docSourceDir = docSourceDir;
         this.docTargetDir = docTargetDir;
         this.definitionXMLFileName = definitionXMLFileName;
         this.definitionFilePath = definitionFilePath;
+        this.tocFileName = tocFileName;
     }
 
     public void writePages(Documentation documentation) {
@@ -217,6 +230,12 @@ public class HtmlWriter implements DocumentWriter {
 
     }
 
+    @Override
+    public void copyHelpSet() throws IOException {
+        //FileUtils.copyFile(new File(docSourceDir, helpSetFileName),new File(docTargetDir, helpSetFileName));
+        FileUtils.copyFile(new File(docSourceDir, helpSetFileName), new File(docTargetDir, helpSetFileName), true, true, 4 * 1024);
+    }
+
     private void writeDefinitionHTML(DocumentDefinition[] docDefs, File htmlFile) throws Exception
     {
         try (PrintWriter pw = new PrintWriter(htmlFile)) {
@@ -253,7 +272,67 @@ public class HtmlWriter implements DocumentWriter {
         }
     }
 
+    @Override
+    public void generateHelpMap(Documentation documentation) throws Exception
+    {
+        File mapFile =  new File(docTargetDir, mapFileName);
 
+        try{
+            Element mapElement = new Element(VCellDocTags.map_tag);
+            mapElement.setAttribute(VCellDocTags.version_tag, "1.0");
+            //add toplevelfolder element
+            Element topLevelElement = new Element(VCellDocTags.mapID_tag);
+            topLevelElement.setAttribute(VCellDocTags.target_attr, "toplevelfolder");
+            topLevelElement.setAttribute(VCellDocTags.url_attr, "topics/image/vcell.gif");
+            mapElement.addContent(topLevelElement);
+            //add doc html files
+            for (DocumentPage documentPage : documentation.getDocumentPages()) {
+                String fileNameNoExt = documentPage.getTemplateFile().getName().replace(".xml","");
+                Element mapIDElement = new Element(VCellDocTags.mapID_tag);
+                mapIDElement.setAttribute(VCellDocTags.target_attr, fileNameNoExt);
+                File targetHtmlFile = getTargetFile(documentPage.getTemplateFile());
+                targetHtmlFile = new File(targetHtmlFile.getPath().replace(".xml",".html"));
+                mapIDElement.setAttribute(VCellDocTags.url_attr, getHelpRelativePath(docTargetDir, targetHtmlFile));
+                mapElement.addContent(mapIDElement);
+            }
+            //add definitions to map
+            Element definitionElement = new Element(VCellDocTags.mapID_tag);
+            definitionElement.setAttribute(VCellDocTags.target_attr, definitionXMLFileName.replace(".xml",""));
+            definitionElement.setAttribute(VCellDocTags.url_attr, definitionFilePath /*+ File.separator*/ + definitionXMLFileName.replace(".xml", ".html"));
+            mapElement.addContent(definitionElement);
+            //convert mapdocument to string
+            Document mapDoc = new Document();
+            mapDoc.setRootElement(mapElement);
+
+            String mapString = XmlUtil.xmlToString(mapDoc, false);
+            XmlUtil.writeXMLStringToFile(mapString, mapFile.getPath(), true);
+
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            throw e;
+        }
+
+    }
+
+
+    @Override
+    public void processTOC(Documentation documentation) throws Exception
+    {
+        File tocSourceFile =  new File(docSourceDir, tocFileName);
+        //
+        // read in existing TOC file and validate its contents
+        //
+        Document doc = XmlUtil.readXML(tocSourceFile);
+        Element root = doc.getRootElement();
+        if (!root.getName().equals(VCellDocTags.toc_tag)){
+            throw new RuntimeException("expecting "+VCellDocTags.toc_tag+" in file "+tocSourceFile.getPath());
+        }
+
+        // copy the Table of Contents to the target directory.
+        FileUtils.copyFile(new File(docSourceDir, tocFileName),new File(docTargetDir, tocFileName));
+        //System.out.println("Calling buildHtmlIndex");
+        buildHtmlIndex(documentation, root);
+    }
 
     private void buildIndexHtml(Documentation documentation, Element element, int level,PrintWriter tocPrintWriter) {
         if (element.getName().equals(VCellDocTags.tocitem_tag)){
@@ -286,6 +365,35 @@ public class HtmlWriter implements DocumentWriter {
         for (Element tocItemElement : children){
             buildIndexHtml(documentation, tocItemElement, level+1,tocPrintWriter);
         }
+    }
+
+
+    @Override
+    public void generateHelpSearch() throws Exception {
+        File helpSearchDir = new File(docTargetDir, helpSearchFolderName);
+        File topicsDir = new File(docTargetDir, "topics");
+        if (helpSearchDir.exists()) {
+            if (!helpSearchDir.isDirectory()) {
+                helpSearchDir.delete();
+            } else {
+                for (File file: helpSearchDir.listFiles()) {
+                    file.delete();
+                }
+            }
+        } else {
+            helpSearchDir.mkdirs();
+        }
+
+        //Write indexer config file, removes path prefix to make indexed items not dependent of original index file locations
+        File helpSearchConfigFullPath = new File(docSourceDir,javaHelp_helpSearchConfigFile);
+        try (FileWriter fw = new FileWriter(helpSearchConfigFullPath)) {
+            fw.write("IndexRemove "+docTargetDir+File.separator);
+        }
+
+
+        Indexer indexer = new Indexer();
+//		indexer.compile(new String[]{"-logfile", "indexer.log", "-c", "UserDocumentation/originalXML/helpSearchConfig.txt", "-db", docTargetDir + File.separator + helpSearchFolderName, docTargetDir + File.separator + "topics"});//javahelpsearch generated under vcell root
+        indexer.compile(new String[]{"-c", helpSearchConfigFullPath.getAbsolutePath(), "-db", helpSearchDir.toString(), topicsDir.toString()});//javahelpsearch generated under vcell root
     }
 
 

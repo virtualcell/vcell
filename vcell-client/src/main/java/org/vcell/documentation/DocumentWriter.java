@@ -7,7 +7,13 @@ import java.io.IOException;
 public interface DocumentWriter {
     void writePages(Documentation documentation);
 
-    void buildHtmlIndex(Documentation documentation, Element root) throws IOException;
-
     void writeDefinitions(Documentation documentation);
+
+    void processTOC(Documentation documentation) throws Exception;
+
+    void generateHelpMap(Documentation documentation) throws Exception;
+
+    void copyHelpSet() throws IOException;
+
+    void generateHelpSearch() throws Exception;
 }

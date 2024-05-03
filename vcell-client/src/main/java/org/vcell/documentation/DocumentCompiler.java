@@ -11,7 +11,6 @@
 package org.vcell.documentation;
 
 import cbit.util.xml.XmlUtil;
-import com.sun.java.help.search.Indexer;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Text;
@@ -20,7 +19,6 @@ import org.vcell.util.FileUtils;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileWriter;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -30,13 +28,9 @@ public class DocumentCompiler {
 	private final static int maxImgWidth = 600;
 	private final static int maxImgHeight = 600;
 	private final static String imageFilePath = "topics/image/";
-	private final static String mapFileName = "Map.jhm";
 	private final static String tocFileName = "TOC.xml";
-	private final static String helpSetFileName = "HelpSet.hs";
-	private final static String helpSearchFolderName = "JavaHelpSearch";
 	private final static String definitionFilePath = "topics/ch_9/Appendix/";
 	private final static String definitionXMLFileName = "Definitions.xml";
-	private final static String javaHelp_helpSearchConfigFile = "helpSearchConfig.txt";
 
 	private final File docTargetDir;
 	private final File docSourceDir;
@@ -48,7 +42,7 @@ public class DocumentCompiler {
 		this.docTargetDir = docTargetDir;
 	}
 
-	//test have two html pages and they point to each other, in addition, xmlFile1 has an image.
+
 	public static void main(String[] args) {
 		try {
 			if (args.length!=2) {
@@ -69,49 +63,24 @@ public class DocumentCompiler {
 				throw new RuntimeException("document target directory "+docTargetDir.getPath()+" isn't a directory");
 			}
 			DocumentCompiler docCompiler = new DocumentCompiler(docSourceDir, docTargetDir);
-			DocumentWriter documentWriter = new HtmlWriter(docSourceDir, docTargetDir, definitionXMLFileName, definitionFilePath);
+			DocumentWriter documentWriter = new HtmlWriter(docSourceDir, docTargetDir, definitionXMLFileName, definitionFilePath, tocFileName);
 			Documentation documentation = docCompiler.parseDocumentation();
+
 			//write document definitions
 			documentWriter.writeDefinitions(documentation);
 			//write document pages
 			documentWriter.writePages(documentation);
 
-			docCompiler.generateHelpMap(documentation);
-			docCompiler.validateTOC(documentation, documentWriter);
-			docCompiler.copyHelpSet();
-			docCompiler.generateHelpSearch();
+			documentWriter.generateHelpMap(documentation);
+			documentWriter.processTOC(documentation);
+
+			documentWriter.copyHelpSet();
+			documentWriter.generateHelpSearch();
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 		}
 	}
-	
-	private void generateHelpSearch() throws Exception
-	{
-		File helpSearchDir = new File(docTargetDir, helpSearchFolderName); 
-		File topicsDir = new File(docTargetDir, "topics");
-		if (helpSearchDir.exists()) {
-			if (!helpSearchDir.isDirectory()) {
-				helpSearchDir.delete();
-			} else {
-				for (File file: helpSearchDir.listFiles()) {
-					file.delete();
-				}
-			}
-		} else {
-			helpSearchDir.mkdirs();
-		}
-		
-		//Write indexer config file, removes path prefix to make indexed items not dependent of original index file locations
-		File helpSearchConfigFullPath = new File(docSourceDir,javaHelp_helpSearchConfigFile);
-		try (FileWriter fw = new FileWriter(helpSearchConfigFullPath)) {
-			fw.write("IndexRemove "+docTargetDir+File.separator);
-		}
-		
-		
-		Indexer indexer = new Indexer();
-//		indexer.compile(new String[]{"-logfile", "indexer.log", "-c", "UserDocumentation/originalXML/helpSearchConfig.txt", "-db", docTargetDir + File.separator + helpSearchFolderName, docTargetDir + File.separator + "topics"});//javahelpsearch generated under vcell root
-		indexer.compile(new String[]{"-c", helpSearchConfigFullPath.getAbsolutePath(), "-db", helpSearchDir.toString(), topicsDir.toString()});//javahelpsearch generated under vcell root
-	}
+
 
 	public Documentation parseDocumentation() throws Exception
 	{
@@ -168,8 +137,7 @@ public class DocumentCompiler {
 		Vector<File> unreferencedImageFiles = new Vector<>();
 		File[] imgFiles = imgSourceDir.listFiles();
 		for(File imgFile: imgFiles) {
-			if(imgFile.isFile())//dont' move over svn file
-			{
+			if(imgFile.isFile()) {
 				String name = imgFile.getName();
 				if(!referencedImageFiles.remove(name)){
 					unreferencedImageFiles.add(imgFile);
@@ -205,6 +173,9 @@ public class DocumentCompiler {
 			}
 			System.out.println("-----");
 		}
+
+		validateTOC(documentation);
+
 		return documentation;
 	}
 
@@ -216,53 +187,13 @@ public class DocumentCompiler {
 		return new File(sourceDir.getPath().replace(docSourceDir.getPath(),docTargetDir.getPath()));
 	}
 	
-	private void generateHelpMap(Documentation documentation) throws Exception
-	{
-		File mapFile =  new File(docTargetDir, mapFileName);
-		
-		try{
-			Element mapElement = new Element(VCellDocTags.map_tag);
-			mapElement.setAttribute(VCellDocTags.version_tag, "1.0");
-			//add toplevelfolder element
-			Element topLevelElement = new Element(VCellDocTags.mapID_tag);
-			topLevelElement.setAttribute(VCellDocTags.target_attr, "toplevelfolder");
-			topLevelElement.setAttribute(VCellDocTags.url_attr, "topics/image/vcell.gif");
-			mapElement.addContent(topLevelElement);	
-			//add doc html files
-			for (DocumentPage documentPage : documentation.getDocumentPages()) {
-				String fileNameNoExt = documentPage.getTemplateFile().getName().replace(".xml","");
-				Element mapIDElement = new Element(VCellDocTags.mapID_tag);
-				mapIDElement.setAttribute(VCellDocTags.target_attr, fileNameNoExt);
-				File targetHtmlFile = getTargetFile(documentPage.getTemplateFile());
-				targetHtmlFile = new File(targetHtmlFile.getPath().replace(".xml",".html"));
-				mapIDElement.setAttribute(VCellDocTags.url_attr, getHelpRelativePath(docTargetDir, targetHtmlFile));
-				mapElement.addContent(mapIDElement);	
-			}
-			//add definitions to map
-			Element definitionElement = new Element(VCellDocTags.mapID_tag);
-			definitionElement.setAttribute(VCellDocTags.target_attr, definitionXMLFileName.replace(".xml",""));
-			definitionElement.setAttribute(VCellDocTags.url_attr, definitionFilePath /*+ File.separator*/ + definitionXMLFileName.replace(".xml", ".html"));
-			mapElement.addContent(definitionElement);	
-			//convert mapdocument to string
-			Document mapDoc = new Document();
-			mapDoc.setRootElement(mapElement);
-			
-			String mapString = XmlUtil.xmlToString(mapDoc, false);
-			XmlUtil.writeXMLStringToFile(mapString, mapFile.getPath(), true);
-			
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw e;
-		} 
-			
-	}
+
 	
-	
-	private void validateTOC(Documentation documentation, DocumentWriter documentWriter) throws Exception
+	private void validateTOC(Documentation documentation) throws Exception
 	{
 		File tocSourceFile =  new File(docSourceDir, tocFileName);
 		//
-		// read in existing TOC file and validate it's contents
+		// read in existing TOC file and validate its contents
 		//
 		Document doc = XmlUtil.readXML(tocSourceFile);
 		Element root = doc.getRootElement();
@@ -277,17 +208,6 @@ public class DocumentCompiler {
 				System.err.println("ERROR: Document page '"+docPage.getTarget()+"' not referenced in either table of contents or from another document");
 			}
 		}
-		
-		// copy the Table of Contents to the target directory.
-		FileUtils.copyFile(new File(docSourceDir, tocFileName),new File(docTargetDir, tocFileName));			
-		//System.out.println("Calling buildHtmlIndex");
-		documentWriter.buildHtmlIndex(documentation, root);
-	}
-	
-	private void copyHelpSet() throws Exception
-	{
-		//FileUtils.copyFile(new File(docSourceDir, helpSetFileName),new File(docTargetDir, helpSetFileName));
-		FileUtils.copyFile(new File(docSourceDir, helpSetFileName), new File(docTargetDir, helpSetFileName), true, true, 4 * 1024);
 	}
 	
 	private void readTOCItem(Documentation documentation, HashSet<DocumentPage> pagesNotYetReferenced, Element element){
@@ -305,12 +225,10 @@ public class DocumentCompiler {
 					pagesNotYetReferenced.remove(targetDocPage);
 				}
 			}
-		}else if (element.getName().equals(VCellDocTags.toc_tag)){
-			// do nothing
-		}else{
+		}else if (!element.getName().equals(VCellDocTags.toc_tag)) {
 			throw new RuntimeException("unexpecteded element '"+element.getName()+"' in table of contents");
 		}
-		@SuppressWarnings("unchecked")
+        @SuppressWarnings("unchecked")
 		List<Element> children = element.getChildren(VCellDocTags.tocitem_tag);
 		for (Element tocItemElement : children){
 			readTOCItem(documentation, pagesNotYetReferenced, tocItemElement);
@@ -380,7 +298,7 @@ public class DocumentCompiler {
 		for (Object child : children){
 			if (child instanceof Text){
 				Text childText = (Text)child;
-				if (childText.getText().trim().length()>0){
+				if (!childText.getText().trim().isEmpty()){
 					docComponent.add(new DocText(childText.getText(),false));
 				}
 			}else if (child instanceof Element childElement){
