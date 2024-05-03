@@ -10,68 +10,50 @@
 
 package org.vcell.documentation;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.Vector;
-
-import javax.imageio.ImageIO;
-
+import cbit.util.xml.XmlUtil;
+import com.sun.java.help.search.Indexer;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Text;
 import org.vcell.util.FileUtils;
 
-import com.sun.java.help.search.Indexer;
-
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.xml.XmlParseException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class DocumentCompiler {
-	public final static int MAX_IMG_FILE_SIZE = 50000;
-	public final static int WARN_IMG_FILE_SIZE = 25000;
-	public final static int maxImgWidth = 600;
-	public final static int maxImgHeight = 600;
+	private final static int MAX_IMG_FILE_SIZE = 50000;
+	private final static int WARN_IMG_FILE_SIZE = 25000;
+	private final static int maxImgWidth = 600;
+	private final static int maxImgHeight = 600;
+	private final static String imageFilePath = "topics/image/";
+	private final static String mapFileName = "Map.jhm";
+	private final static String tocFileName = "TOC.xml";
+	private final static String tocHTMLFileName = "VCellHelpTOC.html";
+	private final static String helpSetFileName = "HelpSet.hs";
+	private final static String helpSearchFolderName = "JavaHelpSearch";
+	private final static String definitionFilePath = "topics/ch_9/Appendix/";
+	private final static String definitionXMLFileName = "Definitions.xml";
+	private final static String javaHelp_helpSearchConfigFile = "helpSearchConfig.txt";
 
-	public final static String VCELL_DOC_HTML_FILE_EXT = ".html";
-	public static File docTargetDir;
-	public static File docSourceDir;
-	public final static String imageFilePath = "topics/image/";
-	public final static String mapFileName = "Map.jhm";
-	public final static String tocFileName = "TOC.xml";
-	public final static String tocHTMLFileName = "VCellHelpTOC.html";
-	public final static String helpSetFileName = "HelpSet.hs";
-	public final static String helpSearchFolderName = "JavaHelpSearch";
-	public final static String definitionFilePath = "topics/ch_9/Appendix/";
-	public final static String definitionXMLFileName = "Definitions.xml";
-	public final static String javaHelp_helpSearchConfigFile = "helpSearchConfig.txt";
-	
-	private Documentation documentation = new Documentation();
+	private final File docTargetDir;
+	private final File docSourceDir;
+	private final Documentation documentation = new Documentation();
 
-	
-	FileFilter directoryFileFilter = new FileFilter() {
-		public boolean accept(File pathname) {
-			return pathname.isDirectory();
-		}
-	};
-	FileFilter xmlFileFilter = new FileFilter() {
-		public boolean accept(File pathname) {
-			return pathname.getName().endsWith(".xml");
-		}
-	};
-		
+
+	public DocumentCompiler(File docSourceDir, File docTargetDir) {
+		this.docSourceDir = docSourceDir;
+		this.docTargetDir = docTargetDir;
+	}
+
 	//test have two html pages and they point to each other, in addition, xmlFile1 has an image.
 	public static void main(String[] args) {
 		try {
@@ -79,8 +61,8 @@ public class DocumentCompiler {
 				System.out.println("Usage: java "+DocumentCompiler.class.getTypeName()+" input-xml-dir  output-javahelp-dir");
 				System.exit(-1);
 			}
-			docSourceDir = new File(args[0]); // see vcell-client/pom.xml
-			docTargetDir = new File(args[1]); // see vcell-client/pom.xml
+			File docSourceDir = new File(args[0]); // see vcell-client/pom.xml
+			File docTargetDir = new File(args[1]); // see vcell-client/pom.xml
 			System.out.println("docSourceDir="+docSourceDir);
 			System.out.println("docTargetDir="+docTargetDir);
 			System.out.flush();
@@ -92,7 +74,7 @@ public class DocumentCompiler {
 			}else if (!docTargetDir.isDirectory()){
 				throw new RuntimeException("document target directory "+docTargetDir.getPath()+" isn't a directory");
 			}
-			DocumentCompiler docCompiler = new DocumentCompiler();
+			DocumentCompiler docCompiler = new DocumentCompiler(docSourceDir, docTargetDir);
 			docCompiler.batchRun();
 			docCompiler.generateHelpMap();
 			docCompiler.validateTOC();
@@ -121,7 +103,7 @@ public class DocumentCompiler {
 		
 		//Write indexer config file, removes path prefix to make indexed items not dependent of original index file locations
 		File helpSearchConfigFullPath = new File(docSourceDir,javaHelp_helpSearchConfigFile);
-		try (FileWriter fw = new FileWriter(helpSearchConfigFullPath);) {
+		try (FileWriter fw = new FileWriter(helpSearchConfigFullPath)) {
 			fw.write("IndexRemove "+docTargetDir+File.separator);
 		}
 		
@@ -131,7 +113,7 @@ public class DocumentCompiler {
 		indexer.compile(new String[]{"-c", helpSearchConfigFullPath.getAbsolutePath(), "-db", helpSearchDir.toString(), topicsDir.toString()});//javahelpsearch generated under vcell root
 	}
 
-	public static TreeSet<String> referencedImageFiles = new TreeSet<String>();
+	public static TreeSet<String> referencedImageFiles = new TreeSet<>();
 	public void batchRun() throws Exception
 	{
 		//generate document images
@@ -144,16 +126,15 @@ public class DocumentCompiler {
 		if(!workingImgDir.exists()){
 			workingImgDir.mkdirs();	
 		}
-		//delete all images
+		//delete all files in the working image directory
 		File[] oldImgFiles = workingImgDir.listFiles();
-		for(File file : oldImgFiles)
-		{
-			if(!file.getName().contains(".svn"))//dont' delete svn file
-			{
-				file.delete();
+        assert oldImgFiles != null;
+        for(File file : oldImgFiles) {
+			if (!file.delete()) {
+				throw new RuntimeException("failed to delete file "+file.getPath());
 			}
 		}
-		
+
 		File[] sourceDirectories = FileUtils.getAllDirectories(docSourceDir);
 		for (File sourceDir : sourceDirectories){
 			//
@@ -176,7 +157,7 @@ public class DocumentCompiler {
 				continue;
 			}
 			//get all xml files from the original xml directory.
-			File[] xmlFiles = sourceDir.listFiles(xmlFileFilter);
+			File[] xmlFiles = sourceDir.listFiles(pathname -> pathname.getName().endsWith(".xml"));
 			for(File xmlFile : xmlFiles) {
 				if (xmlFile.getName().equals(definitionXMLFileName)){
 					ArrayList<DocumentDefinition> docDefs = readDefinitionFile(xmlFile);
@@ -191,7 +172,7 @@ public class DocumentCompiler {
 		}
 		
 		//get images from the original image directory
-		Vector<File> unreferencedImageFiles = new Vector<File>();
+		Vector<File> unreferencedImageFiles = new Vector<>();
 		File[] imgFiles = imgSourceDir.listFiles();
 		for(File imgFile: imgFiles) {
 			if(!imgFile.getName().contains(".svn") && imgFile.isFile())//dont' move over svn file
@@ -211,20 +192,20 @@ public class DocumentCompiler {
 					imgChkStr = "ERROR: (" + imgFile.getName() + ") image dimension ("+imgWidth+","+imgHeight+") exceeds the maximum allowed image dimension("+ maxImgWidth + ","+maxImgHeight+") in VCell Help.";
 				}
 				if(imgFile.length() > MAX_IMG_FILE_SIZE){
-					imgChkStr = (imgChkStr.length() > 0 ?imgChkStr+"\n":"")+
+					imgChkStr = (!imgChkStr.isEmpty() ? imgChkStr+"\n" : "") +
 							"ERROR: (" + imgFile.getName() + ") ERROR file size ("+imgFile.length()+") greater than maximum allowed file size ("+MAX_IMG_FILE_SIZE+") in VCell Help.";
 				}
 				if(imgFile.length() > WARN_IMG_FILE_SIZE && imgFile.length() <= MAX_IMG_FILE_SIZE){
 					System.out.println("WARNING: (" + imgFile.getName() + ") file size ("+imgFile.length()+") greater than preferred file size ("+WARN_IMG_FILE_SIZE+") in VCell Help.");
 				}
-				if(imgChkStr.length()>0){
+				if(!imgChkStr.isEmpty()){
 					System.err.println(imgChkStr);
 				}
 				DocumentImage tempImg = new DocumentImage(workingImgFile, imgWidth, imgHeight, imgWidth, imgHeight);
 				documentation.add(tempImg);
 			}
 		}
-		if(unreferencedImageFiles.size() > 0){
+		if (!unreferencedImageFiles.isEmpty()){
 			System.out.println("-----Unreferenced Image Files");
 			for (int i = 0; i < unreferencedImageFiles.size(); i++) {
 				System.out.println("WARNING: Unreferenced image: "+unreferencedImageFiles.elementAt(i).getName());
@@ -237,14 +218,11 @@ public class DocumentCompiler {
 			DocumentDefinition[] documentDefinitions = documentation.getDocumentDefinitions(); 
 			File xmlFile = getTargetFile(documentDefinitions[0].getSourceFile());
 			File htmlFile = new File(xmlFile.getPath().replace(".xml",".html"));
-			if(documentDefinitions.length > 0)
-			{
-				try {
-					writeDefinitionHTML(documentDefinitions,htmlFile);
-				}catch (Exception e){
-					e.printStackTrace(System.out);
-					throw new RuntimeException("failed to parse document "+documentDefinitions[0].getSourceFile().getPath());
-				}
+			try {
+				writeDefinitionHTML(documentDefinitions,htmlFile);
+			}catch (Exception e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException("failed to parse document "+documentDefinitions[0].getSourceFile().getPath());
 			}
 		}
 		//write document pages
@@ -322,13 +300,11 @@ public class DocumentCompiler {
 			throw new RuntimeException("expecting "+VCellDocTags.toc_tag+" in file "+tocSourceFile.getPath());
 		}
 
-		HashSet<DocumentPage> pagesNotYetReferenced = new HashSet<DocumentPage>(Arrays.asList(documentation.getDocumentPages()));
+		HashSet<DocumentPage> pagesNotYetReferenced = new HashSet<>(Arrays.asList(documentation.getDocumentPages()));
 		readTOCItem(pagesNotYetReferenced, root);
-		if (pagesNotYetReferenced.size()>0){
-			for (DocumentPage docPage : pagesNotYetReferenced){
-				if (!documentation.isReferenced(docPage)){
-					System.err.println("ERROR: Document page '"+docPage.getTarget()+"' not referenced in either table of contents or from another document");
-				}
+		for (DocumentPage docPage : pagesNotYetReferenced){
+			if (!documentation.isReferenced(docPage)){
+				System.err.println("ERROR: Document page '"+docPage.getTarget()+"' not referenced in either table of contents or from another document");
 			}
 		}
 		
@@ -378,7 +354,7 @@ public class DocumentCompiler {
 		tocPrintWriter.close();
 	}
 	
-	private void buildIndexHtml(Element element, int level,PrintWriter tocPrintWriter) throws IOException{
+	private void buildIndexHtml(Element element, int level,PrintWriter tocPrintWriter) {
 		if (element.getName().equals(VCellDocTags.tocitem_tag)){
 			String target = element.getAttributeValue(VCellDocTags.target_attr);
 			if (target!=null){
@@ -413,8 +389,8 @@ public class DocumentCompiler {
 
 	}
 	
-	private ArrayList<DocumentDefinition> readDefinitionFile(File file) throws XmlParseException{
-		ArrayList<DocumentDefinition> documentDefs = new ArrayList<DocumentDefinition>();
+	private ArrayList<DocumentDefinition> readDefinitionFile(File file) {
+		ArrayList<DocumentDefinition> documentDefs = new ArrayList<>();
 		
 		Document doc = XmlUtil.readXML(file);
 		Element root = doc.getRootElement();
@@ -443,7 +419,7 @@ public class DocumentCompiler {
 	}
 	
 	
-	private DocumentPage readTemplateFile(File file) throws XmlParseException {
+	private DocumentPage readTemplateFile(File file) {
 		Document doc = XmlUtil.readXML(file);
 		Element root = doc.getRootElement();
 		if (!root.getName().equals(VCellDocTags.VCellDoc_tag)){
@@ -455,14 +431,13 @@ public class DocumentCompiler {
 			DocSection appearance = getSection(pageElement,VCellDocTags.appearance_tag, file);
 			DocSection introduction = getSection(pageElement,VCellDocTags.introduction_tag, file);
 			DocSection operations = getSection(pageElement,VCellDocTags.operations_tag, file);
-			DocumentPage documentTemplate = new DocumentPage(file, title, introduction, appearance, operations);
-			return documentTemplate;
+            return new DocumentPage(file, title, introduction, appearance, operations);
 		}
 		return null;
 	}
 	
 	// top level section parse method.
-	private DocSection getSection(Element root, String tagName, File xmlFile) throws XmlParseException{
+	private DocSection getSection(Element root, String tagName, File xmlFile) {
 		DocSection docSection = new DocSection();
 		Element sectionRootElement = root.getChild(tagName);
 		if (sectionRootElement!=null){
@@ -480,8 +455,7 @@ public class DocumentCompiler {
 				if (childText.getText().trim().length()>0){
 					docComponent.add(new DocText(childText.getText(),false));
 				}
-			}else if (child instanceof Element){
-				Element childElement = (Element)child;
+			}else if (child instanceof Element childElement){
 				if (childElement.getName().equals(VCellDocTags.link_tag)){
 					String linkText = childElement.getText();
 					String linkTarget = childElement.getAttributeValue(VCellDocTags.target_attr);
@@ -498,8 +472,7 @@ public class DocumentCompiler {
 					@SuppressWarnings("rawtypes")
 					List boldChildren = childElement.getContent();
 					for (Object boldChild : boldChildren){
-						if (boldChild instanceof Text){
-							Text childText = (Text)boldChild;
+						if (boldChild instanceof Text childText){
 							docComponent.add(new DocText(childText.getText(),true));
 						}else if (boldChild instanceof Element){
 							throw new RuntimeException("only plain text is allowed within <bold></bold> elements");
@@ -526,140 +499,114 @@ public class DocumentCompiler {
 			}
 		}
 	}
-	
-	private String getStartTag(String tag) {
-		return "<" + VCellDocTags.html_tag + ">";
-	}
-			
-	private String getEndTag(String tag) {
-		return "</" + VCellDocTags.html_tag + ">";
-	}
-	
+
 	private void writeDefinitionHTML(DocumentDefinition[] docDefs, File htmlFile) throws Exception
 	{
-		PrintWriter pw = null;
-		try {
-			pw = new PrintWriter(htmlFile);
-			
-			 //start html
-			 pw.println(getStartTag(VCellDocTags.html_tag));
-			 //start head
-			 pw.println("<" + VCellDocTags.html_head_tag + ">");
-			 pw.println("<h2> Virtual Cell Definitions </h2>");
-			 //start title
-			 pw.print("<" + VCellDocTags.html_title_tag + ">");
-			 //end title
-			 pw.print("</" + VCellDocTags.html_title_tag + ">");
-			 pw.println();
-			 //end head
-			 pw.print("</" + VCellDocTags.html_head_tag + ">");
-			 //start body
-			 pw.println("<" + VCellDocTags.html_body_tag + ">");
-			 for(DocumentDefinition docDef : docDefs)
-			 {
-				 pw.println();
-				 pw.print("<p>");
-				 pw.print("<a name = \"" + docDef.getTarget() + "\"><b>" + docDef.getLabel() + "</b></a> <br>");
-				 pw.println();
-				 pw.print(docDef.getText());
-				 pw.print("</p>");
-			 }
-			 //end body
-			 pw.println("</" + VCellDocTags.html_body_tag + ">");
-			 //end html
-			 pw.println(getEndTag(VCellDocTags.html_tag));
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw e;
-		} finally {
-			if (pw != null) {
-				pw.close();	
-			}
-		}
+        try (PrintWriter pw = new PrintWriter(htmlFile)) {
+
+            //start html
+			pw.println("<" + VCellDocTags.html_tag + ">");
+            //start head
+            pw.println("<" + VCellDocTags.html_head_tag + ">");
+            pw.println("<h2> Virtual Cell Definitions </h2>");
+            //start title
+            pw.print("<" + VCellDocTags.html_title_tag + ">");
+            //end title
+            pw.print("</" + VCellDocTags.html_title_tag + ">");
+            pw.println();
+            //end head
+            pw.print("</" + VCellDocTags.html_head_tag + ">");
+            //start body
+            pw.println("<" + VCellDocTags.html_body_tag + ">");
+            for (DocumentDefinition docDef : docDefs) {
+                pw.println();
+                pw.print("<p>");
+                pw.print("<a name = \"" + docDef.getTarget() + "\"><b>" + docDef.getLabel() + "</b></a> <br>");
+                pw.println();
+                pw.print(docDef.getText());
+                pw.print("</p>");
+            }
+            //end body
+            pw.println("</" + VCellDocTags.html_body_tag + ">");
+            //end html
+			pw.println("</" + VCellDocTags.html_tag + ">");
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            throw e;
+        }
 	}
 	
 	private void writeHTML(Documentation documentation, DocumentPage documentPage, File htmlFile) throws Exception
 	{
-		PrintWriter pw = null;
-		try {
-			 pw = new PrintWriter(htmlFile);
-			 //start html
-			 pw.println(getStartTag(VCellDocTags.html_tag));
-			 
-			 //start head
-			 pw.println("<" + VCellDocTags.html_head_tag + ">");
-			 //start title
-			 pw.print("<" + VCellDocTags.html_title_tag + ">");
-			 pw.print(documentPage.getTitle());                    //html page title, replace when needed
-			 //end title
-			 pw.print("</" + VCellDocTags.html_title_tag + ">");
-			 pw.println();
-			 //end head
-			 pw.print("</" + VCellDocTags.html_head_tag + ">");
-			 
-			 //start body
-			 pw.println("<" + VCellDocTags.html_body_tag + ">");
-			 //title
-			 pw.print("<" + VCellDocTags.html_new_line + ">");
-			 pw.print("<" + VCellDocTags.html_header_tag + ">" +  documentPage.getTitle() + "</" + VCellDocTags.html_header_tag + ">");
-			 pw.print("</" + VCellDocTags.html_new_line + ">");
-			 pw.println();
-			 
-			 //introduction
-			 DocSection introSection = documentPage.getIntroduction();
-			 if(introSection.getComponents().size() > 0)
-			 {
-				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printComponent(documentation,introSection, htmlFile.getParentFile(), pw, htmlFile);
-				 pw.print("</" + VCellDocTags.html_new_line + ">");
-				 pw.println();
-			 }
-			 //appearance
-			 DocSection appSection = documentPage.getAppearance();
-			 if(appSection.getComponents().size() > 0)
-			 {
-				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printComponent(documentation,appSection, htmlFile.getParentFile(), pw, htmlFile);
-				 pw.print("</" + VCellDocTags.html_new_line + ">");
-				 pw.println();
-			 }
-			 //operation
-			 DocSection opSection = documentPage.getOperations();
-			 if(opSection.getComponents().size() > 0)
-			 {
-				 pw.print("<" + VCellDocTags.html_new_line + ">");
-				 printComponent(documentation,opSection, htmlFile.getParentFile(), pw, htmlFile);
-				 pw.print("</" + VCellDocTags.html_new_line + ">");
-				 pw.println();
-			 }
-			 //end body
-			 pw.println("</" + VCellDocTags.html_body_tag + ">");
-			 
-			 //end html
-			 pw.println(getEndTag(VCellDocTags.html_tag));
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new Exception("Exception in " + htmlFile.getAbsolutePath().replace(".html", ".xml") + ".\n" + e.getMessage());
-		} finally {
-			if (pw != null) {
-				pw.close();	
-			}
-		}
+        try (PrintWriter pw = new PrintWriter(htmlFile)) {
+            //start html
+			pw.println("<" + VCellDocTags.html_tag + ">");
+
+            //start head
+            pw.println("<" + VCellDocTags.html_head_tag + ">");
+            //start title
+            pw.print("<" + VCellDocTags.html_title_tag + ">");
+            pw.print(documentPage.getTitle());                    //html page title, replace when needed
+            //end title
+            pw.print("</" + VCellDocTags.html_title_tag + ">");
+            pw.println();
+            //end head
+            pw.print("</" + VCellDocTags.html_head_tag + ">");
+
+            //start body
+            pw.println("<" + VCellDocTags.html_body_tag + ">");
+            //title
+            pw.print("<" + VCellDocTags.html_new_line + ">");
+            pw.print("<" + VCellDocTags.html_header_tag + ">" + documentPage.getTitle() + "</" + VCellDocTags.html_header_tag + ">");
+            pw.print("</" + VCellDocTags.html_new_line + ">");
+            pw.println();
+
+            //introduction
+            DocSection introSection = documentPage.getIntroduction();
+            if (!introSection.getComponents().isEmpty()) {
+                pw.print("<" + VCellDocTags.html_new_line + ">");
+                printComponent(documentation, introSection, htmlFile.getParentFile(), pw, htmlFile);
+                pw.print("</" + VCellDocTags.html_new_line + ">");
+                pw.println();
+            }
+            //appearance
+            DocSection appSection = documentPage.getAppearance();
+            if (!appSection.getComponents().isEmpty()) {
+                pw.print("<" + VCellDocTags.html_new_line + ">");
+                printComponent(documentation, appSection, htmlFile.getParentFile(), pw, htmlFile);
+                pw.print("</" + VCellDocTags.html_new_line + ">");
+                pw.println();
+            }
+            //operation
+            DocSection opSection = documentPage.getOperations();
+            if (!opSection.getComponents().isEmpty()) {
+                pw.print("<" + VCellDocTags.html_new_line + ">");
+                printComponent(documentation, opSection, htmlFile.getParentFile(), pw, htmlFile);
+                pw.print("</" + VCellDocTags.html_new_line + ">");
+                pw.println();
+            }
+            //end body
+            pw.println("</" + VCellDocTags.html_body_tag + ">");
+
+            //end html
+			pw.println("</" + VCellDocTags.html_tag + ">");
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+            throw new Exception("Exception in " + htmlFile.getAbsolutePath().replace(".html", ".xml") + ".\n" + e.getMessage());
+        }
 	}
 	
 	private void printComponent(Documentation documentation, DocTextComponent docComp, File directory, PrintWriter pw, File sourceHtmlFile) throws Exception {
-		 if (docComp instanceof DocText){
-			 DocText text = (DocText)docComp;
+		 if (docComp instanceof DocText text){
 			 if (text.getBold()) {
 				 pw.print("<b>" + text.getText() + "</b>");
 			 } else {
 				 pw.print(text.getText());
 			 }
-		 }else if (docComp instanceof DocLink){
-			 DocLink docLink = (DocLink)docComp;
+		 }else if (docComp instanceof DocLink docLink){
 			 if(docLink.isWebTarget())
 			 {
-				 URL url = new URL(docLink.getTarget());
+				 URL url = new URI(docLink.getTarget()).toURL();
 				 URLConnection conn = url.openConnection();
 				 try{
 					 conn.connect();
@@ -694,8 +641,7 @@ public class DocumentCompiler {
 			 }
 			 pw.print(docLink.getText());
 			 pw.print("</a>");
-		 }else if (docComp instanceof DocImageReference){
-			 DocImageReference imageReference = (DocImageReference)docComp;
+		 }else if (docComp instanceof DocImageReference imageReference){
 			 DocumentImage targetImage = documentation.getDocumentImage(imageReference);
 			 if (targetImage==null){
 				throw new RuntimeException("reference to image '"+imageReference+"' cannot be resolved");
@@ -708,8 +654,7 @@ public class DocumentCompiler {
 			 } else {
 			 	 pw.println("&nbsp;<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + targetImage.getDisplayWidth() + "\" height=\"" + targetImage.getDisplayHeight()+"\">&nbsp;");
 			 }
-		 }else if (docComp instanceof DocDefinitionReference){
-			 DocDefinitionReference defReference = (DocDefinitionReference)docComp;
+		 }else if (docComp instanceof DocDefinitionReference defReference){
 			 DocumentDefinition targetDef = documentation.getDocumentDefinition(defReference);
 			 if (targetDef==null){
 				throw new RuntimeException("Definition '"+defReference.getDefinitionTarget()+"' does NOT exist.");
@@ -744,7 +689,7 @@ public class DocumentCompiler {
 		 }
 	}
 	
-	public static String getHelpRelativePath(File sourceDir, File targetFile) throws IOException {
+	public static String getHelpRelativePath(File sourceDir, File targetFile) {
 		return Paths.get(sourceDir.getPath()).relativize(Paths.get(targetFile.getPath())).toString();
 	}
 
