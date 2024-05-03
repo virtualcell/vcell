@@ -18,7 +18,6 @@ public class DocImageReference extends DocTextComponent {
 		super();
 		this.imageTarget = imageTarget;
 		this.bInline = bInline;
-		DocumentCompiler.referencedImageFiles.add(imageTarget);
 	}
 
 	public String getImageTarget() {
