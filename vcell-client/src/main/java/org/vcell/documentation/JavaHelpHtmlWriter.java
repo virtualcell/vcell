@@ -320,12 +320,18 @@ public class JavaHelpHtmlWriter implements DocumentWriter {
         //System.out.println("Calling buildHtmlIndex");
         File htmlTOCFile=new File(docTargetDir,tocHTMLFileName);
         PrintWriter tocPrintWriter = new PrintWriter(htmlTOCFile);
+        tocPrintWriter.println("<h2>VCell Desktop Help</h2>");
+        tocPrintWriter.println("<ul>");
         buildIndexHtml(documentation, root,0,tocPrintWriter);
+        tocPrintWriter.println("</ul>");
         tocPrintWriter.close();
     }
 
 
     private void buildIndexHtml(Documentation documentation, Element element, int level,PrintWriter tocPrintWriter) {
+        String indent = " ".repeat(4*level);
+        String bigger_indent = " ".repeat(4*level + 2);
+        String page_content = null;
         if (element.getName().equals(VCellDocTags.tocitem_tag)){
             String target = element.getAttributeValue(VCellDocTags.target_attr);
             if (target!=null){
@@ -336,14 +342,7 @@ public class JavaHelpHtmlWriter implements DocumentWriter {
                     File targetHtmlFile = getTargetFile(documentPage.getTemplateFile());
                     targetHtmlFile = new File(targetHtmlFile.getPath().replace(".xml",".html"));
                     String pathString = getHelpRelativePath(docTargetDir, targetHtmlFile);
-                    System.out.print("<br>\n");
-                    tocPrintWriter.print("<br>\n");
-                    for (int i=1; i<level; ++i) {
-                        System.out.print("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-                        tocPrintWriter.print("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
-                    }
-                    System.out.println("<a href=\""+pathString+"\">"+linkText+"</a>");
-                    tocPrintWriter.println("<a href=\""+pathString+"\">"+linkText+"</a>");
+                    page_content = "<a href=\""+pathString+"\">"+linkText+"</a>";
                 }
             }
         }else if (element.getName().equals(VCellDocTags.toc_tag)){
@@ -351,10 +350,26 @@ public class JavaHelpHtmlWriter implements DocumentWriter {
         }else{
             throw new RuntimeException("unexpecteded element '"+element.getName()+"' in table of contents");
         }
+
         @SuppressWarnings("unchecked")
         List<Element> children = element.getChildren(VCellDocTags.tocitem_tag);
-        for (Element tocItemElement : children){
-            buildIndexHtml(documentation, tocItemElement, level+1,tocPrintWriter);
+        if (page_content != null) {
+            if (children.isEmpty()) {
+                tocPrintWriter.println(indent + "<li>" + page_content + "</li>");
+            } else {
+                tocPrintWriter.println(indent + "<li>");
+                tocPrintWriter.println(bigger_indent + page_content);
+                tocPrintWriter.println(bigger_indent + "<ul>");
+                for (Element tocItemElement : children){
+                    buildIndexHtml(documentation, tocItemElement, level+1,tocPrintWriter);
+                }
+                tocPrintWriter.println(bigger_indent + "</ul>");
+                tocPrintWriter.println(indent + "</li>");
+            }
+        } else {
+            for (Element tocItemElement : children){
+                buildIndexHtml(documentation, tocItemElement, level,tocPrintWriter);
+            }
         }
     }
 
