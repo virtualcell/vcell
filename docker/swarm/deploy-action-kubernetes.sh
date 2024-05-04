@@ -24,6 +24,12 @@ show_help() {
 	echo "                          directory for installers accessible to users"
 	echo "                          typically a web-accessible location to download the client installers for each platform"
 	echo ""
+	echo "    --webhelp-local-dir  /local/path/to/vcellDoc"
+	echo "                          directory for VCell java help including html files"
+	echo ""
+	echo "    --webhelp-deploy-dir /remote/path/to/web/VCell_Help"
+	echo "                          directory for deployed html webhelp published on web server"
+	echo ""
 	echo "    --install-singularity  optionally install batch and opt singularity images on each compute node in 'vcell' SLURM partition"
 	echo ""
 	echo ""
@@ -33,6 +39,8 @@ show_help() {
 	echo "   --ssh-user vcell \\"
 	echo "   --install_singularity \\"
 	echo "   --build_installers --installer_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/Test \\"
+	echo "   --webhelp_local_dir ../../vcell-client/target/classes/vcellDoc \\"
+	echo "   --webhelp_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/VCell_Tutorials/VCell_Help \\"
 	echo "   vcellapi-test.cam.uchc.edu \\"
 	echo "   ./server.config"
 	exit 1
@@ -44,6 +52,8 @@ fi
 
 ssh_user=$(whoami)
 installer_deploy_dir=
+webhelp_local_dir=
+webhelp_deploy_dir=
 build_installers=false
 install_singularity=false
 while :; do
@@ -59,6 +69,14 @@ while :; do
 		--installer-deploy-dir)
 			shift
 			installer_deploy_dir=$1
+			;;
+		--webhelp-local-dir)
+			shift
+			webhelp_local_dir=$1
+			;;
+		--webhelp-deploy-dir)
+			shift
+			webhelp_deploy_dir=$1
 			;;
 		--install-singularity)
 			install_singularity=true
@@ -167,10 +185,24 @@ if [ "$build_installers" == "true" ]; then
 			echo "failed to copy installers"; 
 			exit 1;
 		fi
-
 	fi
 fi
 
+#
+# if --webhelp_deploy_dir, then copy the help html files from vcell-client/target/classes/vcellDoc/topics to the webhelp deploy directory
+#
+if [ ! -z "$webhelp_deploy_dir" ]; then
+  if ! scp -r "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}/topics";
+  then
+    echo "failed to copy html files in topic directory to webhelp deploy directory";
+    exit 1;
+  fi
+  if ! scp "${webhelp_local_dir}/VCellHelpTOC.html" "$ssh_user@$manager_node:${webhelp_deploy_dir}/index.html";
+  then
+    echo "failed to index.html to webhelp deploy directory";
+    exit 1;
+  fi
+fi
 
 echo "exited normally"
 

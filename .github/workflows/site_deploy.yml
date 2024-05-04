@@ -43,6 +43,7 @@ jobs:
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
         echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
+        echo "VCELL_WEBHELP_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/VCell_Tutorials/VCell_Help" >> $GITHUB_ENV
         if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then\
         	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;\
@@ -206,12 +207,14 @@ jobs:
         cd docker/swarm
         ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         if ${{ github.event.inputs.server_only != 'true' }}; then
-          # build and install the client installers and the singularity images (kubernetes cluster deployments are separate)
+          # build and install the client installers, the singularity images, and the web help (kubernetes cluster deployments are separate)
           ./deploy-action-kubernetes.sh \
               --ssh-user ${{ secrets.CD_FULL_USER }} \
               --install-singularity \
               --build-installers \
               --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
+              --webhelp-local-dir ../../vcell-client/target/classes/vcellDoc \
+              --webhelp-deploy-dir $VCELL_WEBHELP_REMOTE_DIR \
               ${VCELL_MANAGER_NODE} \
               ./${VCELL_CONFIG_FILE_NAME}
           export VCELL_SITE_CAMEL=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
