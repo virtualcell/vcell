@@ -162,7 +162,7 @@ public class JavaHelpHtmlWriter implements DocumentWriter {
             String relativePathToTarget = getHelpRelativePath(directory, imageFile);
             if (!imageReference.isInline()){
                 pw.println("<br><br>");
-                pw.println("<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + targetImage.getDisplayWidth() + "\" height=\"" + targetImage.getDisplayHeight()+"\">");
+                pw.println("<img style=\"clear: left; float: none\" src=\""+relativePathToTarget+"\""+" width=\"" + targetImage.getDisplayWidth() + "\" height=\"" + targetImage.getDisplayHeight()+"\">");
             } else {
                 pw.println("&nbsp;<img align=left src=\""+relativePathToTarget+"\""+" width=\"" + targetImage.getDisplayWidth() + "\" height=\"" + targetImage.getDisplayHeight()+"\">&nbsp;");
             }
