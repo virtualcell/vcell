@@ -43,7 +43,7 @@ jobs:
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
         echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
-        echo "VCELL_WEBHELP_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/VCell_Tutorials/VCell_Help" >> $GITHUB_ENV
+        echo "VCELL_WEBHELP_REMOTE_DIR=/share/apps/vcell3/apache_webroot/htdocs/webstart/VCell_Tutorials/VCell_Help" >> $GITHUB_ENV
         if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then\
         	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;\
