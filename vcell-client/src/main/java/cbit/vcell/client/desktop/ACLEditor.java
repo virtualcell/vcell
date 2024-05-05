@@ -10,22 +10,16 @@
 
 package cbit.vcell.client.desktop;
 
-import java.awt.GridBagConstraints;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.resource.PropertyLoader;
+import com.google.common.collect.ImmutableList;
+import org.vcell.util.gui.GeneralGuiUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.util.ArrayList;
 import java.util.Vector;
-
-import javax.swing.JLabel;
-
-import cbit.vcell.resource.PropertyLoader;
-import org.vcell.util.ArrayUtils;
-import org.vcell.util.gui.GeneralGuiUtils;
-import org.vcell.util.document.GroupAccess;
-import org.vcell.util.document.GroupAccessAll;
-import org.vcell.util.document.GroupAccessNone;
-import org.vcell.util.document.GroupAccessSome;
-import org.vcell.util.document.User;
-
-import cbit.vcell.client.PopupGenerator;
 
 /**
  * Insert the type's description here.
@@ -35,50 +29,6 @@ import cbit.vcell.client.PopupGenerator;
 @SuppressWarnings("serial")
 public class ACLEditor extends javax.swing.JPanel {
 
-	// ACL State class
-	public static class ACLState {
-		private boolean isPrivate = true;
-		private String[] aclList = null;
-
-		public static final ACLState PRIVATE_TYPE = new ACLState(true);
-		public static final ACLState PUBLIC_TYPE = new ACLState(false);
-		
-		private ACLState(boolean argIsPrivate) {
-			isPrivate = argIsPrivate;
-		}
-		public ACLState(String[] argACLList) {
-			if(argACLList == null){
-				aclList = new String[0];
-			}else{
-				aclList = argACLList;
-			}
-		}
-		public ACLState(GroupAccess argGroupAccess) {
-			if(argGroupAccess == null){
-				throw new IllegalArgumentException("GroupAccess cannot be null");
-			}
-			if(argGroupAccess instanceof GroupAccessNone){
-				isPrivate = true;
-			}else if(argGroupAccess instanceof GroupAccessAll){
-				isPrivate = false;
-			}else if(argGroupAccess instanceof GroupAccessSome){
-				User[] users = ((GroupAccessSome)argGroupAccess).getNormalGroupMembers();
-				aclList = new String[users.length];
-				for(int i=0;i<users.length;i+= 1){
-					aclList[i] = users[i].getName();
-				}
-			}
-		}		
-		public boolean isAccessPrivate(){
-			return isPrivate && (aclList == null);
-		}
-		public boolean isAccessPublic(){
-			return !isPrivate && (aclList == null);
-		}
-		public String[] getAccessList(){
-			return aclList;
-		}
-	}
 	//
 	private ACLState fieldACLState = null;
 	private javax.swing.ButtonGroup ivjACLButtonGroup = null;
@@ -100,7 +50,7 @@ public class ACLEditor extends javax.swing.JPanel {
 			if (e.getSource() == ACLEditor.this.getJButtonRemoveACLUser()) 
 				connEtoC7(e);
 		};
-		public void itemStateChanged(java.awt.event.ItemEvent e) {
+		public void itemStateChanged(ItemEvent e) {
 			if (e.getSource() == ACLEditor.this.getPublicRadioButton()) 
 				connEtoC3(e);
 			if (e.getSource() == ACLEditor.this.getPrivateRadioButton()) 
@@ -127,26 +77,19 @@ public ACLEditor() {
  * Comment
  */
 private void accessAction(java.awt.event.ActionEvent actionEvent) {
-	if(actionEvent.getSource() == getJButtonAddACLUser()){
-		if(!getJTextFieldACLUser().getText().isEmpty()){
-			String[] oldAccessList = getACLState().getAccessList();
-			if(oldAccessList != null && oldAccessList.length > 0){
-				if(ArrayUtils.arrayContains(oldAccessList,getJTextFieldACLUser().getText())){
-					PopupGenerator.showErrorDialog(this, "User "+getJTextFieldACLUser().getText()+" already in list");
-					return;
-				}
+	if (actionEvent.getSource() == getJButtonAddACLUser()){
+		if (!getJTextFieldACLUser().getText().isEmpty()){
+			ImmutableList<String> oldAccessList = getACLState().getAccessList();
+			if (oldAccessList.contains(getJTextFieldACLUser().getText())){
+				PopupGenerator.showErrorDialog(this, "User "+getJTextFieldACLUser().getText()+" already in list");
+				return;
 			}
-			String[] argList = (getACLState() != null ? getACLState().getAccessList():new String[0]);
-			ACLState newState =	new ACLState(ArrayUtils.addElement(argList, getJTextFieldACLUser().getText()));
-			setACLState(newState);
+			setACLState(getACLState().addUserToACL(getJTextFieldACLUser().getText()));
 		}
 	} else if(actionEvent.getSource() == getJButtonRemoveACLUser() && getACLState() != null){
 		String removeUser = (String)getJListACL().getSelectedValue();
-		if(removeUser == null) return;
-		String[] newUserList = ArrayUtils.removeFirstInstanceOfElement(getACLState().getAccessList(), removeUser);
-		ACLState newState = new ACLState(newUserList);
-		setACLState(newState);
-
+		if (removeUser == null) return;
+		setACLState(getACLState().removeUserFromACL(removeUser));
 	}
 }
 /**
@@ -160,27 +103,30 @@ private void aCLEditor_Initialize() {
 /**
  * Comment
  */
-private void actionACLState(java.awt.event.ItemEvent itemEvent) {
-	
-	if(itemEvent.getStateChange() != java.awt.event.ItemEvent.SELECTED && itemEvent.getSource() != getVCellSupportCheckBox()){
-		return;
-	}
-	
-	if(itemEvent.getSource() == getPrivateRadioButton()){
+private void actionACLState(ItemEvent itemEvent) {
+	if(itemEvent.getSource() == getPrivateRadioButton() && itemEvent.getStateChange() == ItemEvent.SELECTED){
 		setACLState(ACLState.PRIVATE_TYPE);
-	}else if(itemEvent.getSource() == getPublicRadioButton()){
+	}else if(itemEvent.getSource() == getPublicRadioButton() && itemEvent.getStateChange() == ItemEvent.SELECTED){
 		setACLState(ACLState.PUBLIC_TYPE);
-	}else if(itemEvent.getSource() == getVCellSupportCheckBox() || itemEvent.getSource() == getACLRadioButton()){
-		ArrayList<String> aclList = new ArrayList<String>();
+	}else if(itemEvent.getSource() == getACLRadioButton() && itemEvent.getStateChange() == ItemEvent.SELECTED){
+		ArrayList<String> aclList = new ArrayList<>();
 		for(int i=0;i<getJListACL().getModel().getSize();i+= 1){
 			aclList.add((String)getJListACL().getModel().getElementAt(i));
 		}
 		if (vcellSupportCheckBox.isSelected()) {
 			aclList.add(PropertyLoader.VCELL_SUPPORT_USERID);
 		}
-		String[] array = new String[aclList.size()];
-		aclList.toArray(array);
-		setACLState(new ACLState(array));
+		if (!aclList.isEmpty()) {
+			setACLState(new ACLState(aclList));
+		} else {
+			setACLState(ACLState.EMPTY_ACL);
+		}
+	}else if(itemEvent.getSource() == getVCellSupportCheckBox()){
+		if (vcellSupportCheckBox.isSelected()) {
+			setACLState(getACLState().addUserToACL(PropertyLoader.VCELL_SUPPORT_USERID));
+		} else {
+			setACLState(getACLState().removeUserFromACL(PropertyLoader.VCELL_SUPPORT_USERID));
+		}
 	}
 }
 /**
@@ -217,10 +163,10 @@ private void connEtoC2(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 /**
- * connEtoC3:  (PublicRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> ACLEditor.actionACLState(Ljava.awt.event.ItemEvent;)V)
- * @param arg1 java.awt.event.ItemEvent
+ * connEtoC3:  (PublicRadioButton.item.itemStateChanged(ItemEvent) --> ACLEditor.actionACLState(Ljava.awt.event.ItemEvent;)V)
+ * @param arg1 ItemEvent
  */
-private void connEtoC3(java.awt.event.ItemEvent arg1) {
+private void connEtoC3(ItemEvent arg1) {
 	try {
 		this.actionACLState(arg1);
 	} catch (java.lang.Throwable ivjExc) {
@@ -228,10 +174,10 @@ private void connEtoC3(java.awt.event.ItemEvent arg1) {
 	}
 }
 /**
- * connEtoC4:  (PrivateRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> ACLEditor.actionACLState(Ljava.awt.event.ItemEvent;)V)
- * @param arg1 java.awt.event.ItemEvent
+ * connEtoC4:  (PrivateRadioButton.item.itemStateChanged(ItemEvent) --> ACLEditor.actionACLState(Ljava.awt.event.ItemEvent;)V)
+ * @param arg1 ItemEvent
  */
-private void connEtoC4(java.awt.event.ItemEvent arg1) {
+private void connEtoC4(ItemEvent arg1) {
 	try {
 		this.actionACLState(arg1);
 	} catch (java.lang.Throwable ivjExc) {
@@ -239,10 +185,10 @@ private void connEtoC4(java.awt.event.ItemEvent arg1) {
 	}
 }
 /**
- * connEtoC5:  (ACLRadioButton.item.itemStateChanged(java.awt.event.ItemEvent) --> ACLEditor.actionACLState(Ljava.awt.event.ItemEvent;)V)
- * @param arg1 java.awt.event.ItemEvent
+ * connEtoC5:  (ACLRadioButton.item.itemStateChanged(ItemEvent) --> ACLEditor.actionACLState(Ljava.awt.event.ItemEvent;)V)
+ * @param arg1 ItemEvent
  */
-private void connEtoC5(java.awt.event.ItemEvent arg1) {
+private void connEtoC5(ItemEvent arg1) {
 	try {
 		this.actionACLState(arg1);
 	} catch (java.lang.Throwable ivjExc) {
@@ -627,24 +573,23 @@ private void updateInterface() {
 	ACLState currentState = getACLState();
 
 
-	if(currentState.isAccessPrivate()){
+	if(currentState.getAclType().equals(ACLState.ACLType.PRIVATE)){
 		if(!getPrivateRadioButton().isSelected()){
 			getPrivateRadioButton().setSelected(true);
 		}
 		if(getGrantAccessJPanel().isEnabled()){
 			GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),false);
 		}
-	}else if(currentState.isAccessPublic()){
+	}else if(currentState.getAclType().equals(ACLState.ACLType.PUBLIC)){
 		if(!getPublicRadioButton().isSelected()){
 			getPublicRadioButton().setSelected(true);
 		}
 		if(getGrantAccessJPanel().isEnabled()){
 			GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),false);
 		}
-	}else if(currentState != null){
-		String[] currentUserList = (currentState != null?currentState.getAccessList():new String[0]);
-		Vector<String> newList = new Vector<String>();
-		for (String u : currentUserList) {
+	}else { // aclType is ACL
+		Vector<String> newList = new Vector<>();
+		for (String u : currentState.getAccessList()) {
 			if (u.equals(PropertyLoader.VCELL_SUPPORT_USERID)) {
 				if (!getVCellSupportCheckBox().isSelected()) {
 					getVCellSupportCheckBox().setSelected(true);				
@@ -658,9 +603,7 @@ private void updateInterface() {
 		if(!getACLRadioButton().isSelected()){
 			getACLRadioButton().setSelected(true);
 		}
-		if(!getJTextFieldACLUser().isEnabled()){
-			GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),true);
-		}
+		GeneralGuiUtils.enableComponents(getGrantAccessJPanel(),true);
 	}
 }
 
