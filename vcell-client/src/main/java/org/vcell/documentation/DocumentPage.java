@@ -12,7 +12,7 @@ package org.vcell.documentation;
 
 import java.io.File;
 
-public class DocumentPage {
+public class DocumentPage implements DocReferenceTarget {
 	private File templateFile;
 	private String title;
 	private String target;
