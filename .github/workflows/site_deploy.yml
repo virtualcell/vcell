@@ -200,7 +200,19 @@ jobs:
         singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
         singularity pull $BATCH_SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
         singularity pull $OPT_SINGULARITY_FILENAME   oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
-    - name: deploy installers and singularity to kubernetes site
+    - name: setup java 17 with maven cache (for documentation build)
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        cache: 'maven'
+    - name: build documentation for web help
+      if: ${{ github.event.inputs.server_only != 'true' }}
+      run: |
+        set -ux
+        cd vcell-client
+        mvn clean install -DskipTests
+    - name: deploy installers and singularity to kubernetes site and web help to vcell.org
       if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
       run: |
         set -ux
