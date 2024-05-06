@@ -23,6 +23,9 @@ from vcell_client.models.identity import Identity
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.publication import Publication
 from vcell_client.models.simulation import Simulation
+from vcell_client.models.usage_summary import UsageSummary
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 from vcell_client.models.user_registration_info import UserRegistrationInfo
+from vcell_client.models.user_sim_count import UserSimCount
+from vcell_client.models.users_registered_stats import UsersRegisteredStats

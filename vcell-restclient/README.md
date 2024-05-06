@@ -75,20 +75,20 @@ Please follow the [installation](#installation) instruction and execute the foll
 
 import org.vcell.restclient.*;
 import org.vcell.restclient.model.*;
-import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.AdminResourceApi;
 
-public class BioModelResourceApiExample {
+public class AdminResourceApiExample {
 
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         // Configure clients using the `defaultClient` object, such as
         // overriding the host and port, timeout, etc.
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelID = "bioModelID_example"; // String | 
+        AdminResourceApi apiInstance = new AdminResourceApi(defaultClient);
         try {
-            apiInstance.deleteBioModel(bioModelID);
+            UsageSummary result = apiInstance.getUsage();
+            System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#deleteBioModel");
+            System.err.println("Exception when calling AdminResourceApi#getUsage");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -105,6 +105,8 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*AdminResourceApi* | [**getUsage**](docs/AdminResourceApi.md#getUsage) | **GET** /api/v1/admin/usage | Get usage summary
+*AdminResourceApi* | [**getUsageWithHttpInfo**](docs/AdminResourceApi.md#getUsageWithHttpInfo) | **GET** /api/v1/admin/usage | Get usage summary
 *BioModelResourceApi* | [**deleteBioModel**](docs/BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
 *BioModelResourceApi* | [**deleteBioModelWithHttpInfo**](docs/BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
 *BioModelResourceApi* | [**getBiomodelById**](docs/BioModelResourceApi.md#getBiomodelById) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
@@ -147,9 +149,12 @@ Class | Method | HTTP request | Description
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
  - [Simulation](docs/Simulation.md)
+ - [UsageSummary](docs/UsageSummary.md)
  - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
+ - [UserSimCount](docs/UserSimCount.md)
+ - [UsersRegisteredStats](docs/UsersRegisteredStats.md)
 
 
 <a id="documentation-for-authorization"></a>

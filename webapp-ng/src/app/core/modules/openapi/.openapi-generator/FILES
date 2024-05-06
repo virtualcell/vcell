@@ -1,6 +1,8 @@
 .gitignore
 README.md
 api.module.ts
+api/admin-resource.service.ts
+api/admin-resource.serviceInterface.ts
 api/api.ts
 api/bio-model-resource.service.ts
 api/bio-model-resource.serviceInterface.ts
@@ -23,8 +25,11 @@ model/mathmodel-ref.ts
 model/models.ts
 model/publication.ts
 model/simulation.ts
+model/usage-summary.ts
 model/user-identity-json-safe.ts
 model/user-login-info-for-mapping.ts
 model/user-registration-info.ts
+model/user-sim-count.ts
+model/users-registered-stats.ts
 param.ts
 variables.ts

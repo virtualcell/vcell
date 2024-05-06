@@ -14,6 +14,27 @@ info:
 servers:
 - url: https://vcellapi-test.cam.uchc.edu
 paths:
+  /api/v1/admin/usage:
+    get:
+      operationId: getUsage
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageSummary'
+          description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - curator
+      summary: Get usage summary
+      tags:
+      - Admin Resource
+      x-accepts: application/json
   /api/v1/bioModel/upload_bioModel:
     post:
       operationId: uploadBioModel
@@ -229,7 +250,7 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            text/plain:
               schema:
                 type: boolean
           description: OK
@@ -244,7 +265,7 @@ paths:
       tags:
       - Users Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts: text/plain
   /api/v1/users/mappedUser:
     get:
       operationId: getMappedUser
@@ -582,6 +603,99 @@ components:
         name:
           type: string
       type: object
+    UsageSummary:
+      example:
+        publicBiomodelCount: 4
+        simCounts_7Days:
+        - simCount: 0
+          username: username
+        - simCount: 0
+          username: username
+        simCount: 1
+        totalUsers: 7
+        simCounts_180Days:
+        - simCount: 0
+          username: username
+        - simCount: 0
+          username: username
+        simCounts_365Days:
+        - simCount: 0
+          username: username
+        - simCount: 0
+          username: username
+        simCounts_30Days:
+        - simCount: 0
+          username: username
+        - simCount: 0
+          username: username
+        usersWithSims: 9
+        mathmodelCount: 2
+        simCounts_90Days:
+        - simCount: 0
+          username: username
+        - simCount: 0
+          username: username
+        biomodelCount: 3
+        usersRegisteredStats:
+          last1Week: 6
+          last12Months: 2
+          last1Month: 1
+          last3Months: 5
+          last6Months: 5
+        publicMathmodelSimCount: 1
+        publicMathmodelCount: 7
+        publicBiomodelSimCount: 1
+      properties:
+        simCounts_7Days:
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+          type: array
+        simCounts_30Days:
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+          type: array
+        simCounts_90Days:
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+          type: array
+        simCounts_180Days:
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+          type: array
+        simCounts_365Days:
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+          type: array
+        usersRegisteredStats:
+          $ref: '#/components/schemas/UsersRegisteredStats'
+        totalUsers:
+          format: int32
+          type: integer
+        usersWithSims:
+          format: int32
+          type: integer
+        biomodelCount:
+          format: int32
+          type: integer
+        mathmodelCount:
+          format: int32
+          type: integer
+        publicBiomodelCount:
+          format: int32
+          type: integer
+        publicMathmodelCount:
+          format: int32
+          type: integer
+        simCount:
+          format: int32
+          type: integer
+        publicBiomodelSimCount:
+          format: int32
+          type: integer
+        publicMathmodelSimCount:
+          format: int32
+          type: integer
+      type: object
     UserIdentityJSONSafe:
       example:
         subject: subject
@@ -626,6 +740,41 @@ components:
           type: string
         emailNotification:
           type: boolean
+      type: object
+    UserSimCount:
+      example:
+        simCount: 0
+        username: username
+      properties:
+        username:
+          type: string
+        simCount:
+          format: int32
+          type: integer
+      type: object
+    UsersRegisteredStats:
+      example:
+        last1Week: 6
+        last12Months: 2
+        last1Month: 1
+        last3Months: 5
+        last6Months: 5
+      properties:
+        last1Week:
+          format: int32
+          type: integer
+        last1Month:
+          format: int32
+          type: integer
+        last3Months:
+          format: int32
+          type: integer
+        last6Months:
+          format: int32
+          type: integer
+        last12Months:
+          format: int32
+          type: integer
       type: object
   securitySchemes:
     openId:

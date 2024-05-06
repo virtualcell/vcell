@@ -2,6 +2,7 @@
 README.md
 api/openapi.yaml
 docs/AccesTokenRepresentationRecord.md
+docs/AdminResourceApi.md
 docs/BioModel.md
 docs/BioModelResourceApi.md
 docs/BiomodelRef.md
@@ -12,9 +13,12 @@ docs/MathmodelRef.md
 docs/Publication.md
 docs/PublicationResourceApi.md
 docs/Simulation.md
+docs/UsageSummary.md
 docs/UserIdentityJSONSafe.md
 docs/UserLoginInfoForMapping.md
 docs/UserRegistrationInfo.md
+docs/UserSimCount.md
+docs/UsersRegisteredStats.md
 docs/UsersResourceApi.md
 src/main/AndroidManifest.xml
 src/main/java/org/vcell/restclient/ApiClient.java
@@ -26,6 +30,7 @@ src/main/java/org/vcell/restclient/Pair.java
 src/main/java/org/vcell/restclient/RFC3339DateFormat.java
 src/main/java/org/vcell/restclient/ServerConfiguration.java
 src/main/java/org/vcell/restclient/ServerVariable.java
+src/main/java/org/vcell/restclient/api/AdminResourceApi.java
 src/main/java/org/vcell/restclient/api/BioModelResourceApi.java
 src/main/java/org/vcell/restclient/api/HelloWorldApi.java
 src/main/java/org/vcell/restclient/api/PublicationResourceApi.java
@@ -39,6 +44,13 @@ src/main/java/org/vcell/restclient/model/Identity.java
 src/main/java/org/vcell/restclient/model/MathmodelRef.java
 src/main/java/org/vcell/restclient/model/Publication.java
 src/main/java/org/vcell/restclient/model/Simulation.java
+src/main/java/org/vcell/restclient/model/UsageSummary.java
 src/main/java/org/vcell/restclient/model/UserIdentityJSONSafe.java
 src/main/java/org/vcell/restclient/model/UserLoginInfoForMapping.java
 src/main/java/org/vcell/restclient/model/UserRegistrationInfo.java
+src/main/java/org/vcell/restclient/model/UserSimCount.java
+src/main/java/org/vcell/restclient/model/UsersRegisteredStats.java
+src/test/java/org/vcell/restclient/api/AdminResourceApiTest.java
+src/test/java/org/vcell/restclient/model/UsageSummaryTest.java
+src/test/java/org/vcell/restclient/model/UserSimCountTest.java
+src/test/java/org/vcell/restclient/model/UsersRegisteredStatsTest.java

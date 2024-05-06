@@ -18,6 +18,7 @@
 __version__ = "1.0.0"
 
 # import apis into sdk package
+from vcell_client.api.admin_resource_api import AdminResourceApi
 from vcell_client.api.bio_model_resource_api import BioModelResourceApi
 from vcell_client.api.hello_world_api import HelloWorldApi
 from vcell_client.api.publication_resource_api import PublicationResourceApi
@@ -43,6 +44,9 @@ from vcell_client.models.identity import Identity
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.publication import Publication
 from vcell_client.models.simulation import Simulation
+from vcell_client.models.usage_summary import UsageSummary
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 from vcell_client.models.user_registration_info import UserRegistrationInfo
+from vcell_client.models.user_sim_count import UserSimCount
+from vcell_client.models.users_registered_stats import UsersRegisteredStats
