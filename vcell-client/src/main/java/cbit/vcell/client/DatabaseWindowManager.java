@@ -10,13 +10,42 @@
 
 package cbit.vcell.client;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.Window;
+import cbit.image.*;
+import cbit.vcell.client.desktop.ACLEditor;
+import cbit.vcell.client.desktop.ACLState;
+import cbit.vcell.client.desktop.DatabaseWindowPanel;
+import cbit.vcell.client.server.UserPreferences;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.*;
+import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
+import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.xml.ExternalDocInfo;
+import cbit.xml.merge.XmlTreeDiff;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.*;
+import org.vcell.util.document.VCDocument.DocumentCreationInfo;
+import org.vcell.util.document.VCDocument.VCDocumentType;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.exporter.FileFilters;
+
+import javax.swing.Timer;
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -24,78 +53,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
+import java.util.List;
 import java.util.*;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.ToolTipManager;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.tree.TreePath;
-
-import org.vcell.util.gui.GeneralGuiUtils;
-import org.vcell.util.*;
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.GroupAccess;
-import org.vcell.util.document.GroupAccessSome;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.ReferenceQueryResult;
-import org.vcell.util.document.ReferenceQuerySpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocument.DocumentCreationInfo;
-import org.vcell.util.document.VCDocument.VCDocumentType;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.Version;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.VersionableRelationship;
-import org.vcell.util.document.VersionableType;
-import org.vcell.util.document.VersionableTypeVersion;
-import org.vcell.util.gui.AsynchProgressPopup;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.VCFileChooser;
-import org.vcell.util.gui.exporter.FileFilters;
-
-import cbit.image.BrowseImage;
-import cbit.image.GIFImage;
-import cbit.image.VCImageInfo;
-import cbit.image.VCImageUncompressed;
-import cbit.image.VCPixelClass;
-import cbit.vcell.client.desktop.ACLEditor;
-import cbit.vcell.client.desktop.DatabaseWindowPanel;
-import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.desktop.BioModelDbTreePanel;
-import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
-import cbit.vcell.desktop.GeometryTreePanel;
-import cbit.vcell.desktop.MathModelDbTreePanel;
-import cbit.vcell.desktop.VCDocumentDbTreePanel;
-import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.xml.ExternalDocInfo;
-import cbit.xml.merge.XmlTreeDiff;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 public class DatabaseWindowManager extends TopLevelWindowManager {
@@ -173,7 +132,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 getAclEditor().clearACLList();
-                getAclEditor().setACLState(new ACLEditor.ACLState(groupAccess));
+                getAclEditor().setACLState(ACLState.fromGroupAccess(groupAccess));
                 if (bGrantSupportPermissions) {
                     getAclEditor().grantVCellSupportPermissions();
                 }
@@ -189,9 +148,9 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 Object choice = hashTable.get("choice");
                 if (choice == null || !choice.equals("OK")) return;
-                ACLEditor.ACLState aclState = getAclEditor().getACLState();
+                ACLState aclState = getAclEditor().getACLState();
                 if (aclState == null) return;
-                if (aclState.isAccessPrivate() || (aclState.getAccessList() != null && aclState.getAccessList().length == 0)) {
+                if (aclState.getAclType() == ACLState.ACLType.PRIVATE) {
                     VersionInfo vInfo;
                     if (selectedVersionInfo instanceof BioModelInfo bmi) {
                         vInfo = docManager.setGroupPrivate(bmi);
@@ -202,7 +161,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                     } else if (selectedVersionInfo instanceof VCImageInfo vcii) {
                         vInfo = docManager.setGroupPrivate(vcii);
                     }
-                } else if (aclState.isAccessPublic()) {
+                } else if (aclState.getAclType() == ACLState.ACLType.PUBLIC) {
                     VersionInfo vInfo = null;
                     if (selectedVersionInfo instanceof BioModelInfo bmi) {
                         vInfo = docManager.setGroupPublic(bmi);
@@ -214,7 +173,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                         vInfo = docManager.setGroupPublic(vcii);
                     }
                 } else {
-                    List<String> newGroupAccessNameList = Arrays.asList(aclState.getAccessList());
+                    List<String> newGroupAccessNameList = aclState.getAccessList();
                     List<String> originalGroupAccessNameList = new ArrayList<>();
                     //Turn User[] into String[]
                     if (groupAccess instanceof GroupAccessSome gas) {
