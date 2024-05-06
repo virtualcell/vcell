@@ -1,0 +1,7 @@
+Using version ^1.0.0 for jupyter-book
+Using version ^5.3.5 for meshio
+Using version ^3.11.0 for h5py
+Using version ^0.13.2 for seaborn
+Using version ^2.2.2 for pandas
+Using version ^4.66.2 for tqdm
+Using version ^0.43.5 for pyvista

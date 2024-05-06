@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "fenics_solver"
+version = "0.1.0"
+description = ""
+authors = ["Jim Schaff <schaff@uchc.edu>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
