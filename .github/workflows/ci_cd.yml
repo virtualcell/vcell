@@ -65,6 +65,12 @@ jobs:
           poetry install
           poetry run python -m pytest
 
+      - name: build vcelldata package
+        run: |
+          cd pythonData
+          poetry install
+          poetry run python -m pytest
+
       - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
@@ -148,6 +154,12 @@ jobs:
           poetry install
           poetry run python -m pytest
 
+      - name: build vcelldata package
+        run: |
+          cd pythonData
+          poetry install
+          poetry run python -m pytest
+
       - name: setup java 17 with maven cache
         uses: actions/setup-java@v3
         with:
@@ -222,6 +234,12 @@ jobs:
       - name: build python-restclient package
         run: |
           cd python-restclient
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcelldata package
+        run: |
+          cd pythonData
           poetry install
           poetry run python -m pytest
 
