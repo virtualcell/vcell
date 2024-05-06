@@ -15,6 +15,26 @@ info:
 servers:
 - url: https://vcellapi-test.cam.uchc.edu
 paths:
+  /api/v1/admin/usage:
+    get:
+      tags:
+      - Admin Resource
+      summary: Get usage summary
+      operationId: getUsage
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageSummary'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - curator
   /api/v1/bioModel/upload_bioModel:
     post:
       tags:
@@ -463,6 +483,58 @@ components:
       properties:
         name:
           type: string
+    UsageSummary:
+      type: object
+      properties:
+        simCounts_7Days:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+        simCounts_30Days:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+        simCounts_90Days:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+        simCounts_180Days:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+        simCounts_365Days:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSimCount'
+        usersRegisteredStats:
+          $ref: '#/components/schemas/UsersRegisteredStats'
+        totalUsers:
+          format: int32
+          type: integer
+        usersWithSims:
+          format: int32
+          type: integer
+        biomodelCount:
+          format: int32
+          type: integer
+        mathmodelCount:
+          format: int32
+          type: integer
+        publicBiomodelCount:
+          format: int32
+          type: integer
+        publicMathmodelCount:
+          format: int32
+          type: integer
+        simCount:
+          format: int32
+          type: integer
+        publicBiomodelSimCount:
+          format: int32
+          type: integer
+        publicMathmodelSimCount:
+          format: int32
+          type: integer
     UserIdentityJSONSafe:
       type: object
       properties:
@@ -494,6 +566,32 @@ components:
           type: string
         emailNotification:
           type: boolean
+    UserSimCount:
+      type: object
+      properties:
+        username:
+          type: string
+        simCount:
+          format: int32
+          type: integer
+    UsersRegisteredStats:
+      type: object
+      properties:
+        last1Week:
+          format: int32
+          type: integer
+        last1Month:
+          format: int32
+          type: integer
+        last3Months:
+          format: int32
+          type: integer
+        last6Months:
+          format: int32
+          type: integer
+        last12Months:
+          format: int32
+          type: integer
   securitySchemes:
     openId:
       type: openIdConnect

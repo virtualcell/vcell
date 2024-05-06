@@ -20,6 +20,7 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -251,6 +252,145 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         rset.close();
         return val;
     }
+
+    private static int executeCountQuery(Statement stmt, String query) throws SQLException{
+        lg.info(query);
+        ResultSet rset = stmt.executeQuery(query);
+        int val = 0;
+        if(rset.next()){
+            val = rset.getInt(QUERY_VALUE);
+        }
+        rset.close();
+        return val;
+    }
+
+
+    public record DbUsageSummary(
+            DbUserSimCount[] simCounts_7Days,
+            DbUserSimCount[] simCounts_30Days,
+            DbUserSimCount[] simCounts_90Days,
+            DbUserSimCount[] simCounts_180Days,
+            DbUserSimCount[] simCounts_365Days,
+            DbUsersRegisteredStats usersRegisteredStats,
+            int totalUsers,
+            int usersWithSims,
+            int biomodelCount,
+            int mathmodelCount,
+            int publicBiomodelCount,
+            int publicMathmodelCount,
+            int simCount,
+            int publicBiomodelSimCount,
+            int publicMathmodelSimCount) {}
+    public record DbUserSimCount(String username, int simCount) {}
+    public record DbUsersRegisteredStats(int last1Week, int last1Month, int last3Months, int last6Months, int last12Months) {}
+
+    public synchronized DbUsageSummary getUsageSummary(User.SpecialUser user) throws SQLException, DataAccessException{
+        if (!user.isAdmin()){
+            throw new PermissionException("not authorized");
+        }
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            int regUsers_7days = executeCountQuery(stmt, "select count(*) " + QUERY_VALUE + " from vc_userinfo where insertdate >= (current_date - 7)");
+            int regUsers_30days = executeCountQuery(stmt, "select count(*) " + QUERY_VALUE + " from vc_userinfo where insertdate >= (current_date - 30)");
+            int regUsers_90days = executeCountQuery(stmt, "select count(*) " + QUERY_VALUE + " from vc_userinfo where insertdate >= (current_date - 90)");
+            int regUsers_180days = executeCountQuery(stmt, "select count(*) " + QUERY_VALUE + " from vc_userinfo where insertdate >= (current_date - 180)");
+            int regUsers_365days = executeCountQuery(stmt, "select count(*) " + QUERY_VALUE + " from vc_userinfo where insertdate >= (current_date - 365)");
+
+            DbUsersRegisteredStats usersRegisteredStats = new DbUsersRegisteredStats(
+                    regUsers_7days, regUsers_30days, regUsers_90days, regUsers_180days, regUsers_365days);
+
+            String totalUsersQuery = "select count(*) " + QUERY_VALUE + " from vc_userinfo";
+            int totalUsers = executeCountQuery(stmt, totalUsersQuery);
+
+            String usersWithSimsQuery = "select count(distinct ownerref) " + QUERY_VALUE + " from vc_simulation";
+            int usersWithSims = executeCountQuery(stmt, usersWithSimsQuery);
+
+            String bmQuery = "select count(*) " + QUERY_VALUE + " from vc_biomodel";
+            int biomodelCount = executeCountQuery(stmt, bmQuery);
+
+            String mmQuery = "select count(*) " + QUERY_VALUE + " from vc_mathmodel";
+            int mathmodelCount = executeCountQuery(stmt, mmQuery);
+
+            String pubbmQuery = "select count(*) " + QUERY_VALUE + " from vc_biomodel where PRIVACY=0";
+            int publicBiomodelCount = executeCountQuery(stmt, pubbmQuery);
+
+            String pubmmQuery = "select count(*) " + QUERY_VALUE + " from vc_mathmodel where PRIVACY=0";
+            int publicMathmodelCount = executeCountQuery(stmt, pubmmQuery);
+
+            String allsims = "select count(*) " + QUERY_VALUE + " from vc_simulation";
+            int simCount = executeCountQuery(stmt, allsims);
+
+            String pubbmsimsQuery = "SELECT COUNT (*) " + QUERY_VALUE + " FROM VC_SIMULATION WHERE VC_SIMULATION.ID IN ("
+                    + "SELECT DISTINCT VC_SIMULATION.ID FROM VC_BIOMODEL, VC_SIMULATION, VC_BIOMODELSIM "
+                    + "WHERE VC_SIMULATION.ID = VC_BIOMODELSIM.simref "
+                    + "AND VC_BIOMODEL.ID = VC_BIOMODELSIM.biomodelref "
+                    + "AND vc_biomodel.privacy = 0)";
+            int publicBiomodelSimCount = executeCountQuery(stmt, pubbmsimsQuery);
+
+            String pubmmsimsQuery = "SELECT COUNT (*) " + QUERY_VALUE + " FROM VC_SIMULATION WHERE VC_SIMULATION.ID IN ("
+                    + "SELECT DISTINCT VC_SIMULATION.ID FROM VC_MATHMODEL, VC_SIMULATION, VC_MATHMODELSIM "
+                    + "WHERE VC_SIMULATION.ID = VC_MATHMODELSIM.simref "
+                    + "AND VC_MATHMODEL.ID = VC_MATHMODELSIM.mathmodelref "
+                    + "AND VC_MATHMODEL.privacy = 0)";
+            int publicMathmodelSimCount = executeCountQuery(stmt, pubmmsimsQuery);
+
+            DbUserSimCount[] userSimCounts_7Days = getUserSimCounts(stmt, 7);
+            DbUserSimCount[] userSimCounts_30Days = getUserSimCounts(stmt, 30);
+            DbUserSimCount[] userSimCounts_90Days = getUserSimCounts(stmt, 90);
+            DbUserSimCount[] userSimCounts_180Days = getUserSimCounts(stmt, 180);
+            DbUserSimCount[] userSimCounts_365Days = getUserSimCounts(stmt, 365);
+
+            return new DbUsageSummary(
+                    userSimCounts_7Days,
+                    userSimCounts_30Days,
+                    userSimCounts_90Days,
+                    userSimCounts_180Days,
+                    userSimCounts_365Days,
+                    usersRegisteredStats,
+                    totalUsers,
+                    usersWithSims,
+                    biomodelCount,
+                    mathmodelCount,
+                    publicBiomodelCount,
+                    publicMathmodelCount,
+                    simCount,
+                    publicBiomodelSimCount,
+                    publicMathmodelSimCount);
+        } catch(Throwable e){
+            lg.error("failure in getSimulationJobStatusArray()", e);
+            handle_DataAccessException_SQLException(e);
+            return null; // never gets here;
+        } finally {
+            try {
+                if(stmt != null){
+                    stmt.close();
+                }
+            } catch(Exception e){
+                lg.error(e.getMessage(), e);
+            }
+            conFactory.release(con, lock);
+        }
+    }
+
+    private DbUserSimCount[] getUserSimCounts(Statement stmt, int pastTime) throws SQLException {
+        ResultSet rset = stmt.executeQuery(
+                "SELECT userid,  COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
+                        + " WHERE vc_userinfo.id = vc_simulation.ownerref AND "
+                        + "vc_simulationjob.simref = vc_simulation.id AND "
+                        + "vc_simulationjob.submitdate >= (CURRENT_DATE -" + pastTime + ")" + " GROUP BY userid ORDER BY simcount desc");
+        ArrayList<DbUserSimCount> userSimCounts = new ArrayList<>();
+        while (rset.next()) {
+            String username = rset.getString(1);
+            int userSimCount = rset.getInt(2);
+            userSimCounts.add(new DbUserSimCount(username, userSimCount));
+        }
+        rset.close();
+        return userSimCounts.toArray(new DbUserSimCount[0]);
+    }
+
 
     public synchronized String getBasicStatistics() throws SQLException, DataAccessException{
         Object lock = new Object();
