@@ -104,7 +104,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	MiriamTreeModel miriamTreeModel = null;
 	
 	private Identifiable selectedObject = null;
-	
+
+	public static final String ACTION_SEARCH ="Search...";
 	public static final String ACTION_ADD ="Add...";
 	public static final String ACTION_DELETE ="Delete";
 	public static final String ACTION_REMOVE_TEXT = "Delete";
@@ -130,7 +131,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private DefaultComboBoxModel defaultComboBoxModelQualifier = new DefaultComboBoxModel();
 	
 	private JTextField jTextFieldFormalID = null;	// immortal ID text
-	private JButton jButtonAddRef = null;			// add a cross-reference
+	private JButton jButtonAddRef = null;			// add a known cross-reference to a provider database entity
+	private JButton jButtonSearchRef = null;		// add a cross-reference by provider database search of entity
 	private JButton jButtonDeleteRef = null;		// delete selected cross-reference
 	private JButton jButtonRemoveText = null;		// remove text annotation
 
@@ -180,6 +182,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		public void actionPerformed(ActionEvent evt) {
 			if (evt.getSource() == getJButtonAddRef()) {
 				addIdentifier();
+			} else if(evt.getSource() == getJButtonSearchRef()) {
+				searchIdentifier();
 			} else if(evt.getSource() == getJButtonDeleteRef()) {
 				removeIdentifier();
 			} else if(evt.getSource() == getJButtonRemoveText()) {
@@ -446,6 +450,13 @@ private JPanel getJPanelIdentifierManager() {
 		
 		gridx++;
 		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(3, 5, 3, 4);
+		gbc.gridx = gridx;
+		gbc.gridy = 0;
+		jPanelIdentifierManager.add(getJButtonSearchRef(), gbc);
+
+		gridx++;
+		gbc = new GridBagConstraints();
 		gbc.insets = new Insets(3, 5, 3, 5);
 		gbc.gridx = gridx;
 		gbc.gridy = 0;
@@ -459,8 +470,9 @@ private JPanel getJPanelIdentifierManager() {
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
 		jPanelIdentifierManager.add(new JLabel(""), gbc);
-		
+
 		getJButtonAddRef().addActionListener(eventHandler);
+		getJButtonSearchRef().addActionListener(eventHandler);
 	}
 	return jPanelIdentifierManager;
 }
@@ -642,7 +654,7 @@ private JSplitPane getSplitPane() {
 		splitPane.setLeftComponent(leftPanel);
 		splitPane.setRightComponent(rightPanel);
 		splitPane.setResizeWeight(0.1);
-		splitPane.setDividerLocation(0.3);
+		splitPane.setDividerLocation(0.4);
 		
 		annotationTextArea.addKeyListener(eventHandler);
 	}
@@ -839,6 +851,7 @@ private void updateInterface() {
 	if(selectedObject != null && entity != null) {
 		getJComboBoxURI().setEnabled(true);
 		getJTextFieldFormalID().setEnabled(true);
+		getJButtonSearchRef().setEnabled(true);
 		getJButtonAddRef().setEnabled(true);
 		getJButtonRemoveText().setEnabled(true);
 		VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
@@ -855,6 +868,7 @@ private void updateInterface() {
 	} else {
 		getJComboBoxURI().setEnabled(false);
 		getJTextFieldFormalID().setEnabled(false);
+		getJButtonSearchRef().setEnabled(false);
 		getJButtonAddRef().setEnabled(false);
 		getJButtonRemoveText().setEnabled(false);
 		miriamTreeModel.createTree(null);
@@ -926,6 +940,9 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 }
 	
 // -------------------------------------------------------------------------------------------------------
+private void searchIdentifier() {
+
+}
 
 private void addIdentifier() {
 	if(PopupGenerator.showComponentOKCancelDialog(AnnotationsPanel.this, getJPanelNewIdentifier(), "Define New Formal Identifier") != JOptionPane.OK_OPTION) {
@@ -1054,14 +1071,22 @@ private void initializeComboBoxQualifier() {
 	}
 }
 
-private JButton getJButtonAddRef() {
-	if (jButtonAddRef == null) {
-		jButtonAddRef = new JButton();
-		jButtonAddRef.setText(ACTION_ADD);
-		jButtonAddRef.setToolTipText("Add a new reference with this provider");
+	private JButton getJButtonSearchRef() {
+		if (jButtonSearchRef == null) {
+			jButtonSearchRef = new JButton();
+			jButtonSearchRef.setText(ACTION_SEARCH);
+			jButtonSearchRef.setToolTipText("Search a reference within this provider database");
+		}
+		return jButtonSearchRef;
 	}
-	return jButtonAddRef;
-}
+	private JButton getJButtonAddRef() {
+		if (jButtonAddRef == null) {
+			jButtonAddRef = new JButton();
+			jButtonAddRef.setText(ACTION_ADD);
+			jButtonAddRef.setToolTipText("Add a known reference with this provider");
+		}
+		return jButtonAddRef;
+	}
 private JButton getJButtonDeleteRef() {
 	if (jButtonDeleteRef == null) {
 		jButtonDeleteRef = new JButton();
