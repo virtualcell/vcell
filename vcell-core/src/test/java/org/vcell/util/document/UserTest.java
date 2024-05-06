@@ -13,9 +13,9 @@ public class UserTest {
 
 	@Test
 	public void publisherTest( ) {
-		User u = new User("schaff", testKey( ));
+		User.SpecialUser u = new User.SpecialUser("schaff", testKey( ), new User.SPECIAL_CLAIM[] {User.SPECIAL_CLAIM.publicationEditors});
         Assertions.assertTrue(u.isPublisher());
-		u = new User("fido", testKey( ));
+		u = new User.SpecialUser("fido", testKey( ), new User.SPECIAL_CLAIM[]{});
 		assertFalse(u.isPublisher());
 	}
 	@Test
