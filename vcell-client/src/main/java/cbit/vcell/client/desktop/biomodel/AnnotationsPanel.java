@@ -29,6 +29,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -57,6 +58,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreePath;
 
+import cbit.vcell.client.desktop.biomodel.annotations.SearchAnnotationPanel;
+import cbit.vcell.client.desktop.biomodel.annotations.SearchElement;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.sybil.models.AnnotationQualifiers;
@@ -140,7 +143,9 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private String emptyHtmlText = null;	// content of annotationTextArea after initialization with null
 						// will contain an empty html object "<html><header></header><body><p style="margin-top: 0"></p></body></html>"
 	private static String emptyHtmlText2 = "<html><header></header><body></body></html>";	// really empty
-	
+
+	private SearchAnnotationPanel searchAnnotationsPanel; //new window to add annotations from online DBs.
+
 
 	private class EventHandler extends MouseAdapter implements ActionListener, FocusListener, PropertyChangeListener, KeyListener {
 		public void focusGained(FocusEvent e) {
@@ -183,7 +188,9 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			if (evt.getSource() == getJButtonAddRef()) {
 				addIdentifier();
 			} else if(evt.getSource() == getJButtonSearchRef()) {
-				searchIdentifier();
+				initializeSearchAnnotationPanel();									// search annotation dialog box
+			} else if(evt.getSource() == searchAnnotationsPanel.getOkButton()) {	// the OK button in Search panel
+				annotationTextArea.setText("A test from the void");		// TODO: do the real thing
 			} else if(evt.getSource() == getJButtonDeleteRef()) {
 				removeIdentifier();
 			} else if(evt.getSource() == getJButtonRemoveText()) {
@@ -788,6 +795,22 @@ private void initialize() {
 	}
 }
 
+	public void addToAnnotationTextArea(String annotDescription) {	// called from SearchAnnotationPanel
+//		annotationTextArea.setText("Text can be set from addToAnnotation method");
+		String existingTest = annotationTextArea.getText();
+		if (annotationTextArea.getText().length() != 0) {
+			annotationTextArea.setText(existingTest + "\n" + annotDescription);
+		} else {
+			annotationTextArea.setText(annotDescription);
+		}
+
+//		String existingText = "";
+//		if (annotationTextArea != null || annotationTextArea.getText().length() != 0) {
+//			existingText = annotationTextArea.getText();
+//		}
+//		annotationTextArea.setText("\n" + existingText + annotDescription);
+		changeTextAnnotation();
+	}
 private void changeTextAnnotation() {
 	try{
 		if (bioModel == null || selectedObject == null) {
@@ -938,10 +961,45 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 		updateInterface();
 	}
 }
+
+private void initializeSearchAnnotationPanel() {
+	//generate searchAnnotationsPanel with URI and Qualifier ComboBox
+	if (searchAnnotationsPanel == null) {
+		searchAnnotationsPanel =  new SearchAnnotationPanel(this, getJComboBoxURI(), getJComboBoxQualifier());
+	} else {
+		searchAnnotationsPanel.dispose();
+		searchAnnotationsPanel = new SearchAnnotationPanel(this, getJComboBoxURI(), getJComboBoxQualifier());
+	}
+}
 	
 // -------------------------------------------------------------------------------------------------------
-private void searchIdentifier() {
+public void addIdentifier(SearchElement searchElement) {
+	MIRIAMQualifier qualifier = (MIRIAMQualifier)getJComboBoxQualifier().getSelectedItem();
 
+	MiriamManager.DataType objectNamespace = (MiriamManager.DataType)getJComboBoxURI().getSelectedItem();
+
+//		String objectID = getJTextFieldFormalID().getText();
+	String objectID = getId(searchElement.getDbLink(), objectNamespace.getDataTypeName());
+//		if(objectID.compareTo("NewID") == 0) {
+//			return;
+//		}
+	MiriamManager miriamManager = vcMetaData.getMiriamManager();
+	HashSet<MiriamResource> miriamResources = new HashSet<>();
+	try {
+		Identifiable entity = getIdentifiable(selectedObject);
+		MiriamResource mr = miriamManager.createMiriamResource(objectNamespace.getBaseURN()+":"+objectID);
+		miriamResources.add(mr);
+		miriamManager.addMiriamRefGroup(entity, qualifier, miriamResources);
+//		System.out.println(vcMetaData.printRdfStatements());
+		updateInterface();
+		if(selectedObject instanceof ReactionStep) {
+			// we tell ReactionPropertiesPanel to refresh the annotation icon
+			((ReactionStep) selectedObject).firePropertyChange("addIdentifier", false, true);
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		DialogUtils.showErrorDialog(this,"Add Identifier failed:\n"+e.getMessage(), e);
+	}
 }
 
 private void addIdentifier() {
@@ -1010,7 +1068,30 @@ private void removeIdentifier() {
 		}
 	}
 }
+	private String getId(URI uri, String dataTypeName) {
+		String id = "IDError";
 
+		if (uri.toString().contains("BTO"))
+			id = uri.getPath().replace("/obo/BTO_","");
+		else if (uri.toString().contains("CHEBI"))
+			id = uri.getPath().replace("/obo/CHEBI_","");
+		else if (uri.toString().contains("CL"))
+			id = uri.getPath().replace("/obo/CL_","");
+		else if (uri.toString().contains("EFO"))
+			id = uri.getPath().replace("/efo/EFO_","");
+		else if (uri.toString().contains("GO"))
+			id = uri.getPath().replace("/obo/GO_","");
+		else if (uri.toString().contains("ncit"))
+			id = uri.toString().replace("https://ncit.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=","");
+		else if (uri.toString().contains("PATO"))
+			id = uri.getPath().replace("/obo/PATO_","");
+		else if (uri.toString().contains("PR"))
+			id = uri.getPath().replace("/obo/PR_","");
+		else if (uri.toString().contains("uniprot"))
+			id = uri.getPath().replace("/uniprot/","");
+
+		return id;
+	}
 private boolean isEqual(MiriamResource aThis, MiriamResource aThat) {
 	if (aThis == aThat) {
 		return true;

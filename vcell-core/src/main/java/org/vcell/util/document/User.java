@@ -51,11 +51,9 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	private KeyValue key = null;
 	public static final String VCellTestAccountName = "vcelltestaccount";
 
-	public static final String[] publishers = {"frm","schaff","ion"};
-
 	public static final User tempUser = new User("temp",new KeyValue("123"));
 	public static final String VCELL_GUEST = "vcellguest";
-	
+
 	public static class UserNameComparator implements Serializable,Comparator<User>{
 		@Override
 		public int compare(User o1, User o2) {
@@ -81,6 +79,15 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 		public SPECIAL_CLAIM[] getMySpecials() {
 			return mySpecials;
 		}
+
+		public boolean isAdmin() {
+			return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.admins);
+		}
+
+		public boolean isPublisher() {
+			return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.publicationEditors);
+		}
+
 //		@Override
 //		public boolean compareEqual(Matchable obj) {
 //			// TODO Auto-generated method stub
@@ -96,102 +103,93 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	}
 
 	/**
- * User constructor comment.
- */
-public User(String userid, KeyValue key) {
-	this.userName = userid;
-	this.key = key;
-}
-
-public static String createGuestErrorMessage(String theOffendingOp) {
-	return VCELL_GUEST+" not allowed to do '"+theOffendingOp+"'.  Register for free during login to use all VCell features.";
-}
-public static boolean isGuest(String checkThisName) {
-	return VCELL_GUEST.equals(checkThisName);
-}
-/**
- * @return {@link #equals(Object)}
- */
-public boolean compareEqual(Matchable obj) {
-	return equals(obj);
-}
-
-/**
- * @return true if {@link #key}s match
- */
-public boolean equals(Object obj) {
-	if (obj == this){
-		return true;
+	 * User constructor comment.
+	 */
+	public User(String userid, KeyValue key) {
+		this.userName = userid;
+		this.key = key;
 	}
 
-	User user = null;
-	if (!(obj instanceof User)){
-		return false;
+	public static String createGuestErrorMessage(String theOffendingOp) {
+		return VCELL_GUEST+" not allowed to do '"+theOffendingOp+"'.  Register for free during login to use all VCell features.";
 	}
-	user = (User)obj;
+	public static boolean isGuest(String checkThisName) {
+		return VCELL_GUEST.equals(checkThisName);
+	}
+	/**
+	 * @return {@link #equals(Object)}
+	 */
+	public boolean compareEqual(Matchable obj) {
+		return equals(obj);
+	}
 
-	return org.vcell.util.Compare.isEqual(key,user.key);
-}
+	/**
+	 * @return true if {@link #key}s match
+	 */
+	public boolean equals(Object obj) {
+		if (obj == this){
+			return true;
+		}
 
+		User user = null;
+		if (!(obj instanceof User)){
+			return false;
+		}
+		user = (User)obj;
 
-/**
- * This method was created in VisualAge.
- * @return long
- */
-public KeyValue getID() {
-	return key;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public String getName() {
-	return userName;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/24/01 5:31:05 PM)
- * @return int
- */
-public int hashCode() {
-	return getName().hashCode();
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (5/23/2006 8:33:53 AM)
- * @return boolean
- */
-public boolean isPublisher() {
-	return Arrays.asList(publishers).contains(userName);
-}
+		return org.vcell.util.Compare.isEqual(key,user.key);
+	}
 
 
-/**
- * @return true if this is test account
- */
-public boolean isTestAccount() {
-	return isTestAccount(getName( ));
-}
-
-/**
- * @param accountName non null
- * @return true if accountName is test account
- */
-public static boolean isTestAccount(String accountName) {
-	return accountName.equals(VCellTestAccountName);
-}
+	/**
+	 * This method was created in VisualAge.
+	 * @return long
+	 */
+	public KeyValue getID() {
+		return key;
+	}
 
 
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- */
-public String toString() {
-	return userName+"("+key+")";
-}
+	/**
+	 * This method was created in VisualAge.
+	 * @return java.lang.String
+	 */
+	public String getName() {
+		return userName;
+	}
+
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (1/24/01 5:31:05 PM)
+	 * @return int
+	 */
+	public int hashCode() {
+		return getName().hashCode();
+	}
+
+
+	/**
+	 * @return true if this is test account
+	 */
+	public boolean isTestAccount() {
+		return isTestAccount(getName( ));
+	}
+
+	/**
+	 * @param accountName non null
+	 * @return true if accountName is test account
+	 */
+	public static boolean isTestAccount(String accountName) {
+		return accountName.equals(VCellTestAccountName);
+	}
+
+
+	/**
+	 * This method was created in VisualAge.
+	 * @return java.lang.String
+	 */
+	public String toString() {
+		return userName+"("+key+")";
+	}
 }
