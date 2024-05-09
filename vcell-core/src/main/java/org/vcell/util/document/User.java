@@ -51,6 +51,8 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	private KeyValue key = null;
 	public static final String VCellTestAccountName = "vcelltestaccount";
 
+	public static final String[] publishers = {"frm","schaff","ion"};
+
 	public static final User tempUser = new User("temp",new KeyValue("123"));
 	public static final String VCELL_GUEST = "vcellguest";
 
@@ -79,15 +81,6 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 		public SPECIAL_CLAIM[] getMySpecials() {
 			return mySpecials;
 		}
-
-		public boolean isAdmin() {
-			return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.admins);
-		}
-
-		public boolean isPublisher() {
-			return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.publicationEditors);
-		}
-
 //		@Override
 //		public boolean compareEqual(Matchable obj) {
 //			// TODO Auto-generated method stub
@@ -166,6 +159,15 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	 */
 	public int hashCode() {
 		return getName().hashCode();
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (5/23/2006 8:33:53 AM)
+	 * @return boolean
+	 */
+	public boolean isPublisher() {
+		return Arrays.asList(publishers).contains(userName);
 	}
 
 
