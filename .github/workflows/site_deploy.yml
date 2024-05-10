@@ -242,15 +242,11 @@ jobs:
         fi
     - name: Call webhook to deploy to kubernetes cluster (overlay 'stage')
       if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
-      env:
-        GHCR_USERNAME: "${{ secrets.GHCR_USERNAME }}"
-        GHCR_TOKEN: "${{ secrets.GHCR_TOKEN }}"
-        BRANCH: "stage"
       run: |
         git_sha=$(git rev-parse --short "$GITHUB_SHA")
         echo '{"ref": "main","inputs":{"overlay": "'$BRANCH'","tag":"'${{github.ref_name}}'"}}' >body
         curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yml/dispatches' \
-          -H 'Authorization: Bearer ${{ secrets.GHCR_TOKEN }}' \
+          -H 'Authorization: Bearer ${{ secrets.ACTION_TOKEN }}' \
           -H 'Content-Type: application/json' \
           --data "@body"
     - name: deploy to swarm site
