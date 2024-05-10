@@ -98,6 +98,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.quarkiverse.itext</groupId>
+      <artifactId>quarkus-itext</artifactId>
+      <version>3.0.5</version>
+    </dependency>
+    <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>oauth2-oidc-sdk</artifactId>
       <version>10.7</version>

@@ -2,6 +2,7 @@
 README.md
 api/openapi.yaml
 docs/AccesTokenRepresentationRecord.md
+docs/AdminResourceApi.md
 docs/BioModel.md
 docs/BioModelResourceApi.md
 docs/BiomodelRef.md
@@ -26,6 +27,7 @@ src/main/java/org/vcell/restclient/Pair.java
 src/main/java/org/vcell/restclient/RFC3339DateFormat.java
 src/main/java/org/vcell/restclient/ServerConfiguration.java
 src/main/java/org/vcell/restclient/ServerVariable.java
+src/main/java/org/vcell/restclient/api/AdminResourceApi.java
 src/main/java/org/vcell/restclient/api/BioModelResourceApi.java
 src/main/java/org/vcell/restclient/api/HelloWorldApi.java
 src/main/java/org/vcell/restclient/api/PublicationResourceApi.java

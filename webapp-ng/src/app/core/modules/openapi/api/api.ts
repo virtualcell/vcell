@@ -1,3 +1,6 @@
+export * from './admin-resource.service';
+import { AdminResourceService } from './admin-resource.service';
+export * from './admin-resource.serviceInterface';
 export * from './bio-model-resource.service';
 import { BioModelResourceService } from './bio-model-resource.service';
 export * from './bio-model-resource.serviceInterface';
@@ -10,4 +13,4 @@ export * from './publication-resource.serviceInterface';
 export * from './users-resource.service';
 import { UsersResourceService } from './users-resource.service';
 export * from './users-resource.serviceInterface';
-export const APIS = [BioModelResourceService, HelloWorldService, PublicationResourceService, UsersResourceService];
+export const APIS = [AdminResourceService, BioModelResourceService, HelloWorldService, PublicationResourceService, UsersResourceService];

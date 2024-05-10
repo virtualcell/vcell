@@ -6,8 +6,14 @@ import { ErrorComponent } from './pages/error/error.component';
 import { AuthGuard } from '@auth0/auth0-angular';
 import { PublicationListComponent } from './components/publication-list/publication-list.component';
 import {LoginSuccessComponent} from "./pages/login-success/login-success.component";
+import {AdminComponent} from "./pages/admin/admin.component";
 
 const routes: Routes = [
+  {
+    path: 'admin',
+    component: AdminComponent,
+    canActivate: [AuthGuard],
+  },
   {
     path: 'profile',
     component: ProfileComponent,

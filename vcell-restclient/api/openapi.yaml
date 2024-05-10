@@ -14,6 +14,28 @@ info:
 servers:
 - url: https://vcellapi-test.cam.uchc.edu
 paths:
+  /api/v1/admin/usage:
+    get:
+      operationId: getUsage
+      responses:
+        "200":
+          content:
+            application/pdf:
+              schema:
+                format: binary
+                type: string
+          description: The PDF report
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - admin
+      summary: Get usage summary
+      tags:
+      - Admin Resource
+      x-accepts: application/pdf
   /api/v1/bioModel/upload_bioModel:
     post:
       operationId: uploadBioModel
@@ -229,7 +251,7 @@ paths:
       responses:
         "200":
           content:
-            application/json:
+            text/plain:
               schema:
                 type: boolean
           description: OK
@@ -244,7 +266,7 @@ paths:
       tags:
       - Users Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts: text/plain
   /api/v1/users/mappedUser:
     get:
       operationId: getMappedUser

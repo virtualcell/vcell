@@ -9,16 +9,11 @@
  */
 
 package cbit.vcell.publish;
-import java.io.FileOutputStream;
 
-import com.lowagie.text.DocWriter;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Graphic;
-import com.lowagie.text.HeaderFooter;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Phrase;
-import com.lowagie.text.Rectangle;
+import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfWriter;
+
+import java.io.FileOutputStream;
 
 /**
  * Note: Two incomplete methods for publishing an awt component were deleted (writeComponent(), writeSnapshot()).
@@ -59,15 +54,4 @@ protected void writeHeaderFooter(String headerStr) throws DocumentException {
 	document.setFooter(headerFooter);
 }
 
-
-/**
- * PDF implementation.
- */
-protected void writeHorizontalLine() throws DocumentException {
-	document.add(new Paragraph("\n"));
-	Graphic graphic = new Graphic();
-	graphic.setHorizontalLine(1, 75);
-	document.add(graphic);
-	document.add(new Paragraph("\n"));
-}
 }

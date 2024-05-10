@@ -122,7 +122,7 @@
 		<httpcore.version>4.4.13</httpcore.version>
 		<imagej2.version>2.3.0</imagej2.version>
 		<imagej.version>${imagej2.version}</imagej.version>
-		<itext.version>1.4.8</itext.version>
+		<itext.version>2.1.7</itext.version>
 		<jackson-annotations.version>2.15.2</jackson-annotations.version>
 		<jackson-core.version>2.15.2</jackson-core.version>
 		<jackson-databind.version>2.15.2</jackson-databind.version>
