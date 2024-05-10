@@ -71,6 +71,7 @@ public class AdminResource {
             StreamingOutput fileStream = output -> {
                 try {
                     Document document = new Document();
+                    document.setPageSize(com.lowagie.text.PageSize.A2);  // large enough page size for wide table
                     PdfWriter writer = PdfWriter.getInstance(document, output);
                     document.open();
                     HTMLWorker htmlWorker = new HTMLWorker(document);
