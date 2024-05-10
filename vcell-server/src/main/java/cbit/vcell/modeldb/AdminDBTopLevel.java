@@ -400,19 +400,6 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
             StringBuffer sb = new StringBuffer(
                     "<html>" +
                             "<head>\n" +
-                            "<style>\n" +
-                            "table, td, th {\n" +
-                            "  border: 1px solid;\n" +
-                            "}\n" +
-                            "table {\n" +
-                            "  width: 100%;\n" +
-                            "  border-collapse: collapse;\n" +
-                            "}\n" +
-                            "th, td {\n" +
-                            "  padding: 5px;\n" +
-                            "  text-align: left;\n" +
-                            "}\n" +
-                            "</style>\n" +
                             "</head>\n" +
                             "<body>");
             stmt = con.createStatement();
