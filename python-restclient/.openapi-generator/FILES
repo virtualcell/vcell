@@ -2,6 +2,7 @@
 .gitignore
 README.md
 docs/AccesTokenRepresentationRecord.md
+docs/AdminResourceApi.md
 docs/BioModel.md
 docs/BioModelResourceApi.md
 docs/BiomodelRef.md
@@ -21,6 +22,7 @@ test/__init__.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py
+vcell_client/api/admin_resource_api.py
 vcell_client/api/bio_model_resource_api.py
 vcell_client/api/hello_world_api.py
 vcell_client/api/publication_resource_api.py
