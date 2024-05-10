@@ -210,7 +210,6 @@ jobs:
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
         set -ux
-        cd vcell-client
         mvn clean install -DskipTests
     - name: deploy installers and singularity to kubernetes site and web help to vcell.org
       if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
