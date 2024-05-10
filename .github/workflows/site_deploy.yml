@@ -245,13 +245,17 @@ jobs:
       run: |
         SITE="${{ github.event.inputs.vcell_site }}"
         SITE_CAPITALIZED="$(tr '[:lower:]' '[:upper:]' <<< ${SITE:0:1})${SITE:1}"
-        SWVERSION="${SITE_CAPITALIZED}_Version_${{ github.event.inputs.vcell_version }}_build_${{ github.event.inputs.vcell_build}}"
-        echo "SWVERSION=${SWVERSION}" >> $GITHUB_ENV
+        VCELL_SWVERSION="${SITE_CAPITALIZED}_Version_${{ github.event.inputs.vcell_version }}_build_${{ github.event.inputs.vcell_build}}"
+        KUSTOMIZE_OVERLAY="stage"
+        CONTAINER_IMAGE_TAG="${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build}}"
+        echo "VCELL_SWVERSION=${VCELL_SWVERSION}" >> $GITHUB_ENV
+        echo "KUSTOMIZE_OVERLAY=${KUSTOMIZE_OVERLAY}" >> $GITHUB_ENV
+        echo "CONTAINER_IMAGE_TAG=${CONTAINER_IMAGE_TAG}" >> $GITHUB_ENV
     - name: Call webhook to deploy to kubernetes cluster (overlay 'stage')
       if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
       run: |
         git_sha=$(git rev-parse --short "$GITHUB_SHA")
-        echo '{"ref": "main","inputs":{"overlay": "'$BRANCH'","tag":"'${{github.ref_name}}'","swversion": "'${SWVERSION}'"}}' >body
+        echo '{"ref": "main","inputs":{"overlay": "'${KUSTOMIZE_OVERLAY}'","tag":"'${CONTAINER_IMAGE_TAG}'","swversion": "'${VCELL_SWVERSION}'"}}' >body
         curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yaml/dispatches' \
           -H 'Authorization: Bearer ${{ secrets.ACTION_TOKEN }}' \
           -H 'Content-Type: application/json' \
