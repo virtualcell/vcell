@@ -1,0 +1,7 @@
+<h1 class="mat-h1">Administrative Tools</h1>
+<ng-container *ngIf="isAdmin$ | async">
+  <div  class="indent-block">
+    <h3 class="mat-h2">Generate Virtual Cell Usage Report</h3>
+    <button mat-raised-button color="primary" (click)="downloadUsageReport()">Download as PDF</button>
+  </div>
+</ng-container>

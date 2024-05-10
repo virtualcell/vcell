@@ -15,12 +15,14 @@ export class NavBarComponent {
   faUser = faUser;
   faPowerOff = faPowerOff;
   isCurator$: Observable<boolean>;
+  isAdmin$: Observable<boolean>;
 
   constructor(
     public auth: AuthService, private authorizationService: AuthorizationService,
     @Inject(DOCUMENT) private doc: Document
   ) {
     this.isCurator$ = authorizationService.isCurator();
+    this.isAdmin$ = authorizationService.isAdmin();
   }
 
   loginWithRedirect() {
