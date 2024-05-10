@@ -97,4 +97,6 @@ INSERT INTO vc_group VALUES (6,0,0,0,0);
 INSERT INTO vc_available VALUES (7,current_timestamp,'true',NULL,NULL);
 INSERT INTO vc_apiclient VALUES (8,'defaultApiClient','85133f8d-26f7-4247-8356-d175399fc2e6','98d000d6-adff-4f8f-a00e-6c28dbd8c571');
 INSERT INTO vc_useridentity VALUES ( 9, 2,'auth0|65cb6311365d79c2fb96a005', 'https://dev-dzhx7i2db3x3kkvq.us.auth0.com/', CURRENT_TIMESTAMP);
-INSERT INTO vc_specialusers VALUES ( 10,'publication',2,NULL);
+INSERT INTO vc_specialusers VALUES ( 10,'publicationEditors',2,NULL);
+INSERT INTO vc_specialusers VALUES ( 11,'powerUsers',2,NULL);
+INSERT INTO vc_specialusers VALUES ( 12,'admins',2,NULL);
