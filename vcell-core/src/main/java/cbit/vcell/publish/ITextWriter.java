@@ -147,7 +147,6 @@ public abstract class ITextWriter {
 
 	public static final String PDF_WRITER = "PDF_WRITER";
 	public static final String HTM_WRITER = "HTML_WRITER";
-	public static final String RTF_WRITER = "RTF_WRITER";
 	protected static int DEF_IMAGE_WIDTH = 400;
 	protected static int DEF_IMAGE_HEIGHT = 400;
 	protected static final int DEF_GEOM_WIDTH = 150;
@@ -833,8 +832,6 @@ protected Font getFont() {
 			newWriter = new PDFWriter();			
 		} else if (ITextWriter.HTM_WRITER.equals(writerType)) {
 			newWriter = new HTMWriter();
-		} else if (ITextWriter.RTF_WRITER.equals(writerType)) {
-			newWriter = new RTFWriter();
 		} else {
 			throw new IllegalArgumentException("Unsupported writer type: " + writerType);
 		}
@@ -942,7 +939,7 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 	int chapterNum = 1;
 	if (preferences.includePhysio()) {
 		Chapter physioChapter = new Chapter("Physiology For " + name, chapterNum++);
-		introSection = physioChapter.addSection("General Info", physioChapter.numberDepth() + 1);
+		introSection = physioChapter.addSection("General Info", physioChapter.getNumberDepth() + 1);
 		String freeTextAnnotation = bioModel.getVCMetaData().getFreeTextAnnotation(bioModel);
 		writeMetadata(introSection, name, freeTextAnnotation, userName, "BioModel");
 		writeModel(physioChapter, bioModel.getModel());
@@ -953,7 +950,7 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 		if (simContexts.length > 0) {
 			Chapter simContextsChapter = new Chapter("Applications For " + name, chapterNum++);
 			if (introSection == null) {
-				introSection = simContextsChapter.addSection("General Info", simContextsChapter.numberDepth() + 1);
+				introSection = simContextsChapter.addSection("General Info", simContextsChapter.getNumberDepth() + 1);
 				String freeTextAnnotation = bioModel.getVCMetaData().getFreeTextAnnotation(bioModel);
 				writeMetadata(introSection, name, freeTextAnnotation, userName, "BioModel");
 			}
@@ -1047,7 +1044,7 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 	protected void writeGeom(Section container, Geometry geom, GeometryContext geomCont) throws Exception {
 		
 		try {
-			Section geomSection = container.addSection("Geometry: " + geom.getName(), container.numberDepth() + 1);
+			Section geomSection = container.addSection("Geometry: " + geom.getName(), container.getNumberDepth() + 1);
 			if (geom.getDimension() == 0) {
 				Paragraph p = new Paragraph(new Phrase("Non spatial geometry."));
 				p.setAlignment(Paragraph.ALIGN_CENTER);
@@ -1107,9 +1104,9 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 			Section introSection = null;
 			int chapterNum = 1;
 			Chapter geomChapter = new Chapter("Geometry", chapterNum++);
-			introSection = geomChapter.addSection("General Info", geomChapter.numberDepth() + 1);                 
+			introSection = geomChapter.addSection("General Info", geomChapter.getNumberDepth() + 1);                 
 			writeMetadata(introSection, name, geom.getDescription(), userName, "Geometry");
-			Section geomSection = geomChapter.addSection("Geometry", geomChapter.numberDepth() + 1);                  //title?
+			Section geomSection = geomChapter.addSection("Geometry", geomChapter.getNumberDepth() + 1);                  //title?
 			writeGeom(geomSection, geom, null);
 			document.add(geomChapter);
 			document.close();
@@ -1125,14 +1122,6 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
  */
 protected void writeHeaderFooter(String headerStr) throws DocumentException {
 
-}
-
-
-/**
- * writeHorizontalLine comment.
- */
-protected void writeHorizontalLine() throws DocumentException {
-	// Default is no horizontal line...
 }
 
 
@@ -1198,12 +1187,12 @@ protected void writeHorizontalLine() throws DocumentException {
 		if (mathDesc == null) {
 			return;
 		}
-		Section mathDescSection = container.addSection("Math Description: " + mathDesc.getName(), container.depth() + 1);
+		Section mathDescSection = container.addSection("Math Description: " + mathDesc.getName(), container.getDepth() + 1);
 		Section mathDescSubSection = null;
 		Expression expArray [] = null;
 		BufferedImage dummy = new BufferedImage(500, 50, BufferedImage.TYPE_3BYTE_BGR);
 		int scale = 1;
-		int viewableWidth = (int)(document.getPageSize().width() - document.leftMargin() - document.rightMargin());
+		int viewableWidth = (int)(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin());
 		//add Constants
 		Enumeration<Constant> constantsList = mathDesc.getConstants();
 		while (constantsList.hasMoreElements()) {
@@ -1222,11 +1211,11 @@ protected void writeHorizontalLine() throws DocumentException {
 				com.lowagie.text.Image expImage = com.lowagie.text.Image.getInstance(bufferedImage, null);
 				expImage.setAlignment(com.lowagie.text.Image.ALIGN_LEFT);
 				if (mathDescSubSection == null) {
-					mathDescSubSection =  mathDescSection.addSection("Constants", mathDescSection.depth() + 1);
+					mathDescSubSection =  mathDescSection.addSection("Constants", mathDescSection.getDepth() + 1);
 				}
-				if (viewableWidth < Math.floor(expImage.scaledWidth())) {
-					expImage.scaleToFit(viewableWidth, expImage.plainHeight());
-					System.out.println("Constant After scaling: " + expImage.scaledWidth());
+				if (viewableWidth < Math.floor(expImage.getScaledWidth())) {
+					expImage.scaleToFit(viewableWidth, expImage.getPlainHeight());
+					System.out.println("Constant After scaling: " + expImage.getScaledWidth());
 				}
 				mathDescSubSection.add(expImage);
 			} catch (Exception e) {
@@ -1252,11 +1241,11 @@ protected void writeHorizontalLine() throws DocumentException {
 				com.lowagie.text.Image expImage = com.lowagie.text.Image.getInstance(bufferedImage, null);
 				expImage.setAlignment(com.lowagie.text.Image.ALIGN_LEFT);
 				if (mathDescSubSection == null) {
-					mathDescSubSection =  mathDescSection.addSection("Functions", mathDescSection.depth() + 1);
+					mathDescSubSection =  mathDescSection.addSection("Functions", mathDescSection.getDepth() + 1);
 				}
-				if (viewableWidth < Math.floor(expImage.scaledWidth())) {
-					expImage.scaleToFit(viewableWidth, expImage.height());
-					System.out.println("Function After scaling: " + expImage.scaledWidth());
+				if (viewableWidth < Math.floor(expImage.getScaledWidth())) {
+					expImage.scaleToFit(viewableWidth, expImage.getHeight());
+					System.out.println("Function After scaling: " + expImage.getScaledWidth());
 				}
 				mathDescSubSection.add(expImage);
 			} catch (Exception e) {
@@ -1274,7 +1263,7 @@ protected void writeHorizontalLine() throws DocumentException {
 		if (mathDesc == null) {
 			return;
 		}
-		Section mathDescSection = container.addSection("Math Description: " + mathDesc.getName(), container.depth() + 1);
+		Section mathDescSection = container.addSection("Math Description: " + mathDesc.getName(), container.getDepth() + 1);
 		Section mathDescSubSection = null;
 		Table expTable = null;
 		int widths [] = {2, 8};
@@ -1297,7 +1286,7 @@ protected void writeHorizontalLine() throws DocumentException {
 		}
 		//expTable.setWidths(widths);    breaks the contents of the cell, also, widths[1] = widths[1]/widths[0], widths[0] = 1
 		if (expTable != null) {
-			mathDescSubSection =  mathDescSection.addSection("Constants", mathDescSection.depth() + 1);
+			mathDescSubSection =  mathDescSection.addSection("Constants", mathDescSection.getDepth() + 1);
 			mathDescSubSection.add(expTable);
 			expTable = null;
 		}
@@ -1318,7 +1307,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			expTable.addCell(createCell(exp.infix(), getFont()));
 		}
 		if (expTable != null) {
-			mathDescSubSection =  mathDescSection.addSection("Functions", mathDescSection.depth() + 1);
+			mathDescSubSection =  mathDescSection.addSection("Functions", mathDescSection.getDepth() + 1);
 			mathDescSubSection.add(expTable);
 		}
 		writeSubDomainsEquationsAsText(mathDescSection, mathDesc);
@@ -1357,7 +1346,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			if (preferences.includeMathDesc()) {
 				MathDescription mathDesc = mathModel.getMathDescription();
 				Chapter mathDescChapter = new Chapter("Math Description", chapterNum++);
-				introSection = mathDescChapter.addSection("General Info", mathDescChapter.numberDepth() + 1);                 
+				introSection = mathDescChapter.addSection("General Info", mathDescChapter.getNumberDepth() + 1);                 
 				writeMetadata(introSection, name, mathModel.getDescription(), userName, "MathModel");
 				writeMathDescAsText(mathDescChapter, mathDesc);	
 				document.add(mathDescChapter);		
@@ -1367,7 +1356,7 @@ protected void writeHorizontalLine() throws DocumentException {
 				if (sims != null) {
 					Chapter simChapter = new Chapter("Simulations", chapterNum++);
 					if (introSection == null) {
-						introSection = simChapter.addSection("General Info", simChapter.numberDepth() + 1);                 
+						introSection = simChapter.addSection("General Info", simChapter.getNumberDepth() + 1);                 
 						writeMetadata(introSection, name, mathModel.getDescription(), userName, "MathModel");
 					}
 					for (int i = 0; i < sims.length; i++) {
@@ -1383,7 +1372,7 @@ protected void writeHorizontalLine() throws DocumentException {
 				if (geom != null) {
 					Chapter geomChapter = new Chapter("Geometry", chapterNum++);
 					if (introSection == null) {
-						introSection = geomChapter.addSection("General Info", geomChapter.numberDepth() + 1);                 
+						introSection = geomChapter.addSection("General Info", geomChapter.getNumberDepth() + 1);                 
 						writeMetadata(introSection, name, mathModel.getDescription(), userName, "MathModel");
 					}
 					writeGeom(geomChapter, geom, null);
@@ -1450,7 +1439,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			memMapTable.addCell(createCell(spCap, getFont()));
 		}
 		if (memMapTable != null) {
-			memMapSection = simContextSection.addSection("Membrane Mapping For " + simContext.getName(), simContextSection.numberDepth() + 1);
+			memMapSection = simContextSection.addSection("Membrane Mapping For " + simContext.getName(), simContextSection.getNumberDepth() + 1);
 			memMapSection.add(memMapTable);
 		}
 		int[] widths = {1, 1, 1, 5, 8};
@@ -1596,7 +1585,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 //	if (model.getNumStructures() > 0) {
 //		try {
 //			ByteArrayOutputStream bos = generateDocStructureImage(model, ITextWriter.LOW_RESOLUTION);
-//			structSection = physioChapter.addSection("Structures For: " + model.getName(), physioChapter.numberDepth() + 1);
+//			structSection = physioChapter.addSection("Structures For: " + model.getName(), physioChapter.getNumberDepth() + 1);
 //			addImage(structSection, bos);
 //		} catch(Exception e) {
 //			System.err.println("Unable to add structures image for model: " + model.getName());
@@ -1769,7 +1758,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 			reactionSpecTable.addCell(createCell((reactionSpecs[i].isFast() ? " T ": " F "), getFont()));
 		}
 		if (reactionSpecTable != null) {
-			rcSection = simContextSection.addSection("Reaction Mapping For " + simContext.getName(), simContextSection.numberDepth() + 1);
+			rcSection = simContextSection.addSection("Reaction Mapping For " + simContext.getName(), simContextSection.getNumberDepth() + 1);
 			rcSection.add(reactionSpecTable);
 		}
 		
@@ -1803,7 +1792,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		}
 		if (speciesSpecTable != null) {
 			if (rcSection == null) {
-				rcSection = simContextSection.addSection("Reaction Mapping For " + simContext.getName(), simContextSection.numberDepth() + 1);
+				rcSection = simContextSection.addSection("Reaction Mapping For " + simContext.getName(), simContextSection.getNumberDepth() + 1);
 			}
 			speciesSpecTable.setWidths(widths);
 			rcSection.add(speciesSpecTable);
@@ -1861,7 +1850,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		}
 		Paragraph reactionParagraph = new Paragraph();
 		reactionParagraph.add(new Chunk("Structures and Reactions Diagram").setLocalDestination(model.getName()));
-		Section reactionDiagramSection = physioChapter.addSection(reactionParagraph, physioChapter.numberDepth() + 1);
+		Section reactionDiagramSection = physioChapter.addSection(reactionParagraph, physioChapter.getNumberDepth() + 1);
 		try{
 			addImage(reactionDiagramSection, encodeJPEG(generateDocReactionsImage(model,null)));
 		}catch(Exception e){
@@ -1882,7 +1871,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 					if (firstTime) {
 						Paragraph linkParagraph = new Paragraph();
 						linkParagraph.add(new Chunk("Reaction(s) in " + model.getStructure(i).getName()).setLocalDestination(model.getStructure(i).getName()));
-						reactStructSection = physioChapter.addSection(linkParagraph, physioChapter.numberDepth() + 1);
+						reactStructSection = physioChapter.addSection(linkParagraph, physioChapter.getNumberDepth() + 1);
 						firstTime = false;
 					}
 					rs = reactionSteps[j];
@@ -1952,7 +1941,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 						modifiersVector.removeAllElements();
 					}
 					
-					Section reactionSection = reactStructSection.addSection(type + " " + rs.getName(), reactStructSection.numberDepth() + 1);
+					Section reactionSection = reactStructSection.addSection(type + " " + rs.getName(), reactStructSection.getNumberDepth() + 1);
 					//Annotation
 					VCMetaData vcMetaData = rs.getModel().getVcMetaData();
 					if (vcMetaData.getFreeTextAnnotation(rs) != null) {
@@ -1985,7 +1974,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		if (sim == null) {
 			return;
 		}
-		Section simSection = container.addSection(sim.getName(), container.numberDepth() + 1);
+		Section simSection = container.addSection(sim.getName(), container.getNumberDepth() + 1);
 		writeMetadata(simSection, sim.getName(), sim.getDescription(), null, "Simulation ");
 		//add overriden params
 		Table overParamTable = null;
@@ -2101,7 +2090,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 //Electrical Stimulus: ignored the Ground Electrode,   
 protected void writeSimulationContext(Chapter simContextsChapter, SimulationContext simContext, PublishPreferences preferences) throws Exception {
 
-	Section simContextSection = simContextsChapter.addSection("Application: " + simContext.getName(), simContextsChapter.numberDepth() + 1);
+	Section simContextSection = simContextsChapter.addSection("Application: " + simContext.getName(), simContextsChapter.getNumberDepth() + 1);
 	writeMetadata(simContextSection, simContext.getName(), simContext.getDescription(), null, "Application ");
 	//add geometry context (structure mapping)
 	writeStructureMapping(simContextSection, simContext);
@@ -2118,7 +2107,7 @@ protected void writeSimulationContext(Chapter simContextsChapter, SimulationCont
 		//writeMathDescAsImages(simContextSection, simContext.getMathDescription());
 	}
 	if (preferences.includeSim()) {
-		Section simSection = simContextSection.addSection("Simulation(s)", simContextSection.depth() + 1);
+		Section simSection = simContextSection.addSection("Simulation(s)", simContextSection.getDepth() + 1);
 		Simulation sims [] = simContext.getSimulations();
 		for (int i = 0; i < sims.length; i++) {
 			writeSimulation(simSection, sims[i]);	
@@ -2208,7 +2197,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 		/*try {
 			ByteArrayOutputStream bos = generateStructureMappingImage(sc);
 			com.lowagie.text.Image structMapImage = com.lowagie.text.Image.getInstance(Toolkit.getDefaultToolkit().createImage(bos.toByteArray()), null);
-			structMappSection = simContextSection.addSection("Structure Mapping For " + sc.getName(), simContextSection.numberDepth() + 1);
+			structMappSection = simContextSection.addSection("Structure Mapping For " + sc.getName(), simContextSection.getNumberDepth() + 1);
 			structMappSection.add(structMapImage);
 		} catch (Exception e) {
 			System.err.println("Unable to add structure mapping image to report.");
@@ -2272,7 +2261,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 		}
 		if (structMapTable != null) {
 			if (structMappSection == null) {
-				structMappSection = simContextSection.addSection("Structure Mapping For " + sc.getName(), simContextSection.numberDepth() + 1);
+				structMappSection = simContextSection.addSection("Structure Mapping For " + sc.getName(), simContextSection.getNumberDepth() + 1);
 			}
 			structMappSection.add(structMapTable);
 		}
@@ -2284,10 +2273,10 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 
 		Enumeration<SubDomain> subDomains = mathDesc.getSubDomains();
 		Expression expArray[];
-		Section volDomains = mathDescSection.addSection("Volume Domains", mathDescSection.depth() + 1);
-		Section memDomains = mathDescSection.addSection("Membrane Domains", mathDescSection.depth() + 1);
+		Section volDomains = mathDescSection.addSection("Volume Domains", mathDescSection.getDepth() + 1);
+		Section memDomains = mathDescSection.addSection("Membrane Domains", mathDescSection.getDepth() + 1);
 		int scale = 1, height = 200;                            //arbitrary
-		int viewableWidth = (int)(document.getPageSize().width() - document.leftMargin() - document.rightMargin());
+		int viewableWidth = (int)(document.getPageSize().getWidth() - document.leftMargin() - document.rightMargin());
 		BufferedImage dummy = new BufferedImage(viewableWidth, height, BufferedImage.TYPE_3BYTE_BGR);
 		while(subDomains.hasMoreElements()) {
 			SubDomain subDomain = subDomains.nextElement();
@@ -2309,9 +2298,9 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 			expArray = (Expression [])expList.toArray(new Expression[expList.size()]);
 			Section tempSection = null;
 			if (subDomain instanceof CompartmentSubDomain) {
-				tempSection = volDomains.addSection(subDomain.getName(), volDomains.depth() + 1);
+				tempSection = volDomains.addSection(subDomain.getName(), volDomains.getDepth() + 1);
 			} else if (subDomain instanceof MembraneSubDomain) {
-				tempSection = memDomains.addSection(subDomain.getName(), memDomains.depth() + 1);
+				tempSection = memDomains.addSection(subDomain.getName(), memDomains.getDepth() + 1);
 			}
 			try { 
 				Dimension dim = ExpressionCanvas.getExpressionImageSize(expArray, (Graphics2D)dummy.getGraphics());
@@ -2321,9 +2310,9 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 				//Table imageTable = null;;            
 				com.lowagie.text.Image expImage = com.lowagie.text.Image.getInstance(bufferedImage, null);
 				expImage.setAlignment(com.lowagie.text.Image.LEFT);
-				if (viewableWidth < expImage.scaledWidth()) {
-					expImage.scaleToFit(viewableWidth, expImage.height());
-					System.out.println("SubDomain expresions After scaling: " + expImage.scaledWidth());
+				if (viewableWidth < expImage.getScaledWidth()) {
+					expImage.scaleToFit(viewableWidth, expImage.getHeight());
+					System.out.println("SubDomain expresions After scaling: " + expImage.getScaledWidth());
 				}
 				/*Cell imageCell = new Cell();
 				imageCell.add(expImage);
@@ -2352,18 +2341,18 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 	protected void writeSubDomainsEquationsAsText(Section mathDescSection, MathDescription mathDesc) throws DocumentException {
 
 		Enumeration<SubDomain> subDomains = mathDesc.getSubDomains();
-		Section volDomains = mathDescSection.addSection("Volume Domains", mathDescSection.depth() + 1);
-		Section memDomains = mathDescSection.addSection("Membrane Domains", mathDescSection.depth() + 1);
-		Section filDomains = mathDescSection.addSection("Filament Domains", mathDescSection.depth() + 1);
+		Section volDomains = mathDescSection.addSection("Volume Domains", mathDescSection.getDepth() + 1);
+		Section memDomains = mathDescSection.addSection("Membrane Domains", mathDescSection.getDepth() + 1);
+		Section filDomains = mathDescSection.addSection("Filament Domains", mathDescSection.getDepth() + 1);
 		while(subDomains.hasMoreElements()) {
 			Section tempSection = null;
 			SubDomain subDomain = subDomains.nextElement();
 			if (subDomain instanceof CompartmentSubDomain) {
-				tempSection = volDomains.addSection(subDomain.getName(), volDomains.depth() + 1);
+				tempSection = volDomains.addSection(subDomain.getName(), volDomains.getDepth() + 1);
 			} else if (subDomain instanceof MembraneSubDomain) {
-				tempSection = memDomains.addSection(subDomain.getName(), memDomains.depth() + 1);
+				tempSection = memDomains.addSection(subDomain.getName(), memDomains.getDepth() + 1);
 			} else if (subDomain instanceof FilamentSubDomain) {
-				tempSection = filDomains.addSection(subDomain.getName(), filDomains.depth() + 1);
+				tempSection = filDomains.addSection(subDomain.getName(), filDomains.getDepth() + 1);
 			}
 			Enumeration<Equation> equationsList = subDomain.getEquations();
 			while (equationsList.hasMoreElements()) {
