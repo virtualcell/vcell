@@ -240,17 +240,24 @@ jobs:
               ${VCELL_MANAGER_NODE} \
               ./${VCELL_CONFIG_FILE_NAME}
         fi
+    - name: Capitalize first character of site name
+      id: capitalize
+      run: |
+        SITE="${{ github.event.inputs.vcell_site }}"
+        SITE_CAPITALIZED="$(tr '[:lower:]' '[:upper:]' <<< ${SITE:0:1})${SITE:1}"
+        VCELL_SWVERSION="${SITE_CAPITALIZED}_Version_${{ github.event.inputs.vcell_version }}_build_${{ github.event.inputs.vcell_build}}"
+        KUSTOMIZE_OVERLAY="stage"
+        CONTAINER_IMAGE_TAG="${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build}}"
+        echo "VCELL_SWVERSION=${VCELL_SWVERSION}" >> $GITHUB_ENV
+        echo "KUSTOMIZE_OVERLAY=${KUSTOMIZE_OVERLAY}" >> $GITHUB_ENV
+        echo "CONTAINER_IMAGE_TAG=${CONTAINER_IMAGE_TAG}" >> $GITHUB_ENV
     - name: Call webhook to deploy to kubernetes cluster (overlay 'stage')
       if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
-      env:
-        GHCR_USERNAME: "${{ secrets.GHCR_USERNAME }}"
-        GHCR_TOKEN: "${{ secrets.GHCR_TOKEN }}"
-        BRANCH: "stage"
       run: |
         git_sha=$(git rev-parse --short "$GITHUB_SHA")
-        echo '{"ref": "main","inputs":{"overlay": "'$BRANCH'","tag":"'${{github.ref_name}}'"}}' >body
-        curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yml/dispatches' \
-          -H 'Authorization: Bearer ${{ secrets.GHCR_TOKEN }}' \
+        echo '{"ref": "main","inputs":{"overlay": "'${KUSTOMIZE_OVERLAY}'","tag":"'${CONTAINER_IMAGE_TAG}'","swversion": "'${VCELL_SWVERSION}'"}}' >body
+        curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yaml/dispatches' \
+          -H 'Authorization: Bearer ${{ secrets.ACTION_TOKEN }}' \
           -H 'Content-Type: application/json' \
           --data "@body"
     - name: deploy to swarm site
