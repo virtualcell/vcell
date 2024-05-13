@@ -11,27 +11,6 @@
 
 package org.vcell.util;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.net.InetSocketAddress;
-import java.net.URL;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Executors;
-
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.net.ssl.HttpsURLConnection;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
@@ -40,11 +19,24 @@ import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpRequest;
-import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.netty.handler.codec.http.*;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.net.ssl.HttpsURLConnection;
+import java.io.*;
+import java.math.BigDecimal;
+import java.net.InetSocketAddress;
+import java.net.URL;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.Executors;
 
 /**
  * Insert the type's description here.
@@ -82,24 +74,18 @@ public final class BeanUtils {
         return vcellDynamicProps;
     }
 
-    public static synchronized void updateDynamicClientProperties(){
+    public static synchronized void updateDynamicClientProperties(URL vcell_dynamic_properties_url) {
         Map<String, String> temp = new TreeMap<>();
         HttpsURLConnection conn;
-        //"https://vcell.org/webstart/dynamicClientProperties.txt"
 
         try {
-            //HttpURLConnection conn = new HttpURLConnection(new GetMethod(), new URL("http://dockerbuild:8080"));
-            //https://vcell.org/webstart/vcell_dynamic_properties.csv
-//			HttpURLConnection conn = (HttpURLConnection)(new URL("http://dockerbuild:8080")).openConnection();
-            conn = (HttpsURLConnection) (new URL("https://vcell.org/webstart/vcell_dynamic_properties.csv")).openConnection();
+            conn = (HttpsURLConnection) vcell_dynamic_properties_url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(5000);
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
                 Iterable<CSVRecord> records = CSVFormat.DEFAULT
-//	          .withHeader(HEADERS)
-//	          .withFirstRecordAsHeader()
                         .withIgnoreSurroundingSpaces()
                         .withQuote('"')
                         .parse(br);

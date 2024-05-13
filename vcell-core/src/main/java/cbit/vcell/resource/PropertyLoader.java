@@ -146,7 +146,8 @@ public class PropertyLoader {
 	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",ValueType.GEN);
 	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",ValueType.URL);
 	
-	// VCell special URLs
+	// VCell special URLs which are loaded from web server at path DYNAMIC_PROPERTIES_URL_PATH (default /vcell_dynamic_properties.csv)
+	public static final String DYNAMIC_PROPERTIES_URL_PATH	= record("vcell.dynamicPropertiesUrlPath",ValueType.GEN);
 	public static final String COPASI_WEB_URL				= record("vcell.COPASI_WEB_URL",ValueType.URL);
 	public static final String SMOLDYN_WEB_URL				= record("vcell.SMOLDYN_WEB_URL",ValueType.URL);
 	public static final String BIONETGEN_WEB_URL			= record("vcell.BIONETGEN_WEB_URL",ValueType.URL);
@@ -177,7 +178,7 @@ public class PropertyLoader {
 	public static final String BIOPAX_RSABIO65_URL			= record("vcell.BIOPAX_RSABIO65_URL",ValueType.URL);
 	public static final String BIOPAX_RKEGGR01026_URL		= record("vcell.BIOPAX_RKEGGR01026_URL",ValueType.URL);
 	public static final String COMSOL_URL					= record("vcell.COMSOL_URL",ValueType.URL);
-	
+
 	//
 	public static final String databaseThreadsProperty		= record("vcell.databaseThreads",ValueType.GEN);
 	public static final String exportdataThreadsProperty	= record("vcell.exportdataThreads",ValueType.GEN);
