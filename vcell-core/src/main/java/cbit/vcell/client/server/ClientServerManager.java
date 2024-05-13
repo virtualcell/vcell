@@ -35,6 +35,8 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
 
 import java.io.IOException;
+import java.net.URL;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2004 4:31:18 PM)
@@ -373,7 +375,15 @@ public void connectAs(InteractiveContext requester, String user, DigestedPasswor
  * Creation date: (5/12/2004 4:48:13 PM)
  */
 private VCellConnection connectToServer(InteractiveContext requester,boolean bShowErrors) {
-	BeanUtils.updateDynamicClientProperties();
+	try {
+		// see static-files-config ConfigMap for definitions of dynamic properties as deployed
+		String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
+		String webapp_base_url = "https://" + getClientServerInfo().getApihost() + ":" + getClientServerInfo().getApiport();
+		URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
+		BeanUtils.updateDynamicClientProperties(vcell_dynamic_client_properties_url);
+	} catch (Exception e) {
+		lg.error(e.getMessage(), e);
+	}
 	VCellThreadChecker.checkRemoteInvocation();
 
 	VCellConnection newVCellConnection = null;

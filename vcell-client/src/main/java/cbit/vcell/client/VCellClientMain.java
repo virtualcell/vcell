@@ -35,6 +35,7 @@ import picocli.CommandLine.Parameters;
 import javax.swing.*;
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
@@ -118,7 +119,11 @@ public class VCellClientMain implements Callable<Integer> {
         Injector injector = Guice.createInjector(new VCellClientModule(apihost, apiport, pathPrefixV0));
         this.vcellClient = injector.getInstance(VCellClient.class);
 
-        Thread dynamicClientPropertiesThread = new Thread(() -> BeanUtils.updateDynamicClientProperties());
+        // see static-files-config ConfigMap for definitions of dynamic properties as deployed
+        String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
+        String webapp_base_url = "https://" + apihost + ":" + apiport;
+        URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
+        Thread dynamicClientPropertiesThread = new Thread(() -> BeanUtils.updateDynamicClientProperties(vcell_dynamic_client_properties_url));
         dynamicClientPropertiesThread.setDaemon(false); // non-daemon thread to keep JVM running
         dynamicClientPropertiesThread.start();
 
