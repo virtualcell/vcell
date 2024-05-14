@@ -185,6 +185,10 @@ public class UserRestDB {
         }
     }
 
+    public void sendOldLegacyPassword(String userID) throws SQLException, DataAccessException {
+        adminDBTopLevel.sendLostPassword(userID, true);
+    }
+
     public ApiClient getAPIClient() throws DataAccessException {
         try {
             return adminDBTopLevel.getApiClient(DEFAULT_CLIENTID, true);

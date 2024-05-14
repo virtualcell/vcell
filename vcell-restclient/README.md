@@ -125,6 +125,8 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication
+*UsersResourceApi* | [**forgotLegacyPassword**](docs/UsersResourceApi.md#forgotLegacyPassword) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+*UsersResourceApi* | [**forgotLegacyPasswordWithHttpInfo**](docs/UsersResourceApi.md#forgotLegacyPasswordWithHttpInfo) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**getLegacyApiToken**](docs/UsersResourceApi.md#getLegacyApiToken) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 *UsersResourceApi* | [**getLegacyApiTokenWithHttpInfo**](docs/UsersResourceApi.md#getLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 *UsersResourceApi* | [**getMappedUser**](docs/UsersResourceApi.md#getMappedUser) | **GET** /api/v1/users/mappedUser | Get mapped VCell identity

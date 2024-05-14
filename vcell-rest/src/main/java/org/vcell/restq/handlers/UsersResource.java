@@ -20,6 +20,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.List;
 
 @Path("/api/v1/users")
@@ -137,6 +138,27 @@ public class UsersResource {
         ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), vcellUser);
         return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
     }
+
+    @POST
+    @Path("/forgotLegacyPassword")
+    @Operation(operationId = "forgotLegacyPassword", summary = "The end user has forgotten the legacy password they used for VCell, so they will be emailed it.")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Legacy password sent in email"),
+            @APIResponse(responseCode = "401", description = "Need to login to Auth0"),
+            @APIResponse(responseCode = "500", description = "Internal Error")
+    })
+    public void forgotLegacyPassword(@QueryParam("userID") String userID) throws DataAccessException {
+        if(securityIdentity.isAnonymous()){
+            throw new WebApplicationException("securityIdentity is missing jwt", Response.Status.UNAUTHORIZED);
+        }
+        try {
+            userRestDB.sendOldLegacyPassword(userID);
+        } catch (SQLException e) {
+            throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
 
     public record AccesTokenRepresentationRecord(
             String token,
