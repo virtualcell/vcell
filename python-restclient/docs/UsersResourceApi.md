@@ -4,6 +4,7 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**forgot_legacy_password**](UsersResourceApi.md#forgot_legacy_password) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 [**get_legacy_api_token**](UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 [**get_mapped_user**](UsersResourceApi.md#get_mapped_user) | **GET** /api/v1/users/mappedUser | Get mapped VCell identity
 [**get_me**](UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user
@@ -11,6 +12,70 @@ Method | HTTP request | Description
 [**map_user**](UsersResourceApi.md#map_user) | **POST** /api/v1/users/mapUser | map vcell user
 [**unmap_user**](UsersResourceApi.md#unmap_user) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 
+
+# **forgot_legacy_password**
+> forgot_legacy_password(user_id=user_id)
+
+The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcellapi-test.cam.uchc.edu"
+)
+
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.UsersResourceApi(api_client)
+    user_id = 'user_id_example' # str |  (optional)
+
+    try:
+        # The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+        api_instance.forgot_legacy_password(user_id=user_id)
+    except Exception as e:
+        print("Exception when calling UsersResourceApi->forgot_legacy_password: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **user_id** | **str**|  | [optional] 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Legacy password sent in email |  -  |
+**401** | Need to login to Auth0 |  -  |
+**500** | Internal Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **get_legacy_api_token**
 > AccesTokenRepresentationRecord get_legacy_api_token()

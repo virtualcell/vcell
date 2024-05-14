@@ -99,6 +99,7 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
+*UsersResourceApi* | [**forgot_legacy_password**](docs/UsersResourceApi.md#forgot_legacy_password) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**get_legacy_api_token**](docs/UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 *UsersResourceApi* | [**get_mapped_user**](docs/UsersResourceApi.md#get_mapped_user) | **GET** /api/v1/users/mappedUser | Get mapped VCell identity
 *UsersResourceApi* | [**get_me**](docs/UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user

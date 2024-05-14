@@ -240,6 +240,29 @@ paths:
       tags:
       - Users Resource
       x-accepts: application/json
+  /api/v1/users/forgotLegacyPassword:
+    post:
+      operationId: forgotLegacyPassword
+      parameters:
+      - explode: true
+        in: query
+        name: userID
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          description: Legacy password sent in email
+        "401":
+          description: Need to login to Auth0
+        "500":
+          description: Internal Error
+      summary: "The end user has forgotten the legacy password they used for VCell,\
+        \ so they will be emailed it."
+      tags:
+      - Users Resource
+      x-accepts: application/json
   /api/v1/users/mapUser:
     post:
       operationId: mapUser
