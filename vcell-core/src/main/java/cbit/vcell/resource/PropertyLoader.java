@@ -124,6 +124,7 @@ public class PropertyLoader {
 	public static final String vcellServerPrefixV0			= record("vcell.serverPrefix.v0",ValueType.GEN);
 	public static final String sslIgnoreHostMismatch		= record("vcell.ssl.ignoreHostMismatch",ValueType.BOOL);
 	public static final String sslIgnoreCertProblems		= record("vcell.ssl.ignoreCertProblems",ValueType.BOOL);
+	public static final String isHTTP						= record("vcell.ssl.isHTTP",ValueType.BOOL);
 
 	//Python properties
 	public static final String pythonExe					= record("vcell.python.executable",ValueType.EXE);
