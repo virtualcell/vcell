@@ -46,72 +46,24 @@ case $VCELL_SITE in
 		VCELL_DEBUG_PORT_BASE=5000
 		_applicationId="1471-8022-1038-5553"
 		;;
-	BETA)
-		_site_port_offset=1
-		VCELL_API_HOST_EXTERNAL=vcellapi.cam.uchc.edu
-		VCELL_S3_EXPORT_BASEURL=https://vcellapi.cam.uchc.edu
+	ALPHA)
+		_site_port_offset=2
+		VCELL_API_HOST_EXTERNAL=vcell-dev.cam.uchc.edu
+		VCELL_S3_EXPORT_BASEURL=https://vcell-dev.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		VCELL_API_PREFIX_V0="/api/v0"
 		VCELL_API_PREFIX_V1="/api/v1"
-		VCELL_DEBUG_PORT_BASE=5010
-		_applicationId="1471-8022-1038-5552"
-		;;
-	ALPHA)
-		_site_port_offset=2
-		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
-		VCELL_S3_EXPORT_BASEURL=https://vcellapi-beta.cam.uchc.edu
-		VCELL_API_PORT_EXTERNAL=8080
-		VCELL_API_PREFIX_V0="/api/v0"
-		VCELL_API_PREFIX_V1="/api/v1"
-		VCELL_DEBUG_PORT_BASE=5020
 		_applicationId="1471-8022-1038-5554"
 		;;
 	TEST)
 		_site_port_offset=3
 		# VCELL_API_PORT_EXTERNAL=8081
-		VCELL_API_HOST_EXTERNAL=vcellapi-test.cam.uchc.edu
-		VCELL_S3_EXPORT_BASEURL=https://vcellapi-test.cam.uchc.edu
+		VCELL_API_HOST_EXTERNAL=vcell-stage.cam.uchc.edu
+		VCELL_S3_EXPORT_BASEURL=https://vcell-stage.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
 		VCELL_API_PREFIX_V0="/api/v0"
 		VCELL_API_PREFIX_V1="/api/v1"
-		VCELL_DEBUG_PORT_BASE=5030
 		_applicationId="1471-8022-1038-5555"
-		;;
-	TEST2)
-		_site_port_offset=4
-		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
-		VCELL_API_PORT_EXTERNAL=8082
-		VCELL_API_PREFIX_V0="/api/v0"
-		VCELL_API_PREFIX_V1="/api/v1"
-		VCELL_DEBUG_PORT_BASE=5040
-		_applicationId="1471-8022-1038-5556"
-		;;
-	TEST3)
-		_site_port_offset=5
-		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
-		VCELL_API_PORT_EXTERNAL=8083
-		VCELL_API_PREFIX_V0="/api/v0"
-		VCELL_API_PREFIX_V1="/api/v1"
-		VCELL_DEBUG_PORT_BASE=5050
-		_applicationId="1471-8022-1038-5557"
-		;;
-	TEST4)
-		_site_port_offset=6
-		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
-		VCELL_API_PORT_EXTERNAL=8084
-		VCELL_API_PREFIX_V0="/api/v0"
-		VCELL_API_PREFIX_V1="/api/v1"
-		VCELL_DEBUG_PORT_BASE=5060
-		_applicationId="1471-8022-1038-5558"
-		;;
-	TEST5)
-		_site_port_offset=7
-		VCELL_API_HOST_EXTERNAL=vcellapi-beta.cam.uchc.edu
-		VCELL_API_PORT_EXTERNAL=8085
-		VCELL_API_PREFIX_V0="/api/v0"
-		VCELL_API_PREFIX_V1="/api/v1"
-		VCELL_DEBUG_PORT_BASE=5070
-		_applicationId="1471-8022-1038-5559"
 		;;
 	*)
 		printf 'ERROR: Unknown site: %s\n' "$1" >&2
@@ -121,7 +73,6 @@ esac
 VCELL_DB_URL="jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1"
 VCELL_DB_DRIVER="oracle.jdbc.driver.OracleDriver"
 VCELL_DB_USER="vcell"
-VCELL_DEBUG_PORT_BASE=5000
 VCELL_JMS_SIM_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_MONGO_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_BATCH_HOST="hpc-ext-1.cam.uchc.edu,hpc-ext-2.cam.uchc.edu,hpc-ext-3.cam.uchc.edu,hpc-ext-4.cam.uchc.edu"
@@ -140,13 +91,6 @@ VCELL_SLURM_TMPDIR=/scratch/vcell
 VCELL_SLURM_LOCAL_SINGULARITY_DIR=/local/singularityImages
 VCELL_SLURM_CENTRAL_SINGULARITY_DIR=/share/apps/vcell3/singularityImages
 VCELL_SLURM_SINGULARITY_MODULE_NAME=singularity/vcell-3.10.0
-
-#
-# VCELL_API_PORT_EXTERNAL uses 443 for Beta and Rel (but on different machines/swarm clusters)
-#     ALPHA, TEST, TEST2, TEST3, etc. uses ports starting with 8080
-#     Note: port 8080 is currently needed by vcell.org website.
-#
-
 
 VCELL_JMS_SIM_PORT_EXTERNAL=$((61616 + _site_port_offset))
 VCELL_JMS_SIM_RESTPORT_EXTERNAL=$((8161 + _site_port_offset))
@@ -173,7 +117,7 @@ VCELL_SSH_CMD_RESTORE_TIMEOUT=5
 #
 # write out the environment file to be for:
 # 1. deployment actions (e.g. deploy-action-swarm.sh or deploy-action-kubernetes.sh)
-# 2. runtime environment for the docker stack run command
+# 2. runtime environment for the docker stack run command (Docker swarm mode only, kubernetes uses ConfigMaps in vcell-fluxcd repo)
 #
 cat <<EOF >"$_outputfile"
 VCELL_API_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL

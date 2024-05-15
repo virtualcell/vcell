@@ -13,19 +13,15 @@ on:
       vcell_build:
         description: 'build number'
         required: true
-        default: '23'
+        default: '148'
       vcell_site:
-        description: 'rel or alpha or test'
+        description: 'rel or alpha or test (note rel is Swarm, alpha and test are Kubernetes)'
         required: true
         default: 'alpha'
       server_only:
         description: 'Deploy only the server components?'
         required: true
         default: 'false'
-      deployment_type:
-        description: 'swarm or kubernetes (choose kubernetes for vcell_site="test")'
-        required: true
-        default: 'swarm'
 jobs:
   build:
     name: Build client installers
@@ -48,7 +44,7 @@ jobs:
         	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Rel"" >> $GITHUB_ENV;\
         else if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then\
-         	echo "VCELL_MANAGER_NODE=vcellapi-beta.cam.uchc.edu" >> $GITHUB_ENV;\
+         	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
         	echo "VCELL_INSTALLER_REMOTE_DIR="/share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha"" >> $GITHUB_ENV;\
         else if [ "${{ github.event.inputs.vcell_site }}" == "test" ]; then\
          	echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV;\
@@ -212,7 +208,7 @@ jobs:
         set -ux
         mvn clean install -DskipTests
     - name: deploy installers and singularity to kubernetes site and web help to vcell.org
-      if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
+      if: ${{ github.event.inputs.vc == 'kubernetes' }}
       run: |
         set -ux
         cd docker/swarm
@@ -237,21 +233,24 @@ jobs:
           ./deploy-action-kubernetes.sh \
               --ssh-user ${{ secrets.CD_FULL_USER }} \
               --install-singularity  \
-              ${VCELL_MANAGER_NODE} \
+              ${VCELL_MANAGER_NODE} \ 
               ./${VCELL_CONFIG_FILE_NAME}
         fi
     - name: Capitalize first character of site name
       id: capitalize
       run: |
-        SITE="${{ github.event.inputs.vcell_site }}"
+        SITE="${{ github.event.inputs.vcell_site != 'rel' }}"
         SITE_CAPITALIZED="$(tr '[:lower:]' '[:upper:]' <<< ${SITE:0:1})${SITE:1}"
         VCELL_SWVERSION="${SITE_CAPITALIZED}_Version_${{ github.event.inputs.vcell_version }}_build_${{ github.event.inputs.vcell_build}}"
-        KUSTOMIZE_OVERLAY="stage"
+        KUSTOMIZE_OVERLAY='not-specified'
+        if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then KUSTOMIZE_OVERLAY="prod"; fi
+        if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then KUSTOMIZE_OVERLAY="dev"; fi
+        if [ "${{ github.event.inputs.vcell_site }}" == "test" ]; then KUSTOMIZE_OVERLAY="stage"; fi
         CONTAINER_IMAGE_TAG="${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build}}"
         echo "VCELL_SWVERSION=${VCELL_SWVERSION}" >> $GITHUB_ENV
         echo "KUSTOMIZE_OVERLAY=${KUSTOMIZE_OVERLAY}" >> $GITHUB_ENV
         echo "CONTAINER_IMAGE_TAG=${CONTAINER_IMAGE_TAG}" >> $GITHUB_ENV
-    - name: Call webhook to deploy to kubernetes cluster (overlay 'stage')
+    - name: Call webhook to deploy to kubernetes cluster (overlay 'prod', 'dev' or 'stage')
       if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
       run: |
         git_sha=$(git rev-parse --short "$GITHUB_SHA")
