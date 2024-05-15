@@ -43,7 +43,6 @@ case $VCELL_SITE in
 		VCELL_API_PORT_EXTERNAL=443
 		VCELL_API_PREFIX_V0=""
 		VCELL_API_PREFIX_V1=""
-		VCELL_DEBUG_PORT_BASE=5000
 		_applicationId="1471-8022-1038-5553"
 		;;
 	ALPHA)
@@ -73,6 +72,7 @@ esac
 VCELL_DB_URL="jdbc:oracle:thin:@vcell-oracle.cam.uchc.edu:1521/ORCLPDB1"
 VCELL_DB_DRIVER="oracle.jdbc.driver.OracleDriver"
 VCELL_DB_USER="vcell"
+VCELL_DEBUG_PORT_BASE=5000
 VCELL_JMS_SIM_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_MONGO_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
 VCELL_BATCH_HOST="hpc-ext-1.cam.uchc.edu,hpc-ext-2.cam.uchc.edu,hpc-ext-3.cam.uchc.edu,hpc-ext-4.cam.uchc.edu"
