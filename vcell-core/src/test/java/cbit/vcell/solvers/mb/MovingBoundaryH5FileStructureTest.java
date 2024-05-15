@@ -14,11 +14,16 @@
 
 package cbit.vcell.solvers.mb;
 
+import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import ncsa.hdf.object.*;
 import ncsa.hdf.object.h5.H5File;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.util.CastingUtils;
+
+import java.io.File;
 
 /**
  * <p>
@@ -45,10 +50,16 @@ import org.vcell.util.CastingUtils;
  * @version 2.4
  */
 @Tag("Fast")
-public class MovingBoundaryH5FileStructureTest extends MovingBoundaryH5Client {
-    private static String fname = FILE;
+public class MovingBoundaryH5FileStructureTest {
+    private static String fname = "nformat2.h5";
     private static long[] dims2D = {20, 10};
     private static long[] dims3D = {20, 10, 5};
+
+    @BeforeAll
+    public static void setup() {
+        PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+        NativeLib.HDF5.load();
+    }
 
     //public static void main(String args[]) throws Exception {
     @Test

@@ -14,25 +14,32 @@
 
 package cbit.vcell.solvers.mb;
 
+import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import cern.colt.Arrays;
 import ncsa.hdf.object.FileFormat;
 import ncsa.hdf.object.Group;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 
+import java.io.File;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Disabled
 @Tag("Fast")
-public class MovingBoundardyVH5PathTest extends MovingBoundaryH5Client {
-    private static String fname  = FILE;
+public class MovingBoundaryVH5PathTest {
+    private static String fname  = "nformat2.h5";
 	private FileFormat testFile = null;
 	private Group root = null;
 
     @BeforeEach
     public void setup( ) throws Exception {
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+		NativeLib.HDF5.load();
 
-    		// retrieve an instance of H5File
+
+		// retrieve an instance of H5File
     		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
 
     		if (fileFormat == null) {
@@ -65,25 +72,25 @@ public class MovingBoundardyVH5PathTest extends MovingBoundaryH5Client {
     	// create the file and add groups ans dataset into the file
     	try {
     		Group root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
-    		MovingBoundardyVH5Path vpath = new MovingBoundardyVH5Path(root, "elements" ,"volume");
+    		MovingBoundaryVH5Path vpath = new MovingBoundaryVH5Path(root, "elements" ,"volume");
     		System.out.println(vpath.foundType());
-    		MovingBoundardyVH5TypedPath<double[]> tpath = new MovingBoundardyVH5TypedPath<double[]>(root, double[].class,"elements" ,"volume");
+    		MovingBoundaryVH5TypedPath<double[]> tpath = new MovingBoundaryVH5TypedPath<double[]>(root, double[].class,"elements" ,"volume");
     		double[] e = tpath.get();
     		System.out.println(e[0]);
-    		MovingBoundardyVH5Path bpPath = new MovingBoundardyVH5Path(root, "elements" ,"boundaryPosition");
+    		MovingBoundaryVH5Path bpPath = new MovingBoundaryVH5Path(root, "elements" ,"boundaryPosition");
     		Object data = bpPath.getData();
     		System.out.println(data.getClass().getSimpleName());
-    		MovingBoundardyVH5Path vpPath = new MovingBoundardyVH5Path(root, "elements" ,"volumePoints");
+    		MovingBoundaryVH5Path vpPath = new MovingBoundaryVH5Path(root, "elements" ,"volumePoints");
     		data = vpPath.getData();
     		System.out.println(data.getClass().getSimpleName());
 
 //    		MovingBoundardyVH5TypedPath<String[]> spath = new MovingBoundardyVH5TypedPath<String[]>(root, String[].class,"elements" ,"front description");
-    		MovingBoundardyVH5TypedPath<String> spath = new MovingBoundardyVH5TypedPath<String>(root, String.class,"elements" ,"front description");
+    		MovingBoundaryVH5TypedPath<String> spath = new MovingBoundaryVH5TypedPath<String>(root, String.class,"elements" ,"front description");
 //    		String[] sdata = spath.get();
 //    		System.out.println(sdata[0]);
     		System.out.println(spath.get( ));
 
-    		MovingBoundardyVH5Path xpath = new MovingBoundardyVH5Path(root, "elements" ,"front description");
+    		MovingBoundaryVH5Path xpath = new MovingBoundaryVH5Path(root, "elements" ,"front description");
     		Object o = xpath.getData();
     		System.out.println(o);
     		dtype("elements","endX");
@@ -94,9 +101,9 @@ public class MovingBoundardyVH5PathTest extends MovingBoundaryH5Client {
     		dtype("solverTimeStep");
     		dtype("timeStep");
     		dtype("timeStepTimes");
-			MovingBoundardyVH5TypedPath<int[]> ipath = new MovingBoundardyVH5TypedPath<int[]>(root, int[].class,"lastTimeIndex");
+			MovingBoundaryVH5TypedPath<int[]> ipath = new MovingBoundaryVH5TypedPath<int[]>(root, int[].class,"lastTimeIndex");
     		System.out.println(Arrays.toString(ipath.get()));
-			MovingBoundardyVH5TypedPath<long[]> lpath = new MovingBoundardyVH5TypedPath<long[]>(root, long[].class,"elements","numX");
+			MovingBoundaryVH5TypedPath<long[]> lpath = new MovingBoundaryVH5TypedPath<long[]>(root, long[].class,"elements","numX");
     		System.out.println(Arrays.toString(lpath.get()));
 //			System.out.println("-------");
 //    		MovingBoundardyVH5TypedPath<H5ScalarDS> spath = new MovingBoundardyVH5TypedPath<H5ScalarDS>(root, H5ScalarDS.class,"endTime");
@@ -117,7 +124,7 @@ public class MovingBoundardyVH5PathTest extends MovingBoundaryH5Client {
     }
 
     private void dtype(String ...name) {
-		MovingBoundardyVH5TypedPath<double[]> dpath = new MovingBoundardyVH5TypedPath<double[]>(root, double[].class,name);
+		MovingBoundaryVH5TypedPath<double[]> dpath = new MovingBoundaryVH5TypedPath<double[]>(root, double[].class,name);
 		System.out.println(StringUtils.join(name,'/') + ' ' + Arrays.toString(dpath.get()));
     }
 
@@ -125,7 +132,7 @@ public class MovingBoundardyVH5PathTest extends MovingBoundaryH5Client {
     @Test
     public void badType () {
 		assertThrows(UnsupportedOperationException.class, () -> {
-			MovingBoundardyVH5TypedPath<int[]> ipath = new MovingBoundardyVH5TypedPath<int[]>(root, int[].class,"elements" ,"volume");
+			MovingBoundaryVH5TypedPath<int[]> ipath = new MovingBoundaryVH5TypedPath<int[]>(root, int[].class,"elements" ,"volume");
 			System.out.println(ipath);
 		});
 	}
@@ -133,7 +140,7 @@ public class MovingBoundardyVH5PathTest extends MovingBoundaryH5Client {
     @Test
     public void primType () {
 		assertThrows(UnsupportedOperationException.class, () -> {
-			MovingBoundardyVH5TypedPath<Integer> ipath = new MovingBoundardyVH5TypedPath<Integer>(root, int.class,"elements" ,"volume");
+			MovingBoundaryVH5TypedPath<Integer> ipath = new MovingBoundaryVH5TypedPath<Integer>(root, int.class,"elements" ,"volume");
 			System.out.println(ipath);
 		});
 	}
