@@ -208,7 +208,7 @@ jobs:
         set -ux
         mvn clean install -DskipTests
     - name: deploy installers and singularity to kubernetes site and web help to vcell.org
-      if: ${{ github.event.inputs.vc == 'kubernetes' }}
+      if: ${{ github.event.inputs.vcell_site != 'rel' }}
       run: |
         set -ux
         cd docker/swarm
@@ -239,7 +239,7 @@ jobs:
     - name: Capitalize first character of site name
       id: capitalize
       run: |
-        SITE="${{ github.event.inputs.vcell_site != 'rel' }}"
+        SITE="${{ github.event.inputs.vcell_site }}"
         SITE_CAPITALIZED="$(tr '[:lower:]' '[:upper:]' <<< ${SITE:0:1})${SITE:1}"
         VCELL_SWVERSION="${SITE_CAPITALIZED}_Version_${{ github.event.inputs.vcell_version }}_build_${{ github.event.inputs.vcell_build}}"
         KUSTOMIZE_OVERLAY='not-specified'
