@@ -1,20 +1,30 @@
 
 package cbit.vcell.solvers.mb;
 
+import cbit.vcell.resource.NativeLib;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solvers.mb.MovingBoundaryTypes.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.util.Arrays;
 
 @Disabled
 @Tag("Fast")
-public class MovingBoundaryResultTest extends MovingBoundaryH5Client {
-    private static String fname  = FILE;
+public class MovingBoundaryResultTest {
+    private static String fname  = "nformat2.h5";
 	MovingBoundaryReader mbr;
+
+	@BeforeAll
+	public static void setup() {
+		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
+		NativeLib.HDF5.load();
+	}
     public MovingBoundaryResultTest() {
 		Logger lg = LogManager.getLogger("ncsa");
 		mbr = new MovingBoundaryReader(fname);

@@ -17,9 +17,9 @@ import ncsa.hdf.object.h5.H5ScalarDS;
  * @param <T> type of returned data. primitives not supported, autoboxing not supported
  * @author GWeatherby
  */
-public class MovingBoundardyVH5TypedPath<T> extends MovingBoundardyVH5Path {
+public class MovingBoundaryVH5TypedPath<T> extends MovingBoundaryVH5Path {
 
-    public MovingBoundardyVH5TypedPath(Group g, Class<T> clzz, String... names){
+    public MovingBoundaryVH5TypedPath(Group g, Class<T> clzz, String... names){
         super(g, names);
         Objects.requireNonNull(clzz);
         if(clzz.isPrimitive()){

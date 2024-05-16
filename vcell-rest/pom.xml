@@ -100,7 +100,7 @@
     <dependency>
       <groupId>io.quarkiverse.itext</groupId>
       <artifactId>quarkus-itext</artifactId>
-      <version>3.0.5</version>
+      <version>${quarkus-itext.version}</version>
     </dependency>
     <dependency>
       <groupId>com.nimbusds</groupId>
@@ -137,6 +137,10 @@
         <exclusion>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.lowagie</groupId>
+          <artifactId>itext</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

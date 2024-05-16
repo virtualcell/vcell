@@ -1,14 +1,8 @@
 package org.vcell.auth;
 
 import cbit.vcell.resource.PropertyLoader;
-import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMKeyPair;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwk.RsaJwkGenerator;
@@ -24,12 +18,20 @@ import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
 import org.vcell.util.document.User;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,24 +65,25 @@ public class JWTUtils {
         }
         try {
             // Read public key from file
-            FileReader reader = new FileReader(publicKeyFilePath);
-            PEMParser pemParser = new PEMParser(reader);
-            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider(new BouncyCastleProvider());
-            PublicKey publicKey = converter.getPublicKey((org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) pemParser.readObject());
+            String publicKeyFromFile = Files.readString(Paths.get(publicKeyFilePath), Charset.defaultCharset());
+            String publicKeyEncoded = publicKeyFromFile
+                    .replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----","")
+                    .replace(System.lineSeparator(), "");
+            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyEncoded);
+            X509EncodedKeySpec publicSpec = new X509EncodedKeySpec(publicKeyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PublicKey publicKey = keyFactory.generatePublic(publicSpec);
 
             // Read private key from file
-            reader = new FileReader(privateKeyFilePath);
-            pemParser = new PEMParser(reader);
-            Object keyPairObject = pemParser.readObject();
-            final PrivateKeyInfo privateKeyInfo;
-            if (keyPairObject instanceof PEMKeyPair pemKeyPair) {
-                privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
-            } else if (keyPairObject instanceof org.bouncycastle.asn1.pkcs.PrivateKeyInfo pkcsPrivateKeyInfo) {
-                privateKeyInfo = pkcsPrivateKeyInfo;
-            } else {
-                throw new RuntimeException("Error reading private key file");
-            }
-            PrivateKey privateKey = converter.getPrivateKey(privateKeyInfo);
+            String privateKeyFromFile = Files.readString(Paths.get(privateKeyFilePath), Charset.defaultCharset());
+            String privateKeyEncoded = privateKeyFromFile
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----","")
+                    .replace(System.lineSeparator(), "");
+            byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyEncoded);
+            PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+            PrivateKey privateKey = keyFactory.generatePrivate(privateSpec);
 
             // Create RsaJsonWebKey
             RsaJsonWebKey rsaJsonWebKey = new RsaJsonWebKey((java.security.interfaces.RSAPublicKey) publicKey);
@@ -89,7 +92,7 @@ public class JWTUtils {
             rsaJsonWebKey.setKeyId("k1");
 
             JWTUtils.rsaJsonWebKey = rsaJsonWebKey;
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new RuntimeException("Error reading public/private key files", e);
         }
     }
