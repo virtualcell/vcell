@@ -125,6 +125,7 @@
 		<imagej2.version>2.3.0</imagej2.version>
 		<imagej.version>${imagej2.version}</imagej.version>
 		<itext.version>2.1.7</itext.version>
+		<quarkus-itext.version>3.0.5</quarkus-itext.version>
 		<jackson-annotations.version>2.15.2</jackson-annotations.version>
 		<jackson-core.version>2.15.2</jackson-core.version>
 		<jackson-databind.version>2.15.2</jackson-databind.version>
