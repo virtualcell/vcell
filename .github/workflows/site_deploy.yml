@@ -251,7 +251,7 @@ jobs:
         echo "KUSTOMIZE_OVERLAY=${KUSTOMIZE_OVERLAY}" >> $GITHUB_ENV
         echo "CONTAINER_IMAGE_TAG=${CONTAINER_IMAGE_TAG}" >> $GITHUB_ENV
     - name: Call webhook to deploy to kubernetes cluster (overlay 'prod', 'dev' or 'stage')
-      if: ${{ github.event.inputs.deployment_type == 'kubernetes' }}
+      if: ${{ github.event.inputs.vcell_site != 'rel' }}
       run: |
         git_sha=$(git rev-parse --short "$GITHUB_SHA")
         echo '{"ref": "main","inputs":{"overlay": "'${KUSTOMIZE_OVERLAY}'","tag":"'${CONTAINER_IMAGE_TAG}'","swversion": "'${VCELL_SWVERSION}'"}}' >body
@@ -260,7 +260,7 @@ jobs:
           -H 'Content-Type: application/json' \
           --data "@body"
     - name: deploy to swarm site
-      if: ${{ github.event.inputs.deployment_type == 'swarm' }}
+      if: ${{ github.event.inputs.vcell_site == 'rel' }}
       run: |
         set -ux
         cd docker/swarm
