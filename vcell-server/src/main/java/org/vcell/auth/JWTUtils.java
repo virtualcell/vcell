@@ -1,7 +1,6 @@
 package org.vcell.auth;
 
 import cbit.vcell.resource.PropertyLoader;
-import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
