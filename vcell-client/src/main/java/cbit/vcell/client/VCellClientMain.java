@@ -68,6 +68,11 @@ public class VCellClientMain implements Callable<Integer> {
     @Option(names = {"-console"}, type = Boolean.class, description = "Install4J parameter, ignored")
     private boolean _console = false;
     private VCellClient vcellClient;
+    @Option(names = {"--quarkus-api-host"}, hidden = true, description = "Quarkus API server host[:port]")
+    private String quarkusAPIHost = null;
+    @Option(names = {"--api-prefix-v1"}, description = "VCell api server path prefix for api version 1, " +
+            "defaults to /api/v1 if not specified")
+    private String pathPrefixV1 = "/api/v1";
 
 
     private VCellClientMain() {
@@ -115,8 +120,16 @@ public class VCellClientMain implements Callable<Integer> {
             apiport = Integer.parseInt(hostParts[1]);
         }
 
+        String[] quarkusHostParts = this.quarkusAPIHost.split(":");
+        String quarkusApiHost = quarkusHostParts[0];
+        int quarkusApiPort = 443;
+        if (quarkusHostParts.length == 2) {
+            quarkusApiPort = Integer.parseInt(quarkusHostParts[1]);
+        }
+
         PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
-        Injector injector = Guice.createInjector(new VCellClientModule(apihost, apiport, pathPrefixV0));
+        Injector injector = Guice.createInjector(new VCellClientModule(apihost, apiport, pathPrefixV0,
+                quarkusApiHost, quarkusApiPort, pathPrefixV1));
         this.vcellClient = injector.getInstance(VCellClient.class);
 
         // see static-files-config ConfigMap for definitions of dynamic properties as deployed

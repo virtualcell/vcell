@@ -169,8 +169,19 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 	@Inject
 	public RemoteProxyVCellConnectionFactory(
 			@Named(DependencyConstants.VCELL_API_HOST) String apihost,
+		  	@Named(DependencyConstants.VCELL_API_PORT) Integer apiport,
+		  	@Named(DependencyConstants.VCELL_API_PATH_PREFIX_V0) String pathPrefix_v0) {
+		this(apihost, apiport, pathPrefix_v0, apihost, apiport, "/api/v1");
+	}
+
+	@Inject
+	public RemoteProxyVCellConnectionFactory(
+			@Named(DependencyConstants.VCELL_API_HOST) String apihost,
 			@Named(DependencyConstants.VCELL_API_PORT) Integer apiport,
-			@Named(DependencyConstants.VCELL_API_PATH_PREFIX_V0) String pathPrefix_v0) {
+			@Named(DependencyConstants.VCELL_API_PATH_PREFIX_V0) String pathPrefix_v0,
+			@Named(DependencyConstants.VCELL_QUARKUS_API_HOST) String quarkusApiHost,
+			@Named(DependencyConstants.VCELL_QUARKUS_API_PORT) Integer quarkusApiPort,
+			@Named(DependencyConstants.VCELL_API_PATH_PREFIX_V1) String pathPrefix_v1) {
 		this.apihost = apihost;
 		this.apiport = apiport;
 		this.pathPrefix_v0 = pathPrefix_v0;
@@ -178,7 +189,9 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 		boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
 		boolean isHTTP = PropertyLoader.getBooleanProperty(PropertyLoader.isHTTP,false);
 		try {
-			this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, this.pathPrefix_v0, isHTTP, bIgnoreCertProblems, bIgnoreHostMismatch);
+			this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, this.pathPrefix_v0,
+					quarkusApiHost, quarkusApiPort, pathPrefix_v1,
+					isHTTP, bIgnoreCertProblems, bIgnoreHostMismatch);
 		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
 			throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
 		}
