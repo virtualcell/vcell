@@ -123,12 +123,12 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-		this(host, port, pathPrefix_v0, host, port, "/api/v1",
+		this(host, port, pathPrefix_v0, host, port,
 				bSkipSSL, bIgnoreCertProblems, bIgnoreHostMismatch);
 	}
 
 	public VCellApiClient(String host, int port, String pathPrefix_v0,
-						  String quarkusHost, int quarkusPort, String quarkusPathPrefix,
+						  String quarkusHost, int quarkusPort,
 						  boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
 		this.httpHost = new HttpHost(host,port,(bSkipSSL?"http":"https"));
 		this.pathPrefix_v0 = pathPrefix_v0;
@@ -137,7 +137,7 @@ public class VCellApiClient implements AutoCloseable {
 		this.bIgnoreHostMismatch = bIgnoreHostMismatch;
 		this.bSkipSSL = bSkipSSL;
         try {
-            this.quarkusURL = new URL((bSkipSSL?"http":"https"), quarkusHost, quarkusPort, quarkusPathPrefix);
+            this.quarkusURL = new URL((bSkipSSL?"http":"https"), quarkusHost, quarkusPort, "");
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
