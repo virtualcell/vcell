@@ -19,6 +19,7 @@ import org.jose4j.lang.JoseException;
 import org.vcell.util.document.User;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -30,6 +31,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,13 +65,23 @@ public class JWTUtils {
         }
         try {
             // Read public key from file
-            byte[] publicKeyBytes = Files.readAllBytes(Paths.get(publicKeyFilePath));
+            String publicKeyFromFile = Files.readString(Paths.get(publicKeyFilePath), Charset.defaultCharset());
+            String publicKeyEncoded = publicKeyFromFile
+                    .replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----","")
+                    .replace(System.lineSeparator(), "");
+            byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyEncoded);
             X509EncodedKeySpec publicSpec = new X509EncodedKeySpec(publicKeyBytes);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             PublicKey publicKey = keyFactory.generatePublic(publicSpec);
 
             // Read private key from file
-            byte[] privateKeyBytes = Files.readAllBytes(Paths.get(privateKeyFilePath));
+            String privateKeyFromFile = Files.readString(Paths.get(privateKeyFilePath), Charset.defaultCharset());
+            String privateKeyEncoded = privateKeyFromFile
+                    .replace("-----BEGIN PRIVATE KEY-----", "")
+                    .replace("-----END PRIVATE KEY-----","")
+                    .replace(System.lineSeparator(), "");
+            byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyEncoded);
             PKCS8EncodedKeySpec privateSpec = new PKCS8EncodedKeySpec(privateKeyBytes);
             PrivateKey privateKey = keyFactory.generatePrivate(privateSpec);
 
