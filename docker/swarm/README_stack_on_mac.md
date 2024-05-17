@@ -6,22 +6,13 @@ mvn clean install dependency:copy-dependencies -DskipTests=true
 popd
 ```
 ```bash
-pushd ../../pythonCopasiOpt/vcell-opt
-poetry install
-popd
-
-pushd ../swarm/vcell-admin
-poetry install
-popd
-
-pushd ../../pythonVtk
-poetry install
-popd
-
-pushd ../../vcell-cli-utils
-poetry install
-popd
-
+poetry install -C ../../vcell-cli-utils
+poetry install -C ../swarm/vcell-admin
+poetry install -C ../../pythonCopasiOpt/vcell-opt
+poetry install -C ../../pythonVtk
+poetry install -C ../../python-utils
+poetry install -C ../../python-restclient
+poetry install -C ../../pythonData
 ```
 
 2. Build and push Docker and Singularity containers (without building clients)
