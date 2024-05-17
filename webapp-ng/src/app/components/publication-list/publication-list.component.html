@@ -45,7 +45,7 @@
     <th mat-header-cell *matHeaderCellDef mat-sort-header> Biomodels</th>
     <td mat-cell *matCellDef="let row">
       <a *ngFor="let ref of row.biomodelRefs"
-         href="https://vcellapi-test.cam.uchc.edu/api/v0/biomodel/{{ref.bmKey}}">
+         href="/api/v0/biomodel/{{ref.bmKey}}">
         {{ ref.bmKey }}
       </a>
     </td>
@@ -54,7 +54,7 @@
     <th mat-header-cell *matHeaderCellDef mat-sort-header> Mathmodels</th>
     <td mat-cell *matCellDef="let row">
       <a *ngFor="let ref of row.mathmodelRefs"
-         href="https://vcellapi-test.cam.uchc.edu/api/v0/mathmodel/{{ref.mmKey}}">
+         href="/api/v0/mathmodel/{{ref.mmKey}}">
         {{ ref.mmKey }}
       </a>
     </td>
