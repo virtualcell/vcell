@@ -9,17 +9,17 @@ import {UsersResourceService} from "../../core/modules/openapi";
   styleUrls: ['./vcell-identity.component.less'],
 })
 export class VcellIdentityComponent implements OnInit {
-  vcellUserId: string | null;
+  vcellUserId: string | undefined;
   mapUser: UserLoginInfoForMapping = new class implements UserLoginInfoForMapping {
-    password: string;
-    userID: string;
+    password: string | undefined;
+    userID: string | undefined;
   };
   newUser: UserRegistrationInfo = new class implements UserRegistrationInfo {
-    userID: string;
-    organization: string;
-    title: string;
-    country: string;
-    emailNotification: boolean;
+    userID: string | undefined;
+    organization: string | undefined;
+    title: string | undefined;
+    country: string | undefined;
+    emailNotification: boolean | undefined;
   };
 
   constructor(
@@ -47,9 +47,12 @@ export class VcellIdentityComponent implements OnInit {
   }
 
   clearMappedUser() {
+    if (!this.vcellUserId) {
+      return;
+    }
     this.usersResourceService.unmapUser(this.vcellUserId).subscribe((response) => {
       if (response) {
-        this.vcellUserId = null;
+        this.vcellUserId = undefined;
       }
     }, error => {
       console.error('Error clearing VCell identity', error);

@@ -7,7 +7,7 @@ import { AuthService } from '@auth0/auth0-angular';
   styleUrls: ['./profile.component.css'],
 })
 export class ProfileComponent implements OnInit {
-  profileJson: string = null;
+  profileJson: string | undefined;
 
   constructor(public auth: AuthService) {}
 
