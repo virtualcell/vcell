@@ -1,23 +1,22 @@
 import {Injectable} from '@angular/core';
 import {BaseuriConfig} from './baseuri-config';
+import {HttpClient} from "@angular/common/http";
 
 @Injectable({
     providedIn: 'root'
 })
 export class BaseuriConfigService {
     private configData: BaseuriConfig | undefined;
+    private readonly configPath: string = '/assets/config/baseuri_config.json';
+
+    constructor(
+        private http: HttpClient
+    ) { }
 
     async loadConfiguration(): Promise<BaseuriConfig> {
         try {
-            return new Promise<BaseuriConfig>((resolve, reject) => {
-                try {
-                    const url = window.location.origin;
-                    this.configData = {baseUri: url};
-                    resolve(this.configData);
-                } catch (err) {
-                    reject(err);
-                }
-            });
+            this.configData = await this.http.get<BaseuriConfig>(this.configPath).toPromise();
+            return this.configData;
         } catch (err) {
             return Promise.reject(err);
         }
