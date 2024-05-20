@@ -29,12 +29,12 @@ public class InteractiveLogin {
 
     private InteractiveLogin() {
     }
-    public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri) throws URISyntaxException, IOException, ParseException {
+    public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri, boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException {
         URI successRedirectURI = new URI(apiBaseUri+"/login_success");
-        return login(clientID, authServerUri, apiBaseUri, successRedirectURI);
+        return login(clientID, authServerUri, apiBaseUri, successRedirectURI, ignoreSSLCertProblems);
     }
 
-    public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri, URI successRedirectURI) throws URISyntaxException, IOException, ParseException {
+    public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri, URI successRedirectURI, boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException {
 
         // Retrieve OpenID Provider Metadata
         URI metadata_endpoint = new URI(authServerUri + "/.well-known/openid-configuration");
@@ -84,7 +84,7 @@ public class InteractiveLogin {
         String accessToken = oidcTokens.getAccessToken().getValue();
         String idToken = oidcTokens.getIDTokenString();
 
-        AuthApiClient authApiClient = new AuthApiClient(apiBaseUri, oidcProviderMetadata.getTokenEndpointURI(), oidcTokens.getAccessToken(), oidcTokens.getRefreshToken());
+        AuthApiClient authApiClient = new AuthApiClient(apiBaseUri, oidcProviderMetadata.getTokenEndpointURI(), oidcTokens.getAccessToken(), oidcTokens.getRefreshToken(), ignoreSSLCertProblems);
         authApiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + idToken));
         return authApiClient;
     }
