@@ -11,8 +11,6 @@
 
 package org.vcell.util;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -27,15 +25,12 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.Executors;
 
 /**
@@ -54,56 +49,6 @@ public final class BeanUtils {
 
     public static final String FD_EXP_MESSG = "Didn't find field functions";
 
-
-    private static VCellDynamicProps vcellDynamicProps = new VCellDynamicProps(null);
-
-    public static class VCellDynamicProps {
-        private final Map<String, String> dynamicClientProperties;
-
-        private VCellDynamicProps(Map<String, String> dynamicClientProperties){
-            super();
-            this.dynamicClientProperties = dynamicClientProperties;
-        }
-
-        public String getProperty(String propertyName){
-            return (this.dynamicClientProperties == null ? null : this.dynamicClientProperties.get(propertyName));
-        }
-    }
-
-    public static synchronized VCellDynamicProps getDynamicClientProperties(){
-        return vcellDynamicProps;
-    }
-
-    public static synchronized void updateDynamicClientProperties(URL vcell_dynamic_properties_url) {
-        Map<String, String> temp = new TreeMap<>();
-        HttpsURLConnection conn;
-
-        try {
-            conn = (HttpsURLConnection) vcell_dynamic_properties_url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(5000);
-
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                Iterable<CSVRecord> records = CSVFormat.DEFAULT
-                        .withIgnoreSurroundingSpaces()
-                        .withQuote('"')
-                        .parse(br);
-                for(CSVRecord record : records){
-                    temp.put(record.get(0), record.get(1));
-                }
-                vcellDynamicProps = new VCellDynamicProps(temp);
-            }
-        } catch(IOException e){
-            lg.error("Exception occurred while creating Connection of HTTPS: " + e.getMessage(), e);
-            // We don't support throwing an exception...yet!
-            //TODO: Allow this to throw exception!
-        } catch(Exception e){
-            lg.error("Unexpected error occurred while getting client properties: " + e.getMessage(), e);
-            // We don't support throwing an exception...yet!
-            //TODO: Allow this to throw exception!
-        }
-    }
 
     public static class XYZ {
         public double x;
@@ -379,37 +324,6 @@ public final class BeanUtils {
             }
         }
         return responseHandler.getResponseContent().toString();
-    }
-
-    /**
-     * download without status message; see {@link #downloadBytes(URL, ClientTaskStatusSupport)}
-     */
-    public static String downloadBytesQuietly(final URL url){
-        return downloadBytes(url, new SilentTaskSupport());
-    }
-
-    private static class SilentTaskSupport implements ClientTaskStatusSupport {
-        @Override
-        public void setMessage(String message){
-        }
-
-        @Override
-        public void setProgress(int progress){
-        }
-
-        @Override
-        public int getProgress(){
-            return 0;
-        }
-
-        @Override
-        public boolean isInterrupted(){
-            return false;
-        }
-
-        @Override
-        public void addProgressDialogListener(ProgressDialogListener progressDialogListener){
-        }
     }
 
     public static String exceptionMessage(Throwable e){

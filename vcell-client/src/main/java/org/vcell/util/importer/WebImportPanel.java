@@ -12,7 +12,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.BioModelEditorRightSideTableModel;
@@ -25,13 +25,13 @@ public class WebImportPanel extends JPanel {
 	public static String[] urlStringOptions = new String[]{
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A000037&type=sbPAXExport",
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A001778&type=sbPAXExport",
-		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.SIGNALLING_QUERY_URL),
+		DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.SIGNALLING_QUERY_URL),
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A001852&type=sbPAXExport",
 //		"http://www.signaling-gateway.org/molecule/query?afcsid=A001046&type=sbPAXExport",
-		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RSABIO12_URL),
-		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RSABIO65_URL),
-		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RSABIO11452_URL),
-		BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RKEGGR01026_URL)};
+		DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RSABIO12_URL),
+		DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RSABIO65_URL),
+		DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RSABIO11452_URL),
+		DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BIOPAX_RKEGGR01026_URL)};
 	
 	private List<String> urlList = new ArrayList<String>(Arrays.asList(urlStringOptions));
 	//protected final JComboBox urlInput = new JComboBox(urlStringOptions);

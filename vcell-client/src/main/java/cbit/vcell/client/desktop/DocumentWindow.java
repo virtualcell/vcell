@@ -40,6 +40,7 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import cbit.vcell.client.data.ExportedDataViewer;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.apache.commons.io.FileUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.client.logicalwindow.LWTopFrame;
@@ -2167,28 +2168,28 @@ private void initialize() {
  */
 private void invokeOnlineHelp() {
 
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL),
-		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL)+" for Online Help");
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL),
+		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL)+" for Online Help");
 }
 private void invokeOnlineSupport() {
 
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL),
-		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL)+" for Online Support");
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL),
+		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL)+" for Online Support");
 }
 private void invokeDiscussionGroup() {
 
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL),
-		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL)+" for Discussion Group");
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL),
+		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL)+" for Discussion Group");
 }
 private void invokeManagePermissions() {
 
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL),
-		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL)+" for instructions on how to change permissions to your Model");
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL),
+		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL)+" for instructions on how to change permissions to your Model");
 }
 private void invokeOnlinePublish() {
 
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL),
-		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+" for instructions on how to Publish your Model");
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL),
+		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+" for instructions on how to Publish your Model");
 }
 
 

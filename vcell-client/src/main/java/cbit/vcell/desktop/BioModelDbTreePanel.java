@@ -24,11 +24,9 @@ import javax.swing.JSeparator;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.GroupAccessAll;
-import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
@@ -563,8 +561,8 @@ private void onlinePublish(java.awt.event.ActionEvent arg1) {
 }
 private void invokeOnlinePublish() {
 
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL),
-		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+" for instructions on how to Publish your Model");
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL),
+		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+" for instructions on how to Publish your Model");
 }
 
 /**

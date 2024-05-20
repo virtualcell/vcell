@@ -37,7 +37,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -50,10 +49,10 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.UnzipUtility;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -240,7 +239,7 @@ public class BioModelsNetPanel extends DocumentEditorSubPanel {
 		Files.createDirectories(tempDirPath);	// temp may not be there, we make it
 		
 		byte[] responseContent = null;
-		URL url = new URL(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_DOWNLOAD_URL) + id);
+		URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_DOWNLOAD_URL) + id);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		InputStream is = null;
 		try {

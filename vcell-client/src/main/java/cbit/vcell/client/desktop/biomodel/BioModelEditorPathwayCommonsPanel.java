@@ -41,6 +41,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.sbpax.util.StringUtil;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayIOUtil;
@@ -315,7 +316,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	public void gotoPathway() {
 		Pathway pathway = computeSelectedPathway();
 		if (pathway != null) {
-			String url = BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_QUERY_URL) + pathway.primaryId();
+			String url = DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_QUERY_URL) + pathway.primaryId();
 			if (url != null) {
 				DialogUtils.browserLauncher(BioModelEditorPathwayCommonsPanel.this, url, "failed to open " + url);
 			}
@@ -330,7 +331,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		AsynchClientTask task1 = new AsynchClientTask("Importing pathway '" + pathway.name() + "'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(final Hashtable<String, Object> hashTable) throws Exception {
-				final URL url = new URL(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?" 
+				final URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?"
 						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.get_record_by_cpath_id 
 						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
 						+ "&" + PathwayCommonsKeyword.q + "=" + pathway.primaryId()
@@ -407,7 +408,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				URL url = new URL(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?" 
+				URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?"
 						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.search 
 						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
 						+ "&" + PathwayCommonsKeyword.q + "=" + URLEncoder.encode(searchText, "UTF-8")

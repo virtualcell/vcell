@@ -23,7 +23,7 @@ import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.gui.GuiUtils;
@@ -146,7 +146,7 @@ private JTree getJTree1() {
 						try {
 							if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
 								PublicationInfo info = (PublicationInfo)node.getUserObject();
-								Desktop.getDesktop().browse(new URI(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi()));
+								Desktop.getDesktop().browse(new URI(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi()));
 							} else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoUrl".equals(node.getRenderHint("type"))) {
 								PublicationInfo info = (PublicationInfo)node.getUserObject();
 								Desktop.getDesktop().browse(new URI(info.getUrl()));

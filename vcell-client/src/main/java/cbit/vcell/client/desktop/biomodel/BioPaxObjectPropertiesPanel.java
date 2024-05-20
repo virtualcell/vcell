@@ -37,6 +37,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.BioPaxObject;
@@ -52,8 +53,6 @@ import org.vcell.pathway.GroupObject;
 import org.vcell.pathway.Interaction;
 import org.vcell.pathway.InteractionParticipant;
 import org.vcell.pathway.InteractionVocabulary;
-import org.vcell.pathway.PathwayEvent;
-import org.vcell.pathway.PathwayListener;
 import org.vcell.pathway.PhysicalEntity;
 import org.vcell.pathway.Protein;
 import org.vcell.pathway.PublicationXref;
@@ -73,7 +72,6 @@ import org.vcell.relationship.PathwayMapping;
 import org.vcell.relationship.RelationshipEvent;
 import org.vcell.relationship.RelationshipListener;
 import org.vcell.relationship.RelationshipObject;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -351,7 +349,7 @@ private void initialize() {
 							SBEntity sbE = (SBEntity)bioPaxObject;
 							if(sbE.getID().contains("kineticLaw")) {
 //								String url = "http://sabio.h-its.org/sabioRestWebServices/kineticLaws/" + sbE.getID().substring(sbE.getID().indexOf("kineticLaw") + 10);
-								String url = BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.SABIO_DIRECT_IFRAME_URL) + sbE.getID().substring(sbE.getID().indexOf("kineticLaw") + 10);
+								String url = DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.SABIO_DIRECT_IFRAME_URL) + sbE.getID().substring(sbE.getID().indexOf("kineticLaw") + 10);
 								DialogUtils.browserLauncher(BioPaxObjectPropertiesPanel.this, url, "Wrong URL.");
 							}
 						}
