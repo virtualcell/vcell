@@ -378,10 +378,7 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 		String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
 		String webapp_base_url = "https://" + getClientServerInfo().getApihost() + ":" + getClientServerInfo().getApiport();
 		URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
-		boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
-		boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
-		boolean ignoreCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
-		DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url, ignoreCertProblems);
+		DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url);
 	} catch (Exception e) {
 		lg.error(e.getMessage(), e);
 	}

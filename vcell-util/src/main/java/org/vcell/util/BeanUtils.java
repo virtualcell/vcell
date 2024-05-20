@@ -13,11 +13,6 @@ package org.vcell.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFuture;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.handler.codec.http.*;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -27,11 +22,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.*;
 import java.math.BigDecimal;
-import java.net.InetSocketAddress;
-import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.concurrent.Executors;
 
 /**
  * Insert the type's description here.
@@ -173,157 +165,6 @@ public final class BeanUtils {
             }
         }
         return stringBuffer.toString();
-    }
-
-
-    private enum FLAG_STATE {START, FINISHED, INTERRUPTED, FAILED}
-
-    /**
-     * download bytes from URL; optionally provide progress reports; time out after 2 minutes. Note
-     * returned string could be an error message from webserver
-     *
-     * @param url                     not null
-     * @param clientTaskStatusSupport could be null, in which case default status messages printed
-     * @return downloadedString
-     * @throws RuntimeException somehow
-     */
-    public static String downloadBytes(final URL url, final ClientTaskStatusSupport clientTaskStatusSupport){
-        final ChannelFuture[] connectFuture = new ChannelFuture[1];
-        final ChannelFuture[] closeFuture = new ChannelFuture[1];
-        final Exception[] exception = new Exception[1];
-        final FLAG_STATE[] bFlag = new FLAG_STATE[]{FLAG_STATE.START};
-        final HttpResponseHandler responseHandler = new HttpResponseHandler(clientTaskStatusSupport, url.getHost());
-        final Thread readBytesThread = new Thread(new Runnable() {
-            ClientBootstrap bootstrap = null;
-
-            public void run(){
-                try {
-                    bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
-
-                    // Set up the event pipeline factory.
-                    bootstrap.setPipelineFactory(new HttpClientPipelineFactory(responseHandler));
-//					int connectionTimeout = 1000 * 60 * 5;
-//					bootstrap.setOption("connectTimeoutMillis", connectionTimeout);
-
-                    // Start the connection attempt.
-                    int port = url.getPort();
-                    if(port <= 0){
-                        port = 80;
-                    }
-
-                    String host = url.getHost();
-                    connectFuture[0] = bootstrap.connect(new InetSocketAddress(host, port));
-
-                    // Wait until the connection attempt succeeds or fails.
-                    connectFuture[0].awaitUninterruptibly();
-
-                    // Now we are sure the future is completed.
-                    // assert future.isDone();
-
-                    if(connectFuture[0].isCancelled()){
-                        bFlag[0] = FLAG_STATE.INTERRUPTED;
-                        return;
-                    } else if(!connectFuture[0].isSuccess()){
-                        connectFuture[0].getCause().printStackTrace();
-                        if(connectFuture[0].getCause() instanceof Exception){
-                            throw (Exception) connectFuture[0].getCause();
-                        } else {
-                            throw new RuntimeException(exceptionMessage(connectFuture[0].getCause()));
-                        }
-                    } // else: Connection established successfully
-
-
-                    // Prepare the HTTP request.
-                    HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url.toURI().toASCIIString());
-                    request.setHeader(HttpHeaders.Names.HOST, host);
-                    request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-                    request.setHeader(HttpHeaders.Names.ACCEPT_ENCODING, HttpHeaders.Values.GZIP);
-
-                    Channel channel = connectFuture[0].getChannel();
-
-                    // Send the HTTP request.
-                    channel.write(request);
-
-                    // Wait for the server to close the connection.
-                    closeFuture[0] = channel.getCloseFuture();
-
-                    closeFuture[0].awaitUninterruptibly();
-
-                    if(closeFuture[0].isCancelled()){
-                        bFlag[0] = FLAG_STATE.INTERRUPTED;
-                        return;
-                    } else if(!closeFuture[0].isSuccess()){
-                        closeFuture[0].getCause().printStackTrace();
-                        if(closeFuture[0].getCause() instanceof Exception){
-                            throw (Exception) closeFuture[0].getCause();
-                        } else {
-                            throw new RuntimeException(exceptionMessage(closeFuture[0].getCause()));
-                        }
-                    } // else Connection established successfully
-
-                    bFlag[0] = FLAG_STATE.FINISHED;
-
-                } catch(Exception e){
-                    lg.error("Error while downloading bytes from server: " + e.getMessage(), e);
-                    bFlag[0] = FLAG_STATE.FAILED;
-                    exception[0] = new RuntimeException("contacting outside server " + url + " failed.\n" + exceptionMessage(e));
-                } finally {
-                    if(bootstrap != null){
-                        // Shut down executor threads to exit.
-                        bootstrap.releaseExternalResources();
-                    }
-                }
-            }
-        }); // End anonymous Thread implementation
-        readBytesThread.start();
-
-        //Monitor content
-        long maximumElapsedTime_ms = 1000 * 60 * 2;
-        long startTime_ms = System.currentTimeMillis();
-        while (true) {
-            try {
-                Thread.sleep(100);
-            } catch(Exception e){
-                if(lg.isInfoEnabled()) lg.info(e.getMessage(), e);
-            }
-            long elapsedTime_ms = System.currentTimeMillis() - startTime_ms;
-            if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
-                bFlag[0] = FLAG_STATE.INTERRUPTED;
-                if(connectFuture[0] != null){
-                    connectFuture[0].cancel();
-                }
-                if(closeFuture[0] != null){
-                    closeFuture[0].cancel();
-                }
-                throw UserCancelException.CANCEL_GENERIC;
-            } else if(elapsedTime_ms > maximumElapsedTime_ms){
-                bFlag[0] = FLAG_STATE.INTERRUPTED;
-                if(connectFuture[0] != null){
-                    connectFuture[0].cancel();
-                }
-                if(closeFuture[0] != null){
-                    closeFuture[0].cancel();
-                }
-                readBytesThread.interrupt();
-                throw new RuntimeException("Download timed out after " + (maximumElapsedTime_ms / 1000) + " seconds");
-            }
-            if(bFlag[0] == FLAG_STATE.FINISHED){//finished normally
-                break;
-            }
-            if(bFlag[0] == FLAG_STATE.FAILED){//finished error
-                if(connectFuture[0] != null){
-                    connectFuture[0].cancel();
-                }
-                if(closeFuture[0] != null){
-                    closeFuture[0].cancel();
-                }
-                if(exception[0] instanceof RuntimeException){
-                    throw (RuntimeException) exception[0];
-                }
-                throw new RuntimeException(exception[0]);
-            }
-        }
-        return responseHandler.getResponseContent().toString();
     }
 
     public static String exceptionMessage(Throwable e){

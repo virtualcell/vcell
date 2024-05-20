@@ -23,6 +23,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -52,10 +53,10 @@ import org.vcell.sybil.util.http.pathwaycommons.search.Organism;
 import org.vcell.sybil.util.http.pathwaycommons.search.Pathway;
 import org.vcell.sybil.util.http.pathwaycommons.search.XRef;
 import org.vcell.sybil.util.xml.DOMUtil;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
+import org.vcell.util.network.ClientDownloader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -322,7 +323,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			}
 		}
 	}
-	
+
 	public void showPathway() {
 		final Pathway pathway = computeSelectedPathway();
 		if (pathway == null) {
@@ -340,7 +341,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				System.out.println(url.toString());				
 				String ERROR_CODE_TAG = "error_code";
 //				String ERROR_MSG_TAG = "error_msg";
-				org.jdom.Document jdomDocument = XmlUtil.getJDOMDocument(url, getClientTaskStatusSupport());
+				final String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
+				org.jdom.Document jdomDocument = XmlUtil.stringToXML(contentString, null);
 				org.jdom.Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){
@@ -415,7 +417,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 						+ "&" + PathwayCommonsKeyword.maxHits + "=" + 14
 						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
 				System.out.println(url);
-				String responseContent = BeanUtils.downloadBytes(url, getClientTaskStatusSupport());
+				String responseContent = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
 				Document document = DOMUtil.parse(responseContent);	
 
 				Element errorElement = DOMUtil.firstChildElement(document, "error");

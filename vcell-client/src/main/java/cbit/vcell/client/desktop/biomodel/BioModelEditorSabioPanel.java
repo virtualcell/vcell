@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -57,6 +58,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.resource.PropertyLoader;
+import org.vcell.util.network.ClientDownloader;
 
 @SuppressWarnings("serial")
 public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
@@ -347,7 +349,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 			}
 		});
 	}
-	
+
 	public void populateKineticLawsTree() {
 //		String category1 = (String)categoryList1.getSelectedItem();
 		String category1 = "AnyRole";
@@ -372,7 +374,8 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 				final URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.SABIO_SRCH_KINETIC_URL) + command);
 				System.out.println(url.toString());				
 				String ERROR_CODE_TAG = "error_code";
-				Document jdomDocument = XmlUtil.getJDOMDocument(url, getClientTaskStatusSupport());
+				final String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
+				Document jdomDocument = XmlUtil.stringToXML(contentString, null);
 				Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){
@@ -416,7 +419,8 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 //				final URL url = new URL("http://sabiork.h-its.org/sabioRestWebServices/searchKineticLaws/biopax?q=EntryID:33107");
 				System.out.println(url.toString());
 				String ERROR_CODE_TAG = "error_code";
-				Document jdomDocument = XmlUtil.getJDOMDocument(url, getClientTaskStatusSupport());
+				final String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
+				Document jdomDocument = XmlUtil.stringToXML(contentString, null);
 				Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){

@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.Duration;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.sbpax.util.StringUtil;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.network.ClientDownloader;
 
 
 public abstract class DataImportSource {
@@ -64,7 +67,7 @@ public abstract class DataImportSource {
 		public URL getURL() { return url; }
 		
 		public String getBytes(ClientTaskStatusSupport clientTaskStatusSupport) throws IOException {
-			return BeanUtils.downloadBytes(url, clientTaskStatusSupport);
+			return ClientDownloader.downloadBytes(url, Duration.ofSeconds(30));
 		}
 		
 	}

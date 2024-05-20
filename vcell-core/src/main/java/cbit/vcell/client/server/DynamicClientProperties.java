@@ -1,5 +1,6 @@
 package cbit.vcell.client.server;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
@@ -22,8 +23,11 @@ public class DynamicClientProperties {
     private static VCellDynamicProps vcellDynamicProps = new VCellDynamicProps(null);
 
 
-    public static synchronized void updateDynamicClientProperties(URL vcell_dynamic_properties_url, boolean ignoreCertProblems) {
+    public static synchronized void updateDynamicClientProperties(URL vcell_dynamic_properties_url) {
         try {
+            boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
+            boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
+            boolean ignoreCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
             HttpClient client;
             if (ignoreCertProblems) {
                 // Create a trust manager that does not validate certificate chains

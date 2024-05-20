@@ -123,10 +123,7 @@ public class VCellClientMain implements Callable<Integer> {
         String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
         String webapp_base_url = "https://" + apihost + ":" + apiport;
         URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
-        boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
-        boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
-        boolean ignoreCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
-        Thread dynamicClientPropertiesThread = new Thread(() -> DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url, ignoreCertProblems));
+        Thread dynamicClientPropertiesThread = new Thread(() -> DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url));
         dynamicClientPropertiesThread.setDaemon(false); // non-daemon thread to keep JVM running
         dynamicClientPropertiesThread.start();
 
