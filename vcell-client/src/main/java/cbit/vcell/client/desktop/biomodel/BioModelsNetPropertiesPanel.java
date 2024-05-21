@@ -21,7 +21,7 @@ import java.util.Hashtable;
 
 import javax.swing.JLabel;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.DocumentWindowManager;
@@ -57,7 +57,7 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 				if (e.getSource() == linkLabel) {
 					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, bioModelsNetModelInfo.getLink(), "Failed to open " + bioModelsNetModelInfo.getLink());
 				} else if (e.getSource() == urlLabel) {
-					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL), "Failed to open " + BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL));
+					DialogUtils.browserLauncher(BioModelsNetPropertiesPanel.this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL), "Failed to open " + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL));
 				}
 			}
 		}
@@ -110,7 +110,7 @@ public class BioModelsNetPropertiesPanel extends DocumentEditorSubPanel {
 	private void initialize() {
 		setBackground(Color.white);
 		nameLabel = new JLabel();		
-		urlLabel = new JLabel("<html><b><font color=blue><u>" + BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL) + "</u></font>" +
+		urlLabel = new JLabel("<html><b><font color=blue><u>" + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL) + "</u></font>" +
 				", a data resource that allows researchers to" +
 				" store, search and retrieve published mathematical models of biological interest.</b>" +
 				"</html>");

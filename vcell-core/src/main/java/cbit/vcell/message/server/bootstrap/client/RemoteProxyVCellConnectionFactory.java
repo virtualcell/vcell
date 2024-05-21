@@ -175,7 +175,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 		this.apiport = apiport;
 		this.pathPrefix_v0 = pathPrefix_v0;
 		boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
-		boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
+		boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);
 		try {
 			this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, this.pathPrefix_v0, bIgnoreCertProblems, bIgnoreHostMismatch);
 		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
@@ -226,7 +226,10 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	@Override
 	public void auth0SignIn() {
 		try{
-			vcellApiClient.authenticateWithAuth0();
+			boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
+			boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
+			boolean ignoreSSLCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
+			vcellApiClient.authenticateWithAuth0(ignoreSSLCertProblems);
 		} catch (ApiException | URISyntaxException | IOException | ParseException e){
 			throw new RuntimeException(e);
 		}
@@ -243,7 +246,7 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 
 	public static String getVCellSoftwareVersion(String apihost, Integer apiport, String pathPrefix_v0) {
 	boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
-	boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
+	boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);
 	try {
 		VCellApiClient tempApiClient = new VCellApiClient(apihost, apiport, pathPrefix_v0, bIgnoreCertProblems, bIgnoreHostMismatch);
 		String serverSoftwareVersion = tempApiClient.getServerSoftwareVersion();

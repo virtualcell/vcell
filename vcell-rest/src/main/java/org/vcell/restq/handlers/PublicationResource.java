@@ -65,7 +65,7 @@ public class PublicationResource {
             return publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, vcellUser);
         } catch (PermissionException ee) {
             Log.error(ee);
-            throw new RuntimeException("not authorized", ee);
+            throw new WebApplicationException("not authorized", 403);
         } catch (DataAccessException | SQLException e) {
             Log.error(e);
             throw new RuntimeException("failed to retrieve publications from VCell Database : " + e.getMessage(), e);
@@ -74,20 +74,20 @@ public class PublicationResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @RolesAllowed("curator")
+//    @RolesAllowed("curator")
     @Operation(operationId = "createPublication", summary = "Create publication")
     public Long add(Publication publication) throws DataAccessException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
         try {
             User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
             if (vcellUser == null) {
-                throw new PermissionException("vcell user not specified");
+                throw new WebApplicationException("vcell user not specified", 401);
             }
             KeyValue key = publicationService.savePublication(publication, vcellUser);
             return Long.parseLong(key.toString());
         } catch (PermissionException ee) {
             Log.error(ee);
-            throw new RuntimeException("not authorized", ee);
+            throw new WebApplicationException("not authorized", 403);
         } catch (DataAccessException | SQLException e) {
             Log.error(e);
             throw new RuntimeException("failed to add publication to VCell Database : " + e.getMessage(), e);
@@ -97,7 +97,7 @@ public class PublicationResource {
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    @RolesAllowed("curator")
+//    @RolesAllowed("curator")
     @Operation(operationId = "updatePublication", summary = "Create publication")
     public Publication update(Publication publication) {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
@@ -120,7 +120,7 @@ public class PublicationResource {
 
     @DELETE
     @Path("{id}")
-    @RolesAllowed("curator")
+//    @RolesAllowed("curator")
     @Operation(operationId = "deletePublication", summary = "Delete publication")
     public void delete(@PathParam("id") Long publicationID) {
         try {
@@ -134,7 +134,7 @@ public class PublicationResource {
             }
         } catch (PermissionException ee) {
             Log.error(ee);
-            throw new RuntimeException("not authorized", ee);
+            throw new WebApplicationException("not authorized", 403);
         } catch (DataAccessException | SQLException e) {
             Log.error(e);
             throw new RuntimeException("failed to delete publication from VCell Database : " + e.getMessage(), e);

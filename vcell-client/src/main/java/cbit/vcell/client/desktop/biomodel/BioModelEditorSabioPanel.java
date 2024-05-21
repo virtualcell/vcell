@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -33,6 +34,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.vcell.pathway.BioPAXUtil;
@@ -45,7 +47,6 @@ import org.vcell.pathway.sbo.SBOListEx;
 import org.vcell.pathway.sbo.SBOTerm;
 import org.vcell.pathway.sbpax.SBEntity;
 import org.vcell.pathway.sbpax.SBVocabulary;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.VCellIcons;
@@ -57,6 +58,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.resource.PropertyLoader;
+import org.vcell.util.network.ClientDownloader;
 
 @SuppressWarnings("serial")
 public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
@@ -347,7 +349,7 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 			}
 		});
 	}
-	
+
 	public void populateKineticLawsTree() {
 //		String category1 = (String)categoryList1.getSelectedItem();
 		String category1 = "AnyRole";
@@ -369,10 +371,11 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 		AsynchClientTask task1 = new AsynchClientTask("Importing Kinetic Laws", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(final Hashtable<String, Object> hashTable) throws Exception {
-				final URL url = new URL(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.SABIO_SRCH_KINETIC_URL) + command);
+				final URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.SABIO_SRCH_KINETIC_URL) + command);
 				System.out.println(url.toString());				
 				String ERROR_CODE_TAG = "error_code";
-				Document jdomDocument = XmlUtil.getJDOMDocument(url, getClientTaskStatusSupport());
+				final String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
+				Document jdomDocument = XmlUtil.stringToXML(contentString, null);
 				Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){
@@ -412,11 +415,12 @@ public class BioModelEditorSabioPanel extends DocumentEditorSubPanel {
 		AsynchClientTask task1 = new AsynchClientTask("Importing Kinetic Laws", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(final Hashtable<String, Object> hashTable) throws Exception {
-				final URL url = new URL(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.SABIO_SRCH_KINETIC_URL) + command);
+				final URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.SABIO_SRCH_KINETIC_URL) + command);
 //				final URL url = new URL("http://sabiork.h-its.org/sabioRestWebServices/searchKineticLaws/biopax?q=EntryID:33107");
 				System.out.println(url.toString());
 				String ERROR_CODE_TAG = "error_code";
-				Document jdomDocument = XmlUtil.getJDOMDocument(url, getClientTaskStatusSupport());
+				final String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
+				Document jdomDocument = XmlUtil.stringToXML(contentString, null);
 				Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){

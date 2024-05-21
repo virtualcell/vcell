@@ -19,6 +19,7 @@ import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.client.server.DynamicClientProperties;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
@@ -579,7 +580,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
             } else if(e.getSource() == helpButton) {
                 showCopasiMethodHelp();
             } else if(e.getSource() == copasiLinkLabel) {
-                final String url = BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.COPASI_TIKI_URL);
+                final String url = DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.COPASI_TIKI_URL);
                 DialogUtils.browserLauncher(ParameterEstimationRunTaskPanel.this, url, "COPASI web site is not able to be connected.");
             }
         }

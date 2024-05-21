@@ -22,8 +22,8 @@ export class PublicationListComponent implements OnInit {
   editingPublication: Publication | null = null;
   isCurator$: Observable<boolean>;
 
-  @ViewChild(MatSort) sort: MatSort;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(private authorizationService: AuthorizationService, private publicationService: PublicationService) {
     this.isCurator$ = this.authorizationService.isCurator();
@@ -63,15 +63,15 @@ export class PublicationListComponent implements OnInit {
     this.startEdit(pub);
   }
 
-  onEdit(pub) {
+  onEdit(pub: Publication) {
     // nothing to do
     console.log("editing publication "+pub.title);
     this.startEdit(pub)
   }
 
-  onDelete(pub) {
+  onDelete(pub: Publication) {
     // nothing to do
-    this.publicationService.deletePublication(pub.pubKey).subscribe((pub) => {
+    this.publicationService.deletePublication(pub.pubKey!).subscribe((pub) => {
       console.log(pub);
     });
 
@@ -81,7 +81,7 @@ export class PublicationListComponent implements OnInit {
     this.publications.filter = filterText.toLowerCase();
   }
 
-  applyFilterTarget(eventTarget: EventTarget) {
+  applyFilterTarget(eventTarget: EventTarget | null) {
     // //get publication object from this row
     // const pub: Publication = eventTarget.;
     const filterValue = (eventTarget as HTMLInputElement).value;

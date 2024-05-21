@@ -19,7 +19,7 @@ import java.util.Vector;
 
 import javax.swing.JButton;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.DialogUtils;
 
@@ -171,8 +171,8 @@ public BNGOutputPanel(boolean isDoubleBuffered) {
  * Comment
  */
 private void bngHelpAbout() {
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL), 
-								   "For Help using BioNetGen, please visit : "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL));
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL),
+								   "For Help using BioNetGen, please visit : "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL));
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
 }
 
@@ -181,8 +181,8 @@ private void bngHelpAbout() {
  * Comment
  */
 private void bngHelpFAQ() {
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL), 
-								   "please visit : "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL));
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL),
+								   "please visit : "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL));
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
 }
 
@@ -191,8 +191,8 @@ private void bngHelpFAQ() {
  * Comment
  */
 private void bngHelpManual() {
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL), 
-								   "please visit : "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL));
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL),
+								   "please visit : "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL));
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
 }
 
@@ -201,8 +201,8 @@ private void bngHelpManual() {
  * Comment
  */
 private void bngHelpSamples() {
-	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL), 
-								   "please visit : "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL));
+	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL),
+								   "please visit : "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL));
 	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
 }
 
@@ -967,11 +967,11 @@ private javax.swing.JButton getHelpButton() {
 		try {
 			ivjHelpButton = new javax.swing.JButton();
 			ivjHelpButton.setName("HelpButton");
-			ivjHelpButton.setText(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL));
+			ivjHelpButton.setText(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL));
 			ivjHelpButton.setBackground(java.awt.Color.white);
 			ivjHelpButton.setMaximumSize(new java.awt.Dimension(429, 27));
 			ivjHelpButton.setForeground(java.awt.Color.blue);
-			ivjHelpButton.setActionCommand(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL));
+			ivjHelpButton.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_INDEX_URL));
 			ivjHelpButton.setFont(new java.awt.Font("Arial", 1, 14));
 			ivjHelpButton.setBounds(433, 81, 412, 27);
 			ivjHelpButton.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -1059,10 +1059,10 @@ private javax.swing.JButton getJButtonManual() {
 		try {
 			ivjJButtonManual = new javax.swing.JButton();
 			ivjJButtonManual.setName("JButtonManual");
-			ivjJButtonManual.setText(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL));
+			ivjJButtonManual.setText(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL));
 			ivjJButtonManual.setBackground(java.awt.Color.white);
 			ivjJButtonManual.setForeground(java.awt.Color.blue);
-			ivjJButtonManual.setActionCommand(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL));
+			ivjJButtonManual.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_TUTORIAL_URL));
 			ivjJButtonManual.setFont(new java.awt.Font("Arial", 1, 14));
 			ivjJButtonManual.setBounds(428, 218, 417, 25);
 			// user code begin {1}
@@ -1086,10 +1086,10 @@ private javax.swing.JButton getJButtonManual1() {
 		try {
 			ivjJButtonManual1 = new javax.swing.JButton();
 			ivjJButtonManual1.setName("JButtonManual1");
-			ivjJButtonManual1.setText(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL));
+			ivjJButtonManual1.setText(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL));
 			ivjJButtonManual1.setBackground(java.awt.Color.white);
 			ivjJButtonManual1.setForeground(java.awt.Color.blue);
-			ivjJButtonManual1.setActionCommand(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL));
+			ivjJButtonManual1.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_SAMPLES_URL));
 			ivjJButtonManual1.setFont(new java.awt.Font("Arial", 1, 14));
 			ivjJButtonManual1.setBounds(430, 354, 417, 25);
 			// user code begin {1}
@@ -1113,10 +1113,10 @@ private javax.swing.JButton getJButtonManual11() {
 		try {
 			ivjJButtonManual11 = new javax.swing.JButton();
 			ivjJButtonManual11.setName("JButtonManual11");
-			ivjJButtonManual11.setText(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL));
+			ivjJButtonManual11.setText(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL));
 			ivjJButtonManual11.setBackground(java.awt.Color.white);
 			ivjJButtonManual11.setForeground(java.awt.Color.blue);
-			ivjJButtonManual11.setActionCommand(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL));
+			ivjJButtonManual11.setActionCommand(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_BNG_FAQ_URL));
 			ivjJButtonManual11.setFont(new java.awt.Font("Arial", 1, 14));
 			ivjJButtonManual11.setBounds(428, 600, 417, 25);
 			// user code begin {1}

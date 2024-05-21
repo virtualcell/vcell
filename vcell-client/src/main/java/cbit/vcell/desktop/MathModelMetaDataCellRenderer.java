@@ -20,7 +20,7 @@ import javax.swing.JLabel;
  */
 import javax.swing.JTree;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.User;
@@ -135,7 +135,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 		}else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
 			PublicationInfo info = (PublicationInfo)node.getUserObject();
 			component.setToolTipText("DOI");
-			String text = "<a href=\"" + BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi() + "\">" + "DOI: " + info.getDoi() + "</a>";
+			String text = "<a href=\"" + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi() + "\">" + "DOI: " + info.getDoi() + "</a>";
 			component.setText("<html>" + text + "</html>");
 			setIcon(null);
 			

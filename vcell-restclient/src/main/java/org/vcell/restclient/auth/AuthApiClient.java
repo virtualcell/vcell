@@ -8,9 +8,14 @@ import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 import org.vcell.restclient.ApiClient;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.security.cert.X509Certificate;
 import java.util.function.Consumer;
 
 
@@ -36,7 +41,29 @@ public class AuthApiClient extends ApiClient {
         }
     }
 
-    public AuthApiClient(URI apiBaseUrl, URI oidcProviderTokenEndpoint, AccessToken accessToken, RefreshToken refreshToken) {
+    public AuthApiClient(URI apiBaseUrl, URI oidcProviderTokenEndpoint, AccessToken accessToken, RefreshToken refreshToken, boolean ignoreSSLCertProblems) {
+        if (ignoreSSLCertProblems) {
+            try {
+                HttpClient.Builder customBuilder = createDefaultHttpClientBuilder();
+                TrustManager[] trustAllCerts = new TrustManager[]{
+                        new X509TrustManager() {
+                            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                            public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+                            public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+                        }
+                };
+
+                // Install the all-trusting trust manager
+                SSLContext sslContext = SSLContext.getInstance("SSL");
+                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                customBuilder.sslContext(sslContext);
+
+                // Create an HttpClient that uses the custom SSLContext
+                setHttpClientBuilder(customBuilder);
+            } catch (Exception e) {
+                throw new RuntimeException("failed to create custom HttpClient: " + e.getMessage(), e);
+            }
+        }
         this.oidcProviderTokenEndpoint = oidcProviderTokenEndpoint;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;

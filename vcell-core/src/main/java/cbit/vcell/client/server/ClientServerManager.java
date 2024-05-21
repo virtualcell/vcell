@@ -23,8 +23,6 @@ import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.VCDataManager;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpResponseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.service.registration.RegistrationService;
@@ -380,7 +378,7 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 		String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
 		String webapp_base_url = "https://" + getClientServerInfo().getApihost() + ":" + getClientServerInfo().getApiport();
 		URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
-		BeanUtils.updateDynamicClientProperties(vcell_dynamic_client_properties_url);
+		DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url);
 	} catch (Exception e) {
 		lg.error(e.getMessage(), e);
 	}

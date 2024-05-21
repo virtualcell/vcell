@@ -1,5 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
-import {NgModule} from '@angular/core';
+import {APP_INITIALIZER, NgModule} from '@angular/core';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {HIGHLIGHT_OPTIONS, HighlightModule} from 'ngx-highlightjs';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
@@ -28,8 +28,18 @@ import {AuthHttpInterceptor, AuthModule} from '@auth0/auth0-angular';
 import {environment as env} from '../environments/environment';
 import {PublicationListComponent} from './components/publication-list/publication-list.component';
 import {PublicationEditComponent} from './components/publication-edit/publication-edit.component';
-import {ApiModule} from "./core/modules/openapi";
+import {ApiModule, Configuration as ApiConfiguration} from "./core/modules/openapi";
 import {VcellIdentityComponent} from "./components/vcell-identity/vcell-identity.component";
+import {BaseuriConfigService} from "./config/baseuri-config.service";
+import {BaseuriConfig} from "./config/baseuri-config";
+
+export function ConfigLoader(baseuriConfigService: BaseuriConfigService): () => Promise<BaseuriConfig> {
+  return () => baseuriConfigService.loadConfiguration();
+}
+
+export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
+  return new ApiConfiguration({ basePath: baseuriConfigService.config?.baseUri });
+}
 
 @NgModule({
   declarations: [
@@ -68,9 +78,9 @@ import {VcellIdentityComponent} from "./components/vcell-identity/vcell-identity
     MatIconModule,
     MatInputModule,
     MatButtonModule,
-    // ApiModule.forRoot(() => new Configuration({ basePath: env.apiUri })),
+    ApiModule,
     // ApiModule.forRoot(() => new Configuration({ basePath: 'https://vcellapi-test.cam.uchc.edu' })),
-    ApiModule
+    // ApiModule
   ],
   providers: [
     {
@@ -92,6 +102,19 @@ import {VcellIdentityComponent} from "./components/vcell-identity/vcell-identity
         },
       },
     },
+    BaseuriConfigService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: ConfigLoader,
+      deps: [BaseuriConfigService],
+      multi: true
+    },
+    {
+      provide: ApiConfiguration,
+      useFactory: apiConfigFactory,
+      deps: [BaseuriConfigService]
+    }
+
   ],
   bootstrap: [AppComponent],
 })

@@ -38,6 +38,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.vcell.util.gui.GeneralGuiUtils;
@@ -104,10 +105,10 @@ public class BioModelsNetJPanel extends JPanel {
 		final JButton httpbiomodelsnetLabel = new JButton();
 		httpbiomodelsnetLabel.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				DialogUtils.browserLauncher(BioModelsNetJPanel.this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL),BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL));
+				DialogUtils.browserLauncher(BioModelsNetJPanel.this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL), DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL));
 			}
 		});
-		httpbiomodelsnetLabel.setText(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL));
+		httpbiomodelsnetLabel.setText(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BMDB_URL));
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(4, 4, 5, 4);
 		gridBagConstraints.gridy = 4;

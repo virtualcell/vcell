@@ -28,7 +28,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
@@ -200,7 +200,7 @@ public class DiffRateHelpPanel extends JPanel
 		searchWebButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) 
 			{
-				final String url = BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIONUMBERS_SRCH2_URL);
+				final String url = DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BIONUMBERS_SRCH2_URL);
 				DialogUtils.browserLauncher(DiffRateHelpPanel.this, url, null); 
 			}
 		});

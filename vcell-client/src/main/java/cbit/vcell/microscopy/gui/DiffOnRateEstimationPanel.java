@@ -26,7 +26,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
@@ -305,7 +305,7 @@ public class DiffOnRateEstimationPanel extends JPanel {
         final JButton searchWebButton = new JButton();
         searchWebButton.addActionListener(new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
-                final String url = BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIONUMBERS_SRCH1_URL);
+                final String url = DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BIONUMBERS_SRCH1_URL);
                 DialogUtils.browserLauncher(DiffOnRateEstimationPanel.this, url, null);
             }
         });

@@ -24,8 +24,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,16 +36,14 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.sybil.models.miriam.MIRIAMQualifier;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
@@ -56,7 +52,6 @@ import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionInfo;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
-import org.vcell.util.gui.JLabelLikeTextField;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
@@ -508,7 +503,7 @@ private class LocalMetaDataPanel extends JPanel {
 							try {
 								if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
 									PublicationInfo info = (PublicationInfo)node.getUserObject();
-									Desktop.getDesktop().browse(new URI(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi()));
+									Desktop.getDesktop().browse(new URI(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi()));
 								} else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoUrl".equals(node.getRenderHint("type"))) {
 									PublicationInfo info = (PublicationInfo)node.getUserObject();
 									Desktop.getDesktop().browse(new URI(info.getUrl()));

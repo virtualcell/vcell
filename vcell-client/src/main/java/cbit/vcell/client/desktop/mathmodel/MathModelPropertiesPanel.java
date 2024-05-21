@@ -13,7 +13,6 @@ package cbit.vcell.client.desktop.mathmodel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Desktop;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -25,7 +24,6 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Enumeration;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -35,12 +33,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.document.PublicationInfo;
@@ -54,12 +49,9 @@ import cbit.vcell.client.MathModelWindowManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.clientdb.DatabaseEvent;
 import cbit.vcell.clientdb.DatabaseListener;
-import cbit.vcell.desktop.BioModelInfoCellRenderer;
-import cbit.vcell.desktop.BioModelInfoTreeModel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.MathModelMetaDataCellRenderer;
 import cbit.vcell.desktop.MathModelMetaDataTreeModel;
-import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.PropertyLoader;
 
@@ -412,7 +404,7 @@ private class LocalMetaDataPanel extends JPanel {
 							try {
 								if(node.getUserObject() instanceof PublicationInfo && "PublicationInfoDoi".equals(node.getRenderHint("type"))) {
 									PublicationInfo info = (PublicationInfo)node.getUserObject();
-									Desktop.getDesktop().browse(new URI(BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi()));
+									Desktop.getDesktop().browse(new URI(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.DOI_URL) + info.getDoi()));
 								} else if (node.getUserObject() instanceof PublicationInfo && "PublicationInfoUrl".equals(node.getRenderHint("type"))) {
 									PublicationInfo info = (PublicationInfo)node.getUserObject();
 									Desktop.getDesktop().browse(new URI(info.getUrl()));
