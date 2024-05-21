@@ -4,6 +4,6 @@
   "authorizationParams": {
     "audience": "https://vcellapi.cam.uchc.edu"
   },
-  "apiUri": "https://vcellapi-test.cam.uchc.edu",
+  "apiUri": "https://vcell-dev.cam.uchc.edu",
   "errorPath": "/error"
 }
