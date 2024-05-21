@@ -11,7 +11,9 @@ import org.vcell.cli.run.hdf5.Hdf5DataPreparer.Hdf5PreparedData;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -20,6 +22,7 @@ import java.util.Set;
 public class BiosimulationsHdf5Writer {
 
     public static class BiosimulationsHdfWriterException extends Exception {
+        @Serial
         private static final long serialVersionUID = 1L;
         public BiosimulationsHdfWriterException(String message, Exception e) {
             super(message, e);
@@ -85,7 +88,6 @@ public class BiosimulationsHdf5Writer {
                             masterHdf5.insertNumericAttributes(currentDatasetId, "times", Hdf5DataPreparer.getSpatialHdf5Attribute_Times(report, data));
                         }
                         masterHdf5.insertFixedStringAttribute(currentDatasetId, "_type", data.datasetMetadata._type);
-                        masterHdf5.insertFixedStringAttributes(currentDatasetId, "scanParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
                         masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
                         masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetIds", data.datasetMetadata.sedmlDataSetIds);
 
@@ -99,6 +101,8 @@ public class BiosimulationsHdf5Writer {
                         masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
                         masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetLabels", data.datasetMetadata.sedmlDataSetLabels);
                         masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlDataSetShapes", data.datasetMetadata.sedmlDataSetShapes);
+                        if (null != data.dataSource.scanParameterNames) masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlRepeatedTaskParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
+                        if (null != data.dataSource.scanBounds) masterHdf5.insertFixedStringAttributes(currentDatasetId, "sedmlRepeatedTaskBounds", List.of(Arrays.toString(data.dataSource.scanBounds)));
                         masterHdf5.insertFixedStringAttribute(currentDatasetId, "sedmlId", data.datasetMetadata.sedmlId);
                         masterHdf5.insertFixedStringAttribute(currentDatasetId, "sedmlName", data.datasetMetadata.sedmlName);
                         masterHdf5.insertFixedStringAttribute(currentDatasetId, "uri", path.substring(1) + "/" + data.datasetMetadata.sedmlId);
