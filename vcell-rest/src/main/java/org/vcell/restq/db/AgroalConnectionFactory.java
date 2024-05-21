@@ -29,6 +29,9 @@ public class AgroalConnectionFactory implements ConnectionFactory {
     @ConfigProperty(name = "quarkus.profile")
     String activeProfile;
 
+    @ConfigProperty(name = "vcell.prod.database.postgresql")
+    boolean usePostgresqlInProd;
+
 
     public AgroalConnectionFactory() {
     }
@@ -69,12 +72,21 @@ public class AgroalConnectionFactory implements ConnectionFactory {
     }
 
     private boolean usePostgresql() {
-        return switch (activeProfile) {
-            case "test" -> true;
-            case "dev" -> true;
-            case "prod" -> false;
-            default -> throw new IllegalStateException("Unexpected value: " + activeProfile);
-        };
+        switch (activeProfile) {
+            case "test", "dev": {
+                return true;
+            }
+            case "prod": {
+                if (usePostgresqlInProd) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            default: {
+                throw new IllegalStateException("Unexpected value: " + activeProfile);
+            }
+        }
     }
 
     @Override
