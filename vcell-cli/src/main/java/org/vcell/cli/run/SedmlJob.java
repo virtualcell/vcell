@@ -148,16 +148,16 @@ public class SedmlJob {
             for (Output output : outputs) {
                 if (output instanceof Report) this.DOC_STATISTICS.setReportsCount(this.DOC_STATISTICS.getReportsCount() + 1);
                 if (output instanceof Plot2D) this.DOC_STATISTICS.setPlots2DCount(this.DOC_STATISTICS.getPlots2DCount() + 1);
-                if (output instanceof Plot3D) this.DOC_STATISTICS.setPlots3Dcount(this.DOC_STATISTICS.getPlots3Dcount() + 1);
+                if (output instanceof Plot3D) this.DOC_STATISTICS.setPlots3DCount(this.DOC_STATISTICS.getPlots3DCount() + 1);
             }
-            this.DOC_STATISTICS.setNumSimultions(sedmlFromOmex.getSimulations().size());
+            this.DOC_STATISTICS.setNumSimulations(sedmlFromOmex.getSimulations().size());
             String summarySedmlContentString = "Found one SED-ML document with "
                     + this.DOC_STATISTICS.getNumModels() + " model(s), "
-                    + this.DOC_STATISTICS.getNumSimultions() + " simulation(s), "
+                    + this.DOC_STATISTICS.getNumSimulations() + " simulation(s), "
                     + this.DOC_STATISTICS.getNumTasks() + " task(s), "
                     + this.DOC_STATISTICS.getReportsCount() + "  report(s),  "
                     + this.DOC_STATISTICS.getPlots2DCount() + " plot2D(s), and "
-                    + this.DOC_STATISTICS.getPlots3Dcount() + " plot3D(s)\n";
+                    + this.DOC_STATISTICS.getPlots3DCount() + " plot3D(s)\n";
             logger.info(summarySedmlContentString);
 
             this.logDocumentMessage += "done. ";
@@ -469,7 +469,7 @@ public class SedmlJob {
 
     private void recordRunDetails(SolverHandler solverHandler) throws IOException {
         String message = this.DOC_STATISTICS.getNumModels() + ",";
-        message += this.DOC_STATISTICS.getNumSimultions() + ",";
+        message += this.DOC_STATISTICS.getNumSimulations() + ",";
         message += this.DOC_STATISTICS.getNumTasks() + ",";
         message += this.DOC_STATISTICS.getNumOutputs() + ",";
         

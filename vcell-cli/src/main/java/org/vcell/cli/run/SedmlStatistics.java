@@ -18,7 +18,7 @@ public class SedmlStatistics {
     public boolean hasOverrides, hasScans;
 
     public SedmlStatistics(){
-        // -1 indicates the value has not been initalized. 
+        // -1 indicates the value has not been initialized.
         this.nModels = null;
         this.nSimulations = null;
         this.nTasks = null;
@@ -34,7 +34,7 @@ public class SedmlStatistics {
         return this.nModels == null ? 0 : this.nModels;
     }
 
-    public int getNumSimultions(){
+    public int getNumSimulations(){
         return this.nSimulations == null ? 0 : this.nSimulations;
     }
 
@@ -54,7 +54,7 @@ public class SedmlStatistics {
         return this.nPlots2DCount == null ? 0 : this.nPlots2DCount;
     } 
 
-    public int getPlots3Dcount(){
+    public int getPlots3DCount(){
         return this.nPlots3DCount == null ? 0 : this.nPlots3DCount;
     }
 
@@ -67,37 +67,34 @@ public class SedmlStatistics {
     }
 
     public void setNumModels(int nModels){
-        if (this.nModels == null) this.nModels = 0;
         this.nModels = nModels;
     }
 
-    public void setNumSimultions(int nSimulations){
-        if (this.nSimulations == null) this.nSimulations = 0;
+    public void setNumSimulations(int nSimulations){
         this.nSimulations = nSimulations;
     }
 
     public void setNumTasks(int nTasks){
-        if (this.nTasks == null) this.nTasks = 0;
         this.nTasks = nTasks;
     }
 
     public void setNumOutputs(int nOutputs){
-        if (this.nOutputs == null) this.nOutputs = 0;
         this.nOutputs = nOutputs;
+        // If we have outputs, we should de-null the sub-categories
+        if (this.nReportsCount == null) this.setReportsCount(0);
+        if (this.nPlots2DCount == null) this.setPlots2DCount(0);
+        if (this.nPlots3DCount == null) this.setPlots3DCount(0);
     }
 
     public void setReportsCount(int nReportsCount){
-        if (this.nReportsCount == null) this.nReportsCount = 0;
         this.nReportsCount = nReportsCount;
     }
 
     public void setPlots2DCount(int nPlots2DCount){
-        if (this.nPlots2DCount == null) this.nPlots2DCount = 0;
         this.nPlots2DCount = nPlots2DCount;
     } 
 
-    public void setPlots3Dcount(int nPlots3DCount){
-        if (this.nPlots3DCount == null) this.nPlots3DCount = 0;
+    public void setPlots3DCount(int nPlots3DCount){
         this.nPlots3DCount = nPlots3DCount;
     }
 
@@ -114,17 +111,17 @@ public class SedmlStatistics {
      * @returns the relevant info as a comma separated list or an error message
      */
     public String toFormattedString(){
-        if (this.nModels == null && this.nSimulations == null && this.nTasks == null && this.nModels == null && 
-            this.nModels == null && this.nModels == null && this.nModels == null) return "Processing incomplete; no reportable data.";
+        if (this.nModels == null && this.nSimulations == null && this.nTasks == null && this.nReportsCount == null
+                && this.nPlots2DCount == null && this.nPlots3DCount == null) return "Processing incomplete; no reportable data.";
         return String.format(
-            "%d model%s, %d simulation%s, %d task%s, %d output%s, %d report%s, %d 2D plot%s, %d 3D plot%s, %s Math Overrides, %s Paramerter Scans", 
+            "\t> %d model%s\n\t> %d simulation%s\n\t> %d task%s\n\t> %d output%s\n\t\t>> %d report%s\n\t\t>> %d 2D plot%s\n\t\t>> %d 3D plot%s\n\t> %s Math Overrides\n\t> %s Parameter Scans",
             this.getNumModels(), this.nModels != 1 ? "s" : "",
-            this.getNumSimultions(), this.nSimulations != 1 ? "s" : "",
+            this.getNumSimulations(), this.nSimulations != 1 ? "s" : "",
             this.getNumTasks(), this.nTasks != 1 ? "s" : "",
             this.getNumOutputs(), this.nOutputs != 1 ? "s" : "",
             this.getReportsCount(), this.nReportsCount != 1 ? "s" : "",
             this.getPlots2DCount(), this.nPlots2DCount != 1 ? "s" : "",
-            this.getPlots3Dcount(), this.nPlots3DCount != 1 ? "s" : "",
+            this.getPlots3DCount(), this.nPlots3DCount != 1 ? "s" : "",
             this.getHasOverrides() ? "Has" : "Does not have",
             this.getHasScans() ? "Has" : "Does not have"
         );

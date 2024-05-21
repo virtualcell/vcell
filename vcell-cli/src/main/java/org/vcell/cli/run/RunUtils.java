@@ -442,12 +442,12 @@ public class RunUtils {
         for (String ext : extensionListMap.keySet()) {
             srcFiles = listFilesForFolder(dirPath, ext);
 
-            if (srcFiles.size() == 0) {
-                logger.error("No " + ext.toUpperCase() + " files found, skipping archiving `" + extensionListMap.get(ext) + "` files");
+            if (srcFiles.isEmpty()) {
+                logger.warn("No " + ext.toUpperCase() + " files found, skipping archiving `" + extensionListMap.get(ext) + "` files");
             } else {
                 fileOutputStream = new FileOutputStream(Paths.get(dirPath.toString(), extensionListMap.get(ext)).toFile());
                 zipOutputStream = new ZipOutputStream(fileOutputStream);
-                if (srcFiles.size() != 0) logger.info("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
+                if (!srcFiles.isEmpty()) logger.info("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
                 for (File srcFile : srcFiles) {
 
                     fileInputstream = new FileInputStream(srcFile);
