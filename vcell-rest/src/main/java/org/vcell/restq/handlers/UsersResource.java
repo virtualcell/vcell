@@ -122,7 +122,7 @@ public class UsersResource {
 
     @POST
     @Path("/bearerToken")
-//    @RolesAllowed("user")
+    @RolesAllowed("user")
     @Operation(operationId = "getLegacyApiToken", summary = "Get token for legacy API")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
@@ -141,6 +141,7 @@ public class UsersResource {
 
     @POST
     @Path("/forgotLegacyPassword")
+    @RolesAllowed("user")
     @Operation(operationId = "forgotLegacyPassword", summary = "The end user has forgotten the legacy password they used for VCell, so they will be emailed it.")
     @Consumes(MediaType.APPLICATION_JSON)
     @APIResponses({
