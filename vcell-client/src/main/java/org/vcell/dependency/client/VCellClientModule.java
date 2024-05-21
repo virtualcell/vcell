@@ -19,11 +19,18 @@ public class VCellClientModule extends AbstractModule {
     private final String apiHost;
     private final int apiPort;
     private final String apiPathPrefixV0;
+    private final String apiPathPrefixV1;
+    private final String quarkusAPIHost;
+    private final int quarkusAPIPort;
 
-    public VCellClientModule(String apiHost, int apiPort, String apiPathPrefixV0) {
+    public VCellClientModule(String apiHost, int apiPort, String apiPathPrefixV0,
+                             String quarkusAPIHost, int quarkusAPIPort, String quarkusAPIPathPrefixV1) {
         this.apiHost = apiHost;
         this.apiPort = apiPort;
         this.apiPathPrefixV0 = apiPathPrefixV0;
+        this.quarkusAPIHost = quarkusAPIHost;
+        this.quarkusAPIPort = quarkusAPIPort;
+        this.apiPathPrefixV1 = quarkusAPIPathPrefixV1;
     }
 
     public interface UnimplementedService {
@@ -50,5 +57,9 @@ public class VCellClientModule extends AbstractModule {
         bind(String.class).annotatedWith(Names.named(DependencyConstants.VCELL_API_HOST)).toInstance(apiHost);
         bind(Integer.class).annotatedWith(Names.named(DependencyConstants.VCELL_API_PORT)).toInstance(apiPort);
         bind(String.class).annotatedWith(Names.named(DependencyConstants.VCELL_API_PATH_PREFIX_V0)).toInstance(apiPathPrefixV0);
+
+        bind(String.class).annotatedWith(Names.named(DependencyConstants.VCELL_API_PATH_PREFIX_V1)).toInstance(apiPathPrefixV1);
+        bind(String.class).annotatedWith(Names.named(DependencyConstants.VCELL_QUARKUS_API_HOST)).toInstance(quarkusAPIHost);
+        bind(Integer.class).annotatedWith(Names.named(DependencyConstants.VCELL_QUARKUS_API_PORT)).toInstance(quarkusAPIPort);
     }
 }
