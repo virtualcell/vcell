@@ -50,7 +50,7 @@ public class AdminResource {
 
     @GET
     @Path("/usage")
-    @RolesAllowed("admin")
+//    @RolesAllowed("admin")
     @Operation(operationId = "getUsage", summary = "Get usage summary")
     @NoCache
     @APIResponse(

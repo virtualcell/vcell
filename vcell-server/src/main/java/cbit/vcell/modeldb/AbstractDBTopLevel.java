@@ -15,6 +15,8 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/28/2003 4:57:38 PM)
@@ -25,13 +27,8 @@ public abstract class AbstractDBTopLevel {
 	public static Logger lg = LogManager.getLogger(AdminDBTopLevel.class);
 
 	protected final ConnectionFactory conFactory;
-/**
- * Insert the method's description here.
- * Creation date: (9/4/2003 3:02:41 PM)
- * @param confactory cbit.sql.ConnectionFactory
- * @param argSessionLog cbit.vcell.server.SessionLog
- */
-AbstractDBTopLevel(ConnectionFactory argConFactory) {
+
+	AbstractDBTopLevel(ConnectionFactory argConFactory) {
 	this.conFactory = argConFactory;
 }
 /**
@@ -48,6 +45,8 @@ protected void handle_DataAccessException_SQLException(Throwable t) throws org.v
 		throw (java.sql.SQLException)t;
 	}else if (t instanceof Error){
 		throw (Error)t;
+	}else if (t instanceof PermissionException){
+		throw (PermissionException)t;
 	}else if (t instanceof RuntimeException){
 		throw new DataAccessException("Unknown Database Access Error : " + t.getMessage(),t);
 		// throw (RuntimeException)t;

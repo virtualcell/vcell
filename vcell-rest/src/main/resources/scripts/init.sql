@@ -100,3 +100,10 @@ INSERT INTO vc_useridentity VALUES ( 9, 2,'auth0|65cb6311365d79c2fb96a005', 'htt
 INSERT INTO vc_specialusers VALUES ( 10,'publicationEditors',2,NULL);
 INSERT INTO vc_specialusers VALUES ( 11,'powerUsers',2,NULL);
 INSERT INTO vc_specialusers VALUES ( 12,'admins',2,NULL);
+
+INSERT INTO vc_userinfo VALUES ( 20,'dev0','1714152297847','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'C525EF5192F5DF966D0C891224EC5412FC6FD518' );
+INSERT INTO vc_useridentity VALUES ( 21, 20,'google-oauth2|107511464785168320004', 'https://dev-dzhx7i2db3x3kkvq.us.auth0.com/', CURRENT_TIMESTAMP);
+INSERT INTO vc_specialusers VALUES ( 22,'publicationEditors',20,NULL);
+INSERT INTO vc_specialusers VALUES ( 23,'powerUsers',20,NULL);
+INSERT INTO vc_specialusers VALUES ( 24,'admins',20,NULL);
+INSERT INTO vc_publication VALUES ( 25,'Numerical Approach to Spatial Deterministic-Stochastic Models Arising in Cell Biology','Schaff, J.C., Gao, F., Li, Y., Novak, I.L., Slepchenko, B.M.',2016,'Schaff JC, Gao F, Li Y, Novak IL, Slepchenko BM. Numerical Approach to Spatial Deterministic-Stochastic Models Arising in Cell Biology. PLoS Comput Biol. 2016 Dec 13;12(12):e1005236. doi: 10.1371/journal.pcbi.1005236. PMID: 27959915; PMCID: PMC5154471.','27959915','10.1371/journal.pcbi.1005236',NULL,'http://www.vcell.org',NULL,CURRENT_TIMESTAMP );
