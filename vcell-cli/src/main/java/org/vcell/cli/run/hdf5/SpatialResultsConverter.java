@@ -1,6 +1,9 @@
 package org.vcell.cli.run.hdf5;
 
 
+import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.TempSimulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -123,9 +126,23 @@ public class SpatialResultsConverter {
                     taskMetadata.validateScanTargets(vcellSimulation.getMathOverrides().getScannedConstantNames());
                     convertedData.scanParameterNames = taskMetadata.getScanTargets();
                 }
-                if (taskMetadata.getScanBounds() == null){
-                    taskMetadata.validateScanBounds(vcellSimulation.getMathOverrides().getScanBounds());
+                if (taskMetadata.getScanValues() == null){
+                    int[] eachBound = vcellSimulation.getMathOverrides().getScanBounds();
+                    taskMetadata.validateScanBounds(eachBound);
                     convertedData.scanBounds = taskMetadata.getScanBounds();
+                    convertedData.scanParameterValues = taskMetadata.getScanValues();
+                    double[][] scanValues = new double[eachBound.length][];
+                    for (int nameIndex = 0; nameIndex < eachBound.length; nameIndex++){
+                        String nameKey = convertedData.scanParameterNames[nameIndex];
+                        scanValues[nameIndex] = new double[eachBound[nameIndex] + 1];
+                        for (int scanIndex = 0; scanIndex < eachBound[nameIndex] + 1; scanIndex++){
+                            Expression overrideExp = vcellSimulation.getMathOverrides().getActualExpression(nameKey, scanIndex);
+                            try { scanValues[nameIndex][scanIndex] = overrideExp.evaluateConstant(); }
+                            catch (ExpressionException e){ throw new RuntimeException(e); }
+                        }
+                    }
+                    taskMetadata.validateScanValues(scanValues);
+                    convertedData.scanParameterValues = taskMetadata.getScanValues();
                 }
             }
             Hdf5DataSourceSpatialSimVars taskVars = sourceOfTruth.getVarsFromTaskGroup(completeTask.getId());

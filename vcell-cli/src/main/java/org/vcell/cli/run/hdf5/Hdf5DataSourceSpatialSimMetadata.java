@@ -13,8 +13,10 @@ public class Hdf5DataSourceSpatialSimMetadata {
     private int[] timeBounds;
     private double[] times;
     private int[] spaceTimeDimensions;
-    private int[] scanBounds;
+    private double[][] scanTargetValues;
     private String[] scanTargets;
+
+    private int[] scanTargetUpperInclusiveBound;
 
     public Hdf5DataSourceSpatialSimMetadata(){
         this.speciesNames = new HashSet<>();
@@ -56,7 +58,11 @@ public class Hdf5DataSourceSpatialSimMetadata {
     }
 
     public void validateScanBounds(int[] scanBounds){
-        this.scanBounds = scanBounds;
+        this.scanTargetUpperInclusiveBound = scanBounds;
+    }
+
+    public void validateScanValues(double[][] scanTargetValues){
+        this.scanTargetValues = scanTargetValues;
     }
 
     public void validateScanTargets(String[] scanTargets){
@@ -84,7 +90,11 @@ public class Hdf5DataSourceSpatialSimMetadata {
     }
 
     public int[] getScanBounds(){
-        return this.scanBounds;
+        return this.scanTargetUpperInclusiveBound;
+    }
+
+    public double[][] getScanValues(){
+        return this.scanTargetValues;
     }
 
     public String[] getScanTargets(){
