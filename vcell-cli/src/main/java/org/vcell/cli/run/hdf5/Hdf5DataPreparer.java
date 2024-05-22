@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.DataSet;
 import org.jlibsedml.Report;
-import org.jlibsedml.VariableSymbol;
 
 import java.util.*;
 
@@ -30,11 +29,7 @@ public class Hdf5DataPreparer {
         // Fake for-loop; just to get the first item
         if (!(hdf5SedmlResults.dataSource instanceof Hdf5SedmlResultsSpatial spatialResults))
             throw new ClassCastException("A non-spatial dataset was applied to a spatial function");
-        for (DataSet dataSet : spatialResults.dataItems.getDataSetMappings(report).keySet()){
-            Hdf5DataSourceSpatialVarDataItem firstItem = spatialResults.dataItems.getDataSetMappings(report).get(dataSet);
-            return firstItem.times;
-        }
-        throw new RuntimeException("dataSource is empty!");
+        return spatialResults.dataMapping.get(report).metadata.getTimes();
     }
 
     /**
@@ -45,63 +40,37 @@ public class Hdf5DataPreparer {
      */
     public static Hdf5PreparedData prepareSpatialData (Hdf5SedmlResults datasetWrapper, Report sedmlReport, boolean reportSubSets){
         int totalDataVolume = 1;
-        int numJobs = 1;
         double[] bigDataBuffer;
         List<Long> dataDimensionList = new ArrayList<>();
-        Hdf5DataSourceSpatialVarDataItem exampleVarDataItem = null;
         Hdf5SedmlResultsSpatial spatialDataSource = (Hdf5SedmlResultsSpatial)datasetWrapper.dataSource;
-        Map<DataSet, Hdf5DataSourceSpatialVarDataItem> spatialResultsData = new LinkedHashMap<>();
+        Hdf5SedmlResultsSpatial.SpatialComponents comps = spatialDataSource.dataMapping.get(sedmlReport);
+        List<Hdf5DataSourceSpatialVarDataLocation> exampleLocations =
+                spatialDataSource.dataMapping.get(sedmlReport).varsToData.getLocations((new ArrayList<>(comps.varsToData.getVariableSet())).get(0));
 
-        //spatialDataResults.scanBounds = spatialDataSource.scanBounds;
-        //spatialDataResults.scanParameterNames = spatialDataSource.scanParameterNames;
-        for (DataSet dataSetItem : spatialDataSource.dataItems.getDataSetMappings(sedmlReport).keySet()){
-            Hdf5DataSourceSpatialVarDataItem dataItem = spatialDataSource.dataItems.getDataSetMappings(sedmlReport).get(dataSetItem);
-            VariableSymbol symbol = dataItem.sedmlVariable.getSymbol();
-            if (symbol != null && "TIME".equals(symbol.name())) continue;
-            if (exampleVarDataItem == null) exampleVarDataItem = dataItem;
-            spatialResultsData.put(dataSetItem, dataItem);
-        }
-
-        if (exampleVarDataItem == null)
+        if (comps.varsToData == null || comps.varsToData.getVariableSet().isEmpty())
             throw new RuntimeException("We have no spatial datasets here somehow! This error shouldn't happen");
 
-        if (exampleVarDataItem.spaceTimeDimensions == null){
+        if (comps.metadata.getSpaceTimeDimensions() == null){
             RuntimeException e = new RuntimeException("No space time dimensions could be found!");
             logger.error(e);
             throw e;
         }
 
-        int[] spaceTimeDimensions = exampleVarDataItem.spaceTimeDimensions;
-
-        if (exampleVarDataItem.times.length != spaceTimeDimensions[spaceTimeDimensions.length-1]){
-            throw new RuntimeException("unexpected dimension " + spaceTimeDimensions
-                    + " for data, expected last dimension to be that of time: " + exampleVarDataItem.times.length);
-        }
+        int[] spaceTimeDimensions = comps.metadata.getSpaceTimeDimensions();
 
         // Structure dimensionality
-        dataDimensionList.add((long)spatialResultsData.size()); // ...first by dataSet
-        for (int scanBound : spatialDataSource.scanBounds){
-            dataDimensionList.add((long)scanBound + 1);         // ...then by scan bounds / "repeated task"
-            numJobs *= (scanBound+1);
-            if (reportSubSets) dataDimensionList.add((long)1);  // ...then by num of subtasks (VCell only supports 1)
-        }
-        for (long dim : spaceTimeDimensions){                   // ...finally by space-time dimensions
-            dataDimensionList.add(dim);
-        }
+        dataDimensionList.add((long)comps.varsToData.getVariableSet().size());  // ...first by num of dataSet / species
+        dataDimensionList.add((long)exampleLocations.size());                   // ...then by scan bounds / "repeated task"
+        if (reportSubSets) dataDimensionList.add((long)1);                      // ...then by num of subtasks (VCell only supports 1)
+        for (long dim : spaceTimeDimensions) dataDimensionList.add(dim);        // ...finally by space-time dimensions
 
         for (long dim : dataDimensionList){
             totalDataVolume *= (int)dim;
         }
-
-        // Create buffer of contiguous data to hold everything.
-        bigDataBuffer = new double[totalDataVolume];
-        int bufferOffset = 0;
-        for (DataSet varDataSet : spatialResultsData.keySet()){
-            Hdf5DataSourceSpatialVarDataItem varDataItem = spatialResultsData.get(varDataSet);
-            String varName = varDataItem.sedmlVariable.getSymbol() == null ? null : varDataItem.sedmlVariable.getSymbol().name();
-            double[] dataArray = "TIME".equals(varName) ? varDataItem.times: varDataItem.getSpatialData();
-            System.arraycopy(dataArray,0, bigDataBuffer, bufferOffset, dataArray.length);
-            bufferOffset += dataArray.length;
+        bigDataBuffer = comps.varsToData.getFlatDataForAllVars();
+        if (bigDataBuffer.length != totalDataVolume){
+            String format = "Calculated total volume of data (%d) does not match returned value (%d)!";
+            throw new RuntimeException(String.format(format, totalDataVolume, bigDataBuffer.length));
         }
 
         Hdf5PreparedData preparedData = new Hdf5PreparedData();
