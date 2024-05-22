@@ -77,11 +77,7 @@ public class AgroalConnectionFactory implements ConnectionFactory {
                 return true;
             }
             case "prod": {
-                if (usePostgresqlInProd) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return false;
             }
             default: {
                 throw new IllegalStateException("Unexpected value: " + activeProfile);
