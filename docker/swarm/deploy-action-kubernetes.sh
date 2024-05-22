@@ -3,12 +3,12 @@
 set -ux
 
 show_help() {
-	echo "Deploys or updates a deployment of VCell on remote Kubernetes cluster"
+	echo "Deploys vcell client installers, webhelp and singularity images for a Kubernetes deploy"
 	echo ""
 	echo "usage: deploy-action-kubernetes.sh [OPTIONS] REQUIRED-ARGUMENTS"
 	echo ""
 	echo "  REQUIRED-ARGUMENTS"
-	echo "    manager-node          any node for ssh access ( vcellapi-test.cam.uchc.edu )"
+	echo "    manager-node          any node for ssh access (e.g. vcellapi.cam.uchc.edu)"
 	echo ""
 	echo "    local-config-file     local config file for setting environment"
 	echo ""
@@ -38,10 +38,10 @@ show_help() {
 	echo "deploy-action-kubernetes.sh \\"
 	echo "   --ssh-user vcell \\"
 	echo "   --install_singularity \\"
-	echo "   --build_installers --installer_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/Test \\"
+	echo "   --build_installers --installer_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha \\"
 	echo "   --webhelp_local_dir ../../vcell-client/target/classes/vcellDoc \\"
 	echo "   --webhelp_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/VCell_Tutorials/VCell_Help \\"
-	echo "   vcellapi-test.cam.uchc.edu \\"
+	echo "   vcellapi.cam.uchc.edu \\"
 	echo "   ./server.config"
 	exit 1
 }

@@ -21,7 +21,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.gui.VCFileChooser;
 
 import cbit.vcell.resource.PropertyLoader;
@@ -66,7 +66,7 @@ public class ComsolConfigurationPanel extends JPanel {
 		//
 		//=============================================================================
 		int gridy = 0;
-		JLabel comsolRootLabel = new JLabel("<html>Comsol Multiphysics directory (requires a local COMSOL Multiphysics installation, see <a href='"+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.COMSOL_URL)+"'>Comsol.com</a>)</html>");
+		JLabel comsolRootLabel = new JLabel("<html>Comsol Multiphysics directory (requires a local COMSOL Multiphysics installation, see <a href='"+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.COMSOL_URL)+"'>Comsol.com</a>)</html>");
 		gbc.gridx = 0;
 		gbc.gridy = gridy;
 		gbc.gridwidth = 2;

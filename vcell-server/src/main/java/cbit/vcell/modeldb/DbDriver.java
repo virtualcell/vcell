@@ -186,13 +186,13 @@ public abstract class DbDriver {
     public static void checkRolePermission(Connection con, User user, User.SPECIAL_CLAIM claim, String permissionText, DatabaseSyntax databaseSyntax) throws SQLException,DataAccessException{
 		if (user instanceof User.SpecialUser specialUser){
 			if (!Arrays.asList(specialUser.getMySpecials()).contains(claim)){
-				throw new DataAccessException("User "+user.getName()+" does not have permission to " + permissionText);
+				throw new PermissionException("User "+user.getName()+" does not have permission to " + permissionText);
 			}
 		}else {
 			TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user, con, databaseSyntax);
 			TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(claim);
 			if (usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
-				throw new DataAccessException("User " + user.getName() + " does not have permission to " + permissionText);
+				throw new PermissionException("User " + user.getName() + " does not have permission to " + permissionText);
 			}
 		}
     }
@@ -591,7 +591,7 @@ public abstract class DbDriver {
             updatedVersionFlag = VersionFlag.Archived;
         } else if(curateSpec.getCurateType() == CurateSpec.PUBLISH){
             //Must have PUBLISH rights
-            if(!dbVersion.getOwner().isPublisher()){
+            if (!(user instanceof User.SpecialUser specialUser) || !specialUser.isPublisher()) {
                 throw new PermissionException("Cannot curate " + vType.getTypeName() + " \"" + dbVersion.getName() + "\" (" + vKey + "), user " + user.getName() + " not granted PUBLISHING rights");
             }
             //Must be ARCHIVED and Public before PUBLISH is allowed

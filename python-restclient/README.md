@@ -62,19 +62,24 @@ configuration = vcell_client.Configuration(
     host = "https://vcellapi-test.cam.uchc.edu"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
 
 
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
-    api_instance = vcell_client.BioModelResourceApi(api_client)
-    bio_model_id = 'bio_model_id_example' # str | 
+    api_instance = vcell_client.AdminResourceApi(api_client)
 
     try:
-        # Delete the BioModel from VCell's database.
-        api_instance.delete_bio_model(bio_model_id)
+        # Get usage summary
+        api_response = api_instance.get_usage()
+        print("The response of AdminResourceApi->get_usage:\n")
+        pprint(api_response)
     except ApiException as e:
-        print("Exception when calling BioModelResourceApi->delete_bio_model: %s\n" % e)
+        print("Exception when calling AdminResourceApi->get_usage: %s\n" % e)
 
 ```
 
@@ -84,6 +89,7 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
+*AdminResourceApi* | [**get_usage**](docs/AdminResourceApi.md#get_usage) | **GET** /api/v1/admin/usage | Get usage summary
 *BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
 *BioModelResourceApi* | [**get_biomodel_by_id**](docs/BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
 *BioModelResourceApi* | [**upload_bio_model**](docs/BioModelResourceApi.md#upload_bio_model) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.

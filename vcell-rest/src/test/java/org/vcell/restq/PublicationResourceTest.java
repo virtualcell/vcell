@@ -94,7 +94,7 @@ public class PublicationResourceTest {
                 .when().get("/api/v1/publications")
                 .then()
                 .statusCode(200)
-                .body("$.size()", is(0));
+                .body("$.size()", is(1));
 
         // insert publication1 as no user
         given()
@@ -124,24 +124,24 @@ public class PublicationResourceTest {
                 .statusCode(200);
 
         Publication[] publications = publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, Main.DUMMY_USER);
-        Assertions.assertEquals(1, publications.length);
-        Long pubKey = publications[0].pubKey();
+        Assertions.assertEquals(2, publications.length);
+        Long pubKey = publications[1].pubKey();
 
         // list publications, should return list with publication1
         given()
                 .when().get("/api/v1/publications")
                 .then()
                 .statusCode(200)
-                .body("$.size()", is(1))
-                .body("[0].title", is("publication 1"))
-                .body("[0].authors", containsInAnyOrder("author1", "author2"))
-                .body("[0].year", is(1994))
-                .body("[0].citation", is("citation"))
-                .body("[0].pubmedid", is("pubmedId"))
-                .body("[0].doi", is("doi"))
-                .body("[0].endnoteid", is(0))
-                .body("[0].url", is("url"))
-                .body("[0].wittid", is(0));
+                .body("$.size()", is(2))
+                .body("[1].title", is("publication 1"))
+                .body("[1].authors", containsInAnyOrder("author1", "author2"))
+                .body("[1].year", is(1994))
+                .body("[1].citation", is("citation"))
+                .body("[1].pubmedid", is("pubmedId"))
+                .body("[1].doi", is("doi"))
+                .body("[1].endnoteid", is(0))
+                .body("[1].url", is("url"))
+                .body("[1].wittid", is(0));
 
         // get publication1 as no user
         given()
@@ -174,7 +174,7 @@ public class PublicationResourceTest {
                 .when()
                 .delete("/api/v1/publications/{id}")
                 .then()
-                .statusCode(401);
+                .statusCode(403);
 
         // remove publication1 as pubuser (does have permission)
         given().auth().oauth2(keycloakClient.getAccessToken(pubuser))
@@ -189,6 +189,6 @@ public class PublicationResourceTest {
                 .when().get("/api/v1/publications")
                 .then()
                 .statusCode(200)
-                .body("$.size()", is(0));
+                .body("$.size()", is(1));
     }
 }

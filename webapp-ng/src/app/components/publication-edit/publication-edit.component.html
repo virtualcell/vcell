@@ -10,7 +10,7 @@
         </div>
         <div class="row">
             <div class="col" style="text-align: right;"><label for="authors">Authors:</label></div>
-            <div class="col"><input type="text" id="authors" [ngModel]="publication.authors.join(',')" 
+            <div class="col"><input type="text" id="authors" [ngModel]="publication.authors?.join(',')"
                 (ngModelChange)="publication.authors = $event.split(',')" name="authors">
             </div>
         </div>
@@ -44,13 +44,13 @@
         </div>
         <div class="row">
             <div class="col" style="text-align: right;"><label for="biomodelRefs">Biomodel IDs:</label></div>
-            <div class="col"><textarea type="text" id="biomodelRefs" [ngModel]="publication.biomodelRefs?.join(',')" 
+            <div class="col"><textarea type="text" id="biomodelRefs" [ngModel]="publication.biomodelRefs?.join(',')"
                 (ngModelChange)="publication.biomodelRefs = $event.split(',')" name="biomodelRefs"></textarea>
             </div>
         </div>
         <div class="row">
             <div class="col" style="text-align: right;"><label for="mathmodelRefs">Mathmodel IDs:</label></div>
-            <div class="col"><textarea type="text" id="mathmodelRefs" [ngModel]="publication.mathmodelRefs?.join(',')" 
+            <div class="col"><textarea type="text" id="mathmodelRefs" [ngModel]="publication.mathmodelRefs?.join(',')"
                 (ngModelChange)="publication.mathmodelRefs = $event.split(',')" name="mathmodelRefs"></textarea>
             </div>
         </div>

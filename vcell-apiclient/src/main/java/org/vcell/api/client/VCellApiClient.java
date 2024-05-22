@@ -488,9 +488,9 @@ public class VCellApiClient implements AutoCloseable {
 		return accessTokenRep;
 	}
 
-	public void authenticateWithAuth0() throws URISyntaxException, IOException, ParseException, ApiException {
+	public void authenticateWithAuth0(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
 		apiClient = InteractiveLogin.login("cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf", new URI("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/authorize"),
-				new URI(this.httpHost.getSchemeName()+"://"+this.httpHost.getHostName()+":"+this.httpHost.getPort()));
+				new URI(this.httpHost.getSchemeName()+"://"+this.httpHost.getHostName()+":"+this.httpHost.getPort()), ignoreSSLCertProblems);
 		apiClient.setScheme(this.httpHost.getSchemeName());
 	}
 

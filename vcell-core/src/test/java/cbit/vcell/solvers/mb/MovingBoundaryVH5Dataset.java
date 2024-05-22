@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
 
+import ncsa.hdf.object.DataFormat;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.vcell.util.CastingUtils;
@@ -77,7 +78,26 @@ public class MovingBoundaryVH5Dataset {
 //		 dt = dt.getBasetype();
         System.out.println(nt.getFullName());
         System.out.println(nt.getDatatypeDescription());
-        System.out.println(MovingBoundaryH5Client.parseMeta(dt));
+        String result;
+        try {
+            List<Object> meta = null;
+            try {
+                meta = ((DataFormat) dt).getMetadata();
+            } catch (NullPointerException npe) {
+                //HDF Java 5.11 throws these sometimes
+            }
+            if (meta != null) {
+                result = StringUtils.join(meta);
+            }
+            else {
+                result = "no meta";
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("printMeta", e);
+        }
+
+
+        System.out.println(result);
 
 //		 ds.init();
 //		 int did = ds.open();

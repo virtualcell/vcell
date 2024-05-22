@@ -117,4 +117,28 @@ public class JWTUtilsTest {
         assertFalse(verifyJWS(token1), "expect invalid token1, wrong signature");
         assertFalse(verifyJWS(token2), "expect invalid token2, wrong signature");
     }
+
+    @Test
+    public void testJWTWithStoredKeys() throws JoseException, MalformedClaimException {
+        // test with keys stored in files
+        JWTUtils.setRsaJsonWebKey(null);
+        User user = new User.SpecialUser("testuser", new KeyValue("12345"), new User.SPECIAL_CLAIM[0]);
+
+        NumericDate expirationDate = NumericDate.now();
+        expirationDate.addSeconds(1);
+        String token1 = JWTUtils.createToken(user, expirationDate);
+        assertTrue(verifyJWS(token1), "expect valid token");
+
+        // test expiration date by setting the expiration date 31 seconds in the past (there is a 30 second tolerance)
+        expirationDate = NumericDate.now();
+        expirationDate.addSeconds(-31);
+        String token2 = JWTUtils.createToken(user, expirationDate);
+        assertFalse(verifyJWS(token2), "expect timeout");
+
+        // install a different JsonWebKey and see that both tokens are invalid
+        RsaJsonWebKey rsaJsonWebKey2 = JWTUtils.createNewJsonWebKey("k2");
+        JWTUtils.setRsaJsonWebKey(rsaJsonWebKey2);
+        assertFalse(verifyJWS(token1), "expect invalid token1, wrong signature");
+        assertFalse(verifyJWS(token2), "expect invalid token2, wrong signature");
+    }
 }

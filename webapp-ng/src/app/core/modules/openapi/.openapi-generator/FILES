@@ -1,6 +1,8 @@
 .gitignore
 README.md
 api.module.ts
+api/admin-resource.service.ts
+api/admin-resource.serviceInterface.ts
 api/api.ts
 api/bio-model-resource.service.ts
 api/bio-model-resource.serviceInterface.ts

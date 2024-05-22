@@ -141,40 +141,40 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
     }
 
     private double[] getDoubleArray(String... names){
-        MovingBoundardyVH5TypedPath<double[]> dpath = new MovingBoundardyVH5TypedPath<double[]>(root, double[].class, names);
+        MovingBoundaryVH5TypedPath<double[]> dpath = new MovingBoundaryVH5TypedPath<double[]>(root, double[].class, names);
         return dpath.get();
     }
 
     private double singleDouble(String... names){
         double[] a = getDoubleArray(names);
         if(a.length != 1){
-            throw new MovingBoundaryResultException(MovingBoundardyVH5Path.concat(names) + " is not single element array");
+            throw new MovingBoundaryResultException(MovingBoundaryVH5Path.concat(names) + " is not single element array");
         }
         return a[0];
     }
 
     private long[] getLongArray(String... names){
-        MovingBoundardyVH5TypedPath<long[]> dpath = new MovingBoundardyVH5TypedPath<long[]>(root, long[].class, names);
+        MovingBoundaryVH5TypedPath<long[]> dpath = new MovingBoundaryVH5TypedPath<long[]>(root, long[].class, names);
         return dpath.get();
     }
 
     private long singleLong(String... names){
         long[] a = getLongArray(names);
         if(a.length != 1){
-            throw new MovingBoundaryResultException(MovingBoundardyVH5Path.concat(names) + " is not single element array");
+            throw new MovingBoundaryResultException(MovingBoundaryVH5Path.concat(names) + " is not single element array");
         }
         return a[0];
     }
 
     private int[] getIntArray(String... names){
-        MovingBoundardyVH5TypedPath<int[]> dpath = new MovingBoundardyVH5TypedPath<int[]>(root, int[].class, names);
+        MovingBoundaryVH5TypedPath<int[]> dpath = new MovingBoundaryVH5TypedPath<int[]>(root, int[].class, names);
         return dpath.get();
     }
 
     private int singleInt(String... names){
         int[] a = getIntArray(names);
         if(a.length != 1){
-            throw new MovingBoundaryResultException(MovingBoundardyVH5Path.concat(names) + " is not single element array");
+            throw new MovingBoundaryResultException(MovingBoundaryVH5Path.concat(names) + " is not single element array");
         }
         return a[0];
     }
@@ -400,10 +400,10 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
         final H5CompoundDS species;
 
         PlaneNodes() throws Exception{
-            MovingBoundardyVH5TypedPath<H5CompoundDS> dpath = new MovingBoundardyVH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "elements");
+            MovingBoundaryVH5TypedPath<H5CompoundDS> dpath = new MovingBoundaryVH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "elements");
             elements = dpath.get();
             elements.read();
-            dpath = new MovingBoundardyVH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "species");
+            dpath = new MovingBoundaryVH5TypedPath<H5CompoundDS>(root, H5CompoundDS.class, "species");
             species = dpath.get();
             species.read();
         }
@@ -441,7 +441,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
 
             VCAssert.assertTrue(timeIndex >= 0, "negative time index");
             validateTimeIndex(timeIndex);
-            MovingBoundardyVH5TypedPath<H5ScalarDS> path = new MovingBoundardyVH5TypedPath<>(root, H5ScalarDS.class, "boundaries");
+            MovingBoundaryVH5TypedPath<H5ScalarDS> path = new MovingBoundaryVH5TypedPath<>(root, H5ScalarDS.class, "boundaries");
             H5ScalarDS hsd = path.get();
             hsd.init();
             long[] start = hsd.getStartDims();

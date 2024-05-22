@@ -22,7 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.vcell.util.BeanUtils;
+import cbit.vcell.client.server.DynamicClientProperties;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.gui.DialogUtils;
 
@@ -127,7 +127,7 @@ public class DiffRateEstimationPanel extends JPanel
 		searchWebButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) 
 			{
-				final String url = BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.BIONUMBERS_SRCH2_URL);
+				final String url = DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.BIONUMBERS_SRCH2_URL);
 				DialogUtils.browserLauncher(DiffRateEstimationPanel.this, url, null);
 			}
 		});

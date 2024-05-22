@@ -21,6 +21,12 @@ export class AuthorizationService {
     );
   }
 
+  public isAdmin(): Observable<boolean> {
+    return this.auth.idTokenClaims$.pipe(
+      map(claims => claims ? claims['vcellapi.cam.uchc.edu/roles'].includes('admin') : false)
+    );
+  }
+
   public isUser(): Observable<boolean> {
     return this.auth.isAuthenticated$;
   }
