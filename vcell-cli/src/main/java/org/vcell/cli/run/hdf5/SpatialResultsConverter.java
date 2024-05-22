@@ -26,6 +26,7 @@ public class SpatialResultsConverter {
 
     public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws PythonStreamException {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
+        if (spatialResultsHash.isEmpty()) return results;
         ReorganizedSpatialResults sourceOfTruth = new ReorganizedSpatialResults(spatialResultsHash, taskToSimulationMap);
 
         for (Report report : SpatialResultsConverter.getReports(sedml.getOutputs())){
