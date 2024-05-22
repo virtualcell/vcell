@@ -75,7 +75,7 @@ public class CLIPythonManager {
 
     public static void callNonSharedPython(String cliCommand, String sedmlPath, String resultOutDir)
             throws InterruptedException, IOException, PythonStreamException {
-        lg.warn("Using old style python invocation!");
+        if (lg.isWarnEnabled()) lg.warn("Using old style python invocation!");
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-m", "vcell_cli_utils.cli",
                 cliCommand, sedmlPath, resultOutDir);

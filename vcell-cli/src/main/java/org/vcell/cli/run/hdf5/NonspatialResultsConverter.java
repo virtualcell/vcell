@@ -1,5 +1,6 @@
 package org.vcell.cli.run.hdf5;
 
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TempSimulation;
@@ -163,6 +164,18 @@ public class NonspatialResultsConverter {
                 dataSourceNonspatial.dataItems.put(report, dataSet, new LinkedList<>());
                 dataSourceNonspatial.scanBounds = dataSetValuesSource.vcSimulation.getMathOverrides().getScanBounds();
                 dataSourceNonspatial.scanParameterNames = dataSetValuesSource.vcSimulation.getMathOverrides().getScannedConstantNames();
+                double[][] scanValues = new double[dataSourceNonspatial.scanBounds.length][];
+                for (int nameIndex = 0; nameIndex < dataSourceNonspatial.scanBounds.length; nameIndex++){
+                    String nameKey = dataSourceNonspatial.scanParameterNames[nameIndex];
+                    scanValues[nameIndex] = new double[dataSourceNonspatial.scanBounds[nameIndex] + 1];
+                    for (int scanIndex = 0; scanIndex < dataSourceNonspatial.scanBounds[nameIndex] + 1; scanIndex++){
+                        Expression overrideExp = dataSetValuesSource.vcSimulation.getMathOverrides().getActualExpression(nameKey, scanIndex);
+                        try { scanValues[nameIndex][scanIndex] = overrideExp.evaluateConstant(); }
+                        catch (ExpressionException e){ throw new RuntimeException(e); }
+                    }
+                }
+                dataSourceNonspatial.scanParameterValues = scanValues;
+
                 for (double[] data : dataSetValuesSource.listOfResultSets) {
                     dataSourceNonspatial.dataItems.get(report, dataSet).add(data);
                     shapes.add(Integer.toString(data.length));

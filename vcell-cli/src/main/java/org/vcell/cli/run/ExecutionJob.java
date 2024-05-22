@@ -139,7 +139,10 @@ public class ExecutionJob {
                 boolean hasSucceeded = job.simulateSedml(masterHdf5File);
                 this.anySedmlDocumentHasSucceeded |= hasSucceeded;
                 this.anySedmlDocumentHasFailed &= hasSucceeded;
-                if (hasSucceeded) logger.info("Processing of SedML succeeded.\n" + stats.toString());
+                if (hasSucceeded){
+                    String formattedStats = stats.toFormattedString();
+                    logger.info("Processing of SedML succeeded.\n" + formattedStats);
+                }
                 else logger.error("Processing of SedML has failed.\n" + stats.toString());
             }
             BiosimulationsHdf5Writer.writeHdf5(masterHdf5File, new File(this.outputDir));
