@@ -376,7 +376,8 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 	try {
 		// see static-files-config ConfigMap for definitions of dynamic properties as deployed
 		String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
-		String webapp_base_url = "https://" + getClientServerInfo().getApihost() + ":" + getClientServerInfo().getApiport();
+		boolean isHTTP = PropertyLoader.getBooleanProperty(PropertyLoader.isHTTP, false);
+		String webapp_base_url = isHTTP ? "http://" : "https://" + getClientServerInfo().getApihost() + ":" + getClientServerInfo().getApiport();
 		URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
 		DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url);
 	} catch (Exception e) {

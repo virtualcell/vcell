@@ -260,6 +260,7 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	public static String getVCellSoftwareVersion(String apihost, Integer apiport, String pathPrefix_v0) {
 	boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
 	boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch,false);;
+	boolean isHTTP = PropertyLoader.getBooleanProperty(PropertyLoader.isHTTP,false);
 	try {
 		VCellApiClient tempApiClient = new VCellApiClient(apihost, apiport, pathPrefix_v0, isHTTP, bIgnoreCertProblems, bIgnoreHostMismatch);
 		String serverSoftwareVersion = tempApiClient.getServerSoftwareVersion();
