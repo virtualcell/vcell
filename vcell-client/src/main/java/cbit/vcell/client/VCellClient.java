@@ -251,9 +251,10 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			Path appState = Path.of(ResourceUtil.getVcellHome().getAbsolutePath(), "/state.json");
+			boolean appStateExists = Files.exists(appState);
 			boolean showPopupMenu = true;
 			try{
-				if (Files.exists(appState)) {
+				if (appStateExists) {
 					String json = Files.readString(appState);
 					showPopupMenu = false;
 				}
@@ -281,7 +282,9 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 
 			ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, vcellConnectionFactory.getAuth0MappedUser(), null);
 			getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
-			Files.createFile(appState);
+			if(!appStateExists){
+				Files.createFile(appState);
+			}
 		}
 	};
 	
