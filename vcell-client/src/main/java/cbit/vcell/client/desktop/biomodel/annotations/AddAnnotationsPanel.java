@@ -265,7 +265,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         searchComponents.add(searchBar, gbc);
 
         VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
-        if (mdt == DataType_UNIPROT) {
+//        if (mdt == DataType_UNIPROT) {
             searchBar.setColumns(15);
 
             gbc.gridx++;
@@ -286,8 +286,8 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 //            organismLabel.setVisible(true);
 //            organismSearchField.setVisible(true);
             this.pack();
-        }
-//
+//        }
+        updateGUI();
     }
 
     private void addDescriptionPanelComponents(JPanel rightPanel) {
@@ -341,6 +341,10 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     }
 
     public void updateGUI() {
+        if(dlm == null) {
+            organismSearchField.setEnabled(false);
+            return;
+        }
         dlm.clear();
         searchBar.setText(null);
         searchBar.requestFocusInWindow();
@@ -353,7 +357,14 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
                 containsBox.addItem("exact");
             }
         }
-        setSearchComponents();
+//        setSearchComponents();
+
+        if (mdt == DataType_UNIPROT) {
+            organismSearchField.setEnabled(true);
+        } else {
+            organismSearchField.setEnabled(false);
+        }
+
     }
 
     private void getSearchResults() throws IOException, URISyntaxException, ParserConfigurationException, InterruptedException, SAXException {

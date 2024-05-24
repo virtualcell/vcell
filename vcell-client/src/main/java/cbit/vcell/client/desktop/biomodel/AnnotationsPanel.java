@@ -93,6 +93,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private Identifiable selectedObject = null;
 
 	public static final String ACTION_ADD ="Add...";
+	public static final String ACTION_SEARCH ="Search...";
 	public static final String ACTION_DELETE ="Delete";
 	public static final String ACTION_REMOVE_TEXT = "Delete";
 	public static final String ACTION_GOTO ="Go";
@@ -117,7 +118,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private DefaultComboBoxModel defaultComboBoxModelQualifier = new DefaultComboBoxModel();
 
 	private JTextField jTextFieldFormalID = null;	// immortal ID text
-	private JButton jButtonAddRef = null;			// add a cross-reference
+	private JButton jButtonSearchRef = null;		// search a database add a cross-reference
 	private JButton jButtonDeleteRef = null;		// delete selected cross-reference
 	private JButton jButtonRemoveText = null;		// remove text annotation
 
@@ -167,7 +168,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void actionPerformed(ActionEvent evt) {
-			if (evt.getSource() == getJButtonAddRef()) {
+			if (evt.getSource() == getJButtonSearchRef()) {
 				initializeAddAnnotationsPanel();
 //				addIdentifier();
 			}
@@ -387,8 +388,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(3, 6, 3, 8);
 		gbc.gridx = gridx;
 		gbc.gridy = 0;
-		jPanelLeftTitle.add(getJButtonAddRef(), gbc);
-		getJButtonAddRef().addActionListener(eventHandler);
+		jPanelLeftTitle.add(getJButtonSearchRef(), gbc);
+		getJButtonSearchRef().addActionListener(eventHandler);
 
 		return jPanelLeftTitle;
 	}
@@ -451,7 +452,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 //		gbc.insets = new Insets(3, 5, 3, 5);
 //		gbc.gridx = gridx;
 //		gbc.gridy = 0;
-//		jPanelIdentifierManager.add(getJButtonAddRef(), gbc);
+//		jPanelIdentifierManager.add(getJButtonSearchRef(), gbc);
 
 //		gbc = new GridBagConstraints();
 //		gbc.insets = new Insets(3, 0, 3, 0);
@@ -461,7 +462,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 //		gbc.weightx = 1.0;
 //		jPanelIdentifierManager.add(new JLabel(""), gbc);
 //
-//		getJButtonAddRef().addActionListener(eventHandler);
+//		getJButtonSearchRef().addActionListener(eventHandler);
 		}
 		return jPanelIdentifierManager;
 	}
@@ -860,7 +861,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		if(selectedObject != null && entity != null) {
 			getJComboBoxURI().setEnabled(true);
 			getJTextFieldFormalID().setEnabled(true);
-			getJButtonAddRef().setEnabled(true);
+			getJButtonSearchRef().setEnabled(true);
 			getJButtonRemoveText().setEnabled(true);
 			VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
 			miriamTreeModel.createTree(entity);
@@ -876,7 +877,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		} else {
 			getJComboBoxURI().setEnabled(false);
 			getJTextFieldFormalID().setEnabled(false);
-			getJButtonAddRef().setEnabled(false);
+			getJButtonSearchRef().setEnabled(false);
 			getJButtonRemoveText().setEnabled(false);
 			miriamTreeModel.createTree(null);
 
@@ -1114,13 +1115,13 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		}
 	}
 
-	private JButton getJButtonAddRef() {
-		if (jButtonAddRef == null) {
-			jButtonAddRef = new JButton();
-			jButtonAddRef.setText(ACTION_ADD);
-			jButtonAddRef.setToolTipText("Add a new reference with this provider");
+	private JButton getJButtonSearchRef() {
+		if (jButtonSearchRef == null) {
+			jButtonSearchRef = new JButton();
+			jButtonSearchRef.setText(ACTION_SEARCH);
+			jButtonSearchRef.setToolTipText("Search provider database for a reference by keyword");
 		}
-		return jButtonAddRef;
+		return jButtonSearchRef;
 	}
 	private JButton getJButtonDeleteRef() {
 		if (jButtonDeleteRef == null) {
