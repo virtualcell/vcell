@@ -22,7 +22,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 
     private JButton searchButton;
     private JTextField searchBar;
-    private JTextField organismSearchField;
+    private JTextField organismSearchField = new JTextField();
     private JList<String> list;
     private DefaultListModel<String> dlm;
     private JComboBox<String> ontologiesBox;
@@ -34,7 +34,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     private final AnnotationsPanel annotationsPanel; //to connect AnnotationsPanel with AddAnnotationsPanel
     private String annotDescription;
     private JComboBox jComboBoxURI, jComboBoxQualifier;			// identity provider combo
-    private JPanel searchComponents;
+    private JPanel searchComponentsPanel = null;
 
     public AddAnnotationsPanel (AnnotationsPanel annotationsPanel, JComboBox JComboBoxURI, JComboBox JComboBoxQualifier) {
         this.annotationsPanel = annotationsPanel;
@@ -45,33 +45,44 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         setResizable(false);
         setLocationRelativeTo(null);
 
-        GridBagLayout gbl = new GridBagLayout();
-        JPanel mainPanel = new JPanel(gbl);
-        searchComponents = new JPanel();
-
+        JPanel mainPanel = new JPanel(new GridBagLayout());
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.weightx = 1;
-        gbc.weighty = 1;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = 2;
         gbc.insets = new Insets(15,0,0,0);
-
-        //Add left panel for searching annotations
+        gbc.gridx = 0;
         gbc.gridy = 0;
         JPanel searchPanel = new JPanel();
-        addSearchPanelComponents(searchPanel);
+        addSearchPanelComponents(searchPanel);              // --- top panel (Search) ------------------------
         mainPanel.add(searchPanel, gbc);
 
-        //Add right panel for descriptions
-        gbc.gridx = 1;
-        gbc.gridwidth = 2;
+        gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
         gbc.insets = new Insets(0,15,0,0);
+        gbc.fill = GridBagConstraints.BOTH;
+        JPanel resultsPanel = new JPanel();
+        addResultsPanelComponents(resultsPanel);            // --- left panel (Search Results) ---------
+        mainPanel.add(resultsPanel,gbc);
+
+
+        gbc = new GridBagConstraints();
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.insets = new Insets(0,15,0,0);
+        gbc.fill = GridBagConstraints.BOTH;
         JPanel descriptionPanel = new JPanel();
-        addDescriptionPanelComponents(descriptionPanel);
+        addDescriptionPanelComponents(descriptionPanel);    // --- right panel (Description) ---------
         mainPanel.add(descriptionPanel,gbc);
 
         //Add JComboBox for qualifier
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         gbc.gridx = 0;
         gbc.fill = GridBagConstraints.VERTICAL;
         gbc.anchor = GridBagConstraints.EAST;
@@ -79,7 +90,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         mainPanel.add(jComboBoxQualifier,gbc);
 
         //Add "add" button to main panel
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         gbc.gridx = 1;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
@@ -89,7 +100,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         mainPanel.add(addButton, gbc);
 
         //Add OK button to main panel
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         gbc.gridx = 2;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
@@ -110,23 +121,22 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         return closeWinButton;
     }
 
-    private void addSearchPanelComponents(JPanel leftPanel) {
-        GridBagLayout sGbl = new GridBagLayout();
+    private void addSearchPanelComponents(JPanel topPanel) {
+        topPanel.setLayout(new GridBagLayout());
+
+//        sGbc.weightx = 1;
+//        sGbc.weighty = 1;
+//        sGbc.fill = GridBagConstraints.NONE;
+
         GridBagConstraints sGbc = new GridBagConstraints();
-        leftPanel.setLayout(sGbl);
-
-        sGbc.weightx = 1;
-        sGbc.weighty = 1;
-        sGbc.fill = GridBagConstraints.NONE;
-
         //adding select ontology Label
         sGbc.gridy = 0;
         sGbc.gridx = 0;
         sGbc.insets = new Insets(0,10,0,0);
         JLabel selectOntologyLabel = new JLabel("Select Provider:");
-        leftPanel.add(selectOntologyLabel, sGbc);
+        topPanel.add(selectOntologyLabel, sGbc);
 
-        //adding ontologies combobox
+        sGbc = new GridBagConstraints();
         sGbc.gridy = 0;
         sGbc.gridx = 1;
         sGbc.insets = new Insets(0,10,0,0);
@@ -136,53 +146,55 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
                 updateGUI();
             }
         });
-        leftPanel.add(jComboBoxURI, sGbc);
+        topPanel.add(jComboBoxURI, sGbc);      // ontologies combobox
 
-        //adding search label
+        sGbc = new GridBagConstraints();
+        sGbc.gridy = 0;
+        sGbc.gridx = 1;
+        sGbc.weightx = 1;
+        topPanel.add(new javax.swing.JLabel(""), sGbc);      // empty filler
+
+        // ---------- second row -----------------------------------------------------------------
+        sGbc = new GridBagConstraints();
         sGbc.gridy = 1;
         sGbc.gridx = 0;
         sGbc.anchor = GridBagConstraints.EAST;
         sGbc.insets = new Insets(15,0,0,0);
-        JLabel searchLabel = new JLabel("Search term:");
-        leftPanel.add(searchLabel, sGbc);
-/////////////////////////////////////////////////////////////////////////////////////////////////
-        //adding contains/exaxt Jcombobox
+        JLabel searchLabel = new JLabel("Search term:");        // search label
+        topPanel.add(searchLabel, sGbc);
+
+        sGbc = new GridBagConstraints();
         sGbc.gridy = 1;
         sGbc.gridx = 1;
         sGbc.anchor = GridBagConstraints.CENTER;
         sGbc.insets = new Insets(15,0,0,0);
-
-        containsBox = new JComboBox<>();
+        containsBox = new JComboBox<>();            // contains/exact Jcombobox
         containsBox.addItem("contains");
         containsBox.addItem("exact");
-        leftPanel.add(containsBox, sGbc);
+        topPanel.add(containsBox, sGbc);
 
-        //adding search bar
+        sGbc = new GridBagConstraints();
         sGbc.gridy = 1;
         sGbc.fill = GridBagConstraints.HORIZONTAL;
         sGbc.gridx = 2;
-        sGbc.gridwidth = 1;
+        sGbc.weightx = 1;
+        sGbc.gridwidth = 2;
         sGbc.anchor = GridBagConstraints.WEST;
         sGbc.insets = new Insets(15,0,0,6);
-        searchBar = new JTextField(25);
+//        searchBar = new JTextField(25);
 //        searchBar = new JTextField(15);
 //        leftPanel.add(searchBar, sGbc);
-        setSearchComponents();
-        leftPanel.add(searchComponents, sGbc);
+        topPanel.add(getSearchComponentsPanel(), sGbc);    // the searchComponentsPanel
 
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //adding limit label
+        // --------- third row -------------------------------------------------------------------
         sGbc.fill = GridBagConstraints.NONE;
         sGbc.anchor = GridBagConstraints.EAST;
         sGbc.gridwidth = 1;
         sGbc.gridy = 2;
         sGbc.gridx = 0;
         sGbc.insets = new Insets(8,0,0,3);
-        JLabel limitLabel = new JLabel("Limit to");
-        leftPanel.add(limitLabel, sGbc);
+        JLabel limitLabel = new JLabel("Limit to");         // limit label
+        topPanel.add(limitLabel, sGbc);
 
         //adding limit JComboBox
         sGbc.fill = GridBagConstraints.HORIZONTAL;
@@ -195,7 +207,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         limitBox.addItem("100");
         limitBox.addItem("500");
 
-        leftPanel.add(limitBox, sGbc);
+        topPanel.add(limitBox, sGbc);
 
         //adding limit term label
         sGbc.fill = GridBagConstraints.NONE;
@@ -204,7 +216,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         sGbc.gridx = 2;
         sGbc.insets = new Insets(8,0,0,3);
         JLabel elementLabel = new JLabel("elements");
-        leftPanel.add(elementLabel, sGbc);
+        topPanel.add(elementLabel, sGbc);
 
         //adding search button
         sGbc.anchor = GridBagConstraints.EAST;
@@ -213,9 +225,9 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 //        sGbc.insets = new Insets(8,0,0,0);
         searchButton = new JButton("Search");
         searchButton.addActionListener(this);
-        leftPanel.add(searchButton, sGbc);
+        topPanel.add(searchButton, sGbc);
 
-
+/*
         //adding results label
         sGbc.fill = GridBagConstraints.HORIZONTAL;
         sGbc.gridy = 3;
@@ -243,51 +255,97 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
             }
         });
         leftPanel.add(new JScrollPane(list), sGbc);
+ */
     }
 
-    private void setSearchComponents() {
-//        searchComponents = new JPanel();
-        searchComponents.removeAll();
+    private JPanel getSearchComponentsPanel() {
+        if(searchComponentsPanel != null) {
+            return searchComponentsPanel;
+        }
+        searchComponentsPanel = new JPanel();
+//        searchComponents.removeAll();
 
-        GridBagLayout gbl = new GridBagLayout();
-        GridBagConstraints gbc = new GridBagConstraints();
-        searchComponents.setLayout(gbl);
+//        GridBagLayout gbl = new GridBagLayout();
+        searchComponentsPanel.setLayout(new GridBagLayout());
 
+        int gridx = 0;
+        int gridy = 0;
         //adding search bar
-        gbc.gridy = 0;
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = gridx;
+        gbc.gridy = gridy;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx = 0;
         gbc.gridwidth = 1;
+        gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.WEST;
 //        gbc.insets = new Insets(15,0,0,10);
-//        searchBar = new JTextField(25);
-        searchBar = new JTextField(25);
-        searchComponents.add(searchBar, gbc);
+        searchBar = new JTextField();
+        searchComponentsPanel.add(searchBar, gbc);
 
         VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
 //        if (mdt == DataType_UNIPROT) {
-            searchBar.setColumns(15);
-
-            gbc.gridx++;
-            gbc.anchor = GridBagConstraints.CENTER;
+//            searchBar.setColumns(15);
+            gridx++;
+            gbc = new GridBagConstraints();
+            gbc.gridx = gridx;
+            gbc.gridy = gridy;
+            gbc.gridwidth = 1;
+            gbc.anchor = GridBagConstraints.WEST;
             gbc.insets = new Insets(0,5,0,0);
             JLabel organismLabel = new JLabel("in Organism:");
-            searchComponents.add(organismLabel, gbc);
+        searchComponentsPanel.add(organismLabel, gbc);
 //            organismLabel.setVisible(false);
 
+            gridx++;
+            gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx++;
+            gbc.gridx = gridx;
+            gbc.gridy = gridy;
             gbc.gridwidth = 1;
-            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.weightx = 1;
+            gbc.anchor = GridBagConstraints.WEST;
             gbc.insets = new Insets(0,5,0,10);
-            organismSearchField = new JTextField(8);
-            searchComponents.add(organismSearchField, gbc);
+//            organismSearchField = new JTextField(8);
+        searchComponentsPanel.add(organismSearchField, gbc);
 //            organismSearchField.setVisible(false);
 //            organismLabel.setVisible(true);
 //            organismSearchField.setVisible(true);
             this.pack();
 //        }
         updateGUI();
+        return searchComponentsPanel;
+    }
+
+    private void addResultsPanelComponents(JPanel leftPanel) {
+
+        leftPanel.setLayout(new GridBagLayout());
+
+        GridBagConstraints sGbc = new GridBagConstraints();
+        sGbc.fill = GridBagConstraints.HORIZONTAL;
+        sGbc.gridy = 0;
+        sGbc.gridx = 0;
+        sGbc.insets = new Insets(8,10,0,0);
+        JLabel resultLabel = new JLabel("Search Results:");     // search results label
+        leftPanel.add(resultLabel, sGbc);
+
+        sGbc.gridy = 1;
+        sGbc.gridx = 0;
+        sGbc.insets = new Insets(0,10,15,0);
+//        sGbc.ipady = 80;
+        list = new JList<>();                                       // search results list
+        dlm = new DefaultListModel<>();
+        list.setModel(dlm);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent listSelectionEvent) {
+                if (!listSelectionEvent.getValueIsAdjusting()) {
+                    getDescription();
+                }
+            }
+        });
+        leftPanel.add(new JScrollPane(list), sGbc);
+
     }
 
     private void addDescriptionPanelComponents(JPanel rightPanel) {
@@ -309,7 +367,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         //adding text area
         dGbc.weighty = 1;
         dGbc.gridy = 1;
-        dGbc.ipady = 30;
+//        dGbc.ipady = 30;
         dGbc.anchor = GridBagConstraints.NORTH;
         dGbc.fill = GridBagConstraints.BOTH;
         dGbc.insets = new Insets(0,0,20,15);
@@ -347,7 +405,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         }
         dlm.clear();
         searchBar.setText(null);
-        searchBar.requestFocusInWindow();
+//        searchBar.requestFocusInWindow();
 
         VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
         if (mdt == DataType_UNIPROT) {
