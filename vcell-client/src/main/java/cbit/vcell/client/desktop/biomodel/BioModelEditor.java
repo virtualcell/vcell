@@ -53,7 +53,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;

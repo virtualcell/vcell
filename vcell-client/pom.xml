@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -78,11 +78,23 @@
 	</properties>
 
 	<repositories>
-        <repository>
-           <id>ej-technologies</id>
-           <url>https://maven.ej-technologies.com/repository</url>
-        </repository>
+		<repository>
+			<id>ej-technologies</id>
+			<url>https://maven.ej-technologies.com/repository</url>
+		</repository>
 	</repositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>16</source>
+					<target>16</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 	<dependencies>
 	
@@ -144,6 +156,11 @@
       <artifactId>jetty-server</artifactId>
 		<version>${jetty.version}</version>
     </dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20220924</version>
+		</dependency>
 
 	</dependencies>
 	<profiles>
@@ -160,7 +177,7 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<executions>						
+						<executions>
 							<execution>
 								<id>build-user-help</id>
 								<phase>process-classes</phase>
@@ -175,7 +192,7 @@
 									</arguments>
 								</configuration>
 							</execution>
-			
+
 						</executions>
 					</plugin>
 				</plugins>
