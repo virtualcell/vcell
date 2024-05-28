@@ -10,43 +10,22 @@
 
 package cbit.vcell.client.desktop.biomodel;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.SystemColor;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeSelectionModel;
-import javax.swing.tree.TreePath;
-
-import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.MiriamManager;
+import cbit.vcell.biomodel.meta.MiriamManager.DataType;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
+import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
+import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager.VCMetaDataDataType;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.annotations.AddAnnotationsPanel;
 import cbit.vcell.client.desktop.biomodel.annotations.SearchElement;
+import cbit.vcell.desktop.BioModelCellRenderer;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.*;
+import cbit.vcell.xml.gui.MiriamTreeModel;
+import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.sybil.models.AnnotationQualifiers;
@@ -59,26 +38,20 @@ import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.MathModelInfo;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.MiriamManager;
-import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
-import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager.VCMetaDataDataType;
-import cbit.vcell.biomodel.meta.MiriamManager.DataType;
-import cbit.vcell.biomodel.meta.MiriamManager.MiriamRefGroup;
-import cbit.vcell.biomodel.meta.MiriamManager.MiriamResource;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.desktop.BioModelCellRenderer;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.xml.gui.MiriamTreeModel;
-import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
+import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeSelectionModel;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.URI;
+import java.util.List;
+import java.util.*;
 /**
  * Superclass for all the Annotation panels
  * Creation date: (11/6/2018 3:44:00 PM)
