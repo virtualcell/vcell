@@ -11,26 +11,43 @@
 package cbit.vcell.message.server.bootstrap;
 
 import cbit.vcell.export.server.ExportServiceImpl;
+import cbit.vcell.message.server.bootstrap.client.LocalVCellConnectionMessaging;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.Auth0ConnectionUtils;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import com.nimbusds.oauth2.sdk.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.client.VCellApiClient;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.util.AuthenticationException;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
 /**
  * This type was created in VisualAge.
  */
@@ -38,6 +55,17 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 	public static final Logger lg = LogManager.getLogger(LocalVCellConnectionFactory.class);
 	
 	private ConnectionFactory connectionFactory = null;
+	private final Auth0ConnectionUtils auth0ConnectionUtils;
+	private final VCellApiClient vcellApiClient;
+
+	public LocalVCellConnectionFactory() {
+        try {
+            this.vcellApiClient = new VCellApiClient("vcell-dev.cam.uchc.edu", 443, "/api/v0");
+			this.auth0ConnectionUtils = new Auth0ConnectionUtils(vcellApiClient);
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
+	}
 
 
 @Override
@@ -67,7 +95,7 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 		ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 		LocalVCellConnection vcConn = new LocalVCellConnection(userLoginInfo, simulationDatabase, dataSetControllerImpl, exportServiceImpl);
 		NativeLib.HDF5.load();
-		return vcConn; 
+		return vcConn;
 	} catch (Throwable exc) {
 		lg.error(exc.getMessage(), exc);
 		throw new ConnectionException(exc.getMessage());
@@ -76,18 +104,30 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 
 	@Override
 	public VCellConnection createVCellConnectionAuth0(UserLoginInfo userLoginInfo) throws ConnectionException {
-		return null;
-	}
+		try {
+			if (connectionFactory == null) {
+				connectionFactory = DatabaseService.getInstance().createConnectionFactory();
+			}
+			AccesTokenRepresentationRecord accessTokenRep = this.vcellApiClient.getLegacyToken();
+			userLoginInfo.setUser(new User(accessTokenRep.getUserId(), new KeyValue(accessTokenRep.getUserKey())));
 
-	@Override
-	public boolean isVCellIdentityMappedToAuth0Identity() {
-		return false;
-	}
-
-	@Override
-	public void mapVCellIdentityToAuth0Identity(UserLoginInfo userLoginInfo) {
-
-	}
+			KeyFactory keyFactory = connectionFactory.getKeyFactory();
+			LocalVCellConnection.setDatabaseResources(connectionFactory, keyFactory);
+			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(connectionFactory);
+			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(connectionFactory,keyFactory);
+			boolean bCache = false;
+			Cachetable cacheTable = null;
+			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable,
+					new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)),
+					new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty)));
+			SimulationDatabaseDirect simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, bCache);
+			ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
+			LocalVCellConnection vcConn = new LocalVCellConnection(userLoginInfo, simulationDatabase, dataSetControllerImpl, exportServiceImpl);
+			return vcConn;
+		} catch (ApiException | SQLException | FileNotFoundException | DataAccessException apiException){
+			throw new RuntimeException(apiException);
+		}
+    }
 
 	@Override
 	public Auth0ConnectionUtils getAuth0ConnectionUtils() {
