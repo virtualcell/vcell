@@ -24,6 +24,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.Auth0ConnectionUtils;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
@@ -250,6 +251,7 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 	AsynchClientTask task2b = new AsynchClientTask("Popup Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
 			Path appState = Path.of(ResourceUtil.getVcellHome().getAbsolutePath(), "/state.json");
 			boolean appStateExists = Files.exists(appState);
 			boolean showPopupMenu = true;
@@ -323,7 +325,7 @@ public void loginAuth0(final RequestManager requestManager, final ClientServerIn
 				@Override
 				public void run(Hashtable<String, Object> hashTable) throws Exception {
 					ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, userid, digestedPassword);
-					vcellConnectionFactory.mapVCellIdentityToAuth0Identity(newClientServerInfo.getUserLoginInfo());
+//					vcellConnectionFactory.mapVCellIdentityToAuth0Identity(newClientServerInfo.getUserLoginInfo());
 					requestManager.connectToServer(documentWindowManager, newClientServerInfo);
 				}
 			};

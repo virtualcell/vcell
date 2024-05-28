@@ -90,13 +90,8 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	}
 
 	@Override
-	public void auth0SignIn() {
-
-	}
-
-	@Override
-	public String getAuth0MappedUser() {
-		return "";
+	public Auth0ConnectionUtils getAuth0ConnectionUtils() {
+		return auth0ConnectionUtils;
 	}
 
 }

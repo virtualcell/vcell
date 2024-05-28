@@ -14,6 +14,7 @@ import cbit.rmi.event.*;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.server.Auth0ConnectionUtils;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
@@ -74,6 +75,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 	private final Integer apiport;
 	private final String pathPrefix_v0;
 	private final VCellApiClient vcellApiClient;
+	private final Auth0ConnectionUtils auth0ConnectionUtils;
 	private final static AtomicLong lastProcessedEventTimestamp = new AtomicLong(0);
 	private final static Logger lg = LogManager.getLogger(RemoteProxyVCellConnectionFactory.class);
 
@@ -191,6 +193,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 			this.vcellApiClient = new VCellApiClient(this.apihost, this.apiport, this.pathPrefix_v0,
 					quarkusApiHost, quarkusApiPort,
 					isHTTP, bIgnoreCertProblems, bIgnoreHostMismatch);
+			this.auth0ConnectionUtils = new Auth0ConnectionUtils(this.vcellApiClient);
 		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
 			throw new RuntimeException("VCellApiClient configuration exception: "+e.getMessage(),e);
 		}
@@ -219,43 +222,9 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	}
 
 	@Override
-	public boolean isVCellIdentityMappedToAuth0Identity() {
-		try{
-			return vcellApiClient.isVCellIdentityMapped();
-		} catch (ApiException e){
-			throw new RuntimeException(e);
-		}
+	public Auth0ConnectionUtils getAuth0ConnectionUtils() {
+		return auth0ConnectionUtils;
 	}
-
-	@Override
-	public void mapVCellIdentityToAuth0Identity(UserLoginInfo userLoginInfo) {
-		try{
-			vcellApiClient.mapUserToAuth0(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getClearTextPassword());
-		} catch (ApiException e){
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Override
-	public void auth0SignIn() {
-		try{
-			boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
-			boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
-			boolean ignoreSSLCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
-			vcellApiClient.authenticateWithAuth0(ignoreSSLCertProblems);
-		} catch (ApiException | URISyntaxException | IOException | ParseException e){
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Override
-	public String getAuth0MappedUser() {
-        try {
-            return vcellApiClient.getVCellUserNameFromAuth0Mapping();
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
 	public static String getVCellSoftwareVersion(String apihost, Integer apiport, String pathPrefix_v0) {
 	boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems,false);
