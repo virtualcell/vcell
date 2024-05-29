@@ -55,9 +55,9 @@ public class VCellClientMain implements Callable<Integer> {
     public static ArrayBlockingQueue<String> recordedUserEvents = new ArrayBlockingQueue<>(50, true);
     @Parameters(description = "optional vcell model file, accepts drag and drop install4j VCell launcher", arity = "0..1")
     private final File vcellModelFile = null;
-    @Option(names = {"--api-host"}, description = "VCell api server http://host[:port], " +
+    @Option(names = {"--api-host"}, description = "VCell api server host[:port], " +
             "defaults to -Dvcell.serverHost property, or vcellapi.cam.uchc.edu if not specified")
-    private String host = System.getProperty(PropertyLoader.vcellServerHost, "https://vcellapi.cam.uchc.edu");
+    private String host = System.getProperty(PropertyLoader.vcellServerHost, "vcellapi.cam.uchc.edu");
     @Option(names = {"--api-prefix-v0"}, description = "VCell api server path prefix for api version 0, " +
             "defaults to -Dvcell.serverPrefix.v0 property, or /api/v0 if not specified")
     private String pathPrefixV0 = System.getProperty(PropertyLoader.vcellServerPrefixV0, "/api/v0");
@@ -68,8 +68,10 @@ public class VCellClientMain implements Callable<Integer> {
     @Option(names = {"-console"}, type = Boolean.class, description = "Install4J parameter, ignored")
     private boolean _console = false;
     private VCellClient vcellClient;
-    @Option(names = {"--quarkus-api-host"}, hidden = true, description = "Quarkus API server http://host[:port]")
+    @Option(names = {"--quarkus-api-host"}, hidden = true, description = "Quarkus API server host[:port]")
     private String quarkusAPIHost = null;
+
+    private boolean isHTTP = PropertyLoader.getBooleanProperty(PropertyLoader.isHTTP, false);
 
     private VCellClientMain() {
     }
@@ -109,18 +111,23 @@ public class VCellClientMain implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        URL apiV0 = new URL(host);
-        URL quarkusAPI = quarkusAPIHost != null ? new URL(quarkusAPIHost) : apiV0;
+        String[] hostAndPort = this.host.split(":");
+        String host = hostAndPort[0];
+        int port = hostAndPort.length < 2 ? 443 : Integer.parseInt(hostAndPort[1]);
+
+        String quarkusHost = quarkusAPIHost != null ? quarkusAPIHost.split(":")[0] : host;
+        int quarkusPort = quarkusAPIHost != null ? Integer.parseInt(quarkusAPIHost.split(":")[1]) : port;
 
         PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
-        Injector injector = Guice.createInjector(new VCellClientModule(apiV0.getHost(), apiV0.getPort(), pathPrefixV0,
-                quarkusAPI.getHost(), quarkusAPI.getPort()));
+        Injector injector = Guice.createInjector(new VCellClientModule(host, port, pathPrefixV0,
+                quarkusHost, quarkusPort));
         this.vcellClient = injector.getInstance(VCellClient.class);
 
         // see static-files-config ConfigMap for definitions of dynamic properties as deployed
         String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
 
-        String webapp_base_url = apiV0.getProtocol() + "://" + apiV0.getHost() + ":" + apiV0.getPort();
+        String protocol = isHTTP ? "http" : "https";
+        String webapp_base_url = protocol + "://" + host + ":" + port;
         URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
         Thread dynamicClientPropertiesThread = new Thread(() -> DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url));
         dynamicClientPropertiesThread.setDaemon(false); // non-daemon thread to keep JVM running
@@ -144,7 +151,7 @@ public class VCellClientMain implements Callable<Integer> {
         if (password != null && password.length() > 0) {
             digestedPassword = new UserLoginInfo.DigestedPassword(password);
         }
-        ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(apiV0.getHost(), apiV0.getPort(), this.pathPrefixV0, userid, digestedPassword);
+        ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(host, port, this.pathPrefixV0, userid, digestedPassword);
 
         try {
             VCMongoMessage.enabled = false;
