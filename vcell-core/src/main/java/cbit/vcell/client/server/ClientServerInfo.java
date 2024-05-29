@@ -46,7 +46,7 @@ public static ClientServerInfo createFileBasedServerInfo() {
 
 
 public static ClientServerInfo createLocalServerInfo(String userName, DigestedPassword digestedPassword) {
-	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL,null,null, null, new UserLoginInfo(userName, digestedPassword));
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL,"vcell-dev.cam.uchc.edu",443, "/api/v0", new UserLoginInfo(userName, digestedPassword));
 	return csi;
 }
 
