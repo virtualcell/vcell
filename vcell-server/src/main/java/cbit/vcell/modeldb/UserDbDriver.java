@@ -33,10 +33,7 @@ import org.vcell.util.document.UserLoginInfo;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -58,7 +55,7 @@ public UserDbDriver() {
 
 
 public User.SpecialUser getUserFromUserid(Connection con, String userid) throws SQLException {
-	Statement stmt;
+	PreparedStatement pstmt;
 	String sql;
 	ResultSet rset;
 	if (lg.isTraceEnabled()) {
@@ -68,16 +65,17 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			" FROM " + userTable.getTableName() +
 			" LEFT JOIN " + SpecialUsersTable.table.getTableName() +
 			" ON " + SpecialUsersTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
-			" WHERE " + UserTable.table.userid + " = '" + userid + "'";
+			" WHERE " + UserTable.table.userid + " = ?";
 			
 	if (lg.isTraceEnabled()) {
 		lg.trace(sql);
 	}
-	stmt = con.createStatement();
+	pstmt = con.prepareStatement(sql);
+	pstmt.setString(1, userid);
 	BigDecimal userKey = null;
 	ArrayList<User.SPECIAL_CLAIM> specials = new ArrayList<>();
 	try {
-		rset = stmt.executeQuery(sql);
+		rset = pstmt.executeQuery();
 		while (rset.next()) {
 			BigDecimal bigDecimal = rset.getBigDecimal("userkey");
 			if(userKey == null) {
@@ -96,7 +94,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			}
 		}
 	} finally {
-		stmt.close();
+		pstmt.close();
 	}
 	if(userKey == null) {
 		return null;
