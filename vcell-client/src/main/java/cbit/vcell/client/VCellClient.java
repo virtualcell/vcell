@@ -247,12 +247,13 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		
 	};
 
-	AsynchClientTask task2b = new AsynchClientTask("Login With Auth0...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask task2b = new AsynchClientTask("Popup Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			Path appState = Path.of(ResourceUtil.getVcellHome().getAbsolutePath(), "/state.json");
 			boolean appStateExists = Files.exists(appState);
 			boolean showPopupMenu = true;
+			hashTable.put("login", true);
 			try{
 				if (appStateExists) {
 					String json = Files.readString(appState);
@@ -266,24 +267,31 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 				int accept = JOptionPane.showConfirmDialog(null,
 						"VCell is going to redirect you to your browser to login. Do you wish to proceed?");
 				if(accept==JOptionPane.NO_OPTION || accept==JOptionPane.CLOSED_OPTION || accept==JOptionPane.CANCEL_OPTION){
+					hashTable.put("login", false);
 					return;
 				}
-			}
-			vcellConnectionFactory.auth0SignIn();
-			DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
-			int numberOfPolls = 0;
-			while(!vcellConnectionFactory.isVCellIdentityMappedToAuth0Identity()){
-				if (numberOfPolls==20) {
-					return;
-				}
-				numberOfPolls++;
-				Thread.sleep(5000); // Poll every 5 seconds
-			}
-
-			ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, vcellConnectionFactory.getAuth0MappedUser(), null);
-			getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
-			if(!appStateExists){
 				Files.createFile(appState);
+			}
+		}
+	};
+
+	AsynchClientTask task2c = new AsynchClientTask("Login With Auth0...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if ((boolean)hashTable.get("login")) {
+				vcellConnectionFactory.auth0SignIn();
+				DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
+				int numberOfPolls = 0;
+				while(!vcellConnectionFactory.isVCellIdentityMappedToAuth0Identity()){
+					if (numberOfPolls==20) {
+						return;
+					}
+					numberOfPolls++;
+					Thread.sleep(5000); // Poll every 5 seconds
+				}
+
+				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, vcellConnectionFactory.getAuth0MappedUser(), null);
+				getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
 			}
 		}
 	};
@@ -299,7 +307,7 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		}
 	}; 	
 
-	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task2b, task3};
+	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task2b, task2c, task3};
 	ClientTaskDispatcher.dispatch(null, hash, taskArray);
 }
 
