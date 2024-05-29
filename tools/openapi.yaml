@@ -219,6 +219,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
+  /api/v1/users/forgotLegacyPassword:
+    post:
+      tags:
+      - Users Resource
+      summary: "The end user has forgotten the legacy password they used for VCell,\
+        \ so they will be emailed it."
+      operationId: forgotLegacyPassword
+      parameters:
+      - name: userID
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Legacy password sent in email
+        "401":
+          description: Need to login to Auth0
+        "500":
+          description: Internal Error
   /api/v1/users/mapUser:
     post:
       tags:

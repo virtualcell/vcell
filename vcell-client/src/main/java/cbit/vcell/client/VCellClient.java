@@ -10,35 +10,6 @@
 
 package cbit.vcell.client;
 
-import java.awt.Window;
-import java.util.Hashtable;
-import java.util.Map;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.RepaintManager;
-import javax.swing.SwingUtilities;
-
-import cbit.vcell.server.VCellConnectionFactory;
-import com.google.inject.Inject;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.vcell.api.client.VCellApiClient;
-import org.vcell.api.common.AccessTokenRepresentation;
-import org.vcell.restclient.api.UsersResourceApi;
-import org.vcell.restclient.auth.AuthApiClient;
-import org.vcell.restclient.model.AccesTokenRepresentationRecord;
-import org.vcell.restclient.model.MapUser;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocument.VCDocumentType;
-import org.vcell.util.gui.DialogUtils;
-
-import com.install4j.api.launcher.ApplicationLauncher;
-import com.install4j.api.launcher.ApplicationLauncher.Callback;
-import com.install4j.api.launcher.Variables;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -52,6 +23,20 @@ import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.ErrorUtils;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.VCellConnectionFactory;
+import com.google.inject.Inject;
+import com.install4j.api.launcher.ApplicationLauncher;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocument.VCDocumentType;
+
+import javax.swing.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Hashtable;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:24:03 PM)
@@ -262,30 +247,52 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		
 	};
 
-	AsynchClientTask task2b = new AsynchClientTask("Login With Auth0...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask task2b = new AsynchClientTask("Popup Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			vcellConnectionFactory.auth0SignIn();
-			DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
-			if (!vcellConnectionFactory.isVCellIdentityMappedToAuth0Identity()){
-				// pop up with ability to input login info
-				loginAuth0(getRequestManager(), clientServerInfo, currWindowManager);
+			Path appState = Path.of(ResourceUtil.getVcellHome().getAbsolutePath(), "/state.json");
+			boolean appStateExists = Files.exists(appState);
+			boolean showPopupMenu = true;
+			hashTable.put("login", true);
+			try{
+				if (appStateExists) {
+					String json = Files.readString(appState);
+					showPopupMenu = false;
+				}
 			}
-			else{
-				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, vcellConnectionFactory.getAuth0MappedUser(), null);
-				getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
+			catch(Exception e){
+				throw new Exception("Failed to read state file");
+			}
+			if(showPopupMenu){
+				int accept = JOptionPane.showConfirmDialog(null,
+						"VCell is going to redirect you to your browser to login. Do you wish to proceed?");
+				if(accept==JOptionPane.NO_OPTION || accept==JOptionPane.CLOSED_OPTION || accept==JOptionPane.CANCEL_OPTION){
+					hashTable.put("login", false);
+					return;
+				}
+				Files.createFile(appState);
 			}
 		}
 	};
 
-	AsynchClientTask task2c  = new AsynchClientTask("Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-
+	AsynchClientTask task2c = new AsynchClientTask("Login With Auth0...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-		    if (clientServerInfo.getUsername() == null) {
-			    // we were not supplied login credentials; pop-up dialog
-				VCellClient.this.login(VCellClient.this.getRequestManager(), clientServerInfo, ((DocumentWindowManager)hashTable.get("currWindowManager")));
-		    }
+			if ((boolean)hashTable.get("login")) {
+				vcellConnectionFactory.auth0SignIn();
+				DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
+				int numberOfPolls = 0;
+				while(!vcellConnectionFactory.isVCellIdentityMappedToAuth0Identity()){
+					if (numberOfPolls==20) {
+						return;
+					}
+					numberOfPolls++;
+					Thread.sleep(5000); // Poll every 5 seconds
+				}
+
+				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, vcellConnectionFactory.getAuth0MappedUser(), null);
+				getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
+			}
 		}
 	};
 	
@@ -300,7 +307,7 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		}
 	}; 	
 
-	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task2b, task3};
+	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task2b, task2c, task3};
 	ClientTaskDispatcher.dispatch(null, hash, taskArray);
 }
 

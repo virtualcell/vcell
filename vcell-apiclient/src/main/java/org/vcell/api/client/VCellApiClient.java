@@ -37,8 +37,10 @@ import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -65,6 +67,7 @@ public class VCellApiClient implements AutoCloseable {
 	boolean bIgnoreHostMismatch = true;
 	boolean bSkipSSL = true;
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
+	private final URL quarkusURL;
 	private AuthApiClient apiClient = null;
 
 
@@ -119,14 +122,26 @@ public class VCellApiClient implements AutoCloseable {
 		this(host, port, pathPrefix_v0, false, bIgnoreCertProblems, bIgnoreHostMismatch);
 	}
 
-	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
+	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+		this(host, port, pathPrefix_v0, host, port,
+				bSkipSSL, bIgnoreCertProblems, bIgnoreHostMismatch);
+	}
+
+	public VCellApiClient(String host, int port, String pathPrefix_v0,
+						  String quarkusHost, int quarkusPort,
+						  boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
 		this.httpHost = new HttpHost(host,port,(bSkipSSL?"http":"https"));
 		this.pathPrefix_v0 = pathPrefix_v0;
 		this.clientID = DEFAULT_CLIENTID;
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
 		this.bIgnoreHostMismatch = bIgnoreHostMismatch;
 		this.bSkipSSL = bSkipSSL;
-		initClient();
+        try {
+            this.quarkusURL = new URL((bSkipSSL?"http":"https"), quarkusHost, quarkusPort, "");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        initClient();
 	}
 
 	private void initClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
@@ -490,8 +505,8 @@ public class VCellApiClient implements AutoCloseable {
 
 	public void authenticateWithAuth0(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
 		apiClient = InteractiveLogin.login("cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf", new URI("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/authorize"),
-				new URI(this.httpHost.getSchemeName()+"://"+this.httpHost.getHostName()+":"+this.httpHost.getPort()), ignoreSSLCertProblems);
-		apiClient.setScheme(this.httpHost.getSchemeName());
+				this.quarkusURL.toURI(), ignoreSSLCertProblems);
+		apiClient.setScheme(this.quarkusURL.getProtocol());
 	}
 
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {

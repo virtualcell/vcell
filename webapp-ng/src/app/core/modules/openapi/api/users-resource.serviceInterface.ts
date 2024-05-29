@@ -29,6 +29,13 @@ export interface UsersResourceServiceInterface {
     configuration: Configuration;
 
     /**
+     * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+     * 
+     * @param userID 
+     */
+    forgotLegacyPassword(userID?: string, extraHttpRequestParams?: any): Observable<{}>;
+
+    /**
      * Get token for legacy API
      * 
      */

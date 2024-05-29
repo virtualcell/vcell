@@ -68,7 +68,10 @@ public class VCellClientMain implements Callable<Integer> {
     @Option(names = {"-console"}, type = Boolean.class, description = "Install4J parameter, ignored")
     private boolean _console = false;
     private VCellClient vcellClient;
+    @Option(names = {"--quarkus-api-host"}, hidden = true, description = "Quarkus API server host[:port]")
+    private String quarkusAPIHost = null;
 
+    private boolean isHTTP = PropertyLoader.getBooleanProperty(PropertyLoader.isHTTP, false);
 
     private VCellClientMain() {
     }
@@ -108,20 +111,23 @@ public class VCellClientMain implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        String[] hostParts = this.host.split(":");
-        String apihost = hostParts[0];
-        int apiport = 443;
-        if (hostParts.length == 2) {
-            apiport = Integer.parseInt(hostParts[1]);
-        }
+        String[] hostAndPort = this.host.split(":");
+        String host = hostAndPort[0];
+        int port = hostAndPort.length < 2 ? 443 : Integer.parseInt(hostAndPort[1]);
+
+        String quarkusHost = quarkusAPIHost != null ? quarkusAPIHost.split(":")[0] : host;
+        int quarkusPort = quarkusAPIHost != null ? Integer.parseInt(quarkusAPIHost.split(":")[1]) : port;
 
         PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
-        Injector injector = Guice.createInjector(new VCellClientModule(apihost, apiport, pathPrefixV0));
+        Injector injector = Guice.createInjector(new VCellClientModule(host, port, pathPrefixV0,
+                quarkusHost, quarkusPort));
         this.vcellClient = injector.getInstance(VCellClient.class);
 
         // see static-files-config ConfigMap for definitions of dynamic properties as deployed
         String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
-        String webapp_base_url = "https://" + apihost + ":" + apiport;
+
+        String protocol = isHTTP ? "http" : "https";
+        String webapp_base_url = protocol + "://" + host + ":" + port;
         URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
         Thread dynamicClientPropertiesThread = new Thread(() -> DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url));
         dynamicClientPropertiesThread.setDaemon(false); // non-daemon thread to keep JVM running
@@ -145,7 +151,7 @@ public class VCellClientMain implements Callable<Integer> {
         if (password != null && password.length() > 0) {
             digestedPassword = new UserLoginInfo.DigestedPassword(password);
         }
-        ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(apihost, apiport, this.pathPrefixV0, userid, digestedPassword);
+        ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(host, port, this.pathPrefixV0, userid, digestedPassword);
 
         try {
             VCMongoMessage.enabled = false;

@@ -992,7 +992,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         }
     }
 
-    void sendLostPassword(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException{
+    public void sendLostPassword(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException{
         Object lock = new Object();
         Connection con = conFactory.getConnection(lock);
         try {

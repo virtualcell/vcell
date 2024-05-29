@@ -86,6 +86,91 @@ public class UsersResourceApi {
   }
 
   /**
+   * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+   * 
+   * @param userID  (optional)
+   * @throws ApiException if fails to make API call
+   */
+  public void forgotLegacyPassword(String userID) throws ApiException {
+    forgotLegacyPasswordWithHttpInfo(userID);
+  }
+
+  /**
+   * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+   * 
+   * @param userID  (optional)
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> forgotLegacyPasswordWithHttpInfo(String userID) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = forgotLegacyPasswordRequestBuilder(userID);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("forgotLegacyPassword", localVarResponse);
+        }
+        return new ApiResponse<Void>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          null
+        );
+      } finally {
+        // Drain the InputStream
+        while (localVarResponse.body().read() != -1) {
+            // Ignore
+        }
+        localVarResponse.body().close();
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder forgotLegacyPasswordRequestBuilder(String userID) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/forgotLegacyPassword";
+
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "userID";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("userID", userID));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
    * Get token for legacy API
    * 
    * @return AccesTokenRepresentationRecord

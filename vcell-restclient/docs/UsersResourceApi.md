@@ -4,6 +4,8 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**forgotLegacyPassword**](UsersResourceApi.md#forgotLegacyPassword) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it. |
+| [**forgotLegacyPasswordWithHttpInfo**](UsersResourceApi.md#forgotLegacyPasswordWithHttpInfo) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it. |
 | [**getLegacyApiToken**](UsersResourceApi.md#getLegacyApiToken) | **POST** /api/v1/users/bearerToken | Get token for legacy API |
 | [**getLegacyApiTokenWithHttpInfo**](UsersResourceApi.md#getLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/bearerToken | Get token for legacy API |
 | [**getMappedUser**](UsersResourceApi.md#getMappedUser) | **GET** /api/v1/users/mappedUser | Get mapped VCell identity |
@@ -17,6 +19,138 @@ All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
 | [**unmapUser**](UsersResourceApi.md#unmapUser) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping |
 | [**unmapUserWithHttpInfo**](UsersResourceApi.md#unmapUserWithHttpInfo) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping |
 
+
+
+## forgotLegacyPassword
+
+> void forgotLegacyPassword(userID)
+
+The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String userID = "userID_example"; // String | 
+        try {
+            apiInstance.forgotLegacyPassword(userID);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#forgotLegacyPassword");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **userID** | **String**|  | [optional] |
+
+### Return type
+
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Legacy password sent in email |  -  |
+| **401** | Need to login to Auth0 |  -  |
+| **500** | Internal Error |  -  |
+
+## forgotLegacyPasswordWithHttpInfo
+
+> ApiResponse<Void> forgotLegacyPassword forgotLegacyPasswordWithHttpInfo(userID)
+
+The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String userID = "userID_example"; // String | 
+        try {
+            ApiResponse<Void> response = apiInstance.forgotLegacyPasswordWithHttpInfo(userID);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#forgotLegacyPassword");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **userID** | **String**|  | [optional] |
+
+### Return type
+
+
+ApiResponse<Void>
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Legacy password sent in email |  -  |
+| **401** | Need to login to Auth0 |  -  |
+| **500** | Internal Error |  -  |
 
 
 ## getLegacyApiToken

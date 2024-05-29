@@ -30,7 +30,7 @@ public class InteractiveLogin {
     private InteractiveLogin() {
     }
     public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri, boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException {
-        URI successRedirectURI = new URI(apiBaseUri+"/login_success");
+        URI successRedirectURI = new URI(apiBaseUri+( apiBaseUri.getHost().equals("localhost")?  "" : "/login_success"));
         return login(clientID, authServerUri, apiBaseUri, successRedirectURI, ignoreSSLCertProblems);
     }
 
