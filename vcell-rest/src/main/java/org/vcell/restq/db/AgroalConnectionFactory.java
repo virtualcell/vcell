@@ -29,9 +29,6 @@ public class AgroalConnectionFactory implements ConnectionFactory {
     @ConfigProperty(name = "quarkus.profile")
     String activeProfile;
 
-    @ConfigProperty(name = "vcell.prod.database.postgresql")
-    boolean usePostgresqlInProd;
-
 
     public AgroalConnectionFactory() {
     }
