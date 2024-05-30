@@ -30,7 +30,7 @@ jobs:
     - name: checkout tag
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+        ref: "${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}"
     - name: setup global environment variables
       run: |
         echo "VCELL_VERSION=${{ github.event.inputs.vcell_version }}" >> $GITHUB_ENV
@@ -160,7 +160,7 @@ jobs:
     - name: checkout tag
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+        ref: "${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}"
     - name: retrieve installers and variables
       uses: actions/download-artifact@v2
     - name: setenv
