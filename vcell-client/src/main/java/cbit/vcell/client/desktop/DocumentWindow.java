@@ -101,8 +101,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private final ChildWindowManager childWindowManager;
 
 	private JMenuItem ivjAbout_BoxMenuItem = null;
-	private JMenuItem ivjChange_UserMenuItem = null;
-	private JMenuItem ivjUpdate_UserMenuItem = null;
+	private JMenuItem ivjManageUser = null;
+	private JMenuItem ivjLogoutUser = null;
 	private JMenuItem ivjCloseMenuItem = null;
 	private JMenuBar ivjDocumentWindowJMenuBar = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -206,11 +206,11 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				}
 				if (e.getSource() == DocumentWindow.this.getSave_VersionMenuItem())
 					DocumentWindow.this.saveDocument(false);
-				if (e.getSource() == DocumentWindow.this.getChange_UserMenuItem())
+				if (e.getSource() == DocumentWindow.this.getManageUserMenuItem())
 					DocumentWindow.this.showLoginDialog();
 				if (e.getSource() == DocumentWindow.this.getChange_ProxyMenuItem())
 					setProxy();
-				if (e.getSource() == DocumentWindow.this.getReconnectMenuItem())
+				if (e.getSource() == DocumentWindow.this.getReconnectUserMenuItem())
 					DocumentWindow.this.reconnect();
 //			if (e.getSource() == DocumentWindow.this.getImageJServiceMenuItem())
 //				startStopImageJService();
@@ -257,7 +257,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 					showViewJobsDialog();
 				if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData())
 					DocumentWindow.this.jMenuItemFieldData_ActionPerformed(e);
-				if (e.getSource() == DocumentWindow.this.getUpdate_UserMenuItem()){
+				if (e.getSource() == DocumentWindow.this.getManageUserMenuItem()){
 					getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), false);
 				}
 				if (e.getSource() == DocumentWindow.this.getPermissionsMenuItem()) {
@@ -615,27 +615,34 @@ private javax.swing.JMenuItem getViewJobsMenuItem() {
 	return viewJobsMenuItem;
 }
 
-/**
- * Return the Change_UserMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getChange_UserMenuItem() {
-	if (ivjChange_UserMenuItem == null) {
-		try {
-			ivjChange_UserMenuItem = new javax.swing.JMenuItem();
-			ivjChange_UserMenuItem.setName("Change_UserMenuItem");
-			ivjChange_UserMenuItem.setText("Change User...");
-			ivjChange_UserMenuItem.setEnabled(true);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
+private JMenuItem getManageUserMenuItem(){
+	if (ivjManageUser == null){
+		ivjManageUser = new javax.swing.JMenuItem();
+		ivjManageUser.setName("ManageUserMenuItem");
+		ivjManageUser.setText("Manage User");
+		ivjManageUser.setEnabled(false);
 	}
-	return ivjChange_UserMenuItem;
+	return ivjManageUser;
+}
+
+private JMenuItem getLogOutMenuItem() {
+	if (ivjLogoutUser == null){
+		ivjLogoutUser = new javax.swing.JMenuItem();
+		ivjLogoutUser.setName("LogoutMenuItem");
+		ivjLogoutUser.setText("Logout");
+		ivjLogoutUser.setEnabled(false);
+	}
+	return ivjLogoutUser;
+}
+
+private JMenuItem getReconnectUserMenuItem(){
+	if (ivjReconnectMenuItem == null){
+		ivjReconnectMenuItem = new javax.swing.JMenuItem();
+		ivjReconnectMenuItem.setName("ReconnectMenuItem");
+		ivjReconnectMenuItem.setText("Reconnect (Refresh)");
+		ivjReconnectMenuItem.setEnabled(false);
+	}
+	return ivjReconnectMenuItem;
 }
 
 private JMenuItem ivjChange_ProxyMenuItem;
@@ -655,25 +662,6 @@ private javax.swing.JMenuItem getChange_ProxyMenuItem() {
 		}
 	}
 	return ivjChange_ProxyMenuItem;
-}
-
-
-private javax.swing.JMenuItem getUpdate_UserMenuItem() {
-	if (ivjUpdate_UserMenuItem == null) {
-		try {
-			ivjUpdate_UserMenuItem = new javax.swing.JMenuItem();
-			ivjUpdate_UserMenuItem.setName("Update_UserMenuItem");
-			ivjUpdate_UserMenuItem.setText("Update Registration Info...");
-			ivjUpdate_UserMenuItem.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjUpdate_UserMenuItem;
 }
 
 /**
@@ -1404,28 +1392,6 @@ private javax.swing.JMenu getOpenMenuItem() {
 	return ivjOpenMenuItem;
 }
 
-/**
- * Return the ReconnectMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getReconnectMenuItem() {
-	if (ivjReconnectMenuItem == null) {
-		try {
-			ivjReconnectMenuItem = new javax.swing.JMenuItem();
-			ivjReconnectMenuItem.setName("ReconnectMenuItem");
-			ivjReconnectMenuItem.setText("Reconnect (Refresh)");
-			ivjReconnectMenuItem.setEnabled(false);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjReconnectMenuItem;
-}
 
 private static String createImageJServiceMenuText() {
 	if(ImageJHelper.serviceExists()) {
@@ -1755,10 +1721,10 @@ private javax.swing.JMenu getServerMenu() {
 //			});
 			ivjServerMenu.setName("ServerMenu");
 			ivjServerMenu.setText("Account");
-			ivjServerMenu.add(getChange_UserMenuItem());
+			ivjServerMenu.add(getManageUserMenuItem());
 			ivjServerMenu.add(getChange_ProxyMenuItem());
-			ivjServerMenu.add(getUpdate_UserMenuItem());
-			ivjServerMenu.add(getReconnectMenuItem());
+			ivjServerMenu.add(getLogOutMenuItem());
+			ivjServerMenu.add(getReconnectUserMenuItem());
 //			ivjServerMenu.add(getImageJServiceMenuItem());		// moved to Tools
 			ivjServerMenu.add(new JSeparator());
 			ivjServerMenu.add(getViewJobsMenuItem());
@@ -2107,10 +2073,10 @@ private void initConnections() throws java.lang.Exception {
 	getSave_AsLocalMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemImport().addActionListener(ivjEventHandler);
 	getSave_VersionMenuItem().addActionListener(ivjEventHandler);
-	getChange_UserMenuItem().addActionListener(ivjEventHandler);
+	getManageUserMenuItem().addActionListener(ivjEventHandler);
 	getChange_ProxyMenuItem().addActionListener(ivjEventHandler);
-	getUpdate_UserMenuItem().addActionListener(ivjEventHandler);
-	getReconnectMenuItem().addActionListener(ivjEventHandler);
+	getLogOutMenuItem().addActionListener(ivjEventHandler);
+	getReconnectUserMenuItem().addActionListener(ivjEventHandler);
 //	getImageJServiceMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemRevert().addActionListener(ivjEventHandler);
 	getJMenuItemCompare().addActionListener(ivjEventHandler);
@@ -2443,9 +2409,9 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			status = "";
 			getJProgressBarConnection().setString("NOT CONNECTED");
 			getJProgressBarConnection().setValue(0);
-			getChange_UserMenuItem().setEnabled(true);
-			getUpdate_UserMenuItem().setEnabled(false);
-			getReconnectMenuItem().setEnabled(false);
+			getManageUserMenuItem().setEnabled(true);
+			getLogOutMenuItem().setEnabled(false);
+			getReconnectUserMenuItem().setEnabled(false);
 			getViewJobsMenuItem().setEnabled(false);
 			
 			enableOpenMenuItems(false);
@@ -2469,9 +2435,9 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			status = "Server: " + connStatus.getApihost()+":"+connStatus.getApiport() + " User: " + connStatus.getUserName();
 			getJProgressBarConnection().setString("CONNECTED (" + connStatus.getUserName() + ")");
 			getJProgressBarConnection().setValue(100);
-			getChange_UserMenuItem().setEnabled(true);
-			getUpdate_UserMenuItem().setEnabled(true);
-			getReconnectMenuItem().setEnabled(true);
+			getManageUserMenuItem().setEnabled(true);
+			getLogOutMenuItem().setEnabled(true);
+			getReconnectUserMenuItem().setEnabled(true);
 			getViewJobsMenuItem().setEnabled(true);
 
 			enableOpenMenuItems(true);
@@ -2510,9 +2476,9 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			status = "Server: " + connStatus.getApihost()+":"+connStatus.getApiport() + " User: " + connStatus.getUserName();
 			getJProgressBarConnection().setString("INITIALIZING...");
 			getJProgressBarConnection().setValue(0);
-			getChange_UserMenuItem().setEnabled(false);
-			getUpdate_UserMenuItem().setEnabled(false);
-			getReconnectMenuItem().setEnabled(false);
+			getManageUserMenuItem().setEnabled(false);
+			getLogOutMenuItem().setEnabled(false);
+			getReconnectUserMenuItem().setEnabled(false);
 			enableOpenMenuItems(false);
 			getSave_AsLocalMenuItem().setEnabled(true);
 			getSaveMenuItem().setEnabled(false);
@@ -2535,9 +2501,9 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			status = "Server: " + connStatus.getApihost()+":"+connStatus.getApiport() + " User: " + connStatus.getUserName();
 			getJProgressBarConnection().setString("DISCONNECTED");
 			getJProgressBarConnection().setValue(0);
-			getChange_UserMenuItem().setEnabled(true);
-			getUpdate_UserMenuItem().setEnabled(false);
-			getReconnectMenuItem().setEnabled(true);
+			getManageUserMenuItem().setEnabled(true);
+			getLogOutMenuItem().setEnabled(false);
+			getReconnectUserMenuItem().setEnabled(true);
 			enableOpenMenuItems(false);
 			getSave_AsLocalMenuItem().setEnabled(true);
 			getSaveMenuItem().setEnabled(false);
