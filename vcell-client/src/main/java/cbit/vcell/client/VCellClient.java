@@ -281,10 +281,11 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if ((boolean)hashTable.get("login")) {
-				vcellConnectionFactory.auth0SignIn();
+				Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
+				auth0ConnectionUtils.auth0SignIn();
 				DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
 				int numberOfPolls = 0;
-				while(!vcellConnectionFactory.isVCellIdentityMappedToAuth0Identity()){
+				while(!auth0ConnectionUtils.isVCellIdentityMapped()){
 					if (numberOfPolls==20) {
 						return;
 					}
@@ -292,7 +293,7 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 					Thread.sleep(5000); // Poll every 5 seconds
 				}
 
-				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, vcellConnectionFactory.getAuth0MappedUser(), null);
+				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, auth0ConnectionUtils.getAuth0MappedUser(), null);
 				getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
 			}
 		}
