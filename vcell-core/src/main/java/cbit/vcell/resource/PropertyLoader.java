@@ -61,7 +61,6 @@ public class PropertyLoader {
 	public static final String vcellServerIDProperty        = record("vcell.server.id",ValueType.GEN);
 
 	public static final String n5DataDir = record("vcell.n5DataDir.internal", ValueType.DIR);
-	public static final String s3ProxyExternalPort = record("vcell.s3proxy.port.external", ValueType.GEN);
 	public static final String primarySimDataDirInternalProperty	= record("vcell.primarySimdatadir.internal",ValueType.DIR);
 	public static final String secondarySimDataDirInternalProperty	= record("vcell.secondarySimdatadir.internal",ValueType.DIR);
 	public static final String primarySimDataDirExternalProperty	= record("vcell.primarySimdatadir.external",ValueType.GEN);
