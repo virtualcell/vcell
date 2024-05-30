@@ -16,6 +16,12 @@ matplotlib = "^3.8.4"
 h5py = "^3.11.0"
 pathlib = "^1.0.1"
 jupyterlab = "^4.1.8"
+vtk = "^9.3.0"
+numpy = "^1.26.4"
+orjson = "^3.10.3"
+pyvista = "^0.43.8"
+trame = "^3.6.1"
+ipyvtklink = "^0.2.3"
 
 
 [tool.poetry.group.dev.dependencies]
