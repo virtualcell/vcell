@@ -1,4 +1,4 @@
-FROM ghcr.io/virtualcell/vcell-solvers:v0.0.42-dev3
+FROM ghcr.io/virtualcell/vcell-solvers:v0.8.0
 
 RUN apt-get -y update && \
     apt-get install -y  curl && \

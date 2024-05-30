@@ -46,7 +46,7 @@ git tag ${theNewTag)
 //Push new tag to github, e.g. "git push origin v0.0.22"
 git push origin ${theNewTag)
 //github will alert travisci(mac,linux) and appveyor(win) to start building the tagged commit for client local solvers
-//they will send their archived solvers to github and add to tagged commit (win64.zip,linux64.tgz,mac64.tgz)
+//they will send their archived solvers to github and add to tagged commit (win64.zip,linux64.tgz,macos_x86_64.tgz)
 
 ```
 
