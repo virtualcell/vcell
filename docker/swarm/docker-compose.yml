@@ -279,7 +279,6 @@ services:
       - mongodb_host_internal=mongodb
       - mongodb_port_internal=27017
       - mongodb_database=test
-      - s3ProxyPortExternal=${VCELL_S3PROXY_PORT_EXTERNAL}
       - s3export_baseURL=${VCELL_S3_EXPORT_BASEURL}
 
       - servertype=CombinedData
@@ -417,7 +416,7 @@ services:
       JCLOUDS_KEYSTONE_SCOPE: ""
       JCLOUDS_KEYSTONE_PROJECT_DOMAIN_NAME: ""
     ports:
-      - "${VCELL_S3PROXY_PORT_EXTERNAL}:443"
+      - "8123:443"
     volumes:
       - "${VCELL_N5_DATADIR_HOST}:/data:ro"
     entrypoint: [ 'sh', '-c', 'export S3PROXY_KEYSTORE_PASSWORD=$$(cat /run/secrets/keystorepswd); /opt/s3proxy/run-docker-container.sh' ]
