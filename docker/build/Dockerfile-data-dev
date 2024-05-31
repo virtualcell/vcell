@@ -59,7 +59,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     simdatadir_external=/path/to/external/simdata/ \
     simdataCacheSize="simdataCacheSize-not-set" \
     servertype="servertype-not-set" \
-    s3ProxyPortExternal="80" \
     s3export_baseURL="s3-export-baseurl-not-set"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
@@ -91,7 +90,6 @@ ENTRYPOINT java \
 	-Dvcell.primarySimdatadir.internal=/simdata \
 	-Dvcell.secondarySimdatadir.internal=/simdata_secondary \
 	-Dvcell.n5DataDir.internal=/n5DataDir \
-	-Dvcell.s3proxy.port.external="${s3ProxyPortExternal}" \
 	-Dvcell.s3.export.baseURL="${s3export_baseURL}" \
 	-Dvcell.primarySimdatadir.external="${simdatadir_external}" \
 	-Dvcell.simdataCacheSize="${simdataCacheSize}" \

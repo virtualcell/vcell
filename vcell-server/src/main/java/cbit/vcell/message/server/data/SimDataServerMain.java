@@ -59,7 +59,6 @@ public class SimDataServerMain {
             PropertyLoader.primarySimDataDirInternalProperty,
             PropertyLoader.primarySimDataDirExternalProperty,
             PropertyLoader.n5DataDir,
-            PropertyLoader.s3ProxyExternalPort,
             PropertyLoader.s3ExportBaseURLProperty,
             PropertyLoader.vcellServerIDProperty,
             PropertyLoader.installationRoot,

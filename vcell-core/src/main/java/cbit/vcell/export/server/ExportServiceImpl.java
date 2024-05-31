@@ -479,11 +479,11 @@ private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportO
 	if (exportOutput.isValid()) {
 		completedExportRequests.put(exportSpecs, newExportJob);
 		String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
-		String uri = url  + ":" + PropertyLoader.getRequiredProperty(PropertyLoader.s3ProxyExternalPort) + "/" + n5Exporter.getN5FilePathSuffix();
+		url += "/" + n5Exporter.getN5FilePathSuffix();
 		N5Specs n5Specs = (N5Specs) exportSpecs.getFormatSpecificSpecs();
-		uri += "?dataSetName=" + newExportJob.getExportJobID();
+		url += "?dataSetName=" + newExportJob.getExportJobID();
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
-		return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, uri, exportSpecs);
+		return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url, exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
