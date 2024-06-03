@@ -991,142 +991,142 @@ private javax.swing.JMenu getOpenMenuItem() {
 }
 
 
-private static String createImageJServiceMenuText() {
-	if(ImageJHelper.serviceExists()) {
-		return "Stop FIJI (ImageJ) Service ("+ImageJHelper.getServiceURI().getPort()+")";
-	}
-	return "Start FIJI (ImageJ) Service";
-}
-
-private static final String IMAGEJ_PLUGIN_PATH = "IMAGEJ_PLUGIN_PATH";
-
-private void startStopImageJService() {
-	if(ImageJHelper.serviceExists()) {
-		try {
-			ImageJHelper.stopService();
-		} catch (Exception e) {
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, "Error stopping ImageJ Service: "+e.getMessage());
-		}
-	}else {
-		final String VC_PLUG_CONTINUE = "Continue";
-		final String CANCEL = "Cancel";
-		final String NEW_IJ_PLUGIN = "Install new plugin...";
-		final String CHANGE_IJ_PLUGIN = "Update plugin or Change path...";
-		Preferences prefs = Preferences.userNodeForPackage(DocumentWindow.class);
-		String imageJVCellPluginVersion = "vcell-imagej-helper-"+TokenMangler.fixTokenStrict(VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString())+".jar";
-		String imageJPluginPath = prefs.get(IMAGEJ_PLUGIN_PATH, null);
-		URL imageJVCellPluginURL = null;
-		try {
-			imageJVCellPluginURL = new URL(PropertyLoader.getRequiredProperty(PropertyLoader.imageJVcellPluginURL)+"/"+imageJVCellPluginVersion);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			DialogUtils.showErrorDialog(this, "Error download URL: "+e1.getMessage());
-			return;
-		}
-		String downLoadOption = NEW_IJ_PLUGIN;
-//		File ijPluginFile = null;
-		File[] existingVCPlugins = new File[] {};
-		Boolean bSame = null;
-		if(imageJPluginPath != null){
-			existingVCPlugins = (new File(imageJPluginPath)).listFiles(new FilenameFilter() {
-				@Override
-				public boolean accept(File dir, String name) {
-					// TODO Auto-generated method stub
-					return name.startsWith("vcell-imagej-helper-") && name.endsWith(".jar");
-				}
-			});
-			if(existingVCPlugins.length > 1) {
-				StringBuffer sb = new StringBuffer();
-				for (int i = 0; i < existingVCPlugins.length; i++) {
-					sb.append((i!=0?"\n":"")+existingVCPlugins[i].getName());
-				}
-				DialogUtils.showWarningDialog(this, "Found "+existingVCPlugins.length+" installed VCell Imagej plugins:\n"+
-						sb.toString()+"\nRemove the "+existingVCPlugins.length+" plugins from ImageJ directory and start service again.\nPlugin path="+imageJPluginPath);
-				return;
-			}
-			if(existingVCPlugins.length == 1) {
-				downLoadOption = CHANGE_IJ_PLUGIN;
-				if(imageJVCellPluginVersion.equals(existingVCPlugins[0].getName())) {
-					bSame = true;
-				}else {
-					bSame = false;
-				}
-			}
-		}
-		String[] options = (existingVCPlugins.length==0?new String[] {downLoadOption,CANCEL}:new String[] {VC_PLUG_CONTINUE,downLoadOption,CANCEL});
-		String result = DialogUtils.showWarningDialog(this,
-			 "Start VCell's FIJI Service",
-				"VCell's FIJI (ImageJ) service allows scripts running in FIJI to communicate with VCell "+
-						"allowing query, control, and transfer of model/simulation data between VCell and FIJI.\n"+
-						"(see Help->'VCell Help' then search 'start imagej service')\n"+
-						(existingVCPlugins.length == 0?"Install FIJI (https://imagej.net/Fiji) before starting this service.":
-							"Current plugin path:\n"+existingVCPlugins[0].getAbsolutePath()+"\n"+"Available version="+imageJVCellPluginVersion)
-						,options, CANCEL);
-		if(NEW_IJ_PLUGIN.equals(result) || CHANGE_IJ_PLUGIN.equals(result)) {
-			File selectedDir = null;
-			if(OperatingSystemInfo.getInstance().isMac()) {
-				Frame f = (Frame)GeneralGuiUtils.findTypeParentOfComponent(this, Frame.class);
-				System.setProperty("apple.awt.fileDialogForDirectories", "true");
-				FileDialog fdiag = new FileDialog(f);
-				fdiag.setMultipleMode(false);
-				if(existingVCPlugins.length == 1) {
-					fdiag.setDirectory(existingVCPlugins[0].getParentFile().getParentFile().getAbsolutePath());
-					fdiag.setDirectory(existingVCPlugins[0].getParentFile().getAbsolutePath());
-				}
-				fdiag.setVisible(true);
-				File[] files = fdiag.getFiles();
-				if(files == null || files.length == 0) {
-					return;
-				}
-				selectedDir = files[0];
-			}else {
-				VCFileChooser vcf = new VCFileChooser((existingVCPlugins.length == 0?ResourceUtil.getUserHomeDir():existingVCPlugins[0].getParentFile().getParentFile()));
-				vcf.setMultiSelectionEnabled(false);
-				if(existingVCPlugins.length == 1) {
-					vcf.setSelectedFile(existingVCPlugins[0].getParentFile());
-				}
-				vcf.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				int returnVal = vcf.showOpenDialog(this);
-				if(returnVal != JFileChooser.APPROVE_OPTION) {
-					return;
-				}
-				selectedDir = vcf.getSelectedFile();
-			}
-			try {
-				if(!selectedDir.getName().equals("plugins")) {
-					String pluginWarn = DialogUtils.showOKCancelWarningDialog(this, "Unexpected plugins directory warning", "path "+selectedDir.getAbsolutePath()+"\nexpected to end with 'plugins'");
-					if(pluginWarn == null || !pluginWarn.equals(SimpleUserMessage.OPTION_OK)) {
-						return;
-					}
-				}
-				final File pluginDestination = new File(selectedDir,imageJVCellPluginVersion);
-				FileUtils.copyURLToFile(imageJVCellPluginURL, pluginDestination);
-				prefs.put(IMAGEJ_PLUGIN_PATH, selectedDir.getAbsolutePath());
-				if(existingVCPlugins.length != 0 && bSame!=null && !bSame) {
-					if(!existingVCPlugins[0].delete()) {
-						throw new Exception("Couldn't delete old plugin "+existingVCPlugins[0].getAbsolutePath()+".  Please stop Imagej and manually remove the old plugin file.");
-					}
-				}
-				DialogUtils.showInfoDialog(this, "VCell ImageJ plugin installed at:\n"+pluginDestination.getAbsolutePath());
-			} catch (Exception e) {
-				e.printStackTrace();
-				DialogUtils.showErrorDialog(this, e.getMessage());
-				return;
-			}
-		}else if(!VC_PLUG_CONTINUE.equals(result)){
-			return;
-		}
-		try {
-			ImageJHelper.startService(null);
-		} catch (Exception e) {
-			e.printStackTrace();
-			DialogUtils.showErrorDialog(this, "error starting ImageJ Service: "+e.getMessage());
-		}
-	}
-
-}
+//private static String createImageJServiceMenuText() {
+//	if(ImageJHelper.serviceExists()) {
+//		return "Stop FIJI (ImageJ) Service ("+ImageJHelper.getServiceURI().getPort()+")";
+//	}
+//	return "Start FIJI (ImageJ) Service";
+//}
+//
+//private static final String IMAGEJ_PLUGIN_PATH = "IMAGEJ_PLUGIN_PATH";
+//
+//private void startStopImageJService() {
+//	if(ImageJHelper.serviceExists()) {
+//		try {
+//			ImageJHelper.stopService();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			DialogUtils.showErrorDialog(this, "Error stopping ImageJ Service: "+e.getMessage());
+//		}
+//	}else {
+//		final String VC_PLUG_CONTINUE = "Continue";
+//		final String CANCEL = "Cancel";
+//		final String NEW_IJ_PLUGIN = "Install new plugin...";
+//		final String CHANGE_IJ_PLUGIN = "Update plugin or Change path...";
+//		Preferences prefs = Preferences.userNodeForPackage(DocumentWindow.class);
+//		String imageJVCellPluginVersion = "vcell-imagej-helper-"+TokenMangler.fixTokenStrict(VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString())+".jar";
+//		String imageJPluginPath = prefs.get(IMAGEJ_PLUGIN_PATH, null);
+//		URL imageJVCellPluginURL = null;
+//		try {
+//			imageJVCellPluginURL = new URL(PropertyLoader.getRequiredProperty(PropertyLoader.imageJVcellPluginURL)+"/"+imageJVCellPluginVersion);
+//		} catch (Exception e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//			DialogUtils.showErrorDialog(this, "Error download URL: "+e1.getMessage());
+//			return;
+//		}
+//		String downLoadOption = NEW_IJ_PLUGIN;
+////		File ijPluginFile = null;
+//		File[] existingVCPlugins = new File[] {};
+//		Boolean bSame = null;
+//		if(imageJPluginPath != null){
+//			existingVCPlugins = (new File(imageJPluginPath)).listFiles(new FilenameFilter() {
+//				@Override
+//				public boolean accept(File dir, String name) {
+//					// TODO Auto-generated method stub
+//					return name.startsWith("vcell-imagej-helper-") && name.endsWith(".jar");
+//				}
+//			});
+//			if(existingVCPlugins.length > 1) {
+//				StringBuffer sb = new StringBuffer();
+//				for (int i = 0; i < existingVCPlugins.length; i++) {
+//					sb.append((i!=0?"\n":"")+existingVCPlugins[i].getName());
+//				}
+//				DialogUtils.showWarningDialog(this, "Found "+existingVCPlugins.length+" installed VCell Imagej plugins:\n"+
+//						sb.toString()+"\nRemove the "+existingVCPlugins.length+" plugins from ImageJ directory and start service again.\nPlugin path="+imageJPluginPath);
+//				return;
+//			}
+//			if(existingVCPlugins.length == 1) {
+//				downLoadOption = CHANGE_IJ_PLUGIN;
+//				if(imageJVCellPluginVersion.equals(existingVCPlugins[0].getName())) {
+//					bSame = true;
+//				}else {
+//					bSame = false;
+//				}
+//			}
+//		}
+//		String[] options = (existingVCPlugins.length==0?new String[] {downLoadOption,CANCEL}:new String[] {VC_PLUG_CONTINUE,downLoadOption,CANCEL});
+//		String result = DialogUtils.showWarningDialog(this,
+//			 "Start VCell's FIJI Service",
+//				"VCell's FIJI (ImageJ) service allows scripts running in FIJI to communicate with VCell "+
+//						"allowing query, control, and transfer of model/simulation data between VCell and FIJI.\n"+
+//						"(see Help->'VCell Help' then search 'start imagej service')\n"+
+//						(existingVCPlugins.length == 0?"Install FIJI (https://imagej.net/Fiji) before starting this service.":
+//							"Current plugin path:\n"+existingVCPlugins[0].getAbsolutePath()+"\n"+"Available version="+imageJVCellPluginVersion)
+//						,options, CANCEL);
+//		if(NEW_IJ_PLUGIN.equals(result) || CHANGE_IJ_PLUGIN.equals(result)) {
+//			File selectedDir = null;
+//			if(OperatingSystemInfo.getInstance().isMac()) {
+//				Frame f = (Frame)GeneralGuiUtils.findTypeParentOfComponent(this, Frame.class);
+//				System.setProperty("apple.awt.fileDialogForDirectories", "true");
+//				FileDialog fdiag = new FileDialog(f);
+//				fdiag.setMultipleMode(false);
+//				if(existingVCPlugins.length == 1) {
+//					fdiag.setDirectory(existingVCPlugins[0].getParentFile().getParentFile().getAbsolutePath());
+//					fdiag.setDirectory(existingVCPlugins[0].getParentFile().getAbsolutePath());
+//				}
+//				fdiag.setVisible(true);
+//				File[] files = fdiag.getFiles();
+//				if(files == null || files.length == 0) {
+//					return;
+//				}
+//				selectedDir = files[0];
+//			}else {
+//				VCFileChooser vcf = new VCFileChooser((existingVCPlugins.length == 0?ResourceUtil.getUserHomeDir():existingVCPlugins[0].getParentFile().getParentFile()));
+//				vcf.setMultiSelectionEnabled(false);
+//				if(existingVCPlugins.length == 1) {
+//					vcf.setSelectedFile(existingVCPlugins[0].getParentFile());
+//				}
+//				vcf.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+//				int returnVal = vcf.showOpenDialog(this);
+//				if(returnVal != JFileChooser.APPROVE_OPTION) {
+//					return;
+//				}
+//				selectedDir = vcf.getSelectedFile();
+//			}
+//			try {
+//				if(!selectedDir.getName().equals("plugins")) {
+//					String pluginWarn = DialogUtils.showOKCancelWarningDialog(this, "Unexpected plugins directory warning", "path "+selectedDir.getAbsolutePath()+"\nexpected to end with 'plugins'");
+//					if(pluginWarn == null || !pluginWarn.equals(SimpleUserMessage.OPTION_OK)) {
+//						return;
+//					}
+//				}
+//				final File pluginDestination = new File(selectedDir,imageJVCellPluginVersion);
+//				FileUtils.copyURLToFile(imageJVCellPluginURL, pluginDestination);
+//				prefs.put(IMAGEJ_PLUGIN_PATH, selectedDir.getAbsolutePath());
+//				if(existingVCPlugins.length != 0 && bSame!=null && !bSame) {
+//					if(!existingVCPlugins[0].delete()) {
+//						throw new Exception("Couldn't delete old plugin "+existingVCPlugins[0].getAbsolutePath()+".  Please stop Imagej and manually remove the old plugin file.");
+//					}
+//				}
+//				DialogUtils.showInfoDialog(this, "VCell ImageJ plugin installed at:\n"+pluginDestination.getAbsolutePath());
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//				DialogUtils.showErrorDialog(this, e.getMessage());
+//				return;
+//			}
+//		}else if(!VC_PLUG_CONTINUE.equals(result)){
+//			return;
+//		}
+//		try {
+//			ImageJHelper.startService(null);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			DialogUtils.showErrorDialog(this, "error starting ImageJ Service: "+e.getMessage());
+//		}
+//	}
+//
+//}
 
 private JMenuItem getRunVFrapItem() {
 	if (ivjRunVFrapMenuItem == null) {
