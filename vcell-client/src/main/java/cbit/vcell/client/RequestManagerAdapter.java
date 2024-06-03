@@ -142,4 +142,7 @@ public class RequestManagerAdapter implements RequestManager {
 
 	@Override
 	public VtkManager getVtkManager(OutputContext outputContext, VCDataIdentifier vcDataID) throws DataAccessException { return null;}
+
+	@Override
+	public void logOut(TopLevelWindowManager requester) {}
 };

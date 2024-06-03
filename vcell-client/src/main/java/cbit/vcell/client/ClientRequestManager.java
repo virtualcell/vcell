@@ -10,13 +10,7 @@
 
 package cbit.vcell.client;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Rectangle;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -25,6 +19,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.*;
+import java.net.URI;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
@@ -32,6 +27,7 @@ import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
 
@@ -47,6 +43,7 @@ import javax.swing.filechooser.FileFilter;
 
 import cbit.vcell.client.data.*;
 import cbit.vcell.export.server.*;
+import cbit.vcell.server.Auth0ConnectionUtils;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
@@ -820,6 +817,68 @@ public class ClientRequestManager
 
 	public void connectToServer(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) throws Exception {
 		getClientServerManager().connectNewServer(new VCellGuiInteractiveContext(requester), clientServerInfo);
+	}
+
+	public void logOut(final TopLevelWindowManager requester){
+		JDialog dialog = new JDialog();
+		dialog.setAlwaysOnTop(true);
+		int confirm = JOptionPane.showOptionDialog(dialog, "You are about to logout of VCell closing the app" +
+						"and needing to logout on the website as well. Do you want to continue?",
+				"Logout", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
+				new String[] { "Continue", "Cancel" }, "Continue");
+		if (confirm != 0) {
+			return;
+		} else {
+			Auth0ConnectionUtils.setShowLoginPopUp(true);
+			boolean closedAllWindows = closeAllWindows(false);
+			if (!closedAllWindows) {
+				// user bailed out on closing some window
+				return;
+			} else {
+				AsynchClientTask waitTask = new AsynchClientTask("wait for window closing",
+						AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						// wait until all windows are closed.
+						long startTime = System.currentTimeMillis();
+						while (true) {
+							long numOpenWindows = getMdiManager().closeWindow(ClientMDIManager.DATABASE_WINDOW_ID);
+							if (numOpenWindows == 0) {
+								break;
+							}
+							// if can't save all the documents, don't connect as thus throw exception.
+							if (System.currentTimeMillis() - startTime > 60000) {
+								throw UserCancelException.CANCEL_GENERIC;
+							}
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				};
+				String taskName = "Logging out";
+				AsynchClientTask exitTask = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+					@Override
+					public void run(Hashtable<String, Object> hashTable) throws Exception {
+						getClientServerManager().cleanup();
+						if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+							System.out.println("Redirecting to user management page.");
+							Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/login_success"));
+						}
+						System.exit(0);
+					}
+				};
+				AsynchClientTask[] taskArray = {waitTask, exitTask};
+				Hashtable<String, Object> hash = new Hashtable<String, Object>();
+				hash.put("guiParent", requester.getComponent());
+				hash.put("requestManager", this);
+				ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), taskArray,
+						false, false, null);
+			}
+		}
 	}
 
 	VCDocument createDefaultDocument(VCDocumentType docType) {

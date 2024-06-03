@@ -247,6 +247,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 					emailSupport(e);
 				if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
 					showVCellHelpWindow();
+				if (e.getSource() == DocumentWindow.this.getLogOutMenuItem())
+					logOut();
 //			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem())
 //				connEtoC26(e);
 				if (e.getSource() == DocumentWindow.this.getRunVFrapItem())
@@ -2781,5 +2783,15 @@ public void showViewExportedDataDialog() {
 
 	public ChildWindowManager getChildWindowManager() {
 		return childWindowManager;
+	}
+
+	private void logOut(){
+		getWindowManager().getRequestManager().logOut(getWindowManager());
+		// Show popup, saying what logout will do and if the user wants to confirm it
+
+		// Destroy the connection created with VCell (closing all windows and stuff, can be done with changeConnection function)
+		// Delete the state.json object
+		// redirect users to the browser logout page
+		// restart the VCell client flow, by starting with the client function
 	}
 }

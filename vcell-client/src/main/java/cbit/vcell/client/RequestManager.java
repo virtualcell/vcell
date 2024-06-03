@@ -339,4 +339,6 @@ void accessPermissions(Component requester, VCDocument vcDocument);
 boolean isDifferentFromBlank(VCDocumentType documentType, VCDocument vcDocument);
 
 ClientServerInfo getClientServerInfo();
+
+void logOut(TopLevelWindowManager requester);
 }
