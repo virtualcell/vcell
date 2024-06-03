@@ -251,20 +251,8 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 	AsynchClientTask task2b = new AsynchClientTask("Popup Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
-			Path appState = Path.of(ResourceUtil.getVcellHome().getAbsolutePath(), "/state.json");
-			boolean appStateExists = Files.exists(appState);
-			boolean showPopupMenu = true;
+			boolean showPopupMenu = Auth0ConnectionUtils.shouldWeShowLoginPopUp();
 			hashTable.put("login", true);
-			try{
-				if (appStateExists) {
-					String json = Files.readString(appState);
-					showPopupMenu = false;
-				}
-			}
-			catch(Exception e){
-				throw new Exception("Failed to read state file");
-			}
 			if(showPopupMenu){
 				int accept = JOptionPane.showConfirmDialog(null,
 						"VCell is going to redirect you to your browser to login. Do you wish to proceed?");
@@ -272,7 +260,7 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 					hashTable.put("login", false);
 					return;
 				}
-				Files.createFile(appState);
+				Auth0ConnectionUtils.setShowLoginPopUp(false);
 			}
 		}
 	};
