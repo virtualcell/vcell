@@ -2482,23 +2482,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		}
 	}
 
-	public void updateUserRegistration(final DocumentWindowManager currWindowManager, final boolean bNewUser) {
-		try {
-
-			userRegistrationManager.registrationOperationGUI(this, currWindowManager,
-					getClientServerManager().getClientServerInfo(),
-					(bNewUser ? LoginManager.USERACTION_REGISTER : LoginManager.USERACTION_EDITINFO),
-					(bNewUser ? null : getClientServerManager()));
-		} catch (UserCancelException e) {
-			return;
-		} catch (Exception e) {
-			e.printStackTrace();
-			PopupGenerator.showErrorDialog(currWindowManager,
-					(bNewUser ? "Create new" : "Update") + " user Registration error:\n" + e.getMessage(), e);
-			return;
-		}
-	}
-
 	public void sendLostPassword(final DocumentWindowManager currWindowManager, final String userid) {
 		try {
 			userRegistrationManager.registrationOperationGUI(this, currWindowManager,

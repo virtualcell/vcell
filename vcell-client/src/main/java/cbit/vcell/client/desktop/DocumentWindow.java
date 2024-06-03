@@ -176,8 +176,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				}
 				if (e.getSource() == DocumentWindow.this.getSave_VersionMenuItem())
 					DocumentWindow.this.saveDocument(false);
-				if (e.getSource() == DocumentWindow.this.getManageUserMenuItem())
-					DocumentWindow.this.showLoginDialog();
 				if (e.getSource() == DocumentWindow.this.getChange_ProxyMenuItem())
 					setProxy();
 				if (e.getSource() == DocumentWindow.this.getReconnectUserMenuItem())
@@ -223,7 +221,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData())
                     getWindowManager().showFieldDataWindow();
 				if (e.getSource() == DocumentWindow.this.getManageUserMenuItem()){
-					getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), false);
+					if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)){
+                        Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/login_success"));
+                    }
 				}
 				if (e.getSource() == DocumentWindow.this.getPermissionsMenuItem()) {
 					getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
@@ -1737,7 +1737,6 @@ private void showLoginDialog() {
 		public void registerRequest() {
 			loginManager.close();
 			System.out.println("LoginManager.registerRequest()");
-			getWindowManager().getRequestManager().updateUserRegistration(getWindowManager(), true);
 		}
 
 		public void login(String userid, UserLoginInfo.DigestedPassword digestedPassword) {
