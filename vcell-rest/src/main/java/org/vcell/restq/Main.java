@@ -125,6 +125,7 @@ public class Main {
     public static final String STOPSIMULATION = "stopSimulation";
 
     public static final User DUMMY_USER = new User("VOID_VCELL_USER", new KeyValue("11111111111111"));
+    public static final User GUEST_USER = new User("GUEST", new KeyValue("-1"));
 
     public static final String USERNAME_EDUCATION = "Education";
     public static final String USERNAME_TUTORIAL = "tutorial";
