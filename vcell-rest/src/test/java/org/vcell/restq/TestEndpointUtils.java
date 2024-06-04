@@ -4,6 +4,8 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
@@ -38,6 +40,16 @@ public class TestEndpointUtils {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    public static void mapApiClientToAdmin(ApiClient apiClient) throws ApiException {
+        boolean mapped = new UsersResourceApi(apiClient).mapUser(administratorUserLoginInfo);
+        if (!mapped) throw new ApiException("Mapping failed");
+    }
+
+    public static void mapApiClientToNagios(ApiClient apiClient) throws ApiException {
+        boolean mapped = new UsersResourceApi(apiClient).mapUser(vcellNagiosUserLoginInfo);
+        if (!mapped) throw new ApiException("Mapping failed");
     }
 
     public enum TestOIDCUsers{
