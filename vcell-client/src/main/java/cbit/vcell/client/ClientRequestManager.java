@@ -20,6 +20,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
@@ -826,58 +827,11 @@ public class ClientRequestManager
 						"To complete this process you'll need to logout on the website as well. Do you want to continue?",
 				"Logout", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
 				new String[] { "Continue", "Cancel" }, "Continue");
-		if (confirm != 0) {
-			return;
-		} else {
-			Auth0ConnectionUtils.setShowLoginPopUp(true);
-			boolean closedAllWindows = closeAllWindows(false);
-			if (!closedAllWindows) {
-				// user bailed out on closing some window
-				return;
-			} else {
-				AsynchClientTask waitTask = new AsynchClientTask("wait for window closing",
-						AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						// wait until all windows are closed.
-						long startTime = System.currentTimeMillis();
-						while (true) {
-							long numOpenWindows = getMdiManager().closeWindow(ClientMDIManager.DATABASE_WINDOW_ID);
-							if (numOpenWindows == 0) {
-								break;
-							}
-							// if can't save all the documents, don't connect as thus throw exception.
-							if (System.currentTimeMillis() - startTime > 60000) {
-								throw UserCancelException.CANCEL_GENERIC;
-							}
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						}
-					}
-				};
-				String taskName = "Logging out";
-				AsynchClientTask exitTask = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-					@Override
-					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						getClientServerManager().cleanup();
-						if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-							System.out.println("Redirecting to user management page.");
-							Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/login_success"));
-						}
-						System.exit(0);
-					}
-				};
-				AsynchClientTask[] taskArray = {waitTask, exitTask};
-				Hashtable<String, Object> hash = new Hashtable<String, Object>();
-				hash.put("guiParent", requester.getComponent());
-				hash.put("requestManager", this);
-				ClientTaskDispatcher.dispatch(requester.getComponent(), new Hashtable<String, Object>(), taskArray,
-						false, false, null);
-			}
+		if (confirm == JOptionPane.OK_OPTION)  {
+			getClientServerManager().cleanup(); //set VCell connection to null
+			closeAllWindows(false);
+			setBExiting(true);
+			exitApplication(true);
 		}
 	}
 
@@ -2854,7 +2808,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		}
 	}
 
-	public void exitApplication() {
+	public void exitApplication(boolean loggingOut) {
 		try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
 			if (!bExiting) {
 				// close all windows - this will run checks
@@ -2867,10 +2821,24 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			// ready to exit
 			if (!ClientTaskDispatcher.hasOutstandingTasks()) {
 				// simply exit in this case
+				if (loggingOut) {
+					Auth0ConnectionUtils.setShowLoginPopUp(true);
+					if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+						try {
+							Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/login_success"));
+						} catch (IOException | URISyntaxException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}
 				System.exit(0);
 			}
 			new Timer(1000, evt -> checkTasksDone()).start();
 		}
+	}
+
+	public void exitApplication(){
+		exitApplication(false);
 	}
 
 	/**
