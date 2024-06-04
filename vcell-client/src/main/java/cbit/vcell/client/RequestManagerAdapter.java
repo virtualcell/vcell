@@ -56,8 +56,6 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public void curateDocument(VCDocumentInfo vcDocInfo, int curateType, TopLevelWindowManager requester) {}
 	@Override
-	public void updateUserRegistration(DocumentWindowManager docWindowManager, boolean bNewUser) { }
-	@Override
 	public void sendLostPassword(DocumentWindowManager docWindowManager, String userid) {}
 	@Override
 	public void deleteDocument(VCDocumentInfo documentInfo,TopLevelWindowManager requester) {}
@@ -142,4 +140,7 @@ public class RequestManagerAdapter implements RequestManager {
 
 	@Override
 	public VtkManager getVtkManager(OutputContext outputContext, VCDataIdentifier vcDataID) throws DataAccessException { return null;}
+
+	@Override
+	public void logOut(TopLevelWindowManager requester) {}
 };

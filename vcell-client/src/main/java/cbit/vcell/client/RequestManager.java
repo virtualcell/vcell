@@ -107,7 +107,6 @@ void createBioModelFromApplication(BioModelWindowManager requester, String name,
  */
 void curateDocument(VCDocumentInfo vcDocInfo, int curateType, final TopLevelWindowManager requester);
 
-void updateUserRegistration(DocumentWindowManager docWindowManager, boolean bNewUser);
 void sendLostPassword(DocumentWindowManager docWindowManager, String userid);
 
 /**
@@ -339,4 +338,6 @@ void accessPermissions(Component requester, VCDocument vcDocument);
 boolean isDifferentFromBlank(VCDocumentType documentType, VCDocument vcDocument);
 
 ClientServerInfo getClientServerInfo();
+
+void logOut(TopLevelWindowManager requester);
 }

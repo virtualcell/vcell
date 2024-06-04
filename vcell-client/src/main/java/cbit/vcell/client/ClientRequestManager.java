@@ -10,13 +10,7 @@
 
 package cbit.vcell.client;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Rectangle;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -25,6 +19,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
@@ -32,6 +28,7 @@ import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.zip.DataFormatException;
 import java.util.zip.GZIPInputStream;
 
@@ -47,6 +44,7 @@ import javax.swing.filechooser.FileFilter;
 
 import cbit.vcell.client.data.*;
 import cbit.vcell.export.server.*;
+import cbit.vcell.server.Auth0ConnectionUtils;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
@@ -820,6 +818,21 @@ public class ClientRequestManager
 
 	public void connectToServer(TopLevelWindowManager requester, ClientServerInfo clientServerInfo) throws Exception {
 		getClientServerManager().connectNewServer(new VCellGuiInteractiveContext(requester), clientServerInfo);
+	}
+
+	public void logOut(final TopLevelWindowManager requester){
+		JDialog dialog = new JDialog();
+		dialog.setAlwaysOnTop(true);
+		int confirm = JOptionPane.showOptionDialog(dialog, "You are about to logout of VCell, and in doing so close the app." +
+						"To complete this process you'll need to logout on the website as well. Do you want to continue?",
+				"Logout", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
+				new String[] { "Continue", "Cancel" }, "Continue");
+		if (confirm == JOptionPane.OK_OPTION)  {
+			getClientServerManager().cleanup(); //set VCell connection to null
+			closeAllWindows(false);
+			setBExiting(true);
+			exitApplication(true);
+		}
 	}
 
 	VCDocument createDefaultDocument(VCDocumentType docType) {
@@ -2423,23 +2436,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		}
 	}
 
-	public void updateUserRegistration(final DocumentWindowManager currWindowManager, final boolean bNewUser) {
-		try {
-
-			userRegistrationManager.registrationOperationGUI(this, currWindowManager,
-					getClientServerManager().getClientServerInfo(),
-					(bNewUser ? LoginManager.USERACTION_REGISTER : LoginManager.USERACTION_EDITINFO),
-					(bNewUser ? null : getClientServerManager()));
-		} catch (UserCancelException e) {
-			return;
-		} catch (Exception e) {
-			e.printStackTrace();
-			PopupGenerator.showErrorDialog(currWindowManager,
-					(bNewUser ? "Create new" : "Update") + " user Registration error:\n" + e.getMessage(), e);
-			return;
-		}
-	}
-
 	public void sendLostPassword(final DocumentWindowManager currWindowManager, final String userid) {
 		try {
 			userRegistrationManager.registrationOperationGUI(this, currWindowManager,
@@ -2812,7 +2808,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		}
 	}
 
-	public void exitApplication() {
+	public void exitApplication(boolean loggingOut) {
 		try (VCellThreadChecker.SuppressIntensive si = new VCellThreadChecker.SuppressIntensive()) {
 			if (!bExiting) {
 				// close all windows - this will run checks
@@ -2825,10 +2821,24 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			// ready to exit
 			if (!ClientTaskDispatcher.hasOutstandingTasks()) {
 				// simply exit in this case
+				if (loggingOut) {
+					Auth0ConnectionUtils.setShowLoginPopUp(true);
+					if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+						try {
+							Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/login_success"));
+						} catch (IOException | URISyntaxException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				}
 				System.exit(0);
 			}
 			new Timer(1000, evt -> checkTasksDone()).start();
 		}
+	}
+
+	public void exitApplication(){
+		exitApplication(false);
 	}
 
 	/**
