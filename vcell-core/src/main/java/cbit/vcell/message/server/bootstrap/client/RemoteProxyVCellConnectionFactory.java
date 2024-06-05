@@ -212,7 +212,9 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 	@Override
 	public VCellConnection createVCellConnectionAuth0(UserLoginInfo userLoginInfo) {
 		try {
-			AccesTokenRepresentationRecord accessTokenRep = this.getVCellApiClient().getLegacyToken();
+			AccesTokenRepresentationRecord accessTokenRep = userLoginInfo.getUserName().equals(User.VCELL_GUEST_NAME) ?
+				this.getVCellApiClient().getGuestLegacyToken()
+				:this.getVCellApiClient().getLegacyToken();
 			userLoginInfo.setUser(new User(accessTokenRep.getUserId(), new KeyValue(accessTokenRep.getUserKey())));
 			return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender);
 		} catch (ApiException apiException){

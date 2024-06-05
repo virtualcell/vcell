@@ -29,6 +29,7 @@ import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument;
@@ -253,11 +254,16 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			boolean showPopupMenu = Auth0ConnectionUtils.shouldWeShowLoginPopUp();
 			hashTable.put("login", true);
+			hashTable.put("guest", false);
 			if(showPopupMenu){
-				int accept = JOptionPane.showConfirmDialog(null,
-						"VCell is going to redirect you to your browser to login. Do you wish to proceed?");
-				if(accept==JOptionPane.NO_OPTION || accept==JOptionPane.CLOSED_OPTION || accept==JOptionPane.CANCEL_OPTION){
+				int accept = JOptionPane.showOptionDialog(null,
+						"VCell is going to redirect you to your browser to login. Do you wish to proceed?","Login Popup",
+						JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Login", "Offline", "Guest"}, "Login");
+				if(accept==JOptionPane.NO_OPTION || accept==JOptionPane.CLOSED_OPTION){
 					hashTable.put("login", false);
+					return;
+				} else if (accept == JOptionPane.CANCEL_OPTION) {
+					hashTable.put("guest", true);
 					return;
 				}
 				Auth0ConnectionUtils.setShowLoginPopUp(false);
@@ -269,19 +275,23 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if ((boolean)hashTable.get("login")) {
-				Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
-				auth0ConnectionUtils.auth0SignIn();
 				DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
-				int numberOfPolls = 0;
-				while(!auth0ConnectionUtils.isVCellIdentityMapped()){
-					if (numberOfPolls==20) {
-						return;
+				boolean isGuest = (boolean)hashTable.get("guest");
+				Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
+				auth0ConnectionUtils.auth0SignIn(isGuest);
+				if (!isGuest){
+					int numberOfPolls = 0;
+					while(!auth0ConnectionUtils.isVCellIdentityMapped()){
+						if (numberOfPolls==20) {
+							return;
+						}
+						numberOfPolls++;
+						Thread.sleep(5000); // Poll every 5 seconds
 					}
-					numberOfPolls++;
-					Thread.sleep(5000); // Poll every 5 seconds
 				}
-
-				ClientServerInfo newClientServerInfo = createClientServerInfo(clientServerInfo, auth0ConnectionUtils.getAuth0MappedUser(), null);
+				ClientServerInfo newClientServerInfo = isGuest ?
+						createClientServerInfo(clientServerInfo, User.VCELL_GUEST_NAME, new DigestedPassword("frmfrm"))
+						: createClientServerInfo(clientServerInfo, auth0ConnectionUtils.getAuth0MappedUser(), null);
 				getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
 			}
 		}

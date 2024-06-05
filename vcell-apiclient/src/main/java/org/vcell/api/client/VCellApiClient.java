@@ -556,6 +556,17 @@ public class VCellApiClient implements AutoCloseable {
 
 		return accesTokenRepresentationRecord;
 	}
+
+	public AccesTokenRepresentationRecord getGuestLegacyToken() throws ApiException {
+		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
+		AccesTokenRepresentationRecord accesTokenRepresentationRecord = usersResourceApi.getGuestLegacyApiToken();
+
+		// Add AuthCache to the execution context
+		httpClientContext = HttpClientContext.create();
+		httpClientContext.setUserToken(accesTokenRepresentationRecord.getToken());
+
+		return accesTokenRepresentationRecord;
+	}
 	
 	public void clearAuthentication() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
 		initClient();
