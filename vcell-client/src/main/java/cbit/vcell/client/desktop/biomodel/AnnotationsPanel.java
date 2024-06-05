@@ -426,14 +426,14 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			gbc.insets = new Insets(3, 5, 3, 5);
 			gbc.gridx = gridx;
 			gbc.gridy = 0;
-			jPanelIdentifierManager.add(getJButtonAddRef(), gbc);
+			jPanelIdentifierManager.add(getJButtonSearchRef(), gbc);
 
 			gridx++;
 			gbc = new GridBagConstraints();
 			gbc.insets = new Insets(3, 5, 3, 5);
 			gbc.gridx = gridx;
 			gbc.gridy = 0;
-			jPanelIdentifierManager.add(getJButtonSearchRef(), gbc);
+			jPanelIdentifierManager.add(getJButtonAddRef(), gbc);
 
 			gridx++;
 			gbc = new GridBagConstraints();
@@ -513,6 +513,20 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			jComboBoxURI.setPreferredSize(new Dimension(MAX_URI_LENGTH, d.height));
 			ComboboxToolTipRenderer renderer = new ComboboxToolTipRenderer();
 			jComboBoxURI.setRenderer(renderer);
+			jComboBoxURI.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					VCMetaDataDataType mdt = (VCMetaDataDataType)jComboBoxURI.getSelectedItem();
+					System.out.println("aici");
+					if(mdt != null && mdt.isSearchable()) {
+						getJButtonSearchRef().setEnabled(true);
+					} else {
+						getJButtonSearchRef().setEnabled(false);
+					}
+					// aici
+
+				}
+			});
 //		jComboBoxURI.setRenderer(new DefaultListCellRenderer() {
 //			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 //				if(value == null) {
@@ -845,9 +859,13 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			getJComboBoxURI().setEnabled(true);
 			getJTextFieldFormalID().setEnabled(true);
 			getJButtonAddRef().setEnabled(true);
-			getJButtonSearchRef().setEnabled(true);
 			getJButtonRemoveText().setEnabled(true);
 			VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
+			if(mdt != null && mdt.isSearchable()) {
+				getJButtonSearchRef().setEnabled(true);
+			} else {
+				getJButtonSearchRef().setEnabled(false);
+			}
 			miriamTreeModel.createTree(entity);
 
 			String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(entity);
