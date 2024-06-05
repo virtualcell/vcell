@@ -43,7 +43,7 @@ public class UserRestDB {
     public User getUserFromIdentity(SecurityIdentity securityIdentity, boolean defaultGuest) throws DataAccessException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
-            if (defaultGuest) return Main.GUEST_USER;
+            if (defaultGuest) return User.VCELL_GUEST;
             return null;
         }
         if (userIdentities.size() > 1){
