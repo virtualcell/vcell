@@ -1,6 +1,6 @@
 # AdminResourceApi
 
-All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
+All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -22,15 +22,13 @@ Get usage summary
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.AdminResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
-        
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         AdminResourceApi apiInstance = new AdminResourceApi(defaultClient);
         try {
@@ -58,7 +56,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -69,8 +67,6 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | The PDF report |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 ## getUsageWithHttpInfo
 
@@ -86,15 +82,13 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.AdminResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
-        
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         AdminResourceApi apiInstance = new AdminResourceApi(defaultClient);
         try {
@@ -124,7 +118,7 @@ ApiResponse<[**File**](File.md)>
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -135,6 +129,4 @@ ApiResponse<[**File**](File.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | The PDF report |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 

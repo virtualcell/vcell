@@ -101,9 +101,7 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "int",
-            '401': None,
-            '403': None
+            '200': "int"
             
         }
         response_data = self.api_client.call_api(
@@ -170,9 +168,7 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "int",
-            '401': None,
-            '403': None
+            '200': "int"
             
         }
         response_data = self.api_client.call_api(
@@ -239,9 +235,7 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "int",
-            '401': None,
-            '403': None
+            '200': "int"
             
         }
         response_data = self.api_client.call_api(
@@ -305,7 +299,6 @@ class PublicationResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
-            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -555,7 +548,6 @@ class PublicationResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
-            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -1130,9 +1122,7 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Publication",
-            '401': None,
-            '403': None
+            '200': "Publication"
             
         }
         response_data = self.api_client.call_api(
@@ -1199,9 +1189,7 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Publication",
-            '401': None,
-            '403': None
+            '200': "Publication"
             
         }
         response_data = self.api_client.call_api(
@@ -1268,9 +1256,7 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Publication",
-            '401': None,
-            '403': None
+            '200': "Publication"
             
         }
         response_data = self.api_client.call_api(
@@ -1334,7 +1320,6 @@ class PublicationResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
-            'openId'
         ]
 
         return self.api_client.param_serialize(

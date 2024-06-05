@@ -242,4 +242,8 @@ public class InteractiveLogin {
         OIDCTokenResponse oidcTokenResponse = (OIDCTokenResponse) response;
         return oidcTokenResponse.getOIDCTokens();
     }
+
+    public static void logOut(){
+
+    }
 }

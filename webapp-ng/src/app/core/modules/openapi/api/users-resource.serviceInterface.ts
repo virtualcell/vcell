@@ -36,6 +36,12 @@ export interface UsersResourceServiceInterface {
     forgotLegacyPassword(userID?: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
+     * Method to get legacy tokens for guest users
+     * 
+     */
+    getGuestLegacyApiToken(extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
+
+    /**
      * Get token for legacy API
      * 
      */

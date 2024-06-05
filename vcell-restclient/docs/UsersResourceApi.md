@@ -1,11 +1,13 @@
 # UsersResourceApi
 
-All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
+All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**forgotLegacyPassword**](UsersResourceApi.md#forgotLegacyPassword) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it. |
 | [**forgotLegacyPasswordWithHttpInfo**](UsersResourceApi.md#forgotLegacyPasswordWithHttpInfo) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it. |
+| [**getGuestLegacyApiToken**](UsersResourceApi.md#getGuestLegacyApiToken) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users |
+| [**getGuestLegacyApiTokenWithHttpInfo**](UsersResourceApi.md#getGuestLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users |
 | [**getLegacyApiToken**](UsersResourceApi.md#getLegacyApiToken) | **POST** /api/v1/users/bearerToken | Get token for legacy API |
 | [**getLegacyApiTokenWithHttpInfo**](UsersResourceApi.md#getLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/bearerToken | Get token for legacy API |
 | [**getMappedUser**](UsersResourceApi.md#getMappedUser) | **GET** /api/v1/users/mappedUser | Get mapped VCell identity |
@@ -34,13 +36,15 @@ The end user has forgotten the legacy password they used for VCell, so they will
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.UsersResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         String userID = "userID_example"; // String | 
@@ -71,7 +75,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -84,6 +88,7 @@ No authorization required
 | **200** | Legacy password sent in email |  -  |
 | **401** | Need to login to Auth0 |  -  |
 | **500** | Internal Error |  -  |
+| **403** | Not Allowed |  -  |
 
 ## forgotLegacyPasswordWithHttpInfo
 
@@ -99,13 +104,15 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.UsersResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         String userID = "userID_example"; // String | 
@@ -138,7 +145,7 @@ ApiResponse<Void>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -151,13 +158,14 @@ No authorization required
 | **200** | Legacy password sent in email |  -  |
 | **401** | Need to login to Auth0 |  -  |
 | **500** | Internal Error |  -  |
+| **403** | Not Allowed |  -  |
 
 
-## getLegacyApiToken
+## getGuestLegacyApiToken
 
-> AccesTokenRepresentationRecord getLegacyApiToken()
+> AccesTokenRepresentationRecord getGuestLegacyApiToken()
 
-Get token for legacy API
+Method to get legacy tokens for guest users
 
 ### Example
 
@@ -172,14 +180,14 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
-            AccesTokenRepresentationRecord result = apiInstance.getLegacyApiToken();
+            AccesTokenRepresentationRecord result = apiInstance.getGuestLegacyApiToken();
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling UsersResourceApi#getLegacyApiToken");
+            System.err.println("Exception when calling UsersResourceApi#getGuestLegacyApiToken");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -212,11 +220,11 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 
-## getLegacyApiTokenWithHttpInfo
+## getGuestLegacyApiTokenWithHttpInfo
 
-> ApiResponse<AccesTokenRepresentationRecord> getLegacyApiToken getLegacyApiTokenWithHttpInfo()
+> ApiResponse<AccesTokenRepresentationRecord> getGuestLegacyApiToken getGuestLegacyApiTokenWithHttpInfo()
 
-Get token for legacy API
+Method to get legacy tokens for guest users
 
 ### Example
 
@@ -232,16 +240,16 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
-            ApiResponse<AccesTokenRepresentationRecord> response = apiInstance.getLegacyApiTokenWithHttpInfo();
+            ApiResponse<AccesTokenRepresentationRecord> response = apiInstance.getGuestLegacyApiTokenWithHttpInfo();
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling UsersResourceApi#getLegacyApiToken");
+            System.err.println("Exception when calling UsersResourceApi#getGuestLegacyApiToken");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -275,6 +283,136 @@ No authorization required
 | **200** | OK |  -  |
 
 
+## getLegacyApiToken
+
+> AccesTokenRepresentationRecord getLegacyApiToken()
+
+Get token for legacy API
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        try {
+            AccesTokenRepresentationRecord result = apiInstance.getLegacyApiToken();
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#getLegacyApiToken");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**AccesTokenRepresentationRecord**](AccesTokenRepresentationRecord.md)
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
+
+## getLegacyApiTokenWithHttpInfo
+
+> ApiResponse<AccesTokenRepresentationRecord> getLegacyApiToken getLegacyApiTokenWithHttpInfo()
+
+Get token for legacy API
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        try {
+            ApiResponse<AccesTokenRepresentationRecord> response = apiInstance.getLegacyApiTokenWithHttpInfo();
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#getLegacyApiToken");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+ApiResponse<[**AccesTokenRepresentationRecord**](AccesTokenRepresentationRecord.md)>
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
+
+
 ## getMappedUser
 
 > UserIdentityJSONSafe getMappedUser()
@@ -295,7 +433,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -336,8 +474,8 @@ This endpoint does not need any parameter.
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
 | **404** | Identity not found |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## getMappedUserWithHttpInfo
 
@@ -360,7 +498,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -403,8 +541,8 @@ ApiResponse<[**UserIdentityJSONSafe**](UserIdentityJSONSafe.md)>
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
 | **404** | Identity not found |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## getMe
@@ -426,7 +564,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
@@ -486,7 +624,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
@@ -549,7 +687,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -593,8 +731,8 @@ null (empty response body)
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
 | **409** | VCell Identity not mapped, userid already exists |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## mapNewUserWithHttpInfo
 
@@ -617,7 +755,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -663,8 +801,8 @@ ApiResponse<Void>
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
 | **409** | VCell Identity not mapped, userid already exists |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## mapUser
@@ -687,7 +825,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -731,8 +869,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## mapUserWithHttpInfo
 
@@ -755,7 +893,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -801,8 +939,8 @@ ApiResponse<**Boolean**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## unmapUser
@@ -825,7 +963,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -869,8 +1007,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## unmapUserWithHttpInfo
 
@@ -893,7 +1031,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -939,6 +1077,6 @@ ApiResponse<**Boolean**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 

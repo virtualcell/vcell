@@ -13,7 +13,7 @@ info:
     url: http://opensource.org/licenses/MIT
   version: 1.0.1
 servers:
-- url: https://vcellapi-test.cam.uchc.edu
+- url: https://vcell-dev.cam.uchc.edu
 paths:
   /api/v1/admin/usage:
     get:
@@ -29,13 +29,6 @@ paths:
               schema:
                 format: binary
                 type: string
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - admin
   /api/v1/bioModel/upload_bioModel:
     post:
       tags:
@@ -132,13 +125,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - curator
     post:
       tags:
       - Publication Resource
@@ -157,13 +143,6 @@ paths:
               schema:
                 format: int64
                 type: integer
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - curator
   /api/v1/publications/{id}:
     get:
       tags:
@@ -199,13 +178,6 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - curator
   /api/v1/users/bearerToken:
     post:
       tags:
@@ -219,6 +191,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
   /api/v1/users/forgotLegacyPassword:
     post:
       tags:
@@ -238,6 +217,24 @@ paths:
           description: Need to login to Auth0
         "500":
           description: Internal Error
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/v1/users/guestBearerToken:
+    post:
+      tags:
+      - Users Resource
+      summary: Method to get legacy tokens for guest users
+      operationId: getGuestLegacyApiToken
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesTokenRepresentationRecord'
   /api/v1/users/mapUser:
     post:
       tags:
@@ -256,10 +253,10 @@ paths:
             text/plain:
               schema:
                 type: boolean
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -278,10 +275,10 @@ paths:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
         "404":
           description: Identity not found
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -314,10 +311,10 @@ paths:
           description: "Successful, returning the identity"
         "409":
           description: "VCell Identity not mapped, userid already exists"
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -340,10 +337,10 @@ paths:
             application/json:
               schema:
                 type: boolean
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user

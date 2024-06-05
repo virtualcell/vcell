@@ -12,7 +12,7 @@ info:
   title: VCell API
   version: 1.0.1
 servers:
-- url: https://vcellapi-test.cam.uchc.edu
+- url: https://vcell-dev.cam.uchc.edu
 paths:
   /api/v1/admin/usage:
     get:
@@ -25,13 +25,6 @@ paths:
                 format: binary
                 type: string
           description: The PDF report
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - admin
       summary: Get usage summary
       tags:
       - Admin Resource
@@ -140,13 +133,6 @@ paths:
                 format: int64
                 type: integer
           description: OK
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - curator
       summary: Create publication
       tags:
       - Publication Resource
@@ -166,13 +152,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - curator
       summary: Create publication
       tags:
       - Publication Resource
@@ -193,13 +172,6 @@ paths:
       responses:
         "204":
           description: No Content
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - curator
       summary: Delete publication
       tags:
       - Publication Resource
@@ -236,6 +208,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
           description: OK
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
       summary: Get token for legacy API
       tags:
       - Users Resource
@@ -258,8 +237,27 @@ paths:
           description: Need to login to Auth0
         "500":
           description: Internal Error
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: "The end user has forgotten the legacy password they used for VCell,\
         \ so they will be emailed it."
+      tags:
+      - Users Resource
+      x-accepts: application/json
+  /api/v1/users/guestBearerToken:
+    post:
+      operationId: getGuestLegacyApiToken
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccesTokenRepresentationRecord'
+          description: OK
+      summary: Method to get legacy tokens for guest users
       tags:
       - Users Resource
       x-accepts: application/json
@@ -278,10 +276,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -302,10 +300,10 @@ paths:
           description: "Successful, returning the identity"
         "404":
           description: Identity not found
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -340,10 +338,10 @@ paths:
           description: "Successful, returning the identity"
         "409":
           description: "VCell Identity not mapped, userid already exists"
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -370,10 +368,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
