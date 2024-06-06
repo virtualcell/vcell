@@ -91,6 +91,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private DefaultComboBoxModel defaultComboBoxModelQualifier = new DefaultComboBoxModel();
 
 	private JTextField jTextFieldFormalID = null;	// immortal ID text
+	private JButton jButtonAddRef = null;			// add a known cross-reference
 	private JButton jButtonSearchRef = null;		// search a database add a cross-reference
 	private JButton jButtonDeleteRef = null;		// delete selected cross-reference
 	private JButton jButtonRemoveText = null;		// remove text annotation
@@ -141,11 +142,11 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		}
 		@Override
 		public void actionPerformed(ActionEvent evt) {
-			if (evt.getSource() == getJButtonSearchRef()) {
+			if (evt.getSource() == getJButtonAddRef()) {
+				addIdentifier();
+			} else if(evt.getSource() == getJButtonSearchRef()) {
 				initializeAddAnnotationsPanel();
-//				addIdentifier();
-			}
-			else if(evt.getSource() == addAnnotationsPanel.getOkButton()) {
+			} else if(evt.getSource() == addAnnotationsPanel.getOkButton()) {
 				annotationTextArea.setText("A test from the void");
 			} else if(evt.getSource() == getJButtonDeleteRef()) {
 				removeIdentifier();
@@ -215,24 +216,24 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		jPanelNewIdentifier.setLayout(new GridBagLayout());
 //	jPanelNewIdentifier.setPreferredSize(new Dimension(725, 37));
 //	jPanelNewIdentifier.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 2));
-////////////////////////////////////////////////////////////////////////////////////////////////////////
-//		VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
+
+		VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
 		int gridx = 0;
 		int gridy = 0;
 		GridBagConstraints gbc = new GridBagConstraints();
-//		gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
-//		gbc.gridx = gridx;
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.WEST;
-//		jPanelNewIdentifier.add(new JLabel("Provider: "), gbc);
-//
-//		gridx++;
-//		gbc = new GridBagConstraints();
-//		gbc.insets = new Insets(3, 5, 3, 4);
-//		gbc.gridx = gridx;
-//		gbc.gridy = gridy;
-//		gbc.anchor = GridBagConstraints.WEST;
-//		jPanelNewIdentifier.add(new JLabel("<html><b>" + mdt.getDataTypeName() + "</b></html>"), gbc);
+		gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.WEST;
+		jPanelNewIdentifier.add(new JLabel("Provider: "), gbc);
+
+		gridx++;
+		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(3, 5, 3, 4);
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.anchor = GridBagConstraints.WEST;
+		jPanelNewIdentifier.add(new JLabel("<html><b>" + mdt.getDataTypeName() + "</b></html>"), gbc);
 
 		// ------------------------------------- Qualifier combobox  -----------------------------
 
@@ -274,7 +275,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		gbc.gridx = gridx;
 		gbc.gridy = gridy;
 		gbc.anchor = GridBagConstraints.WEST;
-//		jPanelNewIdentifier.add(new JLabel("<html>Example: <b>" + mdt.getExample() +"</b></html>"), gbc);
+		jPanelNewIdentifier.add(new JLabel("<html>Example: <b>" + mdt.getExample() +"</b></html>"), gbc);
 
 		gridx++;
 		gbc = new GridBagConstraints();
@@ -290,14 +291,14 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		gridy++;
 
 		JLabel linkLabel = new JLabel();
-//		String s = "<html>" + "Navigate to" + "&nbsp;<font color=\"" + "blue" + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;";
-//		s += "and find the identifier ID, then paste it in the box above." + "</html>";
+		String s = "<html>" + "Navigate to" + "&nbsp;<font color=\"" + "blue" + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;";
+		s += "and find the identifier ID, then paste it in the box above." + "</html>";
 		linkLabel.setToolTipText("Double-click to open link");
-//		linkLabel.setText(s);
+		linkLabel.setText(s);
 		linkLabel.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				if(e.getClickCount() == 2) {
-//					showBrowseToLink(mdt);
+					showBrowseToLink(mdt);
 				}
 			}
 		});
@@ -312,18 +313,18 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 
 		// ---------------------------------------------------------------------
 		List <String> rows = new ArrayList<> ();
-//		String value = mdt.getDescription();
-//		StringTokenizer tokenizer = new StringTokenizer(value, " ");
+		String value = mdt.getDescription();
+		StringTokenizer tokenizer = new StringTokenizer(value, " ");
 		String row = "";
-//		while(tokenizer.hasMoreTokens()) {
-//			String word = tokenizer.nextToken();
-//			if((row.length() + word.length()) > MAX_DESCRIPTION_LENGTH) {
-//				rows.add(row);
-//				row = word + " ";
-//			} else {
-//				row += word + " ";
-//			}
-//		}
+		while(tokenizer.hasMoreTokens()) {
+			String word = tokenizer.nextToken();
+			if((row.length() + word.length()) > MAX_DESCRIPTION_LENGTH) {
+				rows.add(row);
+				row = word + " ";
+			} else {
+				row += word + " ";
+			}
+		}
 		if(!row.isEmpty()) {
 			rows.add(row);
 		}
@@ -402,40 +403,49 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	private JPanel getJPanelIdentifierManager() {
 		if (jPanelIdentifierManager == null) {
 			jPanelIdentifierManager = new JPanel();
-//			jPanelIdentifierManager.setLayout(new GridBagLayout());
-//			jPanelIdentifierManager.setPreferredSize(new Dimension(260, 300)); //37
-//			jPanelIdentifierManager.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 1));
-//
-//			int gridx = 0;
-//			GridBagConstraints gbc = new GridBagConstraints();
-//		gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
-//		gbc.gridx = gridx;
-//		gbc.gridy = 0;
-//		jPanelIdentifierManager.add(new JLabel("Provider"), gbc);
+			jPanelIdentifierManager.setLayout(new GridBagLayout());
+			jPanelIdentifierManager.setPreferredSize(new Dimension(260, 300)); //37
+			jPanelIdentifierManager.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 1));
 
-//		gridx++;
-//		gbc = new GridBagConstraints();
-//			gbc.insets = new Insets(3, 5, 3, 4);
-//			gbc.gridx = gridx;
-//			gbc.gridy = 0;
-//			jPanelIdentifierManager.add(getJComboBoxURI(), gbc);
+			int gridx = 0;
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.insets = new Insets(3, 15, 3, 0);		// top left bottom right
+			gbc.gridx = gridx;
+			gbc.gridy = 0;
+			jPanelIdentifierManager.add(new JLabel("Provider"), gbc);
 
-//		gridx++;
-//		gbc = new GridBagConstraints();
-//		gbc.insets = new Insets(3, 5, 3, 5);
-//		gbc.gridx = gridx;
-//		gbc.gridy = 0;
-//		jPanelIdentifierManager.add(getJButtonSearchRef(), gbc);
+			gridx++;
+			gbc = new GridBagConstraints();
+			gbc.insets = new Insets(3, 5, 3, 4);
+			gbc.gridx = gridx;
+			gbc.gridy = 0;
+			jPanelIdentifierManager.add(getJComboBoxURI(), gbc);
 
-//		gbc = new GridBagConstraints();
-//		gbc.insets = new Insets(3, 0, 3, 0);
-//		gbc.gridx = gridx;
-//		gbc.gridy = 0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.weightx = 1.0;
-//		jPanelIdentifierManager.add(new JLabel(""), gbc);
-//
-//		getJButtonSearchRef().addActionListener(eventHandler);
+			gridx++;
+			gbc = new GridBagConstraints();
+			gbc.insets = new Insets(3, 5, 3, 5);
+			gbc.gridx = gridx;
+			gbc.gridy = 0;
+			jPanelIdentifierManager.add(getJButtonSearchRef(), gbc);
+
+			gridx++;
+			gbc = new GridBagConstraints();
+			gbc.insets = new Insets(3, 5, 3, 5);
+			gbc.gridx = gridx;
+			gbc.gridy = 0;
+			jPanelIdentifierManager.add(getJButtonAddRef(), gbc);
+
+			gridx++;
+			gbc = new GridBagConstraints();
+			gbc.insets = new Insets(3, 0, 3, 0);
+			gbc.gridx = gridx;
+			gbc.gridy = 0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.weightx = 1.0;
+			jPanelIdentifierManager.add(new JLabel(""), gbc);
+
+			getJButtonAddRef().addActionListener(eventHandler);
+			getJButtonSearchRef().addActionListener(eventHandler);
 		}
 		return jPanelIdentifierManager;
 	}
@@ -503,6 +513,20 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			jComboBoxURI.setPreferredSize(new Dimension(MAX_URI_LENGTH, d.height));
 			ComboboxToolTipRenderer renderer = new ComboboxToolTipRenderer();
 			jComboBoxURI.setRenderer(renderer);
+			jComboBoxURI.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					VCMetaDataDataType mdt = (VCMetaDataDataType)jComboBoxURI.getSelectedItem();
+					System.out.println("aici");
+					if(mdt != null && mdt.isSearchable()) {
+						getJButtonSearchRef().setEnabled(true);
+					} else {
+						getJButtonSearchRef().setEnabled(false);
+					}
+					// aici
+
+				}
+			});
 //		jComboBoxURI.setRenderer(new DefaultListCellRenderer() {
 //			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 //				if(value == null) {
@@ -545,16 +569,16 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			gbc.anchor = GridBagConstraints.NORTHWEST;
 			leftPanel.add(getJPanelLeftTitle(), gbc);
 
-//			gridy++;
-//			gbc = new java.awt.GridBagConstraints();
-//			gbc.gridx = 0;
-//			gbc.gridy = gridy;
-//			gbc.weightx = 1.0;
-//			gbc.weighty = 0;
-//			gbc.insets = new Insets(2, 3, 1, 3);
-//			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
-//			gbc.anchor = GridBagConstraints.NORTHWEST;
-//			leftPanel.add(getJPanelIdentifierManager(), gbc);
+			gridy++;
+			gbc = new java.awt.GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = gridy;
+			gbc.weightx = 1.0;
+			gbc.weighty = 0;
+			gbc.insets = new Insets(2, 3, 1, 3);
+			gbc.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.NORTHWEST;
+			leftPanel.add(getJPanelIdentifierManager(), gbc);
 
 			gridy++;
 			gbc = new java.awt.GridBagConstraints();
@@ -834,9 +858,14 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		if(selectedObject != null && entity != null) {
 			getJComboBoxURI().setEnabled(true);
 			getJTextFieldFormalID().setEnabled(true);
-			getJButtonSearchRef().setEnabled(true);
+			getJButtonAddRef().setEnabled(true);
 			getJButtonRemoveText().setEnabled(true);
 			VCMetaDataDataType mdt = (VCMetaDataDataType)getJComboBoxURI().getSelectedItem();
+			if(mdt != null && mdt.isSearchable()) {
+				getJButtonSearchRef().setEnabled(true);
+			} else {
+				getJButtonSearchRef().setEnabled(false);
+			}
 			miriamTreeModel.createTree(entity);
 
 			String freeText = bioModel.getVCMetaData().getFreeTextAnnotation(entity);
@@ -850,7 +879,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		} else {
 			getJComboBoxURI().setEnabled(false);
 			getJTextFieldFormalID().setEnabled(false);
-			getJButtonSearchRef().setEnabled(false);
+			getJButtonAddRef().setEnabled(false);
+		getJButtonSearchRef().setEnabled(false);
 			getJButtonRemoveText().setEnabled(false);
 			miriamTreeModel.createTree(null);
 
@@ -932,11 +962,35 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		}
 	}
 
-	public void addIdentifier(SearchElement searchElement) {
-//	if(PopupGenerator.showComponentOKCancelDialog(AnnotationsPanel.this, getJPanelNewIdentifier(), "Define New Formal Identifier") != JOptionPane.OK_OPTION) {
-//		return;
-//	}
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+	private void addIdentifier() {				// ----- used for add by direct editing / typing
+		if(PopupGenerator.showComponentOKCancelDialog(AnnotationsPanel.this, getJPanelNewIdentifier(), "Define New Formal Identifier") != JOptionPane.OK_OPTION) {
+			return;
+		}
+		MIRIAMQualifier qualifier = (MIRIAMQualifier)getJComboBoxQualifier().getSelectedItem();
+		MiriamManager.DataType objectNamespace = (MiriamManager.DataType)getJComboBoxURI().getSelectedItem();
+		String objectID = getJTextFieldFormalID().getText();
+		if(objectID.compareTo("NewID") == 0) {
+			return;
+		}
+		MiriamManager miriamManager = vcMetaData.getMiriamManager();
+		HashSet<MiriamResource> miriamResources = new HashSet<MiriamResource>();
+		try {
+			Identifiable entity = getIdentifiable(selectedObject);
+			MiriamResource mr = miriamManager.createMiriamResource(objectNamespace.getBaseURN()+":"+objectID);
+			miriamResources.add(mr);
+			miriamManager.addMiriamRefGroup(entity, qualifier, miriamResources);
+//		System.out.println(vcMetaData.printRdfStatements());
+			updateInterface();
+			if(selectedObject instanceof ReactionStep) {
+				// we tell ReactionPropertiesPanel to refresh the annotation icon
+				((ReactionStep) selectedObject).firePropertyChange("addIdentifier", false, true);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			DialogUtils.showErrorDialog(this,"Add Identifier failed:\n"+e.getMessage(), e);
+		}
+	}
+	public void addIdentifier(SearchElement searchElement) {	// ----- used for search
 		MIRIAMQualifier qualifier = (MIRIAMQualifier)getJComboBoxQualifier().getSelectedItem();
 
 		MiriamManager.DataType objectNamespace = (MiriamManager.DataType)getJComboBoxURI().getSelectedItem();
@@ -1054,7 +1108,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 
 	@SuppressWarnings("unchecked")
 	private void initializeComboBoxURI() {
-		jComboBoxURI = getJComboBoxURI();
+//		jComboBoxURI = getJComboBoxURI();
 		Identifiable entity = getIdentifiable(selectedObject);
 		defaultComboBoxModelURI.removeAllElements();
 		List<String> tooltips = new ArrayList<> ();
@@ -1088,6 +1142,14 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		}
 	}
 
+	private JButton getJButtonAddRef() {
+		if (jButtonAddRef == null) {
+			jButtonAddRef = new JButton();
+			jButtonAddRef.setText(ACTION_ADD);
+			jButtonAddRef.setToolTipText("Add a reference using a known keyword in a provider database");
+		}
+		return jButtonAddRef;
+	}
 	private JButton getJButtonSearchRef() {
 		if (jButtonSearchRef == null) {
 			jButtonSearchRef = new JButton();

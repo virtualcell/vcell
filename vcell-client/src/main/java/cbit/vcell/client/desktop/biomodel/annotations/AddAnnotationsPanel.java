@@ -38,7 +38,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 
     public AddAnnotationsPanel (AnnotationsPanel annotationsPanel, JComboBox JComboBoxURI, JComboBox JComboBoxQualifier) {
         this.annotationsPanel = annotationsPanel;
-        this.jComboBoxURI = (JComboBoxURI==null) ? new JComboBox<>(): JComboBoxURI;
+        this.jComboBoxURI = JComboBoxURI;
         this.jComboBoxQualifier = (JComboBoxQualifier==null) ? new JComboBox<>(): JComboBoxQualifier;
 
         setTitle("Add Annotations");
@@ -137,6 +137,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     }
 
     private void addSearchPanelComponents(JPanel topPanel) {
+        VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
         topPanel.setLayout(new GridBagLayout());
 
         GridBagConstraints sGbc = new GridBagConstraints();
@@ -145,21 +146,29 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         sGbc.gridx = 0;
         sGbc.insets = new Insets(0,0,10,0);
         sGbc.anchor = GridBagConstraints.WEST;
-        JLabel selectOntologyLabel = new JLabel("Select Provider:");
+        JLabel selectOntologyLabel = new JLabel("Provider:");
         topPanel.add(selectOntologyLabel, sGbc);
 
         sGbc = new GridBagConstraints();
+        sGbc.insets = new Insets(3, 5, 3, 4);
         sGbc.gridy = 0;
         sGbc.gridx = 1;
         sGbc.insets = new Insets(0,10,10,20);
         sGbc.anchor = GridBagConstraints.WEST;
-        jComboBoxURI.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateGUI();
-            }
-        });
-        topPanel.add(jComboBoxURI, sGbc);      // ontologies combobox
+        topPanel.add(new JLabel("<html><b>" + mdt.getDataTypeName() + "</b></html>"), sGbc);
+
+//        sGbc = new GridBagConstraints();
+//        sGbc.gridy = 0;
+//        sGbc.gridx = 1;
+//        sGbc.insets = new Insets(0,10,10,20);
+//        sGbc.anchor = GridBagConstraints.WEST;
+//        jComboBoxURI.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                updateGUI();
+//            }
+//        });
+//        topPanel.add(jComboBoxURI, sGbc);      // ontologies combobox
 
         sGbc = new GridBagConstraints();
         sGbc.gridy = 0;
