@@ -47,7 +47,7 @@ public class UsersResource {
     @NoCache
     public Identity me() {
         if (securityIdentity.isAnonymous()){
-            return new Identity("guest_user", null, null, null);
+            return new Identity("anonymous", null, null, null);
         }
         return Identity.fromSecurityIdentity(securityIdentity);
     }
