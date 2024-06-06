@@ -53,7 +53,7 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 
 	public static final User tempUser = new User("temp",new KeyValue("123"));
 	public static final String VCELL_GUEST_NAME = "vcellguest";
-	public static final User VCELL_GUEST = new User(VCELL_GUEST_NAME,new KeyValue("-1"));
+	public static final User VCELL_GUEST = new User(VCELL_GUEST_NAME,new KeyValue("140220477"));
 	
 	public static class UserNameComparator implements Serializable,Comparator<User>{
 		@Override
