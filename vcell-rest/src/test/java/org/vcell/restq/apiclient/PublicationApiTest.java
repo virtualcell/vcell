@@ -38,20 +38,7 @@ public class PublicationApiTest {
 
     private ApiClient aliceAPIClient;
     private ApiClient bobAPIClient;
-    private final Publication defaultPub = new Publication(){{
-        setAuthors(Arrays.asList("author1", "author2"));
-        setCitation("citation");
-        setDoi("doi");
-        setEndnoteid(0);
-        setPubmedid("pubmedId");
-        setTitle("publication 1");
-        setUrl("url");
-        setWittid(0);
-        setYear(1994);
-        setBiomodelRefs(new ArrayList<>());
-        setMathmodelRefs(new ArrayList<>());
-        setDate(LocalDate.now());
-    }};
+    private final Publication defaultPub = TestEndpointUtils.defaultPublication();
 
 
     @BeforeAll
@@ -96,6 +83,7 @@ public class PublicationApiTest {
         Publication retrievedPublication = guessUserAPI.getPublicationById(id);
 
         Assertions.assertEquals(publication, retrievedPublication);
+        publisherAPI.deletePublication(id);
     }
 
     @Test
@@ -106,7 +94,7 @@ public class PublicationApiTest {
         // test that there are no publications initially
         List<Publication> initialPublications = apiInstance.getPublications();
         int initialPubSize = initialPublications.size();
-        Assertions.assertEquals(0, initialPubSize);
+        Assertions.assertEquals(1, initialPubSize);
 
         // save publication pub
         Long newPubKey = apiInstance.createPublication(defaultPub);

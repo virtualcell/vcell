@@ -6,6 +6,7 @@ import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
+import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
@@ -13,6 +14,9 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TestEndpointUtils {
 
@@ -65,5 +69,22 @@ public class TestEndpointUtils {
         apiClient.setHost("localhost");
         apiClient.setPort(testPort);
         return apiClient;
+    }
+
+    public static Publication defaultPublication(){
+        Publication publication = new Publication();
+        publication.setAuthors(Arrays.asList("author1", "author2"));
+        publication.setCitation("citation");
+        publication.setDoi("doi");
+        publication.setEndnoteid(0);
+        publication.setPubmedid("pubmedId");
+        publication.setTitle("publication 1");
+        publication.setUrl("url");
+        publication.setWittid(0);
+        publication.setYear(1994);
+        publication.setBiomodelRefs(new ArrayList<>());
+        publication.setMathmodelRefs(new ArrayList<>());
+        publication.setDate(LocalDate.now());
+        return publication;
     }
 }
