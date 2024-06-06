@@ -156,4 +156,48 @@ public class UsersApiTest {
         Assertions.assertFalse(token.getToken().isEmpty());
         Assertions.assertEquals("Administrator", token.getUserId());
     }
+
+    @Test
+    public void testOldAPITokenGenerationForGuest() throws ApiException {
+        ApiClient defaultUser = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
+        UsersResourceApi usersResourceApi = new UsersResourceApi(defaultUser);
+
+        Assertions.assertThrowsExactly(ApiException.class, () -> usersResourceApi.getLegacyApiToken(), "Should throw 401 since only clients with role user can call it.");
+
+        AccesTokenRepresentationRecord guestApiToken = usersResourceApi.getGuestLegacyApiToken();
+        Assertions.assertNotNull(guestApiToken);
+        Assertions.assertFalse(guestApiToken.getToken().isEmpty());
+        Assertions.assertEquals("vcellguest", guestApiToken.getUserId());
+        Assertions.assertEquals("-1", guestApiToken.getUserKey());
+    }
+
+    @Test
+    public void testOldAPITokenGenerationForMultipleGuests() throws ApiException {
+        ApiClient defaultUser = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
+        ApiClient secondDefaultUser = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
+        UsersResourceApi defaultUserApi = new UsersResourceApi(defaultUser);
+        UsersResourceApi secondDefaultUserApi = new UsersResourceApi(secondDefaultUser);
+
+        AccesTokenRepresentationRecord guestApiToken = defaultUserApi.getGuestLegacyApiToken();
+        AccesTokenRepresentationRecord secondGuestApiToken = secondDefaultUserApi.getGuestLegacyApiToken();
+        Assertions.assertNotNull(guestApiToken);
+        Assertions.assertFalse(guestApiToken.getToken().isEmpty());
+        Assertions.assertEquals("vcellguest", guestApiToken.getUserId());
+
+        Assertions.assertNotNull(secondGuestApiToken);
+        Assertions.assertFalse(secondGuestApiToken.getToken().isEmpty());
+        Assertions.assertEquals("vcellguest", secondGuestApiToken.getUserId());
+
+        Assertions.assertEquals(guestApiToken.getUserId(), secondGuestApiToken.getUserId());
+        Assertions.assertEquals(guestApiToken.getUserKey(), secondGuestApiToken.getUserKey());
+        Assertions.assertNotEquals(guestApiToken.getToken(), secondGuestApiToken.getToken());
+    }
+
 }
+
+
+
+
+
+
+

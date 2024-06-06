@@ -5,6 +5,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
@@ -62,9 +63,14 @@ public class TestEndpointUtils {
     }
 
     public static ApiClient createAuthenticatedAPIClient(KeycloakTestClient keycloakClient, int testPort, TestOIDCUsers oidcUser){
-        ApiClient apiClient = new ApiClient();
+        ApiClient apiClient = createUnAuthenticatedAPIClient(testPort);
         String oidcAccessToken = keycloakClient.getAccessToken(oidcUser.name());
         apiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + oidcAccessToken));
+        return apiClient;
+    }
+
+    public static ApiClient createUnAuthenticatedAPIClient(int testPort){
+        ApiClient apiClient = new ApiClient();
         apiClient.setScheme("http");
         apiClient.setHost("localhost");
         apiClient.setPort(testPort);

@@ -72,10 +72,7 @@ public class PublicationApiTest {
         PublicationResourceApi publisherAPI = new PublicationResourceApi(aliceAPIClient);
         long id = publisherAPI.createPublication(defaultPub);
 
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setScheme("http");
-        defaultClient.setHost("localhost");
-        defaultClient.setPort(testPort);
+        ApiClient defaultClient = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
 
         Publication publication = publisherAPI.getPublicationById(id);
 
