@@ -168,7 +168,7 @@ public class UsersApiTest {
         Assertions.assertNotNull(guestApiToken);
         Assertions.assertFalse(guestApiToken.getToken().isEmpty());
         Assertions.assertEquals("vcellguest", guestApiToken.getUserId());
-        Assertions.assertEquals("-1", guestApiToken.getUserKey());
+        Assertions.assertEquals("140220477", guestApiToken.getUserKey());
     }
 
     @Test
