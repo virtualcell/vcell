@@ -15,29 +15,20 @@ import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ClientServerManager.InteractiveContextDefaultProvider;
-import cbit.vcell.client.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.desktop.LoginDelegate;
-import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.resource.ErrorUtils;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.Auth0ConnectionUtils;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
-import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
-import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
 import javax.swing.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Hashtable;
 /**
  * Insert the type's description here.
@@ -45,7 +36,6 @@ import java.util.Hashtable;
  * @author: Ion Moraru
  */
 public class VCellClient {
-	private final UserRegistrationManager userRegistrationManager; // injected in constructor
 	private final VCellConnectionFactory vcellConnectionFactory; // injected in constructor
 
 	private ClientServerManager clientServerManager = null;
@@ -101,21 +91,12 @@ public class VCellClient {
 	}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 3:56:09 PM)
- */
 @Inject
-public VCellClient(UserRegistrationManager userRegistrationManager, VCellConnectionFactory vcellConnectionFactory) {
-	this.userRegistrationManager = userRegistrationManager;
+public VCellClient(VCellConnectionFactory vcellConnectionFactory) {
 	this.vcellConnectionFactory = vcellConnectionFactory;
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 3:40:19 PM)
- */
 private DocumentWindowManager createAndShowGUI(VCDocument startupDoc) {
 	DocumentWindowManager windowManager = null;
 	/* Create the first document desktop */
@@ -184,7 +165,7 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 			// start management layer
 			InteractiveContextDefaultProvider defaultRequester = new VCellGuiInteractiveContextDefaultProvider();
 			VCellClient.this.setClientServerManager(new ClientServerManager(vcellConnectionFactory, clientServerInfo, defaultRequester));
-			VCellClient.this.setRequestManager(new ClientRequestManager(VCellClient.this, VCellClient.this.userRegistrationManager));
+			VCellClient.this.setRequestManager(new ClientRequestManager(VCellClient.this));
 			VCellClient.this.setMdiManager(new ClientMDIManager(VCellClient.this.getRequestManager()));
 			// start auxilliary stuff
 			VCellClient.this.startStatusThreads();
@@ -219,23 +200,6 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try {
-//				final JComponent component = ((DocumentWindowManager)hashTable.get("currWindowManager")).getComponent();
-//				final Window windowForComponent = SwingUtilities.windowForComponent(component);
-//				final Map<String, Object> installerVariables = Variables.getInstallerVariables();
-//				System.out.println(installerVariables);
-				
-				//-----use following in BreakPoint conditional before ApplicationLauncher.launchApplication in eclipse
-//				System.setProperty("install4j.runtimeDir","/home/vcell/VCell_Test/.install4j");
-//				return false;
-
-//				ApplicationLauncher.Callback callback1 = new ApplicationLauncher.Callback() {
-//			        public void exited(int exitValue) {
-//			        	DialogUtils.showInfoDialog(windowForComponent, "ApplicationLauncher.launchApplication.exited(), exitValue="+exitValue);
-//			        }
-//			        public void prepareShutdown() {
-//			        	DialogUtils.showInfoDialog(windowForComponent, "ApplicationLauncher.launchApplication.prepareShutdown()");
-//			        }
-//			    }
 				String[] install4jArgs = null;
 				boolean blocking = false;
 				ApplicationLauncher.Callback callback = null;
@@ -275,24 +239,9 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if ((boolean)hashTable.get("login")) {
-				DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
 				boolean isGuest = (boolean)hashTable.get("guest");
 				Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
 				auth0ConnectionUtils.auth0SignIn(isGuest);
-				if (!isGuest){
-					int numberOfPolls = 0;
-					while(!auth0ConnectionUtils.isVCellIdentityMapped()){
-						if (numberOfPolls==20) {
-							return;
-						}
-						numberOfPolls++;
-						Thread.sleep(5000); // Poll every 5 seconds
-					}
-				}
-				ClientServerInfo newClientServerInfo = isGuest ?
-						createClientServerInfo(clientServerInfo, User.VCELL_GUEST_NAME, new DigestedPassword("frmfrm"))
-						: createClientServerInfo(clientServerInfo, auth0ConnectionUtils.getAuth0MappedUser(), null);
-				getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
 			}
 		}
 	};
@@ -300,10 +249,25 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 	AsynchClientTask task3  = new AsynchClientTask("Connecting to Server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 		    // try server connection
-		    if (clientServerInfo.getUsername() != null) {
+			boolean login = (boolean)hashTable.get("login");
+			boolean isGuest = (boolean)hashTable.get("guest");
+			Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
+			if (login) {
+				if (!isGuest){
+					int numberOfPolls = 0;
+					while(!auth0ConnectionUtils.isVCellIdentityMapped()){
+						if (numberOfPolls==100) {
+							return;
+						}
+						numberOfPolls++;
+						Thread.sleep(5000); // Poll every 5 seconds
+					}
+				}
 		    	DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
-			    // we were not supplied login credentials; pop-up dialog
-		    	VCellClient.this.getRequestManager().connectToServer(currWindowManager, clientServerInfo);
+				ClientServerInfo newClientServerInfo = isGuest ?
+						createClientServerInfo(clientServerInfo, User.VCELL_GUEST_NAME, new DigestedPassword("frmfrm"))
+						: createClientServerInfo(clientServerInfo, auth0ConnectionUtils.getAuth0MappedUser(), null);
+				getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
 		    }
 		}
 	}; 	
@@ -325,9 +289,7 @@ public ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo
 	return null;
 }
 	
-/**
- * Comment
- */
+
 private void startStatusThreads() {
 	StatusUpdater statusUpdater = new StatusUpdater(getMdiManager());
 	setStatusUpdater(statusUpdater);
