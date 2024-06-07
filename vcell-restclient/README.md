@@ -101,7 +101,7 @@ public class AdminResourceApiExample {
 
 ## Documentation for API Endpoints
 
-All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
+All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
@@ -127,6 +127,8 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication
 *UsersResourceApi* | [**forgotLegacyPassword**](docs/UsersResourceApi.md#forgotLegacyPassword) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**forgotLegacyPasswordWithHttpInfo**](docs/UsersResourceApi.md#forgotLegacyPasswordWithHttpInfo) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+*UsersResourceApi* | [**getGuestLegacyApiToken**](docs/UsersResourceApi.md#getGuestLegacyApiToken) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users
+*UsersResourceApi* | [**getGuestLegacyApiTokenWithHttpInfo**](docs/UsersResourceApi.md#getGuestLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users
 *UsersResourceApi* | [**getLegacyApiToken**](docs/UsersResourceApi.md#getLegacyApiToken) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 *UsersResourceApi* | [**getLegacyApiTokenWithHttpInfo**](docs/UsersResourceApi.md#getLegacyApiTokenWithHttpInfo) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 *UsersResourceApi* | [**getMappedUser**](docs/UsersResourceApi.md#getMappedUser) | **GET** /api/v1/users/mappedUser | Get mapped VCell identity

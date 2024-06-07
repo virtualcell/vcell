@@ -28,6 +28,7 @@ import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.api.common.*;
 import org.vcell.api.common.events.EventWrapper;
+import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.auth.AuthApiClient;
@@ -68,7 +69,7 @@ public class VCellApiClient implements AutoCloseable {
 	boolean bSkipSSL = true;
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 	private final URL quarkusURL;
-	private AuthApiClient apiClient = null;
+	private ApiClient apiClient = null;
 
 
 	// Create a custom response handler
@@ -503,6 +504,16 @@ public class VCellApiClient implements AutoCloseable {
 		return accessTokenRep;
 	}
 
+	public void createDefaultQuarkusClient(boolean bIgnoreCertProblems){
+		apiClient = new ApiClient(){{
+			allowInsecureCertificates(bIgnoreCertProblems);
+			setHost(quarkusURL.getHost());
+			setPort(quarkusURL.getPort());
+			setBasePath(quarkusURL.getPath());
+			setScheme(quarkusURL.getProtocol());
+		}};
+	}
+
 	public void authenticateWithAuth0(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
 		apiClient = InteractiveLogin.login("cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf", new URI("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/authorize"),
 				this.quarkusURL.toURI(), ignoreSSLCertProblems);
@@ -538,6 +549,17 @@ public class VCellApiClient implements AutoCloseable {
 	public AccesTokenRepresentationRecord getLegacyToken() throws ApiException {
 		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
 		AccesTokenRepresentationRecord accesTokenRepresentationRecord = usersResourceApi.getLegacyApiToken();
+
+		// Add AuthCache to the execution context
+		httpClientContext = HttpClientContext.create();
+		httpClientContext.setUserToken(accesTokenRepresentationRecord.getToken());
+
+		return accesTokenRepresentationRecord;
+	}
+
+	public AccesTokenRepresentationRecord getGuestLegacyToken() throws ApiException {
+		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
+		AccesTokenRepresentationRecord accesTokenRepresentationRecord = usersResourceApi.getGuestLegacyApiToken();
 
 		// Add AuthCache to the execution context
 		httpClientContext = HttpClientContext.create();

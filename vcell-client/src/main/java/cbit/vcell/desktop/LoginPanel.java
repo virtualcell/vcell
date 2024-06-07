@@ -68,14 +68,14 @@ public class LoginPanel extends JPanel {
 			if (e.getSource() == LoginPanel.this.getJTextFieldUser() || e.getSource() == LoginPanel.this.getJPasswordFieldPassword() || 
 					e.getSource() == LoginPanel.this.getJButtonOK() || e.getSource() == LoginPanel.this.getBtnGuestLogin()) {
 				updateFields();
-				if(e.getSource() == LoginPanel.this.getBtnGuestLogin() || fieldUser.equals(User.VCELL_GUEST)) {
+				if(e.getSource() == LoginPanel.this.getBtnGuestLogin() || fieldUser.equals(User.VCELL_GUEST_NAME)) {
 					JDialog dialog = new JDialog();
 					dialog.setAlwaysOnTop(true);
 					int confirm = JOptionPane.showOptionDialog(dialog,
 							"The Guest account allows you to explore public models in\nthe VCell database and build models and run simulations on your local machine.\nYou will not be able to save a model to the database or use the VCell simulations servers.",
 						"Change User...", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, new String[] {"Continue","Cancel"}, "Continue");
 					if(confirm == 0) {
-						loginDelegate.login(User.VCELL_GUEST, new UserLoginInfo.DigestedPassword("vcellfrmfrm"));
+						loginDelegate.login(User.VCELL_GUEST_NAME, new UserLoginInfo.DigestedPassword("vcellfrmfrm"));
 					}
 				}else {
 					Preferences prefs = Preferences.userNodeForPackage(LoginPanel.class);

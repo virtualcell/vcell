@@ -1,10 +1,11 @@
 # vcell_client.UsersResourceApi
 
-All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
+All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**forgot_legacy_password**](UsersResourceApi.md#forgot_legacy_password) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+[**get_guest_legacy_api_token**](UsersResourceApi.md#get_guest_legacy_api_token) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users
 [**get_legacy_api_token**](UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
 [**get_mapped_user**](UsersResourceApi.md#get_mapped_user) | **GET** /api/v1/users/mappedUser | Get mapped VCell identity
 [**get_me**](UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user
@@ -27,12 +28,16 @@ import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "https://vcellapi-test.cam.uchc.edu"
+    host = "https://vcell-dev.cam.uchc.edu"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
 
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
@@ -61,7 +66,7 @@ void (empty response body)
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -74,13 +79,14 @@ No authorization required
 **200** | Legacy password sent in email |  -  |
 **401** | Need to login to Auth0 |  -  |
 **500** | Internal Error |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **get_legacy_api_token**
-> AccesTokenRepresentationRecord get_legacy_api_token()
+# **get_guest_legacy_api_token**
+> AccesTokenRepresentationRecord get_guest_legacy_api_token()
 
-Get token for legacy API
+Method to get legacy tokens for guest users
 
 ### Example
 
@@ -92,10 +98,10 @@ from vcell_client.models.acces_token_representation_record import AccesTokenRepr
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "https://vcellapi-test.cam.uchc.edu"
+    host = "https://vcell-dev.cam.uchc.edu"
 )
 
 
@@ -105,12 +111,12 @@ with vcell_client.ApiClient(configuration) as api_client:
     api_instance = vcell_client.UsersResourceApi(api_client)
 
     try:
-        # Get token for legacy API
-        api_response = api_instance.get_legacy_api_token()
-        print("The response of UsersResourceApi->get_legacy_api_token:\n")
+        # Method to get legacy tokens for guest users
+        api_response = api_instance.get_guest_legacy_api_token()
+        print("The response of UsersResourceApi->get_guest_legacy_api_token:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling UsersResourceApi->get_legacy_api_token: %s\n" % e)
+        print("Exception when calling UsersResourceApi->get_guest_legacy_api_token: %s\n" % e)
 ```
 
 
@@ -138,6 +144,73 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **get_legacy_api_token**
+> AccesTokenRepresentationRecord get_legacy_api_token()
+
+Get token for legacy API
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell-dev.cam.uchc.edu"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.UsersResourceApi(api_client)
+
+    try:
+        # Get token for legacy API
+        api_response = api_instance.get_legacy_api_token()
+        print("The response of UsersResourceApi->get_legacy_api_token:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling UsersResourceApi->get_legacy_api_token: %s\n" % e)
+```
+
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**AccesTokenRepresentationRecord**](AccesTokenRepresentationRecord.md)
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+**403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **get_mapped_user**
 > UserIdentityJSONSafe get_mapped_user()
 
@@ -153,10 +226,10 @@ from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "https://vcellapi-test.cam.uchc.edu"
+    host = "https://vcell-dev.cam.uchc.edu"
 )
 
 # The client must configure the authentication and authorization parameters
@@ -201,8 +274,8 @@ This endpoint does not need any parameter.
 |-------------|-------------|------------------|
 **200** | Successful, returning the identity |  -  |
 **404** | Identity not found |  -  |
-**401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -221,10 +294,10 @@ from vcell_client.models.identity import Identity
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "https://vcellapi-test.cam.uchc.edu"
+    host = "https://vcell-dev.cam.uchc.edu"
 )
 
 
@@ -282,10 +355,10 @@ from vcell_client.models.user_registration_info import UserRegistrationInfo
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "https://vcellapi-test.cam.uchc.edu"
+    host = "https://vcell-dev.cam.uchc.edu"
 )
 
 # The client must configure the authentication and authorization parameters
@@ -332,8 +405,8 @@ void (empty response body)
 |-------------|-------------|------------------|
 **200** | Successful, returning the identity |  -  |
 **409** | VCell Identity not mapped, userid already exists |  -  |
-**401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -352,10 +425,10 @@ from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapp
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "https://vcellapi-test.cam.uchc.edu"
+    host = "https://vcell-dev.cam.uchc.edu"
 )
 
 # The client must configure the authentication and authorization parameters
@@ -403,8 +476,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -422,10 +495,10 @@ import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
 
-# Defining the host is optional and defaults to https://vcellapi-test.cam.uchc.edu
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
 # See configuration.py for a list of all supported configuration parameters.
 configuration = vcell_client.Configuration(
-    host = "https://vcellapi-test.cam.uchc.edu"
+    host = "https://vcell-dev.cam.uchc.edu"
 )
 
 # The client must configure the authentication and authorization parameters
@@ -473,8 +546,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -52,7 +52,8 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	public static final String VCellTestAccountName = "vcelltestaccount";
 
 	public static final User tempUser = new User("temp",new KeyValue("123"));
-	public static final String VCELL_GUEST = "vcellguest";
+	public static final String VCELL_GUEST_NAME = "vcellguest";
+	public static final User VCELL_GUEST = new User(VCELL_GUEST_NAME,new KeyValue("140220477"));
 	
 	public static class UserNameComparator implements Serializable,Comparator<User>{
 		@Override
@@ -111,10 +112,10 @@ public User(String userid, KeyValue key) {
 }
 
 public static String createGuestErrorMessage(String theOffendingOp) {
-	return VCELL_GUEST+" not allowed to do '"+theOffendingOp+"'.  Register for free during login to use all VCell features.";
+	return VCELL_GUEST_NAME +" not allowed to do '"+theOffendingOp+"'.  Register for free during login to use all VCell features.";
 }
 public static boolean isGuest(String checkThisName) {
-	return VCELL_GUEST.equals(checkThisName);
+	return VCELL_GUEST_NAME.equals(checkThisName);
 }
 /**
  * @return {@link #equals(Object)}

@@ -1,6 +1,6 @@
 # PublicationResourceApi
 
-All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
+All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -30,15 +30,13 @@ Create publication
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.PublicationResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
-        
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Publication publication = new Publication(); // Publication | 
@@ -70,7 +68,7 @@ public class Example {
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -81,8 +79,6 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 ## createPublicationWithHttpInfo
 
@@ -98,15 +94,13 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.PublicationResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
-        
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Publication publication = new Publication(); // Publication | 
@@ -140,7 +134,7 @@ ApiResponse<**Long**>
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -151,8 +145,6 @@ ApiResponse<**Long**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 
 ## deletePublication
@@ -168,15 +160,13 @@ Delete publication
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.PublicationResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
-        
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
@@ -207,7 +197,7 @@ null (empty response body)
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -218,8 +208,6 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 ## deletePublicationWithHttpInfo
 
@@ -235,15 +223,13 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.PublicationResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
-        
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
@@ -276,7 +262,7 @@ ApiResponse<Void>
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -287,8 +273,6 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 
 ## getPublicationById
@@ -310,7 +294,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
@@ -374,7 +358,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
@@ -440,7 +424,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         try {
@@ -500,7 +484,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         try {
@@ -556,15 +540,13 @@ Create publication
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.PublicationResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
-        
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Publication publication = new Publication(); // Publication | 
@@ -596,7 +578,7 @@ public class Example {
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -607,8 +589,6 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 ## updatePublicationWithHttpInfo
 
@@ -624,15 +604,13 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.PublicationResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
-        
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Publication publication = new Publication(); // Publication | 
@@ -666,7 +644,7 @@ ApiResponse<[**Publication**](Publication.md)>
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -677,6 +655,4 @@ ApiResponse<[**Publication**](Publication.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 

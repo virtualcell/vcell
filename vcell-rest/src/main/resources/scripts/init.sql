@@ -92,6 +92,7 @@ INSERT INTO vc_userinfo VALUES ( 0,'void','1700596370242','empty','empty','empty
 INSERT INTO vc_userinfo VALUES ( 2,'Administrator','1700596370260','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'CD181552B879A2F29D10434D8ACF692B6C8126F9' );
 INSERT INTO vc_userinfo VALUES ( 3,'vcellNagios','1700596370261','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'A93453F7962799355608EC89D33D3249474E538F' );
 INSERT INTO vc_userinfo VALUES ( 4,'VCellSupport','1714152297847','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'C525EF5192F5DF966D0C891224EC5412FC6FD518' );
+INSERT INTO vc_userinfo VALUES ( 140220477,'vcellguest','1700596370260','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'CD181552B879A2F29D10434D8ACF692B6C8126F9' );
 INSERT INTO vc_group VALUES (5,1,0,0,1);
 INSERT INTO vc_group VALUES (6,0,0,0,0);
 INSERT INTO vc_available VALUES (7,current_timestamp,'true',NULL,NULL);

@@ -392,7 +392,8 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 			String apihost = getClientServerInfo().getApihost();
 			Integer apiport = getClientServerInfo().getApiport();
 			Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
-			setConnectionStatus(new ClientConnectionStatus(auth0ConnectionUtils.getAuth0MappedUser(), apihost, apiport, ConnectionStatus.INITIALIZING));
+			String username = User.isGuest(getClientServerInfo().getUsername()) ? getClientServerInfo().getUsername() : auth0ConnectionUtils.getAuth0MappedUser();
+			setConnectionStatus(new ClientConnectionStatus(username, apihost, apiport, ConnectionStatus.INITIALIZING));
 			newVCellConnection = vcellConnectionFactory.createVCellConnectionAuth0(getClientServerInfo().getUserLoginInfo());
 			requester.clearConnectWarning();
 			reconnectStat = ReconnectStatus.NOT;

@@ -8,6 +8,7 @@ import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.vcell.restq.Main;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
@@ -39,15 +40,20 @@ public class UserRestDB {
 
 
     // TODO: add some short-lived caching here to avoid repeated database calls
-    public User getUserFromIdentity(SecurityIdentity securityIdentity) throws DataAccessException {
+    public User getUserFromIdentity(SecurityIdentity securityIdentity, boolean defaultGuest) throws DataAccessException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
+            if (defaultGuest) return User.VCELL_GUEST;
             return null;
         }
         if (userIdentities.size() > 1){
             throw new DataAccessException("multiple identities found for user");
         }
         return userIdentities.get(0).user();
+    }
+
+    public User getUserFromIdentity(SecurityIdentity securityIdentity) throws DataAccessException {
+        return getUserFromIdentity(securityIdentity, false);
     }
 
     // TODO: add some short-lived caching here to avoid repeated database calls

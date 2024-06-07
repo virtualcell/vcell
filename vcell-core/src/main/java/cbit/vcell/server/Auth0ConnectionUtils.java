@@ -33,12 +33,13 @@ public final class Auth0ConnectionUtils {
         }
     }
 
-    public void auth0SignIn() throws ApiException {
+    public void auth0SignIn(boolean isGuest) throws ApiException {
         try{
             boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
             boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
             boolean ignoreSSLCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
-            vcellApiClient.authenticateWithAuth0(ignoreSSLCertProblems);
+            if (!isGuest) vcellApiClient.authenticateWithAuth0(ignoreSSLCertProblems);
+            else vcellApiClient.createDefaultQuarkusClient(ignoreSSLCertProblems);
         } catch (ApiException | URISyntaxException | IOException | ParseException e){
             throw new RuntimeException(e);
         }

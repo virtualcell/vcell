@@ -171,6 +171,71 @@ public class UsersResourceApi {
     return localVarRequestBuilder;
   }
   /**
+   * Method to get legacy tokens for guest users
+   * 
+   * @return AccesTokenRepresentationRecord
+   * @throws ApiException if fails to make API call
+   */
+  public AccesTokenRepresentationRecord getGuestLegacyApiToken() throws ApiException {
+    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getGuestLegacyApiTokenWithHttpInfo();
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Method to get legacy tokens for guest users
+   * 
+   * @return ApiResponse&lt;AccesTokenRepresentationRecord&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<AccesTokenRepresentationRecord> getGuestLegacyApiTokenWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getGuestLegacyApiTokenRequestBuilder();
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getGuestLegacyApiToken", localVarResponse);
+        }
+        return new ApiResponse<AccesTokenRepresentationRecord>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<AccesTokenRepresentationRecord>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getGuestLegacyApiTokenRequestBuilder() throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/guestBearerToken";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
    * Get token for legacy API
    * 
    * @return AccesTokenRepresentationRecord

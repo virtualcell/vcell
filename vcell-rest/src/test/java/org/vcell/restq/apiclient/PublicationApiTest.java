@@ -38,6 +38,7 @@ public class PublicationApiTest {
 
     private ApiClient aliceAPIClient;
     private ApiClient bobAPIClient;
+    private final Publication defaultPub = TestEndpointUtils.defaultPublication();
 
 
     @BeforeAll
@@ -46,9 +47,11 @@ public class PublicationApiTest {
     }
 
     @BeforeEach
-    public void createClients(){
+    public void createClients() throws ApiException {
         aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
         bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
+        TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
+        TestEndpointUtils.mapApiClientToNagios(bobAPIClient);
     }
 
     @AfterEach
@@ -59,46 +62,39 @@ public class PublicationApiTest {
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
+
+    private void addPublications(){
+
+    }
+
+    @Test
+    public void guestUserAccess() throws ApiException {
+        PublicationResourceApi publisherAPI = new PublicationResourceApi(aliceAPIClient);
+        long id = publisherAPI.createPublication(defaultPub);
+
+        ApiClient defaultClient = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
+
+        Publication publication = publisherAPI.getPublicationById(id);
+
+        PublicationResourceApi guessUserAPI = new PublicationResourceApi(defaultClient);
+        Publication retrievedPublication = guessUserAPI.getPublicationById(id);
+
+        Assertions.assertEquals(publication, retrievedPublication);
+        publisherAPI.deletePublication(id);
+    }
+
     @Test
     public void testAddListRemove() throws ApiException {
-        String pubuser = "alice";
-        String nonpubuser = "bob";
-        boolean mapped = new UsersResourceApi(aliceAPIClient).mapUser(TestEndpointUtils.administratorUserLoginInfo);
-        Assertions.assertTrue(mapped);
-        mapped = new UsersResourceApi(bobAPIClient).mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
-        Assertions.assertTrue(mapped);
-
         Log.debug("authServerUrl: " + authServerUrl + " to be used later instead of keycloakClient");
-
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        String accessToken = keycloakClient.getAccessToken(pubuser);
-        Log.warn("TODO: get access token from OIDC server instead of KeycloakTestClient");
-        defaultClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + accessToken));
-        defaultClient.setScheme("http");
-        defaultClient.setHost("localhost");
-        defaultClient.setPort(testPort);
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-
-        Publication pub = new Publication();
-        pub.setAuthors(Arrays.asList("author1", "author2"));
-        pub.setCitation("citation");
-        pub.setDoi("doi");
-        pub.setEndnoteid(0);
-        pub.setPubmedid("pubmedId");
-        pub.setTitle("publication 1");
-        pub.setUrl("url");
-        pub.setWittid(0);
-        pub.setYear(1994);
-        pub.setBiomodelRefs(new ArrayList<>());
-        pub.setMathmodelRefs(new ArrayList<>());
-        pub.setDate(LocalDate.now());
+        PublicationResourceApi apiInstance = new PublicationResourceApi(aliceAPIClient);
 
         // test that there are no publications initially
         List<Publication> initialPublications = apiInstance.getPublications();
         int initialPubSize = initialPublications.size();
+        Assertions.assertEquals(1, initialPubSize);
 
         // save publication pub
-        Long newPubKey = apiInstance.createPublication(pub);
+        Long newPubKey = apiInstance.createPublication(defaultPub);
         Assertions.assertNotNull(newPubKey);
 
         // test that pubuser can get publication pub
@@ -107,10 +103,10 @@ public class PublicationApiTest {
         // test that there is one publication now and matches pub
         List<Publication> publications = apiInstance.getPublications();
         Assertions.assertEquals(initialPubSize + 1, publications.size());
-        pub.setPubKey(newPubKey);
+        defaultPub.setPubKey(newPubKey);
         Log.error("TODO: fix discrepency with LocalDates (after round trip, not same)");
-        pub.setDate(publications.get(initialPubSize + 0).getDate());
-        Assertions.assertEquals(pub, publications.get(initialPubSize + 0));
+        defaultPub.setDate(publications.get(initialPubSize + 0).getDate());
+        Assertions.assertEquals(defaultPub, publications.get(initialPubSize + 0));
 
         // test that pubuser can delete publication pub
         apiInstance.deletePublication(newPubKey);

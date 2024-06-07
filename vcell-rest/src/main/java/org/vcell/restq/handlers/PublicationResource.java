@@ -42,10 +42,7 @@ public class PublicationResource {
     @Operation(operationId = "getPublicationById", summary = "Get publication by ID")
     public Publication get_by_id(@PathParam("id") Long publicationID) throws SQLException, DataAccessException {
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-            if (vcellUser == null) {
-                vcellUser = Main.DUMMY_USER;
-            }
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, true);
             return publicationService.getPublication(new KeyValue(publicationID.toString()), vcellUser);
         } catch (DataAccessException | SQLException e) {
             Log.error(e);
@@ -58,10 +55,7 @@ public class PublicationResource {
     @Operation(operationId = "getPublications", summary = "Get all publications")
     public Publication[] get_list() {
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-            if (vcellUser == null) {
-                vcellUser = Main.DUMMY_USER;
-            }
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, true);
             return publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, vcellUser);
         } catch (PermissionException ee) {
             Log.error(ee);

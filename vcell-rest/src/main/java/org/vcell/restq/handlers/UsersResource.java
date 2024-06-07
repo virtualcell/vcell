@@ -18,6 +18,7 @@ import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
+import org.vcell.util.document.User;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -137,6 +138,19 @@ public class UsersResource {
         }
         ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), vcellUser);
         return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
+    }
+
+    @POST
+    @Path("/guestBearerToken")
+    @Operation(operationId = "getGuestLegacyApiToken", summary = "Method to get legacy tokens for guest users")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public AccesTokenRepresentationRecord generateGuestBearerToken() throws DataAccessException {
+        if(securityIdentity.isAnonymous()){
+            ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), User.VCELL_GUEST);
+            return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
+        }
+        return null;
     }
 
     @POST

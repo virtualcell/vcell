@@ -1,6 +1,6 @@
 # HelloWorldApi
 
-All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
+All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -28,7 +28,7 @@ import org.vcell.restclient.api.HelloWorldApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         HelloWorldApi apiInstance = new HelloWorldApi(defaultClient);
         try {
@@ -88,7 +88,7 @@ import org.vcell.restclient.api.HelloWorldApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         HelloWorldApi apiInstance = new HelloWorldApi(defaultClient);
         try {

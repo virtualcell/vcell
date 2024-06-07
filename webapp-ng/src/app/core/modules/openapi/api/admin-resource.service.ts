@@ -33,7 +33,7 @@ import {
 })
 export class AdminResourceService implements AdminResourceServiceInterface {
 
-    protected basePath = 'https://vcellapi-test.cam.uchc.edu';
+    protected basePath = 'https://vcell-dev.cam.uchc.edu';
     public defaultHeaders = new HttpHeaders();
     public configuration = new Configuration();
     public encoder: HttpParameterCodec;
@@ -103,12 +103,6 @@ export class AdminResourceService implements AdminResourceServiceInterface {
     public getUsage(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/pdf', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
-
-        let localVarCredential: string | undefined;
-        // authentication (openId) required
-        localVarCredential = this.configuration.lookupCredential('openId');
-        if (localVarCredential) {
-        }
 
         let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
         if (localVarHttpHeaderAcceptSelected === undefined) {

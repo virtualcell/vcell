@@ -1,6 +1,6 @@
 # BioModelResourceApi
 
-All URIs are relative to *https://vcellapi-test.cam.uchc.edu*
+All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -32,7 +32,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -95,7 +95,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -160,7 +160,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -224,7 +224,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -290,7 +290,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String body = "body_example"; // String | 
@@ -354,7 +354,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcellapi-test.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String body = "body_example"; // String | 
