@@ -10,43 +10,68 @@
 
 package cbit.vcell.client;
 
-import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferUShort;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.List;
-import java.util.zip.DataFormatException;
-import java.util.zip.GZIPInputStream;
-
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
-import javax.swing.Timer;
-import javax.swing.filechooser.FileFilter;
-
-import cbit.vcell.client.data.*;
-import cbit.vcell.export.server.*;
+import cbit.gui.ImageResizePanel;
+import cbit.image.*;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.rmi.event.VCellMessageEvent;
+import cbit.rmi.event.VCellMessageEventListener;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
+import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
+import cbit.vcell.client.data.DataViewerController;
+import cbit.vcell.client.data.ExportDataRepresentation;
+import cbit.vcell.client.data.MergedDatasetViewerController;
+import cbit.vcell.client.desktop.DocumentWindow;
+import cbit.vcell.client.desktop.biomodel.DocumentEditor;
+import cbit.vcell.client.server.*;
+import cbit.vcell.client.task.*;
+import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.ImageDbTreePanel;
+import cbit.vcell.export.server.ExportFormat;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.HumanReadableExportData;
+import cbit.vcell.export.server.N5Specs;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.gui.ROIMultiPaintManager;
+import cbit.vcell.geometry.surface.*;
+import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
+import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.model.*;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.Model.ReservedSymbol;
+import cbit.vcell.numericstest.ModelGeometryOP;
+import cbit.vcell.numericstest.ModelGeometryOPResults;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.render.Vect3d;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.Auth0ConnectionUtils;
-import com.google.gson.GsonBuilder;
+import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simdata.*;
+import cbit.vcell.solver.*;
+import cbit.vcell.solver.test.MathTestingUtilities;
+import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.xml.ExternalDocInfo;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlHelper;
+import cbit.xml.merge.XmlTreeDiff;
+import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
+import cbit.xml.merge.gui.TMLPanel;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -62,7 +87,6 @@ import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
-import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BngUnitSystem;
 import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
@@ -75,145 +99,46 @@ import org.vcell.util.document.*;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocument.VCDocumentType;
-import org.vcell.util.gui.AsynchGuiUpdater;
-import org.vcell.util.gui.AsynchProgressPopup;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.SimpleUserMessage;
-import org.vcell.util.gui.VCFileChooser;
+import org.vcell.util.gui.*;
 import org.vcell.util.gui.exporter.ExtensionFilter;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 import org.vcell.vcellij.ImageDatasetReader;
 import org.vcell.vcellij.ImageDatasetReaderService;
 
-import cbit.gui.ImageResizePanel;
-import cbit.image.ImageException;
-import cbit.image.ImageSizeInfo;
-import cbit.image.VCImage;
-import cbit.image.VCImageInfo;
-import cbit.image.VCImageUncompressed;
-import cbit.image.VCPixelClass;
-import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.ExportListener;
-import cbit.rmi.event.VCellMessageEvent;
-import cbit.rmi.event.VCellMessageEventListener;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
-import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
-import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.client.desktop.biomodel.DocumentEditor;
-import cbit.vcell.client.server.AsynchMessageManager;
-import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.client.server.ClientServerManager;
-import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.AsynchClientTaskFunction;
-import cbit.vcell.client.task.CheckBeforeDelete;
-import cbit.vcell.client.task.CheckUnchanged;
-import cbit.vcell.client.task.ChooseFile;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.CommonTask;
-import cbit.vcell.client.task.DeleteOldDocument;
-import cbit.vcell.client.task.DocumentToExport;
-import cbit.vcell.client.task.DocumentValidTask;
-import cbit.vcell.client.task.ExportDocument;
-import cbit.vcell.client.task.FinishExport;
-import cbit.vcell.client.task.FinishSave;
-import cbit.vcell.client.task.NewName;
-import cbit.vcell.client.task.RunSims;
-import cbit.vcell.client.task.SaveDocument;
-import cbit.vcell.client.task.SetMathDescription;
-import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.desktop.ImageDbTreePanel;
-import cbit.vcell.desktop.LoginManager;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.CSGObject;
-import cbit.vcell.geometry.CSGPrimitive;
-import cbit.vcell.geometry.CSGScale;
-import cbit.vcell.geometry.CSGTranslation;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryClass;
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.geometry.GeometryThumbnailImageFactoryAWT;
-import cbit.vcell.geometry.ImageSubVolume;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.geometry.gui.ROIMultiPaintManager;
-import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.geometry.surface.RayCaster;
-import cbit.vcell.geometry.surface.StlReader;
-import cbit.vcell.geometry.surface.SurfaceCollection;
-import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
-import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MembraneSubDomain;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.Model.ReservedSymbol;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.numericstest.ModelGeometryOP;
-import cbit.vcell.numericstest.ModelGeometryOPResults;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.render.Vect3d;
-import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.simdata.DataManager;
-import cbit.vcell.simdata.MergedDataInfo;
-import cbit.vcell.simdata.ODEDataManager;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.VCDataManager;
-import cbit.vcell.simdata.VtkManager;
-import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.test.MathTestingUtilities;
-import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.xml.ExternalDocInfo;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.xml.XmlHelper;
-import cbit.xml.merge.XmlTreeDiff;
-import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
-import cbit.xml.merge.gui.TMLPanel;
+import javax.swing.Timer;
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferUShort;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.*;
+import java.util.zip.DataFormatException;
+import java.util.zip.GZIPInputStream;
 
 public class ClientRequestManager
 		implements RequestManager, PropertyChangeListener, ExportListener, VCellMessageEventListener {
 	private VCellClient vcellClient = null;
-	private final UserRegistrationManager userRegistrationManager;
 
 	private boolean bOpening = false;
 	private boolean bExiting = false;
 
 	private static final Logger lg = LogManager.getLogger(ClientRequestManager.class);
 
-	public ClientRequestManager(VCellClient vcellClient, UserRegistrationManager userRegistrationManager) {
-		this.userRegistrationManager = userRegistrationManager;
+	public ClientRequestManager(VCellClient vcellClient) {
 		setVcellClient(vcellClient);
 		// listen to connectionStatus events
 		getClientServerManager().addPropertyChangeListener(this);
@@ -2433,19 +2358,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		} else {
 			// nothing selected
 			return;
-		}
-	}
-
-	public void sendLostPassword(final DocumentWindowManager currWindowManager, final String userid) {
-		try {
-			userRegistrationManager.registrationOperationGUI(this, currWindowManager,
-					VCellClient.getInstance().createClientServerInfo(getClientServerManager().getClientServerInfo(), userid, null),
-					LoginManager.USERACTION_LOSTPASSWORD, null);
-		} catch (UserCancelException e) {
-			return;
-		} catch (Exception e) {
-			e.printStackTrace();
-			PopupGenerator.showErrorDialog(currWindowManager, "Update user Registration error:\n" + e.getMessage(), e);
 		}
 	}
 

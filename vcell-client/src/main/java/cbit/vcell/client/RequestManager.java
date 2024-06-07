@@ -107,8 +107,6 @@ void createBioModelFromApplication(BioModelWindowManager requester, String name,
  */
 void curateDocument(VCDocumentInfo vcDocInfo, int curateType, final TopLevelWindowManager requester);
 
-void sendLostPassword(DocumentWindowManager docWindowManager, String userid);
-
 /**
  * Insert the method's description here.
  * Creation date: (5/21/2004 2:38:26 AM)

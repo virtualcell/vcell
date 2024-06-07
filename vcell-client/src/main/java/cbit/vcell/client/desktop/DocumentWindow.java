@@ -23,8 +23,6 @@ import cbit.vcell.client.server.Reconnector;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.LaunchVirtualFRAP;
-import cbit.vcell.desktop.LoginDelegate;
-import cbit.vcell.desktop.LoginManager;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.TransformMassActions;
 import cbit.vcell.model.TransformMassActions.TransformedReaction;
@@ -35,8 +33,10 @@ import cbit.vcell.resource.ResourceUtil;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.UtilCancelException;
-import org.vcell.util.document.*;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
+import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.*;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
@@ -302,7 +302,7 @@ public String menuDescription() {
 			getTopLevelWindowManager().getRequestManager().getDocumentManager()==null){
 			DialogUtils.showInfoDialog(this, "Update Proxy settings by restarting VCell or using menu Server->'change user' or Server->reconnect");
 		}else if(getTopLevelWindowManager().getRequestManager().getDocumentManager().getUser() == null){
-			showLoginDialog();
+			return;
 		}else{
 			reconnect();
 		}
@@ -1719,38 +1719,6 @@ public static void showAboutBox(Component parent) {
 		exc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage(), exc);
 	}
-}
-
-
-
-private void showLoginDialog() {
-
-	final LoginManager loginManager = new LoginManager();
-
-	LoginDelegate loginDelegate = new LoginDelegate(){
-
-		public void userCancel() {
-			loginManager.close();
-			PopupGenerator.showInfoDialog(DocumentWindow.this,
-					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");
-		}
-		public void registerRequest() {
-			loginManager.close();
-			System.out.println("LoginManager.registerRequest()");
-		}
-
-		public void login(String userid, UserLoginInfo.DigestedPassword digestedPassword) {
-			System.out.println("LoginManager.login("+userid+",xxx)");
-			getWindowManager().connectAs(userid, digestedPassword);
-		}
-
-		public void lostPasswordRequest(String userid) {
-			System.out.println("LoginManager.lostPasswordRequest("+userid+")");
-			getWindowManager().getRequestManager().sendLostPassword(getWindowManager(), userid);
-		}
-	};
-
-	loginManager.showLoginDialog(this, getWindowManager(), loginDelegate);
 }
 
 
