@@ -166,6 +166,7 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 			VCellClient.this.setClientServerManager(new ClientServerManager(vcellConnectionFactory, clientServerInfo, defaultRequester));
 			VCellClient.this.setRequestManager(new ClientRequestManager(VCellClient.this));
 			VCellClient.this.setMdiManager(new ClientMDIManager(VCellClient.this.getRequestManager()));
+			VCellClient.setInstance(VCellClient.this);
 			// start auxilliary stuff
 			VCellClient.this.startStatusThreads();
 			// make sure we have at least a blank document to start with
