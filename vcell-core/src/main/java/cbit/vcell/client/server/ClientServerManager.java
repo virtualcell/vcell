@@ -223,6 +223,10 @@ public ClientServerManager(VCellConnectionFactory vcellConnectionFactory, Client
 	this.defaultInteractiveContextProvider = defaultInteractiveContextProvider;
 }
 
+	public Auth0ConnectionUtils getAuth0ConnectionUtils() {
+		return vcellConnectionFactory.getAuth0ConnectionUtils();
+	}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)

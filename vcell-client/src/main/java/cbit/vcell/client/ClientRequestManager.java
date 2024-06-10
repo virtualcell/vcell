@@ -31,6 +31,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.*;
 import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.desktop.ClientLogin;
 import cbit.vcell.desktop.ImageDbTreePanel;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportSpecs;
@@ -745,6 +746,7 @@ public class ClientRequestManager
 		getClientServerManager().connectNewServer(new VCellGuiInteractiveContext(requester), clientServerInfo);
 	}
 
+
 	public void logOut(final TopLevelWindowManager requester){
 		JDialog dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
@@ -753,10 +755,81 @@ public class ClientRequestManager
 				"Logout", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
 				new String[] { "Continue", "Cancel" }, "Continue");
 		if (confirm == JOptionPane.OK_OPTION)  {
-			getClientServerManager().cleanup(); //set VCell connection to null
 			closeAllWindows(false);
-			setBExiting(true);
-			exitApplication(true);
+			getClientServerManager().cleanup(); //set VCell connection to null
+
+			Hashtable<String, Object> hash = new Hashtable<String, Object>();
+
+			Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().getAuth0ConnectionUtils();
+			Auth0ConnectionUtils.setShowLoginPopUp(true);
+
+			AsynchClientTask waitTask = new AsynchClientTask("wait for window closing",
+					AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					// wait until all windows are closed.
+					long startTime = System.currentTimeMillis();
+					while (true) {
+						long numOpenWindows = getMdiManager().closeWindow(ClientMDIManager.DATABASE_WINDOW_ID);
+						if (numOpenWindows == 0) {
+							break;
+						}
+						// if can't save all the documents, don't connect as thus throw exception.
+						if (System.currentTimeMillis() - startTime > 60000) {
+							throw UserCancelException.CANCEL_GENERIC;
+						}
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			};
+
+
+			AsynchClientTask[] newTasks = newDocument(requester,
+					new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC, 0));
+			AsynchClientTask task0 = new AsynchClientTask("preparing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					DocumentWindowManager windowManager = (DocumentWindowManager) hashTable.get("windowManager");
+					if (windowManager != null) {
+						Frame frameParent = JOptionPane.getFrameForComponent(windowManager.getComponent());
+						ClientMDIManager.blockWindow(frameParent);
+						frameParent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					}
+				}
+			};
+
+			AsynchClientTask task1 = ClientLogin.popupLogin();
+			AsynchClientTask task2 = ClientLogin.loginWithAuth0(auth0ConnectionUtils);
+			AsynchClientTask task3 = ClientLogin.connectToServer(auth0ConnectionUtils, getClientServerInfo());
+
+			AsynchClientTask refresh = new AsynchClientTask("Refresh", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false,
+					false) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					getMdiManager().refreshRecyclableWindows();
+					DocumentWindowManager windowManager = (DocumentWindowManager) hashTable.get("windowManager");
+					if (windowManager != null) {
+						Frame frameParent = JOptionPane.getFrameForComponent(windowManager.getComponent());
+						ClientMDIManager.unBlockWindow(frameParent);
+						frameParent.setCursor(Cursor.getDefaultCursor());
+					}
+				}
+			};
+
+            ArrayList<AsynchClientTask> tasks = new ArrayList<>(Arrays.stream(newTasks).toList());
+			tasks.add(0, waitTask);
+			tasks.add(task0);
+			tasks.add(task1);
+			tasks.add(task2);
+			tasks.add(task3);
+			tasks.add(refresh);
+
+			ClientTaskDispatcher.dispatch(null, hash, tasks.toArray(new AsynchClientTask[0]));
 		}
 	}
 
