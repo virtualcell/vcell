@@ -17,13 +17,12 @@ import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ClientServerManager.InteractiveContextDefaultProvider;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.desktop.ClientLogin;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.server.Auth0ConnectionUtils;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
-import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
@@ -213,71 +212,18 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		
 	};
 
-	AsynchClientTask task2b = new AsynchClientTask("Popup Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			boolean showPopupMenu = Auth0ConnectionUtils.shouldWeShowLoginPopUp();
-			hashTable.put("login", true);
-			hashTable.put("guest", false);
-			if(showPopupMenu){
-				int accept = JOptionPane.showOptionDialog(null,
-						"VCell is going to redirect you to your browser to login. Do you wish to proceed?","Login Popup",
-						JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Login", "Offline", "Guest"}, "Login");
-				if(accept==JOptionPane.NO_OPTION || accept==JOptionPane.CLOSED_OPTION){
-					hashTable.put("login", false);
-					return;
-				} else if (accept == JOptionPane.CANCEL_OPTION) {
-					hashTable.put("guest", true);
-					return;
-				}
-				Auth0ConnectionUtils.setShowLoginPopUp(false);
-			}
-		}
-	};
+	AsynchClientTask task3a = ClientLogin.popupLogin();
 
-	AsynchClientTask task2c = new AsynchClientTask("Login With Auth0...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			if ((boolean)hashTable.get("login")) {
-				boolean isGuest = (boolean)hashTable.get("guest");
-				Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
-				auth0ConnectionUtils.auth0SignIn(isGuest);
-			}
-		}
-	};
+	AsynchClientTask task3b = ClientLogin.loginWithAuth0(vcellConnectionFactory.getAuth0ConnectionUtils());
 	
-	AsynchClientTask task3  = new AsynchClientTask("Connecting to Server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-		    // try server connection
-			boolean login = (boolean)hashTable.get("login");
-			boolean isGuest = (boolean)hashTable.get("guest");
-			Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
-			if (login) {
-				if (!isGuest){
-					int numberOfPolls = 0;
-					while(!auth0ConnectionUtils.isVCellIdentityMapped()){
-						if (numberOfPolls==100) {
-							return;
-						}
-						numberOfPolls++;
-						Thread.sleep(5000); // Poll every 5 seconds
-					}
-				}
-		    	DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
-				ClientServerInfo newClientServerInfo = isGuest ?
-						createClientServerInfo(clientServerInfo, User.VCELL_GUEST_NAME, new DigestedPassword("frmfrm"))
-						: createClientServerInfo(clientServerInfo, auth0ConnectionUtils.getAuth0MappedUser(), null);
-				getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
-		    }
-		}
-	}; 	
+	AsynchClientTask task4  = ClientLogin.connectToServer(vcellConnectionFactory.getAuth0ConnectionUtils(), clientServerInfo);
 
-	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task2b, task2c, task3};
+	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task3a, task3b, task4};
 	ClientTaskDispatcher.dispatch(null, hash, taskArray);
 }
 
 
-public ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,DigestedPassword digestedPassword){
+public static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,DigestedPassword digestedPassword){
 	switch (clientServerInfo.getServerType()) {
 		case SERVER_LOCAL: {
 			return ClientServerInfo.createLocalServerInfo(userid,digestedPassword);
