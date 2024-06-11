@@ -53,6 +53,10 @@ public final class Auth0ConnectionUtils {
         }
     }
 
+    public void logOut(){
+        vcellApiClient.logOut();
+    }
+
     private static Path getAppPropertiesPath() throws IOException {
         Path appProperties = Path.of(ResourceUtil.getVcellHome().getAbsolutePath(), "/properties.json");
         if (!Files.exists(appProperties)) {

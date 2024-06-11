@@ -762,6 +762,7 @@ public class ClientRequestManager
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
 			Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().getAuth0ConnectionUtils();
+			auth0ConnectionUtils.logOut();
 			Auth0ConnectionUtils.setShowLoginPopUp(true);
 
 			AsynchClientTask waitTask = new AsynchClientTask("wait for window closing",
