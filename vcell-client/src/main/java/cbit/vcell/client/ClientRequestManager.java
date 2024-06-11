@@ -97,7 +97,6 @@ import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.gui.*;
@@ -651,8 +650,7 @@ public class ClientRequestManager
 		return compareDocuments(bioModel1, bioModel2, DiffConfiguration.COMPARE_DOCS_SAVED);
 	}
 
-	public void connectAs(final String user, final DigestedPassword digestedPassword,
-						  final TopLevelWindowManager requester) {
+	public void connectAs(final String user, final TopLevelWindowManager requester) {
 		JDialog dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
 		int confirm = JOptionPane.showOptionDialog(dialog, UserMessage.warn_changeUser.getMessage(null),
@@ -709,8 +707,7 @@ public class ClientRequestManager
 				AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						getClientServerManager().connectAs(new VCellGuiInteractiveContext(requester), user,
-								digestedPassword);
+						getClientServerManager().connectAs(new VCellGuiInteractiveContext(requester), user);
 					}
 				};
 				AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false,
