@@ -75,15 +75,6 @@ XmlTreeDiff compareWithOther(VCDocumentInfo vcDoc1, VCDocumentInfo vcDoc2);
  */
 XmlTreeDiff compareWithSaved(VCDocument document);
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 2:12:25 AM)
- * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
- */
-void connectAs(String user, TopLevelWindowManager requester);
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/27/2004 2:12:25 AM)

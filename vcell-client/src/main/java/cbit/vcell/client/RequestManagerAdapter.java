@@ -46,8 +46,6 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public XmlTreeDiff compareWithSaved(VCDocument document) { return null; }
 	@Override
-	public void connectAs(String user, TopLevelWindowManager requester) {}
-	@Override
 	public void connectToServer(TopLevelWindowManager requester,ClientServerInfo clientServerInfo) throws Exception {}
 	@Override
 	public void createMathModelFromApplication(BioModelWindowManager requester, String name, SimulationContext simContext) {}
