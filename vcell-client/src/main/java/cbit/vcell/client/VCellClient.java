@@ -224,13 +224,13 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 }
 
 
-public static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,DigestedPassword digestedPassword){
+public static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid){
 	switch (clientServerInfo.getServerType()) {
 		case SERVER_LOCAL: {
-			return ClientServerInfo.createLocalServerInfo(userid,digestedPassword);
+			return ClientServerInfo.createLocalServerInfo(userid);
 		}
 		case SERVER_REMOTE: {
-			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getApihost(), clientServerInfo.getApiport(), clientServerInfo.getPathPrefix_v0(),userid,digestedPassword);
+			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getApihost(), clientServerInfo.getApiport(), clientServerInfo.getPathPrefix_v0(),userid);
 		}
 	};
 	return null;

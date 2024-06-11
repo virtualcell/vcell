@@ -84,8 +84,8 @@ public class ClientLogin {
                     }
                     DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
                     ClientServerInfo newClientServerInfo = isGuest ?
-                            VCellClient.createClientServerInfo(clientServerInfo, User.VCELL_GUEST_NAME, new UserLoginInfo.DigestedPassword("frmfrm"))
-                            : VCellClient.createClientServerInfo(clientServerInfo, auth0ConnectionUtils.getAuth0MappedUser(), null);
+                            VCellClient.createClientServerInfo(clientServerInfo, User.VCELL_GUEST_NAME)
+                            : VCellClient.createClientServerInfo(clientServerInfo, auth0ConnectionUtils.getAuth0MappedUser());
                     VCellClient.getInstance().getRequestManager().connectToServer(currWindowManager, newClientServerInfo);
                 }
             }

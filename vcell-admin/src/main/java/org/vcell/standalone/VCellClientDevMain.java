@@ -42,7 +42,7 @@ public class VCellClientDevMain {
 		if (password != null && password.length() != 0) {
 			digestedPassword = new UserLoginInfo.DigestedPassword(password);
 		}
-		ClientServerInfo csInfo = ClientServerInfo.createLocalServerInfo(user, digestedPassword);
+		ClientServerInfo csInfo = ClientServerInfo.createLocalServerInfo(user);
 		//call in main thread, since it's quick and not necessarily thread safe
 		VCellLookAndFeel.setVCellLookAndFeel();
 

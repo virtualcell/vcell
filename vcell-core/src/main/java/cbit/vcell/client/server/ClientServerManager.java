@@ -355,17 +355,17 @@ public void reconnect(InteractiveContext requester) {
 	}
 }
 
-public void connectAs(InteractiveContext requester, String user, DigestedPassword digestedPassword) {
+public void connectAs(InteractiveContext requester, String user) {
 	reconnectStat = ReconnectStatus.NOT;
 	switch (getClientServerInfo().getServerType()) {
 		case SERVER_LOCAL: {
-			clientServerInfo = ClientServerInfo.createLocalServerInfo(user, digestedPassword);
+			clientServerInfo = ClientServerInfo.createLocalServerInfo(user);
 			break;
 		}
 		case SERVER_REMOTE: {
 			clientServerInfo = ClientServerInfo.createRemoteServerInfo(
 					getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), getClientServerInfo().getPathPrefix_v0(),
-					user, digestedPassword);
+					user);
 			break;
 		}
 	}

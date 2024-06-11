@@ -45,8 +45,8 @@ public static ClientServerInfo createFileBasedServerInfo() {
 }
 
 
-public static ClientServerInfo createLocalServerInfo(String userName, DigestedPassword digestedPassword) {
-	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL,"vcell-dev.cam.uchc.edu",443, "/api/v0", new UserLoginInfo(userName, digestedPassword));
+public static ClientServerInfo createLocalServerInfo(String userName) {
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL,"vcell-dev.cam.uchc.edu",443, "/api/v0", new UserLoginInfo(userName, null));
 	return csi;
 }
 
@@ -56,8 +56,8 @@ public UserLoginInfo getUserLoginInfo(){
 	return userLoginInfo;
 }
 
-public static ClientServerInfo createRemoteServerInfo(String apihost, Integer apiport, String pathPrefix_v0, String userName,DigestedPassword digestedPassword) {
-	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_REMOTE,apihost,apiport,pathPrefix_v0,new UserLoginInfo(userName, digestedPassword));
+public static ClientServerInfo createRemoteServerInfo(String apihost, Integer apiport, String pathPrefix_v0, String userName) {
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_REMOTE,apihost,apiport,pathPrefix_v0,new UserLoginInfo(userName, null));
 	return csi;
 }
 
