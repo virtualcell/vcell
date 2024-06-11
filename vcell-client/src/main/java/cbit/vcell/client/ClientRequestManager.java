@@ -757,6 +757,7 @@ public class ClientRequestManager
 		if (confirm == JOptionPane.OK_OPTION)  {
 			closeAllWindows(false);
 			getClientServerManager().cleanup(); //set VCell connection to null
+			getClientServerManager().getAsynchMessageManager().stopPolling();
 
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 

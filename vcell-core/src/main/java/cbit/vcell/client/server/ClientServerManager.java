@@ -269,6 +269,7 @@ private void changeConnection(InteractiveContext requester, VCellConnection newV
  */
 public void cleanup() {
 	setVcellConnection(null);
+	setConnectionStatus(new ClientConnectionStatus(null, null, null, ConnectionStatus.NOT_CONNECTED));
 }
 
 public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOException{
