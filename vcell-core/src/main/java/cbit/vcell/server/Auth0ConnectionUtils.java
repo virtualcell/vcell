@@ -25,14 +25,6 @@ public final class Auth0ConnectionUtils {
         return vcellApiClient.isVCellIdentityMapped();
     }
 
-    public void mapVCellIdentityToAuth0Identity(UserLoginInfo userLoginInfo) {
-        try{
-            vcellApiClient.mapUserToAuth0(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getClearTextPassword());
-        } catch (ApiException e){
-            throw new RuntimeException(e);
-        }
-    }
-
     public void auth0SignIn(boolean isGuest) throws ApiException {
         try{
             boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
