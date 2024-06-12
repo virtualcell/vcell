@@ -46,8 +46,6 @@ public class RequestManagerAdapter implements RequestManager {
 	@Override
 	public XmlTreeDiff compareWithSaved(VCDocument document) { return null; }
 	@Override
-	public void connectAs(String user, DigestedPassword digestedPassword, TopLevelWindowManager requester) {}
-	@Override
 	public void connectToServer(TopLevelWindowManager requester,ClientServerInfo clientServerInfo) throws Exception {}
 	@Override
 	public void createMathModelFromApplication(BioModelWindowManager requester, String name, SimulationContext simContext) {}
@@ -55,8 +53,6 @@ public class RequestManagerAdapter implements RequestManager {
 	public void createBioModelFromApplication(BioModelWindowManager requester, String name, SimulationContext simContext) {}
 	@Override
 	public void curateDocument(VCDocumentInfo vcDocInfo, int curateType, TopLevelWindowManager requester) {}
-	@Override
-	public void sendLostPassword(DocumentWindowManager docWindowManager, String userid) {}
 	@Override
 	public void deleteDocument(VCDocumentInfo documentInfo,TopLevelWindowManager requester) {}
 	@Override

@@ -29,7 +29,7 @@ public class RemoteProxyVCellConnectionFactoryTest {
 		UserLoginInfo userLoginInfo = new UserLoginInfo("schaff",new DigestedPassword("xxxxxxx"));
 		factory = new RemoteProxyVCellConnectionFactory("localhost", 8099, "");
 		apiClient = factory.getVCellApiClient();
-		vcConn = factory.createVCellConnection(userLoginInfo);
+		vcConn = factory.createDepricatedVCellConnection(userLoginInfo);
 	}
 
 	@AfterEach

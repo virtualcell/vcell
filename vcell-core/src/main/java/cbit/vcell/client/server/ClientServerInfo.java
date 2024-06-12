@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.server;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
@@ -24,6 +25,11 @@ public class ClientServerInfo {
 		SERVER_LOCAL,
 		SERVER_FILE
 	}
+
+	public static final String apiHost = "vcell-dev.cam.uchc.edu";
+	public static final String v0PathPrefix = "/api/v0";
+	public static final boolean isHTTP = false;
+
 
 	private ServerType serverType = null;
 	private String apihost = null;
@@ -45,8 +51,9 @@ public static ClientServerInfo createFileBasedServerInfo() {
 }
 
 
-public static ClientServerInfo createLocalServerInfo(String userName, DigestedPassword digestedPassword) {
-	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL,"vcell-dev.cam.uchc.edu",443, "/api/v0", new UserLoginInfo(userName, digestedPassword));
+public static ClientServerInfo createLocalServerInfo(String userName) {
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL, ClientServerInfo.apiHost, ClientServerInfo.isHTTP ? 80 : 443,
+			ClientServerInfo.v0PathPrefix, new UserLoginInfo(userName, null));
 	return csi;
 }
 
@@ -56,8 +63,8 @@ public UserLoginInfo getUserLoginInfo(){
 	return userLoginInfo;
 }
 
-public static ClientServerInfo createRemoteServerInfo(String apihost, Integer apiport, String pathPrefix_v0, String userName,DigestedPassword digestedPassword) {
-	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_REMOTE,apihost,apiport,pathPrefix_v0,new UserLoginInfo(userName, digestedPassword));
+public static ClientServerInfo createRemoteServerInfo(String apihost, Integer apiport, String pathPrefix_v0, String userName) {
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_REMOTE,apihost,apiport,pathPrefix_v0,new UserLoginInfo(userName, null));
 	return csi;
 }
 

@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.*;
 import org.vcell.util.document.User;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
 
@@ -223,6 +222,10 @@ public ClientServerManager(VCellConnectionFactory vcellConnectionFactory, Client
 	this.defaultInteractiveContextProvider = defaultInteractiveContextProvider;
 }
 
+	public Auth0ConnectionUtils getAuth0ConnectionUtils() {
+		return vcellConnectionFactory.getAuth0ConnectionUtils();
+	}
+
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)
@@ -265,6 +268,7 @@ private void changeConnection(InteractiveContext requester, VCellConnection newV
  */
 public void cleanup() {
 	setVcellConnection(null);
+	setConnectionStatus(new ClientConnectionStatus(null, null, null, ConnectionStatus.NOT_CONNECTED));
 }
 
 public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOException{
@@ -350,17 +354,17 @@ public void reconnect(InteractiveContext requester) {
 	}
 }
 
-public void connectAs(InteractiveContext requester, String user, DigestedPassword digestedPassword) {
+public void connectAs(InteractiveContext requester, String user) {
 	reconnectStat = ReconnectStatus.NOT;
 	switch (getClientServerInfo().getServerType()) {
 		case SERVER_LOCAL: {
-			clientServerInfo = ClientServerInfo.createLocalServerInfo(user, digestedPassword);
+			clientServerInfo = ClientServerInfo.createLocalServerInfo(user);
 			break;
 		}
 		case SERVER_REMOTE: {
 			clientServerInfo = ClientServerInfo.createRemoteServerInfo(
 					getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), getClientServerInfo().getPathPrefix_v0(),
-					user, digestedPassword);
+					user);
 			break;
 		}
 	}
@@ -394,7 +398,7 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 			Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
 			String username = User.isGuest(getClientServerInfo().getUsername()) ? getClientServerInfo().getUsername() : auth0ConnectionUtils.getAuth0MappedUser();
 			setConnectionStatus(new ClientConnectionStatus(username, apihost, apiport, ConnectionStatus.INITIALIZING));
-			newVCellConnection = vcellConnectionFactory.createVCellConnectionAuth0(getClientServerInfo().getUserLoginInfo());
+			newVCellConnection = vcellConnectionFactory.createVCellConnection(getClientServerInfo().getUserLoginInfo());
 			requester.clearConnectWarning();
 			reconnectStat = ReconnectStatus.NOT;
 		}catch(Exception e) {

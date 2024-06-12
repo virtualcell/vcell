@@ -75,15 +75,6 @@ XmlTreeDiff compareWithOther(VCDocumentInfo vcDoc1, VCDocumentInfo vcDoc2);
  */
 XmlTreeDiff compareWithSaved(VCDocument document);
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/27/2004 2:12:25 AM)
- * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
- */
-void connectAs(String user,DigestedPassword digestedPassword, TopLevelWindowManager requester);
-
-
 /**
  * Insert the method's description here.
  * Creation date: (5/27/2004 2:12:25 AM)
@@ -106,8 +97,6 @@ void createBioModelFromApplication(BioModelWindowManager requester, String name,
  * Creation date: (5/29/2006 11:16:29 AM)
  */
 void curateDocument(VCDocumentInfo vcDocInfo, int curateType, final TopLevelWindowManager requester);
-
-void sendLostPassword(DocumentWindowManager docWindowManager, String userid);
 
 /**
  * Insert the method's description here.

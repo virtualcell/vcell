@@ -69,7 +69,7 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 
 
 @Override
-public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws AuthenticationException, ConnectionException {
+public VCellConnection createDepricatedVCellConnection(UserLoginInfo userLoginInfo) throws AuthenticationException, ConnectionException {
 	try {
 		if (connectionFactory == null) {
 			connectionFactory = DatabaseService.getInstance().createConnectionFactory();
@@ -103,7 +103,7 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 }
 
 	@Override
-	public VCellConnection createVCellConnectionAuth0(UserLoginInfo userLoginInfo) throws ConnectionException {
+	public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException {
 		try {
 			if (connectionFactory == null) {
 				connectionFactory = DatabaseService.getInstance().createConnectionFactory();

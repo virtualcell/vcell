@@ -21,7 +21,6 @@ import cbit.vcell.server.VCellConnectionFactory;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.nimbusds.oauth2.sdk.ParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.DependencyConstants;
@@ -37,7 +36,6 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -199,9 +197,9 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 		}
 	}
 
-public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException {
+public VCellConnection createDepricatedVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException {
 	try {
-		AccessTokenRepresentation accessTokenRep = this.vcellApiClient.authenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString(),true);
+		AccessTokenRepresentation accessTokenRep = this.vcellApiClient.deprecatedAuthenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString(),true);
 		userLoginInfo.setUser(new User(accessTokenRep.userId, new KeyValue(accessTokenRep.getUserKey())));
 		return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender);
 	} catch (IOException e) {
@@ -210,7 +208,7 @@ public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws
 }
 
 	@Override
-	public VCellConnection createVCellConnectionAuth0(UserLoginInfo userLoginInfo) {
+	public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) {
 		try {
 			AccesTokenRepresentationRecord accessTokenRep = userLoginInfo.getUserName().equals(User.VCELL_GUEST_NAME) ?
 				this.getVCellApiClient().getGuestLegacyToken()

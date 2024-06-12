@@ -31,12 +31,11 @@ import org.vcell.api.common.events.EventWrapper;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
-import org.vcell.restclient.auth.AuthApiClient;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
-import org.vcell.restclient.model.UserLoginInfoForMapping;
 
+import java.awt.*;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -70,7 +69,8 @@ public class VCellApiClient implements AutoCloseable {
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 	private final URL quarkusURL;
 	private ApiClient apiClient = null;
-
+	private final static String authClientID = "cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf";
+	private final static String authDomain = "https://dev-dzhx7i2db3x3kkvq.us.auth0.com";
 
 	// Create a custom response handler
 	public static class VCellStringResponseHandler implements ResponseHandler<String> {
@@ -465,7 +465,7 @@ public class VCellApiClient implements AutoCloseable {
 		return simulationTaskRepresentations;
 	}
 	
-	public AccessTokenRepresentation authenticate(String userid, String password, boolean alreadyDigested) throws ClientProtocolException, IOException {
+	public AccessTokenRepresentation deprecatedAuthenticate(String userid, String password, boolean alreadyDigested) throws ClientProtocolException, IOException {
 		// hash the password
 		String digestedPassword = (alreadyDigested)?(password):createdDigestPassword(password);
 		
@@ -514,10 +514,31 @@ public class VCellApiClient implements AutoCloseable {
 		}};
 	}
 
-	public void authenticateWithAuth0(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
-		apiClient = InteractiveLogin.login("cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf", new URI("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/authorize"),
+	public void authenticate(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
+		apiClient = InteractiveLogin.login(authClientID, new URI(authDomain + "/authorize"),
 				this.quarkusURL.toURI(), ignoreSSLCertProblems);
 		apiClient.setScheme(this.quarkusURL.getProtocol());
+	}
+
+	public void logOut(){
+		// for now redirect back to browser
+		// in future automatic logout, https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0
+
+		java.net.http.HttpRequest.Builder httpRequestBuilder = java.net.http.HttpRequest.newBuilder();
+		String postLogoutRedirect = "";
+		String idToken = "";
+		httpRequestBuilder.uri(URI.create(authDomain + "/oidc/logout"));
+		httpRequestBuilder.header("Content-Type", "application/x-www-form-urlencoded");
+//		httpRequestBuilder.method("GET");
+		String logoutPath = "";
+
+		if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            try {
+                Desktop.getDesktop().browse(URI.create("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/oidc/logout"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 	}
 
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
@@ -536,14 +557,6 @@ public class VCellApiClient implements AutoCloseable {
 
 	public boolean isVCellIdentityMapped() throws ApiException {
 		return getVCellUserNameFromAuth0Mapping() != null;
-	}
-
-	public void mapUserToAuth0(String userID, String password) throws ApiException {
-		UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
-		UserLoginInfoForMapping userLoginInfoForMapping = new UserLoginInfoForMapping();
-		userLoginInfoForMapping.setUserID(userID);
-		userLoginInfoForMapping.setPassword(password);
-		usersResourceApi.mapUser(userLoginInfoForMapping);
 	}
 
 	public AccesTokenRepresentationRecord getLegacyToken() throws ApiException {

@@ -6,9 +6,7 @@ import com.google.gson.Gson;
 import com.nimbusds.oauth2.sdk.ParseException;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.util.document.UserLoginInfo;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -25,20 +23,12 @@ public final class Auth0ConnectionUtils {
         return vcellApiClient.isVCellIdentityMapped();
     }
 
-    public void mapVCellIdentityToAuth0Identity(UserLoginInfo userLoginInfo) {
-        try{
-            vcellApiClient.mapUserToAuth0(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getClearTextPassword());
-        } catch (ApiException e){
-            throw new RuntimeException(e);
-        }
-    }
-
     public void auth0SignIn(boolean isGuest) throws ApiException {
         try{
             boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
             boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
             boolean ignoreSSLCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
-            if (!isGuest) vcellApiClient.authenticateWithAuth0(ignoreSSLCertProblems);
+            if (!isGuest) vcellApiClient.authenticate(ignoreSSLCertProblems);
             else vcellApiClient.createDefaultQuarkusClient(ignoreSSLCertProblems);
         } catch (ApiException | URISyntaxException | IOException | ParseException e){
             throw new RuntimeException(e);
@@ -51,6 +41,10 @@ public final class Auth0ConnectionUtils {
         } catch (ApiException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void logOut(){
+        vcellApiClient.logOut();
     }
 
     private static Path getAppPropertiesPath() throws IOException {

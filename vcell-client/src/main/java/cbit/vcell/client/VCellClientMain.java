@@ -63,8 +63,6 @@ public class VCellClientMain implements Callable<Integer> {
     private String pathPrefixV0 = System.getProperty(PropertyLoader.vcellServerPrefixV0, "/api/v0");
     @Option(names = {"--userid"}, hidden = true, description = "vcell userid")
     private String userid = null;
-    @Option(names = {"--password"}, hidden = true, description = "vcell password")
-    private String password = null;
     @Option(names = {"-console"}, type = Boolean.class, description = "Install4J parameter, ignored")
     private boolean _console = false;
     private VCellClient vcellClient;
@@ -147,11 +145,7 @@ public class VCellClientMain implements Callable<Integer> {
             initialDocument = startupWithOpen(vcellModelFile);
         }
 
-        UserLoginInfo.DigestedPassword digestedPassword = null;
-        if (password != null && password.length() > 0) {
-            digestedPassword = new UserLoginInfo.DigestedPassword(password);
-        }
-        ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(host, port, this.pathPrefixV0, userid, digestedPassword);
+        ClientServerInfo csInfo = ClientServerInfo.createRemoteServerInfo(host, port, this.pathPrefixV0, userid);
 
         try {
             VCMongoMessage.enabled = false;
