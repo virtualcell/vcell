@@ -26,9 +26,9 @@ public class ClientServerInfo {
 		SERVER_FILE
 	}
 
-	public static String apiHost = PropertyLoader.getProperty(PropertyLoader.vcellServerHost, "vcell-dev.cam.uchc.edu");
-	public static String v0PathPrefix = PropertyLoader.getProperty(PropertyLoader.vcellServerPrefixV0, "/api/v0");
-	public static boolean isHTTP = PropertyLoader.getBooleanProperty(PropertyLoader.isHTTP, false);
+	public static final String apiHost = "vcell-dev.cam.uchc.edu";
+	public static final String v0PathPrefix = "/api/v0";
+	public static final boolean isHTTP = false;
 
 
 	private ServerType serverType = null;
@@ -52,7 +52,8 @@ public static ClientServerInfo createFileBasedServerInfo() {
 
 
 public static ClientServerInfo createLocalServerInfo(String userName) {
-	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL, apiHost, isHTTP ? 80 : 443, v0PathPrefix, new UserLoginInfo(userName, null));
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL, ClientServerInfo.apiHost, ClientServerInfo.isHTTP ? 80 : 443,
+			ClientServerInfo.v0PathPrefix, new UserLoginInfo(userName, null));
 	return csi;
 }
 
