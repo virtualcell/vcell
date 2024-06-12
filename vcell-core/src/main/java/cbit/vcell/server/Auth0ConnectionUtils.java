@@ -6,9 +6,7 @@ import com.google.gson.Gson;
 import com.nimbusds.oauth2.sdk.ParseException;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.util.document.UserLoginInfo;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -30,7 +28,7 @@ public final class Auth0ConnectionUtils {
             boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
             boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
             boolean ignoreSSLCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
-            if (!isGuest) vcellApiClient.authenticateWithAuth0(ignoreSSLCertProblems);
+            if (!isGuest) vcellApiClient.authenticate(ignoreSSLCertProblems);
             else vcellApiClient.createDefaultQuarkusClient(ignoreSSLCertProblems);
         } catch (ApiException | URISyntaxException | IOException | ParseException e){
             throw new RuntimeException(e);

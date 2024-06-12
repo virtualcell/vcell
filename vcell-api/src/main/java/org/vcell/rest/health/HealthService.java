@@ -210,7 +210,7 @@ public class HealthService {
 			try {
 				UserLoginInfo userLoginInfo = new UserLoginInfo(testUserid, testPassword);
 				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
-				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
+				VCellConnection vcellConnection = vcellConnectionFactory.createDepricatedVCellConnection(userLoginInfo);
 				VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
 				loginSuccess(id);
 			}catch (Throwable e) {
@@ -236,7 +236,7 @@ public class HealthService {
 			VCSimulationIdentifier runningSimId = null;
 			try {
 				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
-				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
+				VCellConnection vcellConnection = vcellConnectionFactory.createDepricatedVCellConnection(userLoginInfo);
 				
 				String vcmlString = IOUtils.toString(getClass().getResourceAsStream("/TestTemplate.vcml"));
 				
@@ -311,7 +311,7 @@ public class HealthService {
 				// cleanup
 				try {
 					RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
-					VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
+					VCellConnection vcellConnection = vcellConnectionFactory.createDepricatedVCellConnection(userLoginInfo);
 					if (runningSimId!=null) {
 						try {
 							vcellConnection.getSimulationController().stopSimulation(runningSimId);

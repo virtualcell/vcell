@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.*;
 import org.vcell.util.document.User;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
 
@@ -399,7 +398,7 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 			Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
 			String username = User.isGuest(getClientServerInfo().getUsername()) ? getClientServerInfo().getUsername() : auth0ConnectionUtils.getAuth0MappedUser();
 			setConnectionStatus(new ClientConnectionStatus(username, apihost, apiport, ConnectionStatus.INITIALIZING));
-			newVCellConnection = vcellConnectionFactory.createVCellConnectionAuth0(getClientServerInfo().getUserLoginInfo());
+			newVCellConnection = vcellConnectionFactory.createVCellConnection(getClientServerInfo().getUserLoginInfo());
 			requester.clearConnectWarning();
 			reconnectStat = ReconnectStatus.NOT;
 		}catch(Exception e) {

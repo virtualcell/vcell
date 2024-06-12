@@ -31,11 +31,9 @@ import org.vcell.api.common.events.EventWrapper;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
-import org.vcell.restclient.auth.AuthApiClient;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
-import org.vcell.restclient.model.UserLoginInfoForMapping;
 
 import java.awt.*;
 import java.io.*;
@@ -43,7 +41,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.http.HttpClient;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -467,7 +464,7 @@ public class VCellApiClient implements AutoCloseable {
 		return simulationTaskRepresentations;
 	}
 	
-	public AccessTokenRepresentation authenticate(String userid, String password, boolean alreadyDigested) throws ClientProtocolException, IOException {
+	public AccessTokenRepresentation deprecatedAuthenticate(String userid, String password, boolean alreadyDigested) throws ClientProtocolException, IOException {
 		// hash the password
 		String digestedPassword = (alreadyDigested)?(password):createdDigestPassword(password);
 		
@@ -516,7 +513,7 @@ public class VCellApiClient implements AutoCloseable {
 		}};
 	}
 
-	public void authenticateWithAuth0(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
+	public void authenticate(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
 		apiClient = InteractiveLogin.login("cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf", new URI("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/authorize"),
 				this.quarkusURL.toURI(), ignoreSSLCertProblems);
 		apiClient.setScheme(this.quarkusURL.getProtocol());

@@ -26,9 +26,6 @@ import org.vcell.util.UserCancelException;
 import org.vcell.util.document.UserLoginInfo;
 
 import javax.swing.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
 
 
 public class CopasiOptimizationSolver {
@@ -69,7 +66,7 @@ public class CopasiOptimizationSolver {
 			UserLoginInfo userLoginInfo = clientServerInfo.getUserLoginInfo();
 			// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:443
 			VCellApiClient apiClient = new VCellApiClient(host, port, pathPrefixV0, bIgnoreCertProblems, bIgnoreHostMismatch);
-			apiClient.authenticate(userLoginInfo.getUser().getName(), userLoginInfo.getDigestedPassword().getString(), true);
+			apiClient.deprecatedAuthenticate(userLoginInfo.getUser().getName(), userLoginInfo.getDigestedPassword().getString(), true);
 
 			OptProblem optProblem = CopasiUtils.paramTaskToOptProblem(parameterEstimationTask);
 
