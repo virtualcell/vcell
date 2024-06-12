@@ -347,7 +347,8 @@ private final int MaxBatchSize = 999;
 public static final String ReservedBatchExtensionString = "_bat_";
 
 int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> batchInputDataMap, Component requester) throws java.beans.PropertyVetoException {
-	
+	final String SUCCESS_KEY = "SUCCESS_KEY";
+
 	Simulation simTemplate = sims[0];		// we already know that we have exactly one simulation template
 	for (int i = 0; i < sims.length; i++){
 		String errorMessage = checkCompatibility(simulationOwner, sims[i]);
@@ -370,7 +371,7 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 	for (int k = 0; k < batchSize; k++) {
 		if(batchInputDataMap.get(k) == null) {
 		// entry missing, perhaps parsing error
-		System.out.println("List of overrides missing for batch simulation " + k + ". Check input data file.");
+			throw new RuntimeException("List of overrides missing for batch simulation " + k + ". Check input data file.");
 		}
 	}
 
@@ -410,6 +411,10 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 						mo.putConstant(constant);
 					} catch (ExpressionException e) {
 						e.printStackTrace();
+					} catch(NullPointerException e) {
+						String message = "Error in batch file, line " + i + " : ";
+						message += "Expression " + value + " for variable '" + name + "' cannot be evaluated to a constant";
+						throw new RuntimeException(message);
 					}
 				}
 				
@@ -422,7 +427,7 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 					throw new RuntimeException("The simulation owner must be a SimulationContext or a Math Model");
 				}
 			}
-
+			hashTable.put(SUCCESS_KEY, true);
 			System.out.println("Done !!!");
 		}										// --- end run()
 	};
