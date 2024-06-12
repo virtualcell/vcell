@@ -10,6 +10,7 @@
 
 package cbit.vcell.client.server;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 
@@ -24,6 +25,11 @@ public class ClientServerInfo {
 		SERVER_LOCAL,
 		SERVER_FILE
 	}
+
+	public static String apiHost = PropertyLoader.getProperty(PropertyLoader.vcellServerHost, "vcell-dev.cam.uchc.edu");
+	public static String v0PathPrefix = PropertyLoader.getProperty(PropertyLoader.vcellServerPrefixV0, "/api/v0");
+	public static boolean isHTTP = PropertyLoader.getBooleanProperty(PropertyLoader.isHTTP, false);
+
 
 	private ServerType serverType = null;
 	private String apihost = null;
@@ -46,7 +52,7 @@ public static ClientServerInfo createFileBasedServerInfo() {
 
 
 public static ClientServerInfo createLocalServerInfo(String userName) {
-	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL,"vcell-dev.cam.uchc.edu",443, "/api/v0", new UserLoginInfo(userName, null));
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL, apiHost, isHTTP ? 80 : 443, v0PathPrefix, new UserLoginInfo(userName, null));
 	return csi;
 }
 
