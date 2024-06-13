@@ -380,6 +380,7 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
 	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Creating Batch Simulations", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			hashTable.put(SUCCESS_KEY, false);
 
 			for(Integer i : batchInputDataMap.keySet()) {
 				LinkedHashMap<String, String> overrideMap = (LinkedHashMap<String, String>)batchInputDataMap.get(i);
@@ -431,7 +432,21 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 			System.out.println("Done !!!");
 		}										// --- end run()
 	};
+
+	AsynchClientTask successCheckTask = new AsynchClientTask("Check Success", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Object ret = hashTable.get(SUCCESS_KEY);
+			boolean success = (boolean)ret;
+			if(success == false) {
+				throw new RuntimeException("Failed to complete importing batch simulation data, error unknown");
+			} else {
+				PopupGenerator.showInfoDialog(requester, "Success importing batch simulation data.");
+			}
+		}
+	};
+
 	taskList.add(retrieveResultsTask);
+	taskList.add(successCheckTask);
 	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
 	taskList.toArray(taskArray);
 	// knowProgress, cancelable, progressDialogListener
