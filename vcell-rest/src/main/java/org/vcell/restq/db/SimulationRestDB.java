@@ -1,22 +1,33 @@
 package org.vcell.restq.db;
 
+import cbit.vcell.message.VCMessageSession;
+import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.SimContextRep;
 import cbit.vcell.modeldb.SimulationRep;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.restq.rpc.RpcSimService;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserLoginInfo;
 
 import java.sql.SQLException;
 import java.util.concurrent.ConcurrentHashMap;
 
 // Make into seperate class in DB module
+@ApplicationScoped
 public class SimulationRestDB {
     private final static Logger lg = LogManager.getLogger(SimulationRestDB.class);
 
 
     private final DatabaseServerImpl databaseServerImpl;
+    private final VCMessagingService vcMessagingService = null;
 
     public SimulationRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
@@ -56,6 +67,34 @@ public class SimulationRestDB {
                 lg.info("couldn't find simulation key = " + key);
             }
             return simContextRep;
+        }
+    }
+
+    public SimulationRep startSimulation(String simId, User vcellUser) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException{
+        KeyValue simKey = new KeyValue(simId);
+        SimulationRep simRep = getSimulationRep(simKey);
+        if (simRep == null){
+            throw new ObjectNotFoundException("Simulation with key "+simKey+" not found");
+        }
+        User owner = simRep.getOwner();
+        if (!owner.compareEqual(vcellUser)){
+            throw new PermissionException("not authorized to start simulation");
+        }
+        VCMessageSession rpcSession = vcMessagingService.createProducerSession();
+        try {
+            UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+            try {
+                userLoginInfo.setUser(vcellUser);
+            } catch (Exception e) {
+                lg.error(e.getMessage(), e);
+                throw new DataAccessException(e.getMessage());
+            }
+            RpcSimService rpcSimServerProxy = new RpcSimService(userLoginInfo, rpcSession);
+            VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
+            rpcSimServerProxy.startSimulation(vcellUser, vcSimID, simRep.getScanCount());
+            return simRep;
+        }finally{
+            rpcSession.close();
         }
     }
 }
