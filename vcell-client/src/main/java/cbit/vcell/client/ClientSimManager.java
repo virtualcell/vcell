@@ -40,6 +40,8 @@ import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.server.*;
 import cbit.vcell.util.ColumnDescription;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.*;
@@ -61,8 +63,11 @@ import java.util.*;
  * @author: Ion Moraru
  */
 public class ClientSimManager implements java.beans.PropertyChangeListener {
-	
-@SuppressWarnings("serial")
+
+	private static final Logger lg = LogManager.getLogger(ClientRequestManager.class);
+
+
+	@SuppressWarnings("serial")
 public static class LocalVCSimulationDataIdentifier extends VCSimulationDataIdentifier implements LocalVCDataIdentifier {
 
 	private File localSimDir = null;
@@ -208,7 +213,9 @@ private static void saveFailure(Hashtable<String, Object>hashTable,Simulation si
 	failures.put(sim, throwable);
 }
 
-public void getBatchSimulationsResults(OutputContext outputContext, Simulation simulation) throws java.beans.PropertyVetoException {
+public void getBatchSimulationsResults(OutputContext outputContext, Simulation simulation, Component requester) throws java.beans.PropertyVetoException {
+	final String SUCCESS_KEY = "SUCCESS_KEY";
+	final String FAILURE_KEY = "FAILURE_KEY";
 	// simulation should be a template simulation
 	if(simulation.getName().contains(SimulationWorkspace.ReservedBatchExtensionString)) {
 		throw new RuntimeException("Not a valid name for a batch template Simulation: '" + simulation.getName() + "'.");
@@ -221,6 +228,8 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
 	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			hashTable.put(SUCCESS_KEY, false);
+			hashTable.put(FAILURE_KEY, false);
 
 			// recover the list of batch simulations that belong to this template
 			Simulation allSims[] = simOwner.getSimulations();
@@ -239,18 +248,18 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 					int pos = simCandidate.getName().lastIndexOf("_");
 					String indexName = simCandidate.getName().substring(pos+1);
 					File currentSimulation = new File(batchResultsDir, indexName + ".txt");
-					
+
 					ODESimData simData = null;
+					// note that simulation ID may be zero here, for example if the sim never ran
 					importsMap.put(simCandidate.getName(), simCandidate.getSimulationID());
 					successMap.put(simCandidate.getName(), true);	// on failure we'll change to false
 
 					try {
 						simData = importBatchSimulation(outputContext, simCandidate);
 					} catch(Exception e) {		// whatever fails, we keep going, this is a batch run
-						System.out.println(simCandidate.getName() + ": failed to recover simulation results");
-
-						// TODO: also make a report with detailed exception text
-//						e.printStackTrace();
+						hashTable.put(FAILURE_KEY, true);
+						lg.error(simCandidate.getName() + ": failed to recover simulation results, ", e);
+						e.printStackTrace();
 						successMap.put(simCandidate.getName(), false);
 					}
 					if(simData != null) {		// write the file
@@ -273,19 +282,32 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 						out.print(sb.toString());
 						out.flush();
 						out.close();
+						hashTable.put(SUCCESS_KEY, true);
 					}
 				}
 			}
-			
-//			for(String name : importsMap.keySet()) {
-//			String value = importsMap.get(name);
-//				write some manifest?
-//				// at least some basic info like the name of the simulation / biomodel / dat file
-//			}
 			System.out.println("Done !!!");
 		}										// --- end run()
 	};
+	AsynchClientTask successCheckTask = new AsynchClientTask("Check Success", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean success = (boolean)hashTable.get(SUCCESS_KEY);
+			boolean failure = (boolean)hashTable.get(FAILURE_KEY);
+
+			if(success == false && failure == false) {
+				throw new RuntimeException("Failed to complete exporting batch simulation results, error unknown");
+			} else if(success == true && failure == true) {
+				throw new RuntimeException("Some batch simulation results missing or failed to be exported");
+			} else if(success == false && failure == true) {
+				throw new RuntimeException("Failed to export any batch simulation results");
+			} else {	// success == true, failure == false
+				PopupGenerator.showInfoDialog(requester, "Success importing batch simulation data.");
+			}
+		}
+	};
+
 	taskList.add(retrieveResultsTask);
+	taskList.add(successCheckTask);
 	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
 	taskList.toArray(taskArray);
 	// knowProgress, cancelable, progressDialogListener
@@ -294,9 +316,6 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 
 private ODESimData importBatchSimulation(OutputContext outputContext, Simulation sim) throws DataAccessException, RemoteProxyException, ExpressionException {
 
-	boolean success = false;
-	ODESimData simData = null;
-	
 	if(sim.getVersion() == null) {
 		throw new RuntimeException("Missing Version.");
 	}
@@ -305,65 +324,13 @@ private ODESimData importBatchSimulation(OutputContext outputContext, Simulation
 		throw new RuntimeException("Missing Simulation Info.");
 	}
 	
-	User usr = sim.getVersion().getOwner();
-	
-
 	VCSimulationIdentifier asi = simInfo.getAuthoritativeVCSimulationIdentifier();
-	// sim.getScanCount()  number of jobs must be one, so job index is 0
 	VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(asi, 0);
 
-	ClientServerManager csm = VCellClient.getInstance().getClientServerManager();
-	DataSetController dsc = csm.getDataSetController();
-	simData = dsc.getODEData(vcSimulationDataIdentifier);
-	
+	ODEDataManager dm = (ODEDataManager)getDocumentWindowManager().getRequestManager().getDataManager(outputContext, vcSimulationDataIdentifier, false);
+	ODESimData osd = (ODESimData)dm.getODESolverResultSet();
 	System.out.println(sim.getName() + ": simulation results recovered");
-	return simData;
-	
-	
-	
-	/*
-	
-	final VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
-	DataManager dataManager = null;
-
-	try {
-//		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(null,localBatchDir,null);
-		ExportServiceImpl localExportServiceImpl = new ExportServiceImpl();
-	
-//		LocalDataSetControllerProvider localDSCProvider = new LocalDataSetControllerProvider(usr, dataSetControllerImpl, localExportServiceImpl);
-//		VCDataManager vcDataManager = new VCDataManager(localDSCProvider);
-//		LocalVCDataIdentifier vcDataId = new LocalVCSimulationDataIdentifier(vcSimulationIdentifier, 0, localSimDir);
-//		if (sim.isSpatial()) {
-//			dataManager = new PDEDataManager(outputContext,vcDataManager, vcDataId);
-//		} else {
-//			dataManager = new ODEDataManager(outputContext,vcDataManager, vcDataId);
-//		}	
-		System.out.println("start!");
-		DataViewerController dataViewerController = documentWindowManager.getRequestManager().getDataViewerController(outputContext,sim, 0);
-		
-//		if(!(dataViewerController instanceof SimResultsViewerController)) {
-//			throw new RuntimeException("Unable to initialize the SimResultsViewerController");
-//		}
-//		SimResultsViewerController rvc = (SimResultsViewerController)dataViewerController;
-		DataViewer dw = dataViewerController.createViewer();
-//		DataViewerManager dwm = dw.getDataViewerManager();
-		if(!(dw instanceof SimResultsViewer)) {
-			throw new RuntimeException("Wrong data viewer type, must be SimResultsViewer.");
-		}
-		SimResultsViewer srw = (SimResultsViewer)dw;
-
-		// I need DataViewer.ODEDataManager.ODESimData (Ode Solver Result Set !!!!)
-		
-		
-		System.out.println("done!");
-//	} catch (FileNotFoundException e) {
-//		e.printStackTrace();
-	} catch (DataAccessException e) {
-		e.printStackTrace();
-	}
-	
-	*/
-
+	return osd;
 }
 
 private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final ViewerType viewerType) {

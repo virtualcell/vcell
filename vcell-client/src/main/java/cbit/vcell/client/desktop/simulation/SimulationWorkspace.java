@@ -461,7 +461,7 @@ int getBatchSimulationsResults(Simulation[] sims, Component requester) throws ja
 	// sims contains exactly one template simulation
 	ArrayList<AnnotatedFunction> outputFunctionsList = getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
 	OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));
-	getClientSimManager().getBatchSimulationsResults(outputContext, sims[0]);
+	getClientSimManager().getBatchSimulationsResults(outputContext, sims[0], requester);
 //	getSimulationOwner().importBatchSimulations(sims[0]);	// was in simContext initially
 	return -1;
 }
