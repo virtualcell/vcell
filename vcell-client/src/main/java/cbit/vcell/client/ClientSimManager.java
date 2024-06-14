@@ -216,6 +216,7 @@ private static void saveFailure(Hashtable<String, Object>hashTable,Simulation si
 public void getBatchSimulationsResults(OutputContext outputContext, Simulation simulation, Component requester) throws java.beans.PropertyVetoException {
 	final String SUCCESS_KEY = "SUCCESS_KEY";
 	final String FAILURE_KEY = "FAILURE_KEY";
+	final String BATCH_RESULTS_DIR_KEY = "BATCH_RESULTS_DIR";
 	// simulation should be a template simulation
 	if(simulation.getName().contains(SimulationWorkspace.ReservedBatchExtensionString)) {
 		throw new RuntimeException("Not a valid name for a batch template Simulation: '" + simulation.getName() + "'.");
@@ -223,13 +224,12 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 
 	SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
 	File batchResultsDir = ResourceUtil.getLocalBatchDir();
-//	File localSimDir = ResourceUtil.getLocalSimDir(User.tempUser.getName());
-	
+
 	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
 	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			hashTable.put(SUCCESS_KEY, false);
-			hashTable.put(FAILURE_KEY, false);
+			hashTable.put(SUCCESS_KEY, false);	// false <- initialization, true <- at least one success
+			hashTable.put(FAILURE_KEY, false);	// false <- initialization, true <- at least one failure
 
 			// recover the list of batch simulations that belong to this template
 			Simulation allSims[] = simOwner.getSimulations();
@@ -238,10 +238,11 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 			String namePrefix = simulation.getName() + SimulationWorkspace.ReservedBatchExtensionString;
 
 			if(allSims.length  == 1 && !allSims[0].getName().contains("_bat_")) {
-				PopupGenerator.showWarningDialog(ClientSimManager.this.getDocumentWindowManager().getComponent(), "No batch simulation results files found");
+				PopupGenerator.showWarningDialog(ClientSimManager.this.getDocumentWindowManager().getComponent(), "No batch simulation results found");
 				return;
 			}
 
+			hashTable.put(BATCH_RESULTS_DIR_KEY, batchResultsDir);
 			for(Simulation simCandidate : allSims) {
 				if(simCandidate.getName().startsWith(namePrefix) && simCandidate.getName().contains("_bat_")) {
 					
@@ -293,15 +294,19 @@ public void getBatchSimulationsResults(OutputContext outputContext, Simulation s
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			boolean success = (boolean)hashTable.get(SUCCESS_KEY);
 			boolean failure = (boolean)hashTable.get(FAILURE_KEY);
+			File batchResultsDir = (File)hashTable.get(BATCH_RESULTS_DIR_KEY);
 
 			if(success == false && failure == false) {
+				// didn't even try
 				throw new RuntimeException("Failed to complete exporting batch simulation results, error unknown");
 			} else if(success == true && failure == true) {
 				throw new RuntimeException("Some batch simulation results missing or failed to be exported");
 			} else if(success == false && failure == true) {
 				throw new RuntimeException("Failed to export any batch simulation results");
 			} else {	// success == true, failure == false
-				PopupGenerator.showInfoDialog(requester, "Success importing batch simulation data.");
+				String msg = "Success exporting batch simulation results to files.\n";
+				msg += "Files located in '" + batchResultsDir.getPath() + "'";
+				PopupGenerator.showInfoDialog(requester, msg);
 			}
 		}
 	};
