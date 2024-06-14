@@ -347,7 +347,8 @@ private final int MaxBatchSize = 999;
 public static final String ReservedBatchExtensionString = "_bat_";
 
 int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> batchInputDataMap, Component requester) throws java.beans.PropertyVetoException {
-	
+	final String SUCCESS_KEY = "SUCCESS_KEY";
+
 	Simulation simTemplate = sims[0];		// we already know that we have exactly one simulation template
 	for (int i = 0; i < sims.length; i++){
 		String errorMessage = checkCompatibility(simulationOwner, sims[i]);
@@ -370,7 +371,7 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 	for (int k = 0; k < batchSize; k++) {
 		if(batchInputDataMap.get(k) == null) {
 		// entry missing, perhaps parsing error
-		System.out.println("List of overrides missing for batch simulation " + k + ". Check input data file.");
+			throw new RuntimeException("List of overrides missing for batch simulation " + k + ". Check input data file.");
 		}
 	}
 
@@ -379,6 +380,7 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
 	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Creating Batch Simulations", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			hashTable.put(SUCCESS_KEY, false);
 
 			for(Integer i : batchInputDataMap.keySet()) {
 				LinkedHashMap<String, String> overrideMap = (LinkedHashMap<String, String>)batchInputDataMap.get(i);
@@ -410,6 +412,10 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 						mo.putConstant(constant);
 					} catch (ExpressionException e) {
 						e.printStackTrace();
+					} catch(NullPointerException e) {
+						String message = "Error in batch file, line " + i + " : ";
+						message += "Expression " + value + " for variable '" + name + "' cannot be evaluated to a constant";
+						throw new RuntimeException(message);
 					}
 				}
 				
@@ -422,11 +428,25 @@ int createBatchSimulations(Simulation[] sims, Map<Integer, Map<String, String>> 
 					throw new RuntimeException("The simulation owner must be a SimulationContext or a Math Model");
 				}
 			}
-
+			hashTable.put(SUCCESS_KEY, true);
 			System.out.println("Done !!!");
 		}										// --- end run()
 	};
+
+	AsynchClientTask successCheckTask = new AsynchClientTask("Check Success", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			Object ret = hashTable.get(SUCCESS_KEY);
+			boolean success = (boolean)ret;
+			if(success == false) {
+				throw new RuntimeException("Failed to complete importing batch simulation data, error unknown");
+			} else {
+				PopupGenerator.showInfoDialog(requester, "Success importing batch simulation data.");
+			}
+		}
+	};
+
 	taskList.add(retrieveResultsTask);
+	taskList.add(successCheckTask);
 	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
 	taskList.toArray(taskArray);
 	// knowProgress, cancelable, progressDialogListener
@@ -441,7 +461,7 @@ int getBatchSimulationsResults(Simulation[] sims, Component requester) throws ja
 	// sims contains exactly one template simulation
 	ArrayList<AnnotatedFunction> outputFunctionsList = getSimulationOwner().getOutputFunctionContext().getOutputFunctionsList();
 	OutputContext outputContext = new OutputContext(outputFunctionsList.toArray(new AnnotatedFunction[outputFunctionsList.size()]));
-	getClientSimManager().getBatchSimulationsResults(outputContext, sims[0]);
+	getClientSimManager().getBatchSimulationsResults(outputContext, sims[0], requester);
 //	getSimulationOwner().importBatchSimulations(sims[0]);	// was in simContext initially
 	return -1;
 }

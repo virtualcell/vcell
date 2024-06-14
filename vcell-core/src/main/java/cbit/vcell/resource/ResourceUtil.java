@@ -283,7 +283,7 @@ public class ResourceUtil {
 			try {
 				deleteRecursively(adir);	// delete the output directory and all its content recursively
 			} catch (IOException e) {
-				System.err.println("Failed to empty " + adir.getName());
+				throw new RuntimeException("Failed to empty the output batch directory '" + batchResultsDirName + "'");
 			}
 		}
 		boolean ret = false;
@@ -291,6 +291,9 @@ public class ResourceUtil {
 			ret = adir.mkdirs();
 		}
 		localBatchDir = adir;
+		if(localBatchDir == null || !localBatchDir.isDirectory() || (localBatchDir.list().length != 0) || !localBatchDir.toString().endsWith(batchResultsDirName)) {
+			throw new RuntimeException("Error initializing the output batch directory '" + batchResultsDirName + "'");
+		}
 		return localBatchDir;
 	}
 	
