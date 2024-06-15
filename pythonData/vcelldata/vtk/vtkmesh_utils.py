@@ -193,10 +193,7 @@ def smoothUnstructuredGridSurface(vtkGrid: vtk.vtkUnstructuredGrid) -> vtk.vtkUn
     ugGeometryFilter = vtk.vtkUnstructuredGridGeometryFilter()
     ugGeometryFilter.PassThroughPointIdsOn()
     ugGeometryFilter.MergingOff()
-    try:
-        ugGeometryFilter.SetInputData(vtkGrid)
-    except AttributeError:
-        ugGeometryFilter.SetInput(vtkGrid)
+    ugGeometryFilter.SetInputData(vtkGrid)
     ugGeometryFilter.Update()
     surfaceUnstructuredGrid: vtk.vtkUnstructuredGrid = ugGeometryFilter.GetOutput()
     originalPointsIdsName = ugGeometryFilter.GetOriginalPointIdsName()
@@ -205,31 +202,25 @@ def smoothUnstructuredGridSurface(vtkGrid: vtk.vtkUnstructuredGrid) -> vtk.vtkUn
     numCellArrays = cellData.GetNumberOfArrays()
     for i in range(0, numCellArrays):
         cellArrayName = cellData.GetArrayName(i)
-        print("CellArray(" + str(i) + ") '" + cellArrayName + "')")
+        # print("CellArray(" + str(i) + ") '" + cellArrayName + "')")
     pointData: vtk.vtkPointData = surfaceUnstructuredGrid.GetPointData()
     numPointArrays = pointData.GetNumberOfArrays()
     for i in range(0, numPointArrays):
         pointArrayName = pointData.GetArrayName(i)
-        print("PointArray(" + str(i) + ") '" + pointArrayName + "'")
+        # print("PointArray(" + str(i) + ") '" + pointArrayName + "'")
 
     geometryFilter = vtk.vtkGeometryFilter()
-    try:
-        geometryFilter.SetInputData(surfaceUnstructuredGrid)
-    except AttributeError:
-        geometryFilter.SetInput(surfaceUnstructuredGrid)
+    geometryFilter.SetInputData(surfaceUnstructuredGrid)
     geometryFilter.Update()
     polyData: vtk.vtkPolyData = geometryFilter.GetOutput()
 
     filter = vtk.vtkWindowedSincPolyDataFilter()
-    try:
-        filter.SetInputData(polyData)
-    except AttributeError:
-        filter.SetInput(polyData)
-    filter.SetNumberOfIterations(15)
+    filter.SetInputData(polyData)
+    filter.SetNumberOfIterations(12)
     filter.BoundarySmoothingOff()
     filter.FeatureEdgeSmoothingOff()
     filter.SetFeatureAngle(120.0)
-    filter.SetPassBand(0.001)
+    filter.SetPassBand(0.05)
     filter.NonManifoldSmoothingOff()
     filter.NormalizeCoordinatesOn()
     filter.Update()
