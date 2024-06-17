@@ -290,7 +290,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		refreshAll();
 	}
 	if(evt.getSource().equals(getModel()) && evt.getPropertyName().equals(Model.PROPERTY_NAME_SPECIES_CONTEXT_SPECIES_PATTERN)) {
-		refreshSpeciesContextSpecsSpeciesPatterns();	// only for springsalad, because we care about the sites (site attributes spec, internal link spec)
+		if(evt.getNewValue() instanceof SpeciesContext) {
+			refreshSpeciesContextSpecsSpeciesPatterns((SpeciesContext)evt.getNewValue());    // only for springsalad, because we care about the sites (site attributes spec, internal link spec)
+		} else {
+			throw new RuntimeException("Expected 'SpeciesContext' instance");
+		}
 	}
 	if (evt.getSource().equals(getModel()) && evt.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)){
 		;	// do nothing
@@ -621,8 +625,12 @@ private void refreshSpeciesContextSpecs() throws MappingException {
 		}
 	}
 }
-private void refreshSpeciesContextSpecsSpeciesPatterns() {
+private void refreshSpeciesContextSpecsSpeciesPatterns(SpeciesContext sc) {
+	if(sc == null) {
+		throw new RuntimeException("Unexpected 'null' SpeciesContext");
+	}
 	if(Application.SPRINGSALAD == simContext.getApplicationType()) {
+		// TODO: we should use the sc in 'initializeForSpringSaLaD()'
 		for(SpeciesContextSpec scs : fieldSpeciesContextSpecs) {
 			scs.initializeForSpringSaLaD(null);
 		}

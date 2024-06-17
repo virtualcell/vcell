@@ -663,7 +663,9 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         }
     }
 
-    public void initializeForSpringSaLaD(MolecularType molecularType){
+    public void initializeForSpringSaLaD(MolecularType molecularType) {
+        // TODO: find out the exact call hierarchy when called after saving, when new instances are created
+        // TODO: get rid of duplicates
         if(getSpeciesContext() != null) {
             SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
             if (sp == null) {
