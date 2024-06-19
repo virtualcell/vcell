@@ -44,14 +44,22 @@
         </div>
         <div class="row">
             <div class="col" style="text-align: right;"><label for="biomodelRefs">Biomodel IDs:</label></div>
-            <div class="col"><textarea type="text" id="biomodelRefs" [ngModel]="publication.biomodelRefs?.join(',')"
-                (ngModelChange)="publication.biomodelRefs = $event.split(',')" name="biomodelRefs"></textarea>
+            <div class="col">
+                <textarea type="text" id="biomodelRefs"
+                          [ngModel]="getBmKeys(publication.biomodelRefs)"
+                          (ngModelChange)="setBmRefsFromBmKeys($event.split(','))"
+                          name="biomodelRefs">
+                </textarea>
             </div>
         </div>
         <div class="row">
             <div class="col" style="text-align: right;"><label for="mathmodelRefs">Mathmodel IDs:</label></div>
-            <div class="col"><textarea type="text" id="mathmodelRefs" [ngModel]="publication.mathmodelRefs?.join(',')"
-                (ngModelChange)="publication.mathmodelRefs = $event.split(',')" name="mathmodelRefs"></textarea>
+            <div class="col">
+                <textarea type="text" id="mathmodelRefs"
+                          [ngModel]="getMmKeys(publication.mathmodelRefs)"
+                          (ngModelChange)="setMmRefsFromMmKeys($event.split(','))"
+                          name="mathmodelRefs">
+                </textarea>
             </div>
         </div>
         <div class="row">

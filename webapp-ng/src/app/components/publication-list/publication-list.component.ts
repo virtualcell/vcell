@@ -65,6 +65,7 @@ export class PublicationListComponent implements OnInit {
 
   onEdit(pub: Publication) {
     // nothing to do
+
     console.log("editing publication "+pub.title);
     this.startEdit(pub)
   }
