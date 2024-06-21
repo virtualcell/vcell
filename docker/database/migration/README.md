@@ -20,7 +20,7 @@ docker run --platform linux/amd64 -it \
 docker run --platform linux/amd64 -it \
     -w /base \
     -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/migv1:/base \
-    georgmoser/ora2pg:24.3 /base/export_schema.sh
+    georgmoser/ora2pg:24.3 /bin/sh -c "cd /base && ./export_schema.sh" > export_schema.log
 ```
 
 ### exporting data

@@ -6,7 +6,7 @@
 #-------------------------------------------------------------------------------
 EXPORT_TYPE="SEQUENCE SEQUENCE_VALUES TABLE PACKAGE VIEW GRANT TRIGGER FUNCTION PROCEDURE TABLESPACE PARTITION TYPE MVIEW DBLINK SYNONYM DIRECTORY"
 SOURCE_TYPE="PACKAGE VIEW TRIGGER FUNCTION PROCEDURE PARTITION TYPE MVIEW"
-namespace="."
+namespace="/base"
 unit_cost=5
 
 ora2pg -t SHOW_TABLE -c $namespace/config/ora2pg.conf > $namespace/reports/tables.txt
