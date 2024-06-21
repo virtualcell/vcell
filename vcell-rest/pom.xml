@@ -42,6 +42,16 @@
       <version>0.0.1-SNAPSHOT</version>
       <type>test-jar</type>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -187,16 +197,6 @@
       <groupId>org.jboss.logmanager</groupId>
       <artifactId>log4j2-jboss-logmanager</artifactId>
       <version>${log4j2-jboss-logmanager.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <version>${log4j-api.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>${log4j-core.version}</version>
     </dependency>
   </dependencies>
   <build>
