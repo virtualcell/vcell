@@ -2,10 +2,13 @@ package org.vcell.restq;
 
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
+import org.apache.commons.io.IOUtils;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
@@ -14,6 +17,8 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -75,6 +80,14 @@ public class TestEndpointUtils {
         apiClient.setHost("localhost");
         apiClient.setPort(testPort);
         return apiClient;
+    }
+
+    public static cbit.vcell.biomodel.BioModel getTestBioModel() throws XmlParseException, PropertyVetoException, IOException {
+        String vcmlString = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestVCML.vcml"));
+        cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlString));
+        bioModel.setName("BioModelApiTest_testAddRemove");
+        bioModel.clearVersion();
+        return bioModel;
     }
 
     public static Publication defaultPublication(){
