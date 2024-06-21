@@ -1,12 +1,16 @@
 ### Initialize
 see https://www.siriusopensource.com/en-us/blog/oracle-postgresql-migration-using-ora2pg
 
+#### Create a new migration project
+
 ```bash
 docker run --platform linux/amd64 -it \
     -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration:/base \
     georgmoser/ora2pg:24.3 \
     ora2pg --project_base /base --init_project migv1
 ```
+
+#### Estimate costs of migration
 
 ```bash
 docker run --platform linux/amd64 -it \
@@ -15,6 +19,8 @@ docker run --platform linux/amd64 -it \
     georgmoser/ora2pg:24.3 \
     ora2pg --type show_report --estimate_cost --conf config/ora2pg_all.conf --basedir data --dump_as_html > ora2pg.html
 ```
+
+#### Run export_schema.sh
 
 ```bash
 docker run --platform linux/amd64 -it \
