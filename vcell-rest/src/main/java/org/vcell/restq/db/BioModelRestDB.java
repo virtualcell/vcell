@@ -6,6 +6,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.vcell.restq.models.BioModel;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -25,7 +26,7 @@ public class BioModelRestDB {
 
 
     @Inject
-    public BioModelRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
+    public BioModelRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         simulationRestDB = new SimulationRestDB(agroalConnectionFactory);
         databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());

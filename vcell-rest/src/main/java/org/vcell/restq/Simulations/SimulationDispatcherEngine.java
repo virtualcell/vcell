@@ -57,7 +57,7 @@ public class SimulationDispatcherEngine {
         simStateMachine.onDispatch(simulation, simJobStatus, simulationDatabase, dispatcherQueueSession);
     }
 
-    public StatusMessage onStartRequest(VCSimulationIdentifier vcSimID, User user, int simulationScanCount, SimulationDatabase simulationDatabase, VCMessageSession session, VCMessageSession dispatcherQueueSession) throws VCMessagingException, DataAccessException, SQLException {
+    public ArrayList<StatusMessage> onStartRequest(VCSimulationIdentifier vcSimID, User user, int simulationScanCount, SimulationDatabase simulationDatabase, VCMessageSession session, VCMessageSession dispatcherQueueSession) throws VCMessagingException, DataAccessException, SQLException {
         KeyValue simKey = vcSimID.getSimulationKey();
 
         User.SpecialUser myUser = simulationDatabase.getUser(user.getName());
@@ -65,37 +65,41 @@ public class SimulationDispatcherEngine {
 
         SimulationInfo simulationInfo = null;
         SimulationJobStatus simJobStatus = null;
+        ArrayList<StatusMessage> status = new ArrayList<>();
         try {
             simulationInfo = simulationDatabase.getSimulationInfo(user, simKey);
         } catch (DataAccessException ex) {
             if (lg.isWarnEnabled()) lg.warn("Bad simulation " + vcSimID);
             simJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null,
                     SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Failed to dispatch simulation: "+ ex.getMessage()), null, null);
-            return new StatusMessage(simJobStatus, user.getName(), null, null);
+            status.add(new StatusMessage(simJobStatus, user.getName(), null, null));
+            return status;
         }
         if (simulationInfo == null) {
             if (lg.isWarnEnabled()) lg.warn("Can't start, simulation [" + vcSimID + "] doesn't exist in database");
             simJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null,
                     SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Can't start, simulation [" + vcSimID + "] doesn't exist"), null, null);
-            return new StatusMessage(simJobStatus, user.getName(), null, null);
+            status.add(new StatusMessage(simJobStatus, user.getName(), null, null));
+            return status;
         }
 
         if (!isAdmin && simulationScanCount > Integer.parseInt(cbit.vcell.resource.PropertyLoader.getRequiredProperty(cbit.vcell.resource.PropertyLoader.maxJobsPerScan))) {
             if (lg.isWarnEnabled()) lg.warn("Too many simulations (" + simulationScanCount + ") for parameter scan." + vcSimID);
             simJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null,
                     SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Too many simulations (" + simulationScanCount + ") for parameter scan."), null, null);
-            return new StatusMessage(simJobStatus, user.getName(), null, null);
+            status.add(new StatusMessage(simJobStatus, user.getName(), null, null));
+            return status;
         }
 
         for (int simulationJobIndex = 0; simulationJobIndex < simulationScanCount; simulationJobIndex++){
             SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, simulationJobIndex);
             try {
-                simStateMachine.onStartRequest(user, vcSimID, simulationDatabase, session);
+                status.add(simStateMachine.onStartRequest(user, vcSimID, simulationDatabase, session));
             }catch (UpdateSynchronizationException e){
-                simStateMachine.onStartRequest(user, vcSimID, simulationDatabase, session);
+                status.add(simStateMachine.onStartRequest(user, vcSimID, simulationDatabase, session));
             }
         }
-        return null;
+        return status;
     }
 
 

@@ -512,23 +512,23 @@ public class SimulationStateMachine {
             // send stopSimulation to serviceControl topic
             //
             if (lg.isTraceEnabled()) lg.trace("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
-            VCMessage msg = session.createMessage();
-            msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
-            msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
-            msg.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, jobIndex);
-            msg.setIntProperty(MessageConstants.TASKID_PROPERTY, taskID);
-            msg.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, user.getName());
+//            VCMessage msg = session.createMessage();
+//            msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
+//            msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
+//            msg.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, jobIndex);
+//            msg.setIntProperty(MessageConstants.TASKID_PROPERTY, taskID);
+//            msg.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, user.getName());
             if (simExeStatus.getHtcJobID()!=null){
-                msg.setStringProperty(MessageConstants.HTCJOBID_PROPERTY, simExeStatus.getHtcJobID().toDatabase());
+//                msg.setStringProperty(MessageConstants.HTCJOBID_PROPERTY, simExeStatus.getHtcJobID().toDatabase());
             }
-            session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);
+//            session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);
 
             simulationDatabase.updateSimulationJobStatus(newJobStatus);
 //			addStateMachineTransition(new StateMachineTransition(new StopStateMachineEvent(taskID), simJobStatus, newJobStatus));
 
             // update client
             cbit.vcell.message.messages.StatusMessage message = new cbit.vcell.message.messages.StatusMessage(newJobStatus, user.getName(), null, null);
-            message.sendToClient(session);
+//            message.sendToClient(session);
         }
     }
 

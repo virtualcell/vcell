@@ -2,6 +2,7 @@ package org.vcell.restq.db;
 
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+import cbit.vcell.server.SimulationStatusPersistent;
 import org.vcell.restq.Simulations.SimulationDispatcherEngine;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -11,6 +12,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.restq.Simulations.StatusMessage;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
@@ -18,6 +20,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 // Make into seperate class in DB module
@@ -86,14 +89,13 @@ public class SimulationRestDB {
         return simRep;
     }
 
-    public SimulationRep startSimulation(String simId, User vcellUser) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException{
+    public ArrayList<StatusMessage> startSimulation(String simId, User vcellUser) throws PermissionException, ObjectNotFoundException, DataAccessException, SQLException{
         KeyValue simKey = new KeyValue(simId);
         VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKey, vcellUser);
         SimulationRep simRep = getAndCheckSimRep(simId, vcellUser);
         try {
-            simulationDispatcherEngine.onStartRequest(vcSimulationIdentifier, vcellUser, simRep.getScanCount(),
+            return simulationDispatcherEngine.onStartRequest(vcSimulationIdentifier, vcellUser, simRep.getScanCount(),
                     simulationDatabaseDirect, null, null);
-            return simRep;
         } catch (VCMessagingException e) {
             throw new RuntimeException(e);
         }
@@ -107,5 +109,9 @@ public class SimulationRestDB {
         return simRep;
     }
 
-    public record SimulationStatus(){}
+    public SimulationStatusPersistent getSimulationStatus(String simID, User vcellUser) throws DataAccessException, SQLException {
+        getAndCheckSimRep(simID, vcellUser);
+        return databaseServerImpl.getSimulationStatus(new KeyValue(simID));
+    }
+
 }
