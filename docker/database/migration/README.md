@@ -2,57 +2,38 @@
 see https://www.siriusopensource.com/en-us/blog/oracle-postgresql-migration-using-ora2pg
 
 ```bash
-docker run  \
-    --platform linux/amd64 \
-    -it \
-    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration:/instance1/ora2pg \
+docker run --platform linux/amd64 -it \
+    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration:/base \
     georgmoser/ora2pg:24.3 \
-    ora2pg --project_base /instance1/ora2pg --init_project migv1
-    
-```
-
-
-```bash
-export ORACLE_USER=system
-docker run  \
-    --platform linux/amd64 \
-    -e ORACLE_USER=${ORACLE_USER} \
-    -e ORACLE_PWD=${ORACLE_SECRET} \
-    -it \
-    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/config:/config \
-    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/data:/data \
-    georgmoser/ora2pg:24.3 \
-    ora2pg --debug -c /config/ora2pg.conf > data/ora2pg.log
+    ora2pg --project_base /base --init_project migv1
 ```
 
 ```bash
-export ORACLE_USER=system
-export ORACLE_SECRET=secret
-docker run  \
-    --platform linux/amd64 \
-    -e ORACLE_USER=${ORACLE_USER} \
-    -e ORACLE_PWD=${ORACLE_SECRET} \
-    -it \
-    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/config:/config \
-    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/data:/data \
+docker run --platform linux/amd64 -it \
+    -w /base \
+    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/migv1:/base \
     georgmoser/ora2pg:24.3 \
-    ora2pg --debug -c /config/ora2pg.conf -t TEST > data/ora2pg_TEST.log
+    ora2pg --type show_report --estimate_cost --conf config/ora2pg_all.conf --basedir data --dump_as_html > ora2pg.html
 ```
 
 ```bash
-cat ../../../vcell-rest/src/main/resources/scripts/init.sql | grep "CREATE TABLE" | tr "(" " " | cut -d' ' -f3 >> config/tables_to_export.txt
+docker run --platform linux/amd64 -it \
+    -w /base \
+    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/migv1:/base \
+    georgmoser/ora2pg:24.3 /base/export_schema.sh
 ```
 
+### exporting data
+#### snapshot
+--scn    SCN : Allow to set the Oracle System Change Number (SCN) to use to export data. It will be used in the WHERE clause to get the data. It is used with action COPY or INSERT.
+
+
 ```bash
-docker run  \
-    --platform linux/amd64 \
-    -e ORACLE_USER=${ORACLE_USER} \
-    -e ORACLE_PWD=${ORACLE_SECRET} \
-    -it \
-    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/config:/config \
-    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/data:/data \
+
+docker run --platform linux/amd64 -it \
+    -w /base \
+    -v /Users/jimschaff/Documents/workspace/vcell/docker/database/migration/migv1:/base \
     georgmoser/ora2pg:24.3 \
-    ora2pg --debug -c /config/ora2pg.conf -t TABLE > data/ora2pg_TABLE.log
-    
+    ora2pg --type table --where "ROWNUM < 100" --conf config/ora2pg_all.conf --basedir data --dump_as_html > ora2pg.html
 ```
 
