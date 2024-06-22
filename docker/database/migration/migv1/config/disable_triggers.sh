@@ -1,3 +1,6 @@
+#!/bin/bash
+
+tables=(
 VC_USERINFO
 VC_GROUP
 VC_MODEL
@@ -76,3 +79,10 @@ VC_USERLOGININFO
 VC_METADATA
 VC_SIMDELFROMDISK
 VC_USERIDENTITY
+)
+
+# disable triggers for all tables in the database
+for table in "${tables[@]}"
+do
+  echo "ALTER TABLE $table DISABLE TRIGGER ALL;"
+done
