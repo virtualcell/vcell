@@ -2,10 +2,9 @@ package org.vcell.restq.apiclient;
 
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.modeldb.BioModelRep;
-import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimulationJobStatus;
-import cbit.vcell.server.SimulationStatusPersistent;
+import cbit.vcell.solver.server.SimulationMessagePersistent;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import io.quarkus.test.junit.QuarkusTest;
@@ -16,6 +15,9 @@ import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.SimulationResourceApi;
+import org.vcell.restclient.model.SchedulerStatus;
+import org.vcell.restclient.model.Status;
+import org.vcell.restq.Simulations.SimulationStatusPersistentRecord;
 import org.vcell.restq.Simulations.StatusMessage;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
@@ -29,6 +31,7 @@ import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 @QuarkusTest
 public class SimulationApiTest {
@@ -57,6 +60,7 @@ public class SimulationApiTest {
 
     private ApiClient aliceAPIClient;
     private ApiClient bobAPIClient;
+    private BioModelRep bioModelRep;
 
     @BeforeAll
     public static void setupConfig(){
@@ -85,46 +89,42 @@ public class SimulationApiTest {
     }
 
     @BeforeEach
-    public void createClients(){
+    public void createClients() throws ApiException, XmlParseException, DataAccessException, PropertyVetoException, IOException, SQLException {
         aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
         bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
+        TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
+
+        String testBioModel = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
+        String testBioModelID = bioModelRestDB.saveBioModel(TestEndpointUtils.administratorUser, testBioModel).toString();
+        bioModelRep = bioModelRestDB.getBioModelRep(new org.vcell.util.document.KeyValue(testBioModelID), TestEndpointUtils.administratorUser);
     }
 
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
         TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
+        bioModelRestDB.deleteBioModel(TestEndpointUtils.administratorUser, bioModelRep.getBmKey());
     }
 
 
 
     @Test
     public void testDBLayerStartStopAndStatus() throws ApiException, PropertyVetoException, XmlParseException, IOException, DataAccessException, SQLException, VCMessagingException {
-        TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
+        KeyValue simKey = bioModelRep.getSimKeyList()[0];
 
-        String testBioModel = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
-        String testBioModelID = bioModelRestDB.saveBioModel(TestEndpointUtils.administratorUser, testBioModel).toString();
-        BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new org.vcell.util.document.KeyValue(testBioModelID), TestEndpointUtils.administratorUser);
-        org.vcell.util.document.KeyValue simKey = bioModelRep.getSimKeyList()[0];
-
-        SimulationStatusPersistent statusPersistent = simulationRestDB.getSimulationStatus(simKey.toString(), TestEndpointUtils.administratorUser);
+        SimulationStatusPersistentRecord statusPersistent = simulationRestDB.getSimulationStatus(simKey.toString(), TestEndpointUtils.administratorUser);
         Assertions.assertNull(statusPersistent);
 
         ArrayList<StatusMessage> statusMessages = simulationRestDB.startSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
         StatusMessage statusMessage = statusMessages.get(0);
 
         Assertions.assertEquals(1, statusMessages.size());
-        Assertions.assertEquals(SimulationJobStatus.SchedulerStatus.WAITING, statusMessage.jobStatus().getSchedulerStatus());
+        Assertions.assertEquals(SimulationJobStatus.SchedulerStatus.WAITING, statusMessage.jobStatus().fieldSchedulerStatus());
         Assertions.assertEquals(TestEndpointUtils.administratorUser.getName(), statusMessage.userName());
-        Assertions.assertEquals(simKey.toString(), statusMessage.jobStatus().getVCSimulationIdentifier().getSimulationKey().toString());
-        statusPersistent = simulationRestDB.getSimulationStatus(simKey.toString(), TestEndpointUtils.administratorUser);
-        Assertions.assertEquals("waiting: too many jobs", statusPersistent.getStatusString());
+        Assertions.assertEquals(simKey.toString(), statusMessage.jobStatus().fieldVCSimID().getSimulationKey().toString());
 
-
-        SimulationRep simulationRep = simulationRestDB.stopSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
+        simulationRestDB.stopSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
         statusPersistent = simulationRestDB.getSimulationStatus(simKey.toString(), TestEndpointUtils.administratorUser);
-        Assertions.assertEquals("stopped", statusPersistent.getStatusString());
-        Assertions.assertEquals(simKey.toString(), simulationRep.getKey().toString());
-        Assertions.assertEquals(TestEndpointUtils.administratorUser, simulationRep.getOwner());
+        Assertions.assertEquals(SimulationStatusPersistentRecord.Status.STOPPED.statusDescription, statusPersistent.status().statusDescription);
     }
 
 
@@ -134,6 +134,25 @@ public class SimulationApiTest {
     // class should ensure this RPC actually fulfills on its promise. Don't need actual simulations in DB for this
     @Test
     public void testStartAndStop() throws Exception {
-        
+        KeyValue simKey = bioModelRep.getSimKeyList()[0];
+
+        SimulationResourceApi simulationResourceApi = new SimulationResourceApi(aliceAPIClient);
+        TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
+
+        List<org.vcell.restclient.model.StatusMessage> startStatus = simulationResourceApi.startSimulation(simKey.toString());
+        Assertions.assertEquals(1, startStatus.size());
+        Assertions.assertEquals(TestEndpointUtils.administratorUser.getName(), startStatus.get(0).getUserName());
+        Assertions.assertEquals(SchedulerStatus.WAITING, startStatus.get(0).getJobStatus().getFieldSchedulerStatus());
+
+        org.vcell.restclient.model.SimulationStatusPersistentRecord getStatus = simulationResourceApi.getSimulationStatus(simKey.toString());
+        Assertions.assertNotNull(getStatus);
+        Assertions.assertEquals(Status.WAITING, getStatus.getStatus());
+        Assertions.assertEquals(SimulationMessagePersistent.MESSAGE_JOB_WAITING.getDisplayMessage(), getStatus.getDetails());
+
+        List<org.vcell.restclient.model.StatusMessage> stopStatus = simulationResourceApi.stopSimulation(simKey.toString());
+        Assertions.assertEquals(1, stopStatus.size());
+        Assertions.assertEquals(TestEndpointUtils.administratorUser.getName(), stopStatus.get(0).getUserName());
+        Assertions.assertEquals(SchedulerStatus.STOPPED, stopStatus.get(0).getJobStatus().getFieldSchedulerStatus());
+
     }
 }

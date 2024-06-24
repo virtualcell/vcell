@@ -72,14 +72,14 @@ public class SimulationDispatcherEngine {
             if (lg.isWarnEnabled()) lg.warn("Bad simulation " + vcSimID);
             simJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null,
                     SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Failed to dispatch simulation: "+ ex.getMessage()), null, null);
-            status.add(new StatusMessage(simJobStatus, user.getName(), null, null));
+            status.add(new StatusMessage(SimulationJobStatusRecord.fromSimulationJobStatus(simJobStatus), user.getName(), null, null));
             return status;
         }
         if (simulationInfo == null) {
             if (lg.isWarnEnabled()) lg.warn("Can't start, simulation [" + vcSimID + "] doesn't exist in database");
             simJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null,
                     SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Can't start, simulation [" + vcSimID + "] doesn't exist"), null, null);
-            status.add(new StatusMessage(simJobStatus, user.getName(), null, null));
+            status.add(new StatusMessage(SimulationJobStatusRecord.fromSimulationJobStatus(simJobStatus), user.getName(), null, null));
             return status;
         }
 
@@ -87,7 +87,7 @@ public class SimulationDispatcherEngine {
             if (lg.isWarnEnabled()) lg.warn("Too many simulations (" + simulationScanCount + ") for parameter scan." + vcSimID);
             simJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null,
                     SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("Too many simulations (" + simulationScanCount + ") for parameter scan."), null, null);
-            status.add(new StatusMessage(simJobStatus, user.getName(), null, null));
+            status.add(new StatusMessage(SimulationJobStatusRecord.fromSimulationJobStatus(simJobStatus), user.getName(), null, null));
             return status;
         }
 
@@ -103,7 +103,7 @@ public class SimulationDispatcherEngine {
     }
 
 
-    public void onStopRequest(VCSimulationIdentifier vcSimID, User user, SimulationDatabase simulationDatabase, VCMessageSession session) throws DataAccessException, VCMessagingException, SQLException {
+    public ArrayList<StatusMessage> onStopRequest(VCSimulationIdentifier vcSimID, User user, SimulationDatabase simulationDatabase, VCMessageSession session) throws DataAccessException, VCMessagingException, SQLException {
         KeyValue simKey = vcSimID.getSimulationKey();
 
         SimulationJobStatus[] allActiveSimJobStatusArray = simulationDatabase.getActiveJobs(VCellServerID.getSystemServerID());
@@ -113,14 +113,16 @@ public class SimulationDispatcherEngine {
                 simJobStatusArray.add(activeSimJobStatus);
             }
         }
+        ArrayList<StatusMessage> stoppedSimulations = new ArrayList<>();
         for (SimulationJobStatus simJobStatus : simJobStatusArray){
             SimulationStateMachine simStateMachine = getSimulationStateMachine(simKey, simJobStatus.getJobIndex());
             try {
-                simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session);
+                stoppedSimulations.add(simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session));
             }catch (UpdateSynchronizationException e){
-                simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session);
+                stoppedSimulations.add(simStateMachine.onStopRequest(user, simJobStatus, simulationDatabase, session));
             }
         }
+        return stoppedSimulations;
     }
 
 

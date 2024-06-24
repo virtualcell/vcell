@@ -12,6 +12,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.restq.Simulations.SimulationStatusPersistentRecord;
 import org.vcell.restq.Simulations.StatusMessage;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -101,17 +102,16 @@ public class SimulationRestDB {
         }
     }
 
-    public SimulationRep stopSimulation(String simId, User vcellUser) throws PermissionException, DataAccessException, SQLException, VCMessagingException {
+    public ArrayList<StatusMessage> stopSimulation(String simId, User vcellUser) throws PermissionException, DataAccessException, SQLException, VCMessagingException {
         KeyValue simKey = new KeyValue(simId);
-        SimulationRep simRep = getAndCheckSimRep(simId, vcellUser);
+        getAndCheckSimRep(simId, vcellUser);
         VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKey, vcellUser);
-        simulationDispatcherEngine.onStopRequest(vcSimulationIdentifier, vcellUser, simulationDatabaseDirect, null);
-        return simRep;
+        return simulationDispatcherEngine.onStopRequest(vcSimulationIdentifier, vcellUser, simulationDatabaseDirect, null);
     }
 
-    public SimulationStatusPersistent getSimulationStatus(String simID, User vcellUser) throws DataAccessException, SQLException {
+    public SimulationStatusPersistentRecord getSimulationStatus(String simID, User vcellUser) throws DataAccessException, SQLException {
         getAndCheckSimRep(simID, vcellUser);
-        return databaseServerImpl.getSimulationStatus(new KeyValue(simID));
+        return SimulationStatusPersistentRecord.fromSimulationStatusPersistent(databaseServerImpl.getSimulationStatus(new KeyValue(simID)));
     }
 
 }

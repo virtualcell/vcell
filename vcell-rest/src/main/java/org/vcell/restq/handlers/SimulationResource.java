@@ -1,27 +1,21 @@
 package org.vcell.restq.handlers;
 
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.xml.XmlParseException;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.vcell.restq.Simulations.SimulationStatusPersistentRecord;
+import org.vcell.restq.Simulations.StatusMessage;
 import org.vcell.restq.db.SimulationRestDB;
 import org.vcell.restq.db.UserRestDB;
-import org.vcell.restq.models.simulation.OverrideRepresentationGenerator;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
-import java.beans.PropertyVetoException;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.ArrayList;
 
 @Path("/api/v1/Simulation")
 public class SimulationResource {
@@ -43,10 +37,11 @@ public class SimulationResource {
     @Path("/{simID}/startSimulation")
     @RolesAllowed("user")
     @Operation(operationId = "startSimulation", summary = "Start a simulation.")
-    public void startSimulation(@PathParam("simID") String simID) {
+    @Produces(MediaType.APPLICATION_JSON)
+    public ArrayList<StatusMessage> startSimulation(@PathParam("simID") String simID) {
         try {
             User user = userRestDB.getUserFromIdentity(securityIdentity);
-            simulationRestDB.startSimulation(simID, user);
+            return simulationRestDB.startSimulation(simID, user);
         } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
@@ -56,10 +51,10 @@ public class SimulationResource {
     @Path("/{simID}/stopSimulation")
     @RolesAllowed("user")
     @Operation(operationId = "stopSimulation", summary = "Stop a simulation.")
-    public void stopSimulation(@PathParam("simID") String simID) {
+    public ArrayList<StatusMessage> stopSimulation(@PathParam("simID") String simID) {
         try {
             User user = userRestDB.getUserFromIdentity(securityIdentity);
-            simulationRestDB.stopSimulation(simID, user);
+            return simulationRestDB.stopSimulation(simID, user);
         } catch (DataAccessException | SQLException | VCMessagingException e) {
             throw new RuntimeException(e);
         }
@@ -69,10 +64,11 @@ public class SimulationResource {
     @Path("/{simID}/simulationStatus")
     @RolesAllowed("user")
     @Operation(operationId = "getSimulationStatus", summary = "Get the status of simulation running")
-    public SimulationRestDB.SimulationStatus getSimulationStatus(@PathParam("simID") String simID){
+    public SimulationStatusPersistentRecord getSimulationStatus(@PathParam("simID") String simID){
         try {
             User user = userRestDB.getUserFromIdentity(securityIdentity);
-        } catch (DataAccessException e) {
+            return simulationRestDB.getSimulationStatus(simID, user);
+        } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
     }

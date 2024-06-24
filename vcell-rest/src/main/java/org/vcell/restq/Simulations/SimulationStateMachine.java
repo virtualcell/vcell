@@ -22,6 +22,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -353,13 +354,14 @@ public class SimulationStateMachine {
             lg.error(user + " is not authorized to start simulation (key=" + simKey + ")");
             SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null,
                     SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to start this simulation!"), null, null);
-            StatusMessage message = new StatusMessage(simulationJobStatus, user.getName(), null, null);
+            StatusMessage message = new StatusMessage(SimulationJobStatusRecord.fromSimulationJobStatus(simulationJobStatus), user.getName(), null, null);
             VCMongoMessage.sendInfo("onStartRequest("+vcSimID.getID()+") ignoring start simulation request - wrong user): simID="+vcSimID);
             return message;
         }
 
         SimulationJobStatus newJobStatus = saveSimulationStartRequest(vcSimID, jobIndex, simulationDatabase);
-        return new StatusMessage(newJobStatus, user.getName(), null, null);
+
+        return new StatusMessage(SimulationJobStatusRecord.fromSimulationJobStatus(newJobStatus), user.getName(), null, null);
     }
 
     public static SimulationJobStatus saveSimulationStartRequest(VCSimulationIdentifier vcSimID, int jobIndex, SimulationDatabase simulationDatabase) throws DataAccessException, SQLException {
@@ -486,16 +488,16 @@ public class SimulationStateMachine {
 
     }
 
-    public synchronized void onStopRequest(User user, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, DataAccessException, SQLException {
+    public synchronized StatusMessage onStopRequest(User user, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, DataAccessException, SQLException {
         updateSolverProcessTimestamp();
 
         if (!user.equals(simJobStatus.getVCSimulationIdentifier().getOwner())) {
             lg.error(user + " is not authorized to stop simulation (key=" + simKey + ")");
-            cbit.vcell.message.messages.StatusMessage message = new cbit.vcell.message.messages.StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), simJobStatus.getVCSimulationIdentifier(), 0, null,
-                    SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to stop this simulation!"), null, null), user.getName(), null, null);
-            message.sendToClient(session);
+            SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), simJobStatus.getVCSimulationIdentifier(), 0, null,
+                    SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to stop this simulation!"), null, null);
+
             VCMongoMessage.sendInfo("onStopRequest("+simJobStatus.getVCSimulationIdentifier()+") ignoring stop simulation request - wrong user)");
-            return;
+            return new StatusMessage(SimulationJobStatusRecord.fromSimulationJobStatus(simulationJobStatus), user.getName(), null, null);
         }
 
         // stop latest task if active
@@ -512,24 +514,17 @@ public class SimulationStateMachine {
             // send stopSimulation to serviceControl topic
             //
             if (lg.isTraceEnabled()) lg.trace("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
-//            VCMessage msg = session.createMessage();
-//            msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
-//            msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
-//            msg.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, jobIndex);
-//            msg.setIntProperty(MessageConstants.TASKID_PROPERTY, taskID);
-//            msg.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, user.getName());
-            if (simExeStatus.getHtcJobID()!=null){
-//                msg.setStringProperty(MessageConstants.HTCJOBID_PROPERTY, simExeStatus.getHtcJobID().toDatabase());
-            }
-//            session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);
+            SimulationJobStatusRecord simulationJobStatusRecord = new SimulationJobStatusRecord(
+                    null, new VCSimulationIdentifier(simKey, user), simJobStatus.getSubmitDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                    SimulationJobStatus.SchedulerStatus.STOPPED, simJobStatus.getSimulationMessage(), taskID,
+                    VCellServerID.getSystemServerID().toString(), jobIndex, simExeStatus, simQueueEntryStatus
+            );
 
             simulationDatabase.updateSimulationJobStatus(newJobStatus);
-//			addStateMachineTransition(new StateMachineTransition(new StopStateMachineEvent(taskID), simJobStatus, newJobStatus));
 
-            // update client
-            cbit.vcell.message.messages.StatusMessage message = new cbit.vcell.message.messages.StatusMessage(newJobStatus, user.getName(), null, null);
-//            message.sendToClient(session);
+            return new StatusMessage(simulationJobStatusRecord, user.getName(), null, null);
         }
+        return null;
     }
 
     public synchronized void onSystemAbort(SimulationJobStatus oldJobStatus, String failureMessage, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, UpdateSynchronizationException, DataAccessException, SQLException {
