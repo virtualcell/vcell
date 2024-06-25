@@ -66,6 +66,11 @@
       <artifactId>quarkus-jdbc-oracle</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkiverse.artemis</groupId>
+      <artifactId>quarkus-artemis-jms</artifactId>
+      <version>${quarkus-artemis-jms.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>${postgresql.version}</version>
@@ -173,6 +178,10 @@
         <exclusion>
           <groupId>org.apache.logging.log4j</groupId>
           <artifactId>log4j-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.activemq</groupId>
+          <artifactId>activemq-client</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

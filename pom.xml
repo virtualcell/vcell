@@ -168,6 +168,7 @@
 		<opencsv.version>5.7.1</opencsv.version>
 		<picocli.version>4.6.3</picocli.version>
 		<postgresql.version>42.6.0</postgresql.version>
+		<quarkus-artemis-jms.version>3.3.0</quarkus-artemis-jms.version>
 		<restlet-version>2.4.3</restlet-version>
 		<scifio-bf-compat.version>4.1.0</scifio-bf-compat.version>
 		<sesame-model.version>2.9.0</sesame-model.version>
