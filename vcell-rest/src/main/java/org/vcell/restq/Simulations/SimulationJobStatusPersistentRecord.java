@@ -6,12 +6,13 @@ import cbit.vcell.server.SimulationQueueEntryStatusPersistent;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
 
+import java.time.Instant;
 import java.util.Date;
 
 public record SimulationJobStatusPersistentRecord(
-        Date fieldTimeDataStamp,
+        Instant fieldTimeDataStamp,
         VCSimulationIdentifier fieldVCSimID,
-        Date fieldSubmitDate,
+        Instant fieldSubmitDate,
         SimulationJobStatusPersistent.SchedulerStatus fieldSchedulerStatus,
         SimulationMessagePersistent fieldSimulationMessage,
         int fieldTaskID,
@@ -23,9 +24,9 @@ public record SimulationJobStatusPersistentRecord(
 
     public static SimulationJobStatusPersistentRecord fromSimulationJobStatusPersistent(SimulationJobStatusPersistent s){
         return new SimulationJobStatusPersistentRecord(
-                s.getTimeDateStamp(),
+                s.getTimeDateStamp().toInstant(),
                 s.getVCSimulationIdentifier(),
-                s.getSubmitDate(),
+                s.getSubmitDate().toInstant(),
                 s.getSchedulerStatus(),
                 s.getSimulationMessage(),
                 s.getTaskID(),

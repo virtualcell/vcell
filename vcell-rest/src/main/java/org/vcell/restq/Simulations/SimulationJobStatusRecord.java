@@ -6,35 +6,35 @@ import cbit.vcell.server.SimulationQueueEntryStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 
-import java.time.LocalTime;
+import java.time.Instant;
 import java.time.ZoneId;
 
 public record SimulationJobStatusRecord(
-        LocalTime fieldTimeDataStamp,
+        Instant fieldTimeDataStamp,
         VCSimulationIdentifier fieldVCSimID,
-        LocalTime fieldSubmitDate,
+        Instant fieldSubmitDate,
         SimulationJobStatus.SchedulerStatus fieldSchedulerStatus,
         SimulationMessage fieldSimulationMessage,
         int fieldTaskID,
         String fieldServerID,
         int fieldJobIndex,
-        SimulationExecutionStatus fieldSimulationExecutionStatus,
-        SimulationQueueEntryStatus fieldSimulationQueueEntryStatus
+        SimulationExecutionStatusRecord fieldSimulationExecutionStatus,
+        SimulationQueueEntryStatusRecord fieldSimulationQueueEntryStatus
 ) {
 
     public static SimulationJobStatusRecord fromSimulationJobStatus(SimulationJobStatus s) {
         if (s == null) {return null;}
         return new SimulationJobStatusRecord(
-                s.getTimeDateStamp() != null ? s.getTimeDateStamp().toInstant().atZone(ZoneId.systemDefault()).toLocalTime(): null,
+                s.getTimeDateStamp() != null ? s.getTimeDateStamp().toInstant(): null,
                 s.getVCSimulationIdentifier(),
-                s.getSubmitDate() != null ? s.getSubmitDate().toInstant().atZone(ZoneId.systemDefault()).toLocalTime(): null,
+                s.getSubmitDate() != null ? s.getSubmitDate().toInstant(): null,
                 s.getSchedulerStatus(),
                 s.getSimulationMessage(),
                 s.getTaskID(),
                 s.getServerID().toString(),
                 s.getJobIndex(),
-                s.getSimulationExecutionStatus(),
-                s.getSimulationQueueEntryStatus()
+                SimulationExecutionStatusRecord.fromSimulationExecutionStatus(s.getSimulationExecutionStatus()),
+                SimulationQueueEntryStatusRecord.fromStatusRecord(s.getSimulationQueueEntryStatus())
         );
     }
 

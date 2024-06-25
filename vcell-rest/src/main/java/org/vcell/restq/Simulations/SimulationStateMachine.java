@@ -515,9 +515,9 @@ public class SimulationStateMachine {
             //
             if (lg.isTraceEnabled()) lg.trace("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
             SimulationJobStatusRecord simulationJobStatusRecord = new SimulationJobStatusRecord(
-                    null, new VCSimulationIdentifier(simKey, user), simJobStatus.getSubmitDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                    null, new VCSimulationIdentifier(simKey, user), simJobStatus.getSubmitDate().toInstant(),
                     SimulationJobStatus.SchedulerStatus.STOPPED, simJobStatus.getSimulationMessage(), taskID,
-                    VCellServerID.getSystemServerID().toString(), jobIndex, simExeStatus, simQueueEntryStatus
+                    VCellServerID.getSystemServerID().toString(), jobIndex, SimulationExecutionStatusRecord.fromSimulationExecutionStatus(simExeStatus), SimulationQueueEntryStatusRecord.fromStatusRecord(simQueueEntryStatus)
             );
 
             simulationDatabase.updateSimulationJobStatus(newJobStatus);

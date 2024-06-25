@@ -46,6 +46,10 @@ public class SimulationStatusPersistent implements java.io.Serializable {
 	private boolean hasData = false;
 	private SimulationJobStatusPersistent[] jobStatuses = null;
 
+	public HashMap<Integer, Double> getProgressHash() {
+		return progressHash;
+	}
+
 /**
  * Insert the method's description here.
  * Creation date: (6/22/2001 1:28:48 PM)
