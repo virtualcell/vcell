@@ -37,7 +37,6 @@ public class BioModelResource {
     @Path("{bioModelID}")
     @Operation(operationId = "getBiomodelById", summary = "Get BioModel information in JSON format by ID.")
     @Produces(MediaType.APPLICATION_JSON)
-    @RolesAllowed("user")
     public BioModel getBioModelInfo(@PathParam("bioModelID") String bioModelID) throws SQLException, DataAccessException, ExpressionException {
         User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
         if (vcellUser == null) {
