@@ -24,9 +24,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import org.vcell.restclient.model.KeyValue;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -34,149 +33,154 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * User
  */
 @JsonPropertyOrder({
-  User.JSON_PROPERTY_PRINCIPAL_NAME,
-  User.JSON_PROPERTY_ROLES,
-  User.JSON_PROPERTY_ATTRIBUTES,
-  User.JSON_PROPERTY_CREDENTIALS
+  User.JSON_PROPERTY_USER_NAME,
+  User.JSON_PROPERTY_KEY,
+  User.JSON_PROPERTY_I_D,
+  User.JSON_PROPERTY_NAME,
+  User.JSON_PROPERTY_TEST_ACCOUNT
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class User {
-  public static final String JSON_PROPERTY_PRINCIPAL_NAME = "principal_name";
-  private String principalName;
+  public static final String JSON_PROPERTY_USER_NAME = "userName";
+  private String userName;
 
-  public static final String JSON_PROPERTY_ROLES = "roles";
-  private List<String> roles;
+  public static final String JSON_PROPERTY_KEY = "key";
+  private KeyValue key;
 
-  public static final String JSON_PROPERTY_ATTRIBUTES = "attributes";
-  private List<String> attributes;
+  public static final String JSON_PROPERTY_I_D = "iD";
+  private KeyValue iD;
 
-  public static final String JSON_PROPERTY_CREDENTIALS = "credentials";
-  private List<String> credentials;
+  public static final String JSON_PROPERTY_NAME = "name";
+  private String name;
+
+  public static final String JSON_PROPERTY_TEST_ACCOUNT = "testAccount";
+  private Boolean testAccount;
 
   public User() { 
   }
 
-  public User principalName(String principalName) {
-    this.principalName = principalName;
+  public User userName(String userName) {
+    this.userName = userName;
     return this;
   }
 
    /**
-   * Get principalName
-   * @return principalName
+   * Get userName
+   * @return userName
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PRINCIPAL_NAME)
+  @JsonProperty(JSON_PROPERTY_USER_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getPrincipalName() {
-    return principalName;
+  public String getUserName() {
+    return userName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PRINCIPAL_NAME)
+  @JsonProperty(JSON_PROPERTY_USER_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPrincipalName(String principalName) {
-    this.principalName = principalName;
+  public void setUserName(String userName) {
+    this.userName = userName;
   }
 
 
-  public User roles(List<String> roles) {
-    this.roles = roles;
-    return this;
-  }
-
-  public User addRolesItem(String rolesItem) {
-    if (this.roles == null) {
-      this.roles = new ArrayList<>();
-    }
-    this.roles.add(rolesItem);
+  public User key(KeyValue key) {
+    this.key = key;
     return this;
   }
 
    /**
-   * Get roles
-   * @return roles
+   * Get key
+   * @return key
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ROLES)
+  @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<String> getRoles() {
-    return roles;
+  public KeyValue getKey() {
+    return key;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ROLES)
+  @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setRoles(List<String> roles) {
-    this.roles = roles;
+  public void setKey(KeyValue key) {
+    this.key = key;
   }
 
 
-  public User attributes(List<String> attributes) {
-    this.attributes = attributes;
-    return this;
-  }
-
-  public User addAttributesItem(String attributesItem) {
-    if (this.attributes == null) {
-      this.attributes = new ArrayList<>();
-    }
-    this.attributes.add(attributesItem);
+  public User iD(KeyValue iD) {
+    this.iD = iD;
     return this;
   }
 
    /**
-   * Get attributes
-   * @return attributes
+   * Get iD
+   * @return iD
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ATTRIBUTES)
+  @JsonProperty(JSON_PROPERTY_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<String> getAttributes() {
-    return attributes;
+  public KeyValue getiD() {
+    return iD;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ATTRIBUTES)
+  @JsonProperty(JSON_PROPERTY_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setAttributes(List<String> attributes) {
-    this.attributes = attributes;
+  public void setiD(KeyValue iD) {
+    this.iD = iD;
   }
 
 
-  public User credentials(List<String> credentials) {
-    this.credentials = credentials;
-    return this;
-  }
-
-  public User addCredentialsItem(String credentialsItem) {
-    if (this.credentials == null) {
-      this.credentials = new ArrayList<>();
-    }
-    this.credentials.add(credentialsItem);
+  public User name(String name) {
+    this.name = name;
     return this;
   }
 
    /**
-   * Get credentials
-   * @return credentials
+   * Get name
+   * @return name
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_CREDENTIALS)
+  @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<String> getCredentials() {
-    return credentials;
+  public String getName() {
+    return name;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_CREDENTIALS)
+  @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setCredentials(List<String> credentials) {
-    this.credentials = credentials;
+  public void setName(String name) {
+    this.name = name;
+  }
+
+
+  public User testAccount(Boolean testAccount) {
+    this.testAccount = testAccount;
+    return this;
+  }
+
+   /**
+   * Get testAccount
+   * @return testAccount
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_TEST_ACCOUNT)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public Boolean getTestAccount() {
+    return testAccount;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_TEST_ACCOUNT)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setTestAccount(Boolean testAccount) {
+    this.testAccount = testAccount;
   }
 
 
@@ -192,25 +196,27 @@ public class User {
       return false;
     }
     User user = (User) o;
-    return Objects.equals(this.principalName, user.principalName) &&
-        Objects.equals(this.roles, user.roles) &&
-        Objects.equals(this.attributes, user.attributes) &&
-        Objects.equals(this.credentials, user.credentials);
+    return Objects.equals(this.userName, user.userName) &&
+        Objects.equals(this.key, user.key) &&
+        Objects.equals(this.iD, user.iD) &&
+        Objects.equals(this.name, user.name) &&
+        Objects.equals(this.testAccount, user.testAccount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(principalName, roles, attributes, credentials);
+    return Objects.hash(userName, key, iD, name, testAccount);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class User {\n");
-    sb.append("    principalName: ").append(toIndentedString(principalName)).append("\n");
-    sb.append("    roles: ").append(toIndentedString(roles)).append("\n");
-    sb.append("    attributes: ").append(toIndentedString(attributes)).append("\n");
-    sb.append("    credentials: ").append(toIndentedString(credentials)).append("\n");
+    sb.append("    userName: ").append(toIndentedString(userName)).append("\n");
+    sb.append("    key: ").append(toIndentedString(key)).append("\n");
+    sb.append("    iD: ").append(toIndentedString(iD)).append("\n");
+    sb.append("    name: ").append(toIndentedString(name)).append("\n");
+    sb.append("    testAccount: ").append(toIndentedString(testAccount)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -258,36 +264,29 @@ public class User {
 
     StringJoiner joiner = new StringJoiner("&");
 
-    // add `principal_name` to the URL query string
-    if (getPrincipalName() != null) {
-      joiner.add(String.format("%sprincipal_name%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPrincipalName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `userName` to the URL query string
+    if (getUserName() != null) {
+      joiner.add(String.format("%suserName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getUserName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `roles` to the URL query string
-    if (getRoles() != null) {
-      for (int i = 0; i < getRoles().size(); i++) {
-        joiner.add(String.format("%sroles%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getRoles().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
+    // add `key` to the URL query string
+    if (getKey() != null) {
+      joiner.add(getKey().toUrlQueryString(prefix + "key" + suffix));
     }
 
-    // add `attributes` to the URL query string
-    if (getAttributes() != null) {
-      for (int i = 0; i < getAttributes().size(); i++) {
-        joiner.add(String.format("%sattributes%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getAttributes().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
+    // add `iD` to the URL query string
+    if (getiD() != null) {
+      joiner.add(getiD().toUrlQueryString(prefix + "iD" + suffix));
     }
 
-    // add `credentials` to the URL query string
-    if (getCredentials() != null) {
-      for (int i = 0; i < getCredentials().size(); i++) {
-        joiner.add(String.format("%scredentials%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getCredentials().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
+    // add `name` to the URL query string
+    if (getName() != null) {
+      joiner.add(String.format("%sname%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `testAccount` to the URL query string
+    if (getTestAccount() != null) {
+      joiner.add(String.format("%stestAccount%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getTestAccount()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

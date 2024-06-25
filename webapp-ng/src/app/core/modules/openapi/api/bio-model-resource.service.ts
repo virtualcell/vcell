@@ -167,6 +167,12 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
 
         let localVarHeaders = this.defaultHeaders;
 
+        let localVarCredential: string | undefined;
+        // authentication (openId) required
+        localVarCredential = this.configuration.lookupCredential('openId');
+        if (localVarCredential) {
+        }
+
         let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
         if (localVarHttpHeaderAcceptSelected === undefined) {
             // to determine the Accept header
@@ -221,6 +227,12 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
     public uploadBioModel(body?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
+
+        let localVarCredential: string | undefined;
+        // authentication (openId) required
+        localVarCredential = this.configuration.lookupCredential('openId');
+        if (localVarCredential) {
+        }
 
         let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
         if (localVarHttpHeaderAcceptSelected === undefined) {

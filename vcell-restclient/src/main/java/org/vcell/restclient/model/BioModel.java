@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.vcell.restclient.model.Simulation;
+import org.vcell.restclient.model.KeyValue;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -45,7 +45,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   BioModel.JSON_PROPERTY_PHYS_MODEL_KEY,
   BioModel.JSON_PROPERTY_OWNER_NAME,
   BioModel.JSON_PROPERTY_OWNER_KEY,
-  BioModel.JSON_PROPERTY_SIMULATIONS,
+  BioModel.JSON_PROPERTY_SIMULATION_KEY_LIST,
   BioModel.JSON_PROPERTY_APPLICATIONS
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
@@ -80,8 +80,8 @@ public class BioModel {
   public static final String JSON_PROPERTY_OWNER_KEY = "ownerKey";
   private String ownerKey;
 
-  public static final String JSON_PROPERTY_SIMULATIONS = "simulations";
-  private List<Simulation> simulations;
+  public static final String JSON_PROPERTY_SIMULATION_KEY_LIST = "simulationKeyList";
+  private List<KeyValue> simulationKeyList;
 
   public static final String JSON_PROPERTY_APPLICATIONS = "applications";
   private List<Object> applications;
@@ -347,36 +347,36 @@ public class BioModel {
   }
 
 
-  public BioModel simulations(List<Simulation> simulations) {
-    this.simulations = simulations;
+  public BioModel simulationKeyList(List<KeyValue> simulationKeyList) {
+    this.simulationKeyList = simulationKeyList;
     return this;
   }
 
-  public BioModel addSimulationsItem(Simulation simulationsItem) {
-    if (this.simulations == null) {
-      this.simulations = new ArrayList<>();
+  public BioModel addSimulationKeyListItem(KeyValue simulationKeyListItem) {
+    if (this.simulationKeyList == null) {
+      this.simulationKeyList = new ArrayList<>();
     }
-    this.simulations.add(simulationsItem);
+    this.simulationKeyList.add(simulationKeyListItem);
     return this;
   }
 
    /**
-   * Get simulations
-   * @return simulations
+   * Get simulationKeyList
+   * @return simulationKeyList
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATIONS)
+  @JsonProperty(JSON_PROPERTY_SIMULATION_KEY_LIST)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<Simulation> getSimulations() {
-    return simulations;
+  public List<KeyValue> getSimulationKeyList() {
+    return simulationKeyList;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATIONS)
+  @JsonProperty(JSON_PROPERTY_SIMULATION_KEY_LIST)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulations(List<Simulation> simulations) {
-    this.simulations = simulations;
+  public void setSimulationKeyList(List<KeyValue> simulationKeyList) {
+    this.simulationKeyList = simulationKeyList;
   }
 
 
@@ -435,13 +435,13 @@ public class BioModel {
         Objects.equals(this.physModelKey, bioModel.physModelKey) &&
         Objects.equals(this.ownerName, bioModel.ownerName) &&
         Objects.equals(this.ownerKey, bioModel.ownerKey) &&
-        Objects.equals(this.simulations, bioModel.simulations) &&
+        Objects.equals(this.simulationKeyList, bioModel.simulationKeyList) &&
         Objects.equals(this.applications, bioModel.applications);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(bmKey, name, privacy, groupUsers, savedDate, annot, branchID, physModelKey, ownerName, ownerKey, simulations, applications);
+    return Objects.hash(bmKey, name, privacy, groupUsers, savedDate, annot, branchID, physModelKey, ownerName, ownerKey, simulationKeyList, applications);
   }
 
   @Override
@@ -458,7 +458,7 @@ public class BioModel {
     sb.append("    physModelKey: ").append(toIndentedString(physModelKey)).append("\n");
     sb.append("    ownerName: ").append(toIndentedString(ownerName)).append("\n");
     sb.append("    ownerKey: ").append(toIndentedString(ownerKey)).append("\n");
-    sb.append("    simulations: ").append(toIndentedString(simulations)).append("\n");
+    sb.append("    simulationKeyList: ").append(toIndentedString(simulationKeyList)).append("\n");
     sb.append("    applications: ").append(toIndentedString(applications)).append("\n");
     sb.append("}");
     return sb.toString();
@@ -561,11 +561,11 @@ public class BioModel {
       joiner.add(String.format("%sownerKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getOwnerKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `simulations` to the URL query string
-    if (getSimulations() != null) {
-      for (int i = 0; i < getSimulations().size(); i++) {
-        if (getSimulations().get(i) != null) {
-          joiner.add(getSimulations().get(i).toUrlQueryString(String.format("%ssimulations%s%s", prefix, suffix,
+    // add `simulationKeyList` to the URL query string
+    if (getSimulationKeyList() != null) {
+      for (int i = 0; i < getSimulationKeyList().size(); i++) {
+        if (getSimulationKeyList().get(i) != null) {
+          joiner.add(getSimulationKeyList().get(i).toUrlQueryString(String.format("%ssimulationKeyList%s%s", prefix, suffix,
           "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
         }
       }

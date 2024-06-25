@@ -154,6 +154,7 @@ Get BioModel information in JSON format by ID.
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.BioModelResourceApi;
 
@@ -161,6 +162,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -192,7 +194,7 @@ public class Example {
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -203,6 +205,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## getBiomodelByIdWithHttpInfo
 
@@ -218,6 +222,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.BioModelResourceApi;
 
@@ -225,6 +230,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -258,7 +264,7 @@ ApiResponse<[**BioModel**](BioModel.md)>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -269,6 +275,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## uploadBioModel
@@ -284,6 +292,7 @@ Upload the BioModel to VCell database. Returns BioModel ID.
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.BioModelResourceApi;
 
@@ -291,6 +300,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String body = "body_example"; // String | 
@@ -322,7 +332,7 @@ public class Example {
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -333,6 +343,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## uploadBioModelWithHttpInfo
 
@@ -348,6 +360,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.BioModelResourceApi;
 
@@ -355,6 +368,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String body = "body_example"; // String | 
@@ -388,7 +402,7 @@ ApiResponse<**String**>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -399,4 +413,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 

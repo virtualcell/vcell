@@ -22,6 +22,7 @@ from vcell_client.api.admin_resource_api import AdminResourceApi
 from vcell_client.api.bio_model_resource_api import BioModelResourceApi
 from vcell_client.api.hello_world_api import HelloWorldApi
 from vcell_client.api.publication_resource_api import PublicationResourceApi
+from vcell_client.api.simulation_resource_api import SimulationResourceApi
 from vcell_client.api.users_resource_api import UsersResourceApi
 
 # import ApiClient
@@ -37,13 +38,27 @@ from vcell_client.exceptions import ApiException
 
 # import models into sdk package
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
+from vcell_client.models.batch_system_type import BatchSystemType
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.biomodel_ref import BiomodelRef
+from vcell_client.models.detailed_state import DetailedState
 from vcell_client.models.hello_world_message import HelloWorldMessage
+from vcell_client.models.htc_job_id import HtcJobID
 from vcell_client.models.identity import Identity
+from vcell_client.models.key_value import KeyValue
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.publication import Publication
-from vcell_client.models.simulation import Simulation
+from vcell_client.models.scheduler_status import SchedulerStatus
+from vcell_client.models.simulation_execution_status_record import SimulationExecutionStatusRecord
+from vcell_client.models.simulation_job_status_record import SimulationJobStatusRecord
+from vcell_client.models.simulation_message import SimulationMessage
+from vcell_client.models.simulation_queue_entry_status_record import SimulationQueueEntryStatusRecord
+from vcell_client.models.simulation_queue_id import SimulationQueueID
+from vcell_client.models.simulation_status_persistent_record import SimulationStatusPersistentRecord
+from vcell_client.models.status import Status
+from vcell_client.models.status_message import StatusMessage
+from vcell_client.models.user import User
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 from vcell_client.models.user_registration_info import UserRegistrationInfo
+from vcell_client.models.vc_simulation_identifier import VCSimulationIdentifier
