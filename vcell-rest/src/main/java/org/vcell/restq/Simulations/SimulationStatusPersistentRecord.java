@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 public record SimulationStatusPersistentRecord(
         Status status,
-        HashMap<Integer, Double> progressHash,
         String details,
         boolean hasData
 ) {
@@ -51,7 +50,6 @@ public record SimulationStatusPersistentRecord(
         if (s == null) return null;
         return new SimulationStatusPersistentRecord(
                 Status.statusFromString(s.getStatusString()),
-                s.getProgressHash(),
                 s.getDetails(),
                 s.getHasData()
         );
