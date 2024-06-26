@@ -1,4 +1,4 @@
-package org.vcell.restq.handlers;
+package org.vcell.restq.Simulations;
 
 import cbit.vcell.message.VCMessagingException;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -7,9 +7,8 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.vcell.restq.Simulations.SimulationStatusPersistentRecord;
-import org.vcell.restq.Simulations.StatusMessage;
-import org.vcell.restq.db.SimulationRestDB;
+import org.vcell.restq.Simulations.DTO.SimulationStatus;
+import org.vcell.restq.Simulations.DTO.StatusMessage;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
@@ -64,8 +63,8 @@ public class SimulationResource {
     @Path("/{simID}/simulationStatus")
     @RolesAllowed("user")
     @Operation(operationId = "getSimulationStatus", summary = "Get the status of simulation running")
-    public SimulationStatusPersistentRecord getSimulationStatus(@PathParam("simID") String simID,
-                                    @QueryParam("bioModelID") String bioModelID, @QueryParam("mathModelID") String mathModelID){
+    public SimulationStatus getSimulationStatus(@PathParam("simID") String simID,
+                                                @QueryParam("bioModelID") String bioModelID, @QueryParam("mathModelID") String mathModelID){
         try {
             User user = userRestDB.getUserFromIdentity(securityIdentity);
             return simulationRestDB.getBioModelSimulationStatus(simID, bioModelID, user);
