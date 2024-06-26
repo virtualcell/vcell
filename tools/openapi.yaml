@@ -27,6 +27,14 @@ paths:
         required: true
         schema:
           type: string
+      - name: bioModelID
+        in: query
+        schema:
+          type: string
+      - name: mathModelID
+        in: query
+        schema:
+          type: string
       responses:
         "200":
           description: OK

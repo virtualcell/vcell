@@ -34,7 +34,6 @@ docs/UsersResourceApi.md
 docs/VCSimulationIdentifier.md
 pyproject.toml
 test/__init__.py
-test/test_simulation_execution_status_record.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py

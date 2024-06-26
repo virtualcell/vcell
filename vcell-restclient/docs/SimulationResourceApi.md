@@ -15,7 +15,7 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 ## getSimulationStatus
 
-> SimulationStatusPersistentRecord getSimulationStatus(simID)
+> SimulationStatusPersistentRecord getSimulationStatus(simID, bioModelID, mathModelID)
 
 Get the status of simulation running
 
@@ -38,8 +38,10 @@ public class Example {
 
         SimulationResourceApi apiInstance = new SimulationResourceApi(defaultClient);
         String simID = "simID_example"; // String | 
+        String bioModelID = "bioModelID_example"; // String | 
+        String mathModelID = "mathModelID_example"; // String | 
         try {
-            SimulationStatusPersistentRecord result = apiInstance.getSimulationStatus(simID);
+            SimulationStatusPersistentRecord result = apiInstance.getSimulationStatus(simID, bioModelID, mathModelID);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling SimulationResourceApi#getSimulationStatus");
@@ -58,6 +60,8 @@ public class Example {
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **simID** | **String**|  | |
+| **bioModelID** | **String**|  | [optional] |
+| **mathModelID** | **String**|  | [optional] |
 
 ### Return type
 
@@ -82,7 +86,7 @@ public class Example {
 
 ## getSimulationStatusWithHttpInfo
 
-> ApiResponse<SimulationStatusPersistentRecord> getSimulationStatus getSimulationStatusWithHttpInfo(simID)
+> ApiResponse<SimulationStatusPersistentRecord> getSimulationStatus getSimulationStatusWithHttpInfo(simID, bioModelID, mathModelID)
 
 Get the status of simulation running
 
@@ -106,8 +110,10 @@ public class Example {
 
         SimulationResourceApi apiInstance = new SimulationResourceApi(defaultClient);
         String simID = "simID_example"; // String | 
+        String bioModelID = "bioModelID_example"; // String | 
+        String mathModelID = "mathModelID_example"; // String | 
         try {
-            ApiResponse<SimulationStatusPersistentRecord> response = apiInstance.getSimulationStatusWithHttpInfo(simID);
+            ApiResponse<SimulationStatusPersistentRecord> response = apiInstance.getSimulationStatusWithHttpInfo(simID, bioModelID, mathModelID);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -128,6 +134,8 @@ public class Example {
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **simID** | **String**|  | |
+| **bioModelID** | **String**|  | [optional] |
+| **mathModelID** | **String**|  | [optional] |
 
 ### Return type
 

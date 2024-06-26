@@ -22,14 +22,17 @@ public class BioModelRestDB {
 
     private final DatabaseServerImpl databaseServerImpl;
     private final SimulationRestDB simulationRestDB;
-    private final DatabaseServerImpl databaseServer;
 
 
     @Inject
     public BioModelRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         simulationRestDB = new SimulationRestDB(agroalConnectionFactory);
-        databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
+    }
+
+    public BioModelRestDB(SimulationRestDB simulationRestDB, DatabaseServerImpl databaseServer) {
+        databaseServerImpl = databaseServer;
+        this.simulationRestDB = simulationRestDB;
     }
 
     public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, DataAccessException {
@@ -77,7 +80,7 @@ public class BioModelRestDB {
         if (user == null){
             throw new PermissionException("vcell user not specified");
         }
-        String savedModel = databaseServer.saveBioModel(user, new BigString(bioModelXML), null).toString();
+        String savedModel = databaseServerImpl.saveBioModel(user, new BigString(bioModelXML), null).toString();
         cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(savedModel));
         return bioModel.getVersion().getVersionKey();
     }

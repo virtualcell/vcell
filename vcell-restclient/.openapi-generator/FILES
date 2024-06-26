@@ -74,4 +74,3 @@ src/main/java/org/vcell/restclient/model/UserIdentityJSONSafe.java
 src/main/java/org/vcell/restclient/model/UserLoginInfoForMapping.java
 src/main/java/org/vcell/restclient/model/UserRegistrationInfo.java
 src/main/java/org/vcell/restclient/model/VCSimulationIdentifier.java
-src/test/java/org/vcell/restclient/model/SimulationExecutionStatusRecordTest.java

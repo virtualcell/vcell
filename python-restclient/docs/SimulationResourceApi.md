@@ -10,7 +10,7 @@ Method | HTTP request | Description
 
 
 # **get_simulation_status**
-> SimulationStatusPersistentRecord get_simulation_status(sim_id)
+> SimulationStatusPersistentRecord get_simulation_status(sim_id, bio_model_id=bio_model_id, math_model_id=math_model_id)
 
 Get the status of simulation running
 
@@ -40,10 +40,12 @@ with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.SimulationResourceApi(api_client)
     sim_id = 'sim_id_example' # str | 
+    bio_model_id = 'bio_model_id_example' # str |  (optional)
+    math_model_id = 'math_model_id_example' # str |  (optional)
 
     try:
         # Get the status of simulation running
-        api_response = api_instance.get_simulation_status(sim_id)
+        api_response = api_instance.get_simulation_status(sim_id, bio_model_id=bio_model_id, math_model_id=math_model_id)
         print("The response of SimulationResourceApi->get_simulation_status:\n")
         pprint(api_response)
     except Exception as e:
@@ -57,6 +59,8 @@ with vcell_client.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **sim_id** | **str**|  | 
+ **bio_model_id** | **str**|  | [optional] 
+ **math_model_id** | **str**|  | [optional] 
 
 ### Return type
 

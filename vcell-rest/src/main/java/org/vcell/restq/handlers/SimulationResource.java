@@ -64,10 +64,11 @@ public class SimulationResource {
     @Path("/{simID}/simulationStatus")
     @RolesAllowed("user")
     @Operation(operationId = "getSimulationStatus", summary = "Get the status of simulation running")
-    public SimulationStatusPersistentRecord getSimulationStatus(@PathParam("simID") String simID){
+    public SimulationStatusPersistentRecord getSimulationStatus(@PathParam("simID") String simID,
+                                    @QueryParam("bioModelID") String bioModelID, @QueryParam("mathModelID") String mathModelID){
         try {
             User user = userRestDB.getUserFromIdentity(securityIdentity);
-            return simulationRestDB.getSimulationStatus(simID, user);
+            return simulationRestDB.getBioModelSimulationStatus(simID, bioModelID, user);
         } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }

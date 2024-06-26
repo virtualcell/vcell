@@ -25,6 +25,20 @@ paths:
         schema:
           type: string
         style: simple
+      - explode: true
+        in: query
+        name: bioModelID
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: mathModelID
+        required: false
+        schema:
+          type: string
+        style: form
       responses:
         "200":
           content:

@@ -99,15 +99,27 @@ export class SimulationResourceService implements SimulationResourceServiceInter
     /**
      * Get the status of simulation running
      * @param simID 
+     * @param bioModelID 
+     * @param mathModelID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getSimulationStatus(simID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<SimulationStatusPersistentRecord>;
-    public getSimulationStatus(simID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<SimulationStatusPersistentRecord>>;
-    public getSimulationStatus(simID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<SimulationStatusPersistentRecord>>;
-    public getSimulationStatus(simID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public getSimulationStatus(simID: string, bioModelID?: string, mathModelID?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<SimulationStatusPersistentRecord>;
+    public getSimulationStatus(simID: string, bioModelID?: string, mathModelID?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<SimulationStatusPersistentRecord>>;
+    public getSimulationStatus(simID: string, bioModelID?: string, mathModelID?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<SimulationStatusPersistentRecord>>;
+    public getSimulationStatus(simID: string, bioModelID?: string, mathModelID?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         if (simID === null || simID === undefined) {
             throw new Error('Required parameter simID was null or undefined when calling getSimulationStatus.');
+        }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        if (bioModelID !== undefined && bioModelID !== null) {
+          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+            <any>bioModelID, 'bioModelID');
+        }
+        if (mathModelID !== undefined && mathModelID !== null) {
+          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+            <any>mathModelID, 'mathModelID');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -151,6 +163,7 @@ export class SimulationResourceService implements SimulationResourceServiceInter
         return this.httpClient.request<SimulationStatusPersistentRecord>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 withCredentials: this.configuration.withCredentials,
                 headers: localVarHeaders,

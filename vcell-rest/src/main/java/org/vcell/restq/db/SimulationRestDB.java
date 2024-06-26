@@ -2,12 +2,10 @@ package org.vcell.restq.db;
 
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+import cbit.vcell.modeldb.*;
 import cbit.vcell.server.SimulationStatusPersistent;
+import jakarta.inject.Inject;
 import org.vcell.restq.Simulations.SimulationDispatcherEngine;
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.SimContextRep;
-import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.logging.log4j.LogManager;
@@ -22,6 +20,7 @@ import org.vcell.util.document.User;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 // Make into seperate class in DB module
@@ -33,11 +32,13 @@ public class SimulationRestDB {
     private final DatabaseServerImpl databaseServerImpl;
     private final SimulationDatabaseDirect simulationDatabaseDirect;
     private final SimulationDispatcherEngine simulationDispatcherEngine;
+    private final BioModelRestDB bioModelRestDB;
 
     public SimulationRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         simulationDatabaseDirect = new SimulationDatabaseDirect(new AdminDBTopLevel(agroalConnectionFactory), databaseServerImpl, true);
         simulationDispatcherEngine = new SimulationDispatcherEngine();
+        bioModelRestDB = new BioModelRestDB(this, databaseServerImpl);
     }
 
     ConcurrentHashMap<KeyValue, SimulationRep> simMap = new ConcurrentHashMap<KeyValue, SimulationRep>();
@@ -85,7 +86,7 @@ public class SimulationRestDB {
         }
         User owner = simRep.getOwner();
         if (!owner.compareEqual(vcellUser)){
-            throw new PermissionException("not authorized to stop simulation");
+            throw new PermissionException("Not authorized to start/stop simulation");
         }
         return simRep;
     }
@@ -109,8 +110,13 @@ public class SimulationRestDB {
         return simulationDispatcherEngine.onStopRequest(vcSimulationIdentifier, vcellUser, simulationDatabaseDirect, null);
     }
 
-    public SimulationStatusPersistentRecord getSimulationStatus(String simID, User vcellUser) throws DataAccessException, SQLException {
-        getAndCheckSimRep(simID, vcellUser);
+    public SimulationStatusPersistentRecord getBioModelSimulationStatus(String simID, String bioModelID, User vcellUser) throws DataAccessException, SQLException {
+        BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
+        User[] users = bioModelRep.getGroupUsers();
+        User owner = bioModelRep.getOwner();
+        if (!Arrays.stream(users).toList().contains(vcellUser) && !owner.compareEqual(vcellUser)){
+            throw new PermissionException("Not authorized to access BioModel");
+        }
         return SimulationStatusPersistentRecord.fromSimulationStatusPersistent(databaseServerImpl.getSimulationStatus(new KeyValue(simID)));
     }
 

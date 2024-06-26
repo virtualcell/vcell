@@ -26,7 +26,7 @@ except ImportError:
 
 from pydantic import StrictStr
 
-from typing import List
+from typing import List, Optional
 
 from vcell_client.models.simulation_status_persistent_record import SimulationStatusPersistentRecord
 from vcell_client.models.status_message import StatusMessage
@@ -53,6 +53,8 @@ class SimulationResourceApi:
     def get_simulation_status(
         self,
         sim_id: StrictStr,
+        bio_model_id: Optional[StrictStr] = None,
+        math_model_id: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -71,6 +73,10 @@ class SimulationResourceApi:
 
         :param sim_id: (required)
         :type sim_id: str
+        :param bio_model_id:
+        :type bio_model_id: str
+        :param math_model_id:
+        :type math_model_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -95,6 +101,8 @@ class SimulationResourceApi:
 
         _param = self._get_simulation_status_serialize(
             sim_id=sim_id,
+            bio_model_id=bio_model_id,
+            math_model_id=math_model_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -122,6 +130,8 @@ class SimulationResourceApi:
     def get_simulation_status_with_http_info(
         self,
         sim_id: StrictStr,
+        bio_model_id: Optional[StrictStr] = None,
+        math_model_id: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -140,6 +150,10 @@ class SimulationResourceApi:
 
         :param sim_id: (required)
         :type sim_id: str
+        :param bio_model_id:
+        :type bio_model_id: str
+        :param math_model_id:
+        :type math_model_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -164,6 +178,8 @@ class SimulationResourceApi:
 
         _param = self._get_simulation_status_serialize(
             sim_id=sim_id,
+            bio_model_id=bio_model_id,
+            math_model_id=math_model_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -191,6 +207,8 @@ class SimulationResourceApi:
     def get_simulation_status_without_preload_content(
         self,
         sim_id: StrictStr,
+        bio_model_id: Optional[StrictStr] = None,
+        math_model_id: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -209,6 +227,10 @@ class SimulationResourceApi:
 
         :param sim_id: (required)
         :type sim_id: str
+        :param bio_model_id:
+        :type bio_model_id: str
+        :param math_model_id:
+        :type math_model_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -233,6 +255,8 @@ class SimulationResourceApi:
 
         _param = self._get_simulation_status_serialize(
             sim_id=sim_id,
+            bio_model_id=bio_model_id,
+            math_model_id=math_model_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -255,6 +279,8 @@ class SimulationResourceApi:
     def _get_simulation_status_serialize(
         self,
         sim_id,
+        bio_model_id,
+        math_model_id,
         _request_auth,
         _content_type,
         _headers,
@@ -278,6 +304,14 @@ class SimulationResourceApi:
         if sim_id is not None:
             _path_params['simID'] = sim_id
         # process the query parameters
+        if bio_model_id is not None:
+            
+            _query_params.append(('bioModelID', bio_model_id))
+            
+        if math_model_id is not None:
+            
+            _query_params.append(('mathModelID', math_model_id))
+            
         # process the header parameters
         # process the form parameters
         # process the body parameter

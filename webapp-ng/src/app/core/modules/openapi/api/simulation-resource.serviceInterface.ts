@@ -29,8 +29,10 @@ export interface SimulationResourceServiceInterface {
      * Get the status of simulation running
      * 
      * @param simID 
+     * @param bioModelID 
+     * @param mathModelID 
      */
-    getSimulationStatus(simID: string, extraHttpRequestParams?: any): Observable<SimulationStatusPersistentRecord>;
+    getSimulationStatus(simID: string, bioModelID?: string, mathModelID?: string, extraHttpRequestParams?: any): Observable<SimulationStatusPersistentRecord>;
 
     /**
      * Start a simulation.

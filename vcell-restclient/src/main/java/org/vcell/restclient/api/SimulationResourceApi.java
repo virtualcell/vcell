@@ -86,11 +86,13 @@ public class SimulationResourceApi {
    * Get the status of simulation running
    * 
    * @param simID  (required)
+   * @param bioModelID  (optional)
+   * @param mathModelID  (optional)
    * @return SimulationStatusPersistentRecord
    * @throws ApiException if fails to make API call
    */
-  public SimulationStatusPersistentRecord getSimulationStatus(String simID) throws ApiException {
-    ApiResponse<SimulationStatusPersistentRecord> localVarResponse = getSimulationStatusWithHttpInfo(simID);
+  public SimulationStatusPersistentRecord getSimulationStatus(String simID, String bioModelID, String mathModelID) throws ApiException {
+    ApiResponse<SimulationStatusPersistentRecord> localVarResponse = getSimulationStatusWithHttpInfo(simID, bioModelID, mathModelID);
     return localVarResponse.getData();
   }
 
@@ -98,11 +100,13 @@ public class SimulationResourceApi {
    * Get the status of simulation running
    * 
    * @param simID  (required)
+   * @param bioModelID  (optional)
+   * @param mathModelID  (optional)
    * @return ApiResponse&lt;SimulationStatusPersistentRecord&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<SimulationStatusPersistentRecord> getSimulationStatusWithHttpInfo(String simID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getSimulationStatusRequestBuilder(simID);
+  public ApiResponse<SimulationStatusPersistentRecord> getSimulationStatusWithHttpInfo(String simID, String bioModelID, String mathModelID) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getSimulationStatusRequestBuilder(simID, bioModelID, mathModelID);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -130,7 +134,7 @@ public class SimulationResourceApi {
     }
   }
 
-  private HttpRequest.Builder getSimulationStatusRequestBuilder(String simID) throws ApiException {
+  private HttpRequest.Builder getSimulationStatusRequestBuilder(String simID, String bioModelID, String mathModelID) throws ApiException {
     // verify the required parameter 'simID' is set
     if (simID == null) {
       throw new ApiException(400, "Missing the required parameter 'simID' when calling getSimulationStatus");
@@ -141,7 +145,24 @@ public class SimulationResourceApi {
     String localVarPath = "/api/v1/Simulation/{simID}/simulationStatus"
         .replace("{simID}", ApiClient.urlEncode(simID.toString()));
 
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "bioModelID";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("bioModelID", bioModelID));
+    localVarQueryParameterBaseName = "mathModelID";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("mathModelID", mathModelID));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
 
     localVarRequestBuilder.header("Accept", "application/json");
 

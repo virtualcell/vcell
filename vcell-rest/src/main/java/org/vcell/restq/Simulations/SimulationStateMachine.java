@@ -513,16 +513,16 @@ public class SimulationStateMachine {
             //
             // send stopSimulation to serviceControl topic
             //
-            VCMessage msg = session.createMessage();
-            msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
-            msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
-            msg.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, jobIndex);
-            msg.setIntProperty(MessageConstants.TASKID_PROPERTY, taskID);
-            msg.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, user.getName());
-            if (simExeStatus.getHtcJobID()!=null){
-                msg.setStringProperty(MessageConstants.HTCJOBID_PROPERTY, simExeStatus.getHtcJobID().toDatabase());
-            }
-            session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);
+//            VCMessage msg = session.createMessage();
+//            msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
+//            msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
+//            msg.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, jobIndex);
+//            msg.setIntProperty(MessageConstants.TASKID_PROPERTY, taskID);
+//            msg.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, user.getName());
+//            if (simExeStatus.getHtcJobID()!=null){
+//                msg.setStringProperty(MessageConstants.HTCJOBID_PROPERTY, simExeStatus.getHtcJobID().toDatabase());
+//            }
+//            session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);
 
             if (lg.isTraceEnabled()) lg.trace("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
             SimulationJobStatusRecord simulationJobStatusRecord = new SimulationJobStatusRecord(

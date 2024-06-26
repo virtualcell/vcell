@@ -111,7 +111,7 @@ public class SimulationApiTest {
     public void testDBLayerStartStopAndStatus() throws ApiException, PropertyVetoException, XmlParseException, IOException, DataAccessException, SQLException, VCMessagingException {
         KeyValue simKey = bioModelRep.getSimKeyList()[0];
 
-        SimulationStatusPersistentRecord statusPersistent = simulationRestDB.getSimulationStatus(simKey.toString(), TestEndpointUtils.administratorUser);
+        SimulationStatusPersistentRecord statusPersistent = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
         Assertions.assertNull(statusPersistent);
 
         ArrayList<StatusMessage> statusMessages = simulationRestDB.startSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
@@ -123,7 +123,7 @@ public class SimulationApiTest {
         Assertions.assertEquals(simKey.toString(), statusMessage.jobStatus().fieldVCSimID().getSimulationKey().toString());
 
         simulationRestDB.stopSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
-        statusPersistent = simulationRestDB.getSimulationStatus(simKey.toString(), TestEndpointUtils.administratorUser);
+        statusPersistent = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
         Assertions.assertEquals(SimulationStatusPersistentRecord.Status.STOPPED.statusDescription, statusPersistent.status().statusDescription);
     }
 
@@ -144,7 +144,7 @@ public class SimulationApiTest {
         Assertions.assertEquals(TestEndpointUtils.administratorUser.getName(), startStatus.get(0).getUserName());
         Assertions.assertEquals(SchedulerStatus.WAITING, startStatus.get(0).getJobStatus().getFieldSchedulerStatus());
 
-        org.vcell.restclient.model.SimulationStatusPersistentRecord getStatus = simulationResourceApi.getSimulationStatus(simKey.toString());
+        org.vcell.restclient.model.SimulationStatusPersistentRecord getStatus = simulationResourceApi.getSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), null);
         Assertions.assertNotNull(getStatus);
         Assertions.assertEquals(Status.WAITING, getStatus.getStatus());
         Assertions.assertEquals(SimulationMessagePersistent.MESSAGE_JOB_WAITING.getDisplayMessage(), getStatus.getDetails());
