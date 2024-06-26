@@ -1,9 +1,18 @@
 package org.vcell.restq.apiclient;
 
+import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessagingException;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.BioModelRep;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimulationJobStatus;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -17,13 +26,14 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.SimulationResourceApi;
 import org.vcell.restclient.model.SchedulerStatus;
 import org.vcell.restclient.model.Status;
-import org.vcell.restq.Simulations.SimulationStatusPersistentRecord;
-import org.vcell.restq.Simulations.StatusMessage;
+import org.vcell.restq.Simulations.Control.SimulationDispatcherEngine;
+import org.vcell.restq.Simulations.DTO.SimulationStatus;
+import org.vcell.restq.Simulations.DTO.StatusMessage;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.db.BioModelRestDB;
-import org.vcell.restq.db.SimulationRestDB;
+import org.vcell.restq.Simulations.SimulationRestDB;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
@@ -50,6 +60,11 @@ public class SimulationApiTest {
 
     @Inject
     SimulationRestDB simulationRestDB;
+
+
+    AdminDBTopLevel adminDBTopLevel;
+    SimulationDatabaseDirect simulationDatabaseDirect;
+    DatabaseServerImpl databaseServer;
 
     private static String previousServerID;
     private static String previousMongoHost;
@@ -97,12 +112,20 @@ public class SimulationApiTest {
         String testBioModel = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
         String testBioModelID = bioModelRestDB.saveBioModel(TestEndpointUtils.administratorUser, testBioModel).toString();
         bioModelRep = bioModelRestDB.getBioModelRep(new org.vcell.util.document.KeyValue(testBioModelID), TestEndpointUtils.administratorUser);
+
+        databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
+        adminDBTopLevel = new AdminDBTopLevel(agroalConnectionFactory);
+        simulationDatabaseDirect = new SimulationDatabaseDirect(adminDBTopLevel, databaseServer, false);
     }
 
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
         TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
         bioModelRestDB.deleteBioModel(TestEndpointUtils.administratorUser, bioModelRep.getBmKey());
+
+        databaseServer = null;
+        adminDBTopLevel = null;
+        simulationDatabaseDirect = null;
     }
 
 
@@ -111,7 +134,7 @@ public class SimulationApiTest {
     public void testDBLayerStartStopAndStatus() throws ApiException, PropertyVetoException, XmlParseException, IOException, DataAccessException, SQLException, VCMessagingException {
         KeyValue simKey = bioModelRep.getSimKeyList()[0];
 
-        SimulationStatusPersistentRecord statusPersistent = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
+        SimulationStatus statusPersistent = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
         Assertions.assertNull(statusPersistent);
 
         ArrayList<StatusMessage> statusMessages = simulationRestDB.startSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
@@ -124,14 +147,10 @@ public class SimulationApiTest {
 
         simulationRestDB.stopSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
         statusPersistent = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
-        Assertions.assertEquals(SimulationStatusPersistentRecord.Status.STOPPED.statusDescription, statusPersistent.status().statusDescription);
+        Assertions.assertEquals(SimulationStatus.Status.STOPPED.statusDescription, statusPersistent.status().statusDescription);
     }
 
 
-
-
-    //TODO: Test that ensures the proper request to start or stop a simulation was made to the RPC. A different test
-    // class should ensure this RPC actually fulfills on its promise. Don't need actual simulations in DB for this
     @Test
     public void testStartAndStop() throws Exception {
         KeyValue simKey = bioModelRep.getSimKeyList()[0];
@@ -155,4 +174,40 @@ public class SimulationApiTest {
         Assertions.assertEquals(SchedulerStatus.STOPPED, stopStatus.get(0).getJobStatus().getFieldSchedulerStatus());
 
     }
+
+    @Test
+    public void testDifferentSimulationStates() throws Exception{
+        KeyValue simKey = bioModelRep.getSimKeyList()[0];
+
+        SimulationStatus statusPersistent = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
+        Assertions.assertNull(statusPersistent);
+
+        ArrayList<StatusMessage> statusMessages = simulationRestDB.startSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
+
+        Simulation simulation = XmlHelper.XMLToSim(databaseServer.getSimulationXML(TestEndpointUtils.administratorUser, simKey).toString());
+        SimulationJob simulationJob = new SimulationJob(simulation, 0, null);
+        SimulationTask simulationTask = new SimulationTask(simulationJob, 0);
+        WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_ACCEPTED, "testService", simulationTask, "testHost", SimulationMessage.MESSAGE_JOB_ACCEPTED);
+        SimulationDispatcherEngine simulationDispatcherEngine = new SimulationDispatcherEngine();
+
+        simulationDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabaseDirect, null);
+
+        SimulationStatus simulationStatus = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
+        Assertions.assertEquals(SimulationStatus.Status.DISPATCHED, simulationStatus.status());
+
+        workerEvent = new WorkerEvent(WorkerEvent.JOB_PROGRESS, "testService", new VCSimulationIdentifier(simKey, TestEndpointUtils.administratorUser),
+                0, "testHost", 0, .3, 1.3, SimulationMessage.MESSAGE_WORKEREVENT_PROGRESS);
+
+        simulationDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabaseDirect, null);
+        simulationStatus = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
+        Assertions.assertEquals(SimulationStatus.Status.RUNNING, simulationStatus.status());
+
+        workerEvent = new WorkerEvent(WorkerEvent.JOB_COMPLETED, "testService", new VCSimulationIdentifier(simKey, TestEndpointUtils.administratorUser),
+                0, "testHost", 0, 1.0, 10.0, SimulationMessage.MESSAGE_JOB_COMPLETED);
+
+        simulationDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabaseDirect, null);
+        simulationStatus = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
+        Assertions.assertEquals(SimulationStatus.Status.COMPLETED, simulationStatus.status());
+    }
+
 }
