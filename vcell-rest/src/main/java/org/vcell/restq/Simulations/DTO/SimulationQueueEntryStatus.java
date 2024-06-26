@@ -1,19 +1,18 @@
-package org.vcell.restq.Simulations;
+package org.vcell.restq.Simulations.DTO;
 
 import cbit.vcell.server.SimulationJobStatus;
-import cbit.vcell.server.SimulationQueueEntryStatus;
 
 import java.time.Instant;
 
-public record SimulationQueueEntryStatusRecord(
+public record SimulationQueueEntryStatus(
         int fieldQueuePriority,
         Instant fieldQueueDate,
         SimulationJobStatus.SimulationQueueID fieldQueueID
 ) {
 
-    public static SimulationQueueEntryStatusRecord fromStatusRecord(SimulationQueueEntryStatus simulationQueueEntryStatus) {
+    public static SimulationQueueEntryStatus fromStatusRecord(cbit.vcell.server.SimulationQueueEntryStatus simulationQueueEntryStatus) {
         if (simulationQueueEntryStatus == null) {return null;}
-        return new SimulationQueueEntryStatusRecord(
+        return new SimulationQueueEntryStatus(
                 simulationQueueEntryStatus.getQueuePriority(),
                 simulationQueueEntryStatus.getQueueDate().toInstant(),
                 simulationQueueEntryStatus.getQueueID()
