@@ -1,11 +1,10 @@
-package org.vcell.restq.Simulations;
+package org.vcell.restq.Simulations.DTO;
 
 import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.SimulationExecutionStatus;
 
 import java.time.Instant;
 
-public record SimulationExecutionStatusRecord(
+public record SimulationExecutionStatus(
         Instant fieldStartDate,
         Instant fieldLatestUpdateDate,
         Instant fieldEndDate,
@@ -14,9 +13,9 @@ public record SimulationExecutionStatusRecord(
         HtcJobID fieldHtcJobID
 ) {
 
-    public static SimulationExecutionStatusRecord fromSimulationExecutionStatus(SimulationExecutionStatus status) {
+    public static SimulationExecutionStatus fromSimulationExecutionStatus(cbit.vcell.server.SimulationExecutionStatus status) {
         if (status == null) {return null;}
-        return new SimulationExecutionStatusRecord(
+        return new SimulationExecutionStatus(
                 status.getStartDate() != null ? status.getStartDate().toInstant(): null,
                 status.getLatestUpdateDate() != null ? status.getLatestUpdateDate().toInstant() : null,
                 status.getEndDate() != null ? status.getEndDate().toInstant(): null,

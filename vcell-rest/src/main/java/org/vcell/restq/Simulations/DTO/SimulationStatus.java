@@ -1,10 +1,8 @@
-package org.vcell.restq.Simulations;
+package org.vcell.restq.Simulations.DTO;
 
 import cbit.vcell.server.SimulationStatusPersistent;
 
-import java.util.HashMap;
-
-public record SimulationStatusPersistentRecord(
+public record SimulationStatus(
         Status status,
         String details,
         boolean hasData
@@ -46,9 +44,9 @@ public record SimulationStatusPersistentRecord(
         }
     }
 
-    public static SimulationStatusPersistentRecord fromSimulationStatusPersistent(SimulationStatusPersistent s) {
+    public static SimulationStatus fromSimulationStatusPersistent(SimulationStatusPersistent s) {
         if (s == null) return null;
-        return new SimulationStatusPersistentRecord(
+        return new SimulationStatus(
                 Status.statusFromString(s.getStatusString()),
                 s.getDetails(),
                 s.getHasData()
