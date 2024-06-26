@@ -30,6 +30,7 @@ import org.vcell.api.common.*;
 import org.vcell.api.common.events.EventWrapper;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.CustomApiClientCode;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
@@ -506,7 +507,7 @@ public class VCellApiClient implements AutoCloseable {
 
 	public void createDefaultQuarkusClient(boolean bIgnoreCertProblems){
 		apiClient = new ApiClient(){{
-			allowInsecureCertificates(bIgnoreCertProblems);
+			if (bIgnoreCertProblems){setHttpClientBuilder(CustomApiClientCode.createInsecureHttpClientBuilder());};
 			setHost(quarkusURL.getHost());
 			setPort(quarkusURL.getPort());
 			setBasePath(quarkusURL.getPath());

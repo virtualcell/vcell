@@ -92,6 +92,10 @@ configuration = vcell_client.Configuration(
     host = "https://vcell-dev.cam.uchc.edu"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
 
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
@@ -122,7 +126,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -133,6 +137,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -156,6 +162,10 @@ configuration = vcell_client.Configuration(
     host = "https://vcell-dev.cam.uchc.edu"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
 
 # Enter a context with an instance of the API client
 with vcell_client.ApiClient(configuration) as api_client:
@@ -186,7 +196,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -197,6 +207,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

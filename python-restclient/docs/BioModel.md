@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 **phys_model_key** | **str** |  | [optional] 
 **owner_name** | **str** |  | [optional] 
 **owner_key** | **str** |  | [optional] 
-**simulations** | [**List[Simulation]**](Simulation.md) |  | [optional] 
+**simulation_key_list** | [**List[KeyValue]**](KeyValue.md) |  | [optional] 
 **applications** | **List[object]** |  | [optional] 
 
 ## Example

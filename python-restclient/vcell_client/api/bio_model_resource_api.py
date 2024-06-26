@@ -350,7 +350,9 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModel"
+            '200': "BioModel",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -417,7 +419,9 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModel"
+            '200': "BioModel",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -484,7 +488,9 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModel"
+            '200': "BioModel",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -535,6 +541,7 @@ class BioModelResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -608,7 +615,9 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "str"
+            '200': "str",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -675,7 +684,9 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "str"
+            '200': "str",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -742,7 +753,9 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "str"
+            '200': "str",
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -806,6 +819,7 @@ class BioModelResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'openId'
         ]
 
         return self.api_client.param_serialize(

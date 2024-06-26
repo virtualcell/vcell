@@ -4,6 +4,7 @@ import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XmlParseException;
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -91,6 +92,7 @@ public class BioModelResource {
     @Operation(operationId = "uploadBioModel", summary = "Upload the BioModel to VCell database. Returns BioModel ID.")
     @Consumes(MediaType.TEXT_XML)
     @Produces(MediaType.TEXT_PLAIN)
+    @RolesAllowed("user")
     public String uploadBioModel(String bioModelXML) throws DataAccessException, XmlParseException {
         User user = userRestDB.getUserFromIdentity(securityIdentity);
         if (user == null) {

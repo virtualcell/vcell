@@ -95,6 +95,9 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
+*SimulationResourceApi* | [**get_simulation_status**](docs/SimulationResourceApi.md#get_simulation_status) | **GET** /api/v1/Simulation/{simID}/simulationStatus | Get the status of simulation running
+*SimulationResourceApi* | [**start_simulation**](docs/SimulationResourceApi.md#start_simulation) | **POST** /api/v1/Simulation/{simID}/startSimulation | Start a simulation.
+*SimulationResourceApi* | [**stop_simulation**](docs/SimulationResourceApi.md#stop_simulation) | **POST** /api/v1/Simulation/{simID}/stopSimulation | Stop a simulation.
 *UsersResourceApi* | [**forgot_legacy_password**](docs/UsersResourceApi.md#forgot_legacy_password) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**get_guest_legacy_api_token**](docs/UsersResourceApi.md#get_guest_legacy_api_token) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users
 *UsersResourceApi* | [**get_legacy_api_token**](docs/UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
@@ -108,16 +111,30 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
+ - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
+ - [DetailedState](docs/DetailedState.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
+ - [HtcJobID](docs/HtcJobID.md)
  - [Identity](docs/Identity.md)
+ - [KeyValue](docs/KeyValue.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
- - [Simulation](docs/Simulation.md)
+ - [SchedulerStatus](docs/SchedulerStatus.md)
+ - [SimulationExecutionStatusRecord](docs/SimulationExecutionStatusRecord.md)
+ - [SimulationJobStatusRecord](docs/SimulationJobStatusRecord.md)
+ - [SimulationMessage](docs/SimulationMessage.md)
+ - [SimulationQueueEntryStatusRecord](docs/SimulationQueueEntryStatusRecord.md)
+ - [SimulationQueueID](docs/SimulationQueueID.md)
+ - [SimulationStatusPersistentRecord](docs/SimulationStatusPersistentRecord.md)
+ - [Status](docs/Status.md)
+ - [StatusMessage](docs/StatusMessage.md)
+ - [User](docs/User.md)
  - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
+ - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
 
 
 <a id="documentation-for-authorization"></a>

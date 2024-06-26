@@ -18,9 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -28,7 +25,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -175,31 +171,6 @@ public class ApiClient {
     connectTimeout = null;
     responseInterceptor = null;
     asyncResponseInterceptor = null;
-  }
-
-  public void allowInsecureCertificates(boolean allowInsecureCertificates) {
-    if (allowInsecureCertificates) {
-      try {
-        HttpClient.Builder customBuilder = createDefaultHttpClientBuilder();
-        TrustManager[] trustAllCerts = new TrustManager[]{
-                new X509TrustManager() {
-                  public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-                  public void checkClientTrusted(X509Certificate[] certs, String authType) { }
-                  public void checkServerTrusted(X509Certificate[] certs, String authType) { }
-                }
-        };
-
-        // Install the all-trusting trust manager
-        SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-        customBuilder.sslContext(sslContext);
-
-        // Create an HttpClient that uses the custom SSLContext
-        setHttpClientBuilder(customBuilder);
-      } catch (Exception e) {
-        throw new RuntimeException("failed to create custom HttpClient: " + e.getMessage(), e);
-      }
-    }
   }
 
   /**

@@ -7,10 +7,11 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**principalName** | **String** |  |  [optional] |
-|**roles** | **List&lt;String&gt;** |  |  [optional] |
-|**attributes** | **List&lt;String&gt;** |  |  [optional] |
-|**credentials** | **List&lt;String&gt;** |  |  [optional] |
+|**userName** | **String** |  |  [optional] |
+|**key** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**iD** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**name** | **String** |  |  [optional] |
+|**testAccount** | **Boolean** |  |  [optional] |
 
 
 

@@ -15,11 +15,6 @@ import java.util.HashMap;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
 
-/**
- * Insert the type's description here.
- * Creation date: (6/19/2001 3:00:45 PM)
- * @author: Ion Moraru
- */
 @SuppressWarnings("serial")
 public class SimulationStatusPersistent implements java.io.Serializable {
 	// possible status values
@@ -41,19 +36,10 @@ public class SimulationStatusPersistent implements java.io.Serializable {
 	};
 	// actual info
 	private int status = UNKNOWN;
-	private HashMap<Integer, Double> progressHash = new HashMap<Integer, Double>();
 	private String details = null;
 	private boolean hasData = false;
 	private SimulationJobStatusPersistent[] jobStatuses = null;
 
-/**
- * Insert the method's description here.
- * Creation date: (6/22/2001 1:28:48 PM)
- * @param status int
- * @param progress double
- * @param details java.lang.String
- * @param hasData boolean
- */
 public SimulationStatusPersistent(SimulationJobStatusPersistent[] jobStatuses0) {
 	//
 	// list of jobStatus passed in contain status
@@ -73,72 +59,32 @@ public SimulationStatusPersistent(SimulationJobStatusPersistent[] jobStatuses0) 
 	initStatus();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/22/2001 1:28:48 PM)
- * @param status int
- * @param progress double
- * @param details java.lang.String
- * @param hasData boolean
- */
 private SimulationStatusPersistent(int status, boolean hasData, int jobCount) {
 	this.status = status;
 	this.hasData = hasData;
 	jobStatuses = new SimulationJobStatusPersistent[jobCount];
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/18/2005 4:46:03 PM)
- * @param oldStatus cbit.vcell.solver.ode.gui.SimulationStatusPersistent
- */
 private SimulationStatusPersistent(SimulationStatusPersistent oldStatus) {
 	this.details = oldStatus.details;
 	this.hasData = oldStatus.hasData;
 	this.jobStatuses = oldStatus.jobStatuses;
-	this.progressHash = oldStatus.progressHash;
 	this.status = oldStatus.status;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/22/2001 1:32:37 PM)
- * @return java.lang.String
- */
 public java.lang.String getDetails() {
 	return details != null ? details : getStatusString();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/28/2001 1:33:56 PM)
- * @return boolean
- */
 public boolean getHasData() {
 	return hasData;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/25/2001 1:22:22 PM)
- * @return java.lang.String
- */
 public SimulationMessagePersistent getJob0SimulationMessage() {
 	return getJobStatuses()[0].getSimulationMessage();
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/21/2006 10:00:40 AM)
- * @return cbit.vcell.messaging.db.SimulationJobStatusPersistent
- * @param index int
- */
 public SimulationJobStatusPersistent getJobStatus(int index) {
 	if (index >= jobStatuses.length) {
 		return null;
@@ -159,72 +105,14 @@ public String getFailedMessage() {
 	return failCount + " of " + jobStatuses.length + " failed";
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (9/29/2005 12:25:24 PM)
- * @return cbit.vcell.messaging.db.SimulationJobStatusPersistent[]
- */
 public SimulationJobStatusPersistent[] getJobStatuses() {
 	return jobStatuses;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/22/2001 1:32:37 PM)
- * @return double
- */
-public Double getProgress() {
-	if (jobStatuses == null) return null;
-	boolean bAllNullProgress = true;
-	double progress = 0;
-	for (int i = 0; i < jobStatuses.length; i++){
-		if (jobStatuses[i] != null) {
-			if (jobStatuses[i].getSchedulerStatus().isDone()) {
-				progress += 1;
-				bAllNullProgress = false;
-			} else {
-				Double jobProgress = progressHash.get(jobStatuses[i].getJobIndex());
-				if (jobProgress != null) {
-					bAllNullProgress = false;
-					progress += jobProgress.doubleValue();
-				}
-			}
-		}
-	}
-	if (bAllNullProgress) {
-		return null;
-	}
-	return new Double(progress);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/21/2006 10:13:56 AM)
- * @return java.lang.Double
- * @param index int
- */
-public Double getProgressAt(int index) {
-	return progressHash.get(index);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/25/2001 1:22:22 PM)
- * @return java.lang.String
- */
 public String getStatusString() {
 	return STATUS_NAMES[status];
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/5/2005 12:50:07 PM)
- * @return cbit.vcell.solver.VCSimulationIdentifier
- */
 public VCSimulationIdentifier getVCSimulationIdentifier() {
 	if (jobStatuses != null && jobStatuses.length > 0) {
 		return jobStatuses[0].getVCSimulationIdentifier();
@@ -233,12 +121,6 @@ public VCSimulationIdentifier getVCSimulationIdentifier() {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 11:25:17 AM)
- * @param newStatus int
- */
 private void initStatus() {
 	
 	boolean allNull = true;
@@ -289,32 +171,14 @@ private void initStatus() {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public boolean isDispatched() {
 	return status == DISPATCHED;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public boolean isFailed() {
 	return status == FAILED;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public boolean isJob0Completed() {
 	//
 	// Convenience method used in TestingFrameworkWindowManager : 
@@ -325,63 +189,27 @@ public boolean isJob0Completed() {
 	return getJobStatuses()[0].getSchedulerStatus().isCompleted();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public boolean isNeverRan() {
 	return status == NEVER_RAN;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public boolean isRunnable() {
 	return status == NOT_SAVED || status == NEVER_RAN || status == COMPLETED || status == FAILED
 		|| status == STOPPED || status == UNKNOWN;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public boolean isRunning() {
 	return status == RUNNING;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public boolean isStartRequested() {
 	return status == START_REQUESTED;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public boolean isStoppable() {
 	return status == DISPATCHED || status == RUNNING || status == WAITING || status == QUEUED;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public boolean isStopRequested() {
 	return status == STOP_REQUESTED;
 }
@@ -389,36 +217,17 @@ public boolean isStopRequested() {
 public boolean isStopped() {
 	return status == STOPPED;
 }
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
+
 public boolean isUnknown() {
 	return status == UNKNOWN;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatusPersistent
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatusPersistent
- * @param progress java.lang.Double
- */
 public static SimulationStatusPersistent newStartRequest(int jobCount) {
 	SimulationStatusPersistent newStatus = new SimulationStatusPersistent(START_REQUESTED, false, jobCount);
 	System.out.println("##  ##  ##  ##  ##  ##  ##  ##  >>>> NEW START REQUEST <<<<< ######################   newstatus=" + newStatus);
 	return newStatus;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatusPersistent
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatusPersistent
- * @param progress java.lang.Double
- */
 public static SimulationStatusPersistent newStartRequestFailure(String failMsg, int jobCount) {
 	SimulationStatusPersistent newStatus = new SimulationStatusPersistent(FAILED, false, jobCount);
 	newStatus.details = failMsg;
@@ -426,14 +235,6 @@ public static SimulationStatusPersistent newStartRequestFailure(String failMsg, 
 	return newStatus;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatusPersistent
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatusPersistent
- * @param progress java.lang.Double
- */
 public static SimulationStatusPersistent newStopRequest(SimulationStatusPersistent currentStatus) {
 	SimulationStatusPersistent newStatus = new SimulationStatusPersistent(currentStatus);
 	newStatus.status = STOP_REQUESTED;
@@ -442,25 +243,11 @@ public static SimulationStatusPersistent newStopRequest(SimulationStatusPersiste
 	return newStatus;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2004 12:45:40 PM)
- * @return cbit.vcell.solver.ode.gui.SimulationStatusPersistent
- * @param jobStatus0 cbit.vcell.messaging.db.SimulationJobStatusPersistent
- * @param progress java.lang.Double
- */
 public static SimulationStatusPersistent newUnknown(int jobCount) {
 	SimulationStatusPersistent newStatus = new SimulationStatusPersistent(UNKNOWN, false, jobCount);
 	return newStatus;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/3/2003 10:28:24 AM)
- * @return boolean
- */
 public int numberOfJobsDone() {
 	int done = 0;
 	for (int i = 0; i < getJobStatuses().length; i++){
@@ -480,12 +267,7 @@ public boolean isCompleted() {
 	return true;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (8/3/2001 9:58:46 PM)
- * @return java.lang.String
- */
 public String toString() {
-	return "SimulationStatusPersistent["+getStatusString()+", hasData="+getHasData()+", progress="+getProgress()+", details="+getDetails() + "]";
+	return "SimulationStatusPersistent["+getStatusString()+", hasData="+getHasData()+", details="+getDetails() + "]";
 }
 }

@@ -14,6 +14,111 @@ info:
 servers:
 - url: https://vcell-dev.cam.uchc.edu
 paths:
+  /api/v1/Simulation/{simID}/simulationStatus:
+    get:
+      operationId: getSimulationStatus
+      parameters:
+      - explode: false
+        in: path
+        name: simID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: true
+        in: query
+        name: bioModelID
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: mathModelID
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationStatusPersistentRecord'
+          description: OK
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
+      summary: Get the status of simulation running
+      tags:
+      - Simulation Resource
+      x-accepts: application/json
+  /api/v1/Simulation/{simID}/startSimulation:
+    post:
+      operationId: startSimulation
+      parameters:
+      - explode: false
+        in: path
+        name: simID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/StatusMessage'
+                type: array
+          description: OK
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
+      summary: Start a simulation.
+      tags:
+      - Simulation Resource
+      x-accepts: application/json
+  /api/v1/Simulation/{simID}/stopSimulation:
+    post:
+      operationId: stopSimulation
+      parameters:
+      - explode: false
+        in: path
+        name: simID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/StatusMessage'
+                type: array
+          description: OK
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
+      summary: Stop a simulation.
+      tags:
+      - Simulation Resource
+      x-accepts: application/json
   /api/v1/admin/usage:
     get:
       operationId: getUsage
@@ -44,6 +149,13 @@ paths:
               schema:
                 type: string
           description: OK
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
       summary: Upload the BioModel to VCell database. Returns BioModel ID.
       tags:
       - Bio Model Resource
@@ -84,6 +196,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/BioModel'
           description: OK
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
       summary: Get BioModel information in JSON format by ID.
       tags:
       - Bio Model Resource
@@ -404,6 +523,12 @@ components:
       type: object
     Application:
       type: object
+    BatchSystemType:
+      enum:
+      - PBS
+      - SGE
+      - SLURM
+      type: string
     BioModel:
       example:
         branchID: branchID
@@ -416,11 +541,11 @@ components:
         - groupUsers
         - groupUsers
         annot: annot
+        simulationKeyList:
+        - value: 0.8008281904610115
+        - value: 0.8008281904610115
         ownerKey: ownerKey
         savedDate: 6
-        simulations:
-        - name: name
-        - name: name
         applications:
         - null
         - null
@@ -449,9 +574,9 @@ components:
           type: string
         ownerKey:
           type: string
-        simulations:
+        simulationKeyList:
           items:
-            $ref: '#/components/schemas/Simulation'
+            $ref: '#/components/schemas/KeyValue'
           type: array
         applications:
           items:
@@ -484,12 +609,79 @@ components:
       example: 2022-03-10
       format: date
       type: string
+    DetailedState:
+      enum:
+      - UNKNOWN
+      - DATAMOVEREVENT_MOVED
+      - WORKEREVENT_WORKERALIVE
+      - JOB_WAITING
+      - JOB_QUEUED
+      - JOB_QUEUED_RETRY
+      - JOB_DISPATCHED
+      - JOB_ACCEPTED
+      - SOLVER_READY
+      - SOLVER_STARTING_INIT
+      - SOLVEREVENT_STARTING_PROC_GEOM
+      - SOLVEREVENT_STARTING_RESAMPLE_FD
+      - SOLVER_RUNNING_INIT
+      - SOLVER_RUNNING_INIT_INPUT_FILE
+      - SOLVER_RUNNING_INIT_CODEGEN
+      - SOLVER_RUNNING_INIT_COMPILING
+      - SOLVER_RUNNING_INIT_COMPILECMD
+      - SOLVER_RUNNING_INIT_COMPILE_OK
+      - SOLVER_RUNNING_INIT_LINKING
+      - SOLVER_RUNNING_INIT_LINKCMD
+      - SOLVER_RUNNING_INIT_LINK_OK
+      - SOLVER_RUNNING_INIT_COMPILELINK_OK
+      - SOLVEREVENT_STARTING_INIT
+      - SOLVEREVENT_STARTING_CODEGEN
+      - SOLVEREVENT_STARTING_COMPILELINK
+      - SOLVEREVENT_STARTING_INPUT_FILE
+      - SOLVEREVENT_STARTING
+      - SOLVEREVENT_STARTING_SUBMITTING
+      - SOLVEREVENT_STARTING_SUBMITTED
+      - WORKEREVENT_STARTING
+      - SOLVEREVENT_RUNNING_START
+      - SOLVER_RUNNING_START
+      - JOB_RUNNING_UNKNOWN
+      - SOLVEREVENT_PRINTED
+      - WORKEREVENT_DATA
+      - JOB_RUNNING
+      - SOLVEREVENT_PROGRESS
+      - WORKEREVENT_PROGRESS
+      - WORKEREVENT_WORKEREXIT_NORMAL
+      - WORKEREVENT_WORKEREXIT_ERROR
+      - SOLVEREVENT_FINISHED
+      - SOLVER_FINISHED
+      - WORKEREVENT_COMPLETED
+      - JOB_COMPLETED
+      - SOLVER_STOPPED
+      - JOB_STOPPED
+      - JOB_FAILED_UNKNOWN
+      - SOLVER_ABORTED
+      - WORKEREVENT_FAILURE
+      - JOB_FAILED
+      type: string
     HelloWorldMessage:
       example:
         message: message
       properties:
         message:
           type: string
+      type: object
+    HtcJobID:
+      example:
+        server: server
+        batchSystemType: null
+        jobNumber: 6
+      properties:
+        jobNumber:
+          format: int64
+          type: integer
+        server:
+          type: string
+        batchSystemType:
+          $ref: '#/components/schemas/BatchSystemType'
       type: object
     Identity:
       example:
@@ -518,6 +710,17 @@ components:
           items:
             type: string
           type: array
+      type: object
+    Instant:
+      example: 2022-03-10T16:15:50Z
+      format: date-time
+      type: string
+    KeyValue:
+      example:
+        value: 0.8008281904610115
+      properties:
+        value:
+          type: number
       type: object
     MathmodelRef:
       example:
@@ -618,12 +821,271 @@ components:
           format: date
           type: string
       type: object
-    Simulation:
+    SchedulerStatus:
+      enum:
+      - WAITING
+      - QUEUED
+      - DISPATCHED
+      - RUNNING
+      - COMPLETED
+      - STOPPED
+      - FAILED
+      type: string
+    SimulationExecutionStatusRecord:
       example:
-        name: name
+        fieldLatestUpdateDate: 2022-03-10T16:15:50Z
+        fieldHasData: true
+        fieldStartDate: 2022-03-10T16:15:50Z
+        fieldEndDate: 2022-03-10T16:15:50Z
+        fieldComputeHost: fieldComputeHost
+        fieldHtcJobID:
+          server: server
+          batchSystemType: null
+          jobNumber: 6
       properties:
+        fieldStartDate:
+          example: 2022-03-10T16:15:50Z
+          format: date-time
+          type: string
+        fieldLatestUpdateDate:
+          example: 2022-03-10T16:15:50Z
+          format: date-time
+          type: string
+        fieldEndDate:
+          example: 2022-03-10T16:15:50Z
+          format: date-time
+          type: string
+        fieldComputeHost:
+          type: string
+        fieldHasData:
+          type: boolean
+        fieldHtcJobID:
+          $ref: '#/components/schemas/HtcJobID'
+      type: object
+    SimulationJobStatusRecord:
+      example:
+        fieldSimulationMessage:
+          htcJobId:
+            server: server
+            batchSystemType: null
+            jobNumber: 6
+          displayMessage: displayMessage
+          detailedState: null
+          message: message
+        fieldTimeDataStamp: 2022-03-10T16:15:50Z
+        fieldServerID: fieldServerID
+        fieldSimulationExecutionStatus:
+          fieldLatestUpdateDate: 2022-03-10T16:15:50Z
+          fieldHasData: true
+          fieldStartDate: 2022-03-10T16:15:50Z
+          fieldEndDate: 2022-03-10T16:15:50Z
+          fieldComputeHost: fieldComputeHost
+          fieldHtcJobID:
+            server: server
+            batchSystemType: null
+            jobNumber: 6
+        fieldVCSimID:
+          owner:
+            testAccount: true
+            name: name
+            iD:
+              value: 0.8008281904610115
+            userName: userName
+            key:
+              value: 0.8008281904610115
+          simulationKey:
+            value: 0.8008281904610115
+          iD: iD
+        fieldTaskID: 1
+        fieldSimulationQueueEntryStatus:
+          fieldQueuePriority: 5
+          fieldQueueID: null
+          fieldQueueDate: 2022-03-10T16:15:50Z
+        fieldSubmitDate: 2022-03-10T16:15:50Z
+        fieldSchedulerStatus: null
+        fieldJobIndex: 5
+      properties:
+        fieldTimeDataStamp:
+          example: 2022-03-10T16:15:50Z
+          format: date-time
+          type: string
+        fieldVCSimID:
+          $ref: '#/components/schemas/VCSimulationIdentifier'
+        fieldSubmitDate:
+          example: 2022-03-10T16:15:50Z
+          format: date-time
+          type: string
+        fieldSchedulerStatus:
+          $ref: '#/components/schemas/SchedulerStatus'
+        fieldSimulationMessage:
+          $ref: '#/components/schemas/SimulationMessage'
+        fieldTaskID:
+          format: int32
+          type: integer
+        fieldServerID:
+          type: string
+        fieldJobIndex:
+          format: int32
+          type: integer
+        fieldSimulationExecutionStatus:
+          $ref: '#/components/schemas/SimulationExecutionStatusRecord'
+        fieldSimulationQueueEntryStatus:
+          $ref: '#/components/schemas/SimulationQueueEntryStatusRecord'
+      type: object
+    SimulationMessage:
+      example:
+        htcJobId:
+          server: server
+          batchSystemType: null
+          jobNumber: 6
+        displayMessage: displayMessage
+        detailedState: null
+        message: message
+      properties:
+        detailedState:
+          $ref: '#/components/schemas/DetailedState'
+        message:
+          type: string
+        htcJobId:
+          $ref: '#/components/schemas/HtcJobID'
+        displayMessage:
+          type: string
+      type: object
+    SimulationQueueEntryStatusRecord:
+      example:
+        fieldQueuePriority: 5
+        fieldQueueID: null
+        fieldQueueDate: 2022-03-10T16:15:50Z
+      properties:
+        fieldQueuePriority:
+          format: int32
+          type: integer
+        fieldQueueDate:
+          example: 2022-03-10T16:15:50Z
+          format: date-time
+          type: string
+        fieldQueueID:
+          $ref: '#/components/schemas/SimulationQueueID'
+      type: object
+    SimulationQueueID:
+      enum:
+      - QUEUE_ID_WAITING
+      - QUEUE_ID_SIMULATIONJOB
+      - QUEUE_ID_NULL
+      type: string
+    SimulationStatusPersistentRecord:
+      example:
+        hasData: true
+        details: details
+        progressHash:
+          key: 0.8008281904610115
+        status: null
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        progressHash:
+          additionalProperties:
+            format: double
+            type: number
+          type: object
+        details:
+          type: string
+        hasData:
+          type: boolean
+      type: object
+    Status:
+      enum:
+      - UNKNOWN
+      - NEVER_RAN
+      - START_REQUESTED
+      - DISPATCHED
+      - WAITING
+      - QUEUED
+      - RUNNING
+      - COMPLETED
+      - FAILED
+      - STOP_REQUESTED
+      - STOPPED
+      - NOT_SAVED
+      type: string
+    StatusMessage:
+      example:
+        jobStatus:
+          fieldSimulationMessage:
+            htcJobId:
+              server: server
+              batchSystemType: null
+              jobNumber: 6
+            displayMessage: displayMessage
+            detailedState: null
+            message: message
+          fieldTimeDataStamp: 2022-03-10T16:15:50Z
+          fieldServerID: fieldServerID
+          fieldSimulationExecutionStatus:
+            fieldLatestUpdateDate: 2022-03-10T16:15:50Z
+            fieldHasData: true
+            fieldStartDate: 2022-03-10T16:15:50Z
+            fieldEndDate: 2022-03-10T16:15:50Z
+            fieldComputeHost: fieldComputeHost
+            fieldHtcJobID:
+              server: server
+              batchSystemType: null
+              jobNumber: 6
+          fieldVCSimID:
+            owner:
+              testAccount: true
+              name: name
+              iD:
+                value: 0.8008281904610115
+              userName: userName
+              key:
+                value: 0.8008281904610115
+            simulationKey:
+              value: 0.8008281904610115
+            iD: iD
+          fieldTaskID: 1
+          fieldSimulationQueueEntryStatus:
+            fieldQueuePriority: 5
+            fieldQueueID: null
+            fieldQueueDate: 2022-03-10T16:15:50Z
+          fieldSubmitDate: 2022-03-10T16:15:50Z
+          fieldSchedulerStatus: null
+          fieldJobIndex: 5
+        progress: 2.3021358869347655
+        userName: userName
+        timepoint: 7.061401241503109
+      properties:
+        jobStatus:
+          $ref: '#/components/schemas/SimulationJobStatusRecord'
+        userName:
+          type: string
+        progress:
+          format: double
+          type: number
+        timepoint:
+          format: double
+          type: number
+      type: object
+    User:
+      example:
+        testAccount: true
+        name: name
+        iD:
+          value: 0.8008281904610115
+        userName: userName
+        key:
+          value: 0.8008281904610115
+      properties:
+        userName:
+          type: string
+        key:
+          $ref: '#/components/schemas/KeyValue'
+        iD:
+          $ref: '#/components/schemas/KeyValue'
         name:
           type: string
+        testAccount:
+          type: boolean
       type: object
     UserIdentityJSONSafe:
       example:
@@ -669,6 +1131,27 @@ components:
           type: string
         emailNotification:
           type: boolean
+      type: object
+    VCSimulationIdentifier:
+      example:
+        owner:
+          testAccount: true
+          name: name
+          iD:
+            value: 0.8008281904610115
+          userName: userName
+          key:
+            value: 0.8008281904610115
+        simulationKey:
+          value: 0.8008281904610115
+        iD: iD
+      properties:
+        simulationKey:
+          $ref: '#/components/schemas/KeyValue'
+        owner:
+          $ref: '#/components/schemas/User'
+        iD:
+          type: string
       type: object
   securitySchemes:
     openId:

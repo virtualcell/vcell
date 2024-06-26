@@ -7,15 +7,11 @@ import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.CustomApiClientCode;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.security.cert.X509Certificate;
 import java.util.function.Consumer;
 
 
@@ -42,7 +38,7 @@ public class AuthApiClient extends ApiClient {
     }
 
     public AuthApiClient(URI apiBaseUrl, URI oidcProviderTokenEndpoint, AccessToken accessToken, RefreshToken refreshToken, boolean ignoreSSLCertProblems) {
-        allowInsecureCertificates(ignoreSSLCertProblems);
+        if (ignoreSSLCertProblems) {setHttpClientBuilder(CustomApiClientCode.createInsecureHttpClientBuilder());}
         this.oidcProviderTokenEndpoint = oidcProviderTokenEndpoint;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;

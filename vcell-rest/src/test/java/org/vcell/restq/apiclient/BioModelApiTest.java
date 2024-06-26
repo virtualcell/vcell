@@ -68,11 +68,7 @@ public class BioModelApiTest {
 
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
 
-        String vcmlString = IOUtils.toString(getClass().getResourceAsStream("/TestVCML.vcml"));
-        cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlString));
-        bioModel.setName("BioModelApiTest_testAddRemove");
-        bioModel.clearVersion();
-        vcmlString = XmlHelper.bioModelToXML(bioModel);
+        String vcmlString = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
 
         String bioModelID = bioModelResourceApi.uploadBioModel(vcmlString);
         BioModel bioModel_dto = bioModelResourceApi.getBiomodelById(bioModelID);

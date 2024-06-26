@@ -125,6 +125,12 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication
+*SimulationResourceApi* | [**getSimulationStatus**](docs/SimulationResourceApi.md#getSimulationStatus) | **GET** /api/v1/Simulation/{simID}/simulationStatus | Get the status of simulation running
+*SimulationResourceApi* | [**getSimulationStatusWithHttpInfo**](docs/SimulationResourceApi.md#getSimulationStatusWithHttpInfo) | **GET** /api/v1/Simulation/{simID}/simulationStatus | Get the status of simulation running
+*SimulationResourceApi* | [**startSimulation**](docs/SimulationResourceApi.md#startSimulation) | **POST** /api/v1/Simulation/{simID}/startSimulation | Start a simulation.
+*SimulationResourceApi* | [**startSimulationWithHttpInfo**](docs/SimulationResourceApi.md#startSimulationWithHttpInfo) | **POST** /api/v1/Simulation/{simID}/startSimulation | Start a simulation.
+*SimulationResourceApi* | [**stopSimulation**](docs/SimulationResourceApi.md#stopSimulation) | **POST** /api/v1/Simulation/{simID}/stopSimulation | Stop a simulation.
+*SimulationResourceApi* | [**stopSimulationWithHttpInfo**](docs/SimulationResourceApi.md#stopSimulationWithHttpInfo) | **POST** /api/v1/Simulation/{simID}/stopSimulation | Stop a simulation.
 *UsersResourceApi* | [**forgotLegacyPassword**](docs/UsersResourceApi.md#forgotLegacyPassword) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**forgotLegacyPasswordWithHttpInfo**](docs/UsersResourceApi.md#forgotLegacyPasswordWithHttpInfo) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**getGuestLegacyApiToken**](docs/UsersResourceApi.md#getGuestLegacyApiToken) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users
@@ -146,16 +152,30 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
+ - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
+ - [DetailedState](docs/DetailedState.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
+ - [HtcJobID](docs/HtcJobID.md)
  - [Identity](docs/Identity.md)
+ - [KeyValue](docs/KeyValue.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [Publication](docs/Publication.md)
- - [Simulation](docs/Simulation.md)
+ - [SchedulerStatus](docs/SchedulerStatus.md)
+ - [SimulationExecutionStatusRecord](docs/SimulationExecutionStatusRecord.md)
+ - [SimulationJobStatusRecord](docs/SimulationJobStatusRecord.md)
+ - [SimulationMessage](docs/SimulationMessage.md)
+ - [SimulationQueueEntryStatusRecord](docs/SimulationQueueEntryStatusRecord.md)
+ - [SimulationQueueID](docs/SimulationQueueID.md)
+ - [SimulationStatusPersistentRecord](docs/SimulationStatusPersistentRecord.md)
+ - [Status](docs/Status.md)
+ - [StatusMessage](docs/StatusMessage.md)
+ - [User](docs/User.md)
  - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
+ - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
 
 
 <a id="documentation-for-authorization"></a>

@@ -4,10 +4,11 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**principal_name** | **str** |  | [optional] 
-**roles** | **List[str]** |  | [optional] 
-**attributes** | **List[str]** |  | [optional] 
-**credentials** | **List[str]** |  | [optional] 
+**user_name** | **str** |  | [optional] 
+**key** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**i_d** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**name** | **str** |  | [optional] 
+**test_account** | **bool** |  | [optional] 
 
 ## Example
 

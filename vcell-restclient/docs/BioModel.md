@@ -17,7 +17,7 @@
 |**physModelKey** | **String** |  |  [optional] |
 |**ownerName** | **String** |  |  [optional] |
 |**ownerKey** | **String** |  |  [optional] |
-|**simulations** | [**List&lt;Simulation&gt;**](Simulation.md) |  |  [optional] |
+|**simulationKeyList** | [**List&lt;KeyValue&gt;**](KeyValue.md) |  |  [optional] |
 |**applications** | **List&lt;Object&gt;** |  |  [optional] |
 
 

@@ -9,12 +9,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { KeyValue } from './key-value';
 
 
 export interface User { 
-    principal_name?: string;
-    roles?: Array<string>;
-    attributes?: Array<string>;
-    credentials?: Array<string>;
+    userName?: string;
+    key?: KeyValue;
+    iD?: KeyValue;
+    name?: string;
+    testAccount?: boolean;
 }
 
