@@ -663,7 +663,13 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         }
     }
 
-    public void initializeForSpringSaLaD(MolecularType molecularType){
+    public void initializeForSpringSaLaD(MolecularType molecularType) {
+        // we need to make sure that the mcp in the siteAttributesMap:
+        // Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.getSiteAttributesMap();
+        // are the same as the authoritative mcp from the physiology:
+        // scs -> sc -> sp -> mtp -> mcp, mcp,...
+
+        // step 1: we solve the scs -> sc -> sp -> mtp -> mcp, mcp sequence
         if(getSpeciesContext() != null) {
             SpeciesPattern sp = getSpeciesContext().getSpeciesPattern();
             if (sp == null) {
@@ -679,10 +685,76 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             // molecularType != null and molecularType == mt : this molecule has a different
             //   number of components or a different component order
             List<MolecularComponent> componentList = mt.getComponentList();
+
+            // step 1.1: superficial sanity check, before changing anything
+            final String saMapExceptionPrefix = "SiteAttributeMap of SpeciesContextSpec of Species '" + getSpeciesContext().getName() + "' ";
+            if(siteAttributesMap == null || siteAttributesMap.isEmpty()) {
+                ;           // do nothing, map is empty, initialization phase
+            } else {        // if map not empty, now we need to check
+                            // we don't fire exceptions, size mismatch may be correct if we delete or add sites to a molecule
+                if (siteAttributesMap.size() > componentList.size()) {
+                    System.out.println(saMapExceptionPrefix + "has obsolete attributes");
+                } else if (siteAttributesMap.size() < componentList.size()) {
+                    System.out.println(saMapExceptionPrefix + "has missing attributes");
+                } else {
+                    for (MolecularComponent mc : componentList) {
+                        MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+                        if (!siteAttributesMap.containsKey(mcp)) {
+                            System.out.println(saMapExceptionPrefix + "mismatching key found (MolecularComponentPattern)");
+                        }
+                    }
+                }
+            }
+            // here the work is being done
+            //
+            // step 2: build the set of "old" mcp from the siteAttributesMap
+            Set<MolecularComponentPattern> oldMcpSet = new LinkedHashSet<> ();
+            for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+                oldMcpSet.add(entry.getKey());
+            }
+
+            // step 3.1: hard compare (instance match) of the authoritative mcp (from the physiology) with the mcp in siteAttributesMap
             for (MolecularComponent mc : componentList) {
                 MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
                 if (siteAttributesMap.containsKey(mcp)) {
-                    continue;    // this is set, nothing to do
+                    oldMcpSet.remove(mcp);      // perfect instance match between physiology and siteAttributesMap, stays as is
+                }
+            }
+            // step 3.2: soft compare (using compareEqual)
+//            Set <MolecularComponentPattern> mcpToAdd = new LinkedHashSet<> ();      // new mcp instances to add
+            Set <MolecularComponentPattern> mcpToRemove = new LinkedHashSet<> ();   // obsolete instances of mcp to be replaced by the new above
+            for (MolecularComponent mc : componentList) {
+                MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+                if (siteAttributesMap.containsKey(mcp)) {
+                    continue;       // dealt with it already
+                }
+                for(MolecularComponentPattern mcpOld : oldMcpSet) {
+                    if(mcp.compareEqual(mcpOld)) {
+//                        mcpToAdd.add(mcp);
+                        mcpToRemove.add(mcpOld);
+                        // we recover the sas from the obsolete mcpOld and transfer it to the new mcp
+                        // since we do not loop through siteAttributesMap we can add right here
+                        SiteAttributesSpec sas = siteAttributesMap.get(mcpOld);
+                        siteAttributesMap.put(mcp, sas);
+                        siteAttributesMap.remove(mcpOld);
+                        break;      // can't be more than one
+                    }
+                }
+            }
+            oldMcpSet.removeAll(mcpToRemove);   // remove the old mcp we have just dealt with
+
+            // step 3.3: whatever is left in the oldMcpSet doesn't exist anymore in the authoritative mcp list,
+            // could be a mc that has been deleted
+            for(MolecularComponentPattern mcpOld : oldMcpSet) {
+                siteAttributesMap.remove(mcpOld);
+            }
+            oldMcpSet.clear();
+
+            // step 3.4: we add any new instance of authoritative mcp not there yet, and we initialize with default sas
+            for (MolecularComponent mc : componentList) {
+                MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+                if (siteAttributesMap.containsKey(mcp)) {
+                    continue;       // exists, already dealt with
                 }
                 SiteAttributesSpec sas = siteAttributesMap.get(mcp);
                 if (sas == null || sas.getMolecularComponentPattern() == null) {
@@ -690,26 +762,14 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     siteAttributesMap.put(mcp, sas);
                 }
             }
+            // at this point the siteAttributesMap should be fully reconstructed
 
-            if (getInternalLinkSet().isEmpty()) {
-                for (int i = 0; i < componentList.size() - 1; i++) {
-                    MolecularComponent mcOne = componentList.get(i);
-                    MolecularComponent mcTwo = componentList.get(i + 1);
-                    MolecularComponentPattern mcpOne = mtp.getMolecularComponentPattern(mcOne);
-                    MolecularComponentPattern mcpTwo = mtp.getMolecularComponentPattern(mcTwo);
-                    MolecularInternalLinkSpec link = new MolecularInternalLinkSpec(this, mcpOne, mcpTwo);
-                    // TODO: set x,y,z instead, link will be computed
-//				link.setLinkLength(2.0);
-                    internalLinkSet.add(link);
-                }
-            }
-            // sanity checks (the current (up to date) instances can be obtained
+            // sanity checks, after (the current (up to date) instances can be obtained
             // only via SpeciesContext -> SpeciesPattern -> MolecularTypePattern -> MolecularComponentPattern
             // all the site attribute map elements and all internal link set elements must use the right instances of these mcp
 //            if(molecularType == null) {
 //                return; // we don't need to do sanity check when we start clean (do we? does it hurt if we do? can it possibly fail?)
 //            }
-            String saMapExceptionPrefix = "SiteAttributeMap of SpeciesContextSpec of Species '" + getSpeciesContext().getName() + "' ";
             if(siteAttributesMap.size() > componentList.size()) {
                 throw new RuntimeException(saMapExceptionPrefix + "has obsolete attributes");
             } else if(siteAttributesMap.size() < componentList.size()) {
@@ -722,22 +782,107 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     }
                 }
             }
-            String ilSetExceptionPrefix = "InternalLinkSet of SpeciesContextSpec of Species '" + getSpeciesContext().getName() + "' ";
-            // we build set of authoritative MolecularComponentPattern from the SpeciesPattern
+            //  ======== dealing with the links ====================================================
+            //
+            // if the list is empty, we just add a full set of default links
+            if (getInternalLinkSet().isEmpty()) {
+                for (int i = 0; i < componentList.size() - 1; i++) {
+                    MolecularComponent mcOne = componentList.get(i);
+                    MolecularComponent mcTwo = componentList.get(i + 1);
+                    MolecularComponentPattern mcpOne = mtp.getMolecularComponentPattern(mcOne);
+                    MolecularComponentPattern mcpTwo = mtp.getMolecularComponentPattern(mcTwo);
+                    MolecularInternalLinkSpec link = new MolecularInternalLinkSpec(this, mcpOne, mcpTwo);
+                    // TODO: set x,y,z instead, link will be computed
+//				link.setLinkLength(2.0);
+                    internalLinkSet.add(link);
+                }
+                return;     // initial initialization done, nothing else to do
+            }
+
+            // step 1.1: build the set of "old" mcp and mils from the siteAttributesMap
+            oldMcpSet = new LinkedHashSet<> ();     // Set<MolecularComponentPattern>
+            for(MolecularInternalLinkSpec oldMils : getInternalLinkSet()) {
+                MolecularComponentPattern mcpOne = oldMils.getMolecularComponentPatternOne();
+                MolecularComponentPattern mcpTwo = oldMils.getMolecularComponentPatternTwo();
+                oldMcpSet.add(mcpOne);
+                oldMcpSet.add(mcpTwo);
+            }
+            // step 1.2: we build set of authoritative MolecularComponentPattern from the SpeciesPattern
             Set<MolecularComponentPattern> authoritativeMcpSet = new LinkedHashSet<>();
             for (MolecularComponent mc : componentList) {
                 MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
                 authoritativeMcpSet.add(mcp);
             }
-            // we can't assume how many links we have, even 0 is possible if we deleted them manually
+
+            // step 2: make a corresponding map between oldMcp and authoritative mcp
+            Map <MolecularComponentPattern, MolecularComponentPattern> oldToNewMcp = new LinkedHashMap<> ();
+            Set<MolecularComponentPattern> mcpToRemoveSet = new LinkedHashSet<> (); // these will be removed from authoritativeMcpSet
+            // step 2.1: hard compare (instance match) of the authoritative mcp (from the physiology) with the mcp in siteAttributesMap
+            for(MolecularComponentPattern oldMcp : oldMcpSet) {
+                if (authoritativeMcpSet.contains(oldMcp)) {
+                    oldToNewMcp.put(oldMcp, oldMcp);
+                    mcpToRemoveSet.add(oldMcp);
+                }
+            }
+            // once we have an instance match we don't want to again try a compareEqual() match,
+            // which will obviously succed and risk producing duplicates
+            authoritativeMcpSet.removeAll(mcpToRemoveSet);
+            oldMcpSet.removeAll(mcpToRemoveSet);
+            mcpToRemoveSet.clear();
+
+            // step 2.2: soft compare, using compareEqual()
+            for(MolecularComponentPattern oldMcp : oldMcpSet) {
+                for(MolecularComponentPattern newMcp : authoritativeMcpSet) {
+                    if(oldMcp.compareEqual(newMcp)) {
+                        oldToNewMcp.put(oldMcp, newMcp);
+                        mcpToRemoveSet.add(newMcp);
+                    }
+                }
+            }
+            // everything that matched one way or another is dealt with, whatever remains is unlinked sites
+            // perhaps a newly added site
+            authoritativeMcpSet.removeAll(mcpToRemoveSet);
+            oldMcpSet.removeAll(mcpToRemoveSet);
+            mcpToRemoveSet.clear();
+            // any mcp still present in the authoritativeMcpSet was newly added
+            // not sure if we need to do anything about it
+            if(!authoritativeMcpSet.isEmpty()) {
+                System.out.println("Unlinked mcp in authoritativeMcpSet");
+            }
+
+            // step 3: we iterate through the internal link set, we replace all mcs with the new mcs in oldToNewMcp
+            // any mcp not found there was deleted, we must delete the link containing it
+            Set<MolecularInternalLinkSpec> linksToRemove = new LinkedHashSet<> ();
+            for(MolecularInternalLinkSpec oldMils : getInternalLinkSet()) {
+                Pair<MolecularComponentPattern, MolecularComponentPattern> link = oldMils.getLink();
+                MolecularComponentPattern mcpOne = oldMils.getMolecularComponentPatternOne();
+                MolecularComponentPattern mcpTwo = oldMils.getMolecularComponentPatternTwo();
+                if(!oldToNewMcp.containsKey(mcpOne) || !oldToNewMcp.containsKey(mcpTwo)) {
+                    linksToRemove.add(oldMils);
+                } else {
+                    Pair<MolecularComponentPattern, MolecularComponentPattern> newLink = new Pair(oldToNewMcp.get(mcpOne), oldToNewMcp.get(mcpTwo));
+                    oldMils.setLink(newLink);
+                }
+            }
+            getInternalLinkSet().removeAll(linksToRemove);
+
+            String ilSetExceptionPrefix = "InternalLinkSet of SpeciesContextSpec of Species '" + getSpeciesContext().getName() + "' ";
+            // step 4: sanity check on links (after)
+            // step 4.1: we build a new authoritativeMcpSet2 (the old authoritativeMcpSet still contains mcp that are unlinked)
+            Set<MolecularComponentPattern> authoritativeMcpSet2 = new LinkedHashSet<>();
+            for (MolecularComponent mc : componentList) {
+                MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
+                authoritativeMcpSet2.add(mcp);
+            }
+            // step 4.2: we can't assume how many links we have, even 0 is possible if we deleted them manually
             // hoever, any mcp instance present in a link must be valid (present in the authoritativeMcpSet)
             for(MolecularInternalLinkSpec link : getInternalLinkSet()) {
                 MolecularComponentPattern mcpOne = link.getMolecularComponentPatternOne();
                 MolecularComponentPattern mcpTwo = link.getMolecularComponentPatternTwo();
-                if(!authoritativeMcpSet.contains(mcpOne)) {
+                if(!authoritativeMcpSet2.contains(mcpOne)) {
                     throw new RuntimeException(ilSetExceptionPrefix + "has invalid MolecularComponentPattern instance");
                 }
-                if(!authoritativeMcpSet.contains(mcpTwo)) {
+                if(!authoritativeMcpSet2.contains(mcpTwo)) {
                     throw new RuntimeException(ilSetExceptionPrefix + "has invalid MolecularComponentPattern instance");
                 }
             }

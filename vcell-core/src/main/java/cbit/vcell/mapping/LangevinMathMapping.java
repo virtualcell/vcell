@@ -1155,7 +1155,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
 		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
 		for (MolecularType molecularType : molecularTypeList) {
-			Map<MolecularComponentPattern, LangevinParticleMolecularComponent> mcToLpmc = new LinkedHashMap<> ();
+			Map<MolecularComponentPattern, LangevinParticleMolecularComponent> mcpToLpmc = new LinkedHashMap<> ();
 			LangevinParticleMolecularType particleMolecularType = new LangevinParticleMolecularType(molecularType.getName());
 			SpeciesContextSpec scs = molecularTypeToSpeciesContextSpecMap.get(molecularType);	// scs may be null for Sink and Source
 			if(scs != null) {
@@ -1187,7 +1187,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					particleMolecularComponent.setCoordinate(sas.getCoordinate());
 					particleMolecularComponent.setRadius(sas.getRadius());
 					particleMolecularComponent.setDiffusionRate(sas.getDiffusionRate());
-					mcToLpmc.put(mcp, particleMolecularComponent);
+					mcpToLpmc.put(mcp, particleMolecularComponent);
 				}
 				particleMolecularType.addMolecularComponent(particleMolecularComponent);
 			}
@@ -1205,8 +1205,8 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 				}
 				for(MolecularInternalLinkSpec mils : internalLinkSet) {
 					Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
-					LangevinParticleMolecularComponent one = mcToLpmc.get(link.one);
-					LangevinParticleMolecularComponent two = mcToLpmc.get(link.two);
+					LangevinParticleMolecularComponent one = mcpToLpmc.get(link.one);
+					LangevinParticleMolecularComponent two = mcpToLpmc.get(link.two);
 					// error: Cannot invoke "Object.equals(Object)" because "this.one" is null
 					Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair = new Pair<> (one, two);
 					particleMolecularType.getInternalLinkSpec().add(pair);
