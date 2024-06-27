@@ -183,6 +183,22 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		}
 		return new Pair<MolecularComponentPattern, MolecularComponentPattern>(internalLink.fieldMolecularComponentPatternOne, internalLink.fieldMolecularComponentPatternTwo);
 	}
+	public void setLink(Pair<MolecularComponentPattern, MolecularComponentPattern> link) {
+		SpeciesContext sc = fieldSpeciesContextSpec.getSpeciesContext();
+		SpeciesPattern sp = sc.getSpeciesPattern();
+		MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);	// the one and only
+		for(MolecularComponentPattern mpc : mtp.getComponentPatternList()) {
+			if(mpc == link.one) {					// linkOne comes first
+				fieldMolecularComponentPatternOne = link.one;
+				fieldMolecularComponentPatternTwo = link.two;
+				break;
+			} else if(mpc == link.two) {				// linkTwo comes first
+				fieldMolecularComponentPatternOne = link.two;
+				fieldMolecularComponentPatternTwo = link.one;
+				break;
+			}
+		}
+	}
 	@Override
 	public boolean compareEqual(Matchable obj) {
 		if (obj == this) {
