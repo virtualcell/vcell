@@ -1,14 +1,20 @@
 package cbit.vcell.desktop;
 
 import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.VCellClient;
+import cbit.vcell.client.VCellClientMain;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.Auth0ConnectionUtils;
-import cbit.vcell.server.VCellConnectionFactory;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Key;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
+import org.vcell.DependencyConstants;
+import org.vcell.dependency.client.VCellClientModule;
 import org.vcell.util.document.User;
-import org.vcell.util.document.UserLoginInfo;
 
 import javax.swing.*;
 import java.util.Hashtable;
@@ -43,7 +49,6 @@ public class ClientLogin {
                     int accept = ClientLogin.showLoginPanel();
                     hashTable.put("login", ClientLogin.doesTheUserWantToLogin(accept));
                     hashTable.put("guest", ClientLogin.doesTheUserWantToBeGuest(accept));
-                    Auth0ConnectionUtils.setShowLoginPopUp(false);
                 }
             }
         };
@@ -65,9 +70,13 @@ public class ClientLogin {
         return task;
     }
 
-    public static AsynchClientTask connectToServer(Auth0ConnectionUtils auth0ConnectionUtils, ClientServerInfo clientServerInfo){
+    @Inject
+    public static AsynchClientTask connectToServer(Auth0ConnectionUtils auth0ConnectionUtils,
+                                                   ClientServerInfo clientServerInfo){
+
         AsynchClientTask task  = new AsynchClientTask("Connecting to Server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
+                String hostname = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_QUARKUS_API_HOST)));
                 // try server connection
                 boolean login = (boolean)hashTable.get("login");
                 boolean isGuest = (boolean)hashTable.get("guest");
@@ -76,12 +85,19 @@ public class ClientLogin {
                         int numberOfPolls = 0;
                         while(!auth0ConnectionUtils.isVCellIdentityMapped()){
                             if (numberOfPolls==100) {
+                                String message = "Please restart the VCell application for we can't find your user. " +
+                                        "If you have not created " +
+                                        "a user on the website https://" + hostname + ", please do so. And if you have an existing user please " +
+                                        "follow the conversion process on the website.";
+                                JOptionPane.showMessageDialog(null, message,
+                                        "Restart the Application", JOptionPane.ERROR_MESSAGE, null);
                                 return;
                             }
                             numberOfPolls++;
                             Thread.sleep(5000); // Poll every 5 seconds
                         }
                     }
+                    Auth0ConnectionUtils.setShowLoginPopUp(false);
                     DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
                     ClientServerInfo newClientServerInfo = isGuest ?
                             VCellClient.createClientServerInfo(clientServerInfo, User.VCELL_GUEST_NAME)
