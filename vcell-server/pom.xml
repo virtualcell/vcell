@@ -74,6 +74,9 @@
 	<properties>
 		<license.licenseName>MIT</license.licenseName>
 		<license.copyrightOwners>UConn Health</license.copyrightOwners>
+		<quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+		<quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
+		<quarkus.platform.version>3.5.2</quarkus.platform.version>
 	</properties>
 
 	<dependencies>
@@ -121,7 +124,10 @@
 			<version>${activemq-broker.version}</version>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-mailer</artifactId>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -136,4 +142,15 @@
 		</dependency>
 
 	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>${quarkus.platform.group-id}</groupId>
+				<artifactId>${quarkus.platform.artifact-id}</artifactId>
+				<version>${quarkus.platform.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>

@@ -1,6 +1,11 @@
 package org.vcell.restq.apiclient;
 
+import cbit.vcell.modeldb.UserDbDriver;
 import cbit.vcell.resource.PropertyLoader;
+import io.quarkus.mailer.Mail;
+import io.quarkus.mailer.Mailer;
+import io.quarkus.mailer.MockMailbox;
+import io.quarkus.mailer.reactive.ReactiveMailer;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
@@ -21,9 +26,15 @@ import org.vcell.restclient.model.UserRegistrationInfo;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @QuarkusTest
@@ -35,7 +46,14 @@ public class UsersApiTest {
     Integer testPort;
 
     @Inject
+    MockMailbox mockMailbox;
+    @Inject
+    Mailer mailer;
+
+    @Inject
     AgroalConnectionFactory agroalConnectionFactory;
+    @Inject
+    UserRestDB userRestDB;
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     private ApiClient aliceAPIClient;
@@ -191,6 +209,42 @@ public class UsersApiTest {
         Assertions.assertEquals(guestApiToken.getUserId(), secondGuestApiToken.getUserId());
         Assertions.assertEquals(guestApiToken.getUserKey(), secondGuestApiToken.getUserKey());
         Assertions.assertNotEquals(guestApiToken.getToken(), secondGuestApiToken.getToken());
+    }
+
+    @Test
+    public void testResetPassword() throws SQLException, DataAccessException {
+        PropertyLoader.setProperty(PropertyLoader.vcellSMTPHostName, "host");
+        PropertyLoader.setProperty(PropertyLoader.vcellSMTPPort, "9090");
+        PropertyLoader.setProperty(PropertyLoader.vcellSMTPEmailAddress, "vcell@test.com");
+
+        UserDbDriver userDbDriver = new UserDbDriver();
+        String startPassword = "1700596370260"; // set in the init.sql script
+        Object lock = new Object();
+        Connection connection = agroalConnectionFactory.getConnection(lock);
+        UserInfo oldUserLoginInfo = userDbDriver.getUserInfo(connection, TestEndpointUtils.administratorUser.getID());
+
+        Assertions.assertNotNull(oldUserLoginInfo);
+        Assertions.assertEquals(new UserLoginInfo.DigestedPassword(startPassword).getString(), oldUserLoginInfo.digestedPassword0.getString());
+
+
+        userDbDriver.sendLostPassword(connection, TestEndpointUtils.administratorUser.getName(), mailer);
+        List<Mail> mails = mockMailbox.getMailsSentTo(oldUserLoginInfo.email);
+        Mail mail = mails.get(0);
+        String passwordReset = mail.getText();
+        String[] strings = passwordReset.split("\\.");
+        strings = strings[0].split(" ");
+        String newPassword = strings[strings.length - 1];
+        newPassword = newPassword.replace("'", "");
+
+        UserInfo newUserLoginInfo = userDbDriver.getUserInfo(connection, TestEndpointUtils.administratorUser.getID());
+        Assertions.assertEquals(newUserLoginInfo.digestedPassword0.getString(), new UserLoginInfo.DigestedPassword(newPassword).getString());
+
+        // reset changes
+        userDbDriver.updateUserInfo(connection, oldUserLoginInfo);
+        newUserLoginInfo = userDbDriver.getUserInfo(connection, TestEndpointUtils.administratorUser.getID());
+        Assertions.assertEquals(oldUserLoginInfo.digestedPassword0.getString(), newUserLoginInfo.digestedPassword0.getString());
+
+        agroalConnectionFactory.release(connection, lock);
     }
 
 }
