@@ -66,7 +66,7 @@ public class InteractiveLogin {
         String callback_endpoint_path = "/oidc_test_callback";
 
         URI redirectURI = new URI("http://" + "localhost" + ":" + localHttpServerPort + callback_endpoint_path);
-        Scope scope = new Scope("openid"); //, "email"); //, "profile", "offline_access");
+        Scope scope = new Scope("openid", "email", "profile"); //, "email"); //, "profile", "offline_access");
         CodeVerifier codeVerifier = new CodeVerifier();
         URI authRequestURI = getAuthRequestURI(oidcProviderMetadata, redirectURI, new ClientID(clientID), scope, state, codeVerifier);
 
