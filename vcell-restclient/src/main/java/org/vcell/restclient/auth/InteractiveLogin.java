@@ -14,6 +14,7 @@ import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import com.sun.net.httpserver.HttpServer;
 import net.minidev.json.JSONObject;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -155,11 +156,14 @@ public class InteractiveLogin {
             System.out.println("opening browser to "+authRequestURI);
             Desktop.getDesktop().browse(authRequestURI);
 
-            System.out.println("waiting up to 10 seconds for authorization code from web server via queue");
+            System.out.println("waiting up to 10 minutes for authorization code from web server via queue");
             // wait for authorization response from web server
-            String authorizationCodeURI = authorizationCodeURIQueue.poll(60, TimeUnit.SECONDS); // wait for server to process the request
+            String authorizationCodeURI = authorizationCodeURIQueue.poll(600, TimeUnit.SECONDS); // wait for server to process the request
             System.out.println("authorization code " + authorizationCodeURI + " received from web server via queue");
             if (authorizationCodeURI == null) {
+                String message = "Please restart the VCell application for the sign up time has expired.";
+                JOptionPane.showMessageDialog(null, message,
+                        "Restart the Application", JOptionPane.ERROR_MESSAGE, null);
                 throw new RuntimeException("Authorization code not received");
             }
             authorizationResponse = AuthorizationResponse.parse(URI.create(authorizationCodeURI));
