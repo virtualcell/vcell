@@ -161,7 +161,7 @@ public class InteractiveLogin {
             String authorizationCodeURI = authorizationCodeURIQueue.poll(600, TimeUnit.SECONDS); // wait for server to process the request
             System.out.println("authorization code " + authorizationCodeURI + " received from web server via queue");
             if (authorizationCodeURI == null) {
-                String message = "Please restart the VCell application for the sign up time has expired.";
+                String message = "If you desire to login, please click Account -> Login, for the login window has expired.";
                 JOptionPane.showMessageDialog(null, message,
                         "Restart the Application", JOptionPane.ERROR_MESSAGE, null);
                 throw new RuntimeException("Authorization code not received");

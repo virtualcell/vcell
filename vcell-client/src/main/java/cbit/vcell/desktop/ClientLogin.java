@@ -85,10 +85,9 @@ public class ClientLogin {
                         int numberOfPolls = 0;
                         while(!auth0ConnectionUtils.isVCellIdentityMapped()){
                             if (numberOfPolls==100) {
-                                String message = "Please restart the VCell application for we can't find your user. " +
-                                        "If you have not created " +
-                                        "a user on the website https://" + hostname + ", please do so. And if you have an existing user please " +
-                                        "follow the conversion process on the website.";
+                                String message = "Please restart the VCell application for we can't find your UserID. " +
+                                        "If you have not created/claimed " +
+                                        "a UserID on the website https://" + hostname + "/profile, please do so.";
                                 JOptionPane.showMessageDialog(null, message,
                                         "Restart the Application", JOptionPane.ERROR_MESSAGE, null);
                                 return;
