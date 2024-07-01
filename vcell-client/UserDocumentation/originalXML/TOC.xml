@@ -36,8 +36,10 @@
     	    <tocitem target="RuleBasedTheory" text="Introduction to Rule-Based Modeling"/> 
        		<tocitem target="RBCreate" text="How to create a rule-based model"/> 		
     		<tocitem target="RBSimulate" text="How to simulate a rule-based model"/> 
-    		<tocitem target="NFSimApp" text="Network-Free Application"/>		
-    	</tocitem>
+    		<tocitem target="NFSimApp" text="Network-Free Application"/>
+			<tocitem target="SpringSaLaDTheory" text="Introduction to SpringSaLaD Modeling"/>
+			<tocitem target="LangevinApp" text="SpringSaLaD Application"/>
+		</tocitem>
     	<tocitem target="PhysOverview" text="Physiology">
     		<tocitem target="ReactDiagView" text="Reaction Diagram"/>
     		<tocitem target="ReactTabView" text="Reactions Table">
