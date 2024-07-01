@@ -96,8 +96,8 @@ public class ClientLogin {
                             numberOfPolls++;
                             Thread.sleep(5000); // Poll every 5 seconds
                         }
+                        Auth0ConnectionUtils.setShowLoginPopUp(false);
                     }
-                    Auth0ConnectionUtils.setShowLoginPopUp(false);
                     DocumentWindowManager currWindowManager = (DocumentWindowManager)hashTable.get("currWindowManager");
                     ClientServerInfo newClientServerInfo = isGuest ?
                             VCellClient.createClientServerInfo(clientServerInfo, User.VCELL_GUEST_NAME)
