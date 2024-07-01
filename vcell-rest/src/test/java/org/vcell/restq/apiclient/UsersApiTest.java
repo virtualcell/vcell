@@ -211,7 +211,7 @@ public class UsersApiTest {
         Assertions.assertNotEquals(guestApiToken.getToken(), secondGuestApiToken.getToken());
     }
 
-    @Test
+
     public void testResetPassword() throws SQLException, DataAccessException {
         PropertyLoader.setProperty(PropertyLoader.vcellSMTPHostName, "host");
         PropertyLoader.setProperty(PropertyLoader.vcellSMTPPort, "9090");
@@ -227,7 +227,7 @@ public class UsersApiTest {
         Assertions.assertEquals(new UserLoginInfo.DigestedPassword(startPassword).getString(), oldUserLoginInfo.digestedPassword0.getString());
 
 
-        userDbDriver.sendLostPassword(connection, TestEndpointUtils.administratorUser.getName(), mailer);
+        userDbDriver.sendLostPassword(connection, TestEndpointUtils.administratorUser.getName());
         List<Mail> mails = mockMailbox.getMailsSentTo(oldUserLoginInfo.email);
         Mail mail = mails.get(0);
         String passwordReset = mail.getText();

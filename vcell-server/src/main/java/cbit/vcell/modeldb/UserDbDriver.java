@@ -12,9 +12,6 @@ package cbit.vcell.modeldb;
 
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.resource.PropertyLoader;
-import io.quarkus.mailer.Mail;
-import io.quarkus.mailer.Mailer;
-import io.quarkus.mailer.reactive.ReactiveMailer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jose4j.jwt.MalformedClaimException;
@@ -302,7 +299,7 @@ public UserLoginInfo.DigestedPassword updatePasswords(Connection con,KeyValue id
 	return dbDigestedPassword;
 }
 
-public void sendLostPassword(Connection con, String userid, Mailer mailer) throws SQLException, DataAccessException, ObjectNotFoundException {
+public void sendLostPassword(Connection con, String userid) throws SQLException, DataAccessException, ObjectNotFoundException {
 	User user = getUserFromUserid(con, userid);
 	if(user == null){
 		throw new ObjectNotFoundException("User name "+userid+" not found.");
@@ -315,11 +312,6 @@ public void sendLostPassword(Connection con, String userid, Mailer mailer) throw
 
 		String subject = "re: VCell Info";
 		String content = "Your password has been reset to '"+clearTextPassword+"'.  Login with the new password and change your password as soon as possible.  To change your password, log into VCell and select Account->'Update Registration Info...' from the Top Menu.  Enter a new password where indicated.";
-		if (mailer != null) {
-			Mail mail = Mail.withText(userInfo.email, subject, content);
-			mailer.send(mail);
-			return;
-		}
 		//Send new password to user
 		BeanUtils.sendSMTP(
 			PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName),
@@ -335,11 +327,6 @@ public void sendLostPassword(Connection con, String userid, Mailer mailer) throw
 	}
 	
 }
-
-public void sendLostPassword(Connection con, String userid) throws SQLException, DataAccessException {
-	sendLostPassword(con, userid, null);
-}
-
 /**
  * getModel method comment.
  */
