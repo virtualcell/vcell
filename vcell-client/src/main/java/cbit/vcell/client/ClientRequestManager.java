@@ -658,8 +658,8 @@ public class ClientRequestManager
 	public void logOut(final TopLevelWindowManager requester){
 		JDialog dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
-		int confirm = JOptionPane.showOptionDialog(dialog, "You are about to logout of VCell, and in doing so close the app." +
-						"To complete this process you'll need to logout on the website as well. Do you want to continue?",
+		int confirm = JOptionPane.showOptionDialog(dialog, "You are about to logout of VCell, and in doing so close the app. " +
+						"To complete this process you'll be redirected to a logout page. Do you want to continue?",
 				"Logout", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
 				new String[] { "Continue", "Cancel" }, "Continue");
 		if (confirm == JOptionPane.OK_OPTION)  {
@@ -670,7 +670,9 @@ public class ClientRequestManager
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
 			Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().getAuth0ConnectionUtils();
-			auth0ConnectionUtils.logOut();
+			if (!getClientServerInfo().getUsername().equals(User.VCELL_GUEST_NAME)){
+				auth0ConnectionUtils.logOut();
+			}
 			Auth0ConnectionUtils.setShowLoginPopUp(true);
 
 			AsynchClientTask waitTask = new AsynchClientTask("wait for window closing",

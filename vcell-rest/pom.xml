@@ -181,6 +181,10 @@
       <artifactId>log4j2-jboss-logmanager</artifactId>
       <version>${log4j2-jboss-logmanager.version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-mailer</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
