@@ -227,7 +227,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
                     getWindowManager().showFieldDataWindow();
 				if (e.getSource() == DocumentWindow.this.getManageUserMenuItem()){
 					if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)){
-                        Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/login_success"));
+                        Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/profile"));
                     }
 				}
 				if (e.getSource() == DocumentWindow.this.getLoginItem()){
@@ -1515,7 +1515,7 @@ private void login(){
 		pathPrefix = "";
 	}
 
-	AsynchClientTask task1a = ClientLogin.popupLogin();
+	AsynchClientTask task1a = ClientLogin.popupLogin(false);
 	AsynchClientTask task1b = ClientLogin.loginWithAuth0(vcellConnectionFactory.getAuth0ConnectionUtils());
 	AsynchClientTask task2  = ClientLogin.connectToServer(vcellConnectionFactory.getAuth0ConnectionUtils(),
 			ClientServerInfo.createRemoteServerInfo(host, Integer.parseInt(port), pathPrefix, null));

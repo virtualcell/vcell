@@ -183,7 +183,7 @@ public class InteractiveLogin {
         //Thread.sleep(1000);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
-        con.setConnectTimeout(1000);
+        con.setConnectTimeout(600 * 100); //milliseconds to seconds
         con.connect();
         int responseCode = con.getResponseCode();
         if (responseCode != 200) {

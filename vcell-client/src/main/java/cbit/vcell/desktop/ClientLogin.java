@@ -5,15 +5,11 @@ import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.VCellClientMain;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.Auth0ConnectionUtils;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Key;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.vcell.DependencyConstants;
-import org.vcell.dependency.client.VCellClientModule;
 import org.vcell.util.document.User;
 
 import javax.swing.*;
@@ -22,10 +18,16 @@ import java.util.Hashtable;
 public class ClientLogin {
 
 
-    public static int showLoginPanel(){
+    public static int showFullLoginPanel(){
         int answer = JOptionPane.showOptionDialog(null,
-                "VCell is going to redirect you to your browser to login. Do you wish to proceed?","Login Popup",
+                "VCell is going to redirect you to your browser to login. Do you wish to proceed?","VCell Login",
                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[] {"Login", "Offline", "Guest"}, "Login");
+        return answer;
+    }
+
+    public static int showAcceptLoginPanel(){
+        int answer = JOptionPane.showOptionDialog(null, "VCell is going to redirect you to your browser to login. Do you wish to proceed?",
+                "VCell Login", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[] {"Okay", "Cancel"}, "Okay");
         return answer;
     }
 
@@ -37,8 +39,11 @@ public class ClientLogin {
         return (answer == JOptionPane.CANCEL_OPTION);
     }
 
-
     public static AsynchClientTask popupLogin(){
+        return popupLogin(true);
+    }
+
+    public static AsynchClientTask popupLogin(boolean showFullPopup){
         AsynchClientTask task = new AsynchClientTask("Popup Login...", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
@@ -46,7 +51,7 @@ public class ClientLogin {
                 hashTable.put("login", true);
                 hashTable.put("guest", false);
                 if(showPopupMenu){
-                    int accept = ClientLogin.showLoginPanel();
+                    int accept = showFullPopup ? ClientLogin.showFullLoginPanel() : ClientLogin.showAcceptLoginPanel();
                     hashTable.put("login", ClientLogin.doesTheUserWantToLogin(accept));
                     hashTable.put("guest", ClientLogin.doesTheUserWantToBeGuest(accept));
                 }
