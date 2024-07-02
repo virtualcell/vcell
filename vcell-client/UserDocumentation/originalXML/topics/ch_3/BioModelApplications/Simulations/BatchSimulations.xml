@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Batch Simulations" target="BatchSimulations">
+
+	
+	<introduction>
+		The batch simulations feature is intended to be used when a user needs to override a large number of simulation
+		parameters / variables and the combinatorial complexity offered by the parameter scan feature is just too large.
+		Batch simulation allows a user to sample a subset of all the possible combinations.
+		This feature is available only for non-spatial applications.
+ 	</introduction>
+	
+	<appearance>
+		The input data needs to be presented as a text file with a .dat extension, with one set of overrides on each row,
+		each override comma separated, the format being variable=value. For example: 3 sets of overrides, which will
+		result in 3 simulations:
+		<list>
+			<item>s0_init_uM=4, s1_init_uM=3, Kf_r0=2</item>
+			<item>s0_init_uM=3, Kf_r0=2</item>
+			<item>s2_init_uM=5, s1_init_uM=3</item>
+		</list>
+		You can override initial conditions, rates and global variables, for non-spatial models.
+
+		<para>
+			The starting point is a "template" simulation with the initial conditions and solver parameters initializations
+			(duration, time intervals, a.s.o.).
+			Note that we use the naming conventions from the math for the initial conditions and kinetic parameter names.
+			The simulations are named sequentially, based on the row number in the .dat file (zero means first row).
+			The batch simulation names are automatically generated based on the template simulation name and input data
+			row, like: Simulation_bat_000, Simulation_bat_001, Simulation_bat_002...
+		</para>
+			The simulation results will be placed in the vCell home directory, in a dedicated folder named batchResults.
+			This folder will contain the results of the most recent run, anything else will be deleted. One can easily
+			find the location of the home vcell directory by selecting the Help / VCell Properties menu.
+			The first row will contain the names of the simulation results variables, with time first: t, s0, s1,...
+			The rows that follow are the simulation results, one timepoint per row.
+	</appearance>
+	
+	<operations>
+		Load the biomodel, navigate to the simulations folder, once there you'll see the template simulation exanple.
+		Select the template simulation and press the import button, an Open File dialog will pop up, which will allow
+		you to navigate to the location of the .dat file.
+		<imgReference target = "BatchSimulation.png"/>
+		<para>
+		Open it and the list of batch simulations will be created in vCell, right under the template.
+		Select all the batch simulations newly created and run them as you would normally run multiple simulations,
+		using the green button. The server will run them in batches, depending on your quota.
+		</para>
+		<imgReference target = "BatchSimulation2.png"/>
+		<para>
+		Once the simulations have finished running select again the template and press the export results button. The
+		code will contact the server on a separate thread, import the results from the server and save the results in the
+		$(home)/batchResults directory according to the same naming convention: 000.txt, 001.txt...
+		</para>
+		<imgReference target = "BatchSimulation3.png"/>
+	</operations>
+</page>
+</vcelldoc>

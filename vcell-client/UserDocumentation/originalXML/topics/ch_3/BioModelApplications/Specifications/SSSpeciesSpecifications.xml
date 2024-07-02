@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="SpringSaLaD Species" target="SSSpeciesSpecifications">
+
+	<introduction>
+	A SpringSaLaD species inherits the attributs of a Rule-based species, but has extra attributes describing
+		its sites' physical attributes and relationship with nearby sites.
+	</introduction>
+
+	<appearance> 
+	When using SpringSaLaD Applications, it is important to be aware that:
+		<list>
+			<item>A very strict geometry is required</item>
+		</list>
+		 
+	Using a SpringSaLaD application has the following limitations:
+	<list>
+		<item>The reaction rules are strictly categorized and must obey several syntax restrictions.</item>
+	</list>
+	</appearance>
+
+	<operations>  
+	
+	</operations>
+	
+</page>
+
+</vcelldoc>

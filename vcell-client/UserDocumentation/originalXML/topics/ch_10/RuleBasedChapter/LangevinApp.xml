@@ -15,7 +15,7 @@
 			<item>The complexity of calculations makes it practical only for a small number of particles</item>
 		</list>
 		 
-	Using a Network-Free application has the following limitations:
+	Using a SpringSaLaD application has the following limitations:
 	<list>
 		<item>The model must have exactly 3 structures, 2 compartments named "Intracellular" and "Extracellular" separated by a "Membrane"</item>
 		<item>All the sites require several attribute, like diameter and relative position to one another.</item>
