@@ -100,7 +100,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JSeparator ivjJSeparator6 = null;
 	private JMenuItem ivjJMenuItemNewBioModel = null;
 	private JMenuItem ivjJMenuItemOpenBioModel = null;
-	private JMenuItem ivjJMenuItemOpenGeometry = null;
 	private JMenuItem ivjJMenuItemOpenLocal = null;
 	private JMenuItem ivjJMenuItemOpenMathModel = null;
 	private JProgressBar ivjJProgressBarMemory = null;
@@ -110,7 +109,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 	private JProgressBar ivjJProgressBarConnection = null;
 	private JMenuItem ivjJMenuItemCompare = null;
 	private JMenuItem ivjJMenuItemRevert = null;
-	private JMenuItem ivjGeometryMenu = null;
 	private JMenuItem ivjMathFromBioMenuItem = null;
 	private JMenu ivjMathMenu = null;
 	private JMenuItem ivjNonSpatialMenuItem = null;
@@ -598,24 +596,6 @@ private JMenuItem getExportedDataViewer(){
 	return exportedDataViewer;
 }
 
-private javax.swing.JMenuItem getGeometryMenuItem() {
-	if (ivjGeometryMenu == null) {
-		try {
-			ivjGeometryMenu = new javax.swing.JMenuItem();
-			ivjGeometryMenu.setName("GeometryMenu");
-			ivjGeometryMenu.setText("Geometry");
-			ivjGeometryMenu.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					DocumentWindow.showGeometryCreationWarning(DocumentWindow.this);
-				}
-			});
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjGeometryMenu;
-}
-
 public static void showGeometryCreationWarning(Component parentComponent){
 	DialogUtils.showWarningDialog(parentComponent,
 			"Geometries are now viewed/edited/created within BioModels or MathModels.\n"+
@@ -840,24 +820,6 @@ private javax.swing.JMenuItem getJMenuItemOpenLocal() {
 	return ivjJMenuItemOpenLocal;
 }
 
-private javax.swing.JMenuItem getJMenuItemOpenGeometry() {
-	if (ivjJMenuItemOpenGeometry == null) {
-		try {
-			ivjJMenuItemOpenGeometry = new javax.swing.JMenuItem();
-			ivjJMenuItemOpenGeometry.setName("JMenuItemOpenGeometry");
-			ivjJMenuItemOpenGeometry.setText("Geometry...");
-			ivjJMenuItemOpenGeometry.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					DocumentWindow.showGeometryCreationWarning(DocumentWindow.this);
-				}
-			});
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemOpenGeometry;
-}
-
 private javax.swing.JMenuItem getJMenuItemOpenMathModel() {
 	if (ivjJMenuItemOpenMathModel == null) {
 		try {
@@ -964,7 +926,6 @@ private javax.swing.JMenu getNewMenuItem() {
 			ivjNewMenuItem.setText("New");
 			ivjNewMenuItem.add(getJMenuItemNewBioModel());
 			ivjNewMenuItem.add(getMathMenu());
-			ivjNewMenuItem.add(getGeometryMenuItem());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -994,7 +955,6 @@ private javax.swing.JMenu getOpenMenuItem() {
 			ivjOpenMenuItem.setEnabled(false);
 			ivjOpenMenuItem.add(getJMenuItemOpenBioModel());
 			ivjOpenMenuItem.add(getJMenuItemOpenMathModel());
-			ivjOpenMenuItem.add(getJMenuItemOpenGeometry());
 			ivjOpenMenuItem.add(getJMenuItemOpenLocal());
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -1626,7 +1586,6 @@ private void enableOpenMenuItems(boolean bEnableServerOps){
 	getOpenMenuItem().setEnabled(true);
 	getJMenuItemOpenBioModel().setEnabled(bEnableServerOps);
 	getJMenuItemOpenMathModel().setEnabled(bEnableServerOps);
-	getJMenuItemOpenGeometry().setEnabled(bEnableServerOps);
 	getJMenuItemOpenLocal().setEnabled(true);
 }
 /**
