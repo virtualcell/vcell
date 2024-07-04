@@ -11,14 +11,20 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringTokenizer;
 
 import static cbit.vcell.biomodel.meta.VCMetaDataMiriamManager.VCMetaDataDataType.DataType_UNIPROT;
 
 public class AddAnnotationsPanel extends JFrame implements ActionListener {
+
+    public static final int MAX_DESCRIPTION_LENGTH = 160;
 
     private JButton searchButton;
     private JTextField searchBar;
@@ -140,9 +146,10 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         VCMetaDataMiriamManager.VCMetaDataDataType mdt = (VCMetaDataMiriamManager.VCMetaDataDataType)jComboBoxURI.getSelectedItem();
         topPanel.setLayout(new GridBagLayout());
 
+        int gridy = 0;
         GridBagConstraints sGbc = new GridBagConstraints();
         //adding select ontology Label
-        sGbc.gridy = 0;
+        sGbc.gridy = gridy;
         sGbc.gridx = 0;
         sGbc.insets = new Insets(0,0,10,0);
         sGbc.anchor = GridBagConstraints.WEST;
@@ -151,11 +158,30 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 
         sGbc = new GridBagConstraints();
         sGbc.insets = new Insets(3, 5, 3, 4);
-        sGbc.gridy = 0;
+        sGbc.gridy = gridy;
         sGbc.gridx = 1;
         sGbc.insets = new Insets(0,10,10,20);
         sGbc.anchor = GridBagConstraints.WEST;
         topPanel.add(new JLabel("<html><b>" + mdt.getDataTypeName() + "</b></html>"), sGbc);
+
+        JLabel linkLabel = new JLabel();
+        String s = "<html>" + "URL : " + "&nbsp;<font color=\"" + "blue" + "\"><a href=" + mdt.getDataTypeURL() + ">" + mdt.getDataTypeURL() + "</a></font>&nbsp;&nbsp;" + "</html>";
+        linkLabel.setToolTipText("Double-click to open link");
+        linkLabel.setText(s);
+        linkLabel.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                if(e.getClickCount() == 2) {
+                    annotationsPanel.showBrowseToLink(mdt);
+                }
+            }
+        });
+        sGbc = new GridBagConstraints();
+        sGbc.insets = new Insets(3, 5, 3, 4);
+        sGbc.gridy = gridy;
+        sGbc.gridx = 2;
+        sGbc.insets = new Insets(0,10,10,20);
+        sGbc.anchor = GridBagConstraints.WEST;
+        topPanel.add(linkLabel, sGbc);
 
 //        sGbc = new GridBagConstraints();
 //        sGbc.gridy = 0;
@@ -171,48 +197,80 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 //        topPanel.add(jComboBoxURI, sGbc);      // ontologies combobox
 
         sGbc = new GridBagConstraints();
-        sGbc.gridy = 0;
-        sGbc.gridx = 2;
+        sGbc.gridy = gridy;
+        sGbc.gridx = 3;
         sGbc.weightx = 1;
         topPanel.add(new javax.swing.JLabel(""), sGbc);      // empty filler
 
         // ---------- second row -----------------------------------------------------------------
+//        gridy++;
+        List <String> rows = new ArrayList<>();
+        String value = mdt.getDescription();
+        StringTokenizer tokenizer = new StringTokenizer(value, " ");
+        String row = "";
+        while(tokenizer.hasMoreTokens()) {
+            String word = tokenizer.nextToken();
+            if((row.length() + word.length()) > MAX_DESCRIPTION_LENGTH) {
+                rows.add(row);
+                row = word + " ";
+            } else {
+                row += word + " ";
+            }
+        }
+        if(!row.isEmpty()) {
+            rows.add(row);
+        }
+        for(String currentRow : rows) {
+            gridy++;
+            sGbc = new GridBagConstraints();
+            sGbc.insets = new Insets(2, 4, 4, 0);
+            sGbc.gridx = 0;
+            sGbc.gridy = gridy;
+            sGbc.gridwidth = 8;
+            sGbc.fill = GridBagConstraints.HORIZONTAL;
+            sGbc.weightx = 1.0;
+            topPanel.add(new JLabel(currentRow), sGbc);
+        }
+
+        // ---------- next row -------------------------------------------------------------------
+        gridy++;
         sGbc = new GridBagConstraints();
-        sGbc.gridy = 1;
+        sGbc.gridy = gridy;
         sGbc.gridx = 0;
         sGbc.anchor = GridBagConstraints.WEST;
-        sGbc.insets = new Insets(0,0,10,0);
+        sGbc.insets = new Insets(9,0,10,0);
         JLabel searchLabel = new JLabel("Search term:");        // search label
         topPanel.add(searchLabel, sGbc);
 
         sGbc = new GridBagConstraints();
-        sGbc.gridy = 1;
+        sGbc.gridy = gridy;
         sGbc.gridx = 1;
         sGbc.anchor = GridBagConstraints.WEST;
-        sGbc.insets = new Insets(0,10,10,0);
+        sGbc.insets = new Insets(9,10,10,0);
         containsBox = new JComboBox<>();            // contains/exact Jcombobox
         containsBox.addItem("contains");
         containsBox.addItem("exact");
         topPanel.add(containsBox, sGbc);
 
         sGbc = new GridBagConstraints();
-        sGbc.gridy = 1;
+        sGbc.gridy = gridy;
         sGbc.fill = GridBagConstraints.HORIZONTAL;
         sGbc.gridx = 2;
         sGbc.weightx = 1;
         sGbc.gridwidth = 3;
         sGbc.anchor = GridBagConstraints.WEST;
-        sGbc.insets = new Insets(0,20,10,0);
+        sGbc.insets = new Insets(9,20,10,0);
 //        searchBar = new JTextField(25);
 //        searchBar = new JTextField(15);
 //        leftPanel.add(searchBar, sGbc);
         topPanel.add(getSearchComponentsPanel(), sGbc);    // the searchComponentsPanel
 
-        // --------- third row -------------------------------------------------------------------
+        // --------- next row -------------------------------------------------------------------
+        gridy++;
         sGbc.fill = GridBagConstraints.NONE;
         sGbc.anchor = GridBagConstraints.WEST;
         sGbc.gridwidth = 1;
-        sGbc.gridy = 2;
+        sGbc.gridy = gridy;
         sGbc.gridx = 0;
         sGbc.insets = new Insets(0,0,0,10);
         JLabel limitLabel = new JLabel("Limit to");         // limit label
@@ -221,7 +279,7 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         //adding limit JComboBox
         sGbc.fill = GridBagConstraints.HORIZONTAL;
         sGbc.anchor = GridBagConstraints.WEST;
-        sGbc.gridy = 2;
+        sGbc.gridy = gridy;
         sGbc.gridx = 1;
         sGbc.insets = new Insets(0,10,0,10);
         limitBox = new JComboBox<>();
@@ -233,20 +291,20 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
         //adding limit term label
         sGbc.fill = GridBagConstraints.NONE;
         sGbc.anchor = GridBagConstraints.WEST;
-        sGbc.gridy = 2;
+        sGbc.gridy = gridy;
         sGbc.gridx = 2;
         sGbc.insets = new Insets(0,0,0,20);
         JLabel elementLabel = new JLabel("elements");
         topPanel.add(elementLabel, sGbc);
 
         sGbc = new GridBagConstraints();
-        sGbc.gridy = 2;
+        sGbc.gridy = gridy;
         sGbc.gridx = 3;
         sGbc.weightx = 1;
         topPanel.add(new javax.swing.JLabel(""), sGbc);      // empty filler
 
         sGbc.anchor = GridBagConstraints.EAST;
-        sGbc.gridy = 2;
+        sGbc.gridy = gridy;
         sGbc.gridx = 4;
         sGbc.insets = new Insets(0,10,0,0);
         searchButton = new JButton("Search");                   // the Search button

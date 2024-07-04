@@ -146,8 +146,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 				addIdentifier();
 			} else if(evt.getSource() == getJButtonSearchRef()) {
 				initializeAddAnnotationsPanel();
-			} else if(evt.getSource() == addAnnotationsPanel.getOkButton()) {
-				annotationTextArea.setText("A test from the void");
+			} else if(addAnnotationsPanel != null && evt.getSource() == addAnnotationsPanel.getOkButton()) {
+				annotationTextArea.setText("");
 			} else if(evt.getSource() == getJButtonDeleteRef()) {
 				removeIdentifier();
 			} else if(evt.getSource() == getJButtonRemoveText()) {
@@ -728,7 +728,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			DialogUtils.showWarningDialog(this, "No Web-site link available");
 		}
 	}
-	private void showBrowseToLink(VCMetaDataDataType md) {
+	public void showBrowseToLink(VCMetaDataDataType md) {
 		String link = md.getDataTypeURL();
 		if (link != null) {
 			DialogUtils.browserLauncher(getJComboBoxURI(), link, "Failed to launch");
@@ -761,7 +761,8 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			initializeComboBoxQualifier();
 			initializeComboBoxURI();
 
-			getJTreeMIRIAM().addTreeSelectionListener(new TreeSelectionListener() {
+			JTree miriamTree = getJTreeMIRIAM();
+			miriamTree.addTreeSelectionListener(new TreeSelectionListener() {
 				public void valueChanged(TreeSelectionEvent e) {
 					TreePath tp = ((JTree)e.getSource()).getSelectionPath();
 					if(tp == null) {
@@ -1033,6 +1034,9 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			id = uri.getPath().replace("/obo/GO_","");
 		else if (uri.toString().contains("ncit"))
 			id = uri.toString().replace("https://ncit.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=","");
+
+		// TODO:  links are not working, and links with UBERON are giving error
+		// TODO: links need to point to the same database as in purl
 		else if (uri.toString().contains("PATO"))
 			id = uri.getPath().replace("/obo/PATO_","");
 		else if (uri.toString().contains("PR"))
@@ -1114,6 +1118,9 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		List<String> tooltips = new ArrayList<> ();
 		List<DataType> dataTypeList = new ArrayList<>();
 		if(entity == null) {
+			if(bioModel == null || vcMetaData == null) {
+				return;		// called way too early, will be again called later
+			}
 			for (DataType dt : vcMetaData.getMiriamManager().getAllDataTypes().values()) {
 				dataTypeList.add(dt);
 			}
