@@ -79,13 +79,10 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
     MatInputModule,
     MatButtonModule,
     ApiModule,
-    // ApiModule.forRoot(() => new Configuration({ basePath: 'https://vcellapi-test.cam.uchc.edu' })),
-    // ApiModule
   ],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
-      //useClass: CustomAuthInterceptor,
       useClass: AuthHttpInterceptor,
       multi: true,
     },
