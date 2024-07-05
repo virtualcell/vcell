@@ -1,6 +1,6 @@
 {
   "/api": {
-    "target": "https://vcell-stage.cam.uchc.edu",
+    "target": "https://minikube.island",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
