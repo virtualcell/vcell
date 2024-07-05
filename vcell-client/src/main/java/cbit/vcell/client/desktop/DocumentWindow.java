@@ -69,212 +69,212 @@ import java.util.Hashtable;
 @SuppressWarnings("serial")
 public class DocumentWindow extends LWTopFrame implements TopLevelWindow, ReconnectListener {
 
-	@SuppressWarnings("unused") //PENDING Window Manager redesign
-	private final static String HelpViewerContextObject = "HelpViewerWindow";  // this object instance is the context for the help ChildWindow
+    @SuppressWarnings("unused") //PENDING Window Manager redesign
+    private final static String HelpViewerContextObject = "HelpViewerWindow";  // this object instance is the context for the help ChildWindow
     private static final String notificationsUrl = "https://vcell.org/webstart/VCell_alert/VCell_Alert.html";
-	private final ChildWindowManager childWindowManager;
+    private final ChildWindowManager childWindowManager;
 
-	private JMenuItem ivjAbout_BoxMenuItem = null;
-	private JMenuItem ivjManageUser = null;
-	private JMenuItem loginMenuItem = null;
-	private JMenuItem ivjLogoutUser = null;
-	private JMenuItem ivjCloseMenuItem = null;
-	private JMenuBar ivjDocumentWindowJMenuBar = null;
-	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JMenuItem ivjExitMenuItem = null;
-	private JMenu ivjFileMenu = null;
-	private JMenu ivjHelpMenu = null;
-	private JMenu ivjNewMenuItem = null;
-	private JMenu ivjOpenMenuItem = null;
-	//private JMenu recentMenuItem = new JMenu("Open Recent...");
-	private JMenuItem ivjReconnectMenuItem = null;
-//	private JMenuItem ivjImageJServiceMenuItem = null;
-	private JMenuItem ivjSave_AsMenuItem = null;
-	private JMenuItem ivjSave_AsLocalMenuItem = null;
-	private JMenuItem ivjSave_VersionMenuItem = null;
-	private JMenuItem ivjSaveMenuItem = null;
-	private JMenu ivjServerMenu = null;
-	private JCheckBoxMenuItem ivjStatusbarMenuItem = null;
-	private JPanel ivjStatusBarPane = null;
-	//--------------------------------------
-	private JSeparator ivjJSeparator6 = null;
-	private JMenuItem ivjJMenuItemNewBioModel = null;
-	private JMenuItem ivjJMenuItemOpenBioModel = null;
-	private JMenuItem ivjJMenuItemOpenGeometry = null;
-	private JMenuItem ivjJMenuItemOpenLocal = null;
-	private JMenuItem ivjJMenuItemOpenMathModel = null;
-	private JProgressBar ivjJProgressBarMemory = null;
-	private DocumentWindowManager fieldWindowManager = null;
-	private JMenuItem ivjJMenuItemExport = null;
-	private JMenuItem menuItemImport = null;
-	private JProgressBar ivjJProgressBarConnection = null;
-	private JMenuItem ivjJMenuItemCompare = null;
-	private JMenuItem ivjJMenuItemRevert = null;
-	private JMenuItem ivjGeometryMenu = null;
-	private JMenuItem ivjMathFromBioMenuItem = null;
-	private JMenu ivjMathMenu = null;
-	private JMenuItem ivjNonSpatialMenuItem = null;
-	private JMenuItem ivjSpatialExistingMenuItem = null;
-	private JMenuItem ivjSpatialCreateNewMenuItem = null;
-//	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
-	private JMenuItem ivjTestingFrameworkMenuItem = null;
-	private JMenuItem ivjJMenuItemOnlineHelp = null;
-	private JMenuItem ivjJMenuItemOnlineSupport = null;
-	private JMenuItem ivjJMenuItemDiscussionGroup = null;
-	private JMenuItem ivjJMenuItemManagePermissions = null;
-	private JMenuItem ivjJMenuItemOnlinePublish = null;
-	private JMenuItem jMenuItemGrantPermissionsToVCellSupport = null;
+    private JMenuItem ivjAbout_BoxMenuItem = null;
+    private JMenuItem ivjManageUser = null;
+    private JMenuItem loginMenuItem = null;
+    private JMenuItem ivjLogoutUser = null;
+    private JMenuItem ivjCloseMenuItem = null;
+    private JMenuBar ivjDocumentWindowJMenuBar = null;
+    private final IvjEventHandler ivjEventHandler = new IvjEventHandler();
+    private JMenuItem ivjExitMenuItem = null;
+    private JMenu ivjFileMenu = null;
+    private JMenu ivjHelpMenu = null;
+    private JMenu ivjNewMenuItem = null;
+    private JMenu ivjOpenMenuItem = null;
+    //private JMenu recentMenuItem = new JMenu("Open Recent...");
+    private JMenuItem ivjReconnectMenuItem = null;
+    //	private JMenuItem ivjImageJServiceMenuItem = null;
+    private JMenuItem ivjSave_AsMenuItem = null;
+    private JMenuItem ivjSave_AsLocalMenuItem = null;
+    private JMenuItem ivjSave_VersionMenuItem = null;
+    private JMenuItem ivjSaveMenuItem = null;
+    private JMenu ivjServerMenu = null;
+    private JCheckBoxMenuItem ivjStatusbarMenuItem = null;
+    private JPanel ivjStatusBarPane = null;
+    //--------------------------------------
+    private JSeparator ivjJSeparator6 = null;
+    private JMenuItem ivjJMenuItemNewBioModel = null;
+    private JMenuItem ivjJMenuItemOpenBioModel = null;
+    private JMenuItem ivjJMenuItemOpenLocal = null;
+    private JMenuItem ivjJMenuItemOpenMathModel = null;
+    private JProgressBar ivjJProgressBarMemory = null;
+    private DocumentWindowManager fieldWindowManager = null;
+    private JMenuItem ivjJMenuItemExport = null;
+    private JMenuItem menuItemImport = null;
+    private JProgressBar ivjJProgressBarConnection = null;
+    private JMenuItem ivjJMenuItemCompare = null;
+    private JMenuItem ivjJMenuItemRevert = null;
+    private JMenuItem ivjMathFromBioMenuItem = null;
+    private JMenu ivjMathMenu = null;
+    private JMenuItem ivjNonSpatialMenuItem = null;
+    private JMenuItem ivjSpatialExistingMenuItem = null;
+    private JMenuItem ivjSpatialCreateNewMenuItem = null;
+    //	private JMenuItem ivjEdit_Annotation_JMenuItem = null;
+    private JMenuItem ivjTestingFrameworkMenuItem = null;
+    private JMenuItem ivjJMenuItemOnlineHelp = null;
+    private JMenuItem ivjJMenuItemOnlineSupport = null;
+    private JMenuItem ivjJMenuItemDiscussionGroup = null;
+    private JMenuItem ivjJMenuItemManagePermissions = null;
+    private JMenuItem ivjJMenuItemOnlinePublish = null;
+    private JMenuItem jMenuItemGrantPermissionsToVCellSupport = null;
 
-	private JMenuItem ivjJMenuItemEmailSupport = null;
-	private JMenuItem newHelpMenuItem = null;
-//	private JMenuItem ivjRunBNGMenuItem = null;
-	private JMenuItem ivjRunVFrapMenuItem = null;
-	//Added Oct. 17th, 2007. To put a tool menu in
-	private JMenu toolMenu = null;
-	private JMenuItem transMAMenuItem = null;
-	private JMenuItem viewJobsMenuItem = null;
-	private JMenuItem jMenuItemPermissions  = null;
-	private JLabel warningText = null;
-	private JLabel iconText = null;
-	private JDialog viewSpeciesDialog = null;
+    private JMenuItem ivjJMenuItemEmailSupport = null;
+    private JMenuItem newHelpMenuItem = null;
+    //	private JMenuItem ivjRunBNGMenuItem = null;
+    private JMenuItem ivjRunVFrapMenuItem = null;
+    //Added Oct. 17th, 2007. To put a tool menu in
+    private JMenu toolMenu = null;
+    private JMenuItem transMAMenuItem = null;
+    private JMenuItem viewJobsMenuItem = null;
+    private JMenuItem jMenuItemPermissions = null;
+    private JLabel warningText = null;
+    private JLabel iconText = null;
+    private JDialog viewSpeciesDialog = null;
 
-	private JMenuItem exportedDataViewer = null;
+    private JMenuItem exportedDataViewer = null;
 
-	private JMenuItem menuItemImportPathwayWebLocation = null;
-	private JMenuItem menuItemImportPathwayFile = null;
-	private JMenuItem menuItemImportPathwayExample = null;
+    private final JMenuItem menuItemImportPathwayWebLocation = null;
+    private final JMenuItem menuItemImportPathwayFile = null;
+    private final JMenuItem menuItemImportPathwayExample = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener {
-		public void actionPerformed(java.awt.event.ActionEvent e) {
-			try {
-				if (e.getSource() == DocumentWindow.this.getAbout_BoxMenuItem())
+    class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener {
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+            try {
+                if (e.getSource() == DocumentWindow.this.getAbout_BoxMenuItem())
                     showAboutBox(DocumentWindow.this);
-				if (e.getSource() == DocumentWindow.this.getCloseMenuItem())
-                    getWindowManager().closeWindow();
-				if (e.getSource() == DocumentWindow.this.getExitMenuItem())
-                    getWindowManager().exitApplication();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemNewBioModel())
-					DocumentWindow.this.newDocument(e);
-				if (e.getSource() == DocumentWindow.this.getJMenuItemOpenBioModel())
-					DocumentWindow.this.openDocument(e);
-				if (e.getSource() == DocumentWindow.this.getJMenuItemOpenLocal())
-					importExternalDocument();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemOpenMathModel())
-					DocumentWindow.this.openDocument(e);
-				if (e.getSource() == DocumentWindow.this.getSaveMenuItem())
-					DocumentWindow.this.saveDocument(true);
-				if (e.getSource() == DocumentWindow.this.getSave_AsMenuItem())
-                    getWindowManager().saveDocumentAsNew();
-				if (e.getSource() == DocumentWindow.this.getSave_AsLocalMenuItem())
-					saveAsLocal();
-				try {
-					if (e.getSource() == DocumentWindow.this.getJMenuItemImport())
-						DocumentWindow.this.importExternalDocument();
-					if (e.getSource() == DocumentWindow.this.menuItemImportPathwayWebLocation)
-						DocumentWindow.this.importPathway(PathwayImportOption.Web_Location);
-					else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayFile)
-						DocumentWindow.this.importPathway(PathwayImportOption.File);
-					else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayExample)
-						DocumentWindow.this.importPathway(PathwayImportOption.Example);
-				} catch (Throwable throwable) {
-					DocumentWindow.this.handleException(throwable);
-				}
-				if (e.getSource() == DocumentWindow.this.getSave_VersionMenuItem())
-					DocumentWindow.this.saveDocument(false);
-				if (e.getSource() == DocumentWindow.this.getChange_ProxyMenuItem())
-					setProxy();
-				if (e.getSource() == DocumentWindow.this.getReconnectUserMenuItem())
-					DocumentWindow.this.reconnect();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemRevert())
-                    getWindowManager().revertToSaved();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemCompare())
-                    getWindowManager().compareWithSaved();
-				if (e.getSource() == DocumentWindow.this.getNonSpatialMenuItem())
-					DocumentWindow.this.newDocument(e);
-				if (e.getSource() == DocumentWindow.this.getMathFromBioMenuItem())
-					DocumentWindow.this.newDocument(e);
-				if (e.getSource() == DocumentWindow.this.getSpatialExistingMenuItem())
-					newDocument(e);
-				if (e.getSource() == DocumentWindow.this.getSpatialCreateNewMenuItem())
-					newDocument(e);
-				if (e.getSource() == DocumentWindow.this.getJMenuItemExport())
-                    getWindowManager().exportDocument(null);
-				if (e.getSource() == DocumentWindow.this.getTestingFrameworkMenuItem())
-					DocumentWindow.this.showTestingFrameworkWindow();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp())
-					DocumentWindow.this.invokeOnlineHelp();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineSupport())
-                        DocumentWindow.this.invokeOnlineSupport();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemDiscussionGroup())
-                        DocumentWindow.this.invokeDiscussionGroup();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemManagePermissions())
-                        DocumentWindow.this.invokeManagePermissions();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemOnlinePublish())
-                        DocumentWindow.this.invokeOnlinePublish();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemEmailSupport())
-					emailSupport(e);
-				if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
-					showVCellHelpWindow();
-				if (e.getSource() == DocumentWindow.this.getLogOutMenuItem())
-                    getWindowManager().getRequestManager().logOut(getWindowManager());
-				if (e.getSource() == DocumentWindow.this.getRunVFrapItem())
-					startVirtualFRAP();
-				if (e.getSource() == DocumentWindow.this.getTransMAMenuItem())
-					showTransMADialog();
-				if (e.getSource() == DocumentWindow.this.getViewJobsMenuItem())
-					showViewJobsDialog();
-				if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData())
-                    getWindowManager().showFieldDataWindow();
-				if (e.getSource() == DocumentWindow.this.getManageUserMenuItem()){
-					if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)){
+                if (e.getSource() == DocumentWindow.this.getCloseMenuItem())
+                    DocumentWindow.this.getWindowManager().closeWindow();
+                if (e.getSource() == DocumentWindow.this.getExitMenuItem())
+                    DocumentWindow.this.getWindowManager().exitApplication();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemNewBioModel())
+                    DocumentWindow.this.newDocument(e);
+                if (e.getSource() == DocumentWindow.this.getJMenuItemOpenBioModel())
+                    DocumentWindow.this.openDocument(e);
+                if (e.getSource() == DocumentWindow.this.getJMenuItemOpenLocal())
+                    DocumentWindow.this.importExternalDocument();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemOpenMathModel())
+                    DocumentWindow.this.openDocument(e);
+                if (e.getSource() == DocumentWindow.this.getSaveMenuItem())
+                    DocumentWindow.this.saveDocument(true);
+                if (e.getSource() == DocumentWindow.this.getSave_AsMenuItem())
+                    DocumentWindow.this.getWindowManager().saveDocumentAsNew();
+                if (e.getSource() == DocumentWindow.this.getSave_AsLocalMenuItem())
+                    DocumentWindow.this.saveAsLocal();
+                try {
+                    if (e.getSource() == DocumentWindow.this.getJMenuItemImport())
+                        DocumentWindow.this.importExternalDocument();
+                    if (e.getSource() == DocumentWindow.this.menuItemImportPathwayWebLocation)
+                        DocumentWindow.this.importPathway(PathwayImportOption.Web_Location);
+                    else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayFile)
+                        DocumentWindow.this.importPathway(PathwayImportOption.File);
+                    else if (e.getSource() == DocumentWindow.this.menuItemImportPathwayExample)
+                        DocumentWindow.this.importPathway(PathwayImportOption.Example);
+                } catch (Throwable throwable) {
+                    DocumentWindow.this.handleException(throwable);
+                }
+                if (e.getSource() == DocumentWindow.this.getSave_VersionMenuItem())
+                    DocumentWindow.this.saveDocument(false);
+                if (e.getSource() == DocumentWindow.this.getChange_ProxyMenuItem())
+                    DocumentWindow.this.setProxy();
+                if (e.getSource() == DocumentWindow.this.getReconnectUserMenuItem())
+                    DocumentWindow.this.reconnect();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemRevert())
+                    DocumentWindow.this.getWindowManager().revertToSaved();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemCompare())
+                    DocumentWindow.this.getWindowManager().compareWithSaved();
+                if (e.getSource() == DocumentWindow.this.getNonSpatialMenuItem())
+                    DocumentWindow.this.newDocument(e);
+                if (e.getSource() == DocumentWindow.this.getMathFromBioMenuItem())
+                    DocumentWindow.this.newDocument(e);
+                if (e.getSource() == DocumentWindow.this.getSpatialExistingMenuItem())
+                    DocumentWindow.this.newDocument(e);
+                if (e.getSource() == DocumentWindow.this.getSpatialCreateNewMenuItem())
+                    DocumentWindow.this.newDocument(e);
+                if (e.getSource() == DocumentWindow.this.getJMenuItemExport())
+                    DocumentWindow.this.getWindowManager().exportDocument(null);
+                if (e.getSource() == DocumentWindow.this.getTestingFrameworkMenuItem())
+                    DocumentWindow.this.showTestingFrameworkWindow();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineHelp())
+                    DocumentWindow.this.invokeOnlineHelp();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemOnlineSupport())
+                    DocumentWindow.this.invokeOnlineSupport();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemDiscussionGroup())
+                    DocumentWindow.this.invokeDiscussionGroup();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemManagePermissions())
+                    DocumentWindow.this.invokeManagePermissions();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemOnlinePublish())
+                    DocumentWindow.this.invokeOnlinePublish();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemEmailSupport())
+                    DocumentWindow.this.emailSupport(e);
+                if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
+                    DocumentWindow.this.showVCellHelpWindow();
+                if (e.getSource() == DocumentWindow.this.getLogOutMenuItem())
+                    DocumentWindow.this.getWindowManager().getRequestManager().logOut(DocumentWindow.this.getWindowManager());
+                if (e.getSource() == DocumentWindow.this.getRunVFrapItem())
+                    DocumentWindow.this.startVirtualFRAP();
+                if (e.getSource() == DocumentWindow.this.getTransMAMenuItem())
+                    DocumentWindow.this.showTransMADialog();
+                if (e.getSource() == DocumentWindow.this.getViewJobsMenuItem())
+                    DocumentWindow.this.showViewJobsDialog();
+                if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData())
+                    DocumentWindow.this.getWindowManager().showFieldDataWindow();
+                if (e.getSource() == DocumentWindow.this.getManageUserMenuItem()) {
+                    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                         Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/profile"));
                     }
-				}
-				if (e.getSource() == DocumentWindow.this.getLoginItem()){
-					login();
-				}
-				if (e.getSource() == DocumentWindow.this.getPermissionsMenuItem()) {
-					getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
-				}
-				if (e.getSource() == DocumentWindow.this.getGrantPermissionsToVCellSupportMenuItem()) {
-					RequestManager rm = getWindowManager().getRequestManager();
-					if(rm instanceof ClientRequestManager) {
-						ClientRequestManager crm = (ClientRequestManager)rm;
-						crm.accessPermissionsEx(DocumentWindow.this, getWindowManager().getVCDocument(), true);
-					} else {
-						rm.accessPermissions(DocumentWindow.this, getWindowManager().getVCDocument());
-					}
-				}
-				if (e.getSource() == DocumentWindow.this.getExportedDataViewer()){
-					DocumentWindow.this.showViewExportedDataDialog();
-				}
-			}
-			catch (Throwable throwable){
-				handleException(throwable);
-			}
+                }
+                if (e.getSource() == DocumentWindow.this.getLoginItem()) {
+                    DocumentWindow.this.login();
+                }
+                if (e.getSource() == DocumentWindow.this.getPermissionsMenuItem()) {
+                    DocumentWindow.this.getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, DocumentWindow.this.getWindowManager().getVCDocument());
+                }
+                if (e.getSource() == DocumentWindow.this.getGrantPermissionsToVCellSupportMenuItem()) {
+                    RequestManager rm = DocumentWindow.this.getWindowManager().getRequestManager();
+                    if (rm instanceof ClientRequestManager crm) {
+                        crm.accessPermissionsEx(DocumentWindow.this, DocumentWindow.this.getWindowManager().getVCDocument(), true);
+                    } else {
+                        rm.accessPermissions(DocumentWindow.this, DocumentWindow.this.getWindowManager().getVCDocument());
+                    }
+                }
+                if (e.getSource() == DocumentWindow.this.getExportedDataViewer()) {
+                    DocumentWindow.this.showViewExportedDataDialog();
+                }
+            } catch (Throwable throwable) {
+                DocumentWindow.this.handleException(throwable);
+            }
 
-		};
+        }
 
-		public void itemStateChanged(java.awt.event.ItemEvent e) {
-			if (e.getSource() == DocumentWindow.this.getStatusbarMenuItem())
-                    getStatusBarPane().setVisible(getStatusbarMenuItem().isSelected());
-		}
+        public void itemStateChanged(java.awt.event.ItemEvent e) {
+            if (e.getSource() == DocumentWindow.this.getStatusbarMenuItem())
+                DocumentWindow.this.getStatusBarPane().setVisible(DocumentWindow.this.getStatusbarMenuItem().isSelected());
+        }
 
-		@Override
-		public void mouseClicked(MouseEvent e) {
-		}
-		@Override
-		public void mouseEntered(MouseEvent e) {
-		}
-		@Override
-		public void mouseExited(MouseEvent e) {
-		}
-		@Override
-		public void mousePressed(MouseEvent e) {
-		}
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			if(e.getSource() == DocumentWindow.this.getIconBar()) {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (e.getSource() == DocumentWindow.this.getIconBar()) {
                 //	PopupGenerator.showInfoDialog(DocumentWindow.this, "VCell admin notification message");
 
                 DialogUtils.browserLauncher(DocumentWindow.this, notificationsUrl, "Please visit '" + notificationsUrl + "' for server administrator notifications.");
@@ -282,48 +282,47 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 //	PopupGenerator.browserLauncher(this, BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL),
 //		"Please visit "+BeanUtils.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL)+" for instructions on how to change permissions to your Model");
             }
-		};
-	};
-	private JMenuItem ivjJMenuItemFieldData = null;
-//	private JMenuItem jMenuItemMIRIAM = null;
-	private JMenuItem jMenuItemPreferences = null;
+        }
 
-/**
- * DocumentWindow constructor comment.
- */
-public DocumentWindow() {
-	super();
-	initialize();
-	childWindowManager = new ChildWindowManager(this);
-}
+    }
 
-@Override
-public String menuDescription() {
-	return getTitle( );
-}
+    private JMenuItem ivjJMenuItemFieldData = null;
+    //	private JMenuItem jMenuItemMIRIAM = null;
+    private JMenuItem jMenuItemPreferences = null;
 
+    /**
+     * DocumentWindow constructor comment.
+     */
+    public DocumentWindow() {
+        super();
+        this.initialize();
+        this.childWindowManager = new ChildWindowManager(this);
+    }
 
-    private void setProxy(){
-	try {
-		NetworkProxyPreferences.setProxyPrefs(this, (restartMsg) -> DialogUtils.showInfoDialog(this, restartMsg) );
-		if(getTopLevelWindowManager()==null || getTopLevelWindowManager().getRequestManager()==null ||
-			getTopLevelWindowManager().getRequestManager().getDocumentManager()==null){
-			DialogUtils.showInfoDialog(this, "Update Proxy settings by restarting VCell or using menu Server->'change user' or Server->reconnect");
-		}else if(getTopLevelWindowManager().getRequestManager().getDocumentManager().getUser() == null){
-			return;
-		}else{
-			reconnect();
-		}
-	} catch (UtilCancelException e) {
-		return;
-	}
-}
+    @Override
+    public String menuDescription() {
+        return this.getTitle();
+    }
 
 
+    private void setProxy() {
+        try {
+            NetworkProxyPreferences.setProxyPrefs(this, (restartMsg) -> DialogUtils.showInfoDialog(this, restartMsg));
+            if (this.getTopLevelWindowManager() == null || this.getTopLevelWindowManager().getRequestManager() == null ||
+                    this.getTopLevelWindowManager().getRequestManager().getDocumentManager() == null) {
+                DialogUtils.showInfoDialog(this, "Update Proxy settings by restarting VCell or using menu Server->'change user' or Server->reconnect");
+            } else if (this.getTopLevelWindowManager().getRequestManager().getDocumentManager().getUser() == null) {
+            } else {
+                this.reconnect();
+            }
+        } catch (UtilCancelException e) {
+        }
+    }
 
-	private void showVCellHelpWindow() {
-	VcellHelpViewer.showStandaloneViewer();
-	//PENDING Window Manager redesign
+
+    private void showVCellHelpWindow() {
+        VcellHelpViewer.showStandaloneViewer();
+        //PENDING Window Manager redesign
 
 //	ChildWindow helpWindow = childWindowManager.getChildWindowFromContext(HelpViewerContextObject);
 //	if (helpWindow!=null){
@@ -342,10 +341,10 @@ public String menuDescription() {
 //		helpWindow.show();
 //		showHierarchy("shown",vcellHelpViewer);
 //	}
-}
+    }
 
-@SuppressWarnings("unused") //Pending Window Manager redesign
-private void showHierarchy(String when, VcellHelpViewer vcellHelpViewer ) {
+    @SuppressWarnings("unused") //Pending Window Manager redesign
+    private void showHierarchy(String when, VcellHelpViewer vcellHelpViewer) {
 	/*
 		System.out.println(when);
 		Container ctn = vcellHelpViewer.getParent();
@@ -354,1643 +353,1624 @@ private void showHierarchy(String when, VcellHelpViewer vcellHelpViewer ) {
 			ctn = ctn.getParent();
 		}
 	*/
-}
+    }
 
     private void emailSupport(java.awt.event.ActionEvent arg1) {
-	try {
-	Desktop desktop;
-	if (Desktop.isDesktopSupported() && (desktop = Desktop.getDesktop()).isSupported(Desktop.Action.MAIL) ) {
-		URI mailto = new URI("mailto:vcell_support@uchc.edu");		// "mailto:john@example.com?subject=Hello%20World"
-		desktop.mail(mailto);
-	} else {
-		throw new RuntimeException("Desktop doesn't support mailto");
-	}
-	} catch(URISyntaxException | IOException ex) {
-		handleException(ex);
-	}
-
-
-
-}
-
-
-    private javax.swing.JMenuItem getAbout_BoxMenuItem() {
-        if (ivjAbout_BoxMenuItem == null) {
-            try {
-                ivjAbout_BoxMenuItem = new javax.swing.JMenuItem();
-                ivjAbout_BoxMenuItem.setName("About_BoxMenuItem");
-                ivjAbout_BoxMenuItem.setText("About VCell");
-            } catch (java.lang.Throwable ivjExc) {
-                handleException(ivjExc);
+        try {
+            Desktop desktop;
+            if (Desktop.isDesktopSupported() && (desktop = Desktop.getDesktop()).isSupported(Desktop.Action.MAIL)) {
+                URI mailto = new URI("mailto:vcell_support@uchc.edu");        // "mailto:john@example.com?subject=Hello%20World"
+                desktop.mail(mailto);
+            } else {
+                throw new RuntimeException("Desktop doesn't support mailto");
             }
+        } catch (URISyntaxException | IOException ex) {
+            this.handleException(ex);
         }
-	    return ivjAbout_BoxMenuItem;
+
+
     }
 
 
-private void startVirtualFRAP(){
-	final DocumentWindowManager dwm = getWindowManager();
-	final Hashtable<String,Object> ht = new Hashtable<>();
-	ClientTaskDispatcher.dispatch(this, ht,LaunchVirtualFRAP.taskList(dwm), true,false,false,null,false);
-}
+    private javax.swing.JMenuItem getAbout_BoxMenuItem() {
+        if (this.ivjAbout_BoxMenuItem == null) {
+            try {
+                this.ivjAbout_BoxMenuItem = new javax.swing.JMenuItem();
+                this.ivjAbout_BoxMenuItem.setName("About_BoxMenuItem");
+                this.ivjAbout_BoxMenuItem.setText("About VCell");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjAbout_BoxMenuItem;
+    }
 
-private JMenu getToolMenu() {
-	if (toolMenu == null) {
-		try {
-			toolMenu = new javax.swing.JMenu();
-			//getImageJServiceMenuItem().setText(createImageJServiceMenuText());
-			toolMenu.addMenuListener(new MenuListener() {
-				@Override
-				public void menuSelected(MenuEvent e) {
+
+    private void startVirtualFRAP() {
+        final DocumentWindowManager dwm = this.getWindowManager();
+        final Hashtable<String, Object> ht = new Hashtable<>();
+        ClientTaskDispatcher.dispatch(this, ht, LaunchVirtualFRAP.taskList(dwm), true, false, false, null, false);
+    }
+
+    private JMenu getToolMenu() {
+        if (this.toolMenu == null) {
+            try {
+                this.toolMenu = new javax.swing.JMenu();
+                //getImageJServiceMenuItem().setText(createImageJServiceMenuText());
+                this.toolMenu.addMenuListener(new MenuListener() {
+                    @Override
+                    public void menuSelected(MenuEvent e) {
 //					getImageJServiceMenuItem().setText(createImageJServiceMenuText());
-				}
-				@Override
-				public void menuDeselected(MenuEvent e) {
-				}
-				@Override
-				public void menuCanceled(MenuEvent e) {
-				}
-			});
+                    }
 
-			toolMenu.setName("ToolMenu");
-			toolMenu.setText("Tools");
-			toolMenu.add(new JSeparator());
-			toolMenu.add(getRunVFrapItem());
-			toolMenu.add(getExportedDataViewer());
-		    toolMenu.add(new JSeparator());
-			toolMenu.add(getTransMAMenuItem());
+                    @Override
+                    public void menuDeselected(MenuEvent e) {
+                    }
+
+                    @Override
+                    public void menuCanceled(MenuEvent e) {
+                    }
+                });
+
+                this.toolMenu.setName("ToolMenu");
+                this.toolMenu.setText("Tools");
+                this.toolMenu.add(new JSeparator());
+                this.toolMenu.add(this.getRunVFrapItem());
+                this.toolMenu.add(this.getExportedDataViewer());
+                this.toolMenu.add(new JSeparator());
+                this.toolMenu.add(this.getTransMAMenuItem());
 //			toolMenu.add(getViewJobsMenuItem());		// moved to Server
-		} catch (Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return toolMenu;
-}
+            } catch (Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.toolMenu;
+    }
 
-private javax.swing.JMenuItem getTransMAMenuItem() {
-	if (transMAMenuItem == null) {
-		try {
-			transMAMenuItem = new javax.swing.JMenuItem();
-			transMAMenuItem.setName("TransMA");
-			transMAMenuItem.setText("Transform to Stochastic Capable");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return transMAMenuItem;
-}
+    private javax.swing.JMenuItem getTransMAMenuItem() {
+        if (this.transMAMenuItem == null) {
+            try {
+                this.transMAMenuItem = new javax.swing.JMenuItem();
+                this.transMAMenuItem.setName("TransMA");
+                this.transMAMenuItem.setText("Transform to Stochastic Capable");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.transMAMenuItem;
+    }
 
-private javax.swing.JMenuItem getViewJobsMenuItem() {
-	if (viewJobsMenuItem == null) {
-		try {
-			viewJobsMenuItem = new javax.swing.JMenuItem();
-			viewJobsMenuItem.setName("ViewJobs");
-			viewJobsMenuItem.setText("View Simulation Jobs");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return viewJobsMenuItem;
-}
+    private javax.swing.JMenuItem getViewJobsMenuItem() {
+        if (this.viewJobsMenuItem == null) {
+            try {
+                this.viewJobsMenuItem = new javax.swing.JMenuItem();
+                this.viewJobsMenuItem.setName("ViewJobs");
+                this.viewJobsMenuItem.setText("View Simulation Jobs");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.viewJobsMenuItem;
+    }
 
-private JMenuItem getLoginItem(){
-	if (loginMenuItem == null){
-		loginMenuItem = new javax.swing.JMenuItem();
-		loginMenuItem.setName("LoginMenuItem");
-		loginMenuItem.setText("Login");
-		loginMenuItem.setEnabled(false);
-	}
-	return loginMenuItem;
-}
+    private JMenuItem getLoginItem() {
+        if (this.loginMenuItem == null) {
+            this.loginMenuItem = new javax.swing.JMenuItem();
+            this.loginMenuItem.setName("LoginMenuItem");
+            this.loginMenuItem.setText("Login");
+            this.loginMenuItem.setEnabled(false);
+        }
+        return this.loginMenuItem;
+    }
 
-private JMenuItem getManageUserMenuItem(){
-	if (ivjManageUser == null){
-		ivjManageUser = new javax.swing.JMenuItem();
-		ivjManageUser.setName("ManageUserMenuItem");
-		ivjManageUser.setText("Manage User");
-		ivjManageUser.setEnabled(false);
-	}
-	return ivjManageUser;
-}
+    private JMenuItem getManageUserMenuItem() {
+        if (this.ivjManageUser == null) {
+            this.ivjManageUser = new javax.swing.JMenuItem();
+            this.ivjManageUser.setName("ManageUserMenuItem");
+            this.ivjManageUser.setText("Manage User");
+            this.ivjManageUser.setEnabled(false);
+        }
+        return this.ivjManageUser;
+    }
 
-private JMenuItem getLogOutMenuItem() {
-	if (ivjLogoutUser == null){
-		ivjLogoutUser = new javax.swing.JMenuItem();
-		ivjLogoutUser.setName("LogoutMenuItem");
-		ivjLogoutUser.setText("Logout");
-		ivjLogoutUser.setEnabled(false);
-	}
-	return ivjLogoutUser;
-}
+    private JMenuItem getLogOutMenuItem() {
+        if (this.ivjLogoutUser == null) {
+            this.ivjLogoutUser = new javax.swing.JMenuItem();
+            this.ivjLogoutUser.setName("LogoutMenuItem");
+            this.ivjLogoutUser.setText("Logout");
+            this.ivjLogoutUser.setEnabled(false);
+        }
+        return this.ivjLogoutUser;
+    }
 
-private JMenuItem getReconnectUserMenuItem(){
-	if (ivjReconnectMenuItem == null){
-		ivjReconnectMenuItem = new javax.swing.JMenuItem();
-		ivjReconnectMenuItem.setName("ReconnectMenuItem");
-		ivjReconnectMenuItem.setText("Reconnect (Refresh)");
-		ivjReconnectMenuItem.setEnabled(false);
-	}
-	return ivjReconnectMenuItem;
-}
+    private JMenuItem getReconnectUserMenuItem() {
+        if (this.ivjReconnectMenuItem == null) {
+            this.ivjReconnectMenuItem = new javax.swing.JMenuItem();
+            this.ivjReconnectMenuItem.setName("ReconnectMenuItem");
+            this.ivjReconnectMenuItem.setText("Reconnect (Refresh)");
+            this.ivjReconnectMenuItem.setEnabled(false);
+        }
+        return this.ivjReconnectMenuItem;
+    }
 
-private JMenuItem ivjChange_ProxyMenuItem;
-private javax.swing.JMenuItem getChange_ProxyMenuItem() {
-	if (ivjChange_ProxyMenuItem == null) {
-		try {
-			ivjChange_ProxyMenuItem = new javax.swing.JMenuItem();
-			ivjChange_ProxyMenuItem.setName("Change_ProxyMenuItem");
-			ivjChange_ProxyMenuItem.setText("Set Proxy...");
-			ivjChange_ProxyMenuItem.setEnabled(true);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjChange_ProxyMenuItem;
-}
+    private JMenuItem ivjChange_ProxyMenuItem;
 
-private javax.swing.JMenuItem getCloseMenuItem() {
-	if (ivjCloseMenuItem == null) {
-		try {
-			ivjCloseMenuItem = new javax.swing.JMenuItem();
-			ivjCloseMenuItem.setName("CloseMenuItem");
-			ivjCloseMenuItem.setText("Close");
-			ivjCloseMenuItem.setAccelerator(GeneralGuiUtils.CLOSE_WINDOW_KEY_STROKE);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjCloseMenuItem;
-}
+    private javax.swing.JMenuItem getChange_ProxyMenuItem() {
+        if (this.ivjChange_ProxyMenuItem == null) {
+            try {
+                this.ivjChange_ProxyMenuItem = new javax.swing.JMenuItem();
+                this.ivjChange_ProxyMenuItem.setName("Change_ProxyMenuItem");
+                this.ivjChange_ProxyMenuItem.setText("Set Proxy...");
+                this.ivjChange_ProxyMenuItem.setEnabled(true);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjChange_ProxyMenuItem;
+    }
 
-private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
-	if (ivjDocumentWindowJMenuBar == null) {
-		try {
-			ivjDocumentWindowJMenuBar = new javax.swing.JMenuBar();
-			ivjDocumentWindowJMenuBar.setName("DocumentWindowJMenuBar");
-			ivjDocumentWindowJMenuBar.add(getFileMenu());
-			ivjDocumentWindowJMenuBar.add(getServerMenu());
-			ivjDocumentWindowJMenuBar.add(createWindowMenu(true));
-			ivjDocumentWindowJMenuBar.add(getToolMenu());
-			ivjDocumentWindowJMenuBar.add(getHelpMenu());
-			ivjDocumentWindowJMenuBar.add(Box.createHorizontalGlue());
-			ivjDocumentWindowJMenuBar.add(createWindowMenu(false));
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjDocumentWindowJMenuBar;
-}
+    private javax.swing.JMenuItem getCloseMenuItem() {
+        if (this.ivjCloseMenuItem == null) {
+            try {
+                this.ivjCloseMenuItem = new javax.swing.JMenuItem();
+                this.ivjCloseMenuItem.setName("CloseMenuItem");
+                this.ivjCloseMenuItem.setText("Close");
+                this.ivjCloseMenuItem.setAccelerator(GeneralGuiUtils.CLOSE_WINDOW_KEY_STROKE);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjCloseMenuItem;
+    }
 
-private javax.swing.JMenuItem getExitMenuItem() {
-	if (ivjExitMenuItem == null) {
-		try {
-			ivjExitMenuItem = new javax.swing.JMenuItem();
-			ivjExitMenuItem.setName("ExitMenuItem");
-			ivjExitMenuItem.setText("Exit");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjExitMenuItem;
-}
+    private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
+        if (this.ivjDocumentWindowJMenuBar == null) {
+            try {
+                this.ivjDocumentWindowJMenuBar = new javax.swing.JMenuBar();
+                this.ivjDocumentWindowJMenuBar.setName("DocumentWindowJMenuBar");
+                this.ivjDocumentWindowJMenuBar.add(this.getFileMenu());
+                this.ivjDocumentWindowJMenuBar.add(this.getServerMenu());
+                this.ivjDocumentWindowJMenuBar.add(createWindowMenu(true));
+                this.ivjDocumentWindowJMenuBar.add(this.getToolMenu());
+                this.ivjDocumentWindowJMenuBar.add(this.getHelpMenu());
+                this.ivjDocumentWindowJMenuBar.add(Box.createHorizontalGlue());
+                this.ivjDocumentWindowJMenuBar.add(createWindowMenu(false));
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjDocumentWindowJMenuBar;
+    }
 
-private javax.swing.JMenu getFileMenu() {
-	if (ivjFileMenu == null) {
-		try {
-			ivjFileMenu = new javax.swing.JMenu();
-			ivjFileMenu.setName("FileMenu");
-			ivjFileMenu.setText("File");
-			ivjFileMenu.add(getNewMenuItem());
-			ivjFileMenu.add(getOpenMenuItem());
-			ivjFileMenu.add(getCloseMenuItem());
-			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getSaveMenuItem());
-			ivjFileMenu.add(getSave_VersionMenuItem());
-			ivjFileMenu.add(getSave_AsMenuItem());
-			ivjFileMenu.add(getSave_AsLocalMenuItem());
-			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getJMenuItemRevert());
-			ivjFileMenu.add(getJMenuItemCompare());
-			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getPermissionsMenuItem());
-			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getJMenuItemFieldData());
-			ivjFileMenu.add(getTestingFrameworkMenuItem());
-			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getJMenuItemImport());
-			ivjFileMenu.add(getJMenuItemExport());
-			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(new JSeparator());
-			ivjFileMenu.add(getExitMenuItem());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjFileMenu;
-}
+    private javax.swing.JMenuItem getExitMenuItem() {
+        if (this.ivjExitMenuItem == null) {
+            try {
+                this.ivjExitMenuItem = new javax.swing.JMenuItem();
+                this.ivjExitMenuItem.setName("ExitMenuItem");
+                this.ivjExitMenuItem.setText("Exit");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjExitMenuItem;
+    }
 
-private JMenuItem getExportedDataViewer(){
-	if(exportedDataViewer == null){
-		exportedDataViewer = new JMenuItem();
-		exportedDataViewer.setName("Exported Data Viewer");
-		exportedDataViewer.setText("Exported Data Viewer");
-	}
-	return exportedDataViewer;
-}
+    private javax.swing.JMenu getFileMenu() {
+        if (this.ivjFileMenu == null) {
+            try {
+                this.ivjFileMenu = new javax.swing.JMenu();
+                this.ivjFileMenu.setName("FileMenu");
+                this.ivjFileMenu.setText("File");
+                this.ivjFileMenu.add(this.getNewMenuItem());
+                this.ivjFileMenu.add(this.getOpenMenuItem());
+                this.ivjFileMenu.add(this.getCloseMenuItem());
+                this.ivjFileMenu.add(new JSeparator());
+                this.ivjFileMenu.add(this.getSaveMenuItem());
+                this.ivjFileMenu.add(this.getSave_VersionMenuItem());
+                this.ivjFileMenu.add(this.getSave_AsMenuItem());
+                this.ivjFileMenu.add(this.getSave_AsLocalMenuItem());
+                this.ivjFileMenu.add(new JSeparator());
+                this.ivjFileMenu.add(this.getJMenuItemRevert());
+                this.ivjFileMenu.add(this.getJMenuItemCompare());
+                this.ivjFileMenu.add(new JSeparator());
+                this.ivjFileMenu.add(this.getPermissionsMenuItem());
+                this.ivjFileMenu.add(new JSeparator());
+                this.ivjFileMenu.add(this.getJMenuItemFieldData());
+                this.ivjFileMenu.add(this.getTestingFrameworkMenuItem());
+                this.ivjFileMenu.add(new JSeparator());
+                this.ivjFileMenu.add(this.getJMenuItemImport());
+                this.ivjFileMenu.add(this.getJMenuItemExport());
+                this.ivjFileMenu.add(new JSeparator());
+                this.ivjFileMenu.add(new JSeparator());
+                this.ivjFileMenu.add(this.getExitMenuItem());
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjFileMenu;
+    }
 
-private javax.swing.JMenuItem getGeometryMenuItem() {
-	if (ivjGeometryMenu == null) {
-		try {
-			ivjGeometryMenu = new javax.swing.JMenuItem();
-			ivjGeometryMenu.setName("GeometryMenu");
-			ivjGeometryMenu.setText("Geometry");
-			ivjGeometryMenu.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					DocumentWindow.showGeometryCreationWarning(DocumentWindow.this);
-				}
-			});
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjGeometryMenu;
-}
+    private JMenuItem getExportedDataViewer() {
+        if (this.exportedDataViewer == null) {
+            this.exportedDataViewer = new JMenuItem();
+            this.exportedDataViewer.setName("Exported Data Viewer");
+            this.exportedDataViewer.setText("Exported Data Viewer");
+        }
+        return this.exportedDataViewer;
+    }
 
-public static void showGeometryCreationWarning(Component parentComponent){
-	DialogUtils.showWarningDialog(parentComponent,
-			"Geometries are now viewed/edited/created within BioModels or MathModels.\n"+
-			"\nBioModel geometries are viewed/edited from a BioModel document within an Application in the 'Geometry' section.\n"+
-			" \nMathModel geometries are viewed/edited from a MathModel document by pressing the 'Geometry Viewer' button.");
+    public static void showGeometryCreationWarning(Component parentComponent) {
+        DialogUtils.showWarningDialog(parentComponent,
+                "Geometries are now viewed/edited/created within BioModels or MathModels.\n" +
+                        "\nBioModel geometries are viewed/edited from a BioModel document within an Application in the 'Geometry' section.\n" +
+                        " \nMathModel geometries are viewed/edited from a MathModel document by pressing the 'Geometry Viewer' button.");
 
-}
-/**
- * Return the HelpMenu property value.
- * @return javax.swing.JMenu
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenu getHelpMenu() {
-	if (ivjHelpMenu == null) {
-		try {
-			ivjHelpMenu = new javax.swing.JMenu();
-			ivjHelpMenu.setName("HelpMenu");
-			ivjHelpMenu.setText("Help");
-			ivjHelpMenu.add(getNewHelpMenuItem());
-			ivjHelpMenu.add(getJMenuItemOnlineHelp());
-			//ivjHelpMenu.add(getJMenuItemOnlineSupport());
-			ivjHelpMenu.add(getJMenuItemDiscussionGroup());
-			ivjHelpMenu.add(getJMenuItemManagePermissions());
-			ivjHelpMenu.add(getJMenuItemOnlinePublish());
-			ivjHelpMenu.add(getJMenuItemEmailSupport());
-			ivjHelpMenu.add(getGrantPermissionsToVCellSupportMenuItem());
-			ivjHelpMenu.add(getJMenuItemPreferences());
+    }
+
+    /**
+     * Return the HelpMenu property value.
+     *
+     * @return javax.swing.JMenu
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JMenu getHelpMenu() {
+        if (this.ivjHelpMenu == null) {
+            try {
+                this.ivjHelpMenu = new javax.swing.JMenu();
+                this.ivjHelpMenu.setName("HelpMenu");
+                this.ivjHelpMenu.setText("Help");
+                this.ivjHelpMenu.add(this.getNewHelpMenuItem());
+                this.ivjHelpMenu.add(this.getJMenuItemOnlineHelp());
+                //ivjHelpMenu.add(getJMenuItemOnlineSupport());
+                this.ivjHelpMenu.add(this.getJMenuItemDiscussionGroup());
+                this.ivjHelpMenu.add(this.getJMenuItemManagePermissions());
+                this.ivjHelpMenu.add(this.getJMenuItemOnlinePublish());
+                this.ivjHelpMenu.add(this.getJMenuItemEmailSupport());
+                this.ivjHelpMenu.add(this.getGrantPermissionsToVCellSupportMenuItem());
+                this.ivjHelpMenu.add(this.getJMenuItemPreferences());
 
 //			ivjHelpMenu.add(getSeparator());
 //			ivjHelpMenu.add(getPermissionsMenuItem());
 
-			ivjHelpMenu.add(getJSeparator6());
-			ivjHelpMenu.add(getMntmLicenseInformation());
-			ivjHelpMenu.add(getAbout_BoxMenuItem());
+                this.ivjHelpMenu.add(this.getJSeparator6());
+                this.ivjHelpMenu.add(this.getMntmLicenseInformation());
+                this.ivjHelpMenu.add(this.getAbout_BoxMenuItem());
 //			ivjHelpMenu.add(getSeparator());
-			ivjHelpMenu.add(getStatusbarMenuItem());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjHelpMenu;
-}
+                this.ivjHelpMenu.add(this.getStatusbarMenuItem());
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjHelpMenu;
+    }
 
-private javax.swing.JMenuItem getJMenuItemCompare() {
-	if (ivjJMenuItemCompare == null) {
-		try {
-			ivjJMenuItemCompare = new javax.swing.JMenuItem();
-			ivjJMenuItemCompare.setName("JMenuItemCompare");
-			ivjJMenuItemCompare.setText("Compare with Saved");
-			ivjJMenuItemCompare.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemCompare;
-}
+    private javax.swing.JMenuItem getJMenuItemCompare() {
+        if (this.ivjJMenuItemCompare == null) {
+            try {
+                this.ivjJMenuItemCompare = new javax.swing.JMenuItem();
+                this.ivjJMenuItemCompare.setName("JMenuItemCompare");
+                this.ivjJMenuItemCompare.setText("Compare with Saved");
+                this.ivjJMenuItemCompare.setEnabled(false);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemCompare;
+    }
 
-private javax.swing.JMenuItem getJMenuItemExport() {
-	if (ivjJMenuItemExport == null) {
-		try {
-			ivjJMenuItemExport = new javax.swing.JMenuItem();
-			ivjJMenuItemExport.setName("JMenuItemExport");
-			ivjJMenuItemExport.setText("Export...");
-			ivjJMenuItemExport.setActionCommand(GuiConstants.ACTIONCMD_EXPORT);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemExport;
-}
+    private javax.swing.JMenuItem getJMenuItemExport() {
+        if (this.ivjJMenuItemExport == null) {
+            try {
+                this.ivjJMenuItemExport = new javax.swing.JMenuItem();
+                this.ivjJMenuItemExport.setName("JMenuItemExport");
+                this.ivjJMenuItemExport.setText("Export...");
+                this.ivjJMenuItemExport.setActionCommand(GuiConstants.ACTIONCMD_EXPORT);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemExport;
+    }
 
-private javax.swing.JMenuItem getJMenuItemFieldData() {
-	if (ivjJMenuItemFieldData == null) {
-		try {
-			ivjJMenuItemFieldData = new javax.swing.JMenuItem();
-			ivjJMenuItemFieldData.setName("JMenuItemFieldData");
-			ivjJMenuItemFieldData.setText("Field Data...");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemFieldData;
-}
-
-
-private JMenuItem getJMenuItemImport() {
-	if (menuItemImport == null) {
-		try {
-			menuItemImport = new JMenuItem();
-			menuItemImport.setName("JMenuItemImport");
-			menuItemImport.setText("Import...");
-		} catch (Throwable throwable) {
-			handleException(throwable);
-		}
-	}
-	return menuItemImport;
-}
-
-private javax.swing.JMenuItem getJMenuItemNewBioModel() {
-	if (ivjJMenuItemNewBioModel == null) {
-		try {
-			ivjJMenuItemNewBioModel = new javax.swing.JMenuItem();
-			ivjJMenuItemNewBioModel.setName("JMenuItemNewBioModel");
-			ivjJMenuItemNewBioModel.setText("BioModel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemNewBioModel;
-}
+    private javax.swing.JMenuItem getJMenuItemFieldData() {
+        if (this.ivjJMenuItemFieldData == null) {
+            try {
+                this.ivjJMenuItemFieldData = new javax.swing.JMenuItem();
+                this.ivjJMenuItemFieldData.setName("JMenuItemFieldData");
+                this.ivjJMenuItemFieldData.setText("Field Data...");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemFieldData;
+    }
 
 
-private javax.swing.JMenuItem getJMenuItemOnlineHelp() {
-	if (ivjJMenuItemOnlineHelp == null) {
-		try {
-			ivjJMenuItemOnlineHelp = new javax.swing.JMenuItem();
-			ivjJMenuItemOnlineHelp.setName("JMenuItemOnlineHelp");
-			ivjJMenuItemOnlineHelp.setText("VCell Website");		// "Online Resources"
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemOnlineHelp;
-}
-private javax.swing.JMenuItem getJMenuItemOnlineSupport() {
-	if (ivjJMenuItemOnlineSupport == null) {
-		try {
-			ivjJMenuItemOnlineSupport = new javax.swing.JMenuItem();
-			ivjJMenuItemOnlineSupport.setName("JMenuItemOnlineSupport");
-			ivjJMenuItemOnlineSupport.setText("VCell Support on the Web");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemOnlineSupport;
-}
-private javax.swing.JMenuItem getJMenuItemDiscussionGroup() {
-	if (ivjJMenuItemDiscussionGroup == null) {
-		try {
-			ivjJMenuItemDiscussionGroup = new javax.swing.JMenuItem();
-			ivjJMenuItemDiscussionGroup.setName("JMenuItemDiscussionGroup");
-			ivjJMenuItemDiscussionGroup.setText("VCell Open Discussion Forum");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemDiscussionGroup;
-}
-private javax.swing.JMenuItem getJMenuItemManagePermissions() {
-	if (ivjJMenuItemManagePermissions == null) {
-		try {
-			ivjJMenuItemManagePermissions = new javax.swing.JMenuItem();
-			ivjJMenuItemManagePermissions.setName("JMenuItemManagePermissions");
-			ivjJMenuItemManagePermissions.setText("How to Change Permissions");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemManagePermissions;
-}
-private javax.swing.JMenuItem getJMenuItemOnlinePublish() {
-	if (ivjJMenuItemOnlinePublish == null) {
-		try {
-			ivjJMenuItemOnlinePublish = new javax.swing.JMenuItem();
-			ivjJMenuItemOnlinePublish.setName("JMenuItemOnlinePublish");
-			ivjJMenuItemOnlinePublish.setText("How to Publish a Model ");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemOnlinePublish;
-}
-private javax.swing.JMenuItem getJMenuItemEmailSupport() {
-	if (ivjJMenuItemEmailSupport == null) {
-		try {
-			ivjJMenuItemEmailSupport = new javax.swing.JMenuItem();
-			ivjJMenuItemEmailSupport.setName("JMenuItemEmailSupport");
-			ivjJMenuItemEmailSupport.setText("Contact VCell Support");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemEmailSupport;
-}
+    private JMenuItem getJMenuItemImport() {
+        if (this.menuItemImport == null) {
+            try {
+                this.menuItemImport = new JMenuItem();
+                this.menuItemImport.setName("JMenuItemImport");
+                this.menuItemImport.setText("Import...");
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.menuItemImport;
+    }
 
-private javax.swing.JMenuItem getNewHelpMenuItem() {
-	if (newHelpMenuItem == null) {
-		try {
-			newHelpMenuItem = new javax.swing.JMenuItem();
-			newHelpMenuItem.setName("newHelpMenuItem");
-			newHelpMenuItem.setText("VCell Help");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return newHelpMenuItem;
-}
-
-private javax.swing.JMenuItem getJMenuItemOpenBioModel() {
-	if (ivjJMenuItemOpenBioModel == null) {
-		try {
-			ivjJMenuItemOpenBioModel = new javax.swing.JMenuItem();
-			ivjJMenuItemOpenBioModel.setName("JMenuItemOpenBioModel");
-			ivjJMenuItemOpenBioModel.setText("BioModel...");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemOpenBioModel;
-}
-
-private javax.swing.JMenuItem getJMenuItemOpenLocal() {
-	if (ivjJMenuItemOpenLocal == null) {
-		try {
-			ivjJMenuItemOpenLocal = new javax.swing.JMenuItem();
-			ivjJMenuItemOpenLocal.setName("JMenuItemOpenLocal");
-			ivjJMenuItemOpenLocal.setText("Local...");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemOpenLocal;
-}
-
-private javax.swing.JMenuItem getJMenuItemOpenGeometry() {
-	if (ivjJMenuItemOpenGeometry == null) {
-		try {
-			ivjJMenuItemOpenGeometry = new javax.swing.JMenuItem();
-			ivjJMenuItemOpenGeometry.setName("JMenuItemOpenGeometry");
-			ivjJMenuItemOpenGeometry.setText("Geometry...");
-			ivjJMenuItemOpenGeometry.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					DocumentWindow.showGeometryCreationWarning(DocumentWindow.this);
-				}
-			});
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemOpenGeometry;
-}
-
-private javax.swing.JMenuItem getJMenuItemOpenMathModel() {
-	if (ivjJMenuItemOpenMathModel == null) {
-		try {
-			ivjJMenuItemOpenMathModel = new javax.swing.JMenuItem();
-			ivjJMenuItemOpenMathModel.setName("JMenuItemOpenMathModel");
-			ivjJMenuItemOpenMathModel.setText("MathModel...");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemOpenMathModel;
-}
-
-private javax.swing.JMenuItem getJMenuItemRevert() {
-	if (ivjJMenuItemRevert == null) {
-		try {
-			ivjJMenuItemRevert = new javax.swing.JMenuItem();
-			ivjJMenuItemRevert.setName("JMenuItemRevert");
-			ivjJMenuItemRevert.setText("Revert to Saved");
-			ivjJMenuItemRevert.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJMenuItemRevert;
-}
-
-private javax.swing.JProgressBar getJProgressBarConnection() {
-	if (ivjJProgressBarConnection == null) {
-		try {
-			ivjJProgressBarConnection = new javax.swing.JProgressBar();
-			ivjJProgressBarConnection.setName("JProgressBarConnection");
-			ivjJProgressBarConnection.setString("NOT CONNECTED");
-			ivjJProgressBarConnection.setStringPainted(true);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJProgressBarConnection;
-}
-
-private javax.swing.JProgressBar getJProgressBarMemory() {
-	if (ivjJProgressBarMemory == null) {
-		try {
-			ivjJProgressBarMemory = new javax.swing.JProgressBar();
-			ivjJProgressBarMemory.setName("JProgressBarMemory");
-			ivjJProgressBarMemory.setMinimum(0);
-			ivjJProgressBarMemory.setStringPainted(true);
-			ivjJProgressBarMemory.setToolTipText("Java Memory Usage");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJProgressBarMemory;
-}
-
-private javax.swing.JSeparator getJSeparator6() {
-	if (ivjJSeparator6 == null) {
-		try {
-			ivjJSeparator6 = new javax.swing.JSeparator();
-			ivjJSeparator6.setName("JSeparator6");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjJSeparator6;
-}
-
-private javax.swing.JMenuItem getMathFromBioMenuItem() {
-	if (ivjMathFromBioMenuItem == null) {
-		try {
-			ivjMathFromBioMenuItem = new javax.swing.JMenuItem();
-			ivjMathFromBioMenuItem.setName("MathFromBioMenuItem");
-			ivjMathFromBioMenuItem.setText("From BioModel");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjMathFromBioMenuItem;
-}
-
-private javax.swing.JMenu getMathMenu() {
-	if (ivjMathMenu == null) {
-		try {
-			ivjMathMenu = new javax.swing.JMenu();
-			ivjMathMenu.setName("MathMenu");
-			ivjMathMenu.setText("MathModel");
-			ivjMathMenu.add(getNonSpatialMenuItem());
-			ivjMathMenu.add(getSpatialExistingMenuItem());
-			ivjMathMenu.add(getSpatialCreateNewMenuItem());
-			ivjMathMenu.add(getMathFromBioMenuItem());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjMathMenu;
-}
-
-private javax.swing.JMenu getNewMenuItem() {
-	if (ivjNewMenuItem == null) {
-		try {
-			ivjNewMenuItem = new javax.swing.JMenu();
-			ivjNewMenuItem.setName("NewMenuItem");
-			ivjNewMenuItem.setText("New");
-			ivjNewMenuItem.add(getJMenuItemNewBioModel());
-			ivjNewMenuItem.add(getMathMenu());
-			ivjNewMenuItem.add(getGeometryMenuItem());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjNewMenuItem;
-}
-
-private javax.swing.JMenuItem getNonSpatialMenuItem() {
-	if (ivjNonSpatialMenuItem == null) {
-		try {
-			ivjNonSpatialMenuItem = new javax.swing.JMenuItem();
-			ivjNonSpatialMenuItem.setName("NonSpatialMenuItem");
-			ivjNonSpatialMenuItem.setText("Non-Spatial");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjNonSpatialMenuItem;
-}
-
-private javax.swing.JMenu getOpenMenuItem() {
-	if (ivjOpenMenuItem == null) {
-		try {
-			ivjOpenMenuItem = new javax.swing.JMenu();
-			ivjOpenMenuItem.setName("OpenMenuItem");
-			ivjOpenMenuItem.setText("Open");
-			ivjOpenMenuItem.setEnabled(false);
-			ivjOpenMenuItem.add(getJMenuItemOpenBioModel());
-			ivjOpenMenuItem.add(getJMenuItemOpenMathModel());
-			ivjOpenMenuItem.add(getJMenuItemOpenGeometry());
-			ivjOpenMenuItem.add(getJMenuItemOpenLocal());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjOpenMenuItem;
-}
+    private javax.swing.JMenuItem getJMenuItemNewBioModel() {
+        if (this.ivjJMenuItemNewBioModel == null) {
+            try {
+                this.ivjJMenuItemNewBioModel = new javax.swing.JMenuItem();
+                this.ivjJMenuItemNewBioModel.setName("JMenuItemNewBioModel");
+                this.ivjJMenuItemNewBioModel.setText("BioModel");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemNewBioModel;
+    }
 
 
+    private javax.swing.JMenuItem getJMenuItemOnlineHelp() {
+        if (this.ivjJMenuItemOnlineHelp == null) {
+            try {
+                this.ivjJMenuItemOnlineHelp = new javax.swing.JMenuItem();
+                this.ivjJMenuItemOnlineHelp.setName("JMenuItemOnlineHelp");
+                this.ivjJMenuItemOnlineHelp.setText("VCell Website");        // "Online Resources"
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemOnlineHelp;
+    }
 
-private JMenuItem getRunVFrapItem() {
-	if (ivjRunVFrapMenuItem == null) {
-		try {
-			ivjRunVFrapMenuItem = new JMenuItem();
-			ivjRunVFrapMenuItem.setName("RunVFrapMenuItem");
-			ivjRunVFrapMenuItem.setText("Launch Virtual FRAP");
-		} catch (Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjRunVFrapMenuItem;
-}
+    private javax.swing.JMenuItem getJMenuItemOnlineSupport() {
+        if (this.ivjJMenuItemOnlineSupport == null) {
+            try {
+                this.ivjJMenuItemOnlineSupport = new javax.swing.JMenuItem();
+                this.ivjJMenuItemOnlineSupport.setName("JMenuItemOnlineSupport");
+                this.ivjJMenuItemOnlineSupport.setText("VCell Support on the Web");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemOnlineSupport;
+    }
 
-private javax.swing.JMenuItem getSave_AsMenuItem() {
-	if (ivjSave_AsMenuItem == null) {
-		try {
-			ivjSave_AsMenuItem = new javax.swing.JMenuItem();
-			ivjSave_AsMenuItem.setName("Save_AsMenuItem");
-			ivjSave_AsMenuItem.setText("Save As...");
-			ivjSave_AsMenuItem.setEnabled(true);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSave_AsMenuItem;
-}
+    private javax.swing.JMenuItem getJMenuItemDiscussionGroup() {
+        if (this.ivjJMenuItemDiscussionGroup == null) {
+            try {
+                this.ivjJMenuItemDiscussionGroup = new javax.swing.JMenuItem();
+                this.ivjJMenuItemDiscussionGroup.setName("JMenuItemDiscussionGroup");
+                this.ivjJMenuItemDiscussionGroup.setText("VCell Open Discussion Forum");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemDiscussionGroup;
+    }
 
-private javax.swing.JMenuItem getSave_AsLocalMenuItem() {
-	if (ivjSave_AsLocalMenuItem == null) {
-		try {
-			ivjSave_AsLocalMenuItem = new javax.swing.JMenuItem();
-			ivjSave_AsLocalMenuItem.setName("Save_AsLocalMenuItem");
-			ivjSave_AsLocalMenuItem.setText("Save As Local...");
-			ivjSave_AsLocalMenuItem.setEnabled(true);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSave_AsLocalMenuItem;
-}
+    private javax.swing.JMenuItem getJMenuItemManagePermissions() {
+        if (this.ivjJMenuItemManagePermissions == null) {
+            try {
+                this.ivjJMenuItemManagePermissions = new javax.swing.JMenuItem();
+                this.ivjJMenuItemManagePermissions.setName("JMenuItemManagePermissions");
+                this.ivjJMenuItemManagePermissions.setText("How to Change Permissions");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemManagePermissions;
+    }
 
-private javax.swing.JMenuItem getSave_VersionMenuItem() {
-	if (ivjSave_VersionMenuItem == null) {
-		try {
-			ivjSave_VersionMenuItem = new javax.swing.JMenuItem();
-			ivjSave_VersionMenuItem.setName("Save_VersionMenuItem");
-			ivjSave_VersionMenuItem.setText("Save New Version");
-			ivjSave_VersionMenuItem.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSave_VersionMenuItem;
-}
+    private javax.swing.JMenuItem getJMenuItemOnlinePublish() {
+        if (this.ivjJMenuItemOnlinePublish == null) {
+            try {
+                this.ivjJMenuItemOnlinePublish = new javax.swing.JMenuItem();
+                this.ivjJMenuItemOnlinePublish.setName("JMenuItemOnlinePublish");
+                this.ivjJMenuItemOnlinePublish.setText("How to Publish a Model ");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemOnlinePublish;
+    }
 
-/**
- * Return the SaveMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JMenuItem getSaveMenuItem() {
-	if (ivjSaveMenuItem == null) {
-		try {
-			ivjSaveMenuItem = new javax.swing.JMenuItem();
-			ivjSaveMenuItem.setName("SaveMenuItem");
-			ivjSaveMenuItem.setText("Save");
-			ivjSaveMenuItem.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSaveMenuItem;
-}
+    private javax.swing.JMenuItem getJMenuItemEmailSupport() {
+        if (this.ivjJMenuItemEmailSupport == null) {
+            try {
+                this.ivjJMenuItemEmailSupport = new javax.swing.JMenuItem();
+                this.ivjJMenuItemEmailSupport.setName("JMenuItemEmailSupport");
+                this.ivjJMenuItemEmailSupport.setText("Contact VCell Support");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemEmailSupport;
+    }
 
-private javax.swing.JMenuItem getPermissionsMenuItem() {
-	if (jMenuItemPermissions == null) {
-		try {
-			jMenuItemPermissions = new javax.swing.JMenuItem();
-			jMenuItemPermissions.setText("Permissions...");
-			jMenuItemPermissions.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return jMenuItemPermissions;
-}
-private javax.swing.JMenuItem getGrantPermissionsToVCellSupportMenuItem() {
-	if (jMenuItemGrantPermissionsToVCellSupport == null) {
-		try {
-			jMenuItemGrantPermissionsToVCellSupport = new javax.swing.JMenuItem();
-			jMenuItemGrantPermissionsToVCellSupport.setText("Grant Permissions To VCell Support...");
-			jMenuItemGrantPermissionsToVCellSupport.setEnabled(false);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return jMenuItemGrantPermissionsToVCellSupport;
-}
+    private javax.swing.JMenuItem getNewHelpMenuItem() {
+        if (this.newHelpMenuItem == null) {
+            try {
+                this.newHelpMenuItem = new javax.swing.JMenuItem();
+                this.newHelpMenuItem.setName("newHelpMenuItem");
+                this.newHelpMenuItem.setText("VCell Help");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.newHelpMenuItem;
+    }
 
-private javax.swing.JMenu getServerMenu() {
-	if (ivjServerMenu == null) {
-		try {
-			ivjServerMenu = new javax.swing.JMenu();
-			ivjServerMenu.setName("ServerMenu");
-			ivjServerMenu.setText("Account");
-			ivjServerMenu.add(getLoginItem());
-			ivjServerMenu.add(getLogOutMenuItem());
-			ivjServerMenu.add(getManageUserMenuItem());
-			ivjServerMenu.add(getChange_ProxyMenuItem());
-			ivjServerMenu.add(getReconnectUserMenuItem());
-			ivjServerMenu.add(new JSeparator());
-			ivjServerMenu.add(getViewJobsMenuItem());
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjServerMenu;
-}
+    private javax.swing.JMenuItem getJMenuItemOpenBioModel() {
+        if (this.ivjJMenuItemOpenBioModel == null) {
+            try {
+                this.ivjJMenuItemOpenBioModel = new javax.swing.JMenuItem();
+                this.ivjJMenuItemOpenBioModel.setName("JMenuItemOpenBioModel");
+                this.ivjJMenuItemOpenBioModel.setText("BioModel...");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemOpenBioModel;
+    }
 
-/**
- * Return the SpatialMenuItem property value.
- * @return javax.swing.JMenuItem
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private static final String MATHMODEL_SPATIAL_EXISTING = "Spatial from database geometry";
-private javax.swing.JMenuItem getSpatialExistingMenuItem() {
-	if (ivjSpatialExistingMenuItem == null) {
-		try {
-			ivjSpatialExistingMenuItem = new javax.swing.JMenuItem();
-			ivjSpatialExistingMenuItem.setName("SpatialMenuItem");
-			ivjSpatialExistingMenuItem.setText(MATHMODEL_SPATIAL_EXISTING);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSpatialExistingMenuItem;
-}
+    private javax.swing.JMenuItem getJMenuItemOpenLocal() {
+        if (this.ivjJMenuItemOpenLocal == null) {
+            try {
+                this.ivjJMenuItemOpenLocal = new javax.swing.JMenuItem();
+                this.ivjJMenuItemOpenLocal.setName("JMenuItemOpenLocal");
+                this.ivjJMenuItemOpenLocal.setText("Local...");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemOpenLocal;
+    }
 
-private static final String MATHMODEL_SPATIAL_CREATENEW = "Spatial from new geometry";
-private JMenuItem mntmLicenseInformation;
-private JSeparator separator;
+    private javax.swing.JMenuItem getJMenuItemOpenMathModel() {
+        if (this.ivjJMenuItemOpenMathModel == null) {
+            try {
+                this.ivjJMenuItemOpenMathModel = new javax.swing.JMenuItem();
+                this.ivjJMenuItemOpenMathModel.setName("JMenuItemOpenMathModel");
+                this.ivjJMenuItemOpenMathModel.setText("MathModel...");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemOpenMathModel;
+    }
 
-private javax.swing.JMenuItem getSpatialCreateNewMenuItem() {
-	if (ivjSpatialCreateNewMenuItem == null) {
-		try {
-			ivjSpatialCreateNewMenuItem = new javax.swing.JMenuItem();
-			ivjSpatialCreateNewMenuItem.setName("SpatialMenuItem");
-			ivjSpatialCreateNewMenuItem.setText(MATHMODEL_SPATIAL_CREATENEW);
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjSpatialCreateNewMenuItem;
-}
+    private javax.swing.JMenuItem getJMenuItemRevert() {
+        if (this.ivjJMenuItemRevert == null) {
+            try {
+                this.ivjJMenuItemRevert = new javax.swing.JMenuItem();
+                this.ivjJMenuItemRevert.setName("JMenuItemRevert");
+                this.ivjJMenuItemRevert.setText("Revert to Saved");
+                this.ivjJMenuItemRevert.setEnabled(false);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJMenuItemRevert;
+    }
 
-/**
- * Return the StatusbarMenuItem property value.
- * @return javax.swing.JCheckBoxMenuItem
- */
-private javax.swing.JCheckBoxMenuItem getStatusbarMenuItem() {
-	if (ivjStatusbarMenuItem == null) {
-		try {
-			ivjStatusbarMenuItem = new javax.swing.JCheckBoxMenuItem();
-			ivjStatusbarMenuItem.setName("StatusbarMenuItem");
-			ivjStatusbarMenuItem.setSelected(true);
-			ivjStatusbarMenuItem.setText("Status Bar");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjStatusbarMenuItem;
-}
+    private javax.swing.JProgressBar getJProgressBarConnection() {
+        if (this.ivjJProgressBarConnection == null) {
+            try {
+                this.ivjJProgressBarConnection = new javax.swing.JProgressBar();
+                this.ivjJProgressBarConnection.setName("JProgressBarConnection");
+                this.ivjJProgressBarConnection.setString("NOT CONNECTED");
+                this.ivjJProgressBarConnection.setStringPainted(true);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJProgressBarConnection;
+    }
 
-/**
- * Return the StatusBarPane property value.
- * @return javax.swing.JPanel
- */
-private javax.swing.JPanel getStatusBarPane() {
-	if (ivjStatusBarPane == null) {
-		try {
-			ivjStatusBarPane = new javax.swing.JPanel();
-			ivjStatusBarPane.setName("StatusBarPane");
-			ivjStatusBarPane.setLayout(new GridBagLayout());
+    private javax.swing.JProgressBar getJProgressBarMemory() {
+        if (this.ivjJProgressBarMemory == null) {
+            try {
+                this.ivjJProgressBarMemory = new javax.swing.JProgressBar();
+                this.ivjJProgressBarMemory.setName("JProgressBarMemory");
+                this.ivjJProgressBarMemory.setMinimum(0);
+                this.ivjJProgressBarMemory.setStringPainted(true);
+                this.ivjJProgressBarMemory.setToolTipText("Java Memory Usage");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJProgressBarMemory;
+    }
 
-			int gridx = 0;
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = gridx;
-			gbc.gridy = 0;
-			gbc.weighty = 1;
-			gbc.fill = GridBagConstraints.VERTICAL;
-			gbc.insets = new Insets(4, 4, 4, 4);
-			ivjStatusBarPane.add(getJProgressBarConnection(), gbc);
+    private javax.swing.JSeparator getJSeparator6() {
+        if (this.ivjJSeparator6 == null) {
+            try {
+                this.ivjJSeparator6 = new javax.swing.JSeparator();
+                this.ivjJSeparator6.setName("JSeparator6");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjJSeparator6;
+    }
 
-			gridx++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = gridx;
-			gbc.gridy = 0;
-			gbc.insets = new Insets(2, 5, 2, 2);
-			ivjStatusBarPane.add(getIconBar(), gbc);
+    private javax.swing.JMenuItem getMathFromBioMenuItem() {
+        if (this.ivjMathFromBioMenuItem == null) {
+            try {
+                this.ivjMathFromBioMenuItem = new javax.swing.JMenuItem();
+                this.ivjMathFromBioMenuItem.setName("MathFromBioMenuItem");
+                this.ivjMathFromBioMenuItem.setText("From BioModel");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjMathFromBioMenuItem;
+    }
 
-			gridx++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = gridx;
-			gbc.gridy = 0;
-			gbc.weightx = 1;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(4, 4, 4, 4);
-			ivjStatusBarPane.add(getWarningBar(), gbc);
+    private javax.swing.JMenu getMathMenu() {
+        if (this.ivjMathMenu == null) {
+            try {
+                this.ivjMathMenu = new javax.swing.JMenu();
+                this.ivjMathMenu.setName("MathMenu");
+                this.ivjMathMenu.setText("MathModel");
+                this.ivjMathMenu.add(this.getNonSpatialMenuItem());
+                this.ivjMathMenu.add(this.getSpatialExistingMenuItem());
+                this.ivjMathMenu.add(this.getSpatialCreateNewMenuItem());
+                this.ivjMathMenu.add(this.getMathFromBioMenuItem());
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjMathMenu;
+    }
 
-			gridx++;
-			gbc = new GridBagConstraints();
-			gbc.gridx = gridx;
-			gbc.gridy = 0;
-			gbc.weighty = 1;
-			gbc.fill = GridBagConstraints.VERTICAL;
-			gbc.insets = new Insets(4, 4, 4, 4);
-			ivjStatusBarPane.add(getJProgressBarMemory(), gbc);
+    private javax.swing.JMenu getNewMenuItem() {
+        if (this.ivjNewMenuItem == null) {
+            try {
+                this.ivjNewMenuItem = new javax.swing.JMenu();
+                this.ivjNewMenuItem.setName("NewMenuItem");
+                this.ivjNewMenuItem.setText("New");
+                this.ivjNewMenuItem.add(this.getJMenuItemNewBioModel());
+                this.ivjNewMenuItem.add(this.getMathMenu());
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjNewMenuItem;
+    }
 
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return ivjStatusBarPane;
-}
+    private javax.swing.JMenuItem getNonSpatialMenuItem() {
+        if (this.ivjNonSpatialMenuItem == null) {
+            try {
+                this.ivjNonSpatialMenuItem = new javax.swing.JMenuItem();
+                this.ivjNonSpatialMenuItem.setName("NonSpatialMenuItem");
+                this.ivjNonSpatialMenuItem.setText("Non-Spatial");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjNonSpatialMenuItem;
+    }
 
-public JLabel getWarningBar() {
-	if (warningText == null) {
-		try {
-			warningText = new JLabel();
-			warningText.setName("");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return warningText;
-}
-public JLabel getIconBar() {
-	if (iconText == null) {
-		try {
-			iconText = new JLabel();
-			iconText.setName("");
-			iconText.setIcon(VCellIcons.noteRedIcon);
-			iconText.setToolTipText("View VCell Administrator Notification");
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return iconText;
-}
+    private javax.swing.JMenu getOpenMenuItem() {
+        if (this.ivjOpenMenuItem == null) {
+            try {
+                this.ivjOpenMenuItem = new javax.swing.JMenu();
+                this.ivjOpenMenuItem.setName("OpenMenuItem");
+                this.ivjOpenMenuItem.setText("Open");
+                this.ivjOpenMenuItem.setEnabled(false);
+                this.ivjOpenMenuItem.add(this.getJMenuItemOpenBioModel());
+                this.ivjOpenMenuItem.add(this.getJMenuItemOpenMathModel());
+                this.ivjOpenMenuItem.add(this.getJMenuItemOpenLocal());
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjOpenMenuItem;
+    }
 
-//private static final String notificationsUrl = "//cfs05.cam.uchc.edu/vcell/apache_webroot/htdocs/webstart/VCell_alert/VCell_Alert.html";
-private void checkForNotifications() {
-	int code = HttpURLConnection.HTTP_BAD_REQUEST;
-	try {
-		URL u = new URL(notificationsUrl);
-		HttpURLConnection huc = (HttpURLConnection)u.openConnection ();
-		huc.setRequestMethod("HEAD");  // probably cheaper than  huc.setRequestMethod ("GET");
-		huc.connect();
-		code = huc.getResponseCode();
-	} catch (IOException e) {
-		// we just eat the exception
+
+    private JMenuItem getRunVFrapItem() {
+        if (this.ivjRunVFrapMenuItem == null) {
+            try {
+                this.ivjRunVFrapMenuItem = new JMenuItem();
+                this.ivjRunVFrapMenuItem.setName("RunVFrapMenuItem");
+                this.ivjRunVFrapMenuItem.setText("Launch Virtual FRAP");
+            } catch (Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjRunVFrapMenuItem;
+    }
+
+    private javax.swing.JMenuItem getSave_AsMenuItem() {
+        if (this.ivjSave_AsMenuItem == null) {
+            try {
+                this.ivjSave_AsMenuItem = new javax.swing.JMenuItem();
+                this.ivjSave_AsMenuItem.setName("Save_AsMenuItem");
+                this.ivjSave_AsMenuItem.setText("Save As...");
+                this.ivjSave_AsMenuItem.setEnabled(true);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjSave_AsMenuItem;
+    }
+
+    private javax.swing.JMenuItem getSave_AsLocalMenuItem() {
+        if (this.ivjSave_AsLocalMenuItem == null) {
+            try {
+                this.ivjSave_AsLocalMenuItem = new javax.swing.JMenuItem();
+                this.ivjSave_AsLocalMenuItem.setName("Save_AsLocalMenuItem");
+                this.ivjSave_AsLocalMenuItem.setText("Save As Local...");
+                this.ivjSave_AsLocalMenuItem.setEnabled(true);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjSave_AsLocalMenuItem;
+    }
+
+    private javax.swing.JMenuItem getSave_VersionMenuItem() {
+        if (this.ivjSave_VersionMenuItem == null) {
+            try {
+                this.ivjSave_VersionMenuItem = new javax.swing.JMenuItem();
+                this.ivjSave_VersionMenuItem.setName("Save_VersionMenuItem");
+                this.ivjSave_VersionMenuItem.setText("Save New Version");
+                this.ivjSave_VersionMenuItem.setEnabled(false);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjSave_VersionMenuItem;
+    }
+
+    /**
+     * Return the SaveMenuItem property value.
+     *
+     * @return javax.swing.JMenuItem
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private javax.swing.JMenuItem getSaveMenuItem() {
+        if (this.ivjSaveMenuItem == null) {
+            try {
+                this.ivjSaveMenuItem = new javax.swing.JMenuItem();
+                this.ivjSaveMenuItem.setName("SaveMenuItem");
+                this.ivjSaveMenuItem.setText("Save");
+                this.ivjSaveMenuItem.setEnabled(false);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjSaveMenuItem;
+    }
+
+    private javax.swing.JMenuItem getPermissionsMenuItem() {
+        if (this.jMenuItemPermissions == null) {
+            try {
+                this.jMenuItemPermissions = new javax.swing.JMenuItem();
+                this.jMenuItemPermissions.setText("Permissions...");
+                this.jMenuItemPermissions.setEnabled(false);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.jMenuItemPermissions;
+    }
+
+    private javax.swing.JMenuItem getGrantPermissionsToVCellSupportMenuItem() {
+        if (this.jMenuItemGrantPermissionsToVCellSupport == null) {
+            try {
+                this.jMenuItemGrantPermissionsToVCellSupport = new javax.swing.JMenuItem();
+                this.jMenuItemGrantPermissionsToVCellSupport.setText("Grant Permissions To VCell Support...");
+                this.jMenuItemGrantPermissionsToVCellSupport.setEnabled(false);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.jMenuItemGrantPermissionsToVCellSupport;
+    }
+
+    private javax.swing.JMenu getServerMenu() {
+        if (this.ivjServerMenu == null) {
+            try {
+                this.ivjServerMenu = new javax.swing.JMenu();
+                this.ivjServerMenu.setName("ServerMenu");
+                this.ivjServerMenu.setText("Account");
+                this.ivjServerMenu.add(this.getLoginItem());
+                this.ivjServerMenu.add(this.getLogOutMenuItem());
+                this.ivjServerMenu.add(this.getManageUserMenuItem());
+                this.ivjServerMenu.add(this.getChange_ProxyMenuItem());
+                this.ivjServerMenu.add(this.getReconnectUserMenuItem());
+                this.ivjServerMenu.add(new JSeparator());
+                this.ivjServerMenu.add(this.getViewJobsMenuItem());
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjServerMenu;
+    }
+
+    /**
+     * Return the SpatialMenuItem property value.
+     *
+     * @return javax.swing.JMenuItem
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private static final String MATHMODEL_SPATIAL_EXISTING = "Spatial from database geometry";
+
+    private javax.swing.JMenuItem getSpatialExistingMenuItem() {
+        if (this.ivjSpatialExistingMenuItem == null) {
+            try {
+                this.ivjSpatialExistingMenuItem = new javax.swing.JMenuItem();
+                this.ivjSpatialExistingMenuItem.setName("SpatialMenuItem");
+                this.ivjSpatialExistingMenuItem.setText(MATHMODEL_SPATIAL_EXISTING);
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjSpatialExistingMenuItem;
+    }
+
+    private static final String MATHMODEL_SPATIAL_CREATENEW = "Spatial from new geometry";
+    private JMenuItem mntmLicenseInformation;
+    private JSeparator separator;
+
+    private javax.swing.JMenuItem getSpatialCreateNewMenuItem() {
+        if (this.ivjSpatialCreateNewMenuItem == null) {
+            try {
+                this.ivjSpatialCreateNewMenuItem = new javax.swing.JMenuItem();
+                this.ivjSpatialCreateNewMenuItem.setName("SpatialMenuItem");
+                this.ivjSpatialCreateNewMenuItem.setText(MATHMODEL_SPATIAL_CREATENEW);
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjSpatialCreateNewMenuItem;
+    }
+
+    /**
+     * Return the StatusbarMenuItem property value.
+     *
+     * @return javax.swing.JCheckBoxMenuItem
+     */
+    private javax.swing.JCheckBoxMenuItem getStatusbarMenuItem() {
+        if (this.ivjStatusbarMenuItem == null) {
+            try {
+                this.ivjStatusbarMenuItem = new javax.swing.JCheckBoxMenuItem();
+                this.ivjStatusbarMenuItem.setName("StatusbarMenuItem");
+                this.ivjStatusbarMenuItem.setSelected(true);
+                this.ivjStatusbarMenuItem.setText("Status Bar");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjStatusbarMenuItem;
+    }
+
+    /**
+     * Return the StatusBarPane property value.
+     *
+     * @return javax.swing.JPanel
+     */
+    private javax.swing.JPanel getStatusBarPane() {
+        if (this.ivjStatusBarPane == null) {
+            try {
+                this.ivjStatusBarPane = new javax.swing.JPanel();
+                this.ivjStatusBarPane.setName("StatusBarPane");
+                this.ivjStatusBarPane.setLayout(new GridBagLayout());
+
+                int gridx = 0;
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.gridx = gridx;
+                gbc.gridy = 0;
+                gbc.weighty = 1;
+                gbc.fill = GridBagConstraints.VERTICAL;
+                gbc.insets = new Insets(4, 4, 4, 4);
+                this.ivjStatusBarPane.add(this.getJProgressBarConnection(), gbc);
+
+                gridx++;
+                gbc = new GridBagConstraints();
+                gbc.gridx = gridx;
+                gbc.gridy = 0;
+                gbc.insets = new Insets(2, 5, 2, 2);
+                this.ivjStatusBarPane.add(this.getIconBar(), gbc);
+
+                gridx++;
+                gbc = new GridBagConstraints();
+                gbc.gridx = gridx;
+                gbc.gridy = 0;
+                gbc.weightx = 1;
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.insets = new Insets(4, 4, 4, 4);
+                this.ivjStatusBarPane.add(this.getWarningBar(), gbc);
+
+                gridx++;
+                gbc = new GridBagConstraints();
+                gbc.gridx = gridx;
+                gbc.gridy = 0;
+                gbc.weighty = 1;
+                gbc.fill = GridBagConstraints.VERTICAL;
+                gbc.insets = new Insets(4, 4, 4, 4);
+                this.ivjStatusBarPane.add(this.getJProgressBarMemory(), gbc);
+
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjStatusBarPane;
+    }
+
+    public JLabel getWarningBar() {
+        if (this.warningText == null) {
+            try {
+                this.warningText = new JLabel();
+                this.warningText.setName("");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.warningText;
+    }
+
+    public JLabel getIconBar() {
+        if (this.iconText == null) {
+            try {
+                this.iconText = new JLabel();
+                this.iconText.setName("");
+                this.iconText.setIcon(VCellIcons.noteRedIcon);
+                this.iconText.setToolTipText("View VCell Administrator Notification");
+            } catch (java.lang.Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.iconText;
+    }
+
+    //private static final String notificationsUrl = "//cfs05.cam.uchc.edu/vcell/apache_webroot/htdocs/webstart/VCell_alert/VCell_Alert.html";
+    private void checkForNotifications() {
+        int code = HttpURLConnection.HTTP_BAD_REQUEST;
+        try {
+            URL u = new URL(notificationsUrl);
+            HttpURLConnection huc = (HttpURLConnection) u.openConnection();
+            huc.setRequestMethod("HEAD");  // probably cheaper than  huc.setRequestMethod ("GET");
+            huc.connect();
+            code = huc.getResponseCode();
+        } catch (IOException e) {
+            // we just eat the exception
 //		e.printStackTrace();
-		code = HttpURLConnection.HTTP_INTERNAL_ERROR;
-	}
-	if(code != HttpURLConnection.HTTP_OK) {
-		getIconBar().setEnabled(false);
-		getIconBar().setVisible(false);
-	} else {
-		getIconBar().setEnabled(true);
-		getIconBar().setVisible(true);
+            code = HttpURLConnection.HTTP_INTERNAL_ERROR;
+        }
+        if (code != HttpURLConnection.HTTP_OK) {
+            this.getIconBar().setEnabled(false);
+            this.getIconBar().setVisible(false);
+        } else {
+            this.getIconBar().setEnabled(true);
+            this.getIconBar().setVisible(true);
 
-		Timer blinkTimer = new Timer(500, new ActionListener() {
-			private int count = 0;
-			private int maxCount = 110;								// 55 seconds
-			public void actionPerformed(ActionEvent e) {
-				if (count >= maxCount) {
-					getIconBar().setIcon(VCellIcons.noteRedIcon);	// must remain on the noteRedIcon
-					((Timer) e.getSource()).stop();
-				} else {
-					if(count %2 == 0) {
-						getIconBar().setIcon(VCellIcons.noteRedIcon);
-					} else {
-						getIconBar().setIcon(VCellIcons.noteWhiteIcon);
-					}
-					count++;
-				}
-			}
-		});
-		blinkTimer.start();
-	}
-}
+            Timer blinkTimer = new Timer(500, new ActionListener() {
+                private int count = 0;
+                private final int maxCount = 110;                                // 55 seconds
 
-private javax.swing.JMenuItem getTestingFrameworkMenuItem() {
-	if (ivjTestingFrameworkMenuItem == null) {
-		try {
-			ivjTestingFrameworkMenuItem = new javax.swing.JMenuItem();
-			ivjTestingFrameworkMenuItem.setName("TestingFrameworkMenuItem");
-			ivjTestingFrameworkMenuItem.setText("Testing Framework ...");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjTestingFrameworkMenuItem;
-}
+                public void actionPerformed(ActionEvent e) {
+                    if (this.count >= this.maxCount) {
+                        DocumentWindow.this.getIconBar().setIcon(VCellIcons.noteRedIcon);    // must remain on the noteRedIcon
+                        ((Timer) e.getSource()).stop();
+                    } else {
+                        if (this.count % 2 == 0) {
+                            DocumentWindow.this.getIconBar().setIcon(VCellIcons.noteRedIcon);
+                        } else {
+                            DocumentWindow.this.getIconBar().setIcon(VCellIcons.noteWhiteIcon);
+                        }
+                        this.count++;
+                    }
+                }
+            });
+            blinkTimer.start();
+        }
+    }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (5/24/2004 3:38:47 PM)
- * @return cbit.vcell.client.desktop.TopLevelWindowManager
- */
-public TopLevelWindowManager getTopLevelWindowManager() {
-	return getWindowManager();
-}
-
-/**
- * Gets the windowManager property (cbit.vcell.client.desktop.DocumentWindowManager) value.
- * @return The windowManager property value.
- * @see #setWindowManager
- */
-private DocumentWindowManager getWindowManager() {
-	return fieldWindowManager;
-}
-
-/**
- * Called whenever the part throws an exception.
- * @param exception java.lang.Throwable
- */
-private void handleException(java.lang.Throwable exception) {
-
-	/* Uncomment the following lines to print uncaught exceptions to stdout */
-	System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-	exception.printStackTrace(System.out);
-}
-
-private void importExternalDocument() {
-	getWindowManager().openDocument(VCDocumentType.EXTERNALFILE_DOC);
-}
-
-private void importPathway(PathwayImportOption pathwayImportOption) {
-	getWindowManager().importPathway(pathwayImportOption);
-}
+    private javax.swing.JMenuItem getTestingFrameworkMenuItem() {
+        if (this.ivjTestingFrameworkMenuItem == null) {
+            try {
+                this.ivjTestingFrameworkMenuItem = new javax.swing.JMenuItem();
+                this.ivjTestingFrameworkMenuItem.setName("TestingFrameworkMenuItem");
+                this.ivjTestingFrameworkMenuItem.setText("Testing Framework ...");
+                // user code begin {1}
+                // user code end
+            } catch (java.lang.Throwable ivjExc) {
+                // user code begin {2}
+                // user code end
+                this.handleException(ivjExc);
+            }
+        }
+        return this.ivjTestingFrameworkMenuItem;
+    }
 
 
-/**
- * Initializes connections
- * @exception java.lang.Exception The exception description.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
-	getAbout_BoxMenuItem().addActionListener(ivjEventHandler);
-	getStatusbarMenuItem().addItemListener(ivjEventHandler);
-	getCloseMenuItem().addActionListener(ivjEventHandler);
-	getExitMenuItem().addActionListener(ivjEventHandler);
-	getJMenuItemNewBioModel().addActionListener(ivjEventHandler);
-	getJMenuItemOpenBioModel().addActionListener(ivjEventHandler);
-	getJMenuItemOpenMathModel().addActionListener(ivjEventHandler);
-	getJMenuItemOpenLocal().addActionListener(ivjEventHandler);
-	getSaveMenuItem().addActionListener(ivjEventHandler);
-	getSave_AsMenuItem().addActionListener(ivjEventHandler);
-	getSave_AsLocalMenuItem().addActionListener(ivjEventHandler);
-	getJMenuItemImport().addActionListener(ivjEventHandler);
-	getSave_VersionMenuItem().addActionListener(ivjEventHandler);
-	getManageUserMenuItem().addActionListener(ivjEventHandler);
-	getChange_ProxyMenuItem().addActionListener(ivjEventHandler);
-	getLogOutMenuItem().addActionListener(ivjEventHandler);
-	getReconnectUserMenuItem().addActionListener(ivjEventHandler);
-	getLoginItem().addActionListener(ivjEventHandler);
+    /**
+     * Insert the method's description here.
+     * Creation date: (5/24/2004 3:38:47 PM)
+     *
+     * @return cbit.vcell.client.desktop.TopLevelWindowManager
+     */
+    public TopLevelWindowManager getTopLevelWindowManager() {
+        return this.getWindowManager();
+    }
+
+    /**
+     * Gets the windowManager property (cbit.vcell.client.desktop.DocumentWindowManager) value.
+     *
+     * @return The windowManager property value.
+     * @see #setWindowManager
+     */
+    private DocumentWindowManager getWindowManager() {
+        return this.fieldWindowManager;
+    }
+
+    /**
+     * Called whenever the part throws an exception.
+     *
+     * @param exception java.lang.Throwable
+     */
+    private void handleException(java.lang.Throwable exception) {
+
+        /* Uncomment the following lines to print uncaught exceptions to stdout */
+        System.out.println("--------- UNCAUGHT EXCEPTION ---------");
+        exception.printStackTrace(System.out);
+    }
+
+    private void importExternalDocument() {
+        this.getWindowManager().openDocument(VCDocumentType.EXTERNALFILE_DOC);
+    }
+
+    private void importPathway(PathwayImportOption pathwayImportOption) {
+        this.getWindowManager().importPathway(pathwayImportOption);
+    }
+
+
+    /**
+     * Initializes connections
+     *
+     * @throws java.lang.Exception The exception description.
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void initConnections() throws java.lang.Exception {
+        // user code begin {1}
+        // user code end
+        this.getAbout_BoxMenuItem().addActionListener(this.ivjEventHandler);
+        this.getStatusbarMenuItem().addItemListener(this.ivjEventHandler);
+        this.getCloseMenuItem().addActionListener(this.ivjEventHandler);
+        this.getExitMenuItem().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemNewBioModel().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemOpenBioModel().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemOpenMathModel().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemOpenLocal().addActionListener(this.ivjEventHandler);
+        this.getSaveMenuItem().addActionListener(this.ivjEventHandler);
+        this.getSave_AsMenuItem().addActionListener(this.ivjEventHandler);
+        this.getSave_AsLocalMenuItem().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemImport().addActionListener(this.ivjEventHandler);
+        this.getSave_VersionMenuItem().addActionListener(this.ivjEventHandler);
+        this.getManageUserMenuItem().addActionListener(this.ivjEventHandler);
+        this.getChange_ProxyMenuItem().addActionListener(this.ivjEventHandler);
+        this.getLogOutMenuItem().addActionListener(this.ivjEventHandler);
+        this.getReconnectUserMenuItem().addActionListener(this.ivjEventHandler);
+        this.getLoginItem().addActionListener(this.ivjEventHandler);
 //	getImageJServiceMenuItem().addActionListener(ivjEventHandler);
-	getJMenuItemRevert().addActionListener(ivjEventHandler);
-	getJMenuItemCompare().addActionListener(ivjEventHandler);
-	getNonSpatialMenuItem().addActionListener(ivjEventHandler);
-	getMathFromBioMenuItem().addActionListener(ivjEventHandler);
-	getSpatialExistingMenuItem().addActionListener(ivjEventHandler);
-	getSpatialCreateNewMenuItem().addActionListener(ivjEventHandler);
-	getJMenuItemExport().addActionListener(ivjEventHandler);
+        this.getJMenuItemRevert().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemCompare().addActionListener(this.ivjEventHandler);
+        this.getNonSpatialMenuItem().addActionListener(this.ivjEventHandler);
+        this.getMathFromBioMenuItem().addActionListener(this.ivjEventHandler);
+        this.getSpatialExistingMenuItem().addActionListener(this.ivjEventHandler);
+        this.getSpatialCreateNewMenuItem().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemExport().addActionListener(this.ivjEventHandler);
 //	getEdit_Annotation_JMenuItem().addActionListener(ivjEventHandler);
-	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
-	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
-	getJMenuItemOnlineSupport().addActionListener(ivjEventHandler);
-	getJMenuItemDiscussionGroup().addActionListener(ivjEventHandler);
-	getJMenuItemManagePermissions().addActionListener(ivjEventHandler);
-	getJMenuItemOnlinePublish().addActionListener(ivjEventHandler);
-	getGrantPermissionsToVCellSupportMenuItem().addActionListener(ivjEventHandler);
+        this.getTestingFrameworkMenuItem().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemOnlineHelp().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemOnlineSupport().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemDiscussionGroup().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemManagePermissions().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemOnlinePublish().addActionListener(this.ivjEventHandler);
+        this.getGrantPermissionsToVCellSupportMenuItem().addActionListener(this.ivjEventHandler);
 
-	getJMenuItemEmailSupport().addActionListener(ivjEventHandler);
-	getNewHelpMenuItem().addActionListener(ivjEventHandler);
+        this.getJMenuItemEmailSupport().addActionListener(this.ivjEventHandler);
+        this.getNewHelpMenuItem().addActionListener(this.ivjEventHandler);
 //	getRunBNGMenuItem().addActionListener(ivjEventHandler);
-	getRunVFrapItem().addActionListener(ivjEventHandler);
-	getTransMAMenuItem().addActionListener(ivjEventHandler);
-	getViewJobsMenuItem().addActionListener(ivjEventHandler);
-	getJMenuItemFieldData().addActionListener(ivjEventHandler);
-	getPermissionsMenuItem().addActionListener(ivjEventHandler);
+        this.getRunVFrapItem().addActionListener(this.ivjEventHandler);
+        this.getTransMAMenuItem().addActionListener(this.ivjEventHandler);
+        this.getViewJobsMenuItem().addActionListener(this.ivjEventHandler);
+        this.getJMenuItemFieldData().addActionListener(this.ivjEventHandler);
+        this.getPermissionsMenuItem().addActionListener(this.ivjEventHandler);
 
-	getIconBar().addMouseListener(ivjEventHandler);
-	getExportedDataViewer().addActionListener(ivjEventHandler);
-}
+        this.getIconBar().addMouseListener(this.ivjEventHandler);
+        this.getExportedDataViewer().addActionListener(this.ivjEventHandler);
+    }
 
-/**
- * Initialize the class.
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void initialize() {
-	try {
-		setName("DocumentWindow");
-		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-		setIconImage(VCellIcons.getJFrameImageIcon());
-		setJMenuBar(getDocumentWindowJMenuBar());
-		setSize(460, 536);
-		setTitle("DocumentWindow");
-		getContentPane().add(getStatusBarPane(), BorderLayout.SOUTH);
-		initConnections();
-		checkForNotifications();
-	} catch (java.lang.Throwable ivjExc) {
-		handleException(ivjExc);
-	}
-	// user code begin {2}
-	// user code end
-}
+    /**
+     * Initialize the class.
+     */
+    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+    private void initialize() {
+        try {
+            this.setName("DocumentWindow");
+            this.setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+            this.setIconImage(VCellIcons.getJFrameImageIcon());
+            this.setJMenuBar(this.getDocumentWindowJMenuBar());
+            this.setSize(460, 536);
+            this.setTitle("DocumentWindow");
+            this.getContentPane().add(this.getStatusBarPane(), BorderLayout.SOUTH);
+            this.initConnections();
+            this.checkForNotifications();
+        } catch (java.lang.Throwable ivjExc) {
+            this.handleException(ivjExc);
+        }
+        // user code begin {2}
+        // user code end
+    }
 
 
-private void invokeOnlineHelp() {
+    private void invokeOnlineHelp() {
 
-	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL),
-		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL)+" for Online Help");
-}
-private void invokeOnlineSupport() {
+        PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL),
+                "Please visit " + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VCELL_URL) + " for Online Help");
+    }
 
-	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL),
-		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL)+" for Online Support");
-}
-private void invokeDiscussionGroup() {
+    private void invokeOnlineSupport() {
 
-	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL),
-		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL)+" for Discussion Group");
-}
-private void invokeManagePermissions() {
+        PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL),
+                "Please visit " + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_SUPPORT_URL) + " for Online Support");
+    }
 
-	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL),
-		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL)+" for instructions on how to change permissions to your Model");
-}
-private void invokeOnlinePublish() {
+    private void invokeDiscussionGroup() {
 
-	PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL),
-		"Please visit "+ DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL)+" for instructions on how to Publish your Model");
-}
+        PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL),
+                "Please visit " + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_GOOGLE_DISCUSS_URL) + " for Discussion Group");
+    }
+
+    private void invokeManagePermissions() {
+
+        PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL),
+                "Please visit " + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.VC_TUT_PERMISSION_URL) + " for instructions on how to change permissions to your Model");
+    }
+
+    private void invokeOnlinePublish() {
+
+        PopupGenerator.browserLauncher(this, DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL),
+                "Please visit " + DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.ACKNOWLEGE_PUB__WEB_URL) + " for instructions on how to Publish your Model");
+    }
 
 
     private void newDocument(java.awt.event.ActionEvent actionEvent) {
-	AsynchClientTask[] taskArray = null;
-	if (actionEvent.getActionCommand().equals("BioModel")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC, VCDocument.BIO_OPTION_DEFAULT));
-	} else if (actionEvent.getActionCommand().equals("Non-Spatial")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_NONSPATIAL));
-	} else if (actionEvent.getActionCommand().equals(MATHMODEL_SPATIAL_EXISTING)) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_EXISTS));
-	} else if (actionEvent.getActionCommand().equals(MATHMODEL_SPATIAL_CREATENEW)) {
-		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_NEW));
-		return;
-	} else if (actionEvent.getActionCommand().equals("From BioModel")) {
-		taskArray = getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_FROMBIOMODELAPP));
-	}else {
-		return;
-	}
-	Hashtable<String, Object> hash = new Hashtable<String, Object>();
-	hash.put(ClientRequestManager.GUI_PARENT, (Component)this);
-	hash.put("requestManager", getWindowManager().getRequestManager());
-	ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
-}
+        AsynchClientTask[] taskArray = null;
+        if (actionEvent.getActionCommand().equals("BioModel")) {
+            taskArray = this.getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.BIOMODEL_DOC, VCDocument.BIO_OPTION_DEFAULT));
+        } else if (actionEvent.getActionCommand().equals("Non-Spatial")) {
+            taskArray = this.getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_NONSPATIAL));
+        } else if (actionEvent.getActionCommand().equals(MATHMODEL_SPATIAL_EXISTING)) {
+            taskArray = this.getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_EXISTS));
+        } else if (actionEvent.getActionCommand().equals(MATHMODEL_SPATIAL_CREATENEW)) {
+            this.getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL_NEW));
+            return;
+        } else if (actionEvent.getActionCommand().equals("From BioModel")) {
+            taskArray = this.getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocumentType.MATHMODEL_DOC, VCDocument.MATH_OPTION_FROMBIOMODELAPP));
+        } else {
+            return;
+        }
+        Hashtable<String, Object> hash = new Hashtable<String, Object>();
+        hash.put(ClientRequestManager.GUI_PARENT, this);
+        hash.put("requestManager", this.getWindowManager().getRequestManager());
+        ClientTaskDispatcher.dispatch(this, hash, taskArray, false);
+    }
 
-private void openDocument(java.awt.event.ActionEvent actionEvent) {
-	if (actionEvent.getActionCommand().equals("BioModel...")) {
-		getWindowManager().openDocument(VCDocumentType.BIOMODEL_DOC);
-	} else if (actionEvent.getActionCommand().equals("MathModel...")) {
-		getWindowManager().openDocument(VCDocumentType.MATHMODEL_DOC);
-	} else if (actionEvent.getActionCommand().equals("Geometry...")) {
-		getWindowManager().openDocument(VCDocumentType.GEOMETRY_DOC);
-	}
-}
+    private void openDocument(java.awt.event.ActionEvent actionEvent) {
+        if (actionEvent.getActionCommand().equals("BioModel...")) {
+            this.getWindowManager().openDocument(VCDocumentType.BIOMODEL_DOC);
+        } else if (actionEvent.getActionCommand().equals("MathModel...")) {
+            this.getWindowManager().openDocument(VCDocumentType.MATHMODEL_DOC);
+        } else if (actionEvent.getActionCommand().equals("Geometry...")) {
+            this.getWindowManager().openDocument(VCDocumentType.GEOMETRY_DOC);
+        }
+    }
 
-private void login(){
-	Hashtable<String, Object> hash = new Hashtable();
-	VCellConnectionFactory vcellConnectionFactory = VCellClientMain.injector.getInstance(VCellConnectionFactory.class);
+    private void login() {
+        Hashtable<String, Object> hash = new Hashtable();
+        VCellConnectionFactory vcellConnectionFactory = VCellClientMain.injector.getInstance(VCellConnectionFactory.class);
 
-	String host = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_HOST)));
-	String port;
-	String pathPrefix;
-	try{
-		port = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_PORT)));
-	}
-	catch (ConfigurationException e){
-		port = "443";
-	}
-	try {
-		pathPrefix = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_PATH_PREFIX_V0)));
-	}
-	catch (ConfigurationException e){
-		pathPrefix = "";
-	}
+        String host = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_HOST)));
+        String port;
+        String pathPrefix;
+        try {
+            port = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_PORT)));
+        } catch (ConfigurationException e) {
+            port = "443";
+        }
+        try {
+            pathPrefix = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_PATH_PREFIX_V0)));
+        } catch (ConfigurationException e) {
+            pathPrefix = "";
+        }
 
-	AsynchClientTask task1a = ClientLogin.popupLogin(false);
-	AsynchClientTask task1b = ClientLogin.loginWithAuth0(vcellConnectionFactory.getAuth0ConnectionUtils());
-	AsynchClientTask task2  = ClientLogin.connectToServer(vcellConnectionFactory.getAuth0ConnectionUtils(),
-			ClientServerInfo.createRemoteServerInfo(host, Integer.parseInt(port), pathPrefix, null));
+        AsynchClientTask task1a = ClientLogin.popupLogin(false);
+        AsynchClientTask task1b = ClientLogin.loginWithAuth0(vcellConnectionFactory.getAuth0ConnectionUtils());
+        AsynchClientTask task2 = ClientLogin.connectToServer(vcellConnectionFactory.getAuth0ConnectionUtils(),
+                ClientServerInfo.createRemoteServerInfo(host, Integer.parseInt(port), pathPrefix, null));
 
-	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1a, task1b, task2};
-	ClientTaskDispatcher.dispatch(null, hash, taskArray);
-}
+        AsynchClientTask[] taskArray = new AsynchClientTask[]{task1a, task1b, task2};
+        ClientTaskDispatcher.dispatch(null, hash, taskArray);
+    }
 
 
-private void reconnect() {
-	getWindowManager().reconnect();
-}
+    private void reconnect() {
+        this.getWindowManager().reconnect();
+    }
 
 
-private void saveDocument(boolean replace) {
-	getWindowManager().saveDocument(replace);
-}
+    private void saveDocument(boolean replace) {
+        this.getWindowManager().saveDocument(replace);
+    }
 
 
-private void saveAsLocal(){
-	getWindowManager().exportDocument(FileFilters.FILE_FILTER_VCML);
-}
+    private void saveAsLocal() {
+        this.getWindowManager().exportDocument(FileFilters.FILE_FILTER_VCML);
+    }
 
-/**
- * Sets the windowManager property (cbit.vcell.client.desktop.DocumentWindowManager) value.
- * @param windowManager The new value for the property.
- * @see #getWindowManager
- */
-public void setWindowManager(DocumentWindowManager windowManager) {
-	if (fieldWindowManager == windowManager) {
-		return;
-	}
-	DocumentWindowManager oldValue = fieldWindowManager;
-	fieldWindowManager = windowManager;
-	firePropertyChange("windowManager", oldValue, windowManager);//May 2009,found it doesn't fire to any where.
+    /**
+     * Sets the windowManager property (cbit.vcell.client.desktop.DocumentWindowManager) value.
+     *
+     * @param windowManager The new value for the property.
+     * @see #getWindowManager
+     */
+    public void setWindowManager(DocumentWindowManager windowManager) {
+        if (this.fieldWindowManager == windowManager) {
+            return;
+        }
+        DocumentWindowManager oldValue = this.fieldWindowManager;
+        this.fieldWindowManager = windowManager;
+        this.firePropertyChange("windowManager", oldValue, windowManager);//May 2009,found it doesn't fire to any where.
 
-}
-
-
-public void setWorkArea(Component c) {
-	getContentPane().add(c, BorderLayout.CENTER);
-}
+    }
 
 
-public static void showAboutBox(Component parent) {
-	String version = "";
-	String build = "";
-	try {
-		version = "Version " + DocumentWindowAboutBox.getVERSION_NO();
-		build = DocumentWindowAboutBox.getEDITION() + " edition, build no. " + DocumentWindowAboutBox.getBUILD_NO();
-	} catch (Exception exc) {
-		System.out.println("Failed to parse vcell.softwareVersion: " + exc.getMessage());
-		exc.printStackTrace(System.out);
-	}
-	/* Create the AboutBox dialog */
-	DocumentWindowAboutBox aDocumentWindowAboutBox = new DocumentWindowAboutBox(version,build);
-	DialogUtils.showComponentCloseDialog(parent, aDocumentWindowAboutBox, "About VCell");
-}
+    public void setWorkArea(Component c) {
+        this.getContentPane().add(c, BorderLayout.CENTER);
+    }
+
+
+    public static void showAboutBox(Component parent) {
+        String version = "";
+        String build = "";
+        try {
+            version = "Version " + DocumentWindowAboutBox.getVERSION_NO();
+            build = DocumentWindowAboutBox.getEDITION() + " edition, build no. " + DocumentWindowAboutBox.getBUILD_NO();
+        } catch (Exception exc) {
+            System.out.println("Failed to parse vcell.softwareVersion: " + exc.getMessage());
+            exc.printStackTrace(System.out);
+        }
+        /* Create the AboutBox dialog */
+        DocumentWindowAboutBox aDocumentWindowAboutBox = new DocumentWindowAboutBox(version, build);
+        DialogUtils.showComponentCloseDialog(parent, aDocumentWindowAboutBox, "About VCell");
+    }
 
 
     private void showEditAnnotationWindow() {
 
-	try {
-		if (getWindowManager() != null) {
-			VCDocument vcDoc = getWindowManager().getVCDocument();
-			if (vcDoc != null) {
-				try{
-					// initialize fields - different for biomodel and mathmodel, geometry
-					String oldAnnotation = null;
-					if (vcDoc instanceof BioModel) {
-						oldAnnotation = ((BioModel)vcDoc).getVCMetaData().getFreeTextAnnotation((BioModel)vcDoc);
-					} else {
-						oldAnnotation = vcDoc.getDescription();
-					}
-					// show the editor
-					String newAnnotation = DialogUtils.showAnnotationDialog(this, oldAnnotation);
-					if (org.vcell.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
-						// if VCDocument is a Biomodel, set the vcMetadata, else edit VCDoc.description for now
-						if (vcDoc instanceof BioModel) {
-							// update free text annotation in VCMetaData
-							VCMetaData vcMetaData = ((BioModel)vcDoc).getVCMetaData();
-							vcMetaData.setFreeTextAnnotation((BioModel)vcDoc, newAnnotation);
-						} else {
-							// Update VCDocument annotation
-							vcDoc.setDescription(newAnnotation);
-						}
-					}
-				}catch(UtilCancelException e){
-					//Do Nothing
-				}
-			}else{
-				throw new Exception("No Document to Edit");
-			}
-		}
-	} catch (Throwable exc) {
-		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to edit annotation!\n"+exc.getMessage(), exc);
-	}
-}
+        try {
+            if (this.getWindowManager() != null) {
+                VCDocument vcDoc = this.getWindowManager().getVCDocument();
+                if (vcDoc != null) {
+                    try {
+                        // initialize fields - different for biomodel and mathmodel, geometry
+                        String oldAnnotation = null;
+                        if (vcDoc instanceof BioModel) {
+                            oldAnnotation = ((BioModel) vcDoc).getVCMetaData().getFreeTextAnnotation((BioModel) vcDoc);
+                        } else {
+                            oldAnnotation = vcDoc.getDescription();
+                        }
+                        // show the editor
+                        String newAnnotation = DialogUtils.showAnnotationDialog(this, oldAnnotation);
+                        if (org.vcell.util.BeanUtils.triggersPropertyChangeEvent(oldAnnotation, newAnnotation)) {
+                            // if VCDocument is a Biomodel, set the vcMetadata, else edit VCDoc.description for now
+                            if (vcDoc instanceof BioModel) {
+                                // update free text annotation in VCMetaData
+                                VCMetaData vcMetaData = ((BioModel) vcDoc).getVCMetaData();
+                                vcMetaData.setFreeTextAnnotation((BioModel) vcDoc, newAnnotation);
+                            } else {
+                                // Update VCDocument annotation
+                                vcDoc.setDescription(newAnnotation);
+                            }
+                        }
+                    } catch (UtilCancelException e) {
+                        //Do Nothing
+                    }
+                } else {
+                    throw new Exception("No Document to Edit");
+                }
+            }
+        } catch (Throwable exc) {
+            exc.printStackTrace(System.out);
+            PopupGenerator.showErrorDialog(this, "Failed to edit annotation!\n" + exc.getMessage(), exc);
+        }
+    }
 
 
-private void showTestingFrameworkWindow() {
-	getWindowManager().showTestingFrameworkWindow();
-}
+    private void showTestingFrameworkWindow() {
+        this.getWindowManager().showTestingFrameworkWindow();
+    }
 
 
-private void enableOpenMenuItems(boolean bEnableServerOps){
-	getOpenMenuItem().setEnabled(true);
-	getJMenuItemOpenBioModel().setEnabled(bEnableServerOps);
-	getJMenuItemOpenMathModel().setEnabled(bEnableServerOps);
-	getJMenuItemOpenGeometry().setEnabled(bEnableServerOps);
-	getJMenuItemOpenLocal().setEnabled(true);
-}
-/**
- * Insert the method's description here.
- * Creation date: (5/10/2004 4:32:17 PM)
- */
-public void updateConnectionStatus(ConnectionStatus connStatus) {
+    private void enableOpenMenuItems(boolean bEnableServerOps) {
+        this.getOpenMenuItem().setEnabled(true);
+        this.getJMenuItemOpenBioModel().setEnabled(bEnableServerOps);
+        this.getJMenuItemOpenMathModel().setEnabled(bEnableServerOps);
+        this.getJMenuItemOpenLocal().setEnabled(true);
+    }
 
-	// other updates
-	String status = "";
-	User user = getWindowManager().getUser();
-	boolean isTestUser = (user!=null)?(user.isTestAccount()):(false);
-	switch (connStatus.getStatus()) {
-		case ConnectionStatus.NOT_CONNECTED: {
-			status = "";
-			getJProgressBarConnection().setString("NOT CONNECTED");
-			getJProgressBarConnection().setValue(0);
-			getManageUserMenuItem().setEnabled(false);
-			getLoginItem().setEnabled(true);
-			getLogOutMenuItem().setEnabled(false);
-			getReconnectUserMenuItem().setEnabled(false);
-			getViewJobsMenuItem().setEnabled(false);
+    /**
+     * Insert the method's description here.
+     * Creation date: (5/10/2004 4:32:17 PM)
+     */
+    public void updateConnectionStatus(ConnectionStatus connStatus) {
 
-			enableOpenMenuItems(false);
+        // other updates
+        String status = "";
+        User user = this.getWindowManager().getUser();
+        boolean isTestUser = user != null && (user.isTestAccount());
+        switch (connStatus.getStatus()) {
+            case ConnectionStatus.NOT_CONNECTED: {
+                status = "";
+                this.getJProgressBarConnection().setString("NOT CONNECTED");
+                this.getJProgressBarConnection().setValue(0);
+                this.getManageUserMenuItem().setEnabled(false);
+                this.getLoginItem().setEnabled(true);
+                this.getLogOutMenuItem().setEnabled(false);
+                this.getReconnectUserMenuItem().setEnabled(false);
+                this.getViewJobsMenuItem().setEnabled(false);
 
-			getSaveMenuItem().setEnabled(false);
-			getSave_AsMenuItem().setEnabled(false);
-			getSave_AsLocalMenuItem().setEnabled(true);
-			getSave_VersionMenuItem().setEnabled(false);
-			getJMenuItemRevert().setEnabled(false);
-			getJMenuItemCompare().setEnabled(false);
-			//getJMenuItemServer().setEnabled(true);
-			getTestingFrameworkMenuItem().setVisible(isTestUser);
-			getTestingFrameworkMenuItem().setEnabled(false);
-			getJMenuItemFieldData().setEnabled(false);
-			getPermissionsMenuItem().setEnabled(false);
-			getGrantPermissionsToVCellSupportMenuItem().setEnabled(false);
-			checkForReconnecting(connStatus);
-			break;
-		}
-		case ConnectionStatus.CONNECTED: {
-			status = "Server: " + connStatus.getApihost()+":"+connStatus.getApiport() + " User: " + connStatus.getUserName();
-			getJProgressBarConnection().setString("CONNECTED (" + connStatus.getUserName() + ")");
-			getJProgressBarConnection().setValue(100);
-			getManageUserMenuItem().setEnabled(true);
-			getLoginItem().setEnabled(false);
-			getLogOutMenuItem().setEnabled(true);
-			getReconnectUserMenuItem().setEnabled(true);
-			getViewJobsMenuItem().setEnabled(true);
+                this.enableOpenMenuItems(false);
 
-			enableOpenMenuItems(true);
+                this.getSaveMenuItem().setEnabled(false);
+                this.getSave_AsMenuItem().setEnabled(false);
+                this.getSave_AsLocalMenuItem().setEnabled(true);
+                this.getSave_VersionMenuItem().setEnabled(false);
+                this.getJMenuItemRevert().setEnabled(false);
+                this.getJMenuItemCompare().setEnabled(false);
+                //getJMenuItemServer().setEnabled(true);
+                this.getTestingFrameworkMenuItem().setVisible(isTestUser);
+                this.getTestingFrameworkMenuItem().setEnabled(false);
+                this.getJMenuItemFieldData().setEnabled(false);
+                this.getPermissionsMenuItem().setEnabled(false);
+                this.getGrantPermissionsToVCellSupportMenuItem().setEnabled(false);
+                this.checkForReconnecting(connStatus);
+                break;
+            }
+            case ConnectionStatus.CONNECTED: {
+                status = "Server: " + connStatus.getApihost() + ":" + connStatus.getApiport() + " User: " + connStatus.getUserName();
+                this.getJProgressBarConnection().setString("CONNECTED (" + connStatus.getUserName() + ")");
+                this.getJProgressBarConnection().setValue(100);
+                this.getManageUserMenuItem().setEnabled(true);
+                this.getLoginItem().setEnabled(false);
+                this.getLogOutMenuItem().setEnabled(true);
+                this.getReconnectUserMenuItem().setEnabled(true);
+                this.getViewJobsMenuItem().setEnabled(true);
 
-			boolean bVersionedDocument = getWindowManager() != null &&  getWindowManager().getVCDocument() != null
-							&& getWindowManager().getVCDocument().getVersion() != null;
-			getSaveMenuItem().setEnabled(
-				bVersionedDocument && !(
-					getWindowManager().getVCDocument().getVersion().getFlag().compareEqual(VersionFlag.Archived) ||
-					getWindowManager().getVCDocument().getVersion().getFlag().compareEqual(VersionFlag.Published)
-				)
-			);
-			getSave_AsMenuItem().setEnabled(true);
-			getSave_AsLocalMenuItem().setEnabled(true);
-			getSave_VersionMenuItem().setEnabled(bVersionedDocument);
-			getJMenuItemRevert().setEnabled(bVersionedDocument);
-			getJMenuItemCompare().setEnabled(bVersionedDocument);
-			//getJMenuItemServer().setEnabled(true);
-			getTestingFrameworkMenuItem().setVisible(isTestUser);
-			getTestingFrameworkMenuItem().setEnabled(true);
-			getJMenuItemFieldData().setEnabled(true);
+                this.enableOpenMenuItems(true);
+
+                boolean bVersionedDocument = this.getWindowManager() != null && this.getWindowManager().getVCDocument() != null
+                        && this.getWindowManager().getVCDocument().getVersion() != null;
+                this.getSaveMenuItem().setEnabled(
+                        bVersionedDocument && !(
+                                this.getWindowManager().getVCDocument().getVersion().getFlag().compareEqual(VersionFlag.Archived) ||
+                                        this.getWindowManager().getVCDocument().getVersion().getFlag().compareEqual(VersionFlag.Published)
+                        )
+                );
+                this.getSave_AsMenuItem().setEnabled(true);
+                this.getSave_AsLocalMenuItem().setEnabled(true);
+                this.getSave_VersionMenuItem().setEnabled(bVersionedDocument);
+                this.getJMenuItemRevert().setEnabled(bVersionedDocument);
+                this.getJMenuItemCompare().setEnabled(bVersionedDocument);
+                //getJMenuItemServer().setEnabled(true);
+                this.getTestingFrameworkMenuItem().setVisible(isTestUser);
+                this.getTestingFrameworkMenuItem().setEnabled(true);
+                this.getJMenuItemFieldData().setEnabled(true);
 //			getJMenuItemMIRIAM().setEnabled(true);
-			getJMenuItemPreferences().setEnabled(true);
-			getTransMAMenuItem().setEnabled(
-					getWindowManager() != null &&
-					getWindowManager().getVCDocument() != null &&
-					getWindowManager().getVCDocument() instanceof BioModel
-			);
-			getViewJobsMenuItem().setEnabled(true);
-			//getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
-			getPermissionsMenuItem().setEnabled(bVersionedDocument && getWindowManager().getVCDocument().getVersion().getOwner().equals(getWindowManager().getUser()));
-			getGrantPermissionsToVCellSupportMenuItem().setEnabled(bVersionedDocument && getWindowManager().getVCDocument().getVersion().getOwner().equals(getWindowManager().getUser()));
-			break;
-		}
-		case ConnectionStatus.INITIALIZING: {
-			status = "Server: " + connStatus.getApihost()+":"+connStatus.getApiport() + " User: " + connStatus.getUserName();
-			getJProgressBarConnection().setString("INITIALIZING...");
-			getJProgressBarConnection().setValue(0);
-			getManageUserMenuItem().setEnabled(false);
-			getLoginItem().setEnabled(false);
-			getLogOutMenuItem().setEnabled(false);
-			getReconnectUserMenuItem().setEnabled(false);
-			enableOpenMenuItems(false);
-			getSave_AsLocalMenuItem().setEnabled(true);
-			getSaveMenuItem().setEnabled(false);
-			getSave_AsMenuItem().setEnabled(false);
-			getSave_AsLocalMenuItem().setEnabled(true);
-			getSave_VersionMenuItem().setEnabled(false);
-			getJMenuItemRevert().setEnabled(false);
-			getJMenuItemCompare().setEnabled(false);
-			//getJMenuItemServer().setEnabled(false);
-			getTestingFrameworkMenuItem().setVisible(isTestUser);
-			getTestingFrameworkMenuItem().setEnabled(isTestUser);
-			getJMenuItemFieldData().setEnabled(false);
+                this.getJMenuItemPreferences().setEnabled(true);
+                this.getTransMAMenuItem().setEnabled(
+                        this.getWindowManager() != null &&
+                                this.getWindowManager().getVCDocument() != null &&
+                                this.getWindowManager().getVCDocument() instanceof BioModel
+                );
+                this.getViewJobsMenuItem().setEnabled(true);
+                //getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
+                this.getPermissionsMenuItem().setEnabled(bVersionedDocument && this.getWindowManager().getVCDocument().getVersion().getOwner().equals(this.getWindowManager().getUser()));
+                this.getGrantPermissionsToVCellSupportMenuItem().setEnabled(bVersionedDocument && this.getWindowManager().getVCDocument().getVersion().getOwner().equals(this.getWindowManager().getUser()));
+                break;
+            }
+            case ConnectionStatus.INITIALIZING: {
+                status = "Server: " + connStatus.getApihost() + ":" + connStatus.getApiport() + " User: " + connStatus.getUserName();
+                this.getJProgressBarConnection().setString("INITIALIZING...");
+                this.getJProgressBarConnection().setValue(0);
+                this.getManageUserMenuItem().setEnabled(false);
+                this.getLoginItem().setEnabled(false);
+                this.getLogOutMenuItem().setEnabled(false);
+                this.getReconnectUserMenuItem().setEnabled(false);
+                this.enableOpenMenuItems(false);
+                this.getSave_AsLocalMenuItem().setEnabled(true);
+                this.getSaveMenuItem().setEnabled(false);
+                this.getSave_AsMenuItem().setEnabled(false);
+                this.getSave_AsLocalMenuItem().setEnabled(true);
+                this.getSave_VersionMenuItem().setEnabled(false);
+                this.getJMenuItemRevert().setEnabled(false);
+                this.getJMenuItemCompare().setEnabled(false);
+                //getJMenuItemServer().setEnabled(false);
+                this.getTestingFrameworkMenuItem().setVisible(isTestUser);
+                this.getTestingFrameworkMenuItem().setEnabled(isTestUser);
+                this.getJMenuItemFieldData().setEnabled(false);
 //			getJMenuItemMIRIAM().setEnabled(false);
-			getJMenuItemPreferences().setEnabled(false);
-			getPermissionsMenuItem().setEnabled(false);
-			getGrantPermissionsToVCellSupportMenuItem().setEnabled(false);
-			break;
-		}
-		case ConnectionStatus.DISCONNECTED: {
-			status = "Server: " + connStatus.getApihost()+":"+connStatus.getApiport() + " User: " + connStatus.getUserName();
-			getJProgressBarConnection().setString("DISCONNECTED");
-			getJProgressBarConnection().setValue(0);
-			getManageUserMenuItem().setEnabled(false);
-			getLoginItem().setEnabled(false);
-			getLogOutMenuItem().setEnabled(false);
-			getReconnectUserMenuItem().setEnabled(true);
-			enableOpenMenuItems(false);
-			getSave_AsLocalMenuItem().setEnabled(true);
-			getSaveMenuItem().setEnabled(false);
-			getSave_AsMenuItem().setEnabled(false);
-			getSave_VersionMenuItem().setEnabled(false);
-			getJMenuItemRevert().setEnabled(false);
-			getJMenuItemCompare().setEnabled(false);
-			//getJMenuItemServer().setEnabled(true);
-			getTestingFrameworkMenuItem().setVisible(isTestUser);
-			getTestingFrameworkMenuItem().setEnabled(false);
-			getJMenuItemFieldData().setEnabled(false);
+                this.getJMenuItemPreferences().setEnabled(false);
+                this.getPermissionsMenuItem().setEnabled(false);
+                this.getGrantPermissionsToVCellSupportMenuItem().setEnabled(false);
+                break;
+            }
+            case ConnectionStatus.DISCONNECTED: {
+                status = "Server: " + connStatus.getApihost() + ":" + connStatus.getApiport() + " User: " + connStatus.getUserName();
+                this.getJProgressBarConnection().setString("DISCONNECTED");
+                this.getJProgressBarConnection().setValue(0);
+                this.getManageUserMenuItem().setEnabled(false);
+                this.getLoginItem().setEnabled(false);
+                this.getLogOutMenuItem().setEnabled(false);
+                this.getReconnectUserMenuItem().setEnabled(true);
+                this.enableOpenMenuItems(false);
+                this.getSave_AsLocalMenuItem().setEnabled(true);
+                this.getSaveMenuItem().setEnabled(false);
+                this.getSave_AsMenuItem().setEnabled(false);
+                this.getSave_VersionMenuItem().setEnabled(false);
+                this.getJMenuItemRevert().setEnabled(false);
+                this.getJMenuItemCompare().setEnabled(false);
+                //getJMenuItemServer().setEnabled(true);
+                this.getTestingFrameworkMenuItem().setVisible(isTestUser);
+                this.getTestingFrameworkMenuItem().setEnabled(false);
+                this.getJMenuItemFieldData().setEnabled(false);
 //			getJMenuItemMIRIAM().setEnabled(false);
-			getJMenuItemPreferences().setEnabled(false);
-			getPermissionsMenuItem().setEnabled(false);
-			getGrantPermissionsToVCellSupportMenuItem().setEnabled(false);
-			checkForReconnecting(connStatus);
-			break;
-		}
-	}
-	getJProgressBarConnection().setToolTipText(status);
-}
+                this.getJMenuItemPreferences().setEnabled(false);
+                this.getPermissionsMenuItem().setEnabled(false);
+                this.getGrantPermissionsToVCellSupportMenuItem().setEnabled(false);
+                this.checkForReconnecting(connStatus);
+                break;
+            }
+        }
+        this.getJProgressBarConnection().setToolTipText(status);
+    }
 
-private void checkForReconnecting(ConnectionStatus connStatus) {
-	Reconnector rc = connStatus.getReconnector();
-	if (rc.isActive()) {
-		rc.addListener(this);
-	}
-}
+    private void checkForReconnecting(ConnectionStatus connStatus) {
+        Reconnector rc = connStatus.getReconnector();
+        if (rc.isActive()) {
+            rc.addListener(this);
+        }
+    }
 
-@Override
-public void refactorCountdown(long seconds) {
-	if (seconds > 0) {
-		getJProgressBarConnection().setString("RECONNECT in " + seconds-- + " s");
-	}
-}
+    @Override
+    public void refactorCountdown(long seconds) {
+        if (seconds > 0) {
+            this.getJProgressBarConnection().setString("RECONNECT in " + seconds-- + " s");
+        }
+    }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/7/2004 11:51:20 AM)
- */
-public void updateMemoryStatus(long freeBytes, long totalBytes) {
-	DecimalFormat df = (DecimalFormat)DecimalFormat.getInstance();
-	df.setMaximumFractionDigits(1);
-	String usedMB = df.format((totalBytes - freeBytes)/1000000.0);
-	String totalMB = df.format(totalBytes/1000000.0);
-	getJProgressBarMemory().setValue((int)(100 * (totalBytes - freeBytes) / totalBytes));
-	getJProgressBarMemory().setString(usedMB + "MB / " + totalMB + "MB");
-}
+    /**
+     * Insert the method's description here.
+     * Creation date: (5/7/2004 11:51:20 AM)
+     */
+    public void updateMemoryStatus(long freeBytes, long totalBytes) {
+        DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance();
+        df.setMaximumFractionDigits(1);
+        String usedMB = df.format((totalBytes - freeBytes) / 1000000.0);
+        String totalMB = df.format(totalBytes / 1000000.0);
+        this.getJProgressBarMemory().setValue((int) (100 * (totalBytes - freeBytes) / totalBytes));
+        this.getJProgressBarMemory().setString(usedMB + "MB / " + totalMB + "MB");
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/10/2004 4:32:17 PM)
- */
-public void updateWhileInitializing(int i) {
-	// extra animation while initializing connection
-	getJProgressBarConnection().setValue(i);
-}
+    /**
+     * Insert the method's description here.
+     * Creation date: (5/10/2004 4:32:17 PM)
+     */
+    public void updateWhileInitializing(int i) {
+        // extra animation while initializing connection
+        this.getJProgressBarConnection().setValue(i);
+    }
 
-private JMenuItem getJMenuItemPreferences() {
-	if (jMenuItemPreferences == null) {
-		jMenuItemPreferences = new JMenuItem();
-		jMenuItemPreferences.setText("VCell Properties ...");
-		jMenuItemPreferences.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent e) {
-				getTopLevelWindowManager().showPreferencesWindow();
-			}
-		});
-	}
-	return jMenuItemPreferences;
-}
+    private JMenuItem getJMenuItemPreferences() {
+        if (this.jMenuItemPreferences == null) {
+            this.jMenuItemPreferences = new JMenuItem();
+            this.jMenuItemPreferences.setText("VCell Properties ...");
+            this.jMenuItemPreferences.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    DocumentWindow.this.getTopLevelWindowManager().showPreferencesWindow();
+                }
+            });
+        }
+        return this.jMenuItemPreferences;
+    }
 
-public void showTransMADialog()
-{
-	String disclaimer = "Transforming reactions to stochastic capable cannot be undone. You may want to make a copy of the model.\nAlso some existing applications may need to be recreated in order to maintain consistency.\nLast but not least, stochastic transfomation may not be mathematically equivalent to the orignal model. \nDo you wish to proceed?";
-	JTextArea ta = new JTextArea(disclaimer);
-	ta.setEditable(false);
-	int userChoice = PopupGenerator.showComponentOKCancelDialog(this, ta, "Model Transformation Warning");
-	if(userChoice != JOptionPane.OK_OPTION) {
-		return;
-	}
-	BioModel biomodel = null;
-	if (getWindowManager().getVCDocument() instanceof BioModel) {
-		biomodel = (BioModel)getWindowManager().getVCDocument();
-	}
-	TransformMassActionPanel transMAPanel = new TransformMassActionPanel();
-	TransformMassActions transformMassActions = new TransformMassActions();
+    public void showTransMADialog() {
+        String disclaimer = "Transforming reactions to stochastic capable cannot be undone. You may want to make a copy of the model.\nAlso some existing applications may need to be recreated in order to maintain consistency.\nLast but not least, stochastic transfomation may not be mathematically equivalent to the orignal model. \nDo you wish to proceed?";
+        JTextArea ta = new JTextArea(disclaimer);
+        ta.setEditable(false);
+        int userChoice = PopupGenerator.showComponentOKCancelDialog(this, ta, "Model Transformation Warning");
+        if (userChoice != JOptionPane.OK_OPTION) {
+            return;
+        }
+        BioModel biomodel = null;
+        if (this.getWindowManager().getVCDocument() instanceof BioModel) {
+            biomodel = (BioModel) this.getWindowManager().getVCDocument();
+        }
+        TransformMassActionPanel transMAPanel = new TransformMassActionPanel();
+        TransformMassActions transformMassActions = new TransformMassActions();
 
-	Hashtable<String, Object> hashTable = new Hashtable<> ();
-	hashTable.put("biomodel", biomodel);
-	hashTable.put("window", this);
+        Hashtable<String, Object> hashTable = new Hashtable<>();
+        hashTable.put("biomodel", biomodel);
+        hashTable.put("window", this);
 
-	ProgressDialog progressDialog = new LinearDefiniteProgressDialog(this);
+        ProgressDialog progressDialog = new LinearDefiniteProgressDialog(this);
 
-	AsynchClientTask task1 = new AsynchClientTask("transform", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			BioModel biomodel = (BioModel)hashTable.get("biomodel");
-			if(biomodel == null) {
-				throw new RuntimeException("Biomodel cannot be null");
-			}
-			try {
-				transMAPanel.setModel(biomodel.getModel());
-				ReactionStep[] origReactions = biomodel.getModel().getReactionSteps();
-				transformMassActions.initializeTransformation(origReactions);
-				for (int i = 0; i < origReactions.length; i++) {
-					progressDialog.setProgress(i * 100 / origReactions.length);
-					TransformedReaction[] transReactionSteps = transformMassActions.getTransformedReactionSteps();
-					boolean[] isTransformable = transformMassActions.getIsTransformable();
+        AsynchClientTask task1 = new AsynchClientTask("transform", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+                BioModel biomodel = (BioModel) hashTable.get("biomodel");
+                if (biomodel == null) {
+                    throw new RuntimeException("Biomodel cannot be null");
+                }
+                try {
+                    transMAPanel.setModel(biomodel.getModel());
+                    ReactionStep[] origReactions = biomodel.getModel().getReactionSteps();
+                    transformMassActions.initializeTransformation(origReactions);
+                    for (int i = 0; i < origReactions.length; i++) {
+                        progressDialog.setProgress(i * 100 / origReactions.length);
+                        TransformedReaction[] transReactionSteps = transformMassActions.getTransformedReactionSteps();
+                        boolean[] isTransformable = transformMassActions.getIsTransformable();
 
-					transReactionSteps[i] = transformMassActions.transformOne(origReactions[i]);	// here all the work is done
-					if (transReactionSteps[i].getTransformType() == TransformedReaction.TRANSFORMABLE) {
-						isTransformable[i] = true;
-					} else {
-						isTransformable[i] = false;
-					}
-				}
-				progressDialog.setProgress(100);
-				transMAPanel.setTransformation(transformMassActions);
-			} catch(Throwable e) {
-				System.out.println(e.getMessage());
-			}
-			System.out.println("done");
-		}
-	};
+                        transReactionSteps[i] = transformMassActions.transformOne(origReactions[i]);    // here all the work is done
+                        isTransformable[i] = transReactionSteps[i].getTransformType() == TransformedReaction.TRANSFORMABLE;
+                    }
+                    progressDialog.setProgress(100);
+                    transMAPanel.setTransformation(transformMassActions);
+                } catch (Throwable e) {
+                    System.out.println(e.getMessage());
+                }
+                System.out.println("done");
+            }
+        };
 
-	AsynchClientTask task2 = new AsynchClientTask("starting exporting", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			// if we hit Cancel on the ProgressDialog, this task won't get executed
-			Component requester = (Component)hashTable.get("window");
-			int choice = DialogUtils.showComponentOKCancelDialog(requester, transMAPanel, "Transform to Stochastic Capable Model");
-			if(choice == JOptionPane.OK_OPTION) {
-				try {
-					transMAPanel.saveTransformedReactions();
-				} catch(Exception e) {
-					PopupGenerator.showWarningDialog(getTopLevelWindowManager(), null, new UserMessage(e.getMessage(), new String[]{"Ok"},"Ok"), null);
-				}
-			}
-		}
-	};
+        AsynchClientTask task2 = new AsynchClientTask("starting exporting", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+                // if we hit Cancel on the ProgressDialog, this task won't get executed
+                Component requester = (Component) hashTable.get("window");
+                int choice = DialogUtils.showComponentOKCancelDialog(requester, transMAPanel, "Transform to Stochastic Capable Model");
+                if (choice == JOptionPane.OK_OPTION) {
+                    try {
+                        transMAPanel.saveTransformedReactions();
+                    } catch (Exception e) {
+                        PopupGenerator.showWarningDialog(DocumentWindow.this.getTopLevelWindowManager(), null, new UserMessage(e.getMessage(), new String[]{"Ok"}, "Ok"), null);
+                    }
+                }
+            }
+        };
 
-	AsynchClientTask[] tasks = new AsynchClientTask[] { task1, task2 };
-	boolean bShowProgressPopup = true;
-	boolean bKnowProgress = true;
-	boolean cancelable = true;
-	boolean bInputBlocking = false;		// default: false
-	ClientTaskDispatcher.dispatch(this, hashTable, tasks, progressDialog,
-			bShowProgressPopup, bKnowProgress, cancelable, null, bInputBlocking,
-			ClientTaskDispatcher.StopStrategy.THREAD_KILL);
-}
+        AsynchClientTask[] tasks = new AsynchClientTask[]{task1, task2};
+        boolean bShowProgressPopup = true;
+        boolean bKnowProgress = true;
+        boolean cancelable = true;
+        boolean bInputBlocking = false;        // default: false
+        ClientTaskDispatcher.dispatch(this, hashTable, tasks, progressDialog,
+                bShowProgressPopup, bKnowProgress, cancelable, null, bInputBlocking,
+                ClientTaskDispatcher.StopStrategy.THREAD_KILL);
+    }
 
-public void showViewJobsDialog() {
-	System.out.println("ViewJobs menu item pressed.");
-	// https://vcellapi.cam.uchc.edu/simtask?submitLow=&submitHigh=&startRow=1&maxRows=100&serverId=&computeHost+value%3D=&simId=&jobId=&taskId=&hasData=all&queued=on&dispatched=on&running=on
-	DocumentWindowManager dwm = getWindowManager();
-	ViewJobsPanel panel = new ViewJobsPanel(dwm);
-	panel.setPreferredSize(new Dimension(1000,600));
+    public void showViewJobsDialog() {
+        System.out.println("ViewJobs menu item pressed.");
+        // https://vcellapi.cam.uchc.edu/simtask?submitLow=&submitHigh=&startRow=1&maxRows=100&serverId=&computeHost+value%3D=&simId=&jobId=&taskId=&hasData=all&queued=on&dispatched=on&running=on
+        DocumentWindowManager dwm = this.getWindowManager();
+        ViewJobsPanel panel = new ViewJobsPanel(dwm);
+        panel.setPreferredSize(new Dimension(1000, 600));
 
-	if(viewSpeciesDialog != null) {		// uncomment these 3 lines to allow only one instance of the dialog
-		viewSpeciesDialog.dispose();
-	}
+        if (this.viewSpeciesDialog != null) {        // uncomment these 3 lines to allow only one instance of the dialog
+            this.viewSpeciesDialog.dispose();
+        }
 
-	JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
-	viewSpeciesDialog = pane.createDialog(this, "View Simulation Jobs Status");
-	viewSpeciesDialog.setModal(false);
-	viewSpeciesDialog.setResizable(true);
-	viewSpeciesDialog.setVisible(true);
+        JOptionPane pane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[]{"Close"});
+        this.viewSpeciesDialog = pane.createDialog(this, "View Simulation Jobs Status");
+        this.viewSpeciesDialog.setModal(false);
+        this.viewSpeciesDialog.setResizable(true);
+        this.viewSpeciesDialog.setVisible(true);
 
 //	ClientRequestManager.idToNameConversion(getWindowManager().getVCDocument());
 
-}
+    }
 
-public void showViewExportedDataDialog() {
-	DocumentWindowManager dwm = getWindowManager();
-	ExportedDataViewer exportedDataViewer = new ExportedDataViewer();
-	exportedDataViewer.setPreferredSize(new Dimension(1030, 590));
+    public void showViewExportedDataDialog() {
+        DocumentWindowManager dwm = this.getWindowManager();
+        ExportedDataViewer exportedDataViewer = new ExportedDataViewer();
+        exportedDataViewer.setPreferredSize(new Dimension(1030, 590));
 
-	if(viewSpeciesDialog != null) {		// uncomment these 3 lines to allow only one instance of the dialog
-		viewSpeciesDialog.dispose();
-	}
+        if (this.viewSpeciesDialog != null) {        // uncomment these 3 lines to allow only one instance of the dialog
+            this.viewSpeciesDialog.dispose();
+        }
 
-	JOptionPane pane = new JOptionPane(exportedDataViewer, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Close"});
-	viewSpeciesDialog = pane.createDialog(this, "View Exported Data");
-	viewSpeciesDialog.setModal(false);
-	viewSpeciesDialog.setResizable(true);
-	viewSpeciesDialog.setVisible(true);
-}
+        JOptionPane pane = new JOptionPane(exportedDataViewer, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[]{"Close"});
+        this.viewSpeciesDialog = pane.createDialog(this, "View Exported Data");
+        this.viewSpeciesDialog.setModal(false);
+        this.viewSpeciesDialog.setResizable(true);
+        this.viewSpeciesDialog.setVisible(true);
+    }
 
-	private JMenuItem getMntmLicenseInformation() {
-		if (mntmLicenseInformation == null) {
-			mntmLicenseInformation = new JMenuItem("VCell License Information");
-			mntmLicenseInformation.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent arg0) {
-					Integer year = 2013;
-					try{
-						int tempYear = Integer.parseInt((new SimpleDateFormat("yyyy")).format(Calendar.getInstance().getTime()));
-						if(tempYear > year && tempYear < 2100){//sanity check
-							year = tempYear;
-						}
-					}catch(Exception e){
-						e.printStackTrace();
-					}
-					final String OK = "OK";
-					final String SAVE_LICENSE = "Save VCell license";
-					final String SAVE_THIRD_PARTY = "Save third party licenses";
-					String licenseStr =
-							"The Virtual Cell is free software distributed under the following MIT licensing terms:\n\n"+
-							"Copyright (c) 1998-"+year+" University of Connecticut Health Center\n\n" +
-							"Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n" +
-							"The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n"+
-							"THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n";
+    private JMenuItem getMntmLicenseInformation() {
+        if (this.mntmLicenseInformation == null) {
+            this.mntmLicenseInformation = new JMenuItem("VCell License Information");
+            this.mntmLicenseInformation.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent arg0) {
+                    Integer year = 2013;
+                    try {
+                        int tempYear = Integer.parseInt((new SimpleDateFormat("yyyy")).format(Calendar.getInstance().getTime()));
+                        if (tempYear > year && tempYear < 2100) {//sanity check
+                            year = tempYear;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    final String OK = "OK";
+                    final String SAVE_LICENSE = "Save VCell license";
+                    final String SAVE_THIRD_PARTY = "Save third party licenses";
+                    String licenseStr =
+                            "The Virtual Cell is free software distributed under the following MIT licensing terms:\n\n" +
+                                    "Copyright (c) 1998-" + year + " University of Connecticut Health Center\n\n" +
+                                    "Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\n" +
+                                    "The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\n" +
+                                    "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n";
 
-					if (OperatingSystemInfo.getInstance().isWindows()) {
-						licenseStr += "The Virtual Cell Windows Edition is licensed under the GNU General Public License Version 3\n\n";
-					}
+                    if (OperatingSystemInfo.getInstance().isWindows()) {
+                        licenseStr += "The Virtual Cell Windows Edition is licensed under the GNU General Public License Version 3\n\n";
+                    }
 
-					String result = DialogUtils.showWarningDialog(DocumentWindow.this, "VCell Licensing Information", licenseStr, new String[] {OK,SAVE_THIRD_PARTY,SAVE_LICENSE,}, OK);
-					if(result != null && (result.equals(SAVE_THIRD_PARTY) || result.equals(SAVE_LICENSE))){
-						JFileChooser saveLicenseJFC = new JFileChooser();
-						int returnVal = saveLicenseJFC.showSaveDialog(DocumentWindow.this);
-					    if(returnVal == JFileChooser.APPROVE_OPTION) {
-					       File outFile = saveLicenseJFC.getSelectedFile();
-					       try{
-					    	   if(result.equals(SAVE_THIRD_PARTY)){
-					    		   ResourceUtil.writeResourceToFile("/"+System.getProperty(PropertyLoader.vcellThirdPartyLicense), outFile);
-					    	   }else if (result.equals(SAVE_LICENSE)){
-					    		   XmlUtil.writeXMLStringToFile(licenseStr, outFile.getAbsolutePath(), false);
-					    	   }
-					       }catch(Exception e){
-					    	   e.printStackTrace();
-					    	   DialogUtils.showErrorDialog(DocumentWindow.this, "Error saving license info: "+e.getMessage());
-					       }
-					    }
-					}
-				}
-			});
-		}
-		return mntmLicenseInformation;
-	}
-	private JSeparator getSeparator() {
-		if (separator == null) {
-			separator = new JSeparator();
-		}
-		return separator;
-	}
+                    String result = DialogUtils.showWarningDialog(DocumentWindow.this, "VCell Licensing Information", licenseStr, new String[]{OK, SAVE_THIRD_PARTY, SAVE_LICENSE,}, OK);
+                    if (result != null && (result.equals(SAVE_THIRD_PARTY) || result.equals(SAVE_LICENSE))) {
+                        JFileChooser saveLicenseJFC = new JFileChooser();
+                        int returnVal = saveLicenseJFC.showSaveDialog(DocumentWindow.this);
+                        if (returnVal == JFileChooser.APPROVE_OPTION) {
+                            File outFile = saveLicenseJFC.getSelectedFile();
+                            try {
+                                if (result.equals(SAVE_THIRD_PARTY)) {
+                                    ResourceUtil.writeResourceToFile("/" + System.getProperty(PropertyLoader.vcellThirdPartyLicense), outFile);
+                                } else if (result.equals(SAVE_LICENSE)) {
+                                    XmlUtil.writeXMLStringToFile(licenseStr, outFile.getAbsolutePath(), false);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                DialogUtils.showErrorDialog(DocumentWindow.this, "Error saving license info: " + e.getMessage());
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        return this.mntmLicenseInformation;
+    }
 
-	public ChildWindowManager getChildWindowManager() {
-		return childWindowManager;
-	}
+    private JSeparator getSeparator() {
+        if (this.separator == null) {
+            this.separator = new JSeparator();
+        }
+        return this.separator;
+    }
+
+    public ChildWindowManager getChildWindowManager() {
+        return this.childWindowManager;
+    }
 }
