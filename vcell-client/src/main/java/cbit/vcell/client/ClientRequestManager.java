@@ -658,8 +658,21 @@ public class ClientRequestManager
 	public void logOut(final TopLevelWindowManager requester){
 		JDialog dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
-		int confirm = JOptionPane.showOptionDialog(dialog, "You are about to logout of VCell, and in doing so close the app. " +
-						"To complete this process you'll be redirected to a logout page. Do you want to continue?",
+		StringBuilder dialogMessage = new StringBuilder();
+		dialogMessage.append("You are about to log out of the VCell client.\n\n");
+		if (requester instanceof DocumentWindowManager documentWindowManager){
+			if(!User.isGuest(documentWindowManager.getUser().getName())){
+				dialogMessage.append("""
+                        Because VCell uses a browser-based login,
+                        you'll be redirected to a logout page to
+                        complete the logout process there.
+                        
+                        """);
+			}
+		}
+		dialogMessage.append("Do you wish to continue?");
+
+		int confirm = JOptionPane.showOptionDialog(dialog, dialogMessage.toString(),
 				"Logout", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
 				new String[] { "Continue", "Cancel" }, "Continue");
 		if (confirm == JOptionPane.OK_OPTION)  {

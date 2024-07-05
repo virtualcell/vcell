@@ -164,7 +164,7 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 }
 
 private static String generalInfo = "<html><b>Overview</b><br>" + 
-		"The Virtual Cell Software provides 2 environments for defining computational models. BioModels and MathModels "
+		"The Virtual Cell Software provides two environments for defining computational models. BioModels and MathModels "
 		+ "allow the user to create models using the tool that best suits their experience. A BioModel consists of a "
 		+ "model description (Physiology), and one or more Applications generated using a graphical interface to define "
 		+ "model elements. A MathModel is a document defined using the VCell Markup Language (VCML) and is created using "
