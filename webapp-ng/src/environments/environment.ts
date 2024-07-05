@@ -19,17 +19,24 @@ export const environment = {
     domain,
     clientId,
     authorizationParams: {
-      ...(audience && audience !== 'YOUR_API_IDENTIFIER' ? { audience } : null),
+      audience: 'https://vcellapi.cam.uchc.edu',
       redirect_uri: window.location.origin,
     },
     errorPath,
   },
-  apiUri: config.apiUri,
+  apiUri: 'https://vcell-stage.cam.uchc.edu',
   httpInterceptor: {
     allowedList: [
       {
-        uri: `${apiUri}/*`,
-        // allowAnonymous: true
+        // uri: `${config.apiUri}/api/*`,
+        uri: 'https://vcell-stage.cam.uchc.edu/api/*',
+        // allowAnonymous: true,
+        tokenOptions: {
+          authorizationParams: {
+            audience: 'https://vcellapi.cam.uchc.edu/api',
+            scope: 'openid profile email'
+          }
+        }
       },
       ],
 
