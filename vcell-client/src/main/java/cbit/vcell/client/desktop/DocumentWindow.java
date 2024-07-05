@@ -77,6 +77,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private JMenuItem ivjAbout_BoxMenuItem = null;
     private JMenuItem ivjManageUser = null;
     private JMenuItem loginMenuItem = null;
+    private JMenuItem loginAsGuestMenuItem = null;
     private JMenuItem ivjLogoutUser = null;
     private JMenuItem ivjCloseMenuItem = null;
     private JMenuBar ivjDocumentWindowJMenuBar = null;
@@ -213,8 +214,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                     DocumentWindow.this.emailSupport(e);
                 if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
                     DocumentWindow.this.showVCellHelpWindow();
-                if (e.getSource() == DocumentWindow.this.getLogOutMenuItem())
+                if (e.getSource() == DocumentWindow.this.getLogOutMenuItem()){
                     DocumentWindow.this.getWindowManager().getRequestManager().logOut(DocumentWindow.this.getWindowManager());
+                }
                 if (e.getSource() == DocumentWindow.this.getRunVFrapItem())
                     DocumentWindow.this.startVirtualFRAP();
                 if (e.getSource() == DocumentWindow.this.getTransMAMenuItem())
@@ -229,7 +231,10 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                     }
                 }
                 if (e.getSource() == DocumentWindow.this.getLoginItem()) {
-                    DocumentWindow.this.login();
+                    DocumentWindow.this.login(false);
+                }
+                if (e.getSource() == DocumentWindow.this.getLoginAsGuestItem()) {
+                    DocumentWindow.this.login(true);
                 }
                 if (e.getSource() == DocumentWindow.this.getPermissionsMenuItem()) {
                     DocumentWindow.this.getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, DocumentWindow.this.getWindowManager().getVCDocument());
@@ -461,6 +466,16 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             this.loginMenuItem.setEnabled(false);
         }
         return this.loginMenuItem;
+    }
+
+    private JMenuItem getLoginAsGuestItem() {
+        if (this.loginAsGuestMenuItem == null) {
+            this.loginAsGuestMenuItem = new javax.swing.JMenuItem();
+            this.loginAsGuestMenuItem.setName("LoginAsGuestMenuItem");
+            this.loginAsGuestMenuItem.setText("Login as Guest");
+            this.loginAsGuestMenuItem.setEnabled(false);
+        }
+        return this.loginAsGuestMenuItem;
     }
 
     private JMenuItem getManageUserMenuItem() {
@@ -1082,6 +1097,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjServerMenu.setName("ServerMenu");
                 this.ivjServerMenu.setText("Account");
                 this.ivjServerMenu.add(this.getLoginItem());
+                this.ivjServerMenu.add(this.getLoginAsGuestItem());
                 this.ivjServerMenu.add(this.getLogOutMenuItem());
                 this.ivjServerMenu.add(this.getManageUserMenuItem());
                 this.ivjServerMenu.add(this.getChange_ProxyMenuItem());
@@ -1364,6 +1380,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         this.getLogOutMenuItem().addActionListener(this.ivjEventHandler);
         this.getReconnectUserMenuItem().addActionListener(this.ivjEventHandler);
         this.getLoginItem().addActionListener(this.ivjEventHandler);
+        this.getLoginAsGuestItem().addActionListener(this.ivjEventHandler);
 //	getImageJServiceMenuItem().addActionListener(ivjEventHandler);
         this.getJMenuItemRevert().addActionListener(this.ivjEventHandler);
         this.getJMenuItemCompare().addActionListener(this.ivjEventHandler);
@@ -1480,7 +1497,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         }
     }
 
-    private void login() {
+    private void login(boolean asGuest) {
         Hashtable<String, Object> hash = new Hashtable();
         VCellConnectionFactory vcellConnectionFactory = VCellClientMain.injector.getInstance(VCellConnectionFactory.class);
 
@@ -1498,7 +1515,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             pathPrefix = "";
         }
 
-        AsynchClientTask task1a = ClientLogin.popupLogin(false);
+        ClientLogin.LoginOptions loginType = asGuest ?
+                ClientLogin.LoginOptions.GUEST_LOGIN : ClientLogin.LoginOptions.STANDARD_LOGIN;
+        AsynchClientTask task1a = ClientLogin.popupLogin(loginType);
         AsynchClientTask task1b = ClientLogin.loginWithAuth0(vcellConnectionFactory.getAuth0ConnectionUtils());
         AsynchClientTask task2 = ClientLogin.connectToServer(vcellConnectionFactory.getAuth0ConnectionUtils(),
                 ClientServerInfo.createRemoteServerInfo(host, Integer.parseInt(port), pathPrefix, null));
@@ -1630,6 +1649,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.getJProgressBarConnection().setValue(0);
                 this.getManageUserMenuItem().setEnabled(false);
                 this.getLoginItem().setEnabled(true);
+                this.getLoginAsGuestItem().setEnabled(true);
                 this.getLogOutMenuItem().setEnabled(false);
                 this.getReconnectUserMenuItem().setEnabled(false);
                 this.getViewJobsMenuItem().setEnabled(false);
@@ -1657,6 +1677,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.getJProgressBarConnection().setValue(100);
                 this.getManageUserMenuItem().setEnabled(true);
                 this.getLoginItem().setEnabled(false);
+                this.getLoginAsGuestItem().setEnabled(false);
                 this.getLogOutMenuItem().setEnabled(true);
                 this.getReconnectUserMenuItem().setEnabled(true);
                 this.getViewJobsMenuItem().setEnabled(true);
@@ -1699,6 +1720,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.getJProgressBarConnection().setValue(0);
                 this.getManageUserMenuItem().setEnabled(false);
                 this.getLoginItem().setEnabled(false);
+                this.getLoginAsGuestItem().setEnabled(false);
                 this.getLogOutMenuItem().setEnabled(false);
                 this.getReconnectUserMenuItem().setEnabled(false);
                 this.enableOpenMenuItems(false);
@@ -1725,6 +1747,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.getJProgressBarConnection().setValue(0);
                 this.getManageUserMenuItem().setEnabled(false);
                 this.getLoginItem().setEnabled(false);
+                this.getLoginAsGuestItem().setEnabled(false);
                 this.getLogOutMenuItem().setEnabled(false);
                 this.getReconnectUserMenuItem().setEnabled(true);
                 this.enableOpenMenuItems(false);
