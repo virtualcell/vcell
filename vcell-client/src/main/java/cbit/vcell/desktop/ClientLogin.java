@@ -26,8 +26,8 @@ public class ClientLogin {
 
 
     public static String showFullLoginPanel(){
-        String OFFLINE = "Offline", GUEST = "Guest", LOGIN = "Login";
-        String[] options = new String[] {OFFLINE, GUEST, LOGIN};
+        String SKIP = "Skip", GUEST = "Guest", LOGIN = "Login";
+        String[] options = new String[] {SKIP, GUEST, LOGIN};
         int result = JOptionPane.showOptionDialog(null,
                 """
                         Welcome to The Virtual Cell!
@@ -40,7 +40,7 @@ public class ClientLogin {
                         
                         Please select one of the following login options.""","Login to VCell",
                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, VCellIcons.makeIcon("/icons/vcell.png"), options, "Login");
-        return result < 0 ? OFFLINE : options[result];
+        return result < 0 ? SKIP : options[result];
     }
 
     public static String showAcceptLoginPanel(){
@@ -80,7 +80,7 @@ public class ClientLogin {
                 String result = LoginOptions.FULL_DIALOG.equals(loginOption) ?
                         ClientLogin.showFullLoginPanel() : LoginOptions.STANDARD_LOGIN.equals(loginOption) ?
                         "Login" : LoginOptions.GUEST_LOGIN.equals(loginOption) ?
-                        "Guest" : "Offline";
+                        "Guest" : "Skip";
                 hashTable.put("login", ClientLogin.doesTheUserWantToLogin(result));
                 hashTable.put("guest", ClientLogin.doesTheUserWantToBeGuest(result));
             }
