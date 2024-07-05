@@ -23,10 +23,12 @@ import org.vcell.util.document.User;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Path("/api/v1/users")
 @RequestScoped
 public class UsersResource {
+    private static final Logger LOG = Logger.getLogger(UsersResource.class.getName());
 
     @Inject
     SecurityIdentity securityIdentity;
@@ -107,13 +109,12 @@ public class UsersResource {
     @RolesAllowed("user")
     @APIResponses({
             @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
-            @APIResponse(responseCode = "404", description = "Identity not found")
     })
     @Produces(MediaType.APPLICATION_JSON)
     public UserIdentityJSONSafe getIdentity() throws DataAccessException {
         List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
         if (userIdentities.isEmpty()){
-            throw new WebApplicationException("Identity not found", Response.Status.NOT_FOUND);
+            return UserIdentityJSONSafe.noIdentity();
         } else if (userIdentities.size() > 1){
             throw new WebApplicationException("Multiple identities found for user", Response.Status.INTERNAL_SERVER_ERROR);
         } else {
@@ -201,13 +202,17 @@ public class UsersResource {
     ){ }
 
     public record UserIdentityJSONSafe(
+            boolean mapped,
             String userName,
             BigDecimal id,
             String subject,
             String insertDate
     ){
+        public static UserIdentityJSONSafe noIdentity(){
+            return new UserIdentityJSONSafe(false, null, null, null, null);
+        }
         static UserIdentityJSONSafe fromUserIdentity(UserIdentity userIdentity){
-            return new UserIdentityJSONSafe(userIdentity.user().getName(), userIdentity.id(), userIdentity.subject(), userIdentity.insertDate().toString());
+            return new UserIdentityJSONSafe(true, userIdentity.user().getName(), userIdentity.id(), userIdentity.subject(), userIdentity.insertDate().toString());
         }
     }
 

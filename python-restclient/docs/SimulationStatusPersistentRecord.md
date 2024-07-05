@@ -5,7 +5,6 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **status** | [**Status**](Status.md) |  | [optional] 
-**progress_hash** | **Dict[str, float]** |  | [optional] 
 **details** | **str** |  | [optional] 
 **has_data** | **bool** |  | [optional] 
 

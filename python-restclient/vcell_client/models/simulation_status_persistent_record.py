@@ -19,8 +19,8 @@ import re  # noqa: F401
 import json
 
 
-from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictBool, StrictFloat, StrictInt, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional
+from pydantic import BaseModel, StrictBool, StrictStr
 from pydantic import Field
 from vcell_client.models.status import Status
 try:
@@ -33,10 +33,9 @@ class SimulationStatusPersistentRecord(BaseModel):
     SimulationStatusPersistentRecord
     """ # noqa: E501
     status: Optional[Status] = None
-    progress_hash: Optional[Dict[str, Union[StrictFloat, StrictInt]]] = Field(default=None, alias="progressHash")
     details: Optional[StrictStr] = None
     has_data: Optional[StrictBool] = Field(default=None, alias="hasData")
-    __properties: ClassVar[List[str]] = ["status", "progressHash", "details", "hasData"]
+    __properties: ClassVar[List[str]] = ["status", "details", "hasData"]
 
     model_config = {
         "populate_by_name": True,
@@ -92,7 +91,6 @@ class SimulationStatusPersistentRecord(BaseModel):
 
         _obj = cls.model_validate({
             "status": obj.get("status"),
-            "progressHash": obj.get("progressHash"),
             "details": obj.get("details"),
             "hasData": obj.get("hasData")
         })

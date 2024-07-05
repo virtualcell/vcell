@@ -14,7 +14,6 @@ import { Status } from './status';
 
 export interface SimulationStatusPersistentRecord { 
     status?: Status;
-    progressHash?: { [key: string]: number; };
     details?: string;
     hasData?: boolean;
 }
