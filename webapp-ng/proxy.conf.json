@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://vcell-stage.cam.uchc.edu",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
