@@ -33,7 +33,7 @@ export const environment = {
         // allowAnonymous: true,
         tokenOptions: {
           authorizationParams: {
-            audience: 'https://vcellapi.cam.uchc.edu/api',
+            audience: 'https://vcellapi.cam.uchc.edu',
             scope: 'openid profile email'
           }
         }
