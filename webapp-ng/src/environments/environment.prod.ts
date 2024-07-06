@@ -28,7 +28,7 @@ export const environment = {
         // uri: `${config.apiUri}/api/*`,
         // uri: `${apiUri}/api/*`,
         // uri: '/api/*',
-        uri: 'https://vcell-stage.cam.uchc.edu/api/*',
+        uri: 'https://vcell.cam.uchc.edu/api/*',
 
         // allowAnonymous: true,
         tokenOptions: {
