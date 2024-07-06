@@ -31,7 +31,7 @@ export const environment = {
         // uri: `${config.apiUri}/api/*`,
         // uri: `${apiUri}/api/*`,
         // uri: '/api/*',
-        uri: 'https://minikube-island/api/*',
+        uri: 'https://vcell-stage.cam.uchc.edu/api/*',
 
         // allowAnonymous: true,
         tokenOptions: {
