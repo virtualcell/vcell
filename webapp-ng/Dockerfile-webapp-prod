@@ -14,7 +14,7 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
-RUN npm run build -c configuration_prod
+RUN npm run build_prod
 
 # -----------------
 
