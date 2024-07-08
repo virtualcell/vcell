@@ -32,6 +32,9 @@ import {ApiModule, Configuration as ApiConfiguration} from "./core/modules/opena
 import {VcellIdentityComponent} from "./components/vcell-identity/vcell-identity.component";
 import {BaseuriConfigService} from "./config/baseuri-config.service";
 import {BaseuriConfig} from "./config/baseuri-config";
+import {MatCardModule} from "@angular/material/card";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {LoginSuccessComponent} from "./pages/login-success/login-success.component";
 
 export function ConfigLoader(baseuriConfigService: BaseuriConfigService): () => Promise<BaseuriConfig> {
   return () => baseuriConfigService.loadConfiguration();
@@ -51,6 +54,7 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
     HeroComponent,
     HomeContentComponent,
     LoadingComponent,
+    LoginSuccessComponent,
     PublicationListComponent,
     PublicationEditComponent,
     VcellIdentityComponent,
@@ -79,13 +83,12 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
     MatInputModule,
     MatButtonModule,
     ApiModule,
-    // ApiModule.forRoot(() => new Configuration({ basePath: 'https://vcellapi-test.cam.uchc.edu' })),
-    // ApiModule
+    MatCardModule,
+    MatCheckboxModule,
   ],
   providers: [
     {
       provide: HTTP_INTERCEPTORS,
-      //useClass: CustomAuthInterceptor,
       useClass: AuthHttpInterceptor,
       multi: true,
     },

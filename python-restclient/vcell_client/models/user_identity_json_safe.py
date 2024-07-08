@@ -20,7 +20,7 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
+from pydantic import BaseModel, StrictBool, StrictFloat, StrictInt, StrictStr
 from pydantic import Field
 try:
     from typing import Self
@@ -31,11 +31,12 @@ class UserIdentityJSONSafe(BaseModel):
     """
     UserIdentityJSONSafe
     """ # noqa: E501
+    mapped: Optional[StrictBool] = None
     user_name: Optional[StrictStr] = Field(default=None, alias="userName")
     id: Optional[Union[StrictFloat, StrictInt]] = None
     subject: Optional[StrictStr] = None
     insert_date: Optional[StrictStr] = Field(default=None, alias="insertDate")
-    __properties: ClassVar[List[str]] = ["userName", "id", "subject", "insertDate"]
+    __properties: ClassVar[List[str]] = ["mapped", "userName", "id", "subject", "insertDate"]
 
     model_config = {
         "populate_by_name": True,
@@ -90,6 +91,7 @@ class UserIdentityJSONSafe(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in UserIdentityJSONSafe) in the input: " + _key)
 
         _obj = cls.model_validate({
+            "mapped": obj.get("mapped"),
             "userName": obj.get("userName"),
             "id": obj.get("id"),
             "subject": obj.get("subject"),

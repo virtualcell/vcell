@@ -1,4 +1,26 @@
 <div class="container">
-  <h1>Login Successful!</h1>
-  <p>You have successfully logged in. Welcome!</p>
+
+  <div *ngIf="vcellUserId; else setIdentity">
+    <br/><br/>
+    <h3>Login Successful!</h3>
+    <h5>You are mapped to VCell username &quot;{{ vcellUserId }}&quot;</h5>
+    <br/><br/>
+    <h5>Please return to VCell (you may close this browser window)</h5>
+  </div>
+
+  <ng-template #setIdentity>
+    <h3>Welcome to VCell - there is one more step!</h3>
+    <br/>
+    <h5>VCell Usernames Explained</h5>
+    A <b>VCell Username</b> is used to identify a user within VCell, and is involved in features such as:
+    <ul>
+      <li>saving and sharing models</li>
+      <li>running remote simulations and saving/sharing simulation results</li>
+    </ul>
+    <app-vcell-identity></app-vcell-identity>
+    <br/>
+    <h5>Once completed, please return to VCell (you may close this browser window)</h5>
+
+  </ng-template>
+
 </div>

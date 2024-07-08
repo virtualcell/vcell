@@ -25,8 +25,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import org.vcell.restclient.model.Status;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -36,7 +34,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  */
 @JsonPropertyOrder({
   SimulationStatusPersistentRecord.JSON_PROPERTY_STATUS,
-  SimulationStatusPersistentRecord.JSON_PROPERTY_PROGRESS_HASH,
   SimulationStatusPersistentRecord.JSON_PROPERTY_DETAILS,
   SimulationStatusPersistentRecord.JSON_PROPERTY_HAS_DATA
 })
@@ -44,9 +41,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class SimulationStatusPersistentRecord {
   public static final String JSON_PROPERTY_STATUS = "status";
   private Status status;
-
-  public static final String JSON_PROPERTY_PROGRESS_HASH = "progressHash";
-  private Map<String, Double> progressHash = new HashMap<>();
 
   public static final String JSON_PROPERTY_DETAILS = "details";
   private String details;
@@ -79,39 +73,6 @@ public class SimulationStatusPersistentRecord {
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setStatus(Status status) {
     this.status = status;
-  }
-
-
-  public SimulationStatusPersistentRecord progressHash(Map<String, Double> progressHash) {
-    this.progressHash = progressHash;
-    return this;
-  }
-
-  public SimulationStatusPersistentRecord putProgressHashItem(String key, Double progressHashItem) {
-    if (this.progressHash == null) {
-      this.progressHash = new HashMap<>();
-    }
-    this.progressHash.put(key, progressHashItem);
-    return this;
-  }
-
-   /**
-   * Get progressHash
-   * @return progressHash
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PROGRESS_HASH)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public Map<String, Double> getProgressHash() {
-    return progressHash;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_PROGRESS_HASH)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setProgressHash(Map<String, Double> progressHash) {
-    this.progressHash = progressHash;
   }
 
 
@@ -178,14 +139,13 @@ public class SimulationStatusPersistentRecord {
     }
     SimulationStatusPersistentRecord simulationStatusPersistentRecord = (SimulationStatusPersistentRecord) o;
     return Objects.equals(this.status, simulationStatusPersistentRecord.status) &&
-        Objects.equals(this.progressHash, simulationStatusPersistentRecord.progressHash) &&
         Objects.equals(this.details, simulationStatusPersistentRecord.details) &&
         Objects.equals(this.hasData, simulationStatusPersistentRecord.hasData);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(status, progressHash, details, hasData);
+    return Objects.hash(status, details, hasData);
   }
 
   @Override
@@ -193,7 +153,6 @@ public class SimulationStatusPersistentRecord {
     StringBuilder sb = new StringBuilder();
     sb.append("class SimulationStatusPersistentRecord {\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
-    sb.append("    progressHash: ").append(toIndentedString(progressHash)).append("\n");
     sb.append("    details: ").append(toIndentedString(details)).append("\n");
     sb.append("    hasData: ").append(toIndentedString(hasData)).append("\n");
     sb.append("}");
@@ -246,15 +205,6 @@ public class SimulationStatusPersistentRecord {
     // add `status` to the URL query string
     if (getStatus() != null) {
       joiner.add(String.format("%sstatus%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getStatus()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `progressHash` to the URL query string
-    if (getProgressHash() != null) {
-      for (String _key : getProgressHash().keySet()) {
-        joiner.add(String.format("%sprogressHash%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, _key, containerSuffix),
-            getProgressHash().get(_key), URLEncoder.encode(String.valueOf(getProgressHash().get(_key)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
     }
 
     // add `details` to the URL query string

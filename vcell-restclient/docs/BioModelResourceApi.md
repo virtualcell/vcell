@@ -154,7 +154,6 @@ Get BioModel information in JSON format by ID.
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.BioModelResourceApi;
 
@@ -162,7 +161,6 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -194,7 +192,7 @@ public class Example {
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -205,8 +203,6 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
-| **401** | Not Authorized |  -  |
 
 ## getBiomodelByIdWithHttpInfo
 
@@ -222,7 +218,6 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.BioModelResourceApi;
 
@@ -230,7 +225,6 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -264,7 +258,7 @@ ApiResponse<[**BioModel**](BioModel.md)>
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -275,8 +269,6 @@ ApiResponse<[**BioModel**](BioModel.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
-| **401** | Not Authorized |  -  |
 
 
 ## uploadBioModel
@@ -343,8 +335,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## uploadBioModelWithHttpInfo
 
@@ -413,6 +405,6 @@ ApiResponse<**String**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 

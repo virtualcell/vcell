@@ -46,10 +46,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -77,10 +77,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -108,10 +108,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -149,10 +149,10 @@ paths:
               schema:
                 type: string
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -196,13 +196,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/BioModel'
           description: OK
-        "403":
-          description: Not Allowed
-        "401":
-          description: Not Authorized
-      security:
-      - openId:
-        - user
       summary: Get BioModel information in JSON format by ID.
       tags:
       - Bio Model Resource
@@ -327,10 +320,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -391,14 +384,14 @@ paths:
       responses:
         "200":
           content:
-            text/plain:
+            application/json:
               schema:
                 type: boolean
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -406,7 +399,7 @@ paths:
       tags:
       - Users Resource
       x-content-type: application/json
-      x-accepts: text/plain
+      x-accepts: application/json
   /api/v1/users/mappedUser:
     get:
       operationId: getMappedUser
@@ -417,12 +410,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
           description: "Successful, returning the identity"
-        "404":
-          description: Identity not found
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -457,10 +448,10 @@ paths:
           description: "Successful, returning the identity"
         "409":
           description: "VCell Identity not mapped, userid already exists"
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -487,10 +478,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -977,17 +968,10 @@ components:
       example:
         hasData: true
         details: details
-        progressHash:
-          key: 0.8008281904610115
         status: null
       properties:
         status:
           $ref: '#/components/schemas/Status'
-        progressHash:
-          additionalProperties:
-            format: double
-            type: number
-          type: object
         details:
           type: string
         hasData:
@@ -1090,10 +1074,13 @@ components:
     UserIdentityJSONSafe:
       example:
         subject: subject
+        mapped: true
         insertDate: insertDate
         id: 0.8008281904610115
         userName: userName
       properties:
+        mapped:
+          type: boolean
         userName:
           type: string
         id:

@@ -1,59 +1,69 @@
 <div class="container mt-5" *ngIf="auth.user$ | async as user">
-  <h4>
-    Virtual Cell now uses <a href="https://auth0.com">Auth0.com</a> to secure access to your models and simulations using; (1) VCell Desktop, (2) VCell WebApp, (3) Python VCell API library in Jupyter notebooks (coming soon)</h4>
-  <div>
-    <p>Our VCell APIFor the Desktop VCell UI, you will need to enter your VCell userid and password to claim your existing VCell userid</p>
-  </div>
   <div *ngIf="vcellUserId; else setIdentity">
-    <p>VCell User ID: {{ vcellUserId }}</p>
-    <button (click)="clearMappedUser()"> VCell User ID</button>
+    <h5>your VCell username is &quot;{{ vcellUserId }}&quot;</h5>
+    <button mat-raised-button color="warn" (click)="clearMappedUser()">
+      <mat-icon>delete</mat-icon>
+      unmap &quot;{{ vcellUserId }}&quot;
+    </button>. <b>(This is an advanced feature, there is no undo!)</b>
   </div>
 
 
   <ng-template #setIdentity>
+    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+      {{ errorMessage }}
+    </div>
 
     <!-- Form for mapping to an existing VCell user -->
     <form class="form-table" (ngSubmit)="setMappedUser()">
-      <h3>Claim your existing VCell userid</h3>
-      <p>This provides access to your existing VCell models.  Please use your legacy vcell userid and password</p>
-      <table>
-        <tr>
-          <td><label for="userid">User ID:</label></td>
-          <td><input type="text" id="userid" name="userid" [(ngModel)]="mapUser.userID"></td>
-        </tr>
-        <tr>
-          <td><label for="password">Password:</label></td>
-          <td><input type="password" id="password" name="password" [(ngModel)]="mapUser.password"></td>
-        </tr>
-      </table>
-      <input class="submit-button" type="submit" value="Submit">
+      <mat-card>
+        <mat-card-title><em><strong>If you have an old vcell account,</strong></em> enter your old VCell login to claim your username and stored models</mat-card-title>
+        <mat-card-content>
+          <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
+            <mat-label>existing username *</mat-label>
+            <input matInput type="text" id="userid" name="userid" [(ngModel)]="mapUser.userID">
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
+            <mat-label>password *</mat-label>
+            <input matInput type="password" id="password" name="password" [(ngModel)]="mapUser.password">
+          </mat-form-field>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" type="submit">Submit</button>
+        </mat-card-actions>
+      </mat-card>
     </form>
 
     <!-- Form for creating a new VCell user -->
     <form class="form-table" (ngSubmit)="mapNewUser()">
-      <h3>Create a new VCell userid</h3>
-      <table>
-        <tr>
-          <td><label for="newUserid">User ID:</label></td>
-          <td><input type="text" id="newUserid" name="newUserid" [(ngModel)]="newUser.userID"></td>
-        </tr>
-        <tr>
-          <td><label for="country">Country:</label></td>
-          <td><input type="text" id="country" name="country" [(ngModel)]="newUser.country"></td>
-        </tr>
-        <tr>
-          <td><label for="title">Title:</label></td>
-          <td><input type="text" id="title" name="title" [(ngModel)]="newUser.title"></td>
-        </tr>
-        <tr>
-          <td><label for="organization">Organization:</label></td>
-          <td><input type="text" id="organization" name="organization" [(ngModel)]="newUser.organization"></td>
-        </tr>
-        <tr>
-          <td><label for="email_notification">Allow email notification</label></td>
-          <td><input type="checkbox" id="email_notification" name="email notification" [(ngModel)]="newUser.emailNotification"></td>
-        </tr>
-      </table>
-      <input class="submit-button" type="submit" value="Submit">
-    </form>  </ng-template>
+      <mat-card>
+        <mat-card-title><em><strong>If you are new to VCell,</strong></em> create a new username (including your institution helps us report usage).</mat-card-title>
+        <mat-card-content>
+          <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
+            <mat-label>new username *</mat-label>
+            <input matInput type="text" id="newUserid" name="newUserid" [(ngModel)]="newUser.userID">
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
+            <mat-label>Institution (optional)</mat-label>
+            <input matInput type="text" id="organization" name="organization" [(ngModel)]="newUser.organization">
+          </mat-form-field>
+          <mat-checkbox id="email_notification" name="email notification" [(ngModel)]="newUser.emailNotification">Allow email notifications to {{ user.email }}</mat-checkbox>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" type="submit">Submit</button>
+        </mat-card-actions>
+      </mat-card>
+    </form>
+  </ng-template>
+
+<!--  Once mapped, you can use your VCell SSO account s://auth0.com" target="_blank">Auth0.com</a> to provide a secure logon for all Virtual Cell platforms.-->
+<!--  <ul>-->
+<!--    <li>Java Desktop Application - the familiar VCell user interface <a href="https://vcell.org/run-vcell-software" target="_blank">(download installer)</a></li>-->
+<!--    <li>this WebApp - user account management and future portal for VCell web content</li>-->
+<!--    <li>Python/Jupyter notebook access to VCell APIs <b>(coming in 2025)</b></li>-->
+<!--  </ul>-->
+<!--  <h5>VCell account userid</h5>-->
+<!--  In order to provide a smooth transition for existing VCell users Browser based logon is mapped to Map to legacy VCell userid-->
+<!--  <h4>VCell userid</h4>-->
+
+
 </div>

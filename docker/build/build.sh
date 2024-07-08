@@ -116,16 +116,27 @@ build_rest() {
 }
 
 
-build_webapp() {
-	echo "building $repo/vcell-webapp:$tag"
-	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../webapp-ng/Dockerfile-webapp --tag $repo/vcell-webapp:$tag ../../webapp-ng"
-	$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../webapp-ng/Dockerfile-webapp --tag $repo/vcell-webapp:$tag ../../webapp-ng
-	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
-	if [ "$skip_push" == "false" ]; then
-		$SUDO_CMD docker push $repo/vcell-webapp:$tag
-	fi
+build_webapp_common() {
+  config=$1
+  echo "building $repo/vcell-webapp-${config}:$tag"
+  echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../webapp-ng/Dockerfile-webapp-${config} --tag $repo/vcell-webapp-${config}:$tag ../../webapp-ng"
+  $SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../webapp-ng/Dockerfile-webapp-${config} --tag $repo/vcell-webapp-${config}:$tag ../../webapp-ng
+  if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
+  if [ "$skip_push" == "false" ]; then
+    $SUDO_CMD docker push $repo/vcell-webapp-${config}:$tag
+  fi
 }
 
+build_webapp() {
+  build_webapp_common dev
+  if [[ $? -ne 0 ]]; then echo "failed to build dev"; exit 1; fi
+  build_webapp_common stage
+  if [[ $? -ne 0 ]]; then echo "failed to build stage"; exit 1; fi
+  build_webapp_common prod
+  if [[ $? -ne 0 ]]; then echo "failed to build prod"; exit 1; fi
+  build_webapp_common island
+  if [[ $? -ne 0 ]]; then echo "failed to build island"; exit 1; fi
+}
 
 build_batch() {
 	echo "building $repo/vcell-batch:$tag"

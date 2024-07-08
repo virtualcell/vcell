@@ -343,8 +343,8 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getLegacyApiTokenWithHttpInfo
 
@@ -409,8 +409,8 @@ ApiResponse<[**AccesTokenRepresentationRecord**](AccesTokenRepresentationRecord.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## getMappedUser
@@ -473,9 +473,8 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
-| **404** | Identity not found |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getMappedUserWithHttpInfo
 
@@ -540,9 +539,8 @@ ApiResponse<[**UserIdentityJSONSafe**](UserIdentityJSONSafe.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
-| **404** | Identity not found |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## getMe
@@ -731,8 +729,8 @@ null (empty response body)
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
 | **409** | VCell Identity not mapped, userid already exists |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## mapNewUserWithHttpInfo
 
@@ -801,8 +799,8 @@ ApiResponse<Void>
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
 | **409** | VCell Identity not mapped, userid already exists |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## mapUser
@@ -863,14 +861,14 @@ public class Example {
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: text/plain
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## mapUserWithHttpInfo
 
@@ -933,14 +931,14 @@ ApiResponse<**Boolean**>
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: text/plain
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## unmapUser
@@ -1007,8 +1005,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## unmapUserWithHttpInfo
 
@@ -1077,6 +1075,6 @@ ApiResponse<**Boolean**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 

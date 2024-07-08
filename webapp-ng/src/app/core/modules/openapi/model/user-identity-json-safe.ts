@@ -12,6 +12,7 @@
 
 
 export interface UserIdentityJSONSafe { 
+    mapped?: boolean;
     userName?: string;
     id?: number;
     subject?: string;

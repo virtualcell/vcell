@@ -128,7 +128,7 @@ public class UserRestDB {
         UserInfo newUserInfo = new UserInfo();
         newUserInfo.userid = userRegistrationInfo.userID();
         newUserInfo.email = email;
-        newUserInfo.notify = userRegistrationInfo.emailNotification();
+        newUserInfo.notify = (userRegistrationInfo.emailNotification() != null) ? userRegistrationInfo.emailNotification() : false;
         newUserInfo.wholeName = name;
         newUserInfo.country = userRegistrationInfo.country();
         newUserInfo.company = userRegistrationInfo.organization();

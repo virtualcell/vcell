@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://minikube.island",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

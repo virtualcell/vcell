@@ -4,7 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --configuration production",
+    "start_with_proxy": "ng serve --proxy-config proxy.conf.json",
+    "build_prod": "ng build -c configuration_prod",
+    "build_dev": "ng build -c configuration_dev",
+    "build_stage": "ng build -c configuration_stage",
+    "build_island": "ng build -c configuration_island",
     "test": "ng test",
     "test:ci": "ng test --no-watch --no-progress --browsers=ChromeHeadlessCI",
     "lint": "ng lint",

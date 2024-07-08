@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * UserIdentityJSONSafe
  */
 @JsonPropertyOrder({
+  UserIdentityJSONSafe.JSON_PROPERTY_MAPPED,
   UserIdentityJSONSafe.JSON_PROPERTY_USER_NAME,
   UserIdentityJSONSafe.JSON_PROPERTY_ID,
   UserIdentityJSONSafe.JSON_PROPERTY_SUBJECT,
@@ -40,6 +41,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class UserIdentityJSONSafe {
+  public static final String JSON_PROPERTY_MAPPED = "mapped";
+  private Boolean mapped;
+
   public static final String JSON_PROPERTY_USER_NAME = "userName";
   private String userName;
 
@@ -54,6 +58,31 @@ public class UserIdentityJSONSafe {
 
   public UserIdentityJSONSafe() { 
   }
+
+  public UserIdentityJSONSafe mapped(Boolean mapped) {
+    this.mapped = mapped;
+    return this;
+  }
+
+   /**
+   * Get mapped
+   * @return mapped
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_MAPPED)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public Boolean getMapped() {
+    return mapped;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_MAPPED)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setMapped(Boolean mapped) {
+    this.mapped = mapped;
+  }
+
 
   public UserIdentityJSONSafe userName(String userName) {
     this.userName = userName;
@@ -167,7 +196,8 @@ public class UserIdentityJSONSafe {
       return false;
     }
     UserIdentityJSONSafe userIdentityJSONSafe = (UserIdentityJSONSafe) o;
-    return Objects.equals(this.userName, userIdentityJSONSafe.userName) &&
+    return Objects.equals(this.mapped, userIdentityJSONSafe.mapped) &&
+        Objects.equals(this.userName, userIdentityJSONSafe.userName) &&
         Objects.equals(this.id, userIdentityJSONSafe.id) &&
         Objects.equals(this.subject, userIdentityJSONSafe.subject) &&
         Objects.equals(this.insertDate, userIdentityJSONSafe.insertDate);
@@ -175,13 +205,14 @@ public class UserIdentityJSONSafe {
 
   @Override
   public int hashCode() {
-    return Objects.hash(userName, id, subject, insertDate);
+    return Objects.hash(mapped, userName, id, subject, insertDate);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class UserIdentityJSONSafe {\n");
+    sb.append("    mapped: ").append(toIndentedString(mapped)).append("\n");
     sb.append("    userName: ").append(toIndentedString(userName)).append("\n");
     sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("    subject: ").append(toIndentedString(subject)).append("\n");
@@ -232,6 +263,11 @@ public class UserIdentityJSONSafe {
     }
 
     StringJoiner joiner = new StringJoiner("&");
+
+    // add `mapped` to the URL query string
+    if (getMapped() != null) {
+      joiner.add(String.format("%smapped%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMapped()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
 
     // add `userName` to the URL query string
     if (getUserName() != null) {

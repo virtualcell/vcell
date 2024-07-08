@@ -42,10 +42,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -70,10 +70,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StatusMessage'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -98,10 +98,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StatusMessage'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -137,10 +137,10 @@ paths:
             text/plain:
               schema:
                 type: string
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -163,13 +163,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModel'
-        "403":
-          description: Not Allowed
-        "401":
-          description: Not Authorized
-      security:
-      - openId:
-        - user
     delete:
       tags:
       - Bio Model Resource
@@ -295,10 +288,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -354,13 +347,13 @@ paths:
         "200":
           description: OK
           content:
-            text/plain:
+            application/json:
               schema:
                 type: boolean
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -377,12 +370,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
-        "404":
-          description: Identity not found
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -415,10 +406,10 @@ paths:
           description: "Successful, returning the identity"
         "409":
           description: "VCell Identity not mapped, userid already exists"
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -441,10 +432,10 @@ paths:
             application/json:
               schema:
                 type: boolean
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -759,11 +750,6 @@ components:
       properties:
         status:
           $ref: '#/components/schemas/Status'
-        progressHash:
-          type: object
-          additionalProperties:
-            format: double
-            type: number
         details:
           type: string
         hasData:
@@ -812,6 +798,8 @@ components:
     UserIdentityJSONSafe:
       type: object
       properties:
+        mapped:
+          type: boolean
         userName:
           type: string
         id:

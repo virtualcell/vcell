@@ -1,0 +1,5 @@
+.logo {
+  background-image: url("/assets/vcellBoxLogo.svg") !important;
+  height: 60px !important; /* Example height */
+  width: 60px !important; /* Example width */
+}

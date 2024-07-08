@@ -4,6 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**mapped** | **bool** |  | [optional] 
 **user_name** | **str** |  | [optional] 
 **id** | **float** |  | [optional] 
 **subject** | **str** |  | [optional] 

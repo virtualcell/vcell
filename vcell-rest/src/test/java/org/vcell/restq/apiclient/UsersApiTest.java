@@ -2,6 +2,8 @@ package org.vcell.restq.apiclient;
 
 import cbit.vcell.modeldb.UserDbDriver;
 import cbit.vcell.resource.PropertyLoader;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.mailer.MockMailbox;
@@ -22,12 +24,15 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
+import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restclient.model.UserRegistrationInfo;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.db.UserRestDB;
+import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -77,7 +82,7 @@ public class UsersApiTest {
     }
 
     @Test
-    public void testMapUser() throws ApiException, InvalidJwtException, MalformedClaimException {
+    public void testMapUser() throws ApiException, InvalidJwtException, MalformedClaimException, JsonProcessingException {
         UsersResourceApi aliceUsersResourceApi = new UsersResourceApi(aliceAPIClient);
 
         // map once, true - map twice return false
@@ -99,8 +104,14 @@ public class UsersApiTest {
         unmapped = aliceUsersResourceApi.unmapUser(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
         Assertions.assertFalse(unmapped);
 
-        // not mapped, getIdentity() should throw exception ApiException with 404
-        Assertions.assertThrows(ApiException.class, aliceUsersResourceApi::getMappedUser);
+        // not mapped
+        UserIdentityJSONSafe unmappedUser = new UserIdentityJSONSafe().userName(null).id(null).subject(null).insertDate(null).mapped(false);
+        Assertions.assertEquals(Boolean.FALSE, aliceUsersResourceApi.getMappedUser().getMapped());
+        ObjectMapper objectMapper = new ObjectMapper();
+        Assertions.assertEquals(objectMapper.writeValueAsString(unmappedUser), objectMapper.writeValueAsString(aliceUsersResourceApi.getMappedUser()));
+
+        // try to map using incorrect password
+        Assertions.assertEquals(Boolean.FALSE, aliceUsersResourceApi.mapUser(new UserLoginInfoForMapping().userID("vcellNagios").password("incorrect")));
 
         // map again, true
         mapped = aliceUsersResourceApi.mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
@@ -117,7 +128,7 @@ public class UsersApiTest {
 
         // cleanup, remove mapping
         aliceUsersResourceApi.unmapUser(TestEndpointUtils.vcellNagiosUserLoginInfo.getUserID());
-        Assertions.assertThrows(ApiException.class, () -> aliceUsersResourceApi.getMappedUser());
+        Assertions.assertEquals(Boolean.FALSE, aliceUsersResourceApi.getMappedUser().getMapped());
     }
 
     @Test
@@ -142,7 +153,7 @@ public class UsersApiTest {
 
         // cleanup, remove mapping
         aliceUsersResourceApi.unmapUser(newUserID);
-        Assertions.assertThrows(ApiException.class, () -> aliceUsersResourceApi.getMappedUser());
+        Assertions.assertEquals(Boolean.FALSE, aliceUsersResourceApi.getMappedUser().getMapped());
     }
 
     //    https://quarkus.io/guides/security-oidc-bearer-token-authentication#integration-testing-wiremock
@@ -210,7 +221,6 @@ public class UsersApiTest {
         Assertions.assertEquals(guestApiToken.getUserKey(), secondGuestApiToken.getUserKey());
         Assertions.assertNotEquals(guestApiToken.getToken(), secondGuestApiToken.getToken());
     }
-
 
     public void testResetPassword() throws SQLException, DataAccessException {
         PropertyLoader.setProperty(PropertyLoader.vcellSMTPHostName, "host");
