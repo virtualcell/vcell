@@ -1,17 +1,6 @@
 <div class="container mt-5" *ngIf="auth.user$ | async as user">
-  <h3>VCell Accounts Explained</h3>
-  <ol>
-    <li>Create a new VCell Single Sign-On (SSO) account, provided by <a href="https://auth0.com" target="_blank">Auth0.com</a>.
-      <ul>
-        <li>linked to your Google account</li>
-        <li>or, create a new Auth0 account using your verified email and a new password</li>
-      </ul>
-    </li>
-    <li>Map your VCell SSO account to a new or existing VCell Database Userid</li>
-  </ol>
-
   <div *ngIf="vcellUserId; else setIdentity">
-    <h3>your VCell Database Userid is &quot;{{ vcellUserId }}&quot;</h3>
+    <h5>your VCell username is &quot;{{ vcellUserId }}&quot;</h5>
     <button mat-raised-button color="warn" (click)="clearMappedUser()">
       <mat-icon>delete</mat-icon>
       unmap &quot;{{ vcellUserId }}&quot;
@@ -20,7 +9,6 @@
 
 
   <ng-template #setIdentity>
-    <h3>Map your VCell SSO account to an existing or new VCell Database Userid</h3>
     <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
       {{ errorMessage }}
     </div>
@@ -28,14 +16,14 @@
     <!-- Form for mapping to an existing VCell user -->
     <form class="form-table" (ngSubmit)="setMappedUser()">
       <mat-card>
-        <mat-card-title>Claim your existing VCell Database Userid</mat-card-title>
+        <mat-card-title><em><strong>If you have an old vcell account,</strong></em> enter your old VCell login to claim your username and stored models</mat-card-title>
         <mat-card-content>
           <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-            <mat-label>VCell Database Userid</mat-label>
+            <mat-label>existing username *</mat-label>
             <input matInput type="text" id="userid" name="userid" [(ngModel)]="mapUser.userID">
           </mat-form-field>
           <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-            <mat-label>Password</mat-label>
+            <mat-label>password *</mat-label>
             <input matInput type="password" id="password" name="password" [(ngModel)]="mapUser.password">
           </mat-form-field>
         </mat-card-content>
@@ -48,25 +36,17 @@
     <!-- Form for creating a new VCell user -->
     <form class="form-table" (ngSubmit)="mapNewUser()">
       <mat-card>
-        <mat-card-title>Create a new VCell userid using linked to your email</mat-card-title>
+        <mat-card-title><em><strong>If you are new to VCell,</strong></em> create a new username (including your institution helps us report usage).</mat-card-title>
         <mat-card-content>
           <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-            <mat-label>User ID</mat-label>
+            <mat-label>new username *</mat-label>
             <input matInput type="text" id="newUserid" name="newUserid" [(ngModel)]="newUser.userID">
           </mat-form-field>
           <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-            <mat-label>Country</mat-label>
-            <input matInput type="text" id="country" name="country" [(ngModel)]="newUser.country">
-          </mat-form-field>
-          <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-            <mat-label>Title</mat-label>
-            <input matInput type="text" id="title" name="title" [(ngModel)]="newUser.title">
-          </mat-form-field>
-          <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-            <mat-label>Organization</mat-label>
+            <mat-label>Institution (optional)</mat-label>
             <input matInput type="text" id="organization" name="organization" [(ngModel)]="newUser.organization">
           </mat-form-field>
-          <mat-checkbox id="email_notification" name="email notification" [(ngModel)]="newUser.emailNotification">Allow email notification</mat-checkbox>
+          <mat-checkbox id="email_notification" name="email notification" [(ngModel)]="newUser.emailNotification">Allow email notifications to {{ user.email }}</mat-checkbox>
         </mat-card-content>
         <mat-card-actions>
           <button mat-raised-button color="primary" type="submit">Submit</button>
