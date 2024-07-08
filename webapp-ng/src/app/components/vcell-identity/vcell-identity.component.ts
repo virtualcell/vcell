@@ -21,11 +21,13 @@ export class VcellIdentityComponent implements OnInit {
     country: string | undefined;
     emailNotification: boolean | undefined;
   };
+  errorMessage = "";
 
   constructor(
     private usersResourceService: UsersResourceService,
     public auth: AuthService
-  ) {}
+  ) {
+  }
 
   ngOnInit() {
     this.getMappedUser();
@@ -38,12 +40,23 @@ export class VcellIdentityComponent implements OnInit {
   }
 
   public setMappedUser() {
-    console.log("setVCellIdentity() mapUser = "+this.mapUser.userID+","+this.mapUser.password);
-    this.usersResourceService.mapUser(this.mapUser).subscribe((response) => {
-      if (response) {
-        this.getMappedUser();
+    console.log("setMappedUser() mapUser = " + this.mapUser.userID + "," + this.mapUser.password);
+    this.usersResourceService.mapUser(this.mapUser).subscribe(
+      (response) => {
+        if (response) {
+          this.getMappedUser();
+          console.log('Successfully mapped VCell identity');
+          this.errorMessage = "";
+        } else {
+          console.error('Error mapping VCell identity, returned false');
+          this.errorMessage = 'Failed to map user. Please try again.';
+        }
+      },
+      (error) => {
+        console.error('Error mapping VCell identity', error);
+        this.errorMessage = 'Failed to map user. Please try again.';
       }
-    });
+    );
   }
 
   clearMappedUser() {
@@ -60,11 +73,21 @@ export class VcellIdentityComponent implements OnInit {
   }
 
   mapNewUser() {
-    console.log("setVCellIdentity() mapNewUser = "+this.newUser.userID);
-    this.usersResourceService.mapNewUser(this.newUser).subscribe((response) => {
-      if (response) {
-        this.getMappedUser();
-      }
-    });
+    console.log("mapNewUser() mapNewUser = " + this.newUser.userID);
+    this.usersResourceService.mapNewUser(this.newUser).subscribe(
+      (response) => {
+        if (response) {
+          this.getMappedUser();
+          console.log("mapNewUser() response = " + response);
+          this.errorMessage = "";
+        } else {
+          console.error('Error mapping new VCell identity, returned false');
+          this.errorMessage = 'Failed to map new user. Please try again.';
+        }
+      },
+      (error) => {
+        console.error('Error mapping new VCell identity', error);
+        this.errorMessage = 'Failed to map new user. Please try again.';
+      });
   }
 }

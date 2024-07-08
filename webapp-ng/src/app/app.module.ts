@@ -32,6 +32,8 @@ import {ApiModule, Configuration as ApiConfiguration} from "./core/modules/opena
 import {VcellIdentityComponent} from "./components/vcell-identity/vcell-identity.component";
 import {BaseuriConfigService} from "./config/baseuri-config.service";
 import {BaseuriConfig} from "./config/baseuri-config";
+import {MatCardModule} from "@angular/material/card";
+import {MatCheckboxModule} from "@angular/material/checkbox";
 
 export function ConfigLoader(baseuriConfigService: BaseuriConfigService): () => Promise<BaseuriConfig> {
   return () => baseuriConfigService.loadConfiguration();
@@ -79,6 +81,8 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
     MatInputModule,
     MatButtonModule,
     ApiModule,
+    MatCardModule,
+    MatCheckboxModule,
   ],
   providers: [
     {
