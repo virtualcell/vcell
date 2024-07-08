@@ -3,7 +3,8 @@
 <page title="File -> New">
 	
 	<introduction> 
-	The <bold>File->New</bold> menu option allows the user to create a new VCell document - biomodel, mathmodel.
+	The <bold>File->New</bold> menu option allows the user to create a new VCell project
+		(<bold>BioModel</bold> or <bold>MathModel</bold>).
 	</introduction>
 	
 	<appearance>
@@ -12,9 +13,10 @@
 	
 	<operations>
 	<para>
-	Clicking on <bold>File->New</bold> menu option shows another menu popup where the user can choose to create a new <bold>BioModel</bold>, <bold>MathModel</bold> or <bold>Geometry</bold> document. 
-	Clicking on any of those options opens a new document of the chosen type. If the user chooses to create a MathModel, further options are provided in the next level of popup menu. 
-	There are 4 options to create a MathModel:
+	Clicking on the <bold>File->New</bold> menu option shows another menu where the user can choose to create
+		either a new <bold>BioModel</bold>, <bold>MathModel</bold>.
+	Clicking on any of those options opens a new project of the chosen type. Note that if the user wishes to create a MathModel,
+		there are four further options (provided in the next level of menu) to create a MathModel:
 	</para>
 	<list>
 		<item> <bold>Non-spatial</bold> - creates a non-spatial (with Ordinary Differential Equations) MathModel.
