@@ -563,7 +563,7 @@ public class UsersResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Content-Type", "application/json");
-    localVarRequestBuilder.header("Accept", "text/plain");
+    localVarRequestBuilder.header("Accept", "application/json");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(userLoginInfoForMapping);

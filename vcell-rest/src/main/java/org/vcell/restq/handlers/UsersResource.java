@@ -59,6 +59,7 @@ public class UsersResource {
     @RolesAllowed("user")
     @Operation(operationId = "mapUser", summary = "map vcell user")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
     }

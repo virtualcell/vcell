@@ -384,7 +384,7 @@ paths:
       responses:
         "200":
           content:
-            text/plain:
+            application/json:
               schema:
                 type: boolean
           description: OK
@@ -399,7 +399,7 @@ paths:
       tags:
       - Users Resource
       x-content-type: application/json
-      x-accepts: text/plain
+      x-accepts: application/json
   /api/v1/users/mappedUser:
     get:
       operationId: getMappedUser

@@ -861,7 +861,7 @@ public class Example {
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: text/plain
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -931,7 +931,7 @@ ApiResponse<**Boolean**>
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: text/plain
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
