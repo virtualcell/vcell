@@ -102,13 +102,13 @@ public class JWTUtilsTest {
 
         NumericDate expirationDate = NumericDate.now();
         expirationDate.addSeconds(1);
-        String token1 = JWTUtils.createToken(user, expirationDate);
+        String token1 = JWTUtils.createLegacyAccessToken(user, expirationDate);
         assertTrue(verifyJWS(token1), "expect valid token");
 
         // test expiration date by setting the expiration date 31 seconds in the past (there is a 30 second tolerance)
         expirationDate = NumericDate.now();
         expirationDate.addSeconds(-31);
-        String token2 = JWTUtils.createToken(user, expirationDate);
+        String token2 = JWTUtils.createLegacyAccessToken(user, expirationDate);
         assertFalse(verifyJWS(token2), "expect timeout");
 
         // install a different JsonWebKey and see that both tokens are invalid
@@ -126,13 +126,13 @@ public class JWTUtilsTest {
 
         NumericDate expirationDate = NumericDate.now();
         expirationDate.addSeconds(1);
-        String token1 = JWTUtils.createToken(user, expirationDate);
+        String token1 = JWTUtils.createLegacyAccessToken(user, expirationDate);
         assertTrue(verifyJWS(token1), "expect valid token");
 
         // test expiration date by setting the expiration date 31 seconds in the past (there is a 30 second tolerance)
         expirationDate = NumericDate.now();
         expirationDate.addSeconds(-31);
-        String token2 = JWTUtils.createToken(user, expirationDate);
+        String token2 = JWTUtils.createLegacyAccessToken(user, expirationDate);
         assertFalse(verifyJWS(token2), "expect timeout");
 
         // install a different JsonWebKey and see that both tokens are invalid

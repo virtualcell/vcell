@@ -536,7 +536,7 @@ public ApiAccessToken generateApiAccessToken(Connection con, KeyFactory keyFacto
 	KeyValue key = keyFactory.getNewKey(con);
 
 	NumericDate expirationTime = NumericDate.fromMilliseconds(expirationDate.getTime());
-	String jwt = JWTUtils.createToken(user, expirationTime);
+	String jwt = JWTUtils.createLegacyAccessToken(user, expirationTime);
 
 	try {
 		boolean valid = JWTUtils.verifyJWS(jwt);

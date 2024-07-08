@@ -106,7 +106,7 @@ public class JWTUtils {
         return rsaJsonWebKey;
     }
 
-    public static String createToken(User user, NumericDate expirationTime) throws JoseException {
+    public static String createLegacyAccessToken(User user, NumericDate expirationTime) throws JoseException {
         createRsaJsonWebKeyIfNeeded();
 
         // Create the Claims, which will be the content of the JWT
