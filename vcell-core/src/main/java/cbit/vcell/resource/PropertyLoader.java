@@ -281,7 +281,7 @@ public class PropertyLoader {
 
 	public static final String imageJ = record("vcell.imageJ", ValueType.EXE);
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
-	public static final boolean enableSpringSalad_default_value=true;
+	public static final boolean enableSpringSalad_default_value=false;
 
 	/**
 	 * native library directory, server side
