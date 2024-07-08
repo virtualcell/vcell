@@ -1,4 +1,17 @@
 <div class="container">
-  <h1>Login Successful!</h1>
-  <p>You have successfully logged in. Welcome!</p>
+
+
+  <div *ngIf="vcellUserId; else setIdentity">
+    <h1>Login Successful!</h1>
+    <h3>You are mapped to VCell Database Userid &quot;{{ vcellUserId }}&quot;</h3>
+    <h3>Please return to the VCell Desktop application (you may close this browser window)</h3>
+  </div>
+
+  <ng-template #setIdentity>
+    <h1>Welcome to VCell - there is one more step!</h1>
+    <h3>Please map your account (see below) and then return to VCell Desktop</h3>
+    <br/>
+    <app-vcell-identity></app-vcell-identity>
+  </ng-template>
+
 </div>

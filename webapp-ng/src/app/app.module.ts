@@ -34,6 +34,7 @@ import {BaseuriConfigService} from "./config/baseuri-config.service";
 import {BaseuriConfig} from "./config/baseuri-config";
 import {MatCardModule} from "@angular/material/card";
 import {MatCheckboxModule} from "@angular/material/checkbox";
+import {LoginSuccessComponent} from "./pages/login-success/login-success.component";
 
 export function ConfigLoader(baseuriConfigService: BaseuriConfigService): () => Promise<BaseuriConfig> {
   return () => baseuriConfigService.loadConfiguration();
@@ -53,6 +54,7 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
     HeroComponent,
     HomeContentComponent,
     LoadingComponent,
+    LoginSuccessComponent,
     PublicationListComponent,
     PublicationEditComponent,
     VcellIdentityComponent,
