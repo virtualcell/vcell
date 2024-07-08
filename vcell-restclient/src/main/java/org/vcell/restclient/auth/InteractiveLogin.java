@@ -14,6 +14,7 @@ import com.nimbusds.openid.connect.sdk.token.OIDCTokens;
 import com.sun.net.httpserver.HttpServer;
 import net.minidev.json.JSONObject;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -66,7 +67,7 @@ public class InteractiveLogin {
         String callback_endpoint_path = "/oidc_test_callback";
 
         URI redirectURI = new URI("http://" + "localhost" + ":" + localHttpServerPort + callback_endpoint_path);
-        Scope scope = new Scope("openid"); //, "email"); //, "profile", "offline_access");
+        Scope scope = new Scope("openid", "email", "profile"); //, "email"); //, "profile", "offline_access");
         CodeVerifier codeVerifier = new CodeVerifier();
         URI authRequestURI = getAuthRequestURI(oidcProviderMetadata, redirectURI, new ClientID(clientID), scope, state, codeVerifier);
 
@@ -155,11 +156,14 @@ public class InteractiveLogin {
             System.out.println("opening browser to "+authRequestURI);
             Desktop.getDesktop().browse(authRequestURI);
 
-            System.out.println("waiting up to 10 seconds for authorization code from web server via queue");
+            System.out.println("waiting up to 10 minutes for authorization code from web server via queue");
             // wait for authorization response from web server
-            String authorizationCodeURI = authorizationCodeURIQueue.poll(60, TimeUnit.SECONDS); // wait for server to process the request
+            String authorizationCodeURI = authorizationCodeURIQueue.poll(600, TimeUnit.SECONDS); // wait for server to process the request
             System.out.println("authorization code " + authorizationCodeURI + " received from web server via queue");
             if (authorizationCodeURI == null) {
+                String message = "If you desire to login, please click Account -> Login, for the login window has expired.";
+                JOptionPane.showMessageDialog(null, message,
+                        "Restart the Application", JOptionPane.ERROR_MESSAGE, null);
                 throw new RuntimeException("Authorization code not received");
             }
             authorizationResponse = AuthorizationResponse.parse(URI.create(authorizationCodeURI));
@@ -179,7 +183,7 @@ public class InteractiveLogin {
         //Thread.sleep(1000);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
-        con.setConnectTimeout(1000);
+        con.setConnectTimeout(600 * 100); //milliseconds to seconds
         con.connect();
         int responseCode = con.getResponseCode();
         if (responseCode != 200) {

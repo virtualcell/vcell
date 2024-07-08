@@ -658,8 +658,21 @@ public class ClientRequestManager
 	public void logOut(final TopLevelWindowManager requester){
 		JDialog dialog = new JDialog();
 		dialog.setAlwaysOnTop(true);
-		int confirm = JOptionPane.showOptionDialog(dialog, "You are about to logout of VCell, and in doing so close the app." +
-						"To complete this process you'll need to logout on the website as well. Do you want to continue?",
+		StringBuilder dialogMessage = new StringBuilder();
+		dialogMessage.append("You are about to log out of the VCell client.\n\n");
+		if (requester instanceof DocumentWindowManager documentWindowManager){
+			if(!User.isGuest(documentWindowManager.getUser().getName())){
+				dialogMessage.append("""
+                        Because VCell uses a browser-based login,
+                        you'll be redirected to a logout page to
+                        complete the logout process there.
+                        
+                        """);
+			}
+		}
+		dialogMessage.append("Do you wish to continue?");
+
+		int confirm = JOptionPane.showOptionDialog(dialog, dialogMessage.toString(),
 				"Logout", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
 				new String[] { "Continue", "Cancel" }, "Continue");
 		if (confirm == JOptionPane.OK_OPTION)  {
@@ -670,7 +683,9 @@ public class ClientRequestManager
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
 			Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().getAuth0ConnectionUtils();
-			auth0ConnectionUtils.logOut();
+			if (!getClientServerInfo().getUsername().equals(User.VCELL_GUEST_NAME)){
+				auth0ConnectionUtils.logOut();
+			}
 			Auth0ConnectionUtils.setShowLoginPopUp(true);
 
 			AsynchClientTask waitTask = new AsynchClientTask("wait for window closing",
