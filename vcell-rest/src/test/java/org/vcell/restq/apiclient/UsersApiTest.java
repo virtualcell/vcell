@@ -24,6 +24,7 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
+import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restclient.model.UserRegistrationInfo;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
@@ -108,6 +109,9 @@ public class UsersApiTest {
         Assertions.assertEquals(Boolean.FALSE, aliceUsersResourceApi.getMappedUser().getMapped());
         ObjectMapper objectMapper = new ObjectMapper();
         Assertions.assertEquals(objectMapper.writeValueAsString(unmappedUser), objectMapper.writeValueAsString(aliceUsersResourceApi.getMappedUser()));
+
+        // try to map using incorrect password
+        Assertions.assertEquals(Boolean.FALSE, aliceUsersResourceApi.mapUser(new UserLoginInfoForMapping().userID("vcellNagios").password("incorrect")));
 
         // map again, true
         mapped = aliceUsersResourceApi.mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
@@ -217,7 +221,6 @@ public class UsersApiTest {
         Assertions.assertEquals(guestApiToken.getUserKey(), secondGuestApiToken.getUserKey());
         Assertions.assertNotEquals(guestApiToken.getToken(), secondGuestApiToken.getToken());
     }
-
 
     public void testResetPassword() throws SQLException, DataAccessException {
         PropertyLoader.setProperty(PropertyLoader.vcellSMTPHostName, "host");
