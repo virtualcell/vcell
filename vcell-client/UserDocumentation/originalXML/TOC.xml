@@ -36,8 +36,10 @@
     	    <tocitem target="RuleBasedTheory" text="Introduction to Rule-Based Modeling"/> 
        		<tocitem target="RBCreate" text="How to create a rule-based model"/> 		
     		<tocitem target="RBSimulate" text="How to simulate a rule-based model"/> 
-    		<tocitem target="NFSimApp" text="Network-Free Application"/>		
-    	</tocitem>
+    		<tocitem target="NFSimApp" text="Network-Free Application"/>
+<!--			<tocitem target="SpringSaLaDTheory" text="Introduction to SpringSaLaD Modeling"/>
+			<tocitem target="LangevinApp" text="SpringSaLaD Application"/> -->
+		</tocitem>
     	<tocitem target="PhysOverview" text="Physiology">
     		<tocitem target="ReactDiagView" text="Reaction Diagram"/>
     		<tocitem target="ReactTabView" text="Reactions Table">
@@ -74,9 +76,12 @@
     		</tocitem>
     		<tocitem target="SpecificationsOverview" text="Specifications">
     	   		<tocitem target="SpeciesSpecifications" text="Species">
-    			     <tocitem target="fieldData" text="Field Data"/>
+					<tocitem target="fieldData" text="Field Data"/>
+<!--					<tocitem target="SSSpeciesSpecifications" text="SpringSaLaD Species"/> -->
     			</tocitem>
-   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions"/>
+   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions">
+<!--					<tocitem target="SSReactionsSpecifications" text="SpringSaLaD Reactions"/> -->
+				</tocitem>
    	 	  		<tocitem target="NetworkSpecifications" text="Network"/>
    	 	  		<tocitem target="NetworkFreeSpecifications" text="Network-Free"/>  	 	  		
     		</tocitem>
@@ -88,7 +93,9 @@
    	 	  		<tocitem target= "AssignmentRules" text ="Assignment Rules"/>
    	 	  	</tocitem>
     		<tocitem target="simulations_overview" text="Simulations">
-    	   		<tocitem target="simulations" text="Simulations"/>
+    	   		<tocitem target="simulations" text="Simulations">
+					<tocitem target="BatchSimulations" text="Batch Simulations"/>
+				</tocitem>
     	   		<tocitem target="simulationEditor" text="Simulation Editor"/>
     	   		<tocitem target="NFSimSimulationEditor" text="NFSim Simulation Editor"/>
    	 	  		<tocitem target="output_functions" text="Output Functions"/>

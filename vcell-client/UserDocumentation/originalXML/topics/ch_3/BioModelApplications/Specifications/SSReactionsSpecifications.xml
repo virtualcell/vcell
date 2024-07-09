@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="SpringSaLaD Reactions" target="SSReactionsSpecifications">
+
+	<introduction>
+	A SpringSaLaD reaction inherits the attributes of a Rule-based species, but must strictly follow the templates of the
+		SpringSaLaD specific categories.
+	</introduction>
+
+	<appearance> 
+	When using SpringSaLaD reactions, it is important to be aware that:
+		<list>
+			<item>The reactions are automatically assigned to one of the predefined categories, based on template matching.</item>
+		</list>
+		 
+	The SpringSaLaD reactions have the following limitations:
+	<list>
+		<item>The reactions are strictly categorized and must follow the template for their category.</item>
+	</list>
+	</appearance>
+
+	<operations>  
+	
+	</operations>
+	
+</page>
+
+</vcelldoc>
