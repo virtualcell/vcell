@@ -997,7 +997,9 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 		MiriamManager.DataType objectNamespace = (MiriamManager.DataType)getJComboBoxURI().getSelectedItem();
 
 //		String objectID = getJTextFieldFormalID().getText();
-		String objectID = getId(searchElement.getDbLink(), objectNamespace.getDataTypeName());
+		URI uri = searchElement.getDbLink();
+		String dataTypeName = objectNamespace.getDataTypeName();
+		String objectID = getId(uri, dataTypeName);
 //		if(objectID.compareTo("NewID") == 0) {
 //			return;
 //		}
@@ -1034,9 +1036,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			id = uri.getPath().replace("/obo/GO_","");
 		else if (uri.toString().contains("ncit"))
 			id = uri.toString().replace("https://ncit.nci.nih.gov/ncitbrowser/ConceptReport.jsp?dictionary=NCI_Thesaurus&ns=ncit&code=","");
-
-		// TODO:  links are not working, and links with UBERON are giving error
-		// TODO: links need to point to the same database as in purl
 		else if (uri.toString().contains("PATO"))
 			id = uri.getPath().replace("/obo/PATO_","");
 		else if (uri.toString().contains("PR"))
