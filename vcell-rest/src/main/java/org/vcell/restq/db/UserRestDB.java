@@ -250,6 +250,9 @@ public class UserRestDB {
     public UserInfo getUserInfo(String userID) throws SQLException, DataAccessException {
         try {
             User user = adminDBTopLevel.getUser(userID, true);
+            if (user == null){
+                return null;
+            }
             return adminDBTopLevel.getUserInfo(user.getID(), true);
         } catch (ObjectNotFoundException e) {
             return null;
