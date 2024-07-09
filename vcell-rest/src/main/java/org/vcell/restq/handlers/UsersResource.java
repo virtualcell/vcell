@@ -2,7 +2,6 @@ package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.ApiAccessToken;
 import cbit.vcell.modeldb.UserIdentity;
-import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
@@ -10,7 +9,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -22,14 +20,13 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.lang.JoseException;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
+import org.vcell.restq.db.SMTPService;
 import org.vcell.restq.db.UserRestDB;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 
-import javax.mail.MessagingException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.sql.SQLException;
@@ -46,6 +43,9 @@ public class UsersResource {
 
     @Inject
     UriInfo uriInfo;
+
+    @Inject
+    SMTPService smtpService;
 
     private final UserRestDB userRestDB;
 
@@ -133,15 +133,8 @@ public class UsersResource {
                     "\n" +
                     "Please note that this link will expire in 24 hours, and can only be used once.";
 
-            //Send new password to user
-            BeanUtils.sendSMTP(
-                    PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName),
-                    Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)),
-                    PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress),
-                    userInfo.email,
-                    subject,
-                    content
-            );
+            //Send magic link to user
+            smtpService.sendEmail(userInfo.email, subject, content);
         } catch (Exception e) {
             throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
         }
