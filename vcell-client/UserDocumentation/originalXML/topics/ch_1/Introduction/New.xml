@@ -22,22 +22,28 @@
 		<item> <bold>Non-spatial</bold> - creates a non-spatial (with Ordinary Differential Equations) MathModel.
 		</item>
 		<item> 
-		<bold>Spatial from database geometry</bold> - creates a spatial MathModel where the spatial geometry is selected from VCell geometries stored in the VCell database (any geometry that belongs to the current user or that is shared by other users).
+		<bold>Spatial from database geometry</bold> - creates a spatial MathModel where the spatial geometry is
+			selected from VCell geometries stored in the VCell database (any geometry that belongs to the current user
+			or that is shared by other users).
 		<imgReference target = "FileNewMathModelDBGeom.PNG"/>
 		</item>
 		<item>
 		<para>
 		<bold>Spatial from new geometry</bold> - creates a spatial MathModel from a new geometry. 
-		The image below shows the dialog the user is prompted with to create a new geometry. The geometry can be analytical (1, 2, or 3D); image-based (from VCell database or imported from image file and processed); 
-		mesh-based (from STL file); copied from a BioModel application or another MathModel or a saved Geometry from the VCell database; or created from scratch. 
+		The image below shows the dialog the user is prompted with to create a new geometry. The geometry can be analytical
+			(1, 2, or 3D); image-based (from VCell database or imported from image file and processed);
+		mesh-based (from STL file); copied from a BioModel application or another MathModel or a saved Geometry from the
+			VCell database; or created from scratch.
 		For further information on creating geometries, refer to the section on <link target = "GeometryOverview">Geometry</link>.
 		</para>
 		<imgReference target = "FileNewMathModelNewGeom.PNG"/>
 		</item>
 		<item>
 		<para>
-		<bold>From BioModel</bold> - creates a MathModel from a BioModel that can be selected from a list of the user's bioModels or those that are shared with the user. 
-		Upon selecting the BioModel, a dialog prompts the user to select an application from a list of applications in the BioModel that should be converted to a MathModel. 
+		<bold>From BioModel</bold> - creates a MathModel from an existing BioModel within the list of the user's
+			BioModels (or those that are shared with the user).
+		Upon selecting the BioModel, a dialog prompts the user to select an application from a list of all applications
+			in the BioModel that should be converted to a MathModel.
 		<bold>Note:</bold> Each application has a separate MathModel associated with it.  
 		</para>
 		<imgReference target = "FileNewMathFromBio.PNG"/>
@@ -45,6 +51,14 @@
 		</item>
 	</list>
 	</operations>
+	<para></para>
+	Virtual Cell also supports
+	<link target="RuleBasedOverview">rule-based modeling</link>, which allows the representation
+	of species as structured objects consisting of <link target="Molecules">molecules</link>
+	and uses  <def target = "def_ReactionRules">reaction rules</def> to define molecular interactions that transform
+	the attributes of species.
+	The rule-based approach allows one to systematically incorporate site-specific details of
+	molecular interactions into a model.
 	<comments>  </comments>
 
 </page>
