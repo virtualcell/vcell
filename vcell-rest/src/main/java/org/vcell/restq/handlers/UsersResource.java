@@ -115,9 +115,12 @@ public class UsersResource {
             String magicJWT = JWTUtils.createMagicLinkJWT(magicTokenClaims, JWTUtils.MAGIC_LINK_DURATION_SECONDS);
             // create URL with same host as this server, but a query parameter 'magic' with text magicJWT
             URI uri = uriInfo.getAbsolutePath();
-            String magicLink = uri.getScheme()+"://"+uri.getHost()+":"+uri.getPort()
-                    +"/api/v1/users/processRecoveryEmail" +
-                    "?magic="+magicJWT;
+            String magicLink = uri.getScheme()+"://"+uri.getHost();
+            if (uri.getPort()!=-1) {
+                magicLink += ":" + uri.getPort();
+            }
+            magicLink += "/api/v1/users/processRecoveryEmail" +
+                        "?magic="+magicJWT;
             String subject = "VCell Account Link Request";
             String content = "Dear VCell User,\n" +
                     "\n" +
