@@ -74,6 +74,21 @@ export interface UsersResourceServiceInterface {
     mapUser(userLoginInfoForMapping?: UserLoginInfoForMapping, extraHttpRequestParams?: any): Observable<boolean>;
 
     /**
+     * Process the magic link and map the user
+     * 
+     * @param magic 
+     */
+    processMagicLink(magic?: string, extraHttpRequestParams?: any): Observable<{}>;
+
+    /**
+     * request a recovery email to link a VCell account.
+     * 
+     * @param email 
+     * @param userID 
+     */
+    requestRecoveryEmail(email?: string, userID?: string, extraHttpRequestParams?: any): Observable<{}>;
+
+    /**
      * remove vcell identity mapping
      * 
      * @param userName 

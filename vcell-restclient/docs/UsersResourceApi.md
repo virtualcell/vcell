@@ -18,6 +18,10 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 | [**mapNewUserWithHttpInfo**](UsersResourceApi.md#mapNewUserWithHttpInfo) | **POST** /api/v1/users/newUser | create vcell user |
 | [**mapUser**](UsersResourceApi.md#mapUser) | **POST** /api/v1/users/mapUser | map vcell user |
 | [**mapUserWithHttpInfo**](UsersResourceApi.md#mapUserWithHttpInfo) | **POST** /api/v1/users/mapUser | map vcell user |
+| [**processMagicLink**](UsersResourceApi.md#processMagicLink) | **POST** /api/v1/users/processMagicLink | Process the magic link and map the user |
+| [**processMagicLinkWithHttpInfo**](UsersResourceApi.md#processMagicLinkWithHttpInfo) | **POST** /api/v1/users/processMagicLink | Process the magic link and map the user |
+| [**requestRecoveryEmail**](UsersResourceApi.md#requestRecoveryEmail) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account. |
+| [**requestRecoveryEmailWithHttpInfo**](UsersResourceApi.md#requestRecoveryEmailWithHttpInfo) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account. |
 | [**unmapUser**](UsersResourceApi.md#unmapUser) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping |
 | [**unmapUserWithHttpInfo**](UsersResourceApi.md#unmapUserWithHttpInfo) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping |
 
@@ -939,6 +943,280 @@ ApiResponse<**Boolean**>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+
+
+## processMagicLink
+
+> void processMagicLink(magic)
+
+Process the magic link and map the user
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String magic = "magic_example"; // String | 
+        try {
+            apiInstance.processMagicLink(magic);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#processMagicLink");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **magic** | **String**|  | [optional] |
+
+### Return type
+
+
+null (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | User mapped successfully |  -  |
+| **400** | Invalid or expired magic link |  -  |
+| **406** | User not mapped |  -  |
+| **500** | Internal server error |  -  |
+
+## processMagicLinkWithHttpInfo
+
+> ApiResponse<Void> processMagicLink processMagicLinkWithHttpInfo(magic)
+
+Process the magic link and map the user
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String magic = "magic_example"; // String | 
+        try {
+            ApiResponse<Void> response = apiInstance.processMagicLinkWithHttpInfo(magic);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#processMagicLink");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **magic** | **String**|  | [optional] |
+
+### Return type
+
+
+ApiResponse<Void>
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | User mapped successfully |  -  |
+| **400** | Invalid or expired magic link |  -  |
+| **406** | User not mapped |  -  |
+| **500** | Internal server error |  -  |
+
+
+## requestRecoveryEmail
+
+> void requestRecoveryEmail(email, userID)
+
+request a recovery email to link a VCell account.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String email = "email_example"; // String | 
+        String userID = "userID_example"; // String | 
+        try {
+            apiInstance.requestRecoveryEmail(email, userID);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#requestRecoveryEmail");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **email** | **String**|  | [optional] |
+| **userID** | **String**|  | [optional] |
+
+### Return type
+
+
+null (empty response body)
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | magic link sent in email if appropriate |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
+
+## requestRecoveryEmailWithHttpInfo
+
+> ApiResponse<Void> requestRecoveryEmail requestRecoveryEmailWithHttpInfo(email, userID)
+
+request a recovery email to link a VCell account.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        String email = "email_example"; // String | 
+        String userID = "userID_example"; // String | 
+        try {
+            ApiResponse<Void> response = apiInstance.requestRecoveryEmailWithHttpInfo(email, userID);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#requestRecoveryEmail");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **email** | **String**|  | [optional] |
+| **userID** | **String**|  | [optional] |
+
+### Return type
+
+
+ApiResponse<Void>
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | magic link sent in email if appropriate |  -  |
+| **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## unmapUser

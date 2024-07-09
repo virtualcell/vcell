@@ -11,6 +11,8 @@ Method | HTTP request | Description
 [**get_me**](UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user
 [**map_new_user**](UsersResourceApi.md#map_new_user) | **POST** /api/v1/users/newUser | create vcell user
 [**map_user**](UsersResourceApi.md#map_user) | **POST** /api/v1/users/mapUser | map vcell user
+[**process_magic_link**](UsersResourceApi.md#process_magic_link) | **POST** /api/v1/users/processMagicLink | Process the magic link and map the user
+[**request_recovery_email**](UsersResourceApi.md#request_recovery_email) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 [**unmap_user**](UsersResourceApi.md#unmap_user) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 
 
@@ -477,6 +479,141 @@ Name | Type | Description  | Notes
 **200** | OK |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **process_magic_link**
+> process_magic_link(magic=magic)
+
+Process the magic link and map the user
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell-dev.cam.uchc.edu"
+)
+
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.UsersResourceApi(api_client)
+    magic = 'magic_example' # str |  (optional)
+
+    try:
+        # Process the magic link and map the user
+        api_instance.process_magic_link(magic=magic)
+    except Exception as e:
+        print("Exception when calling UsersResourceApi->process_magic_link: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **magic** | **str**|  | [optional] 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | User mapped successfully |  -  |
+**400** | Invalid or expired magic link |  -  |
+**406** | User not mapped |  -  |
+**500** | Internal server error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **request_recovery_email**
+> request_recovery_email(email=email, user_id=user_id)
+
+request a recovery email to link a VCell account.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell-dev.cam.uchc.edu"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.UsersResourceApi(api_client)
+    email = 'email_example' # str |  (optional)
+    user_id = 'user_id_example' # str |  (optional)
+
+    try:
+        # request a recovery email to link a VCell account.
+        api_instance.request_recovery_email(email=email, user_id=user_id)
+    except Exception as e:
+        print("Exception when calling UsersResourceApi->request_recovery_email: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **email** | **str**|  | [optional] 
+ **user_id** | **str**|  | [optional] 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | magic link sent in email if appropriate |  -  |
+**403** | Not Allowed |  -  |
+**401** | Not Authorized |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
