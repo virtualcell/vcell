@@ -2,6 +2,8 @@ package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.ApiAccessToken;
 import cbit.vcell.modeldb.UserIdentity;
+import io.quarkus.mailer.Mail;
+import io.quarkus.mailer.Mailer;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
@@ -20,7 +22,6 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.lang.JoseException;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
-import org.vcell.restq.db.SMTPService;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
@@ -45,7 +46,7 @@ public class UsersResource {
     UriInfo uriInfo;
 
     @Inject
-    SMTPService smtpService;
+    Mailer mailer;
 
     private final UserRestDB userRestDB;
 
@@ -127,19 +128,14 @@ public class UsersResource {
             }
             magicLink += "/api/v1/users/processMagicLink" + "?magic="+magicJWT;
             String subject = "VCell Account Link Request";
-            String content = "Dear VCell User,\n" +
-                    "\n" +
-                    "We received a request to link your VCell account for '"+userID+"' associated with this email address. " +
-                    "If you made this request, please click on the link below to confirm your email and link your account:\n" +
-                    "\n" +
-                    "<a href=\""+magicLink+"\">"+magicLink+"<a>\n" +
-                    "\n" +
-                    "If you did not request to link your account, please ignore this email and no changes will be made to your account.\n" +
-                    "\n" +
-                    "Please note that this link will expire in 24 hours, and can only be used once.";
-
+            String htmlContent = "<html><body><p>Dear VCell User,</p><p>We received a request to link your VCell account for '"+userID+"' associated with this email address. " +
+                    "If you made this request, please click on the link below to confirm your email and link your account:</p>" +
+                    "<p><a href=\""+magicLink+"\">click here<a></p>" +
+                    "<p>If you did not request to link your account, please ignore this email and no changes will be made to your account.</p>" +
+                    "<p>Please note that this link will expire in 24 hours, and can only be used once.</p></body></html>";
             //Send magic link to user
-            smtpService.sendEmail(userInfo.email, subject, content);
+            Mail mail = Mail.withHtml(userInfo.email, subject, htmlContent);
+            mailer.send(mail);
             return Response.ok().build();
         } catch (Exception e) {
             LOG.severe("Error sending magic link email: "+e.getMessage());
