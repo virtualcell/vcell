@@ -586,7 +586,7 @@ export class UsersResourceService implements UsersResourceServiceInterface {
         }
 
         let localVarPath = `/api/v1/users/processMagicLink`;
-        return this.httpClient.request<any>('post', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<any>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters,

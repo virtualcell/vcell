@@ -11,7 +11,7 @@ Method | HTTP request | Description
 [**get_me**](UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user
 [**map_new_user**](UsersResourceApi.md#map_new_user) | **POST** /api/v1/users/newUser | create vcell user
 [**map_user**](UsersResourceApi.md#map_user) | **POST** /api/v1/users/mapUser | map vcell user
-[**process_magic_link**](UsersResourceApi.md#process_magic_link) | **POST** /api/v1/users/processMagicLink | Process the magic link and map the user
+[**process_magic_link**](UsersResourceApi.md#process_magic_link) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
 [**request_recovery_email**](UsersResourceApi.md#request_recovery_email) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 [**unmap_user**](UsersResourceApi.md#unmap_user) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 
@@ -542,8 +542,6 @@ No authorization required
 |-------------|-------------|------------------|
 **200** | User mapped successfully |  -  |
 **400** | Invalid or expired magic link |  -  |
-**406** | User not mapped |  -  |
-**500** | Internal server error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -612,6 +610,7 @@ void (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | magic link sent in email if appropriate |  -  |
+**400** | unable to process request |  -  |
 **403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
 

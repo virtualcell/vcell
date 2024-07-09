@@ -461,7 +461,7 @@ paths:
       x-content-type: application/json
       x-accepts: application/json
   /api/v1/users/processMagicLink:
-    post:
+    get:
       operationId: processMagicLink
       parameters:
       - explode: true
@@ -476,10 +476,6 @@ paths:
           description: User mapped successfully
         "400":
           description: Invalid or expired magic link
-        "406":
-          description: User not mapped
-        "500":
-          description: Internal server error
       summary: Process the magic link and map the user
       tags:
       - Users Resource
@@ -505,6 +501,8 @@ paths:
       responses:
         "200":
           description: magic link sent in email if appropriate
+        "400":
+          description: unable to process request
         "403":
           description: Not Allowed
         "401":

@@ -18,8 +18,8 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 | [**mapNewUserWithHttpInfo**](UsersResourceApi.md#mapNewUserWithHttpInfo) | **POST** /api/v1/users/newUser | create vcell user |
 | [**mapUser**](UsersResourceApi.md#mapUser) | **POST** /api/v1/users/mapUser | map vcell user |
 | [**mapUserWithHttpInfo**](UsersResourceApi.md#mapUserWithHttpInfo) | **POST** /api/v1/users/mapUser | map vcell user |
-| [**processMagicLink**](UsersResourceApi.md#processMagicLink) | **POST** /api/v1/users/processMagicLink | Process the magic link and map the user |
-| [**processMagicLinkWithHttpInfo**](UsersResourceApi.md#processMagicLinkWithHttpInfo) | **POST** /api/v1/users/processMagicLink | Process the magic link and map the user |
+| [**processMagicLink**](UsersResourceApi.md#processMagicLink) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user |
+| [**processMagicLinkWithHttpInfo**](UsersResourceApi.md#processMagicLinkWithHttpInfo) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user |
 | [**requestRecoveryEmail**](UsersResourceApi.md#requestRecoveryEmail) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account. |
 | [**requestRecoveryEmailWithHttpInfo**](UsersResourceApi.md#requestRecoveryEmailWithHttpInfo) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account. |
 | [**unmapUser**](UsersResourceApi.md#unmapUser) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping |
@@ -1007,8 +1007,6 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | User mapped successfully |  -  |
 | **400** | Invalid or expired magic link |  -  |
-| **406** | User not mapped |  -  |
-| **500** | Internal server error |  -  |
 
 ## processMagicLinkWithHttpInfo
 
@@ -1075,8 +1073,6 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | User mapped successfully |  -  |
 | **400** | Invalid or expired magic link |  -  |
-| **406** | User not mapped |  -  |
-| **500** | Internal server error |  -  |
 
 
 ## requestRecoveryEmail
@@ -1144,6 +1140,7 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | magic link sent in email if appropriate |  -  |
+| **400** | unable to process request |  -  |
 | **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
 
@@ -1215,6 +1212,7 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | magic link sent in email if appropriate |  -  |
+| **400** | unable to process request |  -  |
 | **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
 

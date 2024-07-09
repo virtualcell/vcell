@@ -2065,7 +2065,7 @@ class UsersResourceApi:
         ]
 
         return self.api_client.param_serialize(
-            method='POST',
+            method='GET',
             resource_path='/api/v1/users/processMagicLink',
             path_params=_path_params,
             query_params=_query_params,
