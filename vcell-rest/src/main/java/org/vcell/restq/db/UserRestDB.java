@@ -8,10 +8,12 @@ import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.vcell.auth.JWTUtils;
 import org.vcell.restq.Main;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -77,6 +79,40 @@ public class UserRestDB {
             return adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
         } catch (SQLException e) {
             throw new DataAccessException("database error while retrieving user identity: "+e.getMessage(), e);
+        }
+    }
+
+    public boolean mapUserIdentity(JWTUtils.MagicTokenClaims magicTokenClaims) throws DataAccessException {
+       try {
+            String subject = magicTokenClaims.requesterSubject();
+            String issuer = magicTokenClaims.requesterIssuer();
+            User userToMap = magicTokenClaims.user();
+            if (subject == null) {
+                throw new DataAccessException("magic link token is missing subject");
+            }
+            if (issuer == null) {
+                throw new DataAccessException("magic link token is missing issuer");
+            }
+
+            // check existing mappings, if already mapped to this user, return true
+            List<UserIdentity> userIdentities = adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
+            for (UserIdentity userIdentity : userIdentities) {
+                if (userIdentity.user().getID().equals(magicTokenClaims.user().getID())) {
+                    return true;
+                }
+            }
+
+            // check existing mappings, if already mapped to a different user, return false (can't remap)
+            for (UserIdentity userIdentity : userIdentities) {
+                if (!userIdentity.user().getID().equals(magicTokenClaims.user().getID())) {
+                    return false;
+                }
+            }
+
+            adminDBTopLevel.setUserIdentityFromIdentityProvider(userToMap, subject, issuer, true);
+            return true;
+        } catch (SQLException e) {
+            throw new DataAccessException("database error while mapping user identity: "+e.getMessage(), e);
         }
     }
 
@@ -211,4 +247,12 @@ public class UserRestDB {
         return expireTime;
     }
 
+    public UserInfo getUserInfo(String userID) throws SQLException, DataAccessException {
+        try {
+            User user = adminDBTopLevel.getUser(userID, true);
+            return adminDBTopLevel.getUserInfo(user.getID(), true);
+        } catch (ObjectNotFoundException e) {
+            return null;
+        }
+    }
 }

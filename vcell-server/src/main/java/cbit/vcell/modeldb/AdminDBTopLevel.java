@@ -971,7 +971,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
     }
 
 
-    UserInfo getUserInfo(KeyValue key, boolean bEnableRetry)
+    public UserInfo getUserInfo(KeyValue key, boolean bEnableRetry)
             throws DataAccessException, java.sql.SQLException, ObjectNotFoundException{
 
         Object lock = new Object();

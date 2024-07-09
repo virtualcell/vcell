@@ -2,6 +2,7 @@ package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.ApiAccessToken;
 import cbit.vcell.modeldb.UserIdentity;
+import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
@@ -9,18 +10,28 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.jboss.resteasy.reactive.NoCache;
+import org.jose4j.jwt.MalformedClaimException;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.lang.JoseException;
+import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.db.UserRestDB;
+import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
+import javax.mail.MessagingException;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,6 +43,9 @@ public class UsersResource {
 
     @Inject
     SecurityIdentity securityIdentity;
+
+    @Inject
+    UriInfo uriInfo;
 
     private final UserRestDB userRestDB;
 
@@ -63,6 +77,105 @@ public class UsersResource {
     public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
     }
+
+    @POST
+    @Path("/requestRecoveryEmail")
+    @RolesAllowed("user")
+    @Operation(operationId = "requestRecoveryEmail", summary = "request a recovery email to link a VCell account.")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "magic link sent in email if appropriate"),
+    })
+    public void requestRecoveryEmail(@QueryParam("userID") String userID, @QueryParam("email") String email) {
+        if(securityIdentity.isAnonymous()){
+            throw new WebApplicationException("securityIdentity is missing jwt", Response.Status.UNAUTHORIZED);
+        }
+        try {
+            JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
+            if (jwt == null) {
+                throw new DataAccessException("securityIdentity is missing jwt");
+            }
+            String requestorSubject = jwt.getSubject();
+            String requestorIssuer = jwt.getIssuer();
+            if (requestorSubject == null) {
+                throw new DataAccessException("securityIdentity is missing subject");
+            }
+            if (requestorIssuer == null) {
+                throw new DataAccessException("securityIdentity is missing issuer");
+            }
+
+            // verify that there is a user with this userid and email
+            UserInfo userInfo = userRestDB.getUserInfo(userID);
+            if (userInfo == null || !userInfo.email.equals(email)) {
+                return;
+            }
+            var magicTokenClaims = new JWTUtils.MagicTokenClaims(
+                    email, requestorSubject, requestorIssuer, new User(userInfo.userid, userInfo.id)
+            );
+            String magicJWT = JWTUtils.createMagicLinkJWT(magicTokenClaims, JWTUtils.MAGIC_LINK_DURATION_SECONDS);
+            // create URL with same host as this server, but a query parameter 'magic' with text magicJWT
+            URI uri = uriInfo.getAbsolutePath();
+            String magicLink = uri.getScheme()+"://"+uri.getHost()+":"+uri.getPort()
+                    +"/api/v1/users/processRecoveryEmail" +
+                    "?magic="+magicJWT;
+            String subject = "VCell Account Link Request";
+            String content = "Dear VCell User,\n" +
+                    "\n" +
+                    "We received a request to link your VCell account for '"+userID+"' associated with this email address. " +
+                    "If you made this request, please click on the link below to confirm your email and link your account:\n" +
+                    "\n" +
+                    "<a href=\""+magicLink+"\">"+magicLink+"<a>\n" +
+                    "\n" +
+                    "If you did not request to link your account, please ignore this email and no changes will be made to your account.\n" +
+                    "\n" +
+                    "Please note that this link will expire in 24 hours, and can only be used once.";
+
+            //Send new password to user
+            BeanUtils.sendSMTP(
+                    PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName),
+                    Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)),
+                    PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress),
+                    userInfo.email,
+                    subject,
+                    content
+            );
+        } catch (Exception e) {
+            throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @POST
+    @Path("/processMagicLink")
+    @Operation(operationId = "processMagicLink", summary = "Process the magic link and map the user")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "User mapped successfully"),
+            @APIResponse(responseCode = "400", description = "Invalid or expired magic link"),
+            @APIResponse(responseCode = "406", description = "User not mapped"),
+            @APIResponse(responseCode = "500", description = "Internal server error")
+    })
+    public Response processMagicLink(@QueryParam("magic") String magicToken) {
+        try {
+            // Decode the magic token into a MagicTokenClaims object
+            JWTUtils.MagicTokenClaims magicTokenClaims = JWTUtils.decodeMagicLinkJWT(magicToken);
+
+            // Map the user
+            boolean mapped = userRestDB.mapUserIdentity(magicTokenClaims);
+
+            if (mapped) {
+                return Response.ok().build();
+            } else {
+                return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+            }
+        } catch (JoseException | MalformedClaimException | InvalidJwtException e) {
+            // The magic token is invalid or expired
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid or expired magic link").build();
+        } catch (Exception e) {
+            // An error occurred while mapping the user
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
     @POST
     @Path("/newUser")
