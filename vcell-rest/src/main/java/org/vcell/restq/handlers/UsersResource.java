@@ -85,8 +85,9 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @APIResponses({
             @APIResponse(responseCode = "200", description = "magic link sent in email if appropriate"),
+            @APIResponse(responseCode = "400", description = "unable to process request"),
     })
-    public void requestRecoveryEmail(@QueryParam("userID") String userID, @QueryParam("email") String email) {
+    public Response requestRecoveryEmail(@QueryParam("userID") String userID, @QueryParam("email") String email) {
         if(securityIdentity.isAnonymous()){
             throw new WebApplicationException("securityIdentity is missing jwt", Response.Status.UNAUTHORIZED);
         }
@@ -106,8 +107,13 @@ public class UsersResource {
 
             // verify that there is a user with this userid and email
             UserInfo userInfo = userRestDB.getUserInfo(userID);
-            if (userInfo == null || !userInfo.email.equals(email)) {
-                return;
+            if (userInfo == null) {
+                LOG.warning("supplied userid " + userID + " not found, didn't send recovery email");
+                return Response.status(Response.Status.BAD_REQUEST).entity("unable to process request").build();
+            }
+            if (!userInfo.email.equals(email)) {
+                LOG.warning("supplied email '"+email+"' doesn't match '"+userInfo.email+"' for userid " + userID + ", didn't send recovery email");
+                return Response.status(Response.Status.BAD_REQUEST).entity("unable to process request").build();
             }
             var magicTokenClaims = new JWTUtils.MagicTokenClaims(
                     email, requestorSubject, requestorIssuer, new User(userInfo.userid, userInfo.id)
@@ -119,8 +125,7 @@ public class UsersResource {
             if (uri.getPort()!=-1) {
                 magicLink += ":" + uri.getPort();
             }
-            magicLink += "/api/v1/users/processMagicLink" +
-                        "?magic="+magicJWT;
+            magicLink += "/api/v1/users/processMagicLink" + "?magic="+magicJWT;
             String subject = "VCell Account Link Request";
             String content = "Dear VCell User,\n" +
                     "\n" +
@@ -135,39 +140,46 @@ public class UsersResource {
 
             //Send magic link to user
             smtpService.sendEmail(userInfo.email, subject, content);
+            return Response.ok().build();
         } catch (Exception e) {
-            throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+            LOG.severe("Error sending magic link email: "+e.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @POST
+    @GET
     @Path("/processMagicLink")
     @Operation(operationId = "processMagicLink", summary = "Process the magic link and map the user")
     @Consumes(MediaType.APPLICATION_JSON)
     @APIResponses({
             @APIResponse(responseCode = "200", description = "User mapped successfully"),
-            @APIResponse(responseCode = "400", description = "Invalid or expired magic link"),
-            @APIResponse(responseCode = "406", description = "User not mapped"),
-            @APIResponse(responseCode = "500", description = "Internal server error")
+            @APIResponse(responseCode = "400", description = "Invalid or expired magic link")
     })
     public Response processMagicLink(@QueryParam("magic") String magicToken) {
         try {
             // Decode the magic token into a MagicTokenClaims object
             JWTUtils.MagicTokenClaims magicTokenClaims = JWTUtils.decodeMagicLinkJWT(magicToken);
 
-            // Map the user
-            boolean mapped = userRestDB.mapUserIdentity(magicTokenClaims);
+            try {
+                // Map the user
+                boolean mapped = userRestDB.mapUserIdentity(magicTokenClaims);
 
-            if (mapped) {
-                return Response.ok().build();
-            } else {
-                return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+                if (mapped) {
+                    return Response.ok().build();
+                } else {
+                    return Response.status(Response.Status.BAD_REQUEST).entity("failed to map user").build();
+                }
+            } catch (DataAccessException e) {
+                // An error occurred while mapping the user
+                LOG.warning("Error mapping user: "+e.getMessage());
+                return Response.status(Response.Status.BAD_REQUEST).entity("failed to map user").build();
             }
         } catch (JoseException | MalformedClaimException | InvalidJwtException e) {
             // The magic token is invalid or expired
+            LOG.warning("JWT Error mapping user: "+e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST).entity("Invalid or expired magic link").build();
         } catch (Exception e) {
-            // An error occurred while mapping the user
+            LOG.severe("Unexpected Error while mapping user: "+e.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
