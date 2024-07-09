@@ -119,7 +119,7 @@ public class UsersResource {
             if (uri.getPort()!=-1) {
                 magicLink += ":" + uri.getPort();
             }
-            magicLink += "/api/v1/users/processRecoveryEmail" +
+            magicLink += "/api/v1/users/processMagicLink" +
                         "?magic="+magicJWT;
             String subject = "VCell Account Link Request";
             String content = "Dear VCell User,\n" +
