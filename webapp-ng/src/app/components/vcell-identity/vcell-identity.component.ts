@@ -22,6 +22,7 @@ export class VcellIdentityComponent implements OnInit {
     emailNotification: boolean | undefined;
   };
   errorMessage = "";
+  showResetPasswordPanel = false;
 
   constructor(
     private usersResourceService: UsersResourceService,
@@ -31,6 +32,28 @@ export class VcellIdentityComponent implements OnInit {
 
   ngOnInit() {
     this.getMappedUser();
+  }
+
+  toggleResetPasswordPanel() {
+    this.showResetPasswordPanel = !this.showResetPasswordPanel;
+  }
+
+  sendResetLink(email: string, userid: string) {
+    this.usersResourceService.requestRecoveryEmail(email, userid).subscribe(
+      (response) => {
+        if (response) {
+          console.log('Successfully sent reset password link, check your email');
+          this.errorMessage = "";
+        } else {
+          console.error('Error sending reset password link, returned false');
+          this.errorMessage = 'Failed to send reset password link. Please try again.';
+        }
+      },
+      (error) => {
+        console.error('Error sending reset password link', error);
+        this.errorMessage = 'Failed to send reset password link. Please try again.';
+      }
+    );
   }
 
   getMappedUser() {

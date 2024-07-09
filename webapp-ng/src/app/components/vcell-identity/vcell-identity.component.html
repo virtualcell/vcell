@@ -28,10 +28,27 @@
           </mat-form-field>
         </mat-card-content>
         <mat-card-actions>
-          <button mat-raised-button color="primary" type="submit">Submit</button>
+          <button mat-raised-button color="primary" type="submit" class="form-field-horizontal-spacing">Submit</button>
+          <!-- Toggle Button for Forgot Password -->
+          <button mat-raised-button color="" (click)="toggleResetPasswordPanel()">Forgot my password</button>
         </mat-card-actions>
       </mat-card>
     </form>
+
+    <!-- Dropdown Panel for Reset Password -->
+    <div *ngIf="showResetPasswordPanel">
+      <form (ngSubmit)="sendResetLink(email.value, username.value)">
+        <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
+          <mat-label>Username</mat-label>
+          <input matInput type="text" #username required>
+        </mat-form-field>
+        <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" #email required>
+        </mat-form-field>
+        <button mat-raised-button color="primary" type="submit">Send Reset Link</button>
+      </form>
+    </div>
 
     <!-- Form for creating a new VCell user -->
     <form class="form-table" (ngSubmit)="mapNewUser()">
