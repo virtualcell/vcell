@@ -131,8 +131,9 @@ public class UsersResource {
             String htmlContent = "<html><body><p>Dear VCell User,</p><p>We received a request to link your VCell username <b>"+userID+"</b> associated with this email address. " +
                     "If you made this request, please click on the link below to confirm your email and link your account:</p>" +
                     "<p><a href=\""+magicLink+"\">click here to claim VCell username <b>"+userID+"</b><a></p>" +
-                    "<p>If you did not request to link your account, please ignore this email and no changes will be made to your account.</p>" +
-                    "<p>Please note that this link will expire in 24 hours, and can only be used once.</p></body></html>";
+                    "<p>If you did not request to link your account, feel free to ignore this email and no changes will be made to your account.  " +
+                    "You may contact us at <a href=\"mailto: VCell_Support@uchc.edu\">VCell_Support@uchc.edu</a> if you have any questions</p>" +
+                    "<p>Please note that this link will expire in 24 hours.</p></body></html>";
             //Send magic link to user
             Mail mail = Mail.withHtml(userInfo.email, subject, htmlContent);
             mailer.send(mail);
