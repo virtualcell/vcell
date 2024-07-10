@@ -1042,6 +1042,10 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			id = uri.getPath().replace("/obo/PR_","");
 		else if (uri.toString().contains("uniprot"))
 			id = uri.getPath().replace("/uniprot/","");
+		else if(uri.toString().contains("SBO/")) {
+			id = uri.getPath().replace("/SBO/", "");
+			id = id.replace("SBO_", "SBO:");
+		}
 
 		return id;
 	}

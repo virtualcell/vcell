@@ -97,7 +97,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"https://www.ebi.ac.uk/ols/ontologies/chebi/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCHEBI_",									// ^CHEBI:\d+$
 				"urn:miriam:chebi",
 				"Chemical Entities of Biological Interest (ChEBI) is a freely available dictionary of molecular entities focused on 'small' chemical compounds.",
-				"CHEBI:36927",
+				"36927",
 				true);																				// CHEBI:36927
 		public final static DataType DataType_FLYBASE 	= new VCMetaDataDataType("FlyBase Database",
 				"http://flybase.org/",
@@ -140,7 +140,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"https://www.ebi.ac.uk/ols/ontologies/go/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FGO_",									// ^GO:\d{7}$
 				"urn:miriam:obo.go",
 				"The Gene Ontology project provides a controlled vocabulary to describe gene and gene product attributes in any organism.",
-				"GO:0006915",
+				"0006915",
 				true);																				// GO:0006915
 		public final static DataType DataType_KEGGCOMPOUND 	= new VCMetaDataDataType("KEGG Compound",
 				"http://www.genome.jp/kegg/compound/",
@@ -296,7 +296,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"https://www.ebi.ac.uk/ols/ontologies/cl/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FCL_",
 				"urn:miriam:cl",
 				"The Cell Ontology is a structured controlled vocabulary for cell types.",
-				"CL:0000145",
+				"0000145",
 				true);
 		public final static DataType DataType_Cas			= new VCMetaDataDataType("Cas",
 				"http://commonchemistry.org/",
@@ -310,14 +310,14 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"https://www.ebi.ac.uk/ols/ontologies/bto/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FBTO_",
 				"urn:miriam:bto",
 				"The Brenda Tissue Ontology is a structured controlled vocabulary used to identify the source of an enzyme cited in the Brenda enzyme database. It comprises terms of tissues, cell lines, cell types and cell cultures.",
-				"BTO:0000028",
+				"0000028",
 				true);
 		public final static DataType DataType_Pato			= new VCMetaDataDataType("PATO",
 				"http://bioportal.bioontology.org/ontologies/PATO/",
 				"https://www.ebi.ac.uk/ols/ontologies/pato/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPATO_",
 				"urn:miriam:pato",
 				"PATO is an ontology of phenotypic qualities.",
-				"PATO:0002220",
+				"0002220",
 				true);
 		public final static DataType DataType_PW			= new VCMetaDataDataType("Pw",
 				"http://rgd.mcw.edu/rgdweb/ontology/",
@@ -345,7 +345,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 				"https://www.ebi.ac.uk/ols/ontologies/pr/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPR_",	// or https://proconsortium.org/app/entry/  or  https://www.ebi.ac.uk/ols/ontologies/pr/terms?obo_id=
 				"urn:miriam:pr",
 				"The PRotein Ontology (PRO) describes the relationships of proteins and protein evolutionary classes, to delineate the multiple protein forms of a gene locus.",
-				"PR:000007300",
+				"000007300",
 				true);
 		public final static DataType DataType_Ncit			= new VCMetaDataDataType("NCIT",
 				"http://www.ontobee.org/ontology/NCIT/",
