@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AuthService} from '@auth0/auth0-angular';
 import {UserLoginInfoForMapping, UserRegistrationInfo} from 'src/app/core/modules/openapi/model/models';
 import {UsersResourceService} from "../../core/modules/openapi";
@@ -8,7 +8,7 @@ import {UsersResourceService} from "../../core/modules/openapi";
   templateUrl: './vcell-identity.component.html',
   styleUrls: ['./vcell-identity.component.less'],
 })
-export class VcellIdentityComponent implements OnInit {
+export class VcellIdentityComponent implements OnInit, OnDestroy {
   vcellUserId: string | undefined;
   mapUser: UserLoginInfoForMapping = new class implements UserLoginInfoForMapping {
     password: string | undefined;
@@ -22,7 +22,9 @@ export class VcellIdentityComponent implements OnInit {
     emailNotification: boolean | undefined;
   };
   errorMessage = "";
-  showResetPasswordPanel = false;
+  showRecoverAccountPanel = false;
+  private checkUserIdInterval: number | undefined;
+  recoveryStatus = "";
 
   constructor(
     private usersResourceService: UsersResourceService,
@@ -32,26 +34,44 @@ export class VcellIdentityComponent implements OnInit {
 
   ngOnInit() {
     this.getMappedUser();
+    this.setupUserIdCheck();
   }
 
-  toggleResetPasswordPanel() {
-    this.showResetPasswordPanel = !this.showResetPasswordPanel;
+  ngOnDestroy() {
+    if (this.checkUserIdInterval) {
+      clearInterval(this.checkUserIdInterval);
+    }
   }
 
-  sendResetLink(email: string, userid: string) {
+  setupUserIdCheck() {
+    this.checkUserIdInterval = setInterval(() => {
+      // Assuming getMappedUser() updates vcellUserId
+      this.getMappedUser();
+      if (this.vcellUserId) {
+        console.log('VCell User ID is set:', this.vcellUserId);
+        // Display your confirmation message here
+        // For example, you could set a property and bind it in your template to show the message
+        this.errorMessage = 'Your VCell User ID has been successfully set.';
+        clearInterval(this.checkUserIdInterval); // Stop checking once found
+      }
+    }, 5000); // Check every 5 seconds
+  }
+
+  toggleRecoverAccountPanel() {
+    this.showRecoverAccountPanel = !this.showRecoverAccountPanel;
+  }
+
+  sendRecoverAccountLink(email: string, userid: string) {
     this.usersResourceService.requestRecoveryEmail(email, userid).subscribe(
       (response) => {
-        if (response) {
-          console.log('Successfully sent reset password link, check your email');
-          this.errorMessage = "";
-        } else {
-          console.error('Error sending reset password link, returned false');
-          this.errorMessage = 'Failed to send reset password link. Please try again.';
-        }
+        console.log('Successfully sent account recovery link, check your email');
+        this.errorMessage = "";
+        this.recoveryStatus = "Successfully sent account recovery link, check your email";
       },
       (error) => {
         console.error('Error sending reset password link', error);
-        this.errorMessage = 'Failed to send reset password link. Please try again.';
+        this.errorMessage = 'Failed to send account recovery link. Please try again.';
+        this.recoveryStatus = "";
       }
     );
   }
@@ -71,6 +91,7 @@ export class VcellIdentityComponent implements OnInit {
           console.log('Successfully mapped VCell identity');
           this.errorMessage = "";
         } else {
+          this.getMappedUser();
           console.error('Error mapping VCell identity, returned false');
           this.errorMessage = 'Failed to map user. Please try again.';
         }
@@ -83,6 +104,7 @@ export class VcellIdentityComponent implements OnInit {
   }
 
   clearMappedUser() {
+    this.errorMessage = "";
     if (!this.vcellUserId) {
       return;
     }
@@ -99,14 +121,9 @@ export class VcellIdentityComponent implements OnInit {
     console.log("mapNewUser() mapNewUser = " + this.newUser.userID);
     this.usersResourceService.mapNewUser(this.newUser).subscribe(
       (response) => {
-        if (response) {
-          this.getMappedUser();
-          console.log("mapNewUser() response = " + response);
-          this.errorMessage = "";
-        } else {
-          console.error('Error mapping new VCell identity, returned false');
-          this.errorMessage = 'Failed to map new user. Please try again.';
-        }
+        this.getMappedUser();
+        console.log("mapNewUser() success, response = " + response);
+        this.errorMessage = "";
       },
       (error) => {
         console.error('Error mapping new VCell identity', error);

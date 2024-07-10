@@ -18,37 +18,51 @@
       <mat-card>
         <mat-card-title><em><strong>If you have an old vcell account,</strong></em> enter your old VCell login to claim your username and stored models</mat-card-title>
         <mat-card-content>
-          <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-            <mat-label>existing username *</mat-label>
-            <input matInput type="text" id="userid" name="userid" [(ngModel)]="mapUser.userID">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>existing username</mat-label>
+            <input matInput type="text" id="userid" name="userid" [(ngModel)]="mapUser.userID" required>
           </mat-form-field>
-          <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-            <mat-label>password *</mat-label>
-            <input matInput type="password" id="password" name="password" [(ngModel)]="mapUser.password">
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>password</mat-label>
+            <input matInput type="password" id="password" name="password" [(ngModel)]="mapUser.password" required>
           </mat-form-field>
         </mat-card-content>
         <mat-card-actions>
-          <button mat-raised-button color="primary" type="submit" class="form-field-horizontal-spacing">Submit</button>
-          <!-- Toggle Button for Forgot Password -->
-          <button mat-raised-button color="" (click)="toggleResetPasswordPanel()">Forgot my password</button>
+          <button mat-raised-button color="primary" type="submit">Submit</button>
         </mat-card-actions>
       </mat-card>
-    </form>
+     </form>
 
-    <!-- Dropdown Panel for Reset Password -->
-    <div *ngIf="showResetPasswordPanel">
-      <form (ngSubmit)="sendResetLink(email.value, username.value)">
-        <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-          <mat-label>Username</mat-label>
-          <input matInput type="text" #username required>
-        </mat-form-field>
-        <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" #email required>
-        </mat-form-field>
-        <button mat-raised-button color="primary" type="submit">Send Reset Link</button>
+    <!-- Toggle Button for Forgot Password -->
+    <mat-checkbox color="" class="reveal-recover-account-button" (click)="toggleRecoverAccountPanel()">Forgot my password</mat-checkbox>
+
+    <!-- Dropdown Panel for Account Recovery -->
+    <div *ngIf="showRecoverAccountPanel">
+       <form (ngSubmit)="sendRecoverAccountLink(email.value, username.value)" class="recover-account-panel">
+         <mat-card>
+           <mat-card-content>
+             <p>Enter your VCell username and associated email.  We'll send you a link to claim your VCell username.</p>
+              <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
+                <mat-label>existing username</mat-label>
+                <input matInput type="text" #username required>
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
+                <mat-label>associated email</mat-label>
+                <input matInput type="email" #email required>
+              </mat-form-field>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-raised-button color="primary" type="submit">Send Email Link</button>
+            </mat-card-actions>
+        </mat-card>
       </form>
+      <div *ngIf="recoveryStatus" class="recover-account-status" role="status">
+        {{ recoveryStatus }}
+      </div>
     </div>
+    <!-- End of Dropdown Panel for Account Recovery -->
+
+    <br/><br/><br/><br/>
 
     <!-- Form for creating a new VCell user -->
     <form class="form-table" (ngSubmit)="mapNewUser()">
@@ -56,8 +70,8 @@
         <mat-card-title><em><strong>If you are new to VCell,</strong></em> create a new username (including your institution helps us report usage).</mat-card-title>
         <mat-card-content>
           <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
-            <mat-label>new username *</mat-label>
-            <input matInput type="text" id="newUserid" name="newUserid" [(ngModel)]="newUser.userID">
+            <mat-label>new username</mat-label>
+            <input matInput type="text" id="newUserid" name="newUserid" [(ngModel)]="newUser.userID" required>
           </mat-form-field>
           <mat-form-field appearance="fill" class="form-field-horizontal-spacing">
             <mat-label>Institution (optional)</mat-label>
