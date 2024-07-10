@@ -49,7 +49,8 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
 
         setTitle("Add Annotations");
         setResizable(false);
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(annotationsPanel);
+//        setAlwaysOnTop(true);
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
