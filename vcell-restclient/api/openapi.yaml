@@ -460,6 +460,60 @@ paths:
       - Users Resource
       x-content-type: application/json
       x-accepts: application/json
+  /api/v1/users/processMagicLink:
+    get:
+      operationId: processMagicLink
+      parameters:
+      - explode: true
+        in: query
+        name: magic
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          description: User mapped successfully
+        "400":
+          description: Invalid or expired magic link
+      summary: Process the magic link and map the user
+      tags:
+      - Users Resource
+      x-accepts: application/json
+  /api/v1/users/requestRecoveryEmail:
+    post:
+      operationId: requestRecoveryEmail
+      parameters:
+      - explode: true
+        in: query
+        name: email
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: userID
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          description: magic link sent in email if appropriate
+        "400":
+          description: unable to process request
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
+      summary: request a recovery email to link a VCell account.
+      tags:
+      - Users Resource
+      x-accepts: application/json
   /api/v1/users/unmapUser/{userName}:
     put:
       operationId: unmapUser

@@ -413,6 +413,49 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/users/processMagicLink:
+    get:
+      tags:
+      - Users Resource
+      summary: Process the magic link and map the user
+      operationId: processMagicLink
+      parameters:
+      - name: magic
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: User mapped successfully
+        "400":
+          description: Invalid or expired magic link
+  /api/v1/users/requestRecoveryEmail:
+    post:
+      tags:
+      - Users Resource
+      summary: request a recovery email to link a VCell account.
+      operationId: requestRecoveryEmail
+      parameters:
+      - name: email
+        in: query
+        schema:
+          type: string
+      - name: userID
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: magic link sent in email if appropriate
+        "400":
+          description: unable to process request
+        "403":
+          description: Not Allowed
+        "401":
+          description: Not Authorized
+      security:
+      - openId:
+        - user
   /api/v1/users/unmapUser/{userName}:
     put:
       tags:

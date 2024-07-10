@@ -16,6 +16,7 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.IOException;
@@ -46,6 +47,16 @@ public class JWTUtils {
 
     public static String VCELL_JWT_AUDIENCE = "VCellService";
     public static String VCELL_JWT_ISSUER = "VCellService";
+
+    public static final String MAGIC_LINK_JWT_CLAIM_EMAIL = "email";
+    public static final String MAGIC_LINK_JWT_CLAIM_REQUESTER_SUBJECT = "requestedSubject";
+    public static final String MAGIC_LINK_JWT_CLAIM_REQUESTER_ISSUER = "requestingIssuer";
+    public static final String MAGIC_LINK_JWT_CLAIM_USERID = "userid";
+    public static final String MAGIC_LINK_JWT_CLAIM_USERKEY = "userkey";
+    public static final long MAGIC_LINK_DURATION_SECONDS = 60*60*24; // 24 hours
+
+    public record MagicTokenClaims(String email, String requesterSubject, String requesterIssuer, User user) {
+    }
 
     public static void setRsaJsonWebKey(RsaJsonWebKey rsaJsonWebKey) {
         JWTUtils.rsaJsonWebKey = rsaJsonWebKey;
@@ -106,7 +117,83 @@ public class JWTUtils {
         return rsaJsonWebKey;
     }
 
-    public static String createToken(User user, NumericDate expirationTime) throws JoseException {
+    public static String createMagicLinkJWT(MagicTokenClaims magicTokenClaims, long expirationTime_seconds) throws JoseException {
+        createRsaJsonWebKeyIfNeeded();
+
+        // Create the Claims, which will be the content of the JWT
+        JwtClaims claims = new JwtClaims();
+        claims.setIssuer(VCELL_JWT_ISSUER);  // who creates the token and signs it
+        claims.setAudience(VCELL_JWT_AUDIENCE); // to whom the token is intended to be sent
+        NumericDate expirationTime = NumericDate.now();
+        expirationTime.addSeconds(expirationTime_seconds);
+        claims.setExpirationTime(expirationTime); // time when the token will expire)
+        claims.setGeneratedJwtId(); // a unique identifier for the token
+        claims.setIssuedAtToNow();  // when the token was issued/created (now)
+        claims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
+        claims.setSubject(magicTokenClaims.requesterSubject); // the subject/principal is whom the token is about
+
+        claims.setStringClaim(MAGIC_LINK_JWT_CLAIM_EMAIL, magicTokenClaims.email);
+        claims.setStringClaim(MAGIC_LINK_JWT_CLAIM_REQUESTER_SUBJECT, magicTokenClaims.requesterSubject);
+        claims.setStringClaim(MAGIC_LINK_JWT_CLAIM_REQUESTER_ISSUER, magicTokenClaims.requesterIssuer);
+        claims.setStringClaim(MAGIC_LINK_JWT_CLAIM_USERKEY, magicTokenClaims.user.getID().toString());
+        claims.setStringClaim(MAGIC_LINK_JWT_CLAIM_USERID, magicTokenClaims.user.getName());
+
+        // A JWT is a JWS and/or a JWE with JSON claims as the payload.
+        // Here we prefer to use JWS (unencrypted claims/payload with signature) so that it is easier to debug/understand.
+        JsonWebSignature jws = new JsonWebSignature();
+
+        // The payload of the JWS is JSON content of the JWT Claims
+        jws.setPayload(claims.toJson());
+
+        // The JWT is signed using the private key
+        jws.setKey(rsaJsonWebKey.getRsaPrivateKey());
+
+        // Set the Key ID (kid) header because it's just the polite thing to do.
+        // We only have one key in this example but a using a Key ID helps
+        // facilitate a smooth key rollover process
+//        jws.setKeyIdHeaderValue(rsaJsonWebKey.getKeyId());
+
+        // Set the signature algorithm on the JWT/JWS that will integrity protect the claims
+        jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+
+        // Sign the JWS and produce the compact serialization or the complete JWT/JWS
+        // representation, which is a string consisting of three dot ('.') separated
+        // base64url-encoded parts in the form Header.Payload.Signature
+        // If you wanted to encrypt it, you can simply set this jwt as the payload
+        // of a JsonWebEncryption object and set the cty (Content Type) header to "jwt".
+        String jwt = jws.getCompactSerialization();
+        if (jwt.getBytes(StandardCharsets.UTF_8).length > MAX_JWT_SIZE_BYTES){
+            throw new RuntimeException("VCells tokens have a max size of "+MAX_JWT_SIZE_BYTES+" bytes");
+        }
+        return jwt;
+    }
+
+
+    public static MagicTokenClaims decodeMagicLinkJWT(String jwt) throws InvalidJwtException, MalformedClaimException, JoseException {
+        createRsaJsonWebKeyIfNeeded();
+
+        JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+                .setRequireExpirationTime() // the JWT must have an expiration time
+                .setAllowedClockSkewInSeconds(30) // allow some leeway in validating time based claims to account for clock skew
+                .setRequireSubject() // the JWT must have a subject claim
+                .setExpectedIssuer(VCELL_JWT_ISSUER) // whom the JWT needs to have been issued by
+                .setExpectedAudience(VCELL_JWT_AUDIENCE) // to whom the JWT is intended for
+                .setVerificationKey(rsaJsonWebKey.getPublicKey()) // verify the signature with the public key
+                .setJwsAlgorithmConstraints( // only allow the expected signature algorithm(s) in the given context
+                        AlgorithmConstraints.ConstraintType.PERMIT, AlgorithmIdentifiers.RSA_USING_SHA256) // which is only RS256 here
+                .build(); // create the JwtConsumer instance
+
+        JwtClaims claims = jwtConsumer.processToClaims(jwt);
+        return new MagicTokenClaims(
+                claims.getStringClaimValue(MAGIC_LINK_JWT_CLAIM_EMAIL),
+                claims.getStringClaimValue(MAGIC_LINK_JWT_CLAIM_REQUESTER_SUBJECT),
+                claims.getStringClaimValue(MAGIC_LINK_JWT_CLAIM_REQUESTER_ISSUER),
+                new User(claims.getStringClaimValue(MAGIC_LINK_JWT_CLAIM_USERID),
+                        new KeyValue(claims.getStringClaimValue(MAGIC_LINK_JWT_CLAIM_USERKEY))));
+    }
+
+
+    public static String createLegacyAccessToken(User user, NumericDate expirationTime) throws JoseException {
         createRsaJsonWebKeyIfNeeded();
 
         // Create the Claims, which will be the content of the JWT

@@ -145,6 +145,10 @@ Class | Method | HTTP request | Description
 *UsersResourceApi* | [**mapNewUserWithHttpInfo**](docs/UsersResourceApi.md#mapNewUserWithHttpInfo) | **POST** /api/v1/users/newUser | create vcell user
 *UsersResourceApi* | [**mapUser**](docs/UsersResourceApi.md#mapUser) | **POST** /api/v1/users/mapUser | map vcell user
 *UsersResourceApi* | [**mapUserWithHttpInfo**](docs/UsersResourceApi.md#mapUserWithHttpInfo) | **POST** /api/v1/users/mapUser | map vcell user
+*UsersResourceApi* | [**processMagicLink**](docs/UsersResourceApi.md#processMagicLink) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
+*UsersResourceApi* | [**processMagicLinkWithHttpInfo**](docs/UsersResourceApi.md#processMagicLinkWithHttpInfo) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
+*UsersResourceApi* | [**requestRecoveryEmail**](docs/UsersResourceApi.md#requestRecoveryEmail) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
+*UsersResourceApi* | [**requestRecoveryEmailWithHttpInfo**](docs/UsersResourceApi.md#requestRecoveryEmailWithHttpInfo) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 *UsersResourceApi* | [**unmapUser**](docs/UsersResourceApi.md#unmapUser) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 *UsersResourceApi* | [**unmapUserWithHttpInfo**](docs/UsersResourceApi.md#unmapUserWithHttpInfo) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 

@@ -4,6 +4,7 @@ import cbit.vcell.resource.PropertyLoader;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwt.MalformedClaimException;
 import org.jose4j.jwt.NumericDate;
+import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,8 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.vcell.auth.JWTUtils.verifyJWS;
 
 @Tag("Fast")
@@ -102,13 +102,13 @@ public class JWTUtilsTest {
 
         NumericDate expirationDate = NumericDate.now();
         expirationDate.addSeconds(1);
-        String token1 = JWTUtils.createToken(user, expirationDate);
+        String token1 = JWTUtils.createLegacyAccessToken(user, expirationDate);
         assertTrue(verifyJWS(token1), "expect valid token");
 
         // test expiration date by setting the expiration date 31 seconds in the past (there is a 30 second tolerance)
         expirationDate = NumericDate.now();
         expirationDate.addSeconds(-31);
-        String token2 = JWTUtils.createToken(user, expirationDate);
+        String token2 = JWTUtils.createLegacyAccessToken(user, expirationDate);
         assertFalse(verifyJWS(token2), "expect timeout");
 
         // install a different JsonWebKey and see that both tokens are invalid
@@ -126,13 +126,13 @@ public class JWTUtilsTest {
 
         NumericDate expirationDate = NumericDate.now();
         expirationDate.addSeconds(1);
-        String token1 = JWTUtils.createToken(user, expirationDate);
+        String token1 = JWTUtils.createLegacyAccessToken(user, expirationDate);
         assertTrue(verifyJWS(token1), "expect valid token");
 
         // test expiration date by setting the expiration date 31 seconds in the past (there is a 30 second tolerance)
         expirationDate = NumericDate.now();
         expirationDate.addSeconds(-31);
-        String token2 = JWTUtils.createToken(user, expirationDate);
+        String token2 = JWTUtils.createLegacyAccessToken(user, expirationDate);
         assertFalse(verifyJWS(token2), "expect timeout");
 
         // install a different JsonWebKey and see that both tokens are invalid
@@ -140,5 +140,33 @@ public class JWTUtilsTest {
         JWTUtils.setRsaJsonWebKey(rsaJsonWebKey2);
         assertFalse(verifyJWS(token1), "expect invalid token1, wrong signature");
         assertFalse(verifyJWS(token2), "expect invalid token2, wrong signature");
+    }
+
+    @Test
+    public void testMagicLinkJWT() throws JoseException, MalformedClaimException, InvalidJwtException {
+        // Generate an RSA key pair, which will be used for signing and verification of the JWT, wrapped in a JWK
+        RsaJsonWebKey rsaJsonWebKey = JWTUtils.createNewJsonWebKey("k1");
+        JWTUtils.setRsaJsonWebKey(rsaJsonWebKey);
+
+        final String email = "myemail@company.com";
+        final User user = new User("myuserid", new KeyValue("123455433"));
+        final String requesterSubject = "myauth0subject";
+        final String requesterIssuer = "myrequestorissuer";
+
+        JWTUtils.MagicTokenClaims magicTokenClaims = new JWTUtils.MagicTokenClaims(email, requesterSubject, requesterIssuer, user);
+        NumericDate expirationDate = NumericDate.now();
+        expirationDate.addSeconds(JWTUtils.MAGIC_LINK_DURATION_SECONDS);
+
+        // create magic link token
+        String token = JWTUtils.createMagicLinkJWT(magicTokenClaims, JWTUtils.MAGIC_LINK_DURATION_SECONDS);
+        assertTrue(JWTUtils.verifyJWS(token), "expect valid token");
+
+        // decode magic link token
+        JWTUtils.MagicTokenClaims claims = JWTUtils.decodeMagicLinkJWT(token);
+        assertEquals(email, claims.email(), "expect email to match");
+        assertEquals(requesterSubject, claims.requesterSubject(), "expect auth0subject to match");
+        assertEquals(requesterIssuer, claims.requesterIssuer(), "expect auth0subject to match");
+        assertEquals(claims.user().getName(), user.getName(), "expect user to match");
+        assertEquals(claims.user().getID(), user.getID(), "expect user to match");
     }
 }

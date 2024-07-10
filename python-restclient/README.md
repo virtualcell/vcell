@@ -105,6 +105,8 @@ Class | Method | HTTP request | Description
 *UsersResourceApi* | [**get_me**](docs/UsersResourceApi.md#get_me) | **GET** /api/v1/users/me | Get current user
 *UsersResourceApi* | [**map_new_user**](docs/UsersResourceApi.md#map_new_user) | **POST** /api/v1/users/newUser | create vcell user
 *UsersResourceApi* | [**map_user**](docs/UsersResourceApi.md#map_user) | **POST** /api/v1/users/mapUser | map vcell user
+*UsersResourceApi* | [**process_magic_link**](docs/UsersResourceApi.md#process_magic_link) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
+*UsersResourceApi* | [**request_recovery_email**](docs/UsersResourceApi.md#request_recovery_email) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 *UsersResourceApi* | [**unmap_user**](docs/UsersResourceApi.md#unmap_user) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 
 
