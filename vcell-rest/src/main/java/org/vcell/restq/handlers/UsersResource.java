@@ -128,9 +128,9 @@ public class UsersResource {
             }
             magicLink += "/api/v1/users/processMagicLink" + "?magic="+magicJWT;
             String subject = "VCell Account Link Request";
-            String htmlContent = "<html><body><p>Dear VCell User,</p><p>We received a request to link your VCell account for '"+userID+"' associated with this email address. " +
+            String htmlContent = "<html><body><p>Dear VCell User,</p><p>We received a request to link your VCell username <b>"+userID+"</b> associated with this email address. " +
                     "If you made this request, please click on the link below to confirm your email and link your account:</p>" +
-                    "<p><a href=\""+magicLink+"\">click here<a></p>" +
+                    "<p><a href=\""+magicLink+"\">click here to claim VCell username <b>"+userID+"</b><a></p>" +
                     "<p>If you did not request to link your account, please ignore this email and no changes will be made to your account.</p>" +
                     "<p>Please note that this link will expire in 24 hours, and can only be used once.</p></body></html>";
             //Send magic link to user
@@ -161,7 +161,7 @@ public class UsersResource {
                 boolean mapped = userRestDB.mapUserIdentity(magicTokenClaims);
 
                 if (mapped) {
-                    return Response.ok().build();
+                    return Response.ok().entity("account successfully linked, you are ready to log into VCell").build();
                 } else {
                     return Response.status(Response.Status.BAD_REQUEST).entity("failed to map user").build();
                 }
