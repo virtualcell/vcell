@@ -7,7 +7,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "accountMenu.png"/>
+		<imgReference target = "AccountMenu.png"/>
 	</appearance>
 	
 	<operations> 
