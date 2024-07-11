@@ -6,6 +6,7 @@
       		<tocitem target="RuleBasedOverview" text="Rule-Based Features"/>  		
     		<tocitem target="GeneralNavAndWinSetup" text="General Navigation and Window Setup"/>
     		<tocitem target="TopMenu" text="Top Menu"/>
+			<tocitem target="Login" text="User Login"/>
     		<tocitem target="File" text="File Menu">
 	    		<tocitem target="New" text="File->New Menu"/>
     			<tocitem target="Open" text="File->Open Menu"/>
@@ -18,11 +19,14 @@
     			<tocitem target="Export" text="File->Export Menu"/>
     		</tocitem>
     		<tocitem target="Account" text="Account Menu">
-    			<tocitem target="Login" text="User Login"/>
-    			<tocitem target="ChangeUser" text="Change User Menu"/>
+				<tocitem target="Auth0Overview" text="Website Login">
+					<tocitem target="Auth0ProfilePage" text="Website Profile Page">
+						<tocitem target="Auth0ExistingUserAccountLinking" text="Existing Users Profile Help"/>
+						<tocitem target="Auth0ReturningUserAccountLinking" text="Returning Users Profile Help"/>
+						<tocitem target="Auth0NewUserAccountCreation" text="New Users Profile Help"/>
+					</tocitem>
+				</tocitem>
     			<tocitem target="SetProxy" text= "Set Proxy Window"/>
-    			<tocitem target="UpdateRegistrationInfo" text="Update Registration Information Menu"/>
-    			<tocitem target="NewUserRegistration" text="New User Registration"/>
     			<tocitem target="ViewSimStatus" text="View Simulation Jobs"/>
     		</tocitem>	
     		<tocitem target="Window" text="Window Menu"/>

@@ -16,13 +16,11 @@ import cbit.vcell.biomodel.meta.VCMetaData;
 import cbit.vcell.client.*;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.data.ExportedDataViewer;
-import cbit.vcell.client.server.ConnectionStatus;
-import cbit.vcell.client.server.DynamicClientProperties;
-import cbit.vcell.client.server.ReconnectListener;
-import cbit.vcell.client.server.Reconnector;
+import cbit.vcell.client.server.*;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.LaunchVirtualFRAP;
+import cbit.vcell.desktop.ClientLogin;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.TransformMassActions;
 import cbit.vcell.model.TransformMassActions.TransformedReaction;
@@ -30,6 +28,11 @@ import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.server.VCellConnectionFactory;
+import com.google.inject.ConfigurationException;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
+import org.vcell.DependencyConstants;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.UtilCancelException;
@@ -40,6 +43,7 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.*;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
+import scala.collection.mutable.HashTable;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
@@ -72,6 +76,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 
     private JMenuItem ivjAbout_BoxMenuItem = null;
     private JMenuItem ivjManageUser = null;
+    private JMenuItem loginMenuItem = null;
+    private JMenuItem loginAsGuestMenuItem = null;
     private JMenuItem ivjLogoutUser = null;
     private JMenuItem ivjCloseMenuItem = null;
     private JMenuBar ivjDocumentWindowJMenuBar = null;
@@ -208,8 +214,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                     DocumentWindow.this.emailSupport(e);
                 if (e.getSource() == DocumentWindow.this.getNewHelpMenuItem())
                     DocumentWindow.this.showVCellHelpWindow();
-                if (e.getSource() == DocumentWindow.this.getLogOutMenuItem())
+                if (e.getSource() == DocumentWindow.this.getLogOutMenuItem()){
                     DocumentWindow.this.getWindowManager().getRequestManager().logOut(DocumentWindow.this.getWindowManager());
+                }
                 if (e.getSource() == DocumentWindow.this.getRunVFrapItem())
                     DocumentWindow.this.startVirtualFRAP();
                 if (e.getSource() == DocumentWindow.this.getTransMAMenuItem())
@@ -220,8 +227,14 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                     DocumentWindow.this.getWindowManager().showFieldDataWindow();
                 if (e.getSource() == DocumentWindow.this.getManageUserMenuItem()) {
                     if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                        Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/login_success"));
+                        Desktop.getDesktop().browse(new URI("https://vcell-stage.cam.uchc.edu/profile"));
                     }
+                }
+                if (e.getSource() == DocumentWindow.this.getLoginItem()) {
+                    DocumentWindow.this.login(false);
+                }
+                if (e.getSource() == DocumentWindow.this.getLoginAsGuestItem()) {
+                    DocumentWindow.this.login(true);
                 }
                 if (e.getSource() == DocumentWindow.this.getPermissionsMenuItem()) {
                     DocumentWindow.this.getWindowManager().getRequestManager().accessPermissions(DocumentWindow.this, DocumentWindow.this.getWindowManager().getVCDocument());
@@ -443,6 +456,26 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             }
         }
         return this.viewJobsMenuItem;
+    }
+
+    private JMenuItem getLoginItem() {
+        if (this.loginMenuItem == null) {
+            this.loginMenuItem = new javax.swing.JMenuItem();
+            this.loginMenuItem.setName("LoginMenuItem");
+            this.loginMenuItem.setText("Login");
+            this.loginMenuItem.setEnabled(false);
+        }
+        return this.loginMenuItem;
+    }
+
+    private JMenuItem getLoginAsGuestItem() {
+        if (this.loginAsGuestMenuItem == null) {
+            this.loginAsGuestMenuItem = new javax.swing.JMenuItem();
+            this.loginAsGuestMenuItem.setName("LoginAsGuestMenuItem");
+            this.loginAsGuestMenuItem.setText("Login as Guest");
+            this.loginAsGuestMenuItem.setEnabled(false);
+        }
+        return this.loginAsGuestMenuItem;
     }
 
     private JMenuItem getManageUserMenuItem() {
@@ -956,143 +989,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     }
 
 
-//private static String createImageJServiceMenuText() {
-//	if(ImageJHelper.serviceExists()) {
-//		return "Stop FIJI (ImageJ) Service ("+ImageJHelper.getServiceURI().getPort()+")";
-//	}
-//	return "Start FIJI (ImageJ) Service";
-//}
-//
-//private static final String IMAGEJ_PLUGIN_PATH = "IMAGEJ_PLUGIN_PATH";
-//
-//private void startStopImageJService() {
-//	if(ImageJHelper.serviceExists()) {
-//		try {
-//			ImageJHelper.stopService();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			DialogUtils.showErrorDialog(this, "Error stopping ImageJ Service: "+e.getMessage());
-//		}
-//	}else {
-//		final String VC_PLUG_CONTINUE = "Continue";
-//		final String CANCEL = "Cancel";
-//		final String NEW_IJ_PLUGIN = "Install new plugin...";
-//		final String CHANGE_IJ_PLUGIN = "Update plugin or Change path...";
-//		Preferences prefs = Preferences.userNodeForPackage(DocumentWindow.class);
-//		String imageJVCellPluginVersion = "vcell-imagej-helper-"+TokenMangler.fixTokenStrict(VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString())+".jar";
-//		String imageJPluginPath = prefs.get(IMAGEJ_PLUGIN_PATH, null);
-//		URL imageJVCellPluginURL = null;
-//		try {
-//			imageJVCellPluginURL = new URL(PropertyLoader.getRequiredProperty(PropertyLoader.imageJVcellPluginURL)+"/"+imageJVCellPluginVersion);
-//		} catch (Exception e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//			DialogUtils.showErrorDialog(this, "Error download URL: "+e1.getMessage());
-//			return;
-//		}
-//		String downLoadOption = NEW_IJ_PLUGIN;
-////		File ijPluginFile = null;
-//		File[] existingVCPlugins = new File[] {};
-//		Boolean bSame = null;
-//		if(imageJPluginPath != null){
-//			existingVCPlugins = (new File(imageJPluginPath)).listFiles(new FilenameFilter() {
-//				@Override
-//				public boolean accept(File dir, String name) {
-//					// TODO Auto-generated method stub
-//					return name.startsWith("vcell-imagej-helper-") && name.endsWith(".jar");
-//				}
-//			});
-//			if(existingVCPlugins.length > 1) {
-//				StringBuffer sb = new StringBuffer();
-//				for (int i = 0; i < existingVCPlugins.length; i++) {
-//					sb.append((i!=0?"\n":"")+existingVCPlugins[i].getName());
-//				}
-//				DialogUtils.showWarningDialog(this, "Found "+existingVCPlugins.length+" installed VCell Imagej plugins:\n"+
-//						sb.toString()+"\nRemove the "+existingVCPlugins.length+" plugins from ImageJ directory and start service again.\nPlugin path="+imageJPluginPath);
-//				return;
-//			}
-//			if(existingVCPlugins.length == 1) {
-//				downLoadOption = CHANGE_IJ_PLUGIN;
-//				if(imageJVCellPluginVersion.equals(existingVCPlugins[0].getName())) {
-//					bSame = true;
-//				}else {
-//					bSame = false;
-//				}
-//			}
-//		}
-//		String[] options = (existingVCPlugins.length==0?new String[] {downLoadOption,CANCEL}:new String[] {VC_PLUG_CONTINUE,downLoadOption,CANCEL});
-//		String result = DialogUtils.showWarningDialog(this,
-//			 "Start VCell's FIJI Service",
-//				"VCell's FIJI (ImageJ) service allows scripts running in FIJI to communicate with VCell "+
-//						"allowing query, control, and transfer of model/simulation data between VCell and FIJI.\n"+
-//						"(see Help->'VCell Help' then search 'start imagej service')\n"+
-//						(existingVCPlugins.length == 0?"Install FIJI (https://imagej.net/Fiji) before starting this service.":
-//							"Current plugin path:\n"+existingVCPlugins[0].getAbsolutePath()+"\n"+"Available version="+imageJVCellPluginVersion)
-//						,options, CANCEL);
-//		if(NEW_IJ_PLUGIN.equals(result) || CHANGE_IJ_PLUGIN.equals(result)) {
-//			File selectedDir = null;
-//			if(OperatingSystemInfo.getInstance().isMac()) {
-//				Frame f = (Frame)GeneralGuiUtils.findTypeParentOfComponent(this, Frame.class);
-//				System.setProperty("apple.awt.fileDialogForDirectories", "true");
-//				FileDialog fdiag = new FileDialog(f);
-//				fdiag.setMultipleMode(false);
-//				if(existingVCPlugins.length == 1) {
-//					fdiag.setDirectory(existingVCPlugins[0].getParentFile().getParentFile().getAbsolutePath());
-//					fdiag.setDirectory(existingVCPlugins[0].getParentFile().getAbsolutePath());
-//				}
-//				fdiag.setVisible(true);
-//				File[] files = fdiag.getFiles();
-//				if(files == null || files.length == 0) {
-//					return;
-//				}
-//				selectedDir = files[0];
-//			}else {
-//				VCFileChooser vcf = new VCFileChooser((existingVCPlugins.length == 0?ResourceUtil.getUserHomeDir():existingVCPlugins[0].getParentFile().getParentFile()));
-//				vcf.setMultiSelectionEnabled(false);
-//				if(existingVCPlugins.length == 1) {
-//					vcf.setSelectedFile(existingVCPlugins[0].getParentFile());
-//				}
-//				vcf.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-//				int returnVal = vcf.showOpenDialog(this);
-//				if(returnVal != JFileChooser.APPROVE_OPTION) {
-//					return;
-//				}
-//				selectedDir = vcf.getSelectedFile();
-//			}
-//			try {
-//				if(!selectedDir.getName().equals("plugins")) {
-//					String pluginWarn = DialogUtils.showOKCancelWarningDialog(this, "Unexpected plugins directory warning", "path "+selectedDir.getAbsolutePath()+"\nexpected to end with 'plugins'");
-//					if(pluginWarn == null || !pluginWarn.equals(SimpleUserMessage.OPTION_OK)) {
-//						return;
-//					}
-//				}
-//				final File pluginDestination = new File(selectedDir,imageJVCellPluginVersion);
-//				FileUtils.copyURLToFile(imageJVCellPluginURL, pluginDestination);
-//				prefs.put(IMAGEJ_PLUGIN_PATH, selectedDir.getAbsolutePath());
-//				if(existingVCPlugins.length != 0 && bSame!=null && !bSame) {
-//					if(!existingVCPlugins[0].delete()) {
-//						throw new Exception("Couldn't delete old plugin "+existingVCPlugins[0].getAbsolutePath()+".  Please stop Imagej and manually remove the old plugin file.");
-//					}
-//				}
-//				DialogUtils.showInfoDialog(this, "VCell ImageJ plugin installed at:\n"+pluginDestination.getAbsolutePath());
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				DialogUtils.showErrorDialog(this, e.getMessage());
-//				return;
-//			}
-//		}else if(!VC_PLUG_CONTINUE.equals(result)){
-//			return;
-//		}
-//		try {
-//			ImageJHelper.startService(null);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			DialogUtils.showErrorDialog(this, "error starting ImageJ Service: "+e.getMessage());
-//		}
-//	}
-//
-//}
-
     private JMenuItem getRunVFrapItem() {
         if (this.ivjRunVFrapMenuItem == null) {
             try {
@@ -1198,33 +1094,17 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         if (this.ivjServerMenu == null) {
             try {
                 this.ivjServerMenu = new javax.swing.JMenu();
-//			//getImageJServiceMenuItem().setText(createImageJServiceMenuText());
-//			ivjServerMenu.addMenuListener(new MenuListener() {
-//				@Override
-//				public void menuSelected(MenuEvent e) {
-//					getImageJServiceMenuItem().setText(createImageJServiceMenuText());
-//				}
-//				@Override
-//				public void menuDeselected(MenuEvent e) {
-//				}
-//				@Override
-//				public void menuCanceled(MenuEvent e) {
-//				}
-//			});
                 this.ivjServerMenu.setName("ServerMenu");
                 this.ivjServerMenu.setText("Account");
+                this.ivjServerMenu.add(this.getLoginItem());
+                this.ivjServerMenu.add(this.getLoginAsGuestItem());
+                this.ivjServerMenu.add(this.getLogOutMenuItem());
                 this.ivjServerMenu.add(this.getManageUserMenuItem());
                 this.ivjServerMenu.add(this.getChange_ProxyMenuItem());
-                this.ivjServerMenu.add(this.getLogOutMenuItem());
                 this.ivjServerMenu.add(this.getReconnectUserMenuItem());
-//			ivjServerMenu.add(getImageJServiceMenuItem());		// moved to Tools
                 this.ivjServerMenu.add(new JSeparator());
                 this.ivjServerMenu.add(this.getViewJobsMenuItem());
-                // user code begin {1}
-                // user code end
             } catch (java.lang.Throwable ivjExc) {
-                // user code begin {2}
-                // user code end
                 this.handleException(ivjExc);
             }
         }
@@ -1499,6 +1379,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         this.getChange_ProxyMenuItem().addActionListener(this.ivjEventHandler);
         this.getLogOutMenuItem().addActionListener(this.ivjEventHandler);
         this.getReconnectUserMenuItem().addActionListener(this.ivjEventHandler);
+        this.getLoginItem().addActionListener(this.ivjEventHandler);
+        this.getLoginAsGuestItem().addActionListener(this.ivjEventHandler);
 //	getImageJServiceMenuItem().addActionListener(ivjEventHandler);
         this.getJMenuItemRevert().addActionListener(this.ivjEventHandler);
         this.getJMenuItemCompare().addActionListener(this.ivjEventHandler);
@@ -1613,6 +1495,35 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         } else if (actionEvent.getActionCommand().equals("Geometry...")) {
             this.getWindowManager().openDocument(VCDocumentType.GEOMETRY_DOC);
         }
+    }
+
+    private void login(boolean asGuest) {
+        Hashtable<String, Object> hash = new Hashtable();
+        VCellConnectionFactory vcellConnectionFactory = VCellClientMain.injector.getInstance(VCellConnectionFactory.class);
+
+        String host = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_HOST)));
+        String port;
+        String pathPrefix;
+        try {
+            port = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_PORT)));
+        } catch (ConfigurationException e) {
+            port = "443";
+        }
+        try {
+            pathPrefix = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_PATH_PREFIX_V0)));
+        } catch (ConfigurationException e) {
+            pathPrefix = "";
+        }
+
+        ClientLogin.LoginOptions loginType = asGuest ?
+                ClientLogin.LoginOptions.GUEST_LOGIN : ClientLogin.LoginOptions.STANDARD_LOGIN;
+        AsynchClientTask task1a = ClientLogin.popupLogin(loginType);
+        AsynchClientTask task1b = ClientLogin.loginWithAuth0(vcellConnectionFactory.getAuth0ConnectionUtils());
+        AsynchClientTask task2 = ClientLogin.connectToServer(vcellConnectionFactory.getAuth0ConnectionUtils(),
+                ClientServerInfo.createRemoteServerInfo(host, Integer.parseInt(port), pathPrefix, null));
+
+        AsynchClientTask[] taskArray = new AsynchClientTask[]{task1a, task1b, task2};
+        ClientTaskDispatcher.dispatch(null, hash, taskArray);
     }
 
 
@@ -1736,7 +1647,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 status = "";
                 this.getJProgressBarConnection().setString("NOT CONNECTED");
                 this.getJProgressBarConnection().setValue(0);
-                this.getManageUserMenuItem().setEnabled(true);
+                this.getManageUserMenuItem().setEnabled(false);
+                this.getLoginItem().setEnabled(true);
+                this.getLoginAsGuestItem().setEnabled(true);
                 this.getLogOutMenuItem().setEnabled(false);
                 this.getReconnectUserMenuItem().setEnabled(false);
                 this.getViewJobsMenuItem().setEnabled(false);
@@ -1763,6 +1676,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.getJProgressBarConnection().setString("CONNECTED (" + connStatus.getUserName() + ")");
                 this.getJProgressBarConnection().setValue(100);
                 this.getManageUserMenuItem().setEnabled(true);
+                this.getLoginItem().setEnabled(false);
+                this.getLoginAsGuestItem().setEnabled(false);
                 this.getLogOutMenuItem().setEnabled(true);
                 this.getReconnectUserMenuItem().setEnabled(true);
                 this.getViewJobsMenuItem().setEnabled(true);
@@ -1804,6 +1719,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.getJProgressBarConnection().setString("INITIALIZING...");
                 this.getJProgressBarConnection().setValue(0);
                 this.getManageUserMenuItem().setEnabled(false);
+                this.getLoginItem().setEnabled(false);
+                this.getLoginAsGuestItem().setEnabled(false);
                 this.getLogOutMenuItem().setEnabled(false);
                 this.getReconnectUserMenuItem().setEnabled(false);
                 this.enableOpenMenuItems(false);
@@ -1828,7 +1745,9 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 status = "Server: " + connStatus.getApihost() + ":" + connStatus.getApiport() + " User: " + connStatus.getUserName();
                 this.getJProgressBarConnection().setString("DISCONNECTED");
                 this.getJProgressBarConnection().setValue(0);
-                this.getManageUserMenuItem().setEnabled(true);
+                this.getManageUserMenuItem().setEnabled(false);
+                this.getLoginItem().setEnabled(false);
+                this.getLoginAsGuestItem().setEnabled(false);
                 this.getLogOutMenuItem().setEnabled(false);
                 this.getReconnectUserMenuItem().setEnabled(true);
                 this.enableOpenMenuItems(false);

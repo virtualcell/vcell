@@ -288,7 +288,7 @@ public User getUserFromUseridAndPassword(Connection con, String userid, UserLogi
 	}
 	return user;
 }
-private UserLoginInfo.DigestedPassword updatePasswords(Connection con,KeyValue id,String clearTextPassword) throws SQLException{
+public UserLoginInfo.DigestedPassword updatePasswords(Connection con,KeyValue id,String clearTextPassword) throws SQLException{
 	UserLoginInfo.DigestedPassword dbDigestedPassword = new UserLoginInfo.DigestedPassword(clearTextPassword);
 	DbDriver.updateCleanSQL(
 			con,"UPDATE " + userTable.getTableName() +
@@ -299,7 +299,7 @@ private UserLoginInfo.DigestedPassword updatePasswords(Connection con,KeyValue i
 	return dbDigestedPassword;
 }
 
-public void sendLostPassword(Connection con,String userid) throws SQLException, DataAccessException, ObjectNotFoundException {
+public void sendLostPassword(Connection con, String userid) throws SQLException, DataAccessException, ObjectNotFoundException {
 	User user = getUserFromUserid(con, userid);
 	if(user == null){
 		throw new ObjectNotFoundException("User name "+userid+" not found.");
@@ -309,14 +309,17 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 	try {
 		//Reset User Password
 		updatePasswords(con,userInfo.id,clearTextPassword);
+
+		String subject = "re: VCell Info";
+		String content = "Your password has been reset to '"+clearTextPassword+"'.  Login with the new password and change your password as soon as possible.  To change your password, log into VCell and select Account->'Update Registration Info...' from the Top Menu.  Enter a new password where indicated.";
 		//Send new password to user
 		BeanUtils.sendSMTP(
 			PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPHostName),
 			Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPPort)),
 			PropertyLoader.getRequiredProperty(PropertyLoader.vcellSMTPEmailAddress),
 			userInfo.email,
-			"re: VCell Info",
-			"Your password has been reset to '"+clearTextPassword+"'.  Login with the new password and change your password as soon as possible.  To change your password, log into VCell and select Account->'Update Registration Info...' from the Top Menu.  Enter a new password where indicated."
+			subject,
+			content
 		);
 	} catch (Exception e) {
 		lg.error(e.getMessage(), e);
@@ -324,7 +327,6 @@ public void sendLostPassword(Connection con,String userid) throws SQLException, 
 	}
 	
 }
-
 /**
  * getModel method comment.
  */

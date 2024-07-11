@@ -3,31 +3,26 @@
 <page title="User Login">
 	
 	<introduction> 
-	The <bold>Login</bold> dialog allows a user to log in to his/her VCell user account to access and manipulate his/her VCell models.
+	When VCell is launched, a dialog window will pop up, welcoming the user and asking how they would like to proceed
+		with login. There are three options:
+	<list>
+		<item>
+			<bold>Login</bold> - Redirect to the default browser of the computer, to authenticate through Auth0.
+		</item>
+		<item>
+			<bold>Guest</bold> - Immediately login as the VCell Guest User, allowing limited access to VCell features.
+		</item>
+		<item>
+			<bold>Skip</bold> - Dismisses the dialog, placing VCell in a "offline" state. Should the user wish to login
+			at a future time, it is possible through the `Account` menu.
+		</item>
+	</list>
+		For more information about what happens after clicking <bold>Login</bold>, see <link target="Auth0Overview">Auth0 Overview</link>
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "LoginDialog.PNG"/>
+		<imgReference target = "VCellLoginPopup.png"/>
 	</appearance>
-	
-	<operations>
-	<para>
-	The <bold>Login</bold> dialog prompts user to provide a 'login ID' (User Name, case sensitive) and password. Clicking <bold>OK</bold> authenticates the user name and password and if successful, the user is logged in and can proceed with editing/creating models. 
-	Clicking <bold>Cancel</bold> cancels the login process. The user can still create models, but cannot save or run simulations.
-	</para>
-	
-	<para>
-	If the user has forgotten his/her password, clicking on the <bold>Forgot Login Password...</bold> button displays a message to the user saying that the password will be sent via email to the user's currently registered email address.
-	The user can choose to accept or cancel the operation. 
-	</para>
-	<imgReference target = "LoginForgotPswd.PNG"/>. 
- 
- 	<para>
- 	First time users should register with VCell to enable interaction with the VCell Database and access to VCell simulation servers. Clicking on the <link target = "NewUserRegistration">New User Registration</link> allows a user to register and use the Virtual Cell.
- 	</para>
- 	<para><bold>Login as Guest</bold>allows an individual to open public models and to build models and run simulations on their local machine.  Guests cannot save models to the database or use VCell simulation servers.
- 	</para>
-	</operations>
 	<comments>  </comments>
 
 </page>

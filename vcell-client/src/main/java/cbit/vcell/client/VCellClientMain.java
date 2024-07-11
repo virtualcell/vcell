@@ -70,6 +70,7 @@ public class VCellClientMain implements Callable<Integer> {
     private String quarkusAPIHost = null;
 
     private boolean isHTTP = PropertyLoader.getBooleanProperty(PropertyLoader.isHTTP, false);
+    public static Injector injector;
 
     private VCellClientMain() {
     }
@@ -117,7 +118,7 @@ public class VCellClientMain implements Callable<Integer> {
         int quarkusPort = quarkusAPIHost != null ? Integer.parseInt(quarkusAPIHost.split(":")[1]) : port;
 
         PropertyLoader.loadProperties(REQUIRED_CLIENT_PROPERTIES);
-        Injector injector = Guice.createInjector(new VCellClientModule(host, port, pathPrefixV0,
+        injector = Guice.createInjector(new VCellClientModule(host, port, pathPrefixV0,
                 quarkusHost, quarkusPort));
         this.vcellClient = injector.getInstance(VCellClient.class);
 
