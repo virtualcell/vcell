@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Introduction to SpringSaLaD Modeling" target="SpringSaLaDTheory">
+
+	<introduction>
+	Some text here
+	
+	<para>Another paragraph</para>
+	<para>Yet another paragraph...</para>
+	<imgReference target = "rule1.PNG"/>
+	<para>...with images inserted between paragraphs...</para>
+	<imgReference target = "reac-combined.PNG"/>
+	</introduction>
+
+	<appearance>  
+	 
+	</appearance>
+
+	<operations>  
+	
+
+	</operations>
+	
+</page>
+
+</vcelldoc>
