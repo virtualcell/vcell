@@ -136,6 +136,8 @@ public class DocumentCompiler {
 				File workingImgFile = getTargetFile(imgFile);
 				FileUtils.copyFile(imgFile, workingImgFile);
 				BufferedImage img = ImageIO.read(imgFile);
+				if (img == null)
+					throw new NullPointerException();
 				int imgWidth = img.getWidth();
 				int imgHeight = img.getHeight();
 				String imgChkStr = "";

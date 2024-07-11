@@ -17,7 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.Enumeration;
+import java.util.*;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
@@ -59,66 +59,56 @@ public class VcellHelpViewer extends JPanel {
     public void setCloseMyParent(ChildWindow closeableWindow) {
         this.closeableWindow = closeableWindow;
         if (closeableWindow != null) {
-            getCloseJButton().setVisible(true);
+            this.getCloseJButton().setVisible(true);
         }
     }
 
     private JButton getCloseJButton() {
-        if (btnCloseHelp == null) {
-            btnCloseHelp = new JButton("Close");
-            btnCloseHelp.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (closeableWindow != null) {
-                        closeableWindow.close();
-                        closeableWindow = null;
-                    }
-                }
-            });
-        }
-        return btnCloseHelp;
+        if (this.btnCloseHelp != null) return this.btnCloseHelp;
+        this.btnCloseHelp = new JButton("Close");
+        this.btnCloseHelp.addActionListener(e -> {
+            if (this.closeableWindow == null) return;
+            this.closeableWindow.close();
+            this.closeableWindow = null;
+        });
+        return this.btnCloseHelp;
     }
 
     public VcellHelpViewer(String docUrl) {
         URL resourceURL = VcellHelpViewer.class.getResource(docUrl);
 
-        HelpSet hs;
+        HelpSet helpSet;
         try {
             // get the system class loader
             ClassLoader cl = this.getClass().getClassLoader();
             // create helpset
-            hs = new HelpSet(cl, resourceURL);
-            JHelp jhelp = new JHelp(hs);
+            helpSet = new HelpSet(cl, resourceURL);
+            JHelp jhelp = new JHelp(helpSet);
 
-            if (hs.getLocalMap() != null) {//Try so set generaloverview as the currently selected
-                Enumeration<ID> jhIDs = hs.getLocalMap().getAllIDs();
-                while (jhIDs != null && jhIDs.hasMoreElements()) {
-                    ID id = jhIDs.nextElement();
-//					System.out.println(id.getIDString());
-                    if (id.getIDString().equals("GeneralOverview")) {//TOC item
-                        jhelp.setCurrentID(id);
-//						hs.setHomeID(id.getIDString());
-                        break;
-                    }
+            if (helpSet.getLocalMap() != null){
+                for (ID id : (ArrayList<ID>)Collections.list(helpSet.getLocalMap().getAllIDs())){
+                    if (!"GeneralOverview".equals(id.getIDString())) continue;
+                    jhelp.setCurrentID(id);
+//				    helpSet.setHomeID(id.getIDString());
+                    break;
                 }
             }
-
-            setLayout(new BorderLayout());
-            add(jhelp);
+            this.setLayout(new BorderLayout());
+            this.add(jhelp);
             GeneralGuiUtils.addCloseWindowKeyboardAction(this);
         } catch (Exception e) {
             e.printStackTrace();
             return;
         }
 
-        setPreferredSize(new Dimension(DEFAULT_HELP_DIALOG_WIDTH, DEFAULT_HELP_DIALOG_HEIGHT));
+        this.setPreferredSize(new Dimension(DEFAULT_HELP_DIALOG_WIDTH, DEFAULT_HELP_DIALOG_HEIGHT));
 
         JPanel panel = new JPanel();
-        add(panel, BorderLayout.SOUTH);
+        this.add(panel, BorderLayout.SOUTH);
         panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-        getCloseJButton().setVisible(false);
-        panel.add(getCloseJButton());
+        this.getCloseJButton().setVisible(false);
+        panel.add(this.getCloseJButton());
     }
 
     public static void showStandaloneViewer() {
@@ -132,7 +122,7 @@ public class VcellHelpViewer extends JPanel {
             frame.pack();
             frame.getContentPane().add(helpViewer);
             GeneralGuiUtils.centerOnScreen(frame);
-            standaloneRef = new WeakReference<JFrame>(frame);
+            standaloneRef = new WeakReference<>(frame);
         }
         frame.setVisible(true);
     }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="SpringSaLaD Application" target="LangevinApp">
+
+	<introduction>
+	A SpringSaLaD application is designed to add spatial details to Sites and Links within a Molecule, and to define and run simulations using the Langevin Solver.
+	</introduction>
+
+	<appearance> 
+	When using SpringSaLaD Applications, it is important to be aware that:
+		<list>
+			<item>The Langevin solver can be used with any Rule-based model that obeys the limitations described below.</item>
+			<item>The Langevin solver performs a stochastic simulation, so simulation results will vary by run.</item>
+			<item>A very strict geometry is required</item>
+			<item>The complexity of calculations makes it practical only for a small number of particles</item>
+		</list>
+		 
+	Using a SpringSaLaD application has the following limitations:
+	<list>
+		<item>The model must have exactly 3 structures, 2 compartments named "Intracellular" and "Extracellular" separated by a "Membrane"</item>
+		<item>All the sites require several attribute, like diameter and relative position to one another.</item>
+		<item>The reaction rules are strictly categorized and must obey several syntax restrictions.</item>
+	</list>
+	</appearance>
+
+	<operations>  
+	
+	</operations>
+	
+</page>
+
+</vcelldoc>

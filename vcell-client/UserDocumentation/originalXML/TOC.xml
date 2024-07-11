@@ -6,6 +6,7 @@
       		<tocitem target="RuleBasedOverview" text="Rule-Based Features"/>  		
     		<tocitem target="GeneralNavAndWinSetup" text="General Navigation and Window Setup"/>
     		<tocitem target="TopMenu" text="Top Menu"/>
+			<tocitem target="Login" text="User Login"/>
     		<tocitem target="File" text="File Menu">
 	    		<tocitem target="New" text="File->New Menu"/>
     			<tocitem target="Open" text="File->Open Menu"/>
@@ -18,16 +19,20 @@
     			<tocitem target="Export" text="File->Export Menu"/>
     		</tocitem>
     		<tocitem target="Account" text="Account Menu">
-    			<tocitem target="Login" text="User Login"/>
-    			<tocitem target="ChangeUser" text="Change User Menu"/>
+				<tocitem target="Auth0Overview" text="Website Login">
+					<tocitem target="Auth0ProfilePage" text="Website Profile Page">
+						<tocitem target="Auth0ExistingUserAccountLinking" text="Existing Users Profile Help"/>
+						<tocitem target="Auth0ReturningUserAccountLinking" text="Returning Users Profile Help"/>
+						<tocitem target="Auth0NewUserAccountCreation" text="New Users Profile Help"/>
+					</tocitem>
+				</tocitem>
     			<tocitem target="SetProxy" text= "Set Proxy Window"/>
-    			<tocitem target="UpdateRegistrationInfo" text="Update Registration Information Menu"/>
-    			<tocitem target="NewUserRegistration" text="New User Registration"/>
     			<tocitem target="ViewSimStatus" text="View Simulation Jobs"/>
     		</tocitem>	
     		<tocitem target="Window" text="Window Menu"/>
     		<tocitem target="Tools" text="Tools Menu">
     			<tocitem target="LaunchVirtualFRAP" text="Launch Virtual FRAP Menu"/>
+				<tocitem target="ExportedDataViewer" text="Exported Data Viewer"/>
  				<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
@@ -36,8 +41,10 @@
     	    <tocitem target="RuleBasedTheory" text="Introduction to Rule-Based Modeling"/> 
        		<tocitem target="RBCreate" text="How to create a rule-based model"/> 		
     		<tocitem target="RBSimulate" text="How to simulate a rule-based model"/> 
-    		<tocitem target="NFSimApp" text="Network-Free Application"/>		
-    	</tocitem>
+    		<tocitem target="NFSimApp" text="Network-Free Application"/>
+<!--			<tocitem target="SpringSaLaDTheory" text="Introduction to SpringSaLaD Modeling"/>
+			<tocitem target="LangevinApp" text="SpringSaLaD Application"/> -->
+		</tocitem>
     	<tocitem target="PhysOverview" text="Physiology">
     		<tocitem target="ReactDiagView" text="Reaction Diagram"/>
     		<tocitem target="ReactTabView" text="Reactions Table">
@@ -74,9 +81,12 @@
     		</tocitem>
     		<tocitem target="SpecificationsOverview" text="Specifications">
     	   		<tocitem target="SpeciesSpecifications" text="Species">
-    			     <tocitem target="fieldData" text="Field Data"/>
+					<tocitem target="fieldData" text="Field Data"/>
+<!--					<tocitem target="SSSpeciesSpecifications" text="SpringSaLaD Species"/> -->
     			</tocitem>
-   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions"/>
+   	 	  		<tocitem target="ReactionsSpecifications" text="Reactions">
+<!--					<tocitem target="SSReactionsSpecifications" text="SpringSaLaD Reactions"/> -->
+				</tocitem>
    	 	  		<tocitem target="NetworkSpecifications" text="Network"/>
    	 	  		<tocitem target="NetworkFreeSpecifications" text="Network-Free"/>  	 	  		
     		</tocitem>
@@ -88,7 +98,9 @@
    	 	  		<tocitem target= "AssignmentRules" text ="Assignment Rules"/>
    	 	  	</tocitem>
     		<tocitem target="simulations_overview" text="Simulations">
-    	   		<tocitem target="simulations" text="Simulations"/>
+    	   		<tocitem target="simulations" text="Simulations">
+					<tocitem target="BatchSimulations" text="Batch Simulations"/>
+				</tocitem>
     	   		<tocitem target="simulationEditor" text="Simulation Editor"/>
     	   		<tocitem target="NFSimSimulationEditor" text="NFSim Simulation Editor"/>
    	 	  		<tocitem target="output_functions" text="Output Functions"/>
@@ -104,6 +116,7 @@
 					<tocitem target="PostProcessingStats" text="Post Processing Statistics Data"/>
 					<tocitem target="PostProcessingImage" text="Post Processing Image Data"/>
 					<tocitem target="ExportingSpatialSimResults" text="Exporting Spatial Simulation Results"/>
+					<tocitem target="ImageJDataViewerPlugin" text="FIJI/ImageJ VCell Simulation Results Viewer Plugin"/>
 					<tocitem target="OpenHDF5ImageJ" text="Importing HDF5 files into FIJI/ImageJ"/>		
 					<tocitem target="SpecificFormatSettings" text="Specific Format Settings"/>
    		        </tocitem>
