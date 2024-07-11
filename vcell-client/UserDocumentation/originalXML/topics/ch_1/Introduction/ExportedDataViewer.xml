@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="Exported Data Viewer">
+
+	<introduction>
+	The <bold>Exported Data Viewer</bold> lists exported spatial simulation results that can be accessed or viewed by the user.
+	</introduction>
+	
+	<appearance>	
+	<imgReference target = "ExportedDataViewer.png"/>
+	</appearance>
+	
+	<operations> 
+	The table lists all exported spatial simulation result sets that were exported using the current local computer.  For each 	exported dataset, the table reports the associated BioModel Name (BM Name), Application Name (App Name), Simulation Name (Sim Name), Time Slice exported (first/last), file Format, and Date Exported.
+	<para>
+	<bold>Filter</bold> by selecting or deselecting the checkbox for Export file Type or Time Interval since the data was exported.
+	</para>
+	<para>	
+	<bold>Copy Link</bold> copies a link to the selected dataset stored on VCell servers.  The link will allow other analysis or viewing software (e.g. Fiji/ImageJ, Excel) access to the data.  The link can be shared with others and provides access only to the specific exported dataset.
+	</para>
+	<para>
+	<bold>Delete Export</bold> deletes any selected exported datasets from the servers.
+	</para>
+	<para>
+	<bold>Search</bold> any information in each of the columns to filter the table.
+	</para>
+	<para>
+	<bold>Export Details</bold> describe the variables exported, simulation ID and Name, and the link itself and can be selected and copied using "ctrl-c"
+	</para>
+	<para>
+	A <bold>Parameters</bold> table lists any Application parameters overwritten from default values for the Simulation that was exported; this distinguishes among different simulations when scanning parameter values.
+	</para>
+
+	</operations>
+	
+	<comments>
+	Exported N5 files can be viewed directly from the server using Fiji/ImageJ.  A VCell Dataviewer plugin to FIJI/ImageJ can be 	installed from https://sites.imagej.net/VCell-Simulations-Result-Viewer/
+ 	</comments>
+
+</page>
+
+</vcelldoc>
