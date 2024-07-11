@@ -2654,15 +2654,22 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	private static void updateExportMetaData(final ExportEvent exportEvent){
 		try{
 			if(ResourceUtil.getVcellHome() != null){
-				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new Stack<>(), new HashMap<>());
-				Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-				// put lock
-				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
 
 				String stringJobID = String.valueOf(exportEvent.getJobID());
 				String exportFormat = exportEvent.getFormat();
+				if(stringJobID == null) {
+					throw new RuntimeException("stringJobID is null");
+				}
+				if(exportFormat == null) {
+					throw new RuntimeException("exportFormat is null");
+				}
 				String globalID = stringJobID + "," + exportFormat;
+
+				ExportDataRepresentation exportDataRepresentation = new ExportDataRepresentation(new Stack<>(), new HashMap<>());
+				Gson gson = new GsonBuilder().setPrettyPrinting().create();
+				// put lock
+				File jsonFile = new File(ResourceUtil.getVcellHome(), EXPORT_METADATA_FILENAME);
+
 				HumanReadableExportData humanReadableExportData = exportEvent.getHumanReadableData();
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 				double[] exportTimes = exportEvent.getTimeSpecs().getAllTimes();
