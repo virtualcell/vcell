@@ -7,23 +7,29 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "AccountMenu.png"/>
+		<imgReference target = "accountMenu.png"/>
 	</appearance>
 	
 	<operations> 
 	Clicking the Account menu displays the following selections 
 	<list>
 		<item>
-		<link target = "ChangeUser">Change User...</link> - allows user to change the user of the currently open VCell document by providing a different user name and password.
+			<bold>Login</bold> - allows user to login if they have not do so already.
+		</item>
+		<item>
+			<bold>Login as Guest</bold> - allows user to login as guest if they are not logged in already.
+		</item>
+		<item>
+			<bold>Logout</bold> - allows user to logout if they are logged in.
+		</item>
+		<item>
+			<link target = "Auth0ProfilePage">Manage User</link> - takes the user to the Auth0 profile page.
 		</item>
 		<item>
 		<link target = "SetProxy">Set Proxy...</link> - allows the user to set a Proxy if local policy prevents direct connection to the VCell server.
 		</item>
 		<item>
-		<link target = "UpdateRegistrationInfo">Update Registration Info...</link> - allows user to update his/her registration information.
-		</item>
-		<item>
-		<bold>Reconnect</bold> - allows user to reconnect to the server. The status bar displays the connecting status.
+		<bold>Reconnect (Refresh)</bold> - allows user to reconnect to the server. The status bar displays the connecting status.
 		</item>
 		<item>
 		<link target = "ViewSimStatus">View Simulation Jobs</link> - provides a way to view and stop simulation jobs.

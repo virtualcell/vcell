@@ -8,7 +8,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileNewMathModelMenuItem.PNG"/>
+		<imgReference target = "FileNewMathModelMenuItem.png"/>
 	</appearance>
 	
 	<operations>
@@ -46,7 +46,7 @@
 			in the BioModel that should be converted to a MathModel.
 		<bold>Note:</bold> Each application has a separate MathModel associated with it.  
 		</para>
-		<imgReference target = "FileNewMathFromBio.PNG"/>
+		<imgReference target = "FileNewMathFromBio.png"/>
 		<imgReference target = "FileNewMathFromBioAppln.PNG"/>
 		</item>
 	</list>
