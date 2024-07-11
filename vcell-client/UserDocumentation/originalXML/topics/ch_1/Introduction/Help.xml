@@ -3,7 +3,7 @@
 <page title="Help">
 
 	<introduction>
-	The <bold>Help</bold> menu bar option provides information of the currently launched VCell version.
+	The <bold>Help</bold> Menu bar option provides information of the currently launched VCell version.
 	</introduction>
 	
 	<appearance>
@@ -17,7 +17,7 @@
 	     <bold> VCell Website </bold> - launches a separate web browser that goes to the Virtual Cell web page.
 	  </item>
 	  <item>
-	  	<bold>VCell Open Discussion Forum</bold> - launches a eparate web browser that goes to the VCell Google Groups Forum.
+	  	<bold>VCell Open Discussion Forum</bold> - launches a separate web browser that goes to the VCell Google Groups Forum.
 	  </item>
 	  <item>
 		<link target = "Permissions">Permissions...</link> - explains how to change access to your model by specific users or by the public.
@@ -28,7 +28,7 @@
 	  <item>
 		<bold>Contact VCell Support</bold> - opens an email to vcell_support@uchc.edu
 	  </item>
-	  <item><bold>Grant Permission  to VCell Support</bold> opens the <link target = "Permissions">Permissions...</link> dialog box with the item "Grant Access to Specific Users" selected and the VCellSupport box checked.  If you are seeking advice from the VCell support team, it is recommended that you share that model with VCellSupport by selecting "OK"</item>
+	  <item><bold>Grant Permission to VCell Support</bold> opens the <link target = "Permissions">Permissions...</link> dialog box with the item "Grant Access to Specific Users" selected and the VCellSupport box checked.  If you are seeking advice from the VCell support team, it is recommended that you share that model with VCellSupport by selecting "OK"</item>
 	  <item>
 	  <bold>VCell Properties</bold> - displays locations for local files including the Installation Directory and VCell Home Directory.
 	  </item>

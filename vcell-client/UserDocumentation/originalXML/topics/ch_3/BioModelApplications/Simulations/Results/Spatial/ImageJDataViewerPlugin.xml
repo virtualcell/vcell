@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vcelldoc>
+<page title="FIJI/ImageJ VCell Simulation Results Viewer Plugin">
+
+	<introduction>
+	Spatial Simulation Results exported as N5 files can be directly viewed or downloaded from VCell servers using a VCell Simulation Result Viewer Plugin.
+	</introduction>
+	
+	<appearance>	
+	<imgReference target = "ImageJPlugin.png"/>
+	<imgReference target = "ImageJDataViewer.png"/>
+	</appearance>
+	
+	<operations> 
+	The VCell Simulations Results Viewer plugin to FIJI/ImageJ can be installed from https://sites.imagej.net/VCell-Simulations-Result-Viewer/.
+	<para>
+	<bold>Select the VCell Simulations Results Viewer plugin</bold> from the plugin list in FIJI/ImageJ to open the Exported Simulation Results Viewer.  The table lists all spatial simulation result sets exported as N5 files using the current local computer.  For each exported dataset, the table reports the associated BioModel Name (BM Name), Application Name (App Name), Simulation Name (Sim Name), Time Slice exported, and Date Exported.
+	</para>
+	<para>
+	<bold>Filter</bold> by selecting or deselecting the check box for Time Interval since the data was exported.
+	</para>
+<para>
+<bold>Open</bold> a selected N5 file in FIJI/ImageJ.  By default, the <bold>Open in Memory</bold> is selected, and the file will open in the local computer memory.  If the dataset is very large, you may <bold>uncheck the Open in Memory</bold> to view directly from the server without loading the file into your computer's memory. This feature allows the user to  view and analyze datasets that are too large to hold in memory.  Note however, that changing views or using analysis tools can be much slower depend on your internet connection speed.
+	</para>
+	<para>
+	<bold>Refresh</bold> the table after changing any of the filters or if you have exported new datasets from VCell.
+	</para>
+	<para>	
+	<bold>Copy Link</bold> copies the path to the VCell server location for the selected dataset.  The link will allow other analysis software 	access to the data.  The link can be shared with others and provides access only to the specific exported dataset.
+	</para>
+	<para>
+	<bold>Use N5 Link</bold> opens the selected N5 dataset in ImageJ.
+	</para>
+	<para>
+	<bold>Show export examples</bold> changes the table to a list of example datasets that can then be opened or viewed in FIJI/ImageJ. <bold>Show My Exports</bold> returns the table to the list of exports from the local user.
+	</para>
+	<para>
+	<bold>Export Details</bold> describe the variables exported
+	</para>
+	<para>
+	A <bold>Parameters</bold> table lists any Application parameters overwritten from default values for the Simulation that was exported.
+	</para>
+	<para>
+	N5 files store floating point values for concentrations or arbitrary units for convolved species. Use the Image>Adjust>Brightness/Contrast function to adjust the display appropriately.  In addition to a channel for each species included in the exported results, an additional channel displays the volume structures in the simulation geometry as different pixel values.
+	</para>
+	</operations>
+
+
+</page>
+
+</vcelldoc>

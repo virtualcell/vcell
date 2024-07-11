@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <vcelldoc>
 <page title="Exporting Spatial Simulation Results">
 
-	
 	<introduction>
-	Results from simulation runs are automatically stored on the remote database server.  
+	Results from remote simulation runs are automatically stored on the remote database server.
 	Simulation results may be exported in different formats including movie, image, spreadsheet, polygon and raw file types.  
 	Both volume and membrane data can be exported depending on the file format chosen.  
-	Exporting image or movie based formats will use the color scaling set in the 
-	<link target = "SimResSpatialSliceView">View Data</link> panel to convert 'data values' to 'pixel colors'.
+	Exporting non-floating point image (gif; jpeg) or movie based formats will use the color scaling set in the
+	<link target = "SimResSpatialSliceView">View Data</link> panel to convert 'data values' to 'pixel colors'.  Exported
 	</introduction>
 		
 	<appearance>
-	<imgReference target = "SimResultsQuicktimeExport.png"/>
+	<imgReference target = "SpatialSimExport.png"/>
 	</appearance>
 	
 	
@@ -21,13 +19,18 @@
 	<bold>Export Data Panel</bold>
 	<para>
 	<bold>Select Export Format </bold> from the dropdown menu.  Available formats are:
-	<list><item> <bold>Comma delimited ascii (*.csv)</bold> for spreadsheet formats.  Each data point value is separated with a comma (,) and rows are separated corresponding to the ROI or slice 'X' spatial dimension.  </item>
-	<item> <bold>HDF5 files (*.hdf5)</bold>.  Stores floating point values as multi-dimensional arrays in a heirarchical format defined by the HDF5 standard. HDF5 files from volume data can be read using <link target = "OpenHDF5ImageJ">ImageJ/Fiji</link> </item>
-	<item> <bold>QuickTime(QT,QTVR) movie (*.mov)</bold>. QTVR is a special version of QT formatted to allow the Apple QuickTime movie player (https://www.apple.com/quicktime/) to display an extra dimension of data (e.g multiple slices/variables over time). </item>
+	<list>
+	<item> <bold>Comma delimited ascii (*.csv)</bold> for spreadsheet formats.  Each data point value is separated with a comma (,) and rows are separated corresponding to the ROI or slice 'X' spatial dimension.  </item>
+	<item> <bold>HDF5 files (*.hdf5)</bold>.  Stores floating point values as multi-dimensional arrays in a heirarchical format defined by the HDF5 standard. HDF5 files from volume data can be read using <link target = "OpenHDF5ImageJ">ImageJ/Fiji</link>
+	</item>
+	<item> <bold>QuickTime(QT,QTVR) movie (*.mov)</bold>. QTVR is a special version of QT formatted to allow the Apple QuickTime movie player (https://www.apple.com/quicktime/) to display an extra dimension of data (e.g multiple slices/variables over time).
+	</item>
 	<item> <bold>GIF</bold> image or animated GIF image file</item>
 	<item> <bold>JPEG</bold> or animated JPEG image file</item>
 	<item> <bold>Nearly Raw Raster Data (*.nrrd)</bold>. Data is saved as the floating point variable value displayed in an image format; this file can be read by a number of programs including FIJI/ImageJ</item>
-	<item> <bold>ucd (*.ucd)</bold>. Stores data values in a polygon format (volume or surface) for each value based on the simulation spatial geometry (mesh).  Programs such as 'VisIt' (https://visit.llnl.gov/) and 'ParaView' (https://www.paraview.org) can open most polygon formats for further analysis.</item>
+	<item><bold>ImageJ compatible remote storage (*.N5)</bold>.  Data is saved to VCell servers in the N5 format. Files exported as N5 files can be viewed from the server without download using a FIJI/ImageJ <link target = "ImageJDataViewerPlugin">VCell Simulation Results Viewer</link>
+	</item>
+	<item><bold>ucd (*.ucd)</bold>. Stores data values in a polygon format (volume or surface) for each value based on the simulation spatial geometry (mesh).  Programs such as 'VisIt' (https://visit.llnl.gov/) and 'ParaView' (https://www.paraview.org) can open most polygon formats for further analysis.</item>
 	<item> <bold>Stanford Poly Texture file (*.ply)</bold>. Stores data values in a polygon format (volume or surface) based on the simulation spatial geometry (mesh)</item>
 	<item> <bold>VTK (*.vtk)</bold>. Stores data values in a polygon format (volume or surface) based on the simulation spatial geometry (mesh).  See https://www.vtk.org for more information </item>
 	</list>

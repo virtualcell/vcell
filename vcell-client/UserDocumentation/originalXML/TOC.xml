@@ -28,6 +28,7 @@
     		<tocitem target="Window" text="Window Menu"/>
     		<tocitem target="Tools" text="Tools Menu">
     			<tocitem target="LaunchVirtualFRAP" text="Launch Virtual FRAP Menu"/>
+				<tocitem target="ExportedDataViewer" text="Exported Data Viewer"/>
  				<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
@@ -104,6 +105,7 @@
 					<tocitem target="PostProcessingStats" text="Post Processing Statistics Data"/>
 					<tocitem target="PostProcessingImage" text="Post Processing Image Data"/>
 					<tocitem target="ExportingSpatialSimResults" text="Exporting Spatial Simulation Results"/>
+					<tocitem target="ImageJDataViewerPlugin" text="FIJI/ImageJ VCell Simulation Results Viewer Plugin"/>
 					<tocitem target="OpenHDF5ImageJ" text="Importing HDF5 files into FIJI/ImageJ"/>		
 					<tocitem target="SpecificFormatSettings" text="Specific Format Settings"/>
    		        </tocitem>

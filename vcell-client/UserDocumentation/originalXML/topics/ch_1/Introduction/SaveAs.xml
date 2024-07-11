@@ -3,7 +3,7 @@
 <page title="File -> Save As">
 	
 	<introduction> 
-	This section describes the <bold>File->Save As</bold> menu option. The <bold>Save As</bold> menu option allows the user to save a new VCell document - BioModel, MathModel or Geometry. 
+	This section describes the <bold>File->Save As</bold> menu option. The <bold>Save As</bold> menu option allows the user to save a new VCell document - BioModel or MathModel.
 	The operation allows a document/model that has already been saved to be saved as a different model, and a new model to be saved in the database for the first time.
 	</introduction>
 	
