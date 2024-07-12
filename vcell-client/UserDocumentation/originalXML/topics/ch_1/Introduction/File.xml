@@ -7,7 +7,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileMenu.PNG"/>
+		<imgReference target = "FileMenu.png"/>
 	</appearance>
 	
 	<operations> 

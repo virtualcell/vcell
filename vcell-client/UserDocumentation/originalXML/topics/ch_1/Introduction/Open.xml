@@ -17,7 +17,7 @@
 	For example, clicking on 'File->Open->BioModel' will open a dialog that lists all BioModels accessible to current user.
 	Additionally, <bold>Local...</bold> displays a local file chooser to select VCell documents saved on the user's own computer (using 'File->Export...' or 'File->Save As Local...').
 	</para>
-	<imgReference target = "FileNewMathFromBio.PNG"/>
+	<imgReference target = "FileNewMathFromBio.png"/>
 	</operations>
 	<comments>  </comments>
 
