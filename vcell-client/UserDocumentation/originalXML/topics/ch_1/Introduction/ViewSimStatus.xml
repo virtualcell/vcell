@@ -8,7 +8,7 @@ View Simulation Jobs opens a window that allows the user to search for VCell sim
 	</introduction>
 	
 	<appearance>  
-<imgReference target = "ViewSimStatus.PNG"/>
+<imgReference target = "ViewSimStatus.png"/>
 	</appearance>
 	
 	<operations>

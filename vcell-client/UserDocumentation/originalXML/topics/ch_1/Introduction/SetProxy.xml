@@ -8,7 +8,7 @@ Set Proxy allows a user to define a proxy to enable connection through a firewal
 	</introduction>
 	
 	<appearance>  
-<imgReference target = "SetProxy.PNG"/>
+<imgReference target = "SetProxy.png"/>
 	</appearance>
 	
 	<operations>

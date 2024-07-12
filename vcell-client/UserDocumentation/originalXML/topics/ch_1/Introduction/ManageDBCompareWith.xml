@@ -16,7 +16,7 @@
 	At the level where that item is, it will be marked with a <bold>"?"</bold>. Items that are only in the modified model are marked with an <bold>"N"</bold> for <bold>new</bold>. 
 	Items that are only in the baseline model are marked with an <bold>"R"</bold> for <bold>removed</bold>; they are considered to be removed from the modified model.
 	</para>
-	<imgReference target = "ManageDBCompareWith.PNG"/>
+	<imgReference target = "ManageDBCompareWith.png"/>
 	<para>
 	When any of these items are selected, the value in the baseline model and the modified model are displayed in the text area below. 
 	If the user is aware that any two similar items (for example., 2 species in the models being compared) represent the same entity, the two items can be selected and the <bold>Associate</bold> button can be clicked to associate the two items.

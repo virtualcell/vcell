@@ -17,7 +17,7 @@
 	<para>
 	Clicking on <bold>Tools -> Transform to Stochastic Capable</bold> menu option brings up a warning to the user about potential changes to the model if the tool is used.
 	</para>
-	<imgReference target = "TransformToStochWarning.PNG"/>
+	<imgReference target = "TransformToStochWarning.png"/>
 	<para>
 	Clicking <bold>Cancel</bold> will cancel the transform operation. Clicking <bold>OK</bold> will open the "Transform to Stochastic Capable Model" dialog. 
 	This dialog displays a table of all the reactions in the model.

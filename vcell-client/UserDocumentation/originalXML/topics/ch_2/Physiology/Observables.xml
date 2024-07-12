@@ -19,7 +19,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "observables.PNG"/>
+		<imgReference target = "observables.png"/>
 		<para></para>The Observables Table displays 
 		<list>
 			<item>The <bold>Name</bold> of Observable (can be edited).</item>

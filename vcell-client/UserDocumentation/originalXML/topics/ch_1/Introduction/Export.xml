@@ -29,7 +29,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileExport.PNG"/>
+		<imgReference target = "FileExport.png"/>
 	</appearance>
 	
 	<operations>

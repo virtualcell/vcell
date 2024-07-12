@@ -31,7 +31,7 @@ public class Documentation {
 
 	public DocumentImage getDocumentImage(DocImageReference docImageReference) {
 		for (DocumentImage docImage : documentImages){
-			if (docImage.getSourceFile().getName().equals(docImageReference.getImageTarget())){
+			if (docImage.getSourceFile().getName().equalsIgnoreCase(docImageReference.getImageTarget())){
 				referencedTargets.add(docImage);
 				return docImage;
 			}

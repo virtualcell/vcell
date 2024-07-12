@@ -9,7 +9,7 @@
 	(Note: A No Data message will appear if the data you are viewing was generated from a simulation run on a version of VCell earlier then 5.2)
 	</introduction>
 	
-	<appearance> 	<imgReference target = "PostProcessingDataGraph.PNG"/> </appearance>
+	<appearance> 	<imgReference target = "PostProcessingDataGraph.png"/> </appearance>
 	
 	<operations><para> <bold>Post Processing Variable Statistics:</bold> To view one or more compartmental average values of variables, select the variable names in the list and a graph of values over time will appear in the right hand pane. The data in tabular form can be accessed by clicking the spreadsheet icon at the lower right of the graph pane, and toggled back to graphical form with the adjacent graph icon.  Note, to select multiple variables, press the Control key while clicking on variable name of interest.
 	</para>

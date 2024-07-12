@@ -10,7 +10,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "VirtualFRAP.PNG"/>	
+		<imgReference target = "VirtualFRAP.png"/>
 	</appearance>
 	
 	<operations> </operations>

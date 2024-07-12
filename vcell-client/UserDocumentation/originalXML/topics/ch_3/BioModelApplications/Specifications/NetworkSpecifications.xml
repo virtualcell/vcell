@@ -8,7 +8,7 @@
 	</introduction>
 	
 	<appearance>
-	<imgReference target = "NetworkTab.PNG"/>
+	<imgReference target = "NetworkTab.png"/>
 	<list>
 		<item><bold>Max Iterations</bold> - how many times the rules are applied to the set of 
 		<def target = "def_SeedSpecies">seed species</def> to generate new species and reactions.</item>
@@ -23,7 +23,7 @@
 	
 	<operations>
 Clicking the "Edit/Test Constraints" button presents a window to specify new constraints. 	
-<imgReference target = "NetworkConstraints.PNG"/>	
+<imgReference target = "NetworkConstraints.png"/>
 <list>	
 	<item><bold>Test/Run</bold> to attempt to generate a reaction network using the specified constraints.</item>
 	<item><bold>Apply</bold> the constraints without generating a network;  a <link target="simulations_overview">simulation</link> will be performed sequentially after generating the network.</item>
@@ -33,12 +33,12 @@ Warnings may be generated when specifying or applying the constraints:
 <list>
 	<item>
 		<bold>Max iterations number may be insufficient</bold> suggests that the network may be not exaustively generated. In this case the <bold>Network Generation Status</bold> pane displaying the number of species will show that the number of species during the last two iterations is different.  Generation of the network is generally considered complete when the last iteration does not produce new species and thus		the number of species at the last two iterations is the same.
-		<imgReference target = "MaxIterNumber.PNG"/> 
+		<imgReference target = "MaxIterNumber.png"/>
 	</item>
 
 	<item>
 		<bold>Max Molecules/Species number may be not sufficient</bold> indicates that a species with aspecified number of molecules is a subject of a rule applied in the last interation.  This indicates that the network is truncated because of the limits set for the number of molecules of that species in the network.
-		<imgReference target = "MaxMolec.PNG"/>
+		<imgReference target = "MaxMolec.png"/>
 
 			<para><bold>Note:</bold> When the warning is displayed, the network is truncated, so a simulation using NFSim is likely to produce different results compared to deterministic or stochastic simulations that use this network.</para></item>
 
@@ -47,7 +47,7 @@ Warnings may be generated when specifying or applying the constraints:
 
 	<item>
 		<bold>View Generated Species/View Generated Reactions</bold> after constraints are applied. The pop-up window shows the species name, depiction and searchable BNGL code. Species names are the same as seen  "Generated Species" is checked in the "Simulation Results" window.
-		<imgReference target = "View_species.PNG"/> 
+		<imgReference target = "View_species.png"/>
 	</item>
 	
 	<item>

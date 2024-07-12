@@ -16,7 +16,7 @@
 	<item> A site that has a defined state is always shown in green.</item>
 	</list>
 	<para>In the figure below, the Observable describes the total extent of phosphorylation of all EGFR molecules. The first species pattern selects all species that have the tyrosine at position 1068 (Y1068) phosphorylated, the second species pattern selects all species that have the tyrosine at position 1148 (Y1148) phosphorylated.</para>
-	<imgReference target = "O0.PNG"/>
+	<imgReference target = "O0.png"/>
   	<para></para>
 	</appearance>
 	
@@ -24,25 +24,25 @@
 	<bold>Add an observable</bold> using the <bold>New Observable</bold> button at the bottom of the main workspace.  A dotted shape will appear in the <bold>Object Properties</bold> tab of the properties pane.  If the model has more than one compartment, the compartment must be selected when the Observable is created, and only molecules within the compartment can be added to the Observable.  (Note that a parameter can be created to sum Observables from different compartments if needed).
 		<list>	
 			<item><bold>Add a molecule</bold> to the pattern using a right click on the dotted shape and selecting a molecule to add to the species pattern from the drop-down menu.
-			<imgReference target = "O1.PNG"/></item>
+			<imgReference target = "O1.png"/></item>
 			<item>
 			<bold>Edit</bold> the molecule site or state using a right click on the molecular site or state to bring up a drop-down menu.
 			</item>
 			<item>
 			<bold>Add another molecule</bold> by right clicking in the window next to molecule.
-			<imgReference target = "O2.PNG"/>
+			<imgReference target = "O2.png"/>
 			</item>
 			<item>
 			<bold>Add another species pattern</bold> using the <bold>Add Pattern</bold> button on the left side of the property pane or using a right click in the window below the first species pattern.
-			<imgReference target = "O3.PNG"/>
+			<imgReference target = "O3.png"/>
 			</item>
 			<item>
 			<bold>Specify the second species pattern</bold> as for the first species pattern; a right click on the dotted shape will bring up a drop-down menu from which a molecule can be selected:
-			<imgReference target = "O4.PNG"/>
+			<imgReference target = "O4.png"/>
 			</item>
 			<item>
 			<bold>Edit the second species pattern</bold> by right click on site to bring up the drop-down menu to edit the state.
-			<imgReference target = "O5.PNG"/></item>
+			<imgReference target = "O5.png"/></item>
 		</list>
 <para><bold>Select</bold> between a <bold>Multimolecular</bold> pattern or <bold>Polymer</bold> patterns using the radio buttons on the left side of the Observables Properties pane.  Polymers (such as actin filaments) can have patterns that describe an either an absolute number of monomers in the polymer, or a length greater than a specified number of monomers; radio buttons on the left of the Observables properties pane select between these options.</para>
 		
