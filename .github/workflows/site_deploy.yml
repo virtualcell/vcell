@@ -9,13 +9,13 @@ on:
       vcell_version:
         description: 'version.major.minor' 
         required: true
-        default: '7.5.0'
+        default: '7.6.0'
       vcell_build:
         description: 'build number'
         required: true
-        default: '148'
+        default: '18'
       vcell_site:
-        description: 'rel or alpha or test (note rel is Swarm, alpha and test are Kubernetes)'
+        description: 'rel or alpha or test'
         required: true
         default: 'alpha'
       server_only:
@@ -208,7 +208,6 @@ jobs:
         set -ux
         mvn clean install -DskipTests
     - name: deploy installers and singularity to kubernetes site and web help to vcell.org
-      if: ${{ github.event.inputs.vcell_site != 'rel' }}
       run: |
         set -ux
         cd docker/swarm
@@ -251,7 +250,6 @@ jobs:
         echo "KUSTOMIZE_OVERLAY=${KUSTOMIZE_OVERLAY}" >> $GITHUB_ENV
         echo "CONTAINER_IMAGE_TAG=${CONTAINER_IMAGE_TAG}" >> $GITHUB_ENV
     - name: Call webhook to deploy to kubernetes cluster (overlay 'prod', 'dev' or 'stage')
-      if: ${{ github.event.inputs.vcell_site != 'rel' }}
       run: |
         git_sha=$(git rev-parse --short "$GITHUB_SHA")
         echo '{"ref": "main","inputs":{"overlay": "'${KUSTOMIZE_OVERLAY}'","tag":"'${CONTAINER_IMAGE_TAG}'","swversion": "'${VCELL_SWVERSION}'"}}' >body
@@ -259,41 +257,6 @@ jobs:
           -H 'Authorization: Bearer ${{ secrets.ACTION_TOKEN }}' \
           -H 'Content-Type: application/json' \
           --data "@body"
-    - name: deploy to swarm site
-      if: ${{ github.event.inputs.vcell_site == 'rel' }}
-      run: |
-        set -ux
-        cd docker/swarm
-        ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
-        if ${{ github.event.inputs.server_only != 'true' }}; then
-          # build and install the client installers, singularity images, and docker swarm configuration
-          ./deploy-action-swarm.sh \
-              --ssh-user ${{ secrets.CD_FULL_USER }} \
-              --install-singularity \
-              --build-installers \
-              --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
-              ${VCELL_MANAGER_NODE} \
-              ./${VCELL_CONFIG_FILE_NAME} \
-              ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
-              ./docker-compose.yml \
-              ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
-              vcell${VCELL_SITE}
-          export VCELL_SITE_CAMEL=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
-          ssh ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} \
-            installer_deploy_dir=$VCELL_INSTALLER_REMOTE_DIR vcell_siteCamel=$VCELL_SITE_CAMEL vcell_version=$VCELL_VERSION vcell_build=$VCELL_BUILD \
-            'bash -s' < link-installers.sh
-        else
-          # build and install only the singularity images and docker swarm configuration
-          ./deploy-action-swarm.sh \
-              --ssh-user ${{ secrets.CD_FULL_USER }} \
-              --install-singularity  \
-              ${VCELL_MANAGER_NODE} \
-              ./${VCELL_CONFIG_FILE_NAME} \
-              ${VCELL_DEPLOY_REMOTE_DIR}/config/${VCELL_CONFIG_FILE_NAME} \
-              ./docker-compose.yml \
-              ${VCELL_DEPLOY_REMOTE_DIR}/config/docker-compose_${VCELL_TAG}.yml \
-              vcell${VCELL_SITE}        
-        fi
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() }}

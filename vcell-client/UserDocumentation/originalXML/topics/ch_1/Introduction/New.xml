@@ -8,7 +8,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileNewMathModelMenuItem.png"/>
+		<imgReference target = "FileNewMathModelMenuItem.PNG"/>
 	</appearance>
 	
 	<operations>
@@ -36,7 +36,7 @@
 			VCell database; or created from scratch.
 		For further information on creating geometries, refer to the section on <link target = "GeometryOverview">Geometry</link>.
 		</para>
-		<imgReference target = "FileNewMathModelNewGeom.png"/>
+		<imgReference target = "FileNewMathModelNewGeom.PNG"/>
 		</item>
 		<item>
 		<para>
