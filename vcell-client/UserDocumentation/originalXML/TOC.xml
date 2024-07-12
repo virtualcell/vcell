@@ -42,8 +42,8 @@
        		<tocitem target="RBCreate" text="How to create a rule-based model"/> 		
     		<tocitem target="RBSimulate" text="How to simulate a rule-based model"/> 
     		<tocitem target="NFSimApp" text="Network-Free Application"/>
-<!--			<tocitem target="SpringSaLaDTheory" text="Introduction to SpringSaLaD Modeling"/>
-			<tocitem target="LangevinApp" text="SpringSaLaD Application"/> -->
+			<tocitem target="SpringSaLaDTheory" text="Introduction to SpringSaLaD Modeling"/>
+			<tocitem target="LangevinApp" text="SpringSaLaD Application"/>
 		</tocitem>
     	<tocitem target="PhysOverview" text="Physiology">
     		<tocitem target="ReactDiagView" text="Reaction Diagram"/>
@@ -82,10 +82,10 @@
     		<tocitem target="SpecificationsOverview" text="Specifications">
     	   		<tocitem target="SpeciesSpecifications" text="Species">
 					<tocitem target="fieldData" text="Field Data"/>
-<!--					<tocitem target="SSSpeciesSpecifications" text="SpringSaLaD Species"/> -->
+					<tocitem target="SSSpeciesSpecifications" text="SpringSaLaD Species"/>
     			</tocitem>
    	 	  		<tocitem target="ReactionsSpecifications" text="Reactions">
-<!--					<tocitem target="SSReactionsSpecifications" text="SpringSaLaD Reactions"/> -->
+					<tocitem target="SSReactionsSpecifications" text="SpringSaLaD Reactions"/>
 				</tocitem>
    	 	  		<tocitem target="NetworkSpecifications" text="Network"/>
    	 	  		<tocitem target="NetworkFreeSpecifications" text="Network-Free"/>  	 	  		
