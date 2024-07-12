@@ -12,7 +12,7 @@
 	</appearance>
 	
 	<operations>
-	<imgReference target = "NetworkFreeTab.PNG"/>
+	<imgReference target = "NetworkFreeTab.png"/>
 	<para>	
 <bold>Create New Rule-Based VCell BioModel</bold> from the original physiology. A new BioModel is created and opened in a new window. A rule based model can be created only for models with a single compartment and if all reactions have mass action kinetics.  Molecules, observables, species with molecular details, and reaction rules are transferred to a new
 BioModel without changes. Species without molecular details and reactions are converted into rule-based physiology by generating a molecule for each species, and converting reactions to fully-defined reaction rules.</para>

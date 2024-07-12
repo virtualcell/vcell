@@ -19,7 +19,7 @@
 	</introduction>
 	
 	<appearance>
-	<imgReference target = "generated_math_main.PNG"/>
+	<imgReference target = "generated_math_main.png"/>
 	</appearance>
 	
 	<operations>

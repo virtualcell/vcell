@@ -7,7 +7,7 @@ Each element in a VCell BioModel, as well as the BioModel itself, can be annotat
  	</introduction>
 	
 	<appearance>
-		<imgReference target = "PP_Annotations.PNG"/>
+		<imgReference target = "PP_Annotations.png"/>
 	</appearance>
 	
 	<operations>
@@ -17,7 +17,7 @@ Each element in a VCell BioModel, as well as the BioModel itself, can be annotat
 		</item>
 		<item>
 		Follow the <bold>annotation link</bold> by double click on the underlined link portion of the annotation.
-		<imgReference target = "PP_Annotate_links.PNG"/>
+		<imgReference target = "PP_Annotate_links.png"/>
 		</item>
 		</list>
 		<para>
@@ -25,7 +25,7 @@ Each element in a VCell BioModel, as well as the BioModel itself, can be annotat
 		<item>
 <bold>Add</bold> new unique identifiers using the drop down menu to select a supported provider.  Double click the provider link to go to the provider web site to search for the appropriate provider.  Add the identifier to the annotation pane using the exact format shown in the example. Supported identity providers are listed in the <link target="AnnotationProviders">Appendix</link>
 		</item>
-		<imgReference target = "PP_AddAnnotations.PNG"/>
+		<imgReference target = "PP_AddAnnotations.png"/>
 		</list>
 		</para>
 		<para>

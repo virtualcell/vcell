@@ -9,7 +9,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FilePermission.PNG"/>
+		<imgReference target = "FilePermission.png"/>
 	</appearance>
 	
 	<operations>

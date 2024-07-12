@@ -44,7 +44,7 @@
 	<para></para>
 	<para>
 	<bold>Right-clicking</bold> on a simulation row will reveal a drop down submenu providing a way to edit End Time and Output Option (frequency of saved data points).
-	<imgReference target="SimulationsMenuRightClick.PNG"/>
+	<imgReference target="SimulationsMenuRightClick.png"/>
 	</para>
 	 </operations>
 	

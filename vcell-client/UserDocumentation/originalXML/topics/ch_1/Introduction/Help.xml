@@ -7,7 +7,7 @@
 	</introduction>
 	
 	<appearance>
-	<imgReference target = "HelpMenu.PNG"/>
+	<imgReference target = "HelpMenu.png"/>
 	</appearance>
 	
 	<operations> 
@@ -33,11 +33,11 @@
 	  <bold>VCell Properties</bold> - displays locations for local files including the Installation Directory and VCell Home Directory.
 	  </item>
 	  <item>           
-         <bold> Virtual Cell License Information</bold> - shows a dialog that displays the license information for the Virtual Cell. <imgReference target = "VCellLicense.PNG"/>
+         <bold> Virtual Cell License Information</bold> - shows a dialog that displays the license information for the Virtual Cell. <imgReference target = "VCellLicense.png"/>
 	  </item>
 	  <para></para>
 	  <item>   
-         <bold> About The Virtual Cell</bold> - pops up a dialog that displays the Version and edition of the currently launched VCell. <imgReference target = "AboutVCell.PNG"/>
+         <bold> About The Virtual Cell</bold> - pops up a dialog that displays the Version and edition of the currently launched VCell. <imgReference target = "AboutVCell.png"/>
 	  </item>
 	  <para></para>
 	  <item>

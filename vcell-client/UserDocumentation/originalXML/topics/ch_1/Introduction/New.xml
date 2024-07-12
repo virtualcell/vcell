@@ -25,7 +25,7 @@
 		<bold>Spatial from database geometry</bold> - creates a spatial MathModel where the spatial geometry is
 			selected from VCell geometries stored in the VCell database (any geometry that belongs to the current user
 			or that is shared by other users).
-		<imgReference target = "FileNewMathModelDBGeom.PNG"/>
+		<imgReference target = "FileNewMathModelDBGeom.png"/>
 		</item>
 		<item>
 		<para>
@@ -47,7 +47,7 @@
 		<bold>Note:</bold> Each application has a separate MathModel associated with it.  
 		</para>
 		<imgReference target = "FileNewMathFromBio.png"/>
-		<imgReference target = "FileNewMathFromBioAppln.PNG"/>
+		<imgReference target = "FileNewMathFromBioAppln.png"/>
 		</item>
 	</list>
 	</operations>

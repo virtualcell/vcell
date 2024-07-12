@@ -6,7 +6,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "FileRevertToSaved.PNG"/>
+		<imgReference target = "FileRevertToSaved.png"/>
 	</appearance>
 	
 	<operations>

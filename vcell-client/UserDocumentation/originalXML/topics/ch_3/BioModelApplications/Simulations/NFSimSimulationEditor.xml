@@ -11,7 +11,7 @@
 		A user can set end simulation time, output interval N (simulations results are outputted every N seconds)
 		 and Advanced Solver Options.
 	</introduction>
-	<appearance><imgReference target="NFSimSolver.PNG"/></appearance>
+	<appearance><imgReference target="NFSimSolver.png"/></appearance>
 	
 	<operations>
 	<bold>Advanced Solver Options</bold>	

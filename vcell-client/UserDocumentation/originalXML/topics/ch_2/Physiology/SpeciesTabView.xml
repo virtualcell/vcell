@@ -16,7 +16,7 @@
 	(using <def target= "def_NFSim">NFSim</def> solver).</para>
  	</introduction>
 	<appearance>
-	<imgReference target = "Mix_Species.PNG"/>
+	<imgReference target = "Mix_Species.png"/>
 	<para>The Species Tab has several columns:</para>
 	<list> 
 		<item>The species <bold>Name</bold>.  New species are automatically named s_number. When a BNGL file is imported species names are automatically generated. 

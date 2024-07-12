@@ -8,7 +8,7 @@
 	</introduction>
 	
 	<appearance>
-		<imgReference target = "Mix_Rules.PNG"/>
+		<imgReference target = "Mix_Rules.png"/>
 
 	The Reactions table has several columns:
 	<list> 

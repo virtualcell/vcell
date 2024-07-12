@@ -9,7 +9,7 @@
 	(Note: The panel will indicate "No Data" if data you are viewing was generated from a simulation run on a version of VCell earlier then 5.2 or if flourescence functions were not specified prior to the simulation run)
 	</introduction>
 	
-	<appearance> 		<imgReference target = "PostProcessingImageData.PNG"/> </appearance>
+	<appearance> 		<imgReference target = "PostProcessingImageData.png"/> </appearance>
 	
 	<operations>
 	<para>

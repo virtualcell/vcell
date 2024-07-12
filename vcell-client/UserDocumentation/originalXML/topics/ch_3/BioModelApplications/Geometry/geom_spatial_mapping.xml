@@ -19,7 +19,7 @@
 	</introduction>
 	
 	<appearance>
-	<imgReference target = "Structure_Mapping.PNG"/>
+	<imgReference target = "Structure_Mapping.png"/>
 	<para>
 	From a selected application click on "Geometry and click the "Structure Mapping" tab.
 	The left panel depicts the "physiology (structures)", the right depicts the "Geometry (subdomains)" and the bottom displays a table of the structure mapping assignments.  

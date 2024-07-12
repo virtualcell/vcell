@@ -9,7 +9,7 @@
 	</introduction>
 		S
 	<appearance>
-	<imgReference target = "ImageJImportHDF5.PNG"/>
+	<imgReference target = "ImageJImportHDF5.png"/>
 	</appearance>
 	
 	
@@ -22,7 +22,7 @@
 	<para>
 	<bold>Select</bold> all of the datasets ending in ".../DataValues (XYZT)" to be imported. If you exported data for multiple variables in a single HDF5 file, the data for each variable appears as a separate data set path in the table.
 	</para>
-	<imgReference target = "ImageJHDF5Table.PNG"/>
+	<imgReference target = "ImageJHDF5Table.png"/>
 	<para>
 	<bold>Click "Individual Hyperstacks (custom layout)"</bold> and <bold>enter "xyzt"</bold> in the text box. (Note that it is not yet possible to use the "Combine to..." functions with the exported VCell HDF5 files.)  Then <bold>select "Load"</bold>
 	</para>

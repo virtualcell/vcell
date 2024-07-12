@@ -17,29 +17,29 @@
   	The second rule describes phosphorylation of unbound Y1148 site (change of state from Y to P) on a receptor that is bound to
   	another receptor (site r is bound) but may be bound to a ligand (question mark under l site) and 
   	site Y1068 may be in any state and may be either bound or not.
-  	  <imgReference target = "RR_00.PNG"/>
+  	  <imgReference target = "RR_00.png"/>
   </appearance>
 	
 <operations>
 	<bold>Reaction Rule edit/specification:</bold>
 		<list>
 			<item>Right click mouse on the first shape to select the first molecule for the first reactant.
-			<imgReference target = "RR_1.PNG"/></item>
+			<imgReference target = "RR_1.png"/></item>
 			<item>To add more reactants, right click on the empty space next to reaction arrow: 			
-			<imgReference target = "RR_2.PNG"/></item>
+			<imgReference target = "RR_2.png"/></item>
 			<item>To specify reactant or product consisting of multiple molecules, right click next to the existing molecule.
-			<imgReference target = "RR_3.PNG"/></item>
+			<imgReference target = "RR_3.png"/></item>
 			<item>Specify how molecules are connected by mouse right click on binding site shape. All changes on reactants are propagated 
 				to products:
-			<imgReference target = "RR_4.PNG"/></item>
+			<imgReference target = "RR_4.png"/></item>
 			<item>Specify explicit bonds by mouse right click on state shape. Changes in products do not propagate to reactions.
-			<imgReference target = "RR_5.PNG"/></item>
+			<imgReference target = "RR_5.png"/></item>
 		</list>
 
 		<para><bold>Note:</bold> If reaction rule has multiple identical molecules, they are enumerated to provide 
 		one-to-one mapping from reactants to products. The match is established automatically, but can be reassigned
 		with a right click on a molecular shape.
-		<imgReference target = "RulesMatch.PNG"/></para>
+		<imgReference target = "RulesMatch.png"/></para>
 		
 	</operations>
 
