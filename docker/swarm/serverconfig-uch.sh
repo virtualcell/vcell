@@ -38,11 +38,11 @@ vcell_slurm_qos_pu=vcellpu
 case $VCELL_SITE in
 	REL)
 		_site_port_offset=0
-		VCELL_API_HOST_EXTERNAL=vcellapi.cam.uchc.edu
-		VCELL_S3_EXPORT_BASEURL=https://vcellapi.cam.uchc.edu
+		VCELL_API_HOST_EXTERNAL=vcell.cam.uchc.edu
+		VCELL_S3_EXPORT_BASEURL=https://vcell.cam.uchc.edu
 		VCELL_API_PORT_EXTERNAL=443
-		VCELL_API_PREFIX_V0=""
-		VCELL_API_PREFIX_V1=""
+		VCELL_API_PREFIX_V0="/api/v0"
+		VCELL_API_PREFIX_V1="/api/v1"
 		_applicationId="1471-8022-1038-5553"
 		;;
 	ALPHA)
@@ -115,8 +115,8 @@ VCELL_SSH_CMD_RESTORE_TIMEOUT=5
 
 #
 # write out the environment file to be for:
-# 1. deployment actions (e.g. deploy-action-swarm.sh or deploy-action-kubernetes.sh)
-# 2. runtime environment for the docker stack run command (Docker swarm mode only, kubernetes uses ConfigMaps in vcell-fluxcd repo)
+# 1. deployment actions (e.g. deploy-action-kubernetes.sh)
+# 2. runtime environment for the docker stack run command (kubernetes uses ConfigMaps in vcell-fluxcd repo), what about VCell Installers?
 #
 cat <<EOF >"$_outputfile"
 VCELL_API_HOST_EXTERNAL=$VCELL_API_HOST_EXTERNAL
