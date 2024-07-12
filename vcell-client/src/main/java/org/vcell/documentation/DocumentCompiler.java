@@ -173,7 +173,14 @@ public class DocumentCompiler {
 	}
 
 	private File getTargetFile(File sourceFile){
-		return new File(getTargetDirectory(sourceFile.getParentFile()), sourceFile.getName());
+		File targetDir = this.getTargetDirectory(sourceFile.getParentFile());
+		String UPPER = ".PNG", LOWER = ".png";
+		if (!sourceFile.getName().toLowerCase().endsWith(LOWER))
+			return new File(this.getTargetDirectory(sourceFile.getParentFile()), sourceFile.getName());;
+		String targetFileBaseName = sourceFile.getName().substring(0, sourceFile.getName().length()-LOWER.length());
+		File upperCaseTargetFile = new File(targetDir, targetFileBaseName + UPPER);
+		if (upperCaseTargetFile.exists()) return upperCaseTargetFile;
+		return new File(targetDir, targetFileBaseName + LOWER);
 	}
 	
 	private File getTargetDirectory(File sourceDir){
