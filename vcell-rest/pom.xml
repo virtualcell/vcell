@@ -98,6 +98,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.quarkiverse.loggingjson</groupId>
+      <artifactId>quarkus-logging-json</artifactId>
+      <version>${quarkus-logging-json.version}</version>
+    </dependency>
+    <dependency>
       <groupId>io.quarkiverse.itext</groupId>
       <artifactId>quarkus-itext</artifactId>
       <version>${quarkus-itext.version}</version>
