@@ -229,7 +229,7 @@ public class VCellApiMain {
 		String pathPrefixV0 = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerPrefixV0);
 		HealthService healthService = new HealthService(restEventService, "localhost", port, pathPrefixV0,
 				bIgnoreCertProblemsForHealthService, bIgnoreHostMismatchForHealthService,
-				testUserInfo.userid, testUserInfo.digestedPassword0);
+				testUserInfo);
 		AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);
 		RpcService rpcService = new RpcService(vcMessagingService_int);
 		WadlApplication app = new VCellApiApplication(restDatabaseService, userService, rpcService, restEventService, adminService, templateConfiguration, healthService, javascriptDir);

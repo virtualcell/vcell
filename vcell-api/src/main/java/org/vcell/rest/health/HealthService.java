@@ -11,10 +11,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.util.BigString;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.*;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
-import org.vcell.util.document.VCInfoContainer;
 
 import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
@@ -109,20 +107,18 @@ public class HealthService {
 	final String pathPrefixV0;
 	final boolean bIgnoreCertProblems;
 	final boolean bIgnoreHostMismatch;
-	final String testUserid;
-	final DigestedPassword testPassword;
+	final UserInfo testUserinfo;
 
 	public HealthService(RestEventService eventService, String host, int port, String pathPrefixV0,
 			boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch, 
-			String testUserid, DigestedPassword testPassword) {
+			UserInfo testUserinfo) {
 		this.eventService = eventService;
 		this.host = host;
 		this.port = port;
 		this.pathPrefixV0 = pathPrefixV0;
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
 		this.bIgnoreHostMismatch = bIgnoreHostMismatch;
-		this.testUserid = testUserid;
-		this.testPassword = testPassword;
+		this.testUserinfo = testUserinfo;
 	}
 			
 	private long simStartEvent() {
@@ -208,9 +204,10 @@ public class HealthService {
 		while (true) {
 			long id = loginStartEvent();
 			try {
-				UserLoginInfo userLoginInfo = new UserLoginInfo(testUserid, testPassword);
+				UserLoginInfo userLoginInfo = new UserLoginInfo(testUserinfo.getApiUserInfo().userid);
+				userLoginInfo.setUser(new User(testUserinfo.userid, testUserinfo.id));
 				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
-				VCellConnection vcellConnection = vcellConnectionFactory.createDepricatedVCellConnection(userLoginInfo);
+				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 				VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
 				loginSuccess(id);
 			}catch (Throwable e) {
@@ -229,14 +226,15 @@ public class HealthService {
 			Thread.sleep(SIMULATION_LOOP_START_DELAY);
 		} catch (InterruptedException e1) {
 		}
-		UserLoginInfo userLoginInfo = new UserLoginInfo(testUserid, testPassword);
+		UserLoginInfo userLoginInfo = new UserLoginInfo(testUserinfo.userid);
+		userLoginInfo.setUser(new User(testUserinfo.userid, testUserinfo.id));
 		while (true) {
 			long id = simStartEvent();
 			KeyValue savedBioModelKey = null;
 			VCSimulationIdentifier runningSimId = null;
 			try {
 				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
-				VCellConnection vcellConnection = vcellConnectionFactory.createDepricatedVCellConnection(userLoginInfo);
+				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 				
 				String vcmlString = IOUtils.toString(getClass().getResourceAsStream("/TestTemplate.vcml"));
 				
@@ -311,7 +309,7 @@ public class HealthService {
 				// cleanup
 				try {
 					RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
-					VCellConnection vcellConnection = vcellConnectionFactory.createDepricatedVCellConnection(userLoginInfo);
+					VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 					if (runningSimId!=null) {
 						try {
 							vcellConnection.getSimulationController().stopSimulation(runningSimId);

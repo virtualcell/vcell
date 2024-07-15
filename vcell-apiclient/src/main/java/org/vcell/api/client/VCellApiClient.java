@@ -466,45 +466,6 @@ public class VCellApiClient implements AutoCloseable {
 		return simulationTaskRepresentations;
 	}
 	
-	public AccessTokenRepresentation deprecatedAuthenticate(String userid, String password, boolean alreadyDigested) throws ClientProtocolException, IOException {
-		// hash the password
-		String digestedPassword = (alreadyDigested)?(password):createdDigestPassword(password);
-		
-		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/access_token?user_id="+userid+"&user_password="+digestedPassword+"&client_id="+clientID);
-
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to retrieve access_token " + httpget.getRequestLine());
-		}
-
-		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("authenticate()", httpget));
-		String accessTokenJson = responseBody;
-		if (lg.isInfoEnabled()) {
-			lg.info("returned: "+accessTokenJson);
-		}
-
-		Gson gson = new Gson();
-		AccessTokenRepresentation accessTokenRep = gson.fromJson(accessTokenJson,AccessTokenRepresentation.class);
-		
-		BasicCredentialsProvider basicCredsProvider = new BasicCredentialsProvider();
-		basicCredsProvider.setCredentials(
-		        new AuthScope(httpHost.getHostName(),httpHost.getPort()),
-		        new UsernamePasswordCredentials("access_token", accessTokenRep.getToken()));
-
-		// Create AuthCache instance
-		AuthCache authCache = new BasicAuthCache();
-		// Generate BASIC scheme object and add it to the local auth cache
-		BasicScheme basicAuth = new BasicScheme();
-		authCache.put(httpHost, basicAuth);
-
-		// Add AuthCache to the execution context
-		httpClientContext = HttpClientContext.create();
-//		httpClientContext.setCredentialsProvider(basicCredsProvider);
-//		httpClientContext.setAuthCache(authCache);
-		httpClientContext.setUserToken(accessTokenRep.token);
-		
-		return accessTokenRep;
-	}
-
 	public void createDefaultQuarkusClient(boolean bIgnoreCertProblems){
 		apiClient = new ApiClient(){{
 			if (bIgnoreCertProblems){setHttpClientBuilder(CustomApiClientCode.createInsecureHttpClientBuilder());};

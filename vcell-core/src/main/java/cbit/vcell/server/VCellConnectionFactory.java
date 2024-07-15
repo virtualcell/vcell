@@ -16,7 +16,6 @@ import org.vcell.util.document.UserLoginInfo;
 import java.io.IOException;
 
 public interface VCellConnectionFactory {
-    VCellConnection createDepricatedVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException, AuthenticationException, IOException;
     VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException;
     Auth0ConnectionUtils getAuth0ConnectionUtils();
 }

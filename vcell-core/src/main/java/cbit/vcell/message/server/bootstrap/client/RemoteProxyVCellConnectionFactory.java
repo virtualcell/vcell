@@ -197,16 +197,6 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 		}
 	}
 
-public VCellConnection createDepricatedVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException {
-	try {
-		AccessTokenRepresentation accessTokenRep = this.vcellApiClient.deprecatedAuthenticate(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword().getString(),true);
-		userLoginInfo.setUser(new User(accessTokenRep.userId, new KeyValue(accessTokenRep.getUserKey())));
-		return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender);
-	} catch (IOException e) {
-		throw new ConnectionException("failed to connect: "+e.getMessage(), e);
-	}
-}
-
 	@Override
 	public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) {
 		try {

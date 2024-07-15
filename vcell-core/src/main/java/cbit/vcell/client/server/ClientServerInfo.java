@@ -53,7 +53,7 @@ public static ClientServerInfo createFileBasedServerInfo() {
 
 public static ClientServerInfo createLocalServerInfo(String userName) {
 	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_LOCAL, ClientServerInfo.apiHost, ClientServerInfo.isHTTP ? 80 : 443,
-			ClientServerInfo.v0PathPrefix, new UserLoginInfo(userName, null));
+			ClientServerInfo.v0PathPrefix, new UserLoginInfo(userName));
 	return csi;
 }
 
@@ -64,7 +64,7 @@ public UserLoginInfo getUserLoginInfo(){
 }
 
 public static ClientServerInfo createRemoteServerInfo(String apihost, Integer apiport, String pathPrefix_v0, String userName) {
-	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_REMOTE,apihost,apiport,pathPrefix_v0,new UserLoginInfo(userName, null));
+	ClientServerInfo csi = new ClientServerInfo(ServerType.SERVER_REMOTE,apihost,apiport,pathPrefix_v0,new UserLoginInfo(userName));
 	return csi;
 }
 
