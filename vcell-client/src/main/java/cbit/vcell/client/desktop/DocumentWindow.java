@@ -638,19 +638,17 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.ivjHelpMenu.add(this.getJMenuItemOnlineHelp());
                 //ivjHelpMenu.add(getJMenuItemOnlineSupport());
                 this.ivjHelpMenu.add(this.getJMenuItemDiscussionGroup());
+                this.ivjHelpMenu.add(new JSeparator());
                 this.ivjHelpMenu.add(this.getJMenuItemManagePermissions());
                 this.ivjHelpMenu.add(this.getJMenuItemOnlinePublish());
+                this.ivjHelpMenu.add(new JSeparator());
                 this.ivjHelpMenu.add(this.getJMenuItemEmailSupport());
                 this.ivjHelpMenu.add(this.getGrantPermissionsToVCellSupportMenuItem());
                 this.ivjHelpMenu.add(this.getJMenuItemPreferences());
-
-//			ivjHelpMenu.add(getSeparator());
-//			ivjHelpMenu.add(getPermissionsMenuItem());
-
                 this.ivjHelpMenu.add(this.getJSeparator6());
                 this.ivjHelpMenu.add(this.getMntmLicenseInformation());
                 this.ivjHelpMenu.add(this.getAbout_BoxMenuItem());
-//			ivjHelpMenu.add(getSeparator());
+    			this.ivjHelpMenu.add(new JSeparator());
                 this.ivjHelpMenu.add(this.getStatusbarMenuItem());
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
