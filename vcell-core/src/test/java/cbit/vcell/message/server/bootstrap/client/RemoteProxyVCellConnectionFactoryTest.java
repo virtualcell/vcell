@@ -26,10 +26,10 @@ public class RemoteProxyVCellConnectionFactoryTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		UserLoginInfo userLoginInfo = new UserLoginInfo("schaff",new DigestedPassword("xxxxxxx"));
+		UserLoginInfo userLoginInfo = new UserLoginInfo("schaff");
 		factory = new RemoteProxyVCellConnectionFactory("localhost", 8099, "");
 		apiClient = factory.getVCellApiClient();
-		vcConn = factory.createDepricatedVCellConnection(userLoginInfo);
+		vcConn = factory.createVCellConnection(userLoginInfo);
 	}
 
 	@AfterEach

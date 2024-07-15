@@ -172,7 +172,7 @@ public final class RpcRestlet extends Restlet {
 					VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
 					RpcService rpcService = vcellApiApplication.getRpcService();
 					serializableResultObject = rpcService.sendRpcMessage(
-							queue, vcRpcRequest, new Boolean(rpcBody.returnedRequired), specialProperties, specialValues, new UserLoginInfo(username,null));
+							queue, vcRpcRequest, rpcBody.returnedRequired, specialProperties, specialValues, new UserLoginInfo(username));
 				}
 				byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(serializableResultObject);
 				response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");

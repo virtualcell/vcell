@@ -29,8 +29,7 @@ public class VCellApiClientTest {
 			String password = args[3];
 			
 			vcellApiClient = new VCellApiClient(host,port,pathPrefix_v0);
-
-			vcellApiClient.deprecatedAuthenticate(username,password,false);
+			vcellApiClient.authenticate(false);
 			
 			// test /biomodel[? query string]
 			BiomodelRepresentation[] biomodelReps = vcellApiClient.getBioModels(new BioModelsQuerySpec());

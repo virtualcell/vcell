@@ -63,10 +63,9 @@ public class CopasiOptimizationSolver {
 			String host = clientServerInfo.getApihost();
 			int port = clientServerInfo.getApiport();
 			String pathPrefixV0 = clientServerInfo.getPathPrefix_v0();
-			UserLoginInfo userLoginInfo = clientServerInfo.getUserLoginInfo();
 			// e.g. vcell.serverhost=vcellapi.cam.uchc.edu:443
 			VCellApiClient apiClient = new VCellApiClient(host, port, pathPrefixV0, bIgnoreCertProblems, bIgnoreHostMismatch);
-			apiClient.deprecatedAuthenticate(userLoginInfo.getUser().getName(), userLoginInfo.getDigestedPassword().getString(), true);
+			apiClient.authenticate(bIgnoreCertProblems);
 
 			OptProblem optProblem = CopasiUtils.paramTaskToOptProblem(parameterEstimationTask);
 

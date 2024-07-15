@@ -185,7 +185,7 @@ public class RestDatabaseService {
 		}
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
-			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
@@ -214,7 +214,7 @@ public class RestDatabaseService {
 		}
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
-			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
@@ -234,7 +234,7 @@ public class RestDatabaseService {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
-		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 		String simId = resource.getAttribute(VCellApiApplication.SIMDATAID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		KeyValue simKey = new KeyValue(simId);
 		SimulationRep simRep = getSimulationRep(simKey);
@@ -259,7 +259,7 @@ public class RestDatabaseService {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
-		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 		String simId = resource.getAttribute(VCellApiApplication.SIMDATAID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		String jobIndexString = resource.getAttribute(VCellApiApplication.JOBINDEX);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		KeyValue simKey = new KeyValue(simId);
@@ -748,7 +748,7 @@ public class RestDatabaseService {
 		}
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
-			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
@@ -813,7 +813,7 @@ public class RestDatabaseService {
 		//
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
-			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
