@@ -419,7 +419,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
 
                 this.toolMenu.setName("ToolMenu");
                 this.toolMenu.setText("Tools");
-                this.toolMenu.add(new JSeparator());
                 this.toolMenu.add(this.getRunVFrapItem());
                 this.toolMenu.add(this.getExportedDataViewer());
                 this.toolMenu.add(new JSeparator());
