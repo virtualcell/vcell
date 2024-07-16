@@ -277,7 +277,12 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.13.0</version>
 		</dependency>
-
+		<!-- https://mvnrepository.com/artifact/com.github.ome.bioformats/formats-bsd -->
+		<dependency>
+			<groupId>com.github.ome.bioformats</groupId>
+			<artifactId>formats-bsd</artifactId>
+			<version>${bio-formats.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-configuration2</artifactId>
@@ -519,8 +524,12 @@
 			<version>${xom.version}</version>
 			<exclusions>
 				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bctsp-jdk14</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

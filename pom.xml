@@ -99,8 +99,7 @@
 		<axis-wsdl4j.version>1.2</axis-wsdl4j.version>
 		<bcprov-jdk15on.version>1.70</bcprov-jdk15on.version>
 		<bcpkix-jdk15on.version>1.70</bcpkix-jdk15on.version>
-		<bio-formats.version>6.7.0</bio-formats.version>
-		<bio-formats_plugins.version>${bio-formats.version}</bio-formats_plugins.version>
+		<bio-formats.version>6.1.1</bio-formats.version>
 		<biojava.version>6.0.4</biojava.version>
 		<biomodels-wslib.version>1.21</biomodels-wslib.version>
 		<colt.version>1.2.0</colt.version>
@@ -177,7 +176,7 @@
 		<sesame-rio-n3.version>2.9.0</sesame-rio-n3.version>
 		<slf4j-api.version>2.0.9</slf4j-api.version>
 		<sshj.version>0.35.0</sshj.version>
-		<xercesImpl.version>2.8.0</xercesImpl.version>
+		<xercesImpl.version>2.8.1</xercesImpl.version>
 		<xstream.version>1.4.20</xstream.version>
 		<xom.version>1.2.5</xom.version>
 
