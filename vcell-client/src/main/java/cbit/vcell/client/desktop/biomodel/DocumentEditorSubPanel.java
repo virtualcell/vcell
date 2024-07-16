@@ -116,7 +116,8 @@ public abstract class DocumentEditorSubPanel extends JPanel implements PropertyC
 
 	public void issueChange(IssueEvent issueEvent) {
 	}
-	
+
+	// Need to fix Field Data Geometry Editor (OverlayEditorPanelJAI?) before this should be used.
 	public static void addFieldDataMenuItem(Component parent/*JTable*/,JPopupMenu addToThisPopup,int position) {
 		do {
 			System.out.println(parent.getClass().getName());

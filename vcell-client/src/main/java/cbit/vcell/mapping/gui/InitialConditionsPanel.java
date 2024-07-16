@@ -111,7 +111,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                 popupMenu.insert(getJMenuItemCopyAll(), pos++);
                 popupMenu.insert(getJMenuItemPaste(), pos++);
                 popupMenu.insert(getJMenuItemPasteAll(), pos++);
-                DocumentEditorSubPanel.addFieldDataMenuItem(getOwnerTable(), popupMenu, pos++);
+                //DocumentEditorSubPanel.addFieldDataMenuItem(getOwnerTable(), popupMenu, pos++); // Disabled while we fix OverlayEditorPanelJAI (7/16/2024)
                 popupMenu.insert(new JSeparator(), pos++);
             }
             Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
