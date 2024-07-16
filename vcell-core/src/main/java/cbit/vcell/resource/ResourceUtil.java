@@ -10,27 +10,19 @@
 
 package cbit.vcell.resource;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.MalformedURLException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.prefs.BackingStoreException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.NoLogging;
+
+import java.io.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.prefs.BackingStoreException;
 
 public class ResourceUtil {
 	private static final Logger logger = LogManager.getLogger(ResourceUtil.class);
@@ -509,40 +501,4 @@ public class ResourceUtil {
 	public static String forceUnixPath(String filePath){
 		return filePath.replace("C:","").replace("D:","").replace("\\","/");
 	}
-
-	private static String getBioformatsJarDownloadURLString(){
-		return PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarDownloadURL);
-	}
-	
-	private static File getPluginFolder(){
-		return new File(ResourceUtil.getVcellHome(),"plugins");
-	}
-		
-	public static void downloadBioformatsJar() throws MalformedURLException, IOException{
-		boolean bPluginFolderExists = false;
-		
-		if (!(bPluginFolderExists = getPluginFolder().exists())) {
-			bPluginFolderExists = getPluginFolder().mkdirs();
-			if (bPluginFolderExists) {
-//				getPluginFolder().setWritable(true);
-			}
-			else {
-				throw new RuntimeException("not able to create plugin directory: "+getPluginFolder().getAbsolutePath());
-			}
-		}
-		File jarFile = new File(getPluginFolder(),PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarFileName));
-		FileUtils.saveUrlToFile(jarFile.getAbsolutePath(), getBioformatsJarDownloadURLString());
-	}
-	
-	public static File getBioFormatsExecutableJarFile() throws Exception{
-		String bioformatsJarFileName = PropertyLoader.getRequiredProperty(PropertyLoader.bioformatsJarFileName);
-		File pluginDir = getPluginFolder();
-		File bioformatsPluginFile = new File(pluginDir,bioformatsJarFileName);
-		if (bioformatsPluginFile.exists()){
-			return bioformatsPluginFile;
-		}else{
-			return null;
-		}
-	}
-
 }

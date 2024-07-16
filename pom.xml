@@ -99,8 +99,7 @@
 		<axis-wsdl4j.version>1.2</axis-wsdl4j.version>
 		<bcprov-jdk15on.version>1.70</bcprov-jdk15on.version>
 		<bcpkix-jdk15on.version>1.70</bcpkix-jdk15on.version>
-		<bio-formats.version>6.7.0</bio-formats.version>
-		<bio-formats_plugins.version>${bio-formats.version}</bio-formats_plugins.version>
+		<bio-formats.version>6.1.1</bio-formats.version>
 		<biojava.version>6.0.4</biojava.version>
 		<biomodels-wslib.version>1.21</biomodels-wslib.version>
 		<colt.version>1.2.0</colt.version>
@@ -143,7 +142,7 @@
 		<jhdf5.version>0.7.0-alpha</jhdf5.version>
 		<jhdf5-2-10.version>2.9</jhdf5-2-10.version>
 		<jmatio.version>1.0</jmatio.version>
-		<joda-time.version>2.3</joda-time.version>
+		<joda-time.version>2.12.2</joda-time.version>
 		<jai-core.version>1.1.3</jai-core.version>
 		<javax-mail.version>1.4</javax-mail.version>
 		<jsbml.version>1.6.1</jsbml.version>
@@ -177,8 +176,9 @@
 		<sesame-rio-n3.version>2.9.0</sesame-rio-n3.version>
 		<slf4j-api.version>2.0.9</slf4j-api.version>
 		<sshj.version>0.35.0</sshj.version>
-		<xercesImpl.version>2.8.0</xercesImpl.version>
+		<xercesImpl.version>2.8.1</xercesImpl.version>
 		<xstream.version>1.4.20</xstream.version>
+		<xalan.version>2.7.3</xalan.version>
 		<xom.version>1.2.5</xom.version>
 
 		<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->

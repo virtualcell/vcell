@@ -10,15 +10,16 @@
 
 package org.vcell.vcellij;
 
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImpl;
 
 
 public class ImageDatasetReaderService {
 	
 	private static ImageDatasetReaderService service;
+	private final BioformatsImageImpl bioformatsImageImpl;
 
 	private ImageDatasetReaderService() {
+		this.bioformatsImageImpl = new BioformatsImageImpl();
 	}
 	
 	public static synchronized ImageDatasetReaderService getInstance(){
@@ -29,15 +30,7 @@ public class ImageDatasetReaderService {
 	}
 	
 	public ImageDatasetReader getImageDatasetReader() {
-		try {
-			ServiceLoader<ImageDatasetReader> imageDatasetReaders = ServiceLoader.load(ImageDatasetReader.class);
-			for (ImageDatasetReader imageDatasetReader : imageDatasetReaders){
-				return imageDatasetReader;
-			}
-			return null;
-		} catch (ServiceConfigurationError serviceError){
-			throw new RuntimeException("imageDatasetReader provider configuration error: "+serviceError.getMessage(),serviceError);
-		}
+		return this.bioformatsImageImpl;
 	}
 	
 }

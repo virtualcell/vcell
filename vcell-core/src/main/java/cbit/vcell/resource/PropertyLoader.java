@@ -141,11 +141,6 @@ public class PropertyLoader {
 //	public static final String hybridMilExecutableProperty	= record("vcell.hybridMil.executable",ValueType.EXE);
 //	public static final String hybridMilAdaptiveExecutableProperty = record("vcell.hybridMilAdaptive.executable",ValueType.EXE);
 
-	//BioFormats plugin properties
-
-	public static final String bioformatsJarFileName		= record("vcell.bioformatsJarFileName",ValueType.GEN);
-	public static final String bioformatsJarDownloadURL		= record("vcell.bioformatsJarDownloadURL",ValueType.URL);
-	
 	// VCell special URLs which are loaded from web server at path DYNAMIC_PROPERTIES_URL_PATH (default /vcell_dynamic_properties.csv)
 	public static final String DYNAMIC_PROPERTIES_URL_PATH	= record("vcell.dynamicPropertiesUrlPath",ValueType.GEN);
 	public static final String COPASI_WEB_URL				= record("vcell.COPASI_WEB_URL",ValueType.URL);
