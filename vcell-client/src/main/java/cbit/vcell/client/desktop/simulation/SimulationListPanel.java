@@ -782,7 +782,7 @@ private JSortTable getScrollPaneTable() {
 				@Override
 				protected void constructPopupMenu() {
 					super.constructPopupMenu();
-					DocumentEditorSubPanel.addFieldDataMenuItem(getOwnerTable(), popupMenu,0);
+					//DocumentEditorSubPanel.addFieldDataMenuItem(getOwnerTable(), popupMenu,0); Need to fix Field Data Geometry Editor first (7/16/2024)
 				}
 				
 			});
