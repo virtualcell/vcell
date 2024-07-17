@@ -263,7 +263,7 @@ public class N5ExporterTest {
 
                 for (int i = 0; i < variables.size(); i++){
                     for(int timeSlice = startTimeIndex; timeSlice <= attributesTimeSize; timeSlice++){
-                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i + 1, 0, timeSlice - startTimeIndex});
+                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice - startTimeIndex});
 
                         double[] exportedRawData = (double[]) dataBlock.getData();
                         assertArrayEquals(
@@ -297,7 +297,7 @@ public class N5ExporterTest {
             for(int i = 0; i < variables.size(); i++){
                 for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
                     DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
-                    DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i + 1, 0, timeSlice});
+                    DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
 
                     double[] exportedRawData = (double[]) dataBlock.getData();
                     assertArrayEquals(
@@ -331,7 +331,7 @@ public class N5ExporterTest {
                     for(int j = 0; j< 8; j++){
                         int timeSlice = random.nextInt(endTimeIndex);
                         int chosenVariable = random.nextInt(variables.size());
-                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, chosenVariable + 1, 0, timeSlice});
+                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, chosenVariable, 0, timeSlice});
 
                         double[] exportedData = (double[]) dataBlock.getData();
                         Assertions.assertArrayEquals(

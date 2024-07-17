@@ -104,20 +104,16 @@ public class N5Exporter implements ExportConstants {
 		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
 		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
 		n5FSWriter.createDataset(String.valueOf(jobID), datasetAttributes);
-		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter, n5Specs.dataSetName, numVariables, blockSize[3], allTimes.length, exportSpecs.getHumanReadableExportData().subVolume);
+		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter,
+				n5Specs.dataSetName, numVariables, blockSize[3], allTimes.length,
+				exportSpecs.getHumanReadableExportData().subVolume);
 
-		//Create mask
-		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
-			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
-			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, 0, 0, normalizedTimeIndex}, mask);
-			n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
-		}
 
-		for (int variableIndex=1; variableIndex < numVariables; variableIndex++){
+		for (int variableIndex=0; variableIndex < (numVariables -1); variableIndex++){
 			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 
 				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
-				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex - 1], allTimes[timeIndex]).getData();
+				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex], allTimes[timeIndex]).getData();
 				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
 				n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
 				if(timeIndex % 3 == 0){
@@ -125,6 +121,13 @@ public class N5Exporter implements ExportConstants {
 					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
 				}
 			}
+		}
+
+		//Create mask
+		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
+			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
+			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, (numVariables - 1), 0, normalizedTimeIndex}, mask);
+			n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
 		}
 		n5FSWriter.close();
 		ExportOutput exportOutput = new ExportOutput(true, "." + N5Specs.n5Suffix, vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
