@@ -23,24 +23,20 @@ import org.vcell.api.common.AccessTokenRepresentation;
 public class UserLoginInfo implements Serializable {
 	private final static Logger lg = LogManager.getLogger(UserLoginInfo.class);
 
-	private String userName;
-	private DigestedPassword digestedPassword;// obfuscate password
-	private transient String password; // clear text password
-	private AccessTokenRepresentation access_token;
-	private String os_name;// os.name Operating system name
-	private String os_arch;// os.arch Operating system architecture
-	private String os_version;// os.version Operating system version
-	private String java_version;// java.version JRE version number
-	private String vcellSoftwareVersion;// VCell client logging in from
+	private final String userName;
+	private final String os_name;// os.name Operating system name
+	private final String os_arch;// os.arch Operating system architecture
+	private final String os_version;// os.version Operating system version
+	private final String java_version;// java.version JRE version number
+	private final String vcellSoftwareVersion;// VCell client logging in from
 	private User user;
 	// clientId to indentify machine so that
 	// same user can login at the same time.
 	private final long clientId = System.currentTimeMillis();
 
-	public UserLoginInfo(String userName, DigestedPassword digestedPassword) {
+	public UserLoginInfo(String userName) {
 		super();
 		this.userName = userName;
-		this.digestedPassword = digestedPassword;
 		os_name = System.getProperty("os.name");
 		os_arch = getArchitecture(os_name);
 		os_version = System.getProperty("os.version");
@@ -194,10 +190,6 @@ public class UserLoginInfo implements Serializable {
 
 	public String getUserName() {
 		return userName;
-	}
-
-	public DigestedPassword getDigestedPassword() {
-		return digestedPassword;
 	}
 
 	public String getVCellSoftwareVersion() {

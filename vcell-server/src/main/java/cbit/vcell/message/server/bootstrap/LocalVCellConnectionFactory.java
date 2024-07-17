@@ -68,40 +68,6 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 	}
 
 
-@Override
-public VCellConnection createDepricatedVCellConnection(UserLoginInfo userLoginInfo) throws AuthenticationException, ConnectionException {
-	try {
-		if (connectionFactory == null) {
-			connectionFactory = DatabaseService.getInstance().createConnectionFactory();
-		}
-		KeyFactory keyFactory = connectionFactory.getKeyFactory();
-		LocalVCellConnection.setDatabaseResources(connectionFactory, keyFactory);
-		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(connectionFactory);
-		boolean bEnableRetry = false;
-		boolean isLocal = true;
-		User user = adminDbTopLevel.getUser(userLoginInfo.getUserName(), userLoginInfo.getDigestedPassword(), bEnableRetry, isLocal);
-		if (user!=null) {
-			userLoginInfo.setUser(user);
-		}else {
-			throw new AuthenticationException("failed to authenticate as user "+userLoginInfo.getUserName());
-		}
-		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(connectionFactory,keyFactory);
-		boolean bCache = false;
-		Cachetable cacheTable = null;
-		DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable, 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty)), 
-				new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty)));
-		SimulationDatabaseDirect simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, bCache);
-		ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
-		LocalVCellConnection vcConn = new LocalVCellConnection(userLoginInfo, simulationDatabase, dataSetControllerImpl, exportServiceImpl);
-		NativeLib.HDF5.load();
-		return vcConn;
-	} catch (Throwable exc) {
-		lg.error(exc.getMessage(), exc);
-		throw new ConnectionException(exc.getMessage());
-	}
-}
-
 	@Override
 	public VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException {
 		try {

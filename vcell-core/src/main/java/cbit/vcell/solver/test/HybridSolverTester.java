@@ -600,127 +600,127 @@ public class HybridSolverTester {
 			return maxTaskID;
 		}
 	}
-	public static void main(java.lang.String[] args) {
-		VCMongoMessage.enabled = false;
-		boolean bAlternate = false;
-		if(args.length == 12){
-			bAlternate = true;
-		}else if(args.length != 5){
-			System.out.println("usage: HybridSolverTest userid SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :) numRuns outputFileDirectory bCalclOnly dbPassword useridKey rmiServer rmiPort");
-			System.out.println("usage: HybridSolverTest userid SimID all postproc varNames(delimited by :) numRuns outputFileDirectory bCalclOnly dbPassword useridKey rmiServer rmiPort");
-			System.out.println("usage: HybridSolverTest mathVCMLFileName startingTrialNo numTrials varNames(delimited by :) bPrintTime vcellSite(rel,beta,...)");
-			System.exit(1);
-		}
-		
-		FileWriter fw = null;
-		try{
-			if(bAlternate){
-				AltArgsHelper altArgsHelper = new AltArgsHelper(args[0], args[1], args[2], args[3], args[4], Integer.parseInt(args[5]),
-						new File(args[6]), Boolean.parseBoolean(args[7]), args[8], args[9], args[10], args[11]);
-//				final String user = args[0];
-//				final String simID = args[1];
-//				final int numRuns = Integer.parseInt(args[5]);
-//				
-//				final String simPrefix  = "SimID_"+simID+"_";
-//				File userSimDataDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+user);
-//				File outputDir = new File(args[6]);
-//				boolean bCalcOnly = Boolean.parseBoolean(args[7]);
-//				String dbPassword = args[8];
-//				String useridKey = args[9];
-//				String rmiServer = args[10];
-//				String rmiPort = args[11];
-				
-				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(altArgsHelper.simID),altArgsHelper.user);
-				UserLoginInfo userLoginInfo = new UserLoginInfo(altArgsHelper.user.getName(), new DigestedPassword(altArgsHelper.dbPassword));
-
-				File[] trialList = null;
-				VCellConnectionHelper vCellConnectionHelper = null;
-				File emptyFile = File.createTempFile("hstempty",null);
-				try{
-					if(!altArgsHelper.bCalcOnly){
-//						String rmiUrl = "//" + "rmi-alpha.cam.uchc.edu" + ":" + "40106" + "/"+"VCellBootstrapServer";
-//						String rmiUrl = "//" + "rmi-alpha.cam.uchc.edu" + ":" + "40112" + "/"+"VCellBootstrapServer";
-						String rmiUrl = "//" + altArgsHelper.rmiServer+".cam.uchc.edu" + ":" + altArgsHelper.rmiPort + "/"+"VCellBootstrapServer";
-
-						vCellConnectionHelper = new VCellConnectionHelper(userLoginInfo, rmiUrl);
-
-						for (int runIndex = 0; runIndex < altArgsHelper.numRuns; runIndex++) {
-							System.out.println("-----     Starting run "+(runIndex+1)+" of "+altArgsHelper.numRuns);
-							runSim(userLoginInfo,vcSimulationIdentifier,vCellConnectionHelper);
-							if(trialList == null){
-								System.out.println("Sim ran, getting trial list for "+altArgsHelper.simPrefix+" please wait...");
-								trialList = altArgsHelper.userSimDataDir.listFiles(new FileFilter() {
-								@Override
-								public boolean accept(File pathname) {
-//									if(pathname.getName().startsWith(altArgsHelper.simPrefix)){
-//										System.out.println(pathname);
+//	public static void main(java.lang.String[] args) {
+//		VCMongoMessage.enabled = false;
+//		boolean bAlternate = false;
+//		if(args.length == 12){
+//			bAlternate = true;
+//		}else if(args.length != 5){
+//			System.out.println("usage: HybridSolverTest userid SimID times(delimited by :) dataIndexes(delimited by :) varNames(delimited by :) numRuns outputFileDirectory bCalclOnly dbPassword useridKey rmiServer rmiPort");
+//			System.out.println("usage: HybridSolverTest userid SimID all postproc varNames(delimited by :) numRuns outputFileDirectory bCalclOnly dbPassword useridKey rmiServer rmiPort");
+//			System.out.println("usage: HybridSolverTest mathVCMLFileName startingTrialNo numTrials varNames(delimited by :) bPrintTime vcellSite(rel,beta,...)");
+//			System.exit(1);
+//		}
+//
+//		FileWriter fw = null;
+//		try{
+//			if(bAlternate){
+//				AltArgsHelper altArgsHelper = new AltArgsHelper(args[0], args[1], args[2], args[3], args[4], Integer.parseInt(args[5]),
+//						new File(args[6]), Boolean.parseBoolean(args[7]), args[8], args[9], args[10], args[11]);
+////				final String user = args[0];
+////				final String simID = args[1];
+////				final int numRuns = Integer.parseInt(args[5]);
+////
+////				final String simPrefix  = "SimID_"+simID+"_";
+////				File userSimDataDir = new File("\\\\cfs02\\raid\\vcell\\users\\"+user);
+////				File outputDir = new File(args[6]);
+////				boolean bCalcOnly = Boolean.parseBoolean(args[7]);
+////				String dbPassword = args[8];
+////				String useridKey = args[9];
+////				String rmiServer = args[10];
+////				String rmiPort = args[11];
+//
+//				VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(altArgsHelper.simID),altArgsHelper.user);
+//				UserLoginInfo userLoginInfo = new UserLoginInfo(altArgsHelper.user.getName()));
+//
+//				File[] trialList = null;
+//				VCellConnectionHelper vCellConnectionHelper = null;
+//				File emptyFile = File.createTempFile("hstempty",null);
+//				try{
+//					if(!altArgsHelper.bCalcOnly){
+////						String rmiUrl = "//" + "rmi-alpha.cam.uchc.edu" + ":" + "40106" + "/"+"VCellBootstrapServer";
+////						String rmiUrl = "//" + "rmi-alpha.cam.uchc.edu" + ":" + "40112" + "/"+"VCellBootstrapServer";
+//						String rmiUrl = "//" + altArgsHelper.rmiServer+".cam.uchc.edu" + ":" + altArgsHelper.rmiPort + "/"+"VCellBootstrapServer";
+//
+//						vCellConnectionHelper = new VCellConnectionHelper(userLoginInfo, rmiUrl);
+//
+//						for (int runIndex = 0; runIndex < altArgsHelper.numRuns; runIndex++) {
+//							System.out.println("-----     Starting run "+(runIndex+1)+" of "+altArgsHelper.numRuns);
+//							runSim(userLoginInfo,vcSimulationIdentifier,vCellConnectionHelper);
+//							if(trialList == null){
+//								System.out.println("Sim ran, getting trial list for "+altArgsHelper.simPrefix+" please wait...");
+//								trialList = altArgsHelper.userSimDataDir.listFiles(new FileFilter() {
+//								@Override
+//								public boolean accept(File pathname) {
+////									if(pathname.getName().startsWith(altArgsHelper.simPrefix)){
+////										System.out.println(pathname);
+////									}
+//									return pathname.getName().startsWith(altArgsHelper.simPrefix) && !pathname.getName().endsWith(".simtask.xml");
+//								}
+//								});
+//							}
+//							System.out.println("-----     Copying run "+(runIndex+1)+" of "+altArgsHelper.numRuns);
+//							File outputRunDir = makeOutputRunDir(altArgsHelper.outputDir,runIndex);
+//							for (int j = 0; j < trialList.length; j++) {
+//								File localCopyFile = new File(outputRunDir,trialList[j].getName());
+//								try{
+//									FileUtils.copyFile(trialList[j],localCopyFile);//copy remote sim data file to local
+//									trialList[j].delete();//delete remote
+//								}catch(Exception e){
+//									System.out.println("failed to copy '"+trialList[j].getAbsolutePath()+"', error="+e.getMessage()+".  Putting empty file as placeholder");
+//									try{
+//										FileUtils.copyFile(emptyFile,localCopyFile);//copy empty file to local in place of problematic remote sim data file, later analysis will skip it
+//									}catch(Exception e2){
+//										System.out.println("Faild to copy file and failed to copy empty, "+e2.getMessage());
 //									}
-									return pathname.getName().startsWith(altArgsHelper.simPrefix) && !pathname.getName().endsWith(".simtask.xml");
-								}
-								});
-							}
-							System.out.println("-----     Copying run "+(runIndex+1)+" of "+altArgsHelper.numRuns);
-							File outputRunDir = makeOutputRunDir(altArgsHelper.outputDir,runIndex);
-							for (int j = 0; j < trialList.length; j++) {
-								File localCopyFile = new File(outputRunDir,trialList[j].getName());
-								try{
-									FileUtils.copyFile(trialList[j],localCopyFile);//copy remote sim data file to local
-									trialList[j].delete();//delete remote
-								}catch(Exception e){
-									System.out.println("failed to copy '"+trialList[j].getAbsolutePath()+"', error="+e.getMessage()+".  Putting empty file as placeholder");
-									try{
-										FileUtils.copyFile(emptyFile,localCopyFile);//copy empty file to local in place of problematic remote sim data file, later analysis will skip it
-									}catch(Exception e2){
-										System.out.println("Faild to copy file and failed to copy empty, "+e2.getMessage());
-									}
-								}
-							}
-						}
-					}
-					
-					//calc stats
-					String dateStr= dateFormat.format(new Date());
-					String outPrefix = altArgsHelper.simID+"_"+dateStr+"_0";
-					File outputFile = new File(altArgsHelper.outputDir,outPrefix+".csv");
-					while(outputFile.exists()){
-						outPrefix = TokenMangler.getNextEnumeratedToken(outPrefix);
-						outputFile = new File(altArgsHelper.outputDir,outPrefix+".csv");
-					}
-					fw = new FileWriter(outputFile);
-					fw.write("\""+altArgsHelper.toString()+"\"\n");
-					for (int runIndex = 0; runIndex < altArgsHelper.numRuns; runIndex++) {
-						makeAltCSV(altArgsHelper,fw,runIndex,makeOutputRunDir(altArgsHelper.outputDir,runIndex));
-					}
-					fw.close();
-				}finally{
-					if(!altArgsHelper.bCalcOnly){
-						File[] straglers = altArgsHelper.userSimDataDir.listFiles(new FileFilter() {
-							@Override
-							public boolean accept(File pathname) {
-								return pathname.getName().startsWith(altArgsHelper.simPrefix);
-							}
-							});
-						if(straglers != null){
-							for (int i = 0; i < straglers.length; i++) {
-								straglers[i].delete();
-							}
-						}
-					}
-				}
-
-				
-			}else{
-				String site = args[5];
-				HybridSolverTester hst = new HybridSolverTester(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3], Boolean.parseBoolean(args[4]));
-				hst.runHybridTest(site);
-			}
-		}catch(Exception e){
-			lg.error(e.getMessage(), e);
-			System.exit(1);
-		}finally{
-			if(fw !=null){try{fw.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
-		}
-	}
+//								}
+//							}
+//						}
+//					}
+//
+//					//calc stats
+//					String dateStr= dateFormat.format(new Date());
+//					String outPrefix = altArgsHelper.simID+"_"+dateStr+"_0";
+//					File outputFile = new File(altArgsHelper.outputDir,outPrefix+".csv");
+//					while(outputFile.exists()){
+//						outPrefix = TokenMangler.getNextEnumeratedToken(outPrefix);
+//						outputFile = new File(altArgsHelper.outputDir,outPrefix+".csv");
+//					}
+//					fw = new FileWriter(outputFile);
+//					fw.write("\""+altArgsHelper.toString()+"\"\n");
+//					for (int runIndex = 0; runIndex < altArgsHelper.numRuns; runIndex++) {
+//						makeAltCSV(altArgsHelper,fw,runIndex,makeOutputRunDir(altArgsHelper.outputDir,runIndex));
+//					}
+//					fw.close();
+//				}finally{
+//					if(!altArgsHelper.bCalcOnly){
+//						File[] straglers = altArgsHelper.userSimDataDir.listFiles(new FileFilter() {
+//							@Override
+//							public boolean accept(File pathname) {
+//								return pathname.getName().startsWith(altArgsHelper.simPrefix);
+//							}
+//							});
+//						if(straglers != null){
+//							for (int i = 0; i < straglers.length; i++) {
+//								straglers[i].delete();
+//							}
+//						}
+//					}
+//				}
+//
+//
+//			}else{
+//				String site = args[5];
+//				HybridSolverTester hst = new HybridSolverTester(args[0], Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3], Boolean.parseBoolean(args[4]));
+//				hst.runHybridTest(site);
+//			}
+//		}catch(Exception e){
+//			lg.error(e.getMessage(), e);
+//			System.exit(1);
+//		}finally{
+//			if(fw !=null){try{fw.close();}catch(Exception e){lg.error(e.getMessage(), e);}}
+//		}
+//	}
 
 	private static File makeOutputRunDir(File baseOutputDir,int runIndex){
 		File outputRunDir = new File(baseOutputDir,"run"+runIndex);

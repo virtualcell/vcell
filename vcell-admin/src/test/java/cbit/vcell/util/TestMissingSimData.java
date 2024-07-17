@@ -478,7 +478,7 @@ public class TestMissingSimData {
 					}
 					String userkey = rset.getString("userkey");
 					if(userLoginInfo == null || !userLoginInfo.getUserName().equals(userid)){
-						userLoginInfo = new UserLoginInfo(userid,DigestedPassword.createAlreadyDigested(rset.getString("digestpw")));
+						userLoginInfo = new UserLoginInfo(userid);
 						userLoginInfo.setUser(new User(userid, new KeyValue(userkey)));
 					}
 					VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simJobSimRef, userLoginInfo.getUser());
@@ -1005,7 +1005,7 @@ public class TestMissingSimData {
 			return;
 		}
 		VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simIDAndJobID.simID, simIDAndJobID.user);
-		UserLoginInfo userLoginInfo = new UserLoginInfo(simIDAndJobID.user.getName(), new DigestedPassword("xoxoxox"));
+		UserLoginInfo userLoginInfo = new UserLoginInfo(simIDAndJobID.user.getName());
 		//getVcellClient().getClientServerManager().getConnectionStatus()
 		VCellConnection vcellConnection = userConnections.get(simIDAndJobID.user);
 		try{

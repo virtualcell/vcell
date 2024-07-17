@@ -183,9 +183,15 @@ public class RestDatabaseService {
 		if (!owner.compareEqual(vcellUser)){
 			throw new PermissionException("not authorized to start simulation");
 		}
-		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
-		try {
-			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+		int scanCount = simRep.getScanCount();
+
+		callStartSimulation(vcMessagingService, vcellUser, simKey, owner, scanCount);
+		return simRep;
+	}
+
+	public static void callStartSimulation(VCMessagingService vcMessagingService, User vcellUser, KeyValue simKey, User owner, int scanCount) throws DataAccessException {
+		try (VCMessageSession rpcSession = vcMessagingService.createProducerSession()) {
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
@@ -194,10 +200,7 @@ public class RestDatabaseService {
 			}
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
-			rpcSimServerProxy.startSimulation(vcellUser, vcSimID, simRep.getScanCount());
-			return simRep;
-		}finally{
-			rpcSession.close();
+			rpcSimServerProxy.startSimulation(vcellUser, vcSimID, scanCount);
 		}
 	}
 
@@ -212,9 +215,14 @@ public class RestDatabaseService {
 		if (!owner.compareEqual(vcellUser)){
 			throw new PermissionException("not authorized to stop simulation");
 		}
-		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
-		try {
-			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+
+		callStopSimulation(vcMessagingService, vcellUser, simKey, owner);
+		return simRep;
+	}
+
+	public static void callStopSimulation(VCMessagingService vcMessagingService, User vcellUser, KeyValue simKey, User owner) throws DataAccessException {
+		try (VCMessageSession rpcSession = vcMessagingService.createProducerSession()) {
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
@@ -224,9 +232,6 @@ public class RestDatabaseService {
 			RpcSimServerProxy rpcSimServerProxy = new RpcSimServerProxy(userLoginInfo, rpcSession);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 			rpcSimServerProxy.stopSimulation(vcellUser, vcSimID);
-			return simRep;
-		}finally{
-			rpcSession.close();
 		}
 	}
 
@@ -234,7 +239,7 @@ public class RestDatabaseService {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
-		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 		String simId = resource.getAttribute(VCellApiApplication.SIMDATAID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		KeyValue simKey = new KeyValue(simId);
 		SimulationRep simRep = getSimulationRep(simKey);
@@ -259,7 +264,7 @@ public class RestDatabaseService {
 		if (vcellUser==null){
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
-		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+		UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 		String simId = resource.getAttribute(VCellApiApplication.SIMDATAID);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		String jobIndexString = resource.getAttribute(VCellApiApplication.JOBINDEX);  // resource.getRequestAttributes().get(VCellApiApplication.SIMDATAID);
 		KeyValue simKey = new KeyValue(simId);
@@ -270,15 +275,19 @@ public class RestDatabaseService {
 		int jobIndex = Integer.parseInt(jobIndexString);
 		String variableNames[] = null; // TODO: pass in variables names from the query parameters.
 		User owner = simRep.getOwner();
-		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
-		try {
+		DataSetTimeSeries dataSetTimeSeries = null;
+		dataSetTimeSeries = callGetDataSetTimeSeries(vcMessagingService, userLoginInfo, simKey, owner, jobIndex, variableNames);
+		return dataSetTimeSeries;
+	}
+
+	public static DataSetTimeSeries callGetDataSetTimeSeries(
+			VCMessagingService vcMessagingService, UserLoginInfo userLoginInfo,
+			KeyValue simKey, User owner, int jobIndex, String[] variableNames) throws DataAccessException {
+		try (VCMessageSession rpcSession = vcMessagingService.createProducerSession()) {
 			RpcDataServerProxy rpcDataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSession);
 			VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
 			VCDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, jobIndex);
-			DataSetTimeSeries dataSetTimeSeries = rpcDataServerProxy.getDataSetTimeSeries(vcdID, variableNames);
-			return dataSetTimeSeries;
-		}finally{
-			rpcSession.close();
+			return rpcDataServerProxy.getDataSetTimeSeries(vcdID, variableNames);
 		}
 	}
 
@@ -748,7 +757,7 @@ public class RestDatabaseService {
 		}
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
-			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {
@@ -813,7 +822,7 @@ public class RestDatabaseService {
 		//
 		VCMessageSession rpcSession = vcMessagingService.createProducerSession();
 		try {
-			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName(),null);
+			UserLoginInfo userLoginInfo = new UserLoginInfo(vcellUser.getName());
 			try {
 				userLoginInfo.setUser(vcellUser);
 			} catch (Exception e) {

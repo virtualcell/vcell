@@ -23,10 +23,9 @@ public final class HealthRestlet extends Restlet {
 	private final static Logger lg = LogManager.getLogger(HealthRestlet.class);
 	
 	enum RequestType {
-		login,
 		sim,
 		all
-	};
+	}
 	
 	
 	public HealthRestlet(Context context) {
@@ -43,9 +42,7 @@ public final class HealthRestlet extends Restlet {
 				String requestTypeString = form.getFirstValue(VCellApiApplication.HEALTH_CHECK, true);
 				RequestType requestType = null;
 				if (requestTypeString!=null) {
-					if (requestTypeString.equalsIgnoreCase(VCellApiApplication.HEALTH_CHECK_LOGIN)) {
-						requestType = RequestType.login;
-					}else if (requestTypeString.equalsIgnoreCase(VCellApiApplication.HEALTH_CHECK_SIM)) {
+					if (requestTypeString.equalsIgnoreCase(VCellApiApplication.HEALTH_CHECK_SIM)) {
 						requestType = RequestType.sim;
 					}else if (requestTypeString.equalsIgnoreCase(VCellApiApplication.HEALTH_CHECK_ALL)) {
 						requestType = RequestType.all;
@@ -53,7 +50,7 @@ public final class HealthRestlet extends Restlet {
 				}
 				if (requestType==null){
 					throw new RuntimeException("expecting /"+VCellApiApplication.HEALTH+"?"+VCellApiApplication.HEALTH_CHECK+"="+
-							"("+VCellApiApplication.HEALTH_CHECK_LOGIN+"|"+VCellApiApplication.HEALTH_CHECK_SIM+"|"+VCellApiApplication.HEALTH_CHECK_ALL+")"
+							"("+VCellApiApplication.HEALTH_CHECK_SIM+"|"+VCellApiApplication.HEALTH_CHECK_ALL+")"
 							+ "[&"+VCellApiApplication.HEALTH_CHECK_ALL_START_TIMESTAMP+"=<start_ms>]"
 							+ "[&"+VCellApiApplication.HEALTH_CHECK_ALL_END_TIMESTAMP+"=<end_ms>]"
 							+ "[&"+VCellApiApplication.HEALTH_CHECK_STATUS_TIMESTAMP+"=<status_ms>]");
@@ -90,14 +87,6 @@ public final class HealthRestlet extends Restlet {
 						String healthEventsJSON = gson.toJson(events);
 						response.setStatus(Status.SUCCESS_OK);
 						response.setEntity(new JsonRepresentation(healthEventsJSON));
-						break;
-					}
-					case login:{
-						NagiosStatus nagiosStatus = healthService.getLoginStatus(status_timestamp);
-						Gson gson = new Gson();
-						String statusJSON = gson.toJson(nagiosStatus);
-						response.setStatus(Status.SUCCESS_OK);
-						response.setEntity(new JsonRepresentation(statusJSON));
 						break;
 					}
 					case sim:{
