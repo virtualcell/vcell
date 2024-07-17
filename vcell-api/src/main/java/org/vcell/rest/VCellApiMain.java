@@ -226,8 +226,7 @@ public class VCellApiMain {
 		boolean bIgnoreCertProblemsForHealthService = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
 		User testUser = localAdminDbServer.getUser(TEST_USER);
 		UserInfo testUserInfo = localAdminDbServer.getUserInfo(testUser.getID()); // lookup hashed auth credentials in database.
-		String pathPrefixV0 = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerPrefixV0);
-		HealthService healthService = new HealthService(restEventService, "localhost", port, pathPrefixV0,
+		HealthService healthService = new HealthService(vcMessagingService_int, databaseServerImpl, restEventService,
 				bIgnoreCertProblemsForHealthService, bIgnoreHostMismatchForHealthService,
 				testUserInfo);
 		AdminService adminService = new AdminService(adminDbTopLevel, databaseServerImpl);

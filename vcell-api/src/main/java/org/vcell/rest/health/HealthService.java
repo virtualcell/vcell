@@ -1,50 +1,46 @@
 package org.vcell.rest.health;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.atomic.AtomicLong;
-
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.rest.events.RestEventService;
-import org.vcell.util.BigString;
-import org.vcell.util.document.*;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
-
-import cbit.rmi.event.MessageEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
+import cbit.vcell.message.VCMessagingService;
+import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
+import com.google.gson.Gson;
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.api.common.events.EventWrapper;
+import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
+import org.vcell.rest.events.RestEventService;
+import org.vcell.rest.server.RestDatabaseService;
+import org.vcell.util.BigString;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.UserLoginInfo;
+
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class HealthService {
 	
-	private static final long LOGIN_TIME_WARNING = 10*1000;
-	private static final long LOGIN_TIME_ERROR = 30*1000;
 	private static final long SIMULATION_TIME_WARNING = 45*1000;
 	private static final long SIMULATION_TIMEOUT = 8*60*1000;
-	private static final long LOGIN_LOOP_START_DELAY = 40*1000;
-	private static final long LOGIN_LOOP_SLEEP = 3*60*1000;
 	private static final long SIMULATION_LOOP_START_DELAY = 60*1000;
 	private static final long SIMULATION_LOOP_SLEEP = 5*60*1000;
 	
 	Logger lg = LogManager.getLogger(HealthService.class);
 
-	public static enum HealthEventType {
-		LOGIN_START,
-		LOGIN_FAILED,
-		LOGIN_SUCCESS,
+	public enum HealthEventType {
 		RUNSIM_START,
 		RUNSIM_SUBMIT,
 		RUNSIM_FAILED,
@@ -92,33 +88,32 @@ public class HealthService {
 		static NagiosStatus Critical(Long elapsedTime_MS, String message) {
 			return new NagiosStatus("Critical",2,message,elapsedTime_MS);
 		}
-		static NagiosStatus Unknown(Long elapsedTime_MS, String message) {
-			return new NagiosStatus("Unknown",3,null,elapsedTime_MS);
+		static NagiosStatus Unknown() {
+			return new NagiosStatus("Unknown",3,null,null);
 		}
 	}
 
 	final RestEventService eventService;
+	final DatabaseServerImpl databaseServer;
+	final SimulationDatabaseDirect simulationDatabaseDirect;
 	final AtomicLong eventSequence = new AtomicLong(0);
 	final ConcurrentLinkedDeque<HealthEvent> healthEvents = new ConcurrentLinkedDeque<>();
-	Thread loginThread;
 	Thread runsimThread;
-	final String host;
-	final int port;
-	final String pathPrefixV0;
 	final boolean bIgnoreCertProblems;
 	final boolean bIgnoreHostMismatch;
 	final UserInfo testUserinfo;
+	final VCMessagingService vcMessagingService;
 
-	public HealthService(RestEventService eventService, String host, int port, String pathPrefixV0,
-			boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch, 
-			UserInfo testUserinfo) {
+	public HealthService(VCMessagingService vcMessagingService, DatabaseServerImpl databaseServer, RestEventService eventService,
+						 boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch,
+						 UserInfo testUserinfo) {
 		this.eventService = eventService;
-		this.host = host;
-		this.port = port;
-		this.pathPrefixV0 = pathPrefixV0;
+		this.databaseServer = databaseServer;
+		this.simulationDatabaseDirect = new SimulationDatabaseDirect(databaseServer.getAdminDBTopLevel(), databaseServer, false);
 		this.bIgnoreCertProblems = bIgnoreCertProblems;
 		this.bIgnoreHostMismatch = bIgnoreHostMismatch;
 		this.testUserinfo = testUserinfo;
+		this.vcMessagingService = vcMessagingService;
 	}
 			
 	private long simStartEvent() {
@@ -143,82 +138,31 @@ public class HealthService {
 		addHealthEvent(healthEvent);
 	}
 	
-	private long loginStartEvent() {
-		long id = eventSequence.getAndIncrement();
-		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.LOGIN_START, "starting login ("+id+")");
-		addHealthEvent(healthEvent);
-		return id;
-	}
-	
-	private void loginFailed(long id, String message) {
-		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.LOGIN_FAILED, "login failed ("+id+"): " + message);
-		addHealthEvent(healthEvent);
-	}
-	
-	private void loginSuccess(long id) {
-		HealthEvent healthEvent = new HealthEvent(id, HealthEventType.LOGIN_SUCCESS, "login success ("+id+")");
-		addHealthEvent(healthEvent);
-	}
-
 	private void addHealthEvent(HealthEvent healthEvent) {
 		if (lg.isDebugEnabled()) {
 			lg.debug(healthEvent.toString());
 		}
 		healthEvents.addFirst(healthEvent);
 	}
-	
-	
+
 	public HealthEvent[] query(long starttimestamp_MS, long endtimestamp_MS) {
-		ArrayList<HealthEvent> eventList = new ArrayList<HealthEvent>();
-		Iterator<HealthEvent> iter = healthEvents.iterator();
-		while (iter.hasNext()) {
-			HealthEvent event = iter.next();
-			if (event.timestamp_MS >= starttimestamp_MS && event.timestamp_MS <= endtimestamp_MS) {
-				eventList.add(0, event);
-			}
-		}
-		HealthEvent[] eventArray = eventList.toArray(new HealthEvent[0]);
-		return eventArray;
+		var eventList = new ArrayList<HealthEvent>();
+        for (HealthEvent event : healthEvents) {
+            if (event.timestamp_MS >= starttimestamp_MS && event.timestamp_MS <= endtimestamp_MS) {
+                eventList.add(0, event);
+            }
+        }
+        return eventList.toArray(new HealthEvent[0]);
 	}
 
 	public void start() {
-		if (loginThread!=null || runsimThread!=null) {
+		if (runsimThread!=null) {
 			throw new RuntimeException("only call start() once.");
 		}
-		loginThread = new Thread(() -> loginLoop(), "login monitor thread");
-		loginThread.setDaemon(true);
-		loginThread.setPriority(Thread.currentThread().getPriority()-1);
-		loginThread.start();
-		
 		runsimThread = new Thread(() -> runsimLoop(), "runsim monitor thread");
 		runsimThread.setDaemon(true);
 		runsimThread.setPriority(Thread.currentThread().getPriority()-1);
 		runsimThread.start();
-	}
-	
-	private void loginLoop() {
-		try {
-			Thread.sleep(LOGIN_LOOP_START_DELAY);
-		} catch (InterruptedException e1) {
-		}
-		while (true) {
-			long id = loginStartEvent();
-			try {
-				UserLoginInfo userLoginInfo = new UserLoginInfo(testUserinfo.getApiUserInfo().userid);
-				userLoginInfo.setUser(new User(testUserinfo.userid, testUserinfo.id));
-				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
-				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
-				VCInfoContainer vcInfoContainer = vcellConnection.getUserMetaDbServer().getVCInfoContainer();
-				loginSuccess(id);
-			}catch (Throwable e) {
-				loginFailed(id, e.getMessage());
-			}
-			try {
-				Thread.sleep(LOGIN_LOOP_SLEEP);
-			} catch (InterruptedException e) {
-				lg.info(e);
-			}
-		}
 	}
 	
 	private void runsimLoop() {
@@ -226,16 +170,15 @@ public class HealthService {
 			Thread.sleep(SIMULATION_LOOP_START_DELAY);
 		} catch (InterruptedException e1) {
 		}
+		Gson gson = new Gson();
 		UserLoginInfo userLoginInfo = new UserLoginInfo(testUserinfo.userid);
-		userLoginInfo.setUser(new User(testUserinfo.userid, testUserinfo.id));
+		User user = new User(testUserinfo.userid, testUserinfo.id);
+		userLoginInfo.setUser(user);
 		while (true) {
 			long id = simStartEvent();
 			KeyValue savedBioModelKey = null;
 			VCSimulationIdentifier runningSimId = null;
 			try {
-				RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
-				VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
-				
 				String vcmlString = IOUtils.toString(getClass().getResourceAsStream("/TestTemplate.vcml"));
 				
 				BioModel templateBioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlString));
@@ -248,25 +191,27 @@ public class HealthService {
 					templateBioModel.removeSimulation(templateBioModel.getSimulation(0));
 				}
 				MathMappingCallback callback = new MathMappingCallback() {
-					@Override
-					public void setProgressFraction(float fractionDone) { }
-					@Override
-					public void setMessage(String message) { }
-					@Override
-					public boolean isInterrupted() { return false; }
+					@Override public void setProgressFraction(float fractionDone) { }
+					@Override public void setMessage(String message) { }
+					@Override public boolean isInterrupted() { return false; }
 				};
 				templateBioModel.getSimulationContext(0).addNewSimulation("sim", callback, NetworkGenerationRequirements.ComputeFullStandardTimeout);
 				
 				BigString vcml = new BigString(XmlHelper.bioModelToXML(templateBioModel));
 				String[] independentSims = new String[0];
-				BigString savedBioModelVCML = vcellConnection.getUserMetaDbServer().saveBioModelAs(vcml, newBiomodelName, independentSims);
+				BigString savedBioModelVCML = databaseServer.saveBioModel(user, vcml, independentSims);
 				BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(savedBioModelVCML.toString()));
 				savedBioModelKey = savedBioModel.getVersion().getVersionKey();
 				
 				Simulation sim = savedBioModel.getSimulation(0);
 				VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(sim.getKey(), sim.getVersion().getOwner());
 				long eventTimestamp = System.currentTimeMillis();
-				SimulationStatus simStatus = vcellConnection.getSimulationController().startSimulation(vcSimId, 1);
+
+				// submit simulation via an RPC call
+				RestDatabaseService.callStartSimulation(vcMessagingService, user, vcSimId.getSimulationKey(), sim.getSimulationVersion().getOwner(), sim.getScanCount());
+				// get initial status from database
+				SimulationStatus simStatus = simulationDatabaseDirect.getSimulationStatus(vcSimId.getSimulationKey());
+
 				simSubmitEvent(id, vcSimId);
 				runningSimId = vcSimId;
 				
@@ -276,11 +221,13 @@ public class HealthService {
 						throw new RuntimeException("simulation took longer than "+SIMULATION_TIMEOUT+" to complete");
 					}
 					Thread.sleep(1000);
-					MessageEvent[] messageEvents = vcellConnection.getMessageEvents();
-					if (messageEvents!=null) {
-						for (MessageEvent event : messageEvents) {
-							if (event instanceof SimulationJobStatusEvent) {
-								SimulationJobStatusEvent jobEvent = (SimulationJobStatusEvent)event;
+					EventWrapper[] eventWrappers = eventService.query(user.getName(), eventTimestamp);
+					if (eventWrappers!=null) {
+						for (EventWrapper eventWrapper : eventWrappers) {
+							if (eventWrapper.eventType == EventWrapper.EventType.SimJob) {
+								SimulationJobStatusEventRepresentation simJobStatusEventRep =
+										gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);
+								SimulationJobStatusEvent jobEvent = SimulationJobStatusEvent.fromJsonRep(this, simJobStatusEventRep);
 								SimulationJobStatus jobStatus = jobEvent.getJobStatus();
 								VCSimulationIdentifier eventSimId = jobStatus.getVCSimulationIdentifier();
 								if (eventSimId.getOwner().equals(userLoginInfo.getUser()) && eventSimId.getSimulationKey().equals(sim.getKey())) {
@@ -297,7 +244,7 @@ public class HealthService {
 				}
 
 				// before declaring success, retrieve some data (time array is sufficient)
-				vcellConnection.getDataSetController().getDataSetTimes(new VCSimulationDataIdentifier(vcSimId, 0));
+				RestDatabaseService.callGetDataSetTimeSeries(vcMessagingService, userLoginInfo, sim.getKey(), user, 0, new String[] { "t" });
 
 				simSuccess(id);
 				
@@ -308,17 +255,15 @@ public class HealthService {
 			}finally {
 				// cleanup
 				try {
-					RemoteProxyVCellConnectionFactory vcellConnectionFactory = new RemoteProxyVCellConnectionFactory(host, port, pathPrefixV0);
-					VCellConnection vcellConnection = vcellConnectionFactory.createVCellConnection(userLoginInfo);
 					if (runningSimId!=null) {
 						try {
-							vcellConnection.getSimulationController().stopSimulation(runningSimId);
+							RestDatabaseService.callStopSimulation(vcMessagingService, user, runningSimId.getSimulationKey(), runningSimId.getOwner());
 						}catch (Exception e) {
 							lg.error(e.getMessage(), e);
 						}
 					}
 					if (savedBioModelKey!=null) {
-						vcellConnection.getUserMetaDbServer().deleteBioModel(savedBioModelKey);
+						databaseServer.deleteBioModel(user, savedBioModelKey);
 					}
 				}catch (Exception e) {
 					lg.error(e.getMessage(), e);
@@ -329,54 +274,6 @@ public class HealthService {
 			} catch (InterruptedException e) {
 				lg.error(e.getMessage(), e);
 			}
-		}
-	}
-	
-	public NagiosStatus getLoginStatus(long status_timestamp) {
-		// get last 5 minutes of events to determine status
-		HealthEvent[] events = query(status_timestamp-(LOGIN_TIME_ERROR+LOGIN_LOOP_SLEEP+120000), status_timestamp);
-		
-		// find last completed login event (if any)
-		HealthEvent loginCompleteEvent = null;
-		for (HealthEvent event : events) {
-			if (event.eventType == HealthEventType.LOGIN_FAILED 
-					|| event.eventType == HealthEventType.LOGIN_SUCCESS) {
-				if (loginCompleteEvent==null || loginCompleteEvent.timestamp_MS < event.timestamp_MS) {
-					loginCompleteEvent = event;
-				}
-			}
-		}
-
-		// find corresponding START event to determine elapsed time
-		Long elapsedTime_MS = null;
-		if (loginCompleteEvent!=null) {
-			for (HealthEvent event : events) {
-				if (event.eventType == HealthEventType.LOGIN_START 
-						&& event.transactionId == loginCompleteEvent.transactionId) {
-					elapsedTime_MS = loginCompleteEvent.timestamp_MS - event.timestamp_MS;
-				}
-			}
-		}
-		
-		if (loginCompleteEvent==null) {
-			return NagiosStatus.Unknown(null, "no completed login attempts");
-			
-		} else if (loginCompleteEvent.eventType==HealthEventType.LOGIN_SUCCESS) {
-			//
-			// OK or WARNING depending on time
-			//
-			if (elapsedTime_MS==null || elapsedTime_MS > LOGIN_TIME_ERROR) {
-				return NagiosStatus.Critical(elapsedTime_MS, "login timeout");
-			}
-			if (elapsedTime_MS < LOGIN_TIME_WARNING) {
-				return NagiosStatus.OK(elapsedTime_MS);
-			}
-			return NagiosStatus.Warning(elapsedTime_MS);
-
-		} else if (loginCompleteEvent.eventType==HealthEventType.LOGIN_FAILED) {
-			return NagiosStatus.Critical(elapsedTime_MS, loginCompleteEvent.message);
-		} else {
-			throw new RuntimeException("unexpected HealthEventType");
 		}
 	}
 	
@@ -407,7 +304,7 @@ public class HealthService {
 		}
 		
 		if (loginCompleteEvent==null) {
-			return NagiosStatus.Unknown(null, "no completed simulation attempts");
+			return NagiosStatus.Unknown(); // no completed simulation attempts
 			
 		} else if (loginCompleteEvent.eventType==HealthEventType.RUNSIM_SUCCESS) {
 			//
@@ -416,7 +313,7 @@ public class HealthService {
 			if (elapsedTime_MS==null || elapsedTime_MS > SIMULATION_TIMEOUT) {
 				return NagiosStatus.Critical(elapsedTime_MS, "simulation timeout");
 			}
-			if (elapsedTime_MS==null || elapsedTime_MS < SIMULATION_TIME_WARNING) {
+			if (elapsedTime_MS < SIMULATION_TIME_WARNING) {
 				return NagiosStatus.OK(elapsedTime_MS);
 			}
 			return NagiosStatus.Warning(elapsedTime_MS);

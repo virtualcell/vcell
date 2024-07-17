@@ -136,7 +136,6 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String HEALTH = "health";
 
 	public static final String HEALTH_CHECK = "check";
-	public static final String 	HEALTH_CHECK_LOGIN = "login";
 	public static final String 	HEALTH_CHECK_SIM = "sim";
 	public static final String 	HEALTH_CHECK_STATUS_TIMESTAMP = "status_timestamp";
 	public static final String 	HEALTH_CHECK_ALL = "all";
