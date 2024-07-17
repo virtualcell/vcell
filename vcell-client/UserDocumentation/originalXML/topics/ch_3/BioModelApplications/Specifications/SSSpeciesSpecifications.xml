@@ -17,6 +17,7 @@
 	<list>
 		<item>The reaction rules are strictly categorized and must obey several syntax restrictions.</item>
 	</list>
+		<imgReference target = "SS_species.png"/>
 	</appearance>
 
 	<operations>  
