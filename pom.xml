@@ -96,12 +96,8 @@
 		<activemq-broker.version>5.18.3</activemq-broker.version>
 		<activemq-client.version>5.18.3</activemq-client.version>
 		<axis.version>1.4</axis.version>
-		<axis-wsdl4j.version>1.2</axis-wsdl4j.version>
-		<bcprov-jdk15on.version>1.70</bcprov-jdk15on.version>
-		<bcpkix-jdk15on.version>1.70</bcpkix-jdk15on.version>
 		<bio-formats.version>6.1.1</bio-formats.version>
 		<biojava.version>6.0.4</biojava.version>
-		<biomodels-wslib.version>1.21</biomodels-wslib.version>
 		<colt.version>1.2.0</colt.version>
 		<combine-archive.version>1.4.1</combine-archive.version>
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
@@ -121,8 +117,6 @@
 		<guice.version>7.0.0</guice.version>
 		<httpclient.version>4.5.11</httpclient.version>
 		<httpcore.version>4.4.13</httpcore.version>
-		<imagej2.version>2.3.0</imagej2.version>
-		<imagej.version>${imagej2.version}</imagej.version>
 		<itext.version>2.1.7</itext.version>
 		<quarkus-itext.version>3.0.5</quarkus-itext.version>
 		<quarkus-logging-json.version>3.1.0</quarkus-logging-json.version>
@@ -162,7 +156,6 @@
 		<mongodb-driver-sync.version>5.0.0</mongodb-driver-sync.version>
 		<n5.version>3.0.0</n5.version>
 		<netcdf.version>4.3.22</netcdf.version>
-		<netty.version>3.2.10.Final</netty.version>
 		<nitrite.version>2.1.1</nitrite.version>
 		<ojdbc-bom.version>23.3.0.23.09</ojdbc-bom.version>
 		<opencsv.version>5.7.1</opencsv.version>

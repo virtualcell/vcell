@@ -109,7 +109,7 @@
     <launcher name="VCell-${compiler:Site}-MacOSX" id="102" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
-      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;--add-exports java.desktop/sun.awt.image=ALL-UNNAMED -Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
@@ -118,7 +118,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>-Dvcell.autoflushlog=true
+        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dvcell.serverHost=${compiler:rmiHosts}
@@ -147,7 +148,7 @@
     <launcher name="VCell-${compiler:Site}-Windows64" id="345" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
-      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;--add-exports java.desktop/sun.awt.image=ALL-UNNAMED -Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
@@ -156,7 +157,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>-Dvcell.autoflushlog=true
+        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dvcell.serverHost=${compiler:rmiHosts}
@@ -179,7 +181,7 @@
     <launcher name="VCell-${compiler:Site}-Windows32" id="447" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" iconSet="true" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen show="true" bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" textOverlay="true" />
-      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;--add-exports java.desktop/sun.awt.image=ALL-UNNAMED -Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
@@ -188,7 +190,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>-Dvcell.autoflushlog=true
+        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dvcell.serverHost=${compiler:rmiHosts}
@@ -212,7 +215,7 @@
     <launcher name="VCell-${compiler:Site}-Linux32" id="534" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
-      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;--add-exports java.desktop/sun.awt.image=ALL-UNNAMED -Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
@@ -221,7 +224,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>-Dvcell.autoflushlog=true
+        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
 -Dvcell.serverHost=${compiler:rmiHosts}
@@ -241,7 +245,7 @@
     <launcher name="VCell-${compiler:Site}-Linux64" id="627" icnsFile="${compiler:vcellIcnsFile}">
       <executable name="VCell-${compiler:Site}" failOnStderrOutput="false" executableMode="gui" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
-      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;--add-exports java.desktop/sun.awt.image=ALL-UNNAMED -Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="cbit.vcell.client.VCellClientMain" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
@@ -250,7 +254,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>-Dvcell.autoflushlog=true
+        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.serverHost=${compiler:rmiHosts}
 -Dvcell.serverPrefix.v0=${compiler:serverPrefixV0}
@@ -270,7 +275,7 @@
     <launcher name="VCell-${compiler:Site}-Linux64-sbmltovcml" id="1880" excludeFromMenu="true">
       <executable name="VCell-${compiler:Site}-sbmltovcml" iconSet="true" redirectStderr="false" failOnStderrOutput="false" executableMode="console" checkConsoleParameter="true" dpiAware="false" />
       <splashScreen bitmapFile="${compiler:vcell5SplashScreenPngFilePath}" />
-      <java mainClass="org.vcell.sbml.SbmlVcmlConverter" vmParameters="&quot;--add-exports java.desktop/sun.awt.image=ALL-UNNAMED -Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
+      <java mainClass="org.vcell.sbml.SbmlVcmlConverter" vmParameters="&quot;-Dvcell.installDir=${launcher:sys.launcherDirectory}&quot;">
         <classPath>
           <variable name="vcellClasspathColonSep" separator=":" useRelativePrefix="true" relativePrefix="lib" />
         </classPath>
@@ -279,7 +284,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>-Dvcell.autoflushlog=true
+        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+-Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.serverHost=${compiler:rmiHosts}
 -Dvcell.serverPrefix.v0=${compiler:serverPrefixV0}

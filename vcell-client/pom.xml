@@ -150,24 +150,6 @@
 			<artifactId>picocli</artifactId>
 			<version>${picocli.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>xalan</groupId>
-			<artifactId>xalan</artifactId>
-			<version>${xalan.version}</version>
-		</dependency>
-		
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-		<version>${jetty.version}</version>
-    </dependency>
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20220924</version>
-		</dependency>
-
 	</dependencies>
 	<profiles>
 		<profile>

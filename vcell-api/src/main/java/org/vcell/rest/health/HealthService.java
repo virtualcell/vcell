@@ -70,26 +70,28 @@ public class HealthService {
 		int nagiosStatusCode;
 		String message;
 		Long elapsedTime_MS;
+		String tags;
 		
 		// exit with parsed nagios code (0-OK,1-Warning,2-Critical,3-Unknown)
-		NagiosStatus(String nagiosStatusName, int nagiosStatusCode, String message, Long elapsedTime_MS){
+		NagiosStatus(String nagiosStatusName, int nagiosStatusCode, String message, Long elapsedTime_MS, String tags){
 			this.nagiosStatusName = nagiosStatusName;
 			this.nagiosStatusCode = nagiosStatusCode;
 			this.message = message;
 			this.elapsedTime_MS = elapsedTime_MS;
+			this.tags = tags;
 		}
 
 		static NagiosStatus OK(Long elapsedTime_MS) {
-			return new NagiosStatus("OK",0,null,elapsedTime_MS);
+			return new NagiosStatus("OK",0,null,elapsedTime_MS, "UP");
 		}
 		static NagiosStatus Warning(Long elapsedTime_MS) {
-			return new NagiosStatus("Warning",1,null,elapsedTime_MS);
+			return new NagiosStatus("Warning",1,null,elapsedTime_MS, "UP WARNING");
 		}
 		static NagiosStatus Critical(Long elapsedTime_MS, String message) {
-			return new NagiosStatus("Critical",2,message,elapsedTime_MS);
+			return new NagiosStatus("Critical",2,message,elapsedTime_MS, "DOWN");
 		}
 		static NagiosStatus Unknown() {
-			return new NagiosStatus("Unknown",3,null,null);
+			return new NagiosStatus("Unknown",3,null,null, "WARNING");
 		}
 	}
 
