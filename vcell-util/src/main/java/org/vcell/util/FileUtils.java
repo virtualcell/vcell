@@ -10,18 +10,7 @@
 
 package org.vcell.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -30,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+
 
 /**
  * Insert the type's description here.
@@ -80,14 +70,6 @@ public static void copyDirectory(File sourceDir, File destDir, boolean bDeep, Fi
 	}	
 }
 
-public static void copyDirectoryShallow(File sourceDir, File destDir) throws IOException {
-	copyDirectory(sourceDir, destDir, false, null);
-}
-
-public static void copyDirectoryDeep(File sourceDir, File destDir) throws IOException {
-	copyDirectory(sourceDir, destDir, true, null);
-}
-	
 /**
 * Convenience method to copy a file from a source to a destination.
 * Overwrite is prevented, and the last modified is kept, 4k buffer used.
@@ -371,16 +353,6 @@ public static String pathJoinStrings(Collection<String> input) {
 	}
 	throw new IllegalArgumentException("null input to splitPathString");
 }
-/**
- * join collection of File into into operating system path separator String
- * @param input
- * @return String with input elements separated by path
- * @throws IllegalArgumentException if input null 
- */
-public static String pathJoinFiles(Collection<File> input) {
-	return pathJoinStrings(toStrings(input));
-	
-}
 
 /**
  * convert collection of Strings to Files. Optionally verify Strings are valid files, and omit from
@@ -398,23 +370,6 @@ public static Collection<File> toFiles(Collection<String> input, boolean validat
 			if (!validate || f.exists()) {
 				rval.add(f);
 			}
-		}
-		return rval;
-	}
-	throw new IllegalArgumentException("null input to splitPathString");
-}
-
-/**
- * convert collection of Files to Strings
- * @param input 
- * @return Collection of absolute paths 
- * @throws IllegalArgumentException if input null 
- */
-public static Collection<String> toStrings(Collection<File> input) {
-	if (input != null) {
-		Collection<String> rval = new ArrayList<String>();
-		for (File file:input) {
-			rval.add(file.getAbsolutePath());
 		}
 		return rval;
 	}
@@ -577,15 +532,6 @@ public static String getPrefix(final String filename) {
 }
 private static boolean isSeparator(final char ch) {
     return ch == UNIX_SEPARATOR || ch == WINDOWS_SEPARATOR;
-}
-/**
- * use org.apache.commons.io.FileUtils.deleteQuietly(path);
- * @param path
- * @throws FileNotFoundException
- */
-@Deprecated
-public static void deleteRecursive(File path) throws FileNotFoundException{
-    org.apache.commons.io.FileUtils.deleteQuietly(path);
 }
 
 }

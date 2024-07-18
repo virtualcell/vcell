@@ -1,5 +1,10 @@
 package cbit.vcell.client.desktop.biomodel.annotations;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,7 +13,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.*;
 
 public class UniProtSearch {
 
@@ -44,34 +48,7 @@ public class UniProtSearch {
 
         System.out.println(response);
         System.out.println("Parsing JSON\n");
-        JSONObject obj = new JSONObject(response);
-//        String accession = obj.getJSONObject("pageInfo").getString("pageName");
-        JSONArray results = obj.getJSONArray("results"); // notice that `"posts": [...]`
-        for (int i = 0; i < results.length(); i++) {
-            JSONObject result = results.getJSONObject(i);
-            String accession = result.getString("primaryAccession");
-
-            System.out.println("Accession: " + accession);
-            String name;
-            if (result.toString().contains("submissionNames")) {
-                name = result
-                        .getJSONObject("proteinDescription")
-                        .getJSONArray("submissionNames")
-                        .getJSONObject(0)
-                        .getJSONObject("fullName")
-                        .getString("value");
-            } else {
-                name = results.getJSONObject(i)
-                        .getJSONObject("proteinDescription")
-                        .getJSONObject("recommendedName")
-                        .getJSONObject("fullName")
-                        .getString("value");
-            }
-            System.out.println("Name: " + name+"\n");
-
-            //Add searchElements to list
-            searchElements.add(new SearchElement(name, accession));
-        }
+        searchElements.addAll(parseResponse(response));
 
 //        System.out.println("\nSearch Elements:");
 //        for (SearchElement element: searchElements) {
@@ -80,6 +57,41 @@ public class UniProtSearch {
 
         //        System.out.println("Status Code: " + response.statusCode());
 //        System.out.println("Response Body:\n" + response.body());
+        return searchElements;
+    }
+
+
+    private static List<SearchElement> parseResponse(String response) {
+        List<SearchElement> searchElements = new ArrayList<>();
+        JsonElement jelement = JsonParser.parseString(response);
+        JsonObject jobject = jelement.getAsJsonObject();
+        JsonArray results = jobject.getAsJsonArray("results");
+
+        for (JsonElement resultElement : results) {
+            JsonObject result = resultElement.getAsJsonObject();
+            String accession = result.get("primaryAccession").getAsString();
+
+            System.out.println("Accession: " + accession);
+            String name;
+            if (result.toString().contains("submissionNames")) {
+                name = result
+                        .getAsJsonObject("proteinDescription")
+                        .getAsJsonArray("submissionNames")
+                        .get(0).getAsJsonObject()
+                        .getAsJsonObject("fullName")
+                        .get("value").getAsString();
+            } else {
+                name = result
+                        .getAsJsonObject("proteinDescription")
+                        .getAsJsonObject("recommendedName")
+                        .getAsJsonObject("fullName")
+                        .get("value").getAsString();
+            }
+            System.out.println("Name: " + name + "\n");
+
+            // Add searchElements to list
+            searchElements.add(new SearchElement(name, accession));
+        }
         return searchElements;
     }
 

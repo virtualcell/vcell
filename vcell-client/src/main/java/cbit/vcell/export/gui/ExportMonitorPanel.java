@@ -10,6 +10,18 @@
 
 package cbit.vcell.export.gui;
 
+import cbit.rmi.event.ExportEvent;
+import cbit.vcell.resource.PropertyLoader;
+import org.vcell.util.gui.DefaultScrollTableActionManager;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.ScrollTable;
+
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -18,31 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Optional;
-
-import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-
-import cbit.vcell.client.data.ExportedDataTableModel;
-import cbit.vcell.resource.PropertyLoader;
-import org.apache.xalan.trace.SelectionEvent;
-import org.vcell.client.logicalwindow.LWContainerHandle;
-import org.vcell.client.logicalwindow.LWDialog;
-import org.vcell.client.logicalwindow.LWNamespace;
-import org.vcell.client.logicalwindow.LWTitledOptionPaneDialog;
-import org.vcell.util.gui.DefaultScrollTableActionManager;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.ScrollTable;
-
-import cbit.rmi.event.ExportEvent;
 /**
  * Insert the type's description here.
  * Creation date: (4/4/2001 2:38:28 AM)

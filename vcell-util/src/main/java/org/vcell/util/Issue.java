@@ -13,9 +13,6 @@ package org.vcell.util;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
-
-
 
 /**
  * Insert the type's description here.
@@ -330,7 +327,7 @@ public java.lang.String getTooltip() {
  * @return {@link #getTooltip()} wrapped in html tags if not blank; otherwise return {@link #getTooltip()}
  */
 public String getHtmlTooltip() {
-	if (!StringUtils.isBlank(tooltip)) {
+	if (tooltip != null && !tooltip.trim().isEmpty()) {
 		return "<html>" + tooltip + "</html>";
 	}
 	return tooltip;
