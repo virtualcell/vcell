@@ -3,7 +3,7 @@
 	<tocitem image="toplevelfolder" text="The Virtual Cell Help">
 	    <tocitem target="GeneralOverview" text="Introduction">
     		<tocitem target="General" text="Overview"/>
-      		<tocitem target="RuleBasedOverview" text="Rule-Based Features"/>  		
+<!--      		<tocitem target="RuleBasedOverview" text="Rule-Based Features"/>  		-->
     		<tocitem target="GeneralNavAndWinSetup" text="General Navigation and Window Setup"/>
     		<tocitem target="TopMenu" text="Top Menu"/>
 			<tocitem target="Login" text="User Login"/>
