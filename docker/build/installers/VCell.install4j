@@ -118,7 +118,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+        <content>--add-exports
+java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
@@ -157,7 +158,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+        <content>--add-exports
+java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
@@ -190,7 +192,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+        <content>--add-exports
+java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
@@ -224,7 +227,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+        <content>--add-exports
+java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.softwareVersion=${compiler:SoftwareVersionString}
@@ -254,7 +258,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+        <content>--add-exports
+java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.serverHost=${compiler:rmiHosts}
@@ -284,7 +289,8 @@
         </nativeLibraryDirectories>
       </java>
       <vmOptionsFile mode="content" overwriteMode="1">
-        <content>--add-exports java.desktop/sun.awt.image=ALL-UNNAMED
+        <content>--add-exports
+java.desktop/sun.awt.image=ALL-UNNAMED
 -Dvcell.autoflushlog=true
 -Dvcell.thirdPartyLicense=thirdpartylicenses.txt
 -Dvcell.serverHost=${compiler:rmiHosts}
