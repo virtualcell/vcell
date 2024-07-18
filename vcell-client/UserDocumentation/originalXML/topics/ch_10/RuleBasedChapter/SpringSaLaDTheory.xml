@@ -9,7 +9,7 @@
 	<para>Yet another paragraph...</para>
 	<imgReference target = "rule1.png"/>
 	<para>...with images inserted between paragraphs...</para>
-	<imgReference target = "reac-combined.png"/>
+	<imgReference target = "SS_new.png"/>
 	</introduction>
 
 	<appearance>  

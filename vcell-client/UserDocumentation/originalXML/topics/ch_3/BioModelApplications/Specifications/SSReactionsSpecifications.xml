@@ -17,6 +17,7 @@
 	<list>
 		<item>The reactions are strictly categorized and must follow the template for their category.</item>
 	</list>
+		<imgReference target = "SS_reactions.png"/>
 	</appearance>
 
 	<operations>  
