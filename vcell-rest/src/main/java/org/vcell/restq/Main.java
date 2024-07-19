@@ -80,7 +80,7 @@ public class Main {
 
     public static final String VCML_DOWNLOAD = "biomodel.vcml";
     public static final String SBML_DOWNLOAD = "biomodel.sbml";
-    public static final String OMEX_DOWNLOAD = "biomodel.omex";
+//    public static final String OMEX_DOWNLOAD = "biomodel.omex";
     public static final String BNGL_DOWNLOAD = "biomodel.bngl";
     public static final String DIAGRAM_DOWNLOAD = "diagram";
     public static final String SIMULATION = "simulation";

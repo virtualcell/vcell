@@ -65,37 +65,39 @@ public class BiomodelOMEXServerResource extends AbstractServerResource implement
 	@Override
 	@Get(BiomodelOMEXResource.APPLICATION_OMEX_ZIP)
 	public ByteArrayRepresentation get_omex() {
-		VCellApiApplication application = ((VCellApiApplication)getApplication());
-		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
-		boolean bSkipUnsupported = false;
-		StringBuffer suggestedProjectName = new StringBuffer();
-        ByteArrayRepresentation omexRep = getOmex(vcellUser, bSkipUnsupported, suggestedProjectName);
-        
-        if (omexRep != null){
-			String bioModelID = (String)getRequestAttributes().get(VCellApiApplication.BIOMODELID);
-//        	setAttribute("Content-type", "application/vcml+xml");
-			setAttribute("Content-Disposition", "attachment; filename=\""+suggestedProjectName+".omex\"");
-			return omexRep;
-        }
-        throw new RuntimeException("biomodel not found");
+		// TODO: Implement this method properly, as it is currently using too much resources
+		throw new ResourceException(Status.SERVER_ERROR_NOT_IMPLEMENTED, "biomodel.omex endpoint not implemented");
+//		VCellApiApplication application = ((VCellApiApplication)getApplication());
+//		User vcellUser = application.getVCellUser(getChallengeResponse(),AuthenticationPolicy.ignoreInvalidCredentials);
+//		boolean bSkipUnsupported = false;
+//		StringBuffer suggestedProjectName = new StringBuffer();
+//        ByteArrayRepresentation omexRep = getOmex(vcellUser, bSkipUnsupported, suggestedProjectName);
+//
+//        if (omexRep != null){
+//			String bioModelID = (String)getRequestAttributes().get(VCellApiApplication.BIOMODELID);
+////        	setAttribute("Content-type", "application/vcml+xml");
+//			setAttribute("Content-Disposition", "attachment; filename=\""+suggestedProjectName+".omex\"");
+//			return omexRep;
+//        }
+//        throw new RuntimeException("biomodel not found");
 	}
 
 
-	private ByteArrayRepresentation getOmex(User vcellUser, boolean bSkipUnsupported, StringBuffer suggestedProjectName) {
-		RestDatabaseService restDatabaseService = ((VCellApiApplication)getApplication()).getRestDatabaseService();
-		try {
-			ByteArrayRepresentation omexRep = restDatabaseService.query(this, vcellUser, bSkipUnsupported, suggestedProjectName);
-			return omexRep;
-		} catch (PermissionException e) {
-			lg.error(e);
-			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
-		} catch (ObjectNotFoundException e) {
-			lg.error(e);
-			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
-		} catch (Exception e){
-			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.toString());
-		}
-	}
+//	private ByteArrayRepresentation getOmex(User vcellUser, boolean bSkipUnsupported, StringBuffer suggestedProjectName) {
+//		RestDatabaseService restDatabaseService = ((VCellApiApplication)getApplication()).getRestDatabaseService();
+//		try {
+//			ByteArrayRepresentation omexRep = restDatabaseService.query(this, vcellUser, bSkipUnsupported, suggestedProjectName);
+//			return omexRep;
+//		} catch (PermissionException e) {
+//			lg.error(e);
+//			throw new ResourceException(Status.CLIENT_ERROR_UNAUTHORIZED, "permission denied to requested resource");
+//		} catch (ObjectNotFoundException e) {
+//			lg.error(e);
+//			throw new ResourceException(Status.CLIENT_ERROR_NOT_FOUND, "biomodel not found");
+//		} catch (Exception e){
+//			throw new ResourceException(Status.SERVER_ERROR_INTERNAL, e.toString());
+//		}
+//	}
 
 
 }
