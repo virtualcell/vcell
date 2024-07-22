@@ -636,9 +636,9 @@ public synchronized User getUser() {
  */
 public synchronized UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
 	VCellThreadChecker.checkRemoteInvocation();
-	if (userMetaDbServer!=null){
-		return userMetaDbServer;
-	}else if (getVcellConnection()==null){
+	if (userMetaDbServer != null) return userMetaDbServer;
+
+    if (getVcellConnection()==null){
 		throw new RuntimeException("cannot get Database Server, no VCell Connection\ntry Server->Reconnect");
 	}else{
 		try {

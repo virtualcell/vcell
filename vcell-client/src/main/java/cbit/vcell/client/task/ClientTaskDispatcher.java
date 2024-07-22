@@ -89,26 +89,26 @@ public class ClientTaskDispatcher {
  * @param tasks cbit.vcell.desktop.controls.ClientTask[]
  */
 public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks) {
-	dispatch(requester,hash,tasks,false, false, false, null, false);
+	ClientTaskDispatcher.dispatch(requester,hash,tasks,false, false, false, null, false);
 }
 
 public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress) {
-	dispatch(requester,hash,tasks, true, bKnowProgress, false, null, false);
+	ClientTaskDispatcher.dispatch(requester,hash,tasks, true, bKnowProgress, false, null, false);
 }
 
 public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress, 
 		boolean cancelable, ProgressDialogListener progressDialogListener) {
-	dispatch(requester,hash,tasks, true, bKnowProgress, cancelable, progressDialogListener, false);
+	ClientTaskDispatcher.dispatch(requester,hash,tasks, true, bKnowProgress, cancelable, progressDialogListener, false);
 }
 
 public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress, 
 		boolean cancelable, ProgressDialogListener progressDialogListener, boolean bInputBlocking) {
-	dispatch(requester,hash,tasks, true, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+	ClientTaskDispatcher.dispatch(requester,hash,tasks, true, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
 }
 
 public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
 		final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
-	dispatch(requester, hash, tasks, null, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+	ClientTaskDispatcher.dispatch(requester, hash, tasks, null, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
 }
 
 private static int entryCounter = 0;
@@ -259,7 +259,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 								final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
 								final boolean cancelable, final ProgressDialogListener progressDialogListener,
 								final boolean bInputBlocking) {
-	dispatch(requester, hash, tasks, customDialog, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener,
+	ClientTaskDispatcher.dispatch(requester, hash, tasks, customDialog, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener,
 			bInputBlocking, StopStrategy.THREAD_INTERRUPT);
 }
 
@@ -285,7 +285,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 		Thread.dumpStack();
 	}
 		
-	final List<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
+	final List<AsynchClientTask> taskList = new ArrayList<>();
 	
 	for (int i = 0; i < tasks.length; i++){
 		if (tasks[i].getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING && i < tasks.length - 1) {
