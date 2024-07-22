@@ -106,7 +106,9 @@ public class N5Exporter implements ExportConstants {
 		n5FSWriter.createDataset(String.valueOf(jobID), datasetAttributes);
 		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter,
 				n5Specs.dataSetName, numVariables, blockSize[3], allTimes.length,
-				exportSpecs.getHumanReadableExportData().subVolume);
+				exportSpecs.getHumanReadableExportData().subVolume,
+				(mesh.getExtent().getY() / mesh.getSizeY()), (mesh.getExtent().getX() / mesh.getSizeX()),
+				(mesh.getExtent().getZ() / mesh.getSizeZ()));
 
 
 		for (int variableIndex=0; variableIndex < (numVariables -1); variableIndex++){
