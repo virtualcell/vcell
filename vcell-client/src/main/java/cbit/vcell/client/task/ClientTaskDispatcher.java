@@ -282,7 +282,7 @@ public class ClientTaskDispatcher {
         }
 
         // dispatch tasks to a new worker
-        SwingWorker worker = new StandardSwingWorker(threadBaseName, requester, stopStrategy, bKnowProgress,
+        SwingWorker worker = new StandardSwingWorker(threadBaseName, taskList, requester, stopStrategy, hash, bKnowProgress,
                 progressDialogListener, bShowProgressPopup, customDialog, bInputBlocking, cancelable) {
 
             @Override

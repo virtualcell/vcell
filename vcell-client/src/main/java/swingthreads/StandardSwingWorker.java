@@ -32,25 +32,28 @@ public abstract class StandardSwingWorker extends SwingWorker {
     private List<AsynchClientTask> taskList;
     private Hashtable<String, Object> resultsHash;
 
-    private boolean shouldShowProgressPopup;
-    private boolean shouldBlockInput;
-    private boolean shouldInformOfProgress;
-    private boolean shouldBeCancelable;
-    private String threadBaseName;
-    private ProgressDialog customProgressDialog;
-    private Component requestingComponent;
-    private ProgressDialogListener progressDialogListener;
+    private final boolean shouldShowProgressPopup;
+    private final boolean shouldBlockInput;
+    private final boolean shouldInformOfProgress;
+    private final boolean shouldBeCancelable;
+    private final String threadBaseName;
+    private final ProgressDialog customProgressDialog;
+    private final Component requestingComponent;
+    private final ProgressDialogListener progressDialogListener;
 
-    private ClientTaskDispatcher.StopStrategy stopStrategy;
+    private final ClientTaskDispatcher.StopStrategy stopStrategy;
 
-    public StandardSwingWorker(String threadBaseName, Component requestingComponent,
-                               ClientTaskDispatcher.StopStrategy stopStrategy, boolean shouldInformOfProgress,
-                               ProgressDialogListener progressDialogListener, boolean shouldShowProgressPopup,
-                               ProgressDialog customProgressDialog, boolean shouldBlockInput, boolean shouldBeCancelable) {
+    public StandardSwingWorker(String threadBaseName, List<AsynchClientTask> taskList, Component requestingComponent,
+                               ClientTaskDispatcher.StopStrategy stopStrategy, Hashtable<String, Object> resultsHash,
+                               boolean shouldInformOfProgress, ProgressDialogListener progressDialogListener,
+                               boolean shouldShowProgressPopup, ProgressDialog customProgressDialog,
+                               boolean shouldBlockInput, boolean shouldBeCancelable) {
         super();
         this.threadBaseName = threadBaseName;
+        this.taskList = taskList;
         this.requestingComponent = requestingComponent;
         this.stopStrategy = stopStrategy;
+        this.resultsHash = resultsHash;
         this.shouldInformOfProgress = shouldInformOfProgress;
         this.progressDialogListener = progressDialogListener;
         this.shouldShowProgressPopup = shouldShowProgressPopup;
@@ -70,16 +73,10 @@ public abstract class StandardSwingWorker extends SwingWorker {
     public static void runTask(AsynchClientTask currentTask, Hashtable<String, Object> hash, Collection<AsynchClientTask> taskList) throws Exception {
         if (lg.isDebugEnabled()) {
             String msg = "Thread " + Thread.currentThread().getName() + " calling task " + currentTask.getTaskName();
-            if (lg.isDebugEnabled()) {
-                Object obj = hash.get(TaskEventKeys.STACK_TRACE_ARRAY.toString());
-                StackTraceElement[] ste = CastingUtils.downcast(StackTraceElement[].class, obj);
-                if (ste != null) {
-                    msg += '\n' + StringUtils.join(ste, '\n');
-                }
-                lg.debug(msg);
-            } else {
-                lg.debug(msg);
-            }
+            Object obj = hash.get(TaskEventKeys.STACK_TRACE_ARRAY.toString());
+            StackTraceElement[] ste = CastingUtils.downcast(StackTraceElement[].class, obj);
+            if (ste != null) msg += '\n' + StringUtils.join(ste, '\n');
+            lg.debug(msg);
         }
         //check required elements present
         StringBuilder sb = null;
@@ -90,12 +87,13 @@ public abstract class StandardSwingWorker extends SwingWorker {
                 sb.append("Missing required key  ").append(requiredKey.name).append('\n');
                 continue;
             }
+
             Class<?> foundClass = obj.getClass();
-            if (!requiredKey.clzz.isAssignableFrom(foundClass)) {
-                if (sb == null) sb = StandardSwingWorker.initStringBuilder(currentTask);
-                sb.append("key ").append(requiredKey.name).append(" type ").append(foundClass.getName()).append(" not of required type ").append(requiredKey.clzz.getName());
-                sb.append('\n');
-            }
+            if (requiredKey.clzz.isAssignableFrom(foundClass)) continue;
+
+            if (sb == null) sb = StandardSwingWorker.initStringBuilder(currentTask);
+            sb.append("key ").append(requiredKey.name).append(" type ").append(foundClass.getName()).append(" not of required type ").append(requiredKey.clzz.getName());
+            sb.append('\n');
         }
 
         if (sb == null) { //no problems found
@@ -103,6 +101,7 @@ public abstract class StandardSwingWorker extends SwingWorker {
             return;
         }
 
+        // If we got here, we had issues.
         sb.append("Prior tasks\n");
         for (AsynchClientTask pt : taskList) {
             if (pt == currentTask) {
