@@ -15,9 +15,6 @@ import javax.swing.SwingUtilities;
  * creating it.
  */
 public abstract class SwingWorker {
-    private Object value;  // see getValue(), setValue()
-    private Thread thread;
-
     /**
      * Class to maintain reference to current worker thread
      * under separate synchronization control.
@@ -38,6 +35,8 @@ public abstract class SwingWorker {
         }
     }
 
+    // Instance Variables
+    private Object value;  // see getValue(), setValue()
     private final ThreadVar threadVar;
 
     /**
@@ -64,8 +63,7 @@ public abstract class SwingWorker {
      * Called on the event dispatching thread (not on the worker thread)
      * after the <code>construct</code> method has returned.
      */
-    public void finished() {
-    }
+    public void finished() {}
 
     /**
      * A new method that interrupts the worker thread.  Call this method
@@ -73,9 +71,7 @@ public abstract class SwingWorker {
      */
     public void interrupt() {
         Thread t = this.threadVar.get();
-        if (t != null) {
-            t.interrupt();
-        }
+        if (t != null) t.interrupt();
         this.threadVar.clear();
     }
 
@@ -89,9 +85,8 @@ public abstract class SwingWorker {
     public Object get() {
         while (true) {
             Thread t = this.threadVar.get();
-            if (t == null) {
-                return this.getValue();
-            }
+            if (t == null) return this.getValue();
+
             try {
                 t.join();
             } catch (InterruptedException e) {
@@ -101,17 +96,12 @@ public abstract class SwingWorker {
         }
     }
 
-
     /**
      * Start a thread that will call the <code>construct</code> method
      * and then exit.
      */
     public SwingWorker() {
-        final Runnable doFinished = new Runnable() {
-            public void run() {
-                SwingWorker.this.finished();
-            }
-        };
+        final Runnable doFinished = SwingWorker.this::finished;
 
         Runnable doConstruct = new Runnable() {
             public void run() {
@@ -120,7 +110,6 @@ public abstract class SwingWorker {
                 } finally {
                     SwingWorker.this.threadVar.clear();
                 }
-
                 SwingUtilities.invokeLater(doFinished);
             }
         };
