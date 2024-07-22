@@ -340,8 +340,29 @@ public class ClientRequestManager
 			return CloseOption.CLOSE_IN_ANY_CASE;
 		}
 		boolean isChanged = true;
+		String IS_CHANGED_KEY = this.getClass().getName() + ".DocumentManager::isChanged";
+		Hashtable<String, Object> hashtable = new Hashtable<>();
 		try {
-			isChanged = getDocumentManager().isChanged(vcDocument);
+			AsynchClientTask checkIfChanged = new AsynchClientTask(
+					"Checking if model has changed...",
+					AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+				@Override
+				public void run(Hashtable<String, Object> hashTable) throws Exception {
+					boolean hasBeenChanged = ClientRequestManager.this.getDocumentManager().isChanged(vcDocument);
+                    hashTable.put(IS_CHANGED_KEY, hasBeenChanged);
+				}
+			};
+			ClientTaskDispatcher.dispatch(null, hashtable, new AsynchClientTask[]{checkIfChanged},
+					false, false, null, true);
+			ClientTaskDispatcher.dispatch(null, hashtable, new AsynchClientTask[] {checkIfChanged});
+			if (hashtable.containsKey(IS_CHANGED_KEY))
+				isChanged = (Boolean)hashtable.get(IS_CHANGED_KEY);
+			else if (hashtable.containsKey("clientTaskDispatcherStackTraceArray")){
+				StringBuilder stackTrace = new StringBuilder();
+				for (StackTraceElement elem : (StackTraceElement[]) hashtable.get("clientTaskDispatcherStackTraceArray"))
+					stackTrace.append(" \tat ").append(elem.toString()).append("\n");
+                lg.error("Unknown error occurred during task 'Checking if model has changed'\n{}", stackTrace);
+			}
 		} catch (Exception exc) {
 			exc.printStackTrace();
 			String choice = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(),
