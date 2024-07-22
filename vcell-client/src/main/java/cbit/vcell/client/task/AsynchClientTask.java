@@ -20,7 +20,6 @@ import java.util.Objects;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.VCAssert;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
@@ -92,45 +91,6 @@ public abstract class AsynchClientTask {
 	public ClientTaskStatusSupport getClientTaskStatusSupport() {
 		return clientTaskStatusSupport;
 	}
-	
-	/**
-	 * fetch and type convert object from hash
-	 * @param hashTable not null
-	 * @param key name (not null)
-	 * @param clzz required type, not null
-	 * @param required throw exception if required and not present 
-	 * @return object cast to correct type or possibly null if !required
-	 * @throws ProgrammingException if key not of required type 
-	 * @throws ProgrammingException required is true and key not present 
-	 */
-	@SuppressWarnings("unchecked")
-	static protected <T> T fetch(Hashtable<String, Object> hashTable, String key, Class<T> clzz, boolean required) {
-		Object obj = hashTable.get(key);
-		if (obj != null) {
-			Class<? extends Object> oclzz = obj.getClass();
-			if (clzz.isAssignableFrom(oclzz)) {
-				return (T) obj;
-			}
-			throw new ProgrammingException("object " + obj + " of type " + oclzz.getName() + " not instance of " + clzz.getName());
-		}
-		if (required) {
-			throw new ProgrammingException("key " + key + " not found in async hashtable");
-		}
-		return null;
-	}
-	
-	/**
-	 * typesafe (verified) fetch of object from hash
-	 * @param hashTable non null
-	 * @param keyInfo non null
-	 * @return object of correct type
-	 */
-	static protected Object fetch(Hashtable<String, Object> hashTable, KeyInfo keyInfo) {
-		Object obj = hashTable.get(keyInfo.name);
-		VCAssert.assertTrue(obj != null, "ClientTaskDispatcher failed to verify object");
-		VCAssert.assertTrue(keyInfo.clzz.isAssignableFrom(obj.getClass()),"ClientTaskDispatcher failed to verify type");
-		return  obj;
-	}
 
 	/**
 	 * Insert the method's description here.
@@ -189,7 +149,7 @@ public abstract class AsynchClientTask {
 	 * return list of keys need by task
 	 * @return non-null Collection
 	 */
-	protected Collection<KeyInfo> requiredKeys( ) {
+	public Collection<KeyInfo> requiredKeys( ) {
 		return Collections.emptyList();
 	}
 	
@@ -198,7 +158,7 @@ public abstract class AsynchClientTask {
 	 */
 	public static final class KeyInfo {
 		public final String name;
-		final Class<?> clzz;
+		public final Class<?> clzz;
 		/**
 		 * @param name non null
 		 * @param clzz non null

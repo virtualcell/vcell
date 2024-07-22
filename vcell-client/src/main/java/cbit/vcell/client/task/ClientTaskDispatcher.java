@@ -11,12 +11,8 @@
 package cbit.vcell.client.task;
 
 import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,25 +22,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.swing.FocusManager;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.vcell.util.*;
 import org.vcell.util.gui.AsynchProgressPopup;
-import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ProgressDialog;
 
-import cbit.vcell.client.ClientMDIManager;
-import cbit.vcell.client.DocumentWindowManager;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.AsynchClientTask.KeyInfo;
 import cbit.vcell.simdata.PDEDataContext;
+import swingthreads.StandardSwingWorker;
 import swingthreads.SwingWorker;
+import swingthreads.TaskEventKeys;
 
 /**
  * Insert the type's description here.
@@ -53,19 +43,6 @@ import swingthreads.SwingWorker;
  * @author: Ion Moraru
  */
 public class ClientTaskDispatcher {
-    //	public static final String PROGRESS_POPUP = "asynchProgressPopup";
-//	public static final String TASK_PROGRESS_INTERVAL = "progressRange";
-    public static final String TASK_ABORTED_BY_ERROR = "abort";
-    public static final String TASK_ABORTED_BY_USER = "cancel";
-    public static final String TASKS_TO_BE_SKIPPED = "conditionalSkip";
-    /**
-     * hash key to internally flag problem with hash table data
-     */
-    private static final String HASH_DATA_ERROR = "hdeHdeHde";
-    /**
-     * hash key to store stack trace if {@link #lg} enabled for INFO
-     */
-    private static final String STACK_TRACE_ARRAY = "clientTaskDispatcherStackTraceArray";
     private static final Logger lg = LogManager.getLogger(ClientTaskDispatcher.class);
     /**
      * used to count / generate thread names
@@ -282,194 +259,48 @@ public class ClientTaskDispatcher {
                                 final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
                                 final boolean cancelable, final ProgressDialogListener progressDialogListener,
                                 final boolean bInputBlocking, final StopStrategy stopStrategy) {
-		final String threadBaseName = "ClientTaskDispatcher " + (serial++) + ' ';
-		final List<AsynchClientTask> taskList = new ArrayList<>();
+        final String threadBaseName = "ClientTaskDispatcher " + (serial++) + ' ';
+        final List<AsynchClientTask> taskList = new ArrayList<>();
 
         // check tasks - swing non-blocking can be only at the end
         ClientTaskDispatcher.entryCounter++;
         if (ClientTaskDispatcher.entryCounter > 1) lg.debug("Reentrant: {}", ClientTaskDispatcher.entryCounter);
 
-		//	if (bInProgress) {
-		//		Thread.dumpStack();
-		//	}
-        if (lg.isInfoEnabled()) hash.put(STACK_TRACE_ARRAY, Thread.currentThread().getStackTrace());
+        //	if (bInProgress) {
+        //		Thread.dumpStack();
+        //	}
+        if (lg.isInfoEnabled())
+            hash.put(TaskEventKeys.STACK_TRACE_ARRAY.toString(), Thread.currentThread().getStackTrace());
 
         if (bShowProgressPopup && requester == null) {
             System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
             Thread.dumpStack();
         }
 
-		for (AsynchClientTask task : tasks){
-			if (AsynchClientTask.TASKTYPE_SWING_NONBLOCKING== task.getTaskType() && taskList.size() + 1 != tasks.length) {
-				throw new RuntimeException("SWING_NONBLOCKING task only permitted as last task");
-			}
-			taskList.add(task);
-			lg.debug("added task name {}", task.getTaskName());
-		}
+        for (AsynchClientTask task : tasks) {
+            if (AsynchClientTask.TASKTYPE_SWING_NONBLOCKING == task.getTaskType() && taskList.size() + 1 != tasks.length) {
+                throw new RuntimeException("SWING_NONBLOCKING task only permitted as last task");
+            }
+            taskList.add(task);
+            lg.debug("added task name {}", task.getTaskName());
+        }
 
         // dispatch tasks to a new worker
-        SwingWorker worker = new SwingWorker() {
-            private AsynchProgressPopup pp = null;
-            private Window windowParent = null;
-            private Component focusOwner = null;
+        SwingWorker worker = new StandardSwingWorker(threadBaseName, requester, stopStrategy, bKnowProgress,
+                progressDialogListener, bShowProgressPopup, customDialog, bInputBlocking, cancelable) {
 
-            public Object construct() {
-                if (bShowProgressPopup) {
-                    if (customDialog == null) {
-                        this.pp = new AsynchProgressPopup(requester, "WORKING...", "Initializing request", Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
-                    } else {
-                        this.pp = new AsynchProgressPopup(requester, customDialog, Thread.currentThread(), bInputBlocking, bKnowProgress, cancelable, progressDialogListener);
-                    }
-                    this.pp.setStopStrategy(stopStrategy);
-                    if (bInputBlocking) {
-                        this.pp.startKeepOnTop();
-                    } else {
-                        this.pp.start();
-                    }
-                }
-                if (requester != null) this.windowParent = GuiUtils.getWindowForComponent(requester);
-
-                try {
-                    if (this.windowParent != null) {
-						Window targetWindow = this.windowParent;
-                        this.focusOwner = FocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-                        SwingUtilities.invokeAndWait(() -> {
-                            ClientMDIManager.blockWindow(targetWindow);
-                            targetWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                        });
-                    }
-                } catch (InterruptedException | InvocationTargetException e) {
-                    lg.warn(e);
-                }
-                for (int i = 0; i < taskList.size(); i++) {
-                    // run all tasks
-                    // after abort, run only non-skippable tasks
-                    // also skip selected tasks specified by conditionalSkip tag
-                    final AsynchClientTask currentTask = taskList.get(i);
-                    try {
-                        currentTask.setClientTaskStatusSupport(this.pp);
-                        ClientTaskDispatcher.setSwingWorkerThreadName(this, threadBaseName + currentTask.getTaskName());
-
-                        //System.out.println("DISPATCHING: "+currentTask.getTaskName()+" at "+ new Date(System.currentTimeMillis()));
-                        if (this.pp != null) {
-                            this.pp.setVisible(currentTask.showProgressPopup());
-                            if (!bKnowProgress) {
-                                this.pp.setProgress(i * 100 / taskList.size()); // beginning of task
-                            }
-                            this.pp.setMessage(currentTask.getTaskName());
-                        }
-                        boolean shouldRun = !hash.containsKey(HASH_DATA_ERROR);
-                        if (hash.containsKey(TASK_ABORTED_BY_ERROR) && currentTask.skipIfAbort()) {
-                            shouldRun = false;
-                        }
-                        if (hash.containsKey(TASKS_TO_BE_SKIPPED)) {
-                            String[] toSkip = (String[]) hash.get(TASKS_TO_BE_SKIPPED);
-							boolean taskShouldBeSkipped = ArrayUtils.arrayContains(toSkip, currentTask.getClass().getName());
-                            if (taskShouldBeSkipped) shouldRun = false;
-                        }
-                        if (this.pp != null && this.pp.isInterrupted()) {
-                            ClientTaskDispatcher.recordException(UserCancelException.CANCEL_GENERIC, hash);
-                        }
-
-                        if (hash.containsKey(TASK_ABORTED_BY_USER)) {
-                            UserCancelException exc = (UserCancelException) hash.get(TASK_ABORTED_BY_USER);
-                            if (currentTask.skipIfCancel(exc)) shouldRun = false;
-                        }
-                        if (shouldRun) {
-                            try {
-                                if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-                                    ClientTaskDispatcher.runTask(currentTask, hash, taskList);
-                                } else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-                                    SwingUtilities.invokeAndWait(() -> {
-                                        try {
-                                            ClientTaskDispatcher.runTask(currentTask, hash, taskList);
-                                        } catch (Exception exc) {
-                                            ClientTaskDispatcher.recordException(exc, hash);
-                                        }
-                                    });
-                                } else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
-                                    SwingUtilities.invokeLater(() -> {
-                                        try {
-                                            ClientTaskDispatcher.runTask(currentTask, hash, taskList);
-                                        } catch (Exception exc) {
-											ClientTaskDispatcher.recordException(exc, hash);
-                                        }
-                                    });
-                                }
-                            } catch (Exception exc) {
-                                ClientTaskDispatcher.recordException(exc, hash);
-                            }
-                        }
-                    } finally {
-						ClientTaskDispatcher.allTasks.remove(currentTask);
-                    }
-                }
-                return hash;
+            @Override
+            public void removeTaskFromDispatcher(AsynchClientTask task) {
+                ClientTaskDispatcher.allTasks.remove(task);
             }
 
-            public void finished() {
-				ClientTaskDispatcher.entryCounter--;
-
-                if (this.pp != null) {
-                    this.pp.stop();
-                }
-                if (hash.containsKey(TASK_ABORTED_BY_ERROR)) {
-                    // something went wrong
-                    StringBuilder allCausesErrorMessageSB = new StringBuilder();
-                    Throwable causeError = (Throwable) hash.get(TASK_ABORTED_BY_ERROR);
-                    do {
-                        allCausesErrorMessageSB.append(causeError.getClass().getSimpleName()).append("-")
-								.append(causeError.getMessage() == null || causeError.getMessage().isEmpty() ?
-										"" : causeError.getMessage());
-                        allCausesErrorMessageSB.append("\n");
-                    } while ((causeError = causeError.getCause()) != null);
-                    if (requester == null) {
-                        lg.warn("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
-                        Thread.dumpStack();
-                    }
-                    if (lg.isInfoEnabled()) {
-                        Object obj = hash.get(STACK_TRACE_ARRAY);
-                        StackTraceElement[] ste = CastingUtils.downcast(StackTraceElement[].class, obj);
-                        if (ste != null) {
-                            String stackTraceString = StringUtils.join(ste, '\n');
-                            lg.info(stackTraceString, (Throwable) hash.get(TASK_ABORTED_BY_ERROR));
-                        } else {
-                            lg.info("Unexpected {} obj {}", STACK_TRACE_ARRAY, obj);
-                        }
-                    }
-                    PopupGenerator.showErrorDialog(requester, allCausesErrorMessageSB.toString(),
-							(Throwable) hash.get(TASK_ABORTED_BY_ERROR));
-                } else if (hash.containsKey(TASK_ABORTED_BY_USER)) {
-                    // depending on where user canceled we might want to automatically start a new job
-                    ClientTaskDispatcher.dispatchFollowUp(hash);
-                }
-
-                FinalWindow fw = AsynchClientTask.fetch(hash, FINAL_WINDOW, FinalWindow.class, false);
-                if (lg.isDebugEnabled() && fw != null) {
-                    lg.debug("FinalWindow retrieved from hash");
-                }
-                //focusOwner is legacy means of shifting focus -- FinalWindow is newer explicit invocation
-                if (this.windowParent != null) {
-                    ClientMDIManager.unBlockWindow(this.windowParent);
-                    this.windowParent.setCursor(Cursor.getDefaultCursor());
-                    if (fw == null && this.focusOwner != null) {
-                        fw = () -> {
-                            this.windowParent.requestFocusInWindow();
-                            this.focusOwner.requestFocusInWindow();
-                        };
-                        lg.debug("FinalWindow built from {} and {}", this.windowParent.toString(), this.focusOwner.toString());
-                    }
-                }
-                if (fw != null) {
-					lg.debug("scheduling {}.run on {}", fw.getClass().getName(), fw);
-					Runnable runnable = lg.isDebugEnabled() ? ClientTaskDispatcher.debugWrapper(fw) : fw;
-					SwingUtilities.invokeLater(runnable);
-                } else {
-                    lg.debug("no Final Window");
-                }
+            @Override
+            public void announceTaskComplete() {
+                ClientTaskDispatcher.entryCounter--;
             }
         };
-        setSwingWorkerThreadName(worker, threadBaseName);
+
+        worker.setThreadName(threadBaseName);
         allTasks.addAll(taskList);
         worker.start();
     }
@@ -480,7 +311,7 @@ public class ClientTaskDispatcher {
      * @param r payload
      * @return wrapper
      */
-    private static Runnable debugWrapper(Runnable r) {
+    public static Runnable debugWrapper(Runnable r) {
         return () ->
         {
             lg.debug("calling " + r.getClass().getName() + ".run on " + r);
@@ -488,22 +319,14 @@ public class ClientTaskDispatcher {
         };
     }
 
-    private static void dispatchFollowUp(Hashtable<String, Object> hash) {
-        // we deal with a task dispatch that aborted due to some user choice on prompts
-        UserCancelException e = (UserCancelException) hash.get("cancel");
-        if (e == UserCancelException.CHOOSE_SAVE_AS) {
-            // user chose to save as during a save or save/edition of a document found to be unchanged
-            ((DocumentWindowManager) hash.get(CommonTask.DOCUMENT_WINDOW_MANAGER.name)).saveDocumentAsNew();
-        }
-    }
 
     public static void recordException(Throwable exc, Hashtable<String, Object> hash) {
         lg.error(exc.getMessage(), exc);
         if (exc instanceof UserCancelException userCancelException) {
-            hash.put(TASK_ABORTED_BY_USER, userCancelException);
+            hash.put(TaskEventKeys.TASK_ABORTED_BY_USER.toString(), userCancelException);
         } else {
             exc.printStackTrace(System.out);
-            hash.put(TASK_ABORTED_BY_ERROR, exc);
+            hash.put(TaskEventKeys.TASK_ABORTED_BY_ERROR.toString(), exc);
         }
     }
 
@@ -560,98 +383,8 @@ public class ClientTaskDispatcher {
     }
 
 
-    /**
-     * set {@link SwingWorker} thread name
-     *
-     * @param sw
-     * @param name may not be null
-     * @throws IllegalArgumentException if name is null
-     */
-    private static void setSwingWorkerThreadName(SwingWorker sw, String name) {
-        if (name != null) {
-            try {
-                Field threadVarField = SwingWorker.class.getDeclaredField("threadVar");
-                threadVarField.setAccessible(true);
-                Object threadVar = threadVarField.get(sw);
-                Field threadField = threadVar.getClass().getDeclaredField("thread");
-                threadField.setAccessible(true);
-                Thread thread = (Thread) threadField.get(threadVar);
-                thread.setName(name);
-            } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
-                lg.warn("setSwingWorkerName fail", e);
-            }
-            return;
-        }
-        throw new IllegalArgumentException("name may not be null");
-    }
-
-    /**
-     * call currentTask.run(hash) with log4j logging; check for required keys
-     *
-     * @param currentTask not null
-     * @param hash        not null
-     * @param taskList    current set of tasks being dispatched
-     * @throws Exception
-     */
-    private static void runTask(AsynchClientTask currentTask, Hashtable<String, Object> hash, Collection<AsynchClientTask> taskList) throws Exception {
-        if (lg.isDebugEnabled()) {
-            String msg = "Thread " + Thread.currentThread().getName() + " calling task " + currentTask.getTaskName();
-            if (lg.isDebugEnabled()) {
-                Object obj = hash.get(STACK_TRACE_ARRAY);
-                StackTraceElement[] ste = CastingUtils.downcast(StackTraceElement[].class, obj);
-                if (ste != null) {
-                    msg += '\n' + StringUtils.join(ste, '\n');
-                }
-                lg.debug(msg);
-            } else {
-                lg.debug(msg);
-            }
-        }
-        //check required elements present
-        StringBuilder sb = null;
-        for (KeyInfo requiredKey : currentTask.requiredKeys()) {
-            Object obj = hash.get(requiredKey.name);
-            if (obj == null) {
-                if (sb == null) sb = initStringBuilder(currentTask);
-                sb.append("Missing required key  ").append(requiredKey.name).append('\n');
-                continue;
-            }
-            Class<?> foundClass = obj.getClass();
-            if (!requiredKey.clzz.isAssignableFrom(foundClass)) {
-                if (sb == null) sb = initStringBuilder(currentTask);
-                sb.append("key ").append(requiredKey.name).append(" type ").append(foundClass.getName()).append(" not of required type ").append(requiredKey.clzz.getName());
-                sb.append('\n');
-            }
-        }
-
-        if (sb == null) { //no problems found
-            currentTask.run(hash);
-            return;
-        }
-
-        sb.append("Prior tasks\n");
-        for (AsynchClientTask pt : taskList) {
-            if (pt == currentTask) {
-                break;
-            }
-            sb.append('\t').append(pt.getTaskName()).append('\n');
-        }
-        hash.put(HASH_DATA_ERROR, HASH_DATA_ERROR);
-        throw new ProgrammingException(sb.toString());
-    }
-
-    /**
-     * @param currentTask non null
-     * @return {@link StringBuilder} initialized with task name
-     */
-    private static StringBuilder initStringBuilder(AsynchClientTask currentTask) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Data error for task " + currentTask.getTaskName() + '\n');
-        return sb;
-    }
-
     //package
-    interface FinalWindow extends Runnable {
+    public interface FinalWindow extends Runnable {
     }
 
     /**

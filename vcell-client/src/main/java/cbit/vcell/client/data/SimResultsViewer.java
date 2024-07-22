@@ -29,6 +29,7 @@ import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDataIdentifier;
+import swingthreads.TaskEventKeys;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
@@ -446,7 +447,7 @@ private void updateScanParamChoices(final String message,ListReset listReset){
 		AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null && hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER) == null) {
+				if (hashTable.get(TaskEventKeys.TASK_ABORTED_BY_ERROR.toString()) == null && hashTable.get(TaskEventKeys.TASK_ABORTED_BY_USER.toString()) == null) {
 					ODEDataManager odeDatamanager = (ODEDataManager)hashTable.get("odeDatamanager");
 					odeDataViewer.setOdeSolverResultSet(odeDatamanager.getODESolverResultSet());
 					odeDataViewer.setVcDataIdentifier(vcdid);
@@ -477,7 +478,7 @@ private void updateScanParamChoices(final String message,ListReset listReset){
 		AsynchClientTask task2 = new AsynchClientTask("show results", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
+				if (hashTable.get(TaskEventKeys.TASK_ABORTED_BY_ERROR.toString()) == null) {
 					ClientPDEDataContext newPDEDC = (ClientPDEDataContext)hashTable.get("newPDEDC");
 					pdeDataViewer.setPdeDataContext(newPDEDC);
 					pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), ExportSpecs.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
