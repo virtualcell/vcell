@@ -48,6 +48,7 @@ public class ClientTaskDispatcher {
      * used to count / generate thread names
      */
     private static long serial = 0;
+    private static int entryCounter = 0;
     /**
      * set of all scheduled tasks; used to avoid calling System.exit() prematurely on Application exit
      */
@@ -58,7 +59,7 @@ public class ClientTaskDispatcher {
     private static final String FINAL_WINDOW = "finalWindowInterface";
 
     static {
-        WeakHashMap<AsynchClientTask, Boolean> whm = new WeakHashMap<AsynchClientTask, Boolean>();
+        WeakHashMap<AsynchClientTask, Boolean> whm = new WeakHashMap<>();
         allTasks = Collections.synchronizedSet(Collections.newSetFromMap(whm));
     }
 
@@ -92,8 +93,6 @@ public class ClientTaskDispatcher {
         ClientTaskDispatcher.dispatch(requester, hash, tasks, null, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
     }
 
-    private static int entryCounter = 0;
-
     public static boolean isBusy() {
         //		System.out.println("----------Busy----------");
         return entryCounter > 0;
@@ -115,15 +114,12 @@ public class ClientTaskDispatcher {
                 }
             }
         });
-        private static final ProgressDialogListener cancelListener = new ProgressDialogListener() {
-            @Override
-            public void cancelButton_actionPerformed(EventObject newEvent) {
-                synchronized (allBlockingTimers) {
-                    while (!allBlockingTimers.isEmpty()) {
-                        allBlockingTimers.remove(0);
-                    }
-                    ppStop.restart();
+        private static final ProgressDialogListener cancelListener = newEvent -> {
+            synchronized (allBlockingTimers) {
+                while (!allBlockingTimers.isEmpty()) {
+                    allBlockingTimers.remove(0);
                 }
+                ppStop.restart();
             }
         };
 
@@ -408,6 +404,4 @@ public class ClientTaskDispatcher {
         String n = ClassUtils.getShortClassName(fWindow, def);
         throw new ProgrammingException("duplicate final windows" + e + " and " + n);
     }
-
-
 }

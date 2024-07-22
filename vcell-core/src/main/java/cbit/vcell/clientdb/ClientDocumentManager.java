@@ -102,7 +102,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
 
-public class ClientDocumentManager implements DocumentManager{
+public class ClientDocumentManager implements DocumentManager {
 	private static final Logger lg = LogManager.getLogger(ClientDocumentManager.class);
 	//
 	//

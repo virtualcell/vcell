@@ -21,20 +21,7 @@ import java.lang.reflect.Field;
  */
 public abstract class SwingWorker {
     private static final Logger lg = LogManager.getLogger(SwingWorker.class);
-    /**
-     * set {@link SwingWorker} thread name
-     *
-     * @param name may not be null
-     * @throws IllegalArgumentException if name is null
-     */
-    public void setThreadName(String name) {
-        if (name == null) throw new IllegalArgumentException("name may not be null");
-        try {
-            this.threadVar.thread.setName(name);
-        } catch (SecurityException e) {
-            lg.warn("setSwingWorkerName fail", e);
-        }
-    }
+
 
     /**
      * Class to maintain reference to current worker thread
@@ -60,6 +47,22 @@ public abstract class SwingWorker {
     private Object value;  // see getValue(), setValue()
     private final ThreadVar threadVar;
 
+
+    /**
+     * set {@link SwingWorker} thread name
+     *
+     * @param name may not be null
+     * @throws IllegalArgumentException if name is null
+     */
+    public void setThreadName(String name) {
+        if (name == null) throw new IllegalArgumentException("name may not be null");
+        try {
+            this.threadVar.thread.setName(name);
+        } catch (SecurityException e) {
+            lg.warn("setSwingWorkerName fail", e);
+        }
+    }
+
     /**
      * Get the value produced by the worker thread, or null if it
      * hasn't been constructed yet.
@@ -79,12 +82,6 @@ public abstract class SwingWorker {
      * Compute the value to be returned by the <code>get</code> method.
      */
     public abstract Object construct();
-
-    /**
-     * Called on the event dispatching thread (not on the worker thread)
-     * after the <code>construct</code> method has returned.
-     */
-    public void finished() {}
 
     /**
      * A new method that interrupts the worker thread.  Call this method
@@ -138,6 +135,12 @@ public abstract class SwingWorker {
         Thread t = new Thread(doConstruct);
         this.threadVar = new ThreadVar(t);
     }
+
+    /**
+     * Called on the event dispatching thread (not on the worker thread)
+     * after the <code>construct</code> method has returned.
+     */
+    public void finished() {}
 
     /**
      * Start the worker thread.
