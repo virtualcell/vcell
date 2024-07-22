@@ -2433,6 +2433,7 @@ private void updateInterface() {
 		break;
 	case N5:
 		getJRadioButtonROI().setEnabled(false);
+		getROISelections().setEnabled(false);
 		getJRadioButtonSlice().setEnabled(false);
 		getMembVarRadioButton().setEnabled(false);
 		getBothVarRadioButton().setEnabled(false);
