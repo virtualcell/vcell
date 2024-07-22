@@ -20,11 +20,11 @@ import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
-import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.ResultsHashUtils;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -33,7 +33,6 @@ import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFact
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
@@ -402,7 +401,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 	AsynchClientTask displayResultsTask = new AsynchClientTask("Showing results", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		@SuppressWarnings("unchecked")
 		public void run(Hashtable<String, Object> hashTable) throws Exception {					
-			boolean isLocal = fetch(hashTable,H_LOCAL_SIM,Boolean.class,true);
+			boolean isLocal = ResultsHashUtils.fetch(hashTable,H_LOCAL_SIM,Boolean.class,true);
 			SimulationWindow.LocalState localState = isLocal ? LocalState.LOCAL : LocalState.SERVER;
 			Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation,Throwable>)hashTable.get(H_FAILURES);
 			Simulation[] simsToShow = (Simulation[])hashTable.get("simsArray");

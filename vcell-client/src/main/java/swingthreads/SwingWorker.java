@@ -1,6 +1,11 @@
 package swingthreads;
 
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.swing.SwingUtilities;
+import java.lang.reflect.Field;
 
 /**
  * This is the 3rd version of SwingWorker (also known as
@@ -15,6 +20,22 @@ import javax.swing.SwingUtilities;
  * creating it.
  */
 public abstract class SwingWorker {
+    private static final Logger lg = LogManager.getLogger(SwingWorker.class);
+    /**
+     * set {@link SwingWorker} thread name
+     *
+     * @param name may not be null
+     * @throws IllegalArgumentException if name is null
+     */
+    public void setThreadName(String name) {
+        if (name == null) throw new IllegalArgumentException("name may not be null");
+        try {
+            this.threadVar.thread.setName(name);
+        } catch (SecurityException e) {
+            lg.warn("setSwingWorkerName fail", e);
+        }
+    }
+
     /**
      * Class to maintain reference to current worker thread
      * under separate synchronization control.
