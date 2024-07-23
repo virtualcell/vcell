@@ -3333,7 +3333,7 @@ private boolean errorAutoAllTimes(boolean bPPInfo,Boolean bVarMatch,boolean isFi
 //	};
 //	AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
 //		public void run(Hashtable<String, Object> hashTable) throws Exception {
-//			Throwable exc = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+//			Throwable exc = (Throwable)hashTable.get(swingthreads.TaskEventKeys.TASK_ABORTED_BY_ERROR.toString());
 //			if (exc == null) {
 //				updateTimeTextField(getPdeDataContext().getTimePoint());
 //			} else {
@@ -3404,7 +3404,7 @@ private boolean errorAutoAllTimes(boolean bPPInfo,Boolean bVarMatch,boolean isFi
 //		
 //	AsynchClientTask task3  = new AsynchClientTask("Setting cursor", AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {		
 //		public void run(Hashtable<String, Object> hashTable) throws Exception {
-//			Throwable e = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+//			Throwable e = (Throwable)hashTable.get(swingthreads.TaskEventKeys.TASK_ABORTED_BY_ERROR.toString());
 //			if (e != null) {
 //				int index = -1;
 //				if(getPdeDataContext() != null && getPdeDataContext().getDataIdentifier() != null){
