@@ -10,8 +10,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 /**
- * This is the 3rd version of SwingWorker (also known as
- * SwingWorker 3), an abstract class that you subclass to
+ * This class is based upon the 3rd version of SwingWorker (also known as
+ * SwingWorker 3). Its job is to serve as a worker that dispatches tasks to the correct endpoints (swing or otherwise),
+ * based on the type of AsynchClientTask requested.
+ * <p>
+ * SwingWorker 3 is an abstract class that you subclass to
  * perform GUI-related work in a dedicated thread.  For
  * instructions on using this class, see:
  * <p>
@@ -21,19 +24,21 @@ import java.util.concurrent.FutureTask;
  * You must now invoke start() on the SwingWorker after
  * creating it.
  */
-public abstract class SwingWorker {
-    private static final Logger lg = LogManager.getLogger(SwingWorker.class);
+public abstract class VCellSwingWorker {
+    private static final Logger lg = LogManager.getLogger(VCellSwingWorker.class);
 
 
     /**
      * Class to maintain reference to current worker thread
      * under separate synchronization control.
      */
-    private static class ThreadVar {
+    private static class TaskThread {
         private Thread thread;
+        private final FutureTask<Hashtable<String, Object>> futureTask;
 
-        ThreadVar(Thread t) {
-            this.thread = t;
+        TaskThread(Callable<Hashtable<String, Object>> callableTask) {
+            this.futureTask = new FutureTask<>(callableTask);
+            this.thread = new Thread(this.futureTask);
         }
 
         synchronized Thread get() {
@@ -43,10 +48,16 @@ public abstract class SwingWorker {
         synchronized void clear() {
             this.thread = null;
         }
+
+        Future<Hashtable<String, Object>> start(){
+            if (this.thread == null) return this.futureTask; // do not rerun the task! It's already done.
+            this.thread.start();
+            return this.futureTask;
+        }
     }
 
     /**
-     * set {@link SwingWorker} thread name
+     * set {@link VCellSwingWorker} thread name
      *
      * @param name may not be null
      * @throws IllegalArgumentException if name is null
@@ -54,29 +65,29 @@ public abstract class SwingWorker {
     public void setThreadName(String name) {
         if (name == null) throw new IllegalArgumentException("name may not be null");
         try {
-            this.threadVar.thread.setName(name);
+            this.threadedTask.thread.setName(name);
         } catch (SecurityException e) {
             lg.warn("setSwingWorkerName fail", e);
         }
     }
 
     // Instance Variables
-    private Hashtable<String, Object> value;  // see getValue(), setValue()
-    private final ThreadVar threadVar;
+    private Hashtable<String, Object> hashResults;  // see getValue(), setValue()
+    private final TaskThread threadedTask;
 
     /**
      * Get the value produced by the worker thread, or null if it
      * hasn't been constructed yet.
      */
-    protected synchronized Hashtable<String, Object> getValue() {
-        return this.value;
+    protected synchronized Hashtable<String, Object> getHashResults() {
+        return this.hashResults;
     }
 
     /**
      * Set the value produced by worker thread
      */
-    private synchronized void setValue(Hashtable<String, Object> x) {
-        this.value = x;
+    private synchronized void setHashResults(Hashtable<String, Object> x) {
+        this.hashResults = x;
     }
 
     /**
@@ -84,9 +95,9 @@ public abstract class SwingWorker {
      * to force the worker to stop what it's doing.
      */
     public void interrupt() {
-        Thread t = this.threadVar.get();
+        Thread t = this.threadedTask.get();
         if (t != null) t.interrupt();
-        this.threadVar.clear();
+        this.threadedTask.clear();
     }
 
     /**
@@ -98,8 +109,8 @@ public abstract class SwingWorker {
      */
     public Hashtable<String,  Object> get() {
         while (true) {
-            Thread t = this.threadVar.get();
-            if (t == null) return this.getValue(); // thread finished!
+            Thread t = this.threadedTask.get();
+            if (t == null) return this.getHashResults(); // thread finished!
 
             try {
                 t.join();
@@ -114,22 +125,24 @@ public abstract class SwingWorker {
      * Start a thread that will call the <code>construct</code> method
      * and then exit.
      */
-    public SwingWorker() {
-        Runnable doWork = new Runnable() {
-            public void run() {
+    public VCellSwingWorker() {
+        Callable<Hashtable<String, Object>> doWork = new Callable<>() {
+            @Override
+            public Hashtable<String, Object> call() {
                 try {
-                    SwingWorker.this.setValue(SwingWorker.this.verifyAndRun()); // Invoke now, on the current thread
+                    VCellSwingWorker.this.setHashResults(VCellSwingWorker.this.verifyAndRun()); // Invoke now, on the current thread
                 } finally {
                     // At the time this is called, the thread is running
-                    SwingWorker.this.threadVar.clear();
+                    VCellSwingWorker.this.threadedTask.clear();
                     // We do this to make sure we never accidentally re-run the same thread.
                     // We must ensure "one and done" threading.
                 }
-                SwingUtilities.invokeLater(SwingWorker.this::performSwingPostProcessing);
+                SwingUtilities.invokeLater(VCellSwingWorker.this::performSwingPostProcessing);
+                return VCellSwingWorker.this.hashResults;
             }
         };
 
-        this.threadVar = new ThreadVar(new Thread(doWork));
+        this.threadedTask = new TaskThread(doWork);
     }
 
     /**
@@ -147,14 +160,6 @@ public abstract class SwingWorker {
      * Start the worker thread.
      */
     public Future<Hashtable<String, Object>> start() {
-        Thread t = this.threadVar.get();
-        FutureTask<Hashtable<String, Object>> ft = new FutureTask<>(t.start(), this.);
-        if (t != null) {
-            ft.run();
-            return ft;
-        }
-
-        // Generally, getting here means we've already run the thread.
-        return t.start();
+        return this.threadedTask.start();
     }
 }
