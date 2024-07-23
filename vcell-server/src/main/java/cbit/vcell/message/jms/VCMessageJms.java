@@ -344,7 +344,7 @@ public class VCMessageJms implements VCMessage {
 	
 	private void handleJMSException(JMSException e){
 		delegate.onException(e);
-		lg.error(e);
+		lg.error(e.getMessage(),e);
 	}
 
 	public VCDestination getReplyTo() {
@@ -428,7 +428,7 @@ public class VCMessageJms implements VCMessage {
 				buffer.append("'");
 			}
 		} catch (JMSException e) {
-			lg.error(e);
+			lg.error(e.getMessage(), e);
 			throw new RuntimeException(e.getMessage(),e);
 		}
 		return buffer.toString();
