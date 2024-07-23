@@ -11,10 +11,12 @@
 package cbit.vcell.export.server;
 
 import cbit.vcell.math.VariableType;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.units.VCUnitDefinition;
 import com.google.gson.GsonBuilder;
 import edu.uchc.connjur.wb.ExecutionTrace;
 import org.apache.commons.codec.binary.Hex;
@@ -63,6 +65,7 @@ public class N5Exporter implements ExportConstants {
 }
 
 	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws Exception {
+		VCUnitDefinition lengthUnit = ModelUnitSystem.createDefaultVCModelUnitSystem().getLengthUnit();
 		double[] allTimes = dataServer.getDataSetTimes(user, vcDataID);
 		TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
 		String[] variableNames = exportSpecs.getVariableSpecs().getVariableNames();
@@ -108,7 +111,7 @@ public class N5Exporter implements ExportConstants {
 				n5Specs.dataSetName, numVariables, blockSize[3], allTimes.length,
 				exportSpecs.getHumanReadableExportData().subVolume,
 				(mesh.getExtent().getY() / mesh.getSizeY()), (mesh.getExtent().getX() / mesh.getSizeX()),
-				(mesh.getExtent().getZ() / mesh.getSizeZ()));
+				(mesh.getExtent().getZ() / mesh.getSizeZ()), lengthUnit.getSymbol());
 
 
 		for (int variableIndex=0; variableIndex < (numVariables -1); variableIndex++){
