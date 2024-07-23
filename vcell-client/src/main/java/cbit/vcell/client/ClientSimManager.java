@@ -607,7 +607,7 @@ public void runSmoldynParticleView(final Simulation originalSimulation) {
 		}
 	};
 	tasks.add(pv);
-	ClientTaskDispatcher.dispatchColl(documentWindowManager.getComponent(), new Hashtable<String, Object>(), tasks, false, true, null);
+	ClientTaskDispatcher.dispatch(documentWindowManager.getComponent(), new Hashtable<String, Object>(), tasks, false, true, null);
 }
 
 public void runQuickSimulation(final Simulation originalSimulation, ViewerType viewerType) {
