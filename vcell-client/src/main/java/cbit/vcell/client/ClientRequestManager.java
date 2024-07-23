@@ -474,7 +474,7 @@ public class ClientRequestManager
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
 						// if there is error saving the document, try to unblock the window
-						if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
+						if (hashTable.get(swingthreads.TaskEventKeys.TASK_ABORTED_BY_ERROR.toString()) != null) {
 							getMdiManager().unBlockWindow(windowID);
 							getMdiManager().showWindow(windowID);
 						} else {
@@ -3544,7 +3544,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				try {
-					Throwable exc = (Throwable) hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+					Throwable exc = (Throwable) hashTable.get(swingthreads.TaskEventKeys.TASK_ABORTED_BY_ERROR.toString());
 					if (exc == null) {
 						boolean isSEDML = (boolean) hashTable.get("isSEDML");
 						if (isSEDML) {

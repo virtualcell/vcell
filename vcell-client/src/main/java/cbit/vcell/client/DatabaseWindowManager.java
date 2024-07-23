@@ -40,6 +40,7 @@ import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.gui.VCFileChooser;
 import org.vcell.util.gui.exporter.FileFilters;
+import swingthreads.TaskEventKeys;
 
 import javax.swing.Timer;
 import javax.swing.*;
@@ -541,7 +542,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 try {
-                    if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
+                    if (hashTable.get(TaskEventKeys.TASK_ABORTED_BY_ERROR.toString()) == null) {
                         XmlTreeDiff xmlTreeDiff = (XmlTreeDiff) hashTable.get("xmlTreeDiff");
                         String baselineDesc = docInfo1.getVersion().getName() + ", " + docInfo1.getVersion().getDate();
                         String modifiedDesc = docInfo2.getVersion().getName() + ", " + docInfo2.getVersion().getDate();
