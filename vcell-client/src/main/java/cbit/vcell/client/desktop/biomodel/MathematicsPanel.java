@@ -184,14 +184,14 @@ public class MathematicsPanel extends JPanel {
 	}
 	
 	private void refreshMath() {
-		ClientTaskDispatcher.dispatchColl(MathematicsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout), false);
+		ClientTaskDispatcher.dispatch(MathematicsPanel.this, new Hashtable<String, Object>(), ClientRequestManager.updateMath(this, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout), false);
 	}
 	
 	private void createMathModel(final ActionEvent e) {
 		// relays an action event with this as the source
 		Collection<AsynchClientTask> tasks = ClientRequestManager.updateMath(this, simulationContext, true,NetworkGenerationRequirements.ComputeFullStandardTimeout);
 		tasks.add(new AsynchClientTaskFunction(ht -> refireActionPerformed(e),"creating math model", AsynchClientTask.TASKTYPE_SWING_BLOCKING) ); 
-		ClientTaskDispatcher.dispatchColl(this, new Hashtable<String, Object>(), tasks, false);
+		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), tasks, false);
 	}
 	
 	public synchronized void addActionListener(ActionListener l) {
