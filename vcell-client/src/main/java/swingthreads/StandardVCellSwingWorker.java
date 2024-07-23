@@ -192,7 +192,7 @@ public abstract class StandardVCellSwingWorker extends VCellSwingWorker {
                             try {
                                 StandardVCellSwingWorker.runTask(currentTask, this.resultsHash, this.taskList);
                             } catch (Exception exc) {
-                                ClientTaskDispatcher.recordException(exc, this.resultsHash);
+                                ClientTaskDispatcher.recordException(exc, StandardVCellSwingWorker.this.resultsHash);
                             }
                         });
                     } else if (currentTask.getTaskType() == AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {

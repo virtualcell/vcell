@@ -16,11 +16,14 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.swing.Timer;
 
@@ -32,8 +35,8 @@ import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.ProgressDialog;
 
 import cbit.vcell.simdata.PDEDataContext;
-import swingthreads.StandardSwingWorker;
-import swingthreads.SwingWorker;
+import swingthreads.StandardVCellSwingWorker;
+import swingthreads.VCellSwingWorker;
 import swingthreads.TaskEventKeys;
 
 /**
@@ -44,6 +47,7 @@ import swingthreads.TaskEventKeys;
  */
 public class ClientTaskDispatcher {
     private static final Logger lg = LogManager.getLogger(ClientTaskDispatcher.class);
+    private static final long DEFAULT_TIMEOUT = 5000;//ms
     /**
      * used to count / generate thread names
      */
@@ -74,8 +78,24 @@ public class ClientTaskDispatcher {
         ClientTaskDispatcher.dispatch(requester, hash, tasks, false, false, false, null, false);
     }
 
+    public static Future<Hashtable<String, Object>> dispatchWithFuture(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks) {
+        return ClientTaskDispatcher.dispatchWithFuture(requester, hash, tasks, false, false, false, null, false);
+    }
+
+    public static void dispatchAndWait(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks) {
+        ClientTaskDispatcher.dispatchAndWait(requester, hash, tasks, false, false, false, null, false);
+    }
+
     public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress) {
         ClientTaskDispatcher.dispatch(requester, hash, tasks, true, bKnowProgress, false, null, false);
+    }
+
+    public static Future<Hashtable<String, Object>> dispatchWithFuture(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress) {
+        return ClientTaskDispatcher.dispatchWithFuture(requester, hash, tasks, true, bKnowProgress, false, null, false);
+    }
+
+    public static void dispatchAndWait(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress) {
+        ClientTaskDispatcher.dispatchAndWait(requester, hash, tasks, true, bKnowProgress, false, null, false);
     }
 
     public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress,
@@ -83,14 +103,44 @@ public class ClientTaskDispatcher {
         ClientTaskDispatcher.dispatch(requester, hash, tasks, true, bKnowProgress, cancelable, progressDialogListener, false);
     }
 
+    public static Future<Hashtable<String, Object>> dispatchWithFuture(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress,
+                                boolean cancelable, ProgressDialogListener progressDialogListener) {
+        return ClientTaskDispatcher.dispatchWithFuture(requester, hash, tasks, true, bKnowProgress, cancelable, progressDialogListener, false);
+    }
+
+    public static void dispatchAndWait(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress,
+                                boolean cancelable, ProgressDialogListener progressDialogListener) {
+        ClientTaskDispatcher.dispatchAndWait(requester, hash, tasks, true, bKnowProgress, cancelable, progressDialogListener, false);
+    }
+
     public static void dispatch(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress,
                                 boolean cancelable, ProgressDialogListener progressDialogListener, boolean bInputBlocking) {
         ClientTaskDispatcher.dispatch(requester, hash, tasks, true, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
     }
 
+    public static Future<Hashtable<String, Object>> dispatchWithFuture(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress,
+                                boolean cancelable, ProgressDialogListener progressDialogListener, boolean bInputBlocking) {
+        return ClientTaskDispatcher.dispatchWithFuture(requester, hash, tasks, true, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+    }
+
+    public static void dispatchAndWait(Component requester, Hashtable<String, Object> hash, AsynchClientTask[] tasks, boolean bKnowProgress,
+                                boolean cancelable, ProgressDialogListener progressDialogListener, boolean bInputBlocking) {
+        ClientTaskDispatcher.dispatchAndWait(requester, hash, tasks, true, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+    }
+
     public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
                                 final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
         ClientTaskDispatcher.dispatch(requester, hash, tasks, null, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+    }
+
+    public static Future<Hashtable<String, Object>> dispatchWithFuture(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+                                final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
+        return ClientTaskDispatcher.dispatchWithFuture(requester, hash, tasks, null, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
+    }
+
+    public static void dispatchAndWait(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+                                final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
+        ClientTaskDispatcher.dispatchAndWait(requester, hash, tasks, null, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
     }
 
     public static boolean isBusy() {
@@ -250,11 +300,51 @@ public class ClientTaskDispatcher {
                 bInputBlocking, StopStrategy.THREAD_INTERRUPT);
     }
 
+    public static Future<Hashtable<String, Object>> dispatchWithFuture(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+                                final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
+                                final boolean cancelable, final ProgressDialogListener progressDialogListener,
+                                final boolean bInputBlocking) {
+        return ClientTaskDispatcher.dispatchWithFuture(requester, hash, tasks, customDialog, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener,
+                bInputBlocking, StopStrategy.THREAD_INTERRUPT);
+    }
+
+    public static void dispatchAndWait(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+                                final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
+                                final boolean cancelable, final ProgressDialogListener progressDialogListener,
+                                final boolean bInputBlocking) {
+        ClientTaskDispatcher.dispatchAndWait(requester, hash, tasks, customDialog, bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener,
+                bInputBlocking, StopStrategy.THREAD_INTERRUPT);
+    }
+
 
     public static void dispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
                                 final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
                                 final boolean cancelable, final ProgressDialogListener progressDialogListener,
                                 final boolean bInputBlocking, final StopStrategy stopStrategy) {
+        ClientTaskDispatcher.masterDispatch(requester, hash, tasks, customDialog, bShowProgressPopup, bKnowProgress, cancelable,
+                progressDialogListener, bInputBlocking, stopStrategy, false);
+    }
+
+    public static Future<Hashtable<String, Object>> dispatchWithFuture(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+                                                                       final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
+                                                                       final boolean cancelable, final ProgressDialogListener progressDialogListener,
+                                                                       final boolean bInputBlocking, final StopStrategy stopStrategy){
+        return ClientTaskDispatcher.masterDispatch(requester, hash, tasks, customDialog, bShowProgressPopup, bKnowProgress, cancelable,
+                progressDialogListener, bInputBlocking, stopStrategy, false);
+    }
+
+    public static void dispatchAndWait(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+                                       final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
+                                       final boolean cancelable, final ProgressDialogListener progressDialogListener,
+                                       final boolean bInputBlocking, final StopStrategy stopStrategy){
+        ClientTaskDispatcher.masterDispatch(requester, hash, tasks, customDialog, bShowProgressPopup, bKnowProgress, cancelable,
+                progressDialogListener, bInputBlocking, stopStrategy, true);
+    }
+
+    private static Future<Hashtable<String, Object>> masterDispatch(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks,
+                                      final ProgressDialog customDialog, final boolean bShowProgressPopup, final boolean bKnowProgress,
+                                      final boolean cancelable, final ProgressDialogListener progressDialogListener,
+                                      final boolean bInputBlocking, final StopStrategy stopStrategy, final boolean blockUntilDone){
         final String threadBaseName = "ClientTaskDispatcher " + (serial++) + ' ';
         final List<AsynchClientTask> taskList = new ArrayList<>();
 
@@ -281,8 +371,8 @@ public class ClientTaskDispatcher {
             lg.debug("added task name {}", task.getTaskName());
         }
 
-        // dispatch tasks to a new worker
-        SwingWorker worker = new StandardSwingWorker(threadBaseName, taskList, requester, stopStrategy, hash, bKnowProgress,
+        // dispatch tasks to a new worker (note that there is handling for non-swing and swing tasks in the same place)
+        VCellSwingWorker worker = new StandardVCellSwingWorker(threadBaseName, taskList, requester, stopStrategy, hash, bKnowProgress,
                 progressDialogListener, bShowProgressPopup, customDialog, bInputBlocking, cancelable) {
 
             @Override
@@ -298,7 +388,21 @@ public class ClientTaskDispatcher {
 
         worker.setThreadName(threadBaseName);
         allTasks.addAll(taskList);
-        worker.start();
+        Future<Hashtable<String, Object>> futureResult =  worker.start();
+        if (!blockUntilDone) return futureResult;
+        try {
+            futureResult.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
+            lg.error("Unexpected exception occurred during execution of {} : ", threadBaseName, e);
+            lg.error(e);
+        } catch (InterruptedException e) {
+            lg.error("Unexpected thread interruption of {}: ", threadBaseName);
+            lg.error(e);
+        } catch (TimeoutException e) {
+            lg.error("Unexpected timeout occurred during execution of {} : ", threadBaseName);
+            lg.error(e);
+        }
+        return futureResult;
     }
 
     /**
@@ -308,8 +412,7 @@ public class ClientTaskDispatcher {
      * @return wrapper
      */
     public static Runnable debugWrapper(Runnable r) {
-        return () ->
-        {
+        return () -> {
             lg.debug("calling " + r.getClass().getName() + ".run on " + r);
             r.run();
         };
@@ -351,31 +454,14 @@ public class ClientTaskDispatcher {
     }
 
     //updated API
-    public static void dispatchColl(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask> coll) {
-        dispatch(requester, hash, coll.toArray(AsynchClientTask[]::new));
-    }
-
-    public static void dispatchColl(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask> coll, boolean bKnowProgress) {
+    // Extend if desired!
+    public static void dispatch(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask> coll, boolean bKnowProgress) {
         dispatch(requester, hash, coll.toArray(AsynchClientTask[]::new), bKnowProgress);
     }
 
-    public static void dispatchColl(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask> coll, boolean bKnowProgress,
-                                    boolean cancelable, ProgressDialogListener progressDialogListener) {
+    public static void dispatch(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask> coll, boolean bKnowProgress,
+                                boolean cancelable, ProgressDialogListener progressDialogListener) {
         dispatch(requester, hash, coll.toArray(AsynchClientTask[]::new), bKnowProgress, cancelable, progressDialogListener);
-    }
-
-    public static void dispatchColl(Component requester, Hashtable<String, Object> hash, Collection<AsynchClientTask> coll, boolean bKnowProgress,
-                                    boolean cancelable, ProgressDialogListener progressDialogListener, boolean bInputBlocking) {
-        dispatch(requester, hash, coll.toArray(AsynchClientTask[]::new), bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
-    }
-
-    public static void dispatchColl(final Component requester, final Hashtable<String, Object> hash, Collection<AsynchClientTask> coll,
-                                    final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
-        dispatch(requester, hash, coll.toArray(AsynchClientTask[]::new), bShowProgressPopup, bKnowProgress, cancelable, progressDialogListener, bInputBlocking);
-    }
-
-    public static void dispatchColl(final Component requester, final Hashtable<String, Object> hash, final AsynchClientTask[] tasks, final ProgressDialog customDialog,
-                                    final boolean bShowProgressPopup, final boolean bKnowProgress, final boolean cancelable, final ProgressDialogListener progressDialogListener, final boolean bInputBlocking) {
     }
 
 
@@ -403,5 +489,13 @@ public class ClientTaskDispatcher {
         String e = ClassUtils.getShortClassName(existing, def);
         String n = ClassUtils.getShortClassName(fWindow, def);
         throw new ProgrammingException("duplicate final windows" + e + " and " + n);
+    }
+
+    private void removeTaskFromDispatcher(AsynchClientTask task) {
+        ClientTaskDispatcher.allTasks.remove(task);
+    }
+
+    public void announceTaskComplete() {
+        ClientTaskDispatcher.entryCounter--;
     }
 }

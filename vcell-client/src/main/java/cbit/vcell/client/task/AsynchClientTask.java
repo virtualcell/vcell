@@ -116,7 +116,7 @@ public abstract class AsynchClientTask {
         this.clientTaskStatusSupport = clientTaskStatusSupport;
     }
 
-    public boolean showProgressPopup() {
+    public boolean shouldShowProgressPopup() {
         return this.bShowProgressPopup;
     }
 
