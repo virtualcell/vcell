@@ -202,13 +202,13 @@ public class VCellApiClient implements AutoCloseable {
 		HttpGet httpget = new HttpGet(getApiUrlPrefix() + "/simtask?" + simTasksQuerySpec.getQueryString());
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve simulation tasks " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getSimTasks()", httpget), httpClientContext);
 		String simTasksJson = responseBody;
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("returned: "+toStringTruncated(simTasksJson));
 		}
 
@@ -231,13 +231,13 @@ public class VCellApiClient implements AutoCloseable {
 		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel?"+bioModelsQuerySpec.getQueryString());
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve biomodels " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getBioModels()", httpget), httpClientContext);
 		String bimodelsJson = responseBody;
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("returned: "+toStringTruncated(bimodelsJson));
 		}
 
@@ -251,13 +251,13 @@ public class VCellApiClient implements AutoCloseable {
 		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/events?beginTimestamp="+beginTimestamp);
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve user events " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getEvents()", httpget), httpClientContext);
 		String eventWrappersJson = responseBody;
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("returned: "+toStringTruncated(eventWrappersJson));
 		}
 
@@ -271,13 +271,13 @@ public class VCellApiClient implements AutoCloseable {
 		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId);
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getBioModel()", httpget), httpClientContext);
 		String bimodelsJson = responseBody;
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("returned: "+toStringTruncated(bimodelsJson));
 		}
 
@@ -291,7 +291,7 @@ public class VCellApiClient implements AutoCloseable {
 		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId+"/biomodel.vcml");
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
 		}
 
@@ -306,13 +306,13 @@ public class VCellApiClient implements AutoCloseable {
 		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey);
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve simulation " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getSimulation()", httpget), httpClientContext);
 		String simulationJson = responseBody;
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("returned: "+toStringTruncated(simulationJson));
 		}
 
@@ -326,12 +326,12 @@ public class VCellApiClient implements AutoCloseable {
 		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/optimization/"+optimizationId+"?bStop="+bStop);
 		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve optimization run " + httpget.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getOptRunJson()", httpget), httpClientContext);
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("returned: "+toStringTruncated(responseBody));
 		}
 		return responseBody;
@@ -429,7 +429,7 @@ public class VCellApiClient implements AutoCloseable {
 		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey+"/startSimulation");
 		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
 		}
 
@@ -453,13 +453,13 @@ public class VCellApiClient implements AutoCloseable {
 		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey+"/stopSimulation");
 		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
 		}
 
 		String responseBody = httpclient.execute(httppost, new VCellStringResponseHandler("stopSimulation()", httppost), httpClientContext);
 		String simTaskReps = responseBody;
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("returned: "+toStringTruncated(simTaskReps));
 		}
 
@@ -826,7 +826,7 @@ public class VCellApiClient implements AutoCloseable {
 		  
 		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/swversion");
 
-		if (lg.isInfoEnabled()) {
+		if (lg.isDebugEnabled()) {
 			lg.info("Executing request to retrieve server software version " + httpget.getRequestLine());
 		}
 
