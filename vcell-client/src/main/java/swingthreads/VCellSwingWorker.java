@@ -1,11 +1,13 @@
 package swingthreads;
 
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.SwingUtilities;
-import java.lang.reflect.Field;
+import java.util.Hashtable;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 /**
  * This is the 3rd version of SwingWorker (also known as
@@ -43,11 +45,6 @@ public abstract class SwingWorker {
         }
     }
 
-    // Instance Variables
-    private Object value;  // see getValue(), setValue()
-    private final ThreadVar threadVar;
-
-
     /**
      * set {@link SwingWorker} thread name
      *
@@ -63,25 +60,24 @@ public abstract class SwingWorker {
         }
     }
 
+    // Instance Variables
+    private Hashtable<String, Object> value;  // see getValue(), setValue()
+    private final ThreadVar threadVar;
+
     /**
      * Get the value produced by the worker thread, or null if it
      * hasn't been constructed yet.
      */
-    protected synchronized Object getValue() {
+    protected synchronized Hashtable<String, Object> getValue() {
         return this.value;
     }
 
     /**
      * Set the value produced by worker thread
      */
-    private synchronized void setValue(Object x) {
+    private synchronized void setValue(Hashtable<String, Object> x) {
         this.value = x;
     }
-
-    /**
-     * Compute the value to be returned by the <code>get</code> method.
-     */
-    public abstract Object construct();
 
     /**
      * A new method that interrupts the worker thread.  Call this method
@@ -100,10 +96,10 @@ public abstract class SwingWorker {
      *
      * @return the value created by the <code>construct</code> method
      */
-    public Object get() {
+    public Hashtable<String,  Object> get() {
         while (true) {
             Thread t = this.threadVar.get();
-            if (t == null) return this.getValue();
+            if (t == null) return this.getValue(); // thread finished!
 
             try {
                 t.join();
@@ -119,36 +115,46 @@ public abstract class SwingWorker {
      * and then exit.
      */
     public SwingWorker() {
-        final Runnable doFinished = SwingWorker.this::finished;
-
-        Runnable doConstruct = new Runnable() {
+        Runnable doWork = new Runnable() {
             public void run() {
                 try {
-                    SwingWorker.this.setValue(SwingWorker.this.construct());
+                    SwingWorker.this.setValue(SwingWorker.this.verifyAndRun()); // Invoke now, on the current thread
                 } finally {
+                    // At the time this is called, the thread is running
                     SwingWorker.this.threadVar.clear();
+                    // We do this to make sure we never accidentally re-run the same thread.
+                    // We must ensure "one and done" threading.
                 }
-                SwingUtilities.invokeLater(doFinished);
+                SwingUtilities.invokeLater(SwingWorker.this::performSwingPostProcessing);
             }
         };
 
-        Thread t = new Thread(doConstruct);
-        this.threadVar = new ThreadVar(t);
+        this.threadVar = new ThreadVar(new Thread(doWork));
     }
+
+    /**
+     * Compute the value to be returned by the <code>get</code> method.
+     */
+    public abstract Hashtable<String, Object> verifyAndRun();
 
     /**
      * Called on the event dispatching thread (not on the worker thread)
      * after the <code>construct</code> method has returned.
      */
-    public void finished() {}
+    public abstract void performSwingPostProcessing();
 
     /**
      * Start the worker thread.
      */
-    public void start() {
+    public Future<Hashtable<String, Object>> start() {
         Thread t = this.threadVar.get();
+        FutureTask<Hashtable<String, Object>> ft = new FutureTask<>(t.start(), this.);
         if (t != null) {
-            t.start();
+            ft.run();
+            return ft;
         }
+
+        // Generally, getting here means we've already run the thread.
+        return t.start();
     }
 }
