@@ -602,6 +602,8 @@ public DataOperationResults doDataOperation(DataOperation dataOperation) throws 
 		}
 		if(e instanceof DataAccessException){
 			throw (DataAccessException)e;
+		}else if (e instanceof FileNotFoundException) {
+			throw new ObjectNotFoundException(e.getMessage(), e);
 		}else{
 			throw new DataAccessException("Datasetcontrollerimpl.doDataOperation error: "+e.getMessage(),e);
 		}
