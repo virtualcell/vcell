@@ -2,6 +2,7 @@ package cbit.vcell.message;
 
 import java.io.Serializable;
 
+import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,7 +48,7 @@ public class VCRpcMessageHandler implements VCQueueConsumer.QueueListener {
 		}
 
 		// reply to "reply-to" queue with the return value or exception.
-		long clientTimeoutMS = Long.parseLong(cbit.vcell.resource.PropertyLoader.getProperty(cbit.vcell.resource.PropertyLoader.vcellClientTimeoutMS, "1200000")); 
+		long clientTimeoutMS = Long.parseLong(cbit.vcell.resource.PropertyLoader.getProperty(cbit.vcell.resource.PropertyLoader.vcellClientTimeoutMS, PropertyLoader.vcellClientTimeoutMSDefault));
 		VCellQueue replyTo = (VCellQueue)rpcVCMessage.getReplyTo();
 		
 		//

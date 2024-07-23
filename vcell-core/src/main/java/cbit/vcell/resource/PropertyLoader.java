@@ -223,6 +223,7 @@ public class PropertyLoader {
 	public static final String jmsBlobMessageTempDir	= record("vcell.jms.blobMessageTempDir",ValueType.GEN);
 	public static final String jmsBlobMessageUseMongo	= record("vcell.jms.blobMessageUseMongo",ValueType.GEN);
 	public static final String vcellClientTimeoutMS 	= record("vcell.client.timeoutMS",ValueType.GEN);
+	public static final String vcellClientTimeoutMSDefault = "50000"; // default to 50 seconds.
 
 	public static final String maxOdeJobsPerUser	= record("vcell.server.maxOdeJobsPerUser",ValueType.GEN);
 	public static final String maxPdeJobsPerUser	= record("vcell.server.maxPdeJobsPerUser",ValueType.GEN);

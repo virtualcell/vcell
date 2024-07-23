@@ -30,7 +30,7 @@ public class RpcService {
 			UserLoginInfo userLoginInfo)
 					throws VCMessagingException, VCMessagingInvocationTargetException {
 		
-		int timeoutMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.vcellClientTimeoutMS, "120000")); // default to 2 minutes.
+		int timeoutMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.vcellClientTimeoutMS, PropertyLoader.vcellClientTimeoutMSDefault));
 		Object retvalue = vcMessagingSession.sendRpcMessage(queue, vcRpcRequest, returnRequired, timeoutMS, specialProperties, specialValues, userLoginInfo);
 		return (Serializable)retvalue;
 	}

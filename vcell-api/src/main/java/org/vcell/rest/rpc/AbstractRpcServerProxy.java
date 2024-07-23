@@ -65,7 +65,7 @@ public Object rpc(RpcServiceType serviceType, String methodName, Object[] args, 
  */
 public Object rpc(RpcServiceType serviceType, String methodName, Object[] args, boolean returnRequired, String[] specialProperties, Object[] specialValues) throws Exception {
 	VCRpcRequest vcRpcRequest = new VCRpcRequest(userLoginInfo.getUser(), serviceType, methodName, args);
-	int timeoutMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.vcellClientTimeoutMS, "120000")); // default to 2 minutes.
+	int timeoutMS = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.vcellClientTimeoutMS, PropertyLoader.vcellClientTimeoutMSDefault));
 	return vcMessagingSession.sendRpcMessage(queue, vcRpcRequest, returnRequired, timeoutMS, specialProperties, specialValues, userLoginInfo);
 }
 }
