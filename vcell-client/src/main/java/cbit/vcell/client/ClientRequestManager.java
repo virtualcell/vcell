@@ -352,9 +352,8 @@ public class ClientRequestManager
                     hashTable.put(IS_CHANGED_KEY, hasBeenChanged);
 				}
 			};
-			ClientTaskDispatcher.dispatch(null, hashtable, new AsynchClientTask[]{checkIfChanged},
+			ClientTaskDispatcher.dispatchAndWait(null, hashtable, new AsynchClientTask[]{checkIfChanged},
 					false, false, null, true);
-			ClientTaskDispatcher.dispatch(null, hashtable, new AsynchClientTask[] {checkIfChanged});
 			if (hashtable.containsKey(IS_CHANGED_KEY))
 				isChanged = (Boolean)hashtable.get(IS_CHANGED_KEY);
 			else if (hashtable.containsKey("clientTaskDispatcherStackTraceArray")){
@@ -463,6 +462,7 @@ public class ClientRequestManager
 			getMdiManager().showWindow(windowID);
 			getMdiManager().blockWindow(windowID);
 			CloseOption closeOption = checkBeforeClosing((DocumentWindowManager) windowManager);
+			lg.error("Yup, he's not dead Jim");
 			if (closeOption.equals(CloseOption.CANCEL_CLOSE)) {
 				// user canceled
 				getMdiManager().unBlockWindow(windowID);
