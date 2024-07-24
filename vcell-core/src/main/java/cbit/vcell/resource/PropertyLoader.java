@@ -143,6 +143,8 @@ public class PropertyLoader {
 
 	// VCell special URLs which are loaded from web server at path DYNAMIC_PROPERTIES_URL_PATH (default /vcell_dynamic_properties.csv)
 	public static final String DYNAMIC_PROPERTIES_URL_PATH	= record("vcell.dynamicPropertiesUrlPath",ValueType.GEN);
+	public static final String DYNAMIC_PROPERTIES_TIMEOUT_MS= record("vcell.dynamicPropertiesTimeoutMS",ValueType.GEN);
+	public static final String DYNAMIC_PROPERTIES_TIMEOUT_MS_DEFAULT = "1000"; // default to 1 second.
 	public static final String COPASI_WEB_URL				= record("vcell.COPASI_WEB_URL",ValueType.URL);
 	public static final String SMOLDYN_WEB_URL				= record("vcell.SMOLDYN_WEB_URL",ValueType.URL);
 	public static final String BIONETGEN_WEB_URL			= record("vcell.BIONETGEN_WEB_URL",ValueType.URL);

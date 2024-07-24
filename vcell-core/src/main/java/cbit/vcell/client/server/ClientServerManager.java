@@ -33,6 +33,7 @@ import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Duration;
 
 /**
  * Insert the type's description here.
@@ -381,9 +382,12 @@ private VCellConnection connectToServer(InteractiveContext requester,boolean bSh
 		// see static-files-config ConfigMap for definitions of dynamic properties as deployed
 		String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
 		boolean isHTTP = PropertyLoader.getBooleanProperty(PropertyLoader.isHTTP, false);
+		String dynamic_properties_timeout_MS = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_TIMEOUT_MS,
+				PropertyLoader.DYNAMIC_PROPERTIES_TIMEOUT_MS_DEFAULT);
+		Duration timeout = Duration.ofMillis(Long.parseLong(dynamic_properties_timeout_MS));
 		String webapp_base_url = isHTTP ? "http://" : "https://" + getClientServerInfo().getApihost() + ":" + getClientServerInfo().getApiport();
 		URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
-		DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url);
+		DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url, timeout);
 	} catch (Exception e) {
 		lg.error(e.getMessage(), e);
 	}

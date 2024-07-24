@@ -36,6 +36,7 @@ import javax.swing.*;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
@@ -128,7 +129,10 @@ public class VCellClientMain implements Callable<Integer> {
         String protocol = isHTTP ? "http" : "https";
         String webapp_base_url = protocol + "://" + host + ":" + port;
         URL vcell_dynamic_client_properties_url = new URL(webapp_base_url + url_path);
-        Thread dynamicClientPropertiesThread = new Thread(() -> DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url));
+        String dynamic_properties_timeout_MS = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_TIMEOUT_MS,
+                PropertyLoader.DYNAMIC_PROPERTIES_TIMEOUT_MS_DEFAULT);
+        Duration timeout = Duration.ofMillis(Long.parseLong(dynamic_properties_timeout_MS));
+        Thread dynamicClientPropertiesThread = new Thread(() -> DynamicClientProperties.updateDynamicClientProperties(vcell_dynamic_client_properties_url, timeout));
         dynamicClientPropertiesThread.setDaemon(false); // non-daemon thread to keep JVM running
         dynamicClientPropertiesThread.start();
 

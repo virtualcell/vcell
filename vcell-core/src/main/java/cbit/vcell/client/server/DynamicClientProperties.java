@@ -14,6 +14,7 @@ import java.io.StringReader;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -23,7 +24,7 @@ public class DynamicClientProperties {
     private static VCellDynamicProps vcellDynamicProps = new VCellDynamicProps(null);
 
 
-    public static synchronized void updateDynamicClientProperties(URL vcell_dynamic_properties_url) {
+    public static synchronized void updateDynamicClientProperties(URL vcell_dynamic_properties_url, Duration timeout) {
         try {
             boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
             boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
@@ -55,6 +56,7 @@ public class DynamicClientProperties {
             // Send a GET request
             java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
                     .uri(vcell_dynamic_properties_url.toURI())
+                    .timeout(timeout)
                     .GET()
                     .build();
 
