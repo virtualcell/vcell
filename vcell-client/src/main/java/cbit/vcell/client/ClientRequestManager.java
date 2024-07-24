@@ -462,7 +462,6 @@ public class ClientRequestManager
 			getMdiManager().showWindow(windowID);
 			getMdiManager().blockWindow(windowID);
 			CloseOption closeOption = checkBeforeClosing((DocumentWindowManager) windowManager);
-			lg.error("Yup, he's not dead Jim");
 			if (closeOption.equals(CloseOption.CANCEL_CLOSE)) {
 				// user canceled
 				getMdiManager().unBlockWindow(windowID);
