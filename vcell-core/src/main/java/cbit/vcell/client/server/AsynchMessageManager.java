@@ -114,7 +114,7 @@ private void poll( )  {
     	if (shouldReport) begin = System.currentTimeMillis(); // time the call
 
 		if (!clientServerManager.isStatusConnected()){
-			connectionLock.lock();
+			if (!connectionLock.tryLock()) return;
 			clientServerManager.attemptReconnect();
 			return;
 		}
