@@ -16,6 +16,7 @@ public class SsldUtils {
     public static SsldModel importSsldFile(File file) {
 
         SsldModel model = new SsldModel();
+        model.setFile(file);
 
         BufferedReader br = null;
         FileReader fr = null;
@@ -37,9 +38,9 @@ public class SsldUtils {
                     case MOLECULES:
                         model.molecules = Molecule.loadMolecules(sc.next().trim());
                         break;
-//                    case MOLECULE_FILES:
-//                        Molecule.loadMoleculesFiles(model, sc.next().trim(), model.molecules);
-//                        break;
+                    case MOLECULE_FILES:
+                        Molecule.loadMoleculesFiles(model, sc.next().trim(), model.molecules);
+                        break;
 //                    case DECAY_REACTIONS:
 //                        DecayReaction.loadReactions(model, new Scanner(sc.next().trim()));
 //                        break;

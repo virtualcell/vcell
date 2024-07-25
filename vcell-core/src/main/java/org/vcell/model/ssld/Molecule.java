@@ -544,4 +544,49 @@ public class Molecule {
         return tempMol;
         // </editor-fold>
     }
+
+    public static void loadMoleculesFiles(SsldModel model, String lines, ArrayList<Molecule> g_molecules) {
+        Scanner sc = new Scanner(lines);
+        sc.useDelimiter("MOLECULE:");
+        ArrayList<String> moleculeStrings = new ArrayList<> ();
+        while(sc.hasNext()){
+            moleculeStrings.add(sc.next());
+        }
+        sc.close();
+
+        for(String data : moleculeStrings) {
+            Scanner sc2 = new Scanner(data);
+            sc2.useDelimiter(" ");
+            String molName = sc2.next();
+            String finalName = sc2.next();
+            String fName = "";
+            while(sc2.hasNext()) {
+                fName = sc2.next();
+                finalName = finalName + " " + fName;
+            }
+            finalName = finalName.trim();
+
+            for(Molecule m: g_molecules) {
+                if(m.getName().equals(molName)) {
+                    //check if file exists
+                    if(new File(finalName).exists()) {
+                        m.setFile(finalName);
+                    }else {
+                        //try and find file in auto-generated folder
+                        String childname = new File(finalName).getName();
+                        if(new File(model.getFile().getParent() + File.separator + "structure_files" + File.separator + childname).exists()) {
+                            m.setFile(model.getFile().getParent() + File.separator + "structure_files" + File.separator + childname);
+                        } else {
+                            String msg = "Could not find pdb source file for "+ m.toString() +".\nPlease check model txt file for correct Molecule file.";
+//            				PopUp.information(msg);
+                            System.out.println(msg);
+                        }
+                    }
+                    break;
+                }
+            }
+            sc2.close();
+        }
+    }
+
 }

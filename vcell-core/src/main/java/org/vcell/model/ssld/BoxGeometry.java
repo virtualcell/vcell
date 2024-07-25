@@ -2,6 +2,8 @@ package org.vcell.model.ssld;
 
 import java.util.Scanner;
 
+import org.vcell.util.springsalad.IOHelp;
+
 public class BoxGeometry {
 
     public final static String LX = "L_x";
@@ -65,7 +67,7 @@ public class BoxGeometry {
                     break;
                 default:
                     System.out.println("BoxGeometry loadData received "
-                            + "unexpected input. Input = " + SsldUtils.printArray(next));
+                            + "unexpected input. Input = " + IOHelp.printArray(next));
             }
         }
         sc.close();
