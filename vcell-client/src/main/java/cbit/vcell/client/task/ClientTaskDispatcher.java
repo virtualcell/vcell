@@ -350,7 +350,8 @@ public class ClientTaskDispatcher {
 
         // check tasks - swing non-blocking can be only at the end
         ClientTaskDispatcher.entryCounter++;
-        if (ClientTaskDispatcher.entryCounter > 1) lg.debug("Reentrant: {}", ClientTaskDispatcher.entryCounter);
+        if (ClientTaskDispatcher.entryCounter > 1 && lg.isTraceEnabled())
+            lg.debug("Reentrant: {}", ClientTaskDispatcher.entryCounter);
 
         //	if (bInProgress) {
         //		Thread.dumpStack();
@@ -359,8 +360,8 @@ public class ClientTaskDispatcher {
             hash.put(TaskEventKeys.STACK_TRACE_ARRAY.toString(), Thread.currentThread().getStackTrace());
 
         if (bShowProgressPopup && requester == null) {
-            System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
-            Thread.dumpStack();
+            if (lg.isDebugEnabled()) lg.warn("ClientTaskDispatcher.dispatch(), requester is null, " +
+                    "dialog has no parent, please try best to fix it!!!");
         }
 
         for (AsynchClientTask task : tasks) {
@@ -368,7 +369,7 @@ public class ClientTaskDispatcher {
                 throw new RuntimeException("SWING_NONBLOCKING task only permitted as last task");
             }
             taskList.add(task);
-            lg.debug("added task name {}", task.getTaskName());
+            if (lg.isTraceEnabled()) lg.debug("added task name {}", task.getTaskName());
         }
 
         // dispatch tasks to a new worker (note that there is handling for non-swing and swing tasks in the same place)

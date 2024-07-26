@@ -35,6 +35,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.graphlayout.ExpandCanvasLayouter;
 import org.vcell.util.graphlayout.GenericLogicGraphLayouter;
 import org.vcell.util.graphlayout.RandomLayouter;
@@ -57,6 +59,8 @@ import cbit.vcell.model.Model;
 
 @SuppressWarnings("serial")
 public class ReactionCartoonEditorPanel extends JPanel implements ActionListener {
+	private static final Logger lg = LogManager.getLogger(ReactionCartoonEditorPanel.class);
+
 	public static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(10,0);
 	public static final Dimension NARROW_SEPARATOR_SIZE = new Dimension(2,0);
 	public static final Dimension WIDE_SEPARATOR_SIZE = new Dimension(15,0);
@@ -169,7 +173,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 				});
 			}
 			else if (source == getGlgLayoutJButton())
-//				System.out.println("GLG Layout has been removed");
+//				lg.debug("GLG Layout has been removed");
 				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
 			else if (source == getShrinkCanvasButton())
 				getReactionCartoonTool().layout(ShrinkCanvasLayouter.LAYOUT_NAME);
@@ -700,8 +704,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 
 	// TODO centralize exception handling
 	private void handleException(Throwable exception) {
-		System.out.println("--------- UNCAUGHT EXCEPTION --------- in CartoonPanel");
-		exception.printStackTrace(System.out);
+		lg.error("--------- UNCAUGHT EXCEPTION ---------", exception);
 	}
 
 	private void initConnections() throws Exception {
@@ -830,7 +833,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 		return ungroupButton;
 	}
 	private void setViewMode(String command) {
-		System.out.println("ReactionCartoonEditorPanel, setViewMode");
+		lg.trace("ReactionCartoonEditorPanel, setViewMode");
 		if(command.equalsIgnoreCase(Mode.GROUPMOLECULE.getActionCommand())) {	// group participants by signature
 			currentReactionCartoon = reactionCartoonMolecule;
 			getReactionCartoonTool().setReactionCartoon(currentReactionCartoon);
@@ -853,7 +856,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 	}
 	
 	private void setSizeMode(String command) {
-		System.out.println("ReactionCartoonEditorPanel, setSizeMode");
+		lg.trace("ReactionCartoonEditorPanel, setSizeMode");
 		if(command.equalsIgnoreCase(Mode.EQUALSIZE.getActionCommand())) {
 			currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.normal);
 		} else if(command.equalsIgnoreCase(Mode.SIZEBYWEIGHT.getActionCommand())) {
@@ -934,8 +937,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 			try{
 				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME, false);
 			}catch(Exception e){
-				System.out.println("Error:  "+this.getClass().getName()+" setStructureSuite(...)->reactioncartoontool.layout(...)");
-				e.printStackTrace();
+				lg.error("Error:  "+this.getClass().getName()+" setStructureSuite(...)->reactioncartoontool.layout(...)", e);
 			}
 		//}
 	}

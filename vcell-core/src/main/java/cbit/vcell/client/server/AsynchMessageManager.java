@@ -84,18 +84,18 @@ public class AsynchMessageManager implements SimStatusListener, DataAccessExcept
             this.executorService = VCellExecutorService.get();
             DataAccessException.addListener(this);
         }
-        this.schedule(this.pollTime);
-        lg.debug("Asynch Polling active");
+        this.schedule(AsynchMessageManager.BASE_POLL_SECONDS);
+        lg.debug("Asynch polling active");
     }
 
     public void stopPolling() {
         this.isPollingEnabled.set(false);
-        lg.debug("Asynch Polling disabled, stopping polling");
+        lg.debug("Asynch polling disabled, stopping polling");
     }
 
     @Override
     public void created(DataAccessException dae) {
-//	if (lg.isTraceEnabled()) {
+		lg.debug("scheduling now due to " + dae.getMessage());
 //		lg.trace("scheduling now due to " + dae.getMessage());
 //	}
         this.schedule(0);
@@ -103,12 +103,12 @@ public class AsynchMessageManager implements SimStatusListener, DataAccessExcept
 
     private void poll() {
         if (!this.isPollingEnabled.get()) {
-            lg.debug("polling stopped");
+            lg.debug("polling is not currently enabled");
             return;
         }
 
-        lg.debug("polling");
-        boolean shouldReport = this.counter % 50 == 0;
+        if (lg.isTraceEnabled()) lg.debug("Attempting a single poll...");
+        boolean shouldReport = this.counter++ % 50 == 0;
         long begin = 0;
         long end = 0;
 
