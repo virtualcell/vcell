@@ -78,18 +78,19 @@ public class AsynchMessageManager implements SimStatusListener, DataAccessExcept
      */
     public synchronized void startPolling() {
         if (this.isPollingEnabled.get()) return;
+        lg.debug("Asynch Polling initiated");
         this.isPollingEnabled.set(true);
         if (this.executorService == null) {
             this.executorService = VCellExecutorService.get();
             DataAccessException.addListener(this);
         }
         this.schedule(this.pollTime);
-
+        lg.debug("Asynch Polling active");
     }
 
     public void stopPolling() {
-//	lg.trace("stopping polling");
         this.isPollingEnabled.set(false);
+        lg.debug("Asynch Polling disabled, stopping polling");
     }
 
     @Override
