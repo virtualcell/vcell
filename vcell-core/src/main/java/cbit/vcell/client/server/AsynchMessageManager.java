@@ -38,7 +38,6 @@ import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
-import edu.uchc.connjur.wb.ExecutionTrace;
 
 /**
  * {@link AsynchMessageManager} polls from {@link VCellConnection} to get remote messages. Remote Messages include the following:
@@ -51,7 +50,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  */
 public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener, DataJobListenerHolder {
     private static final long BASE_POLL_SECONDS = 3;
-    private static final long ATTEMPT_POLL_SECONDS = 3;
+    private static final long RETRY_POLL_SECONDS = 1;
     private static final long DEFAULT_TIMEOUT_MS = 1500;
     private static final Logger lg = LogManager.getLogger(AsynchMessageManager.class);
 
@@ -60,7 +59,6 @@ public class AsynchMessageManager implements SimStatusListener, DataAccessExcept
     private int failureCount = 0;
     private ScheduledExecutorService executorService = null;
     private long counter = 0;
-    private long pollTime = BASE_POLL_SECONDS;
     private final AtomicBoolean isPollingEnabled = new AtomicBoolean(false);
     private ScheduledFuture<?> pollingHandle = null;
     /**
@@ -97,8 +95,6 @@ public class AsynchMessageManager implements SimStatusListener, DataAccessExcept
     @Override
     public void created(DataAccessException dae) {
 		lg.debug("scheduling now due to " + dae.getMessage());
-//		lg.trace("scheduling now due to " + dae.getMessage());
-//	}
         this.schedule(0);
     }
 
@@ -144,16 +140,18 @@ public class AsynchMessageManager implements SimStatusListener, DataAccessExcept
             );
         } catch (Exception exc) {
             lg.error(">> POLLING FAILURE <<", exc);
-            this.pollTime = ATTEMPT_POLL_SECONDS;
             this.failureCount++;
             if (this.failureCount % 3 == 0) {
                 this.isPollingEnabled.set(false);
                 this.clientServerManager.setDisconnected();
             }
         } finally {
-            this.connectionLock.unlock();
-            lg.debug(ExecutionTrace.justClassName(this) + " poll time " + this.pollTime + " seconds");
-            if (this.isPollingEnabled.get()) this.schedule(this.pollTime);
+            long retryTime = this.failureCount > 0 ?
+                    AsynchMessageManager.RETRY_POLL_SECONDS : AsynchMessageManager.BASE_POLL_SECONDS;
+            if (lg.isTraceEnabled())
+                lg.debug("Poll concluded; Next poll in " + retryTime + " seconds");
+            if (this.connectionLock.isHeldByCurrentThread()) this.connectionLock.unlock();
+            if (this.isPollingEnabled.get()) this.schedule(retryTime);
         }
     }
 
