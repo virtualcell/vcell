@@ -90,7 +90,7 @@ public class N5Exporter implements ExportConstants {
 				variableInfo.put("Name", variableName);
 				variableInfo.put("Domain", specie.getDomain().getName());
 				channelInfo.put(i, variableInfo);
-				if (unsupported){`
+				if (unsupported){
 					throw new RuntimeException("Tried to export a variable type that is not supported!");
 				} else if (specie.getVariableType().equals(VariableType.POSTPROCESSING)) {
 					File hdf5File = dataServer.getVCellSimFiles(vcDataID.getOwner(), vcDataID).postprocessingFile;
