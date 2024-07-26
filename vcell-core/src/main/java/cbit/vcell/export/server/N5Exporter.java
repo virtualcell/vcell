@@ -36,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 
 public class N5Exporter implements ExportConstants {
@@ -79,15 +80,17 @@ public class N5Exporter implements ExportConstants {
 		// 51X, 51Y, 1Z, 1C, 2T
 		int[] blockSize = {mesh.getSizeX(), mesh.getSizeY(), 1, mesh.getSizeZ(), 1};
 
-		double[] mask = new double[mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ()];
-		for (int i =0; i < mesh.getSizeX() * mesh.getSizeY() * mesh.getSizeZ(); i++){
-			mask[i] = (double) mesh.getSubVolumeFromVolumeIndex(i);
-		}
-
-		for (String variableName: variableNames){
+		HashMap<Integer, Object> channelInfo = new HashMap<>();
+		for (int i = 0; i < variableNames.length; i++){
+			String variableName = variableNames[i];
 			DataIdentifier specie = getSpecificDI(variableName, outputContext);
 			if (specie != null){
-				if (unsupportedTypes.contains(specie.getVariableType())){
+				boolean unsupported = unsupportedTypes.contains(specie.getVariableType());
+				HashMap<String, Object> variableInfo = new HashMap<>();
+				variableInfo.put("Name", variableName);
+				variableInfo.put("Domain", specie.getDomain().getName());
+				channelInfo.put(i, variableInfo);
+				if (unsupported){`
 					throw new RuntimeException("Tried to export a variable type that is not supported!");
 				} else if (specie.getVariableType().equals(VariableType.POSTPROCESSING)) {
 					File hdf5File = dataServer.getVCellSimFiles(vcDataID.getOwner(), vcDataID).postprocessingFile;
@@ -111,7 +114,7 @@ public class N5Exporter implements ExportConstants {
 				n5Specs.dataSetName, numVariables, blockSize[3], allTimes.length,
 				exportSpecs.getHumanReadableExportData().subVolume,
 				(mesh.getExtent().getY() / mesh.getSizeY()), (mesh.getExtent().getX() / mesh.getSizeX()),
-				(mesh.getExtent().getZ() / mesh.getSizeZ()), lengthUnit.getSymbol());
+				(mesh.getExtent().getZ() / mesh.getSizeZ()), lengthUnit.getSymbol(), channelInfo);
 
 
 		for (int variableIndex=0; variableIndex < (numVariables -1); variableIndex++){
@@ -129,6 +132,10 @@ public class N5Exporter implements ExportConstants {
 		}
 
 		//Create mask
+		double[] mask = new double[mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ()];
+		for (int i =0; i < mesh.getSizeX() * mesh.getSizeY() * mesh.getSizeZ(); i++){
+			mask[i] = (double) mesh.getSubVolumeFromVolumeIndex(i);
+		}
 		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
 			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, (numVariables - 1), 0, normalizedTimeIndex}, mask);
