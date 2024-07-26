@@ -33,6 +33,7 @@ import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.*;
 
 /**
  * Insert the type's description here.
@@ -278,6 +279,18 @@ public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOExceptio
 		return null;
 	}
 }
+
+	public MessageEvent[] getMessageEvents(long timeoutMs) throws RemoteProxyException, IOException, TimeoutException {
+		Callable<MessageEvent[]> getMessageEventsCallable = this::getMessageEvents;
+		FutureTask<MessageEvent[]> futureTask = new FutureTask<>(getMessageEventsCallable);
+		Thread messageFetchThread = new Thread(futureTask);
+		messageFetchThread.start();
+		try {
+			return futureTask.get(timeoutMs, TimeUnit.MILLISECONDS);
+		} catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Error Attempting to get message events:", e);
+        }
+	}
 
 private void checkClientServerSoftwareVersion(InteractiveContext requester, ClientServerInfo clientServerInfo) {
 	String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);

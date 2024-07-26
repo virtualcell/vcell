@@ -52,13 +52,14 @@ import edu.uchc.connjur.wb.ExecutionTrace;
 public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener, DataJobListenerHolder {
     private static final long BASE_POLL_SECONDS = 3;
     private static final long ATTEMPT_POLL_SECONDS = 3;
+    private static final long DEFAULT_TIMEOUT_MS = 1500;
     private static final Logger lg = LogManager.getLogger(AsynchMessageManager.class);
 
     private final EventListenerList listenerList = new EventListenerList();
     private final ClientServerManager clientServerManager;
     private int failureCount = 0;
     private ScheduledExecutorService executorService = null;
-    private final long counter = 0;
+    private long counter = 0;
     private long pollTime = BASE_POLL_SECONDS;
     private final AtomicBoolean isPollingEnabled = new AtomicBoolean(false);
     private ScheduledFuture<?> pollingHandle = null;
@@ -122,8 +123,8 @@ public class AsynchMessageManager implements SimStatusListener, DataAccessExcept
                 this.clientServerManager.attemptReconnect();
                 return;
             }
-            this.pollTime = BASE_POLL_SECONDS;
-            queuedEvents = this.clientServerManager.getMessageEvents();
+
+            queuedEvents = this.clientServerManager.getMessageEvents(AsynchMessageManager.DEFAULT_TIMEOUT_MS);
 
             if (shouldReport) end = System.currentTimeMillis();
 
