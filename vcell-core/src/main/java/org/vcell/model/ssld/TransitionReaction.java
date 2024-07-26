@@ -31,11 +31,8 @@ public class TransitionReaction extends Reaction {
     public final static String FREE_CONDITION = "Free";
     public final static String BOUND_CONDITION = "Bound";
 
-    // The condition on this reaction
-    private String condition;
-
-    // Each transition reaction has a single rate
-    private double rate;  // Units s-1
+    private String condition;   // The condition on this reaction
+    private double rate;        // Each transition reaction has a single rate ( Units s-1 )
 
 
     @Override
@@ -47,8 +44,38 @@ public class TransitionReaction extends Reaction {
         throw new UnsupportedOperationException("This operation is implemented elsewhere for the vcell version of springsalad");
     }
     @Override
-    public void loadReaction(SsldModel model, Scanner sc) {
-        // TODO: implement this
+    public void loadReaction(SsldModel model, Scanner dataScanner) {
+        // <editor-fold defaultstate="collapsed" desc="Method Code">
+        name = IOHelp.getNameInQuotes(dataScanner);
+        dataScanner.next();
+        molecule = model.getMolecule(IOHelp.getNameInQuotes(dataScanner));
+        dataScanner.next();
+        type = molecule.getType(IOHelp.getNameInQuotes(dataScanner));
+        dataScanner.next();
+        initialState = type.getState(IOHelp.getNameInQuotes(dataScanner));
+        dataScanner.next();
+        finalState = type.getState(IOHelp.getNameInQuotes(dataScanner));
+        dataScanner.next();
+        rate = dataScanner.nextDouble();
+        dataScanner.next();
+        condition = dataScanner.next();
+        if(!condition.equals(BOUND_CONDITION)){
+            conditionalMolecule = null;
+            conditionalType = null;
+            conditionalState = null;
+        } else {
+            conditionalMolecule = model.getMolecule(IOHelp.getNameInQuotes(dataScanner));
+            dataScanner.next();
+            conditionalType = conditionalMolecule.getType(IOHelp.getNameInQuotes(dataScanner));
+            dataScanner.next();
+            String condState = IOHelp.getNameInQuotes(dataScanner);
+            if(condState.equals(TransitionReaction.ANY_STATE_STRING)){
+                conditionalState = TransitionReaction.ANY_STATE;
+            } else {
+                conditionalState = conditionalType.getState(condState);
+            }
+        }
+        // </editor-fold>
     }
     @Override
     public String getName() {
@@ -57,6 +84,20 @@ public class TransitionReaction extends Reaction {
     @Override
     public String toString() {
         return name;
+    }
+
+    public static ArrayList<TransitionReaction> loadReactions(SsldModel model, Scanner sc){
+        // <editor-fold defaultstate="collapsed" desc="Method Code">
+        ArrayList<TransitionReaction> transitionReactions = new ArrayList<>();
+        TransitionReaction reaction;
+        while(sc.hasNextLine()){
+            reaction = new TransitionReaction();
+            reaction.loadReaction(model, new Scanner(sc.nextLine()));
+            transitionReactions.add(reaction);
+        }
+        sc.close();
+        return transitionReactions;
+        // </editor-fold>
     }
 
 }

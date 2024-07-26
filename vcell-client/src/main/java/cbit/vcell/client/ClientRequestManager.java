@@ -3341,7 +3341,12 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						isSEDML = true; // treat the same since OMEX is just and archive with SED-ML file(s)
 					} else if(file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".ssld")) {
 
+						// TODO: ssld import here
+
 						SsldUtils.importSsldFile(file);
+
+
+
 					} else if (!externalDocInfo.isXML()) {
 						if (hashTable.containsKey(BNG_UNIT_SYSTEM)) { // not XML, look for BNGL etc.
 							// we use the BngUnitSystem already created during the 1st pass

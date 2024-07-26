@@ -115,36 +115,16 @@ public class SsldModel {
     }
 
     // ------------------------ binding reactions
-    // Add a single reaction
-    public void addBindingReaction(BindingReaction reaction){
-        bindingReactions.add(reaction);
-    }
-
-    // Remove a single binding reaction
-    public void removeBindingReaction(BindingReaction reaction){
-        bindingReactions.remove(reaction);
-    }
-
-    // Remove a binding reaction based on its index
-    public void removeBindingReaction(int index){
-        bindingReactions.remove(index);
-    }
-
-    // Get the entire binding reaction array
-    public ArrayList<BindingReaction> getBindingReactions(){
+    public ArrayList<BindingReaction> getBindingReactions() {
         return bindingReactions;
     }
-
-    // Get a binding reaction by its index
-    public BindingReaction getBindingReaction(int index){
+    public BindingReaction getBindingReaction(int index) {
         return bindingReactions.get(index);
     }
-
-    // Get a binding reaction by name
-    public BindingReaction getBindingReaction(String name){
+    public BindingReaction getBindingReaction(String name) {
         BindingReaction bindingReaction = null;
-        for(BindingReaction reaction : bindingReactions){
-            if(reaction.getName().equals(name)){
+        for(BindingReaction reaction : bindingReactions) {
+            if(reaction.getName().equals(name)) {
                 bindingReaction = reaction;
             }
         }
@@ -152,19 +132,16 @@ public class SsldModel {
     }
 
     // ------------------------ transition reactions
-    public ArrayList<TransitionReaction> getTransitionReactions(){
+    public ArrayList<TransitionReaction> getTransitionReactions() {
         return transitionReactions;
     }
-    // Get transition reaction by index
-    public TransitionReaction getTransitionReaction(int index){
+    public TransitionReaction getTransitionReaction(int index) {
         return transitionReactions.get(index);
     }
-
-    // Get transition reaction by name
-    public TransitionReaction getTransitionReaction(String name){
+    public TransitionReaction getTransitionReaction(String name) {
         TransitionReaction transitionReaction = null;
-        for(TransitionReaction reaction : transitionReactions){
-            if(reaction.getName().equals(name)){
+        for(TransitionReaction reaction : transitionReactions) {
+            if(reaction.getName().equals(name)) {
                 transitionReaction = reaction;
                 break;
             }
@@ -172,13 +149,17 @@ public class SsldModel {
         return transitionReaction;
     }
 
-
-
     // ------------------------ allosteric reactions
-    public AllostericReaction getAllostericReaction(String name){
+    public ArrayList<AllostericReaction> getAllostericReactions() {
+        return allostericReactions;
+    }
+    public AllostericReaction getAllostericReaction(int index) {
+        return allostericReactions.get(index);
+    }
+    public AllostericReaction getAllostericReaction(String name) {
         AllostericReaction reaction = null;
-        for(AllostericReaction rxn : allostericReactions){
-            if(rxn.getName().equals(name)){
+        for(AllostericReaction rxn : allostericReactions) {
+            if(rxn.getName().equals(name)) {
                 reaction = rxn;
                 break;
             }
@@ -189,7 +170,7 @@ public class SsldModel {
 
 
     // ------------------------ annotations
-    private void loadMoleculeAnnotations(String string) {
+    public void loadMoleculeAnnotations(String string) {
         // <editor-fold defaultstate="collapsed" desc="Method Code">
         Scanner sc = new Scanner(string);
         sc.useDelimiter("Annotation:");
@@ -219,7 +200,7 @@ public class SsldModel {
         sc.close();
         // </editor-fold>
     }
-    private void loadReactionAnnotations(String string) {
+    public void loadReactionAnnotations(String string) {
         // <editor-fold defaultstate="collapsed" desc="Method Code">
         Scanner sc = new Scanner(string);
         sc.useDelimiter("Annotation:");
