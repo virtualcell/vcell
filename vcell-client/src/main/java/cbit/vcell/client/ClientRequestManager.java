@@ -95,6 +95,7 @@ import org.vcell.model.bngl.gui.BNGLDebuggerPanel;
 import org.vcell.model.bngl.gui.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
+import org.vcell.model.ssld.SsldModel;
 import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
@@ -3343,7 +3344,9 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 						// TODO: ssld import here
 
-						SsldUtils.importSsldFile(file);
+						SsldModel ssldModel = SsldUtils.importSsldFile(file);
+						BioModel bioModel = SsldUtils.fromSsld(ssldModel);
+
 
 
 

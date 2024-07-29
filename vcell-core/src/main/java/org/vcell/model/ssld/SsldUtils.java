@@ -1,10 +1,16 @@
 package org.vcell.model.ssld;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.model.*;
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.MolecularComponent;
+import org.vcell.model.rbm.MolecularType;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 
 import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.*;
+import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.prefs.Preferences;
 
@@ -13,6 +19,52 @@ import static org.vcell.solver.langevin.LangevinLngvWriter.*;
 public class SsldUtils {
 
 
+    public static BioModel fromSsld(SsldModel ssldModel) throws Exception {
+
+        ModelUnitSystem mus = ModelUnitSystem.createDefaultVCModelUnitSystem();
+        BioModel bioModel = new BioModel(null);
+        bioModel.setName(ssldModel.getSystemName());
+        Model model = new Model("model", mus);
+        bioModel.setModel(model);
+
+        // structures
+        if(bioModel.getModel().getStructures().length > 0) {
+            Structure struct = bioModel.getModel().getStructure(0);
+            if (struct != null) {
+                bioModel.getModel().removeStructure(struct, true);
+            }
+        }
+        LinkedList<Structure> newstructures = new LinkedList<Structure>();
+        Feature intra = new Feature(Structure.SpringStructureEnum.Intracellular.columnName);
+        newstructures.add(intra);
+        Membrane membr = new Membrane(Structure.SpringStructureEnum.Membrane.columnName);
+        newstructures.add(membr);
+        Feature extra = new Feature(Structure.SpringStructureEnum.Extracellular.columnName);
+        newstructures.add(extra);
+        Structure[] structarray = new Structure[newstructures.size()];
+        newstructures.toArray(structarray);
+        model.setStructures(structarray);
+
+        // molecular types
+        for(Molecule ssldMolecule : ssldModel.getMolecules()) {
+            MolecularType mt = new MolecularType(ssldMolecule.getName(), model);
+            for(Site ssldSite : ssldMolecule.getSiteArray()) {
+                SiteType ssldType = ssldSite.getType();
+                MolecularComponent mc = new MolecularComponent(ssldType.getName());
+                mc.setIndex(ssldSite.getIndex());   // TODO: starts at 1, adjust to start at 0? see export
+                for(State ssldState : ssldType.getStates()) {
+                    ComponentStateDefinition csd = new ComponentStateDefinition(ssldState.getName());
+                    mc.addComponentStateDefinition(csd);
+                }
+                mt.addMolecularComponent(mc);
+            }
+            model.getRbmModelContainer().addMolecularType(mt, false);
+        }
+
+
+
+        return bioModel;
+    }
     public static SsldModel importSsldFile(File file) {
 
         SsldModel model = new SsldModel();
