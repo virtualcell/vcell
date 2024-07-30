@@ -1,8 +1,8 @@
-FROM ghcr.io/virtualcell/vcell-solvers:0.8.1.1
+FROM ghcr.io/virtualcell/vcell-solvers:v0.8.1.2
 
 RUN apt-get -y update && \
     apt-get install -y  curl && \
-	apt-get install -y wget gdebi-core apt-utils libfreetype6 fontconfig fonts-dejavu python3-pip && \
+	apt-get install -y wget gdebi-core apt-utils libfreetype6 fontconfig fonts-dejavu && \
     pip3 install thrift
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
