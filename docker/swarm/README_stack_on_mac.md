@@ -25,9 +25,12 @@ popd
 
 on cluster (e.g. xanadu-76) as user vcell build vcell-opt singularity container
 ```bash
-export docker_image=ghcr.io/virtualcell/vcell-opt:dev
-export singularity_file=ghcr.io_virtualcell_vcell-opt_dev.img
-module load singularity
+export TAG=dev
+export TAG=7.6.0.31
+export SINGULARITY_MODULE=singularity/vcell-3.10.0
+export docker_image=ghcr.io/virtualcell/vcell-opt:${TAG}
+export singularity_file=ghcr.io_virtualcell_vcell-opt_${TAG}.img
+module load ${SINGULARITY_MODULE}
 # singularity remote login -u <github_user> -p <github_token> docker://ghcr.io
 singularity build --force ${singularity_file} docker://${docker_image}
 cp ${singularity_file} /state/partition1/singularityImages/
@@ -41,16 +44,18 @@ also, make sure vcell-batch container is current.
 
    on cluster (e.g. xanadu-76) as user vcell build vcell-batch singularity container
 
-    ```bash
-    export docker_image=ghcr.io/virtualcell/vcell-batch:dev
-    export singularity_file=ghcr.io_virtualcell_vcell-batch_dev.img
-    module load singularity
-    #singularity remote login -u <github_user> -p <github_token> docker://ghcr.io
-    singularity build --force ${singularity_file} docker://${docker_image}
-    cp ${singularity_file} /state/partition1/singularityImages/
-    cp ${singularity_file} /share/apps/vcell3/singularityImages/
-   
-    ```
+```bash
+export TAG=dev
+export TAG=7.6.0.31
+export SINGULARITY_MODULE=singularity/vcell-3.10.0
+export docker_image=ghcr.io/virtualcell/vcell-batch:${TAG}
+export singularity_file=ghcr.io_virtualcell_vcell-batch_${TAG}.img
+module load ${SINGULARITY_MODULE}
+#singularity remote login -u <github_user> -p <github_token> docker://ghcr.io
+singularity build --force ${singularity_file} docker://${docker_image}
+cp ${singularity_file} /state/partition1/singularityImages/
+cp ${singularity_file} /share/apps/vcell3/singularityImages/
+```
 
 
 3. Update local configuration to run locally (stored in <vcell>/docker_env.txt)

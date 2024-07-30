@@ -1,9 +1,9 @@
-FROM ghcr.io/virtualcell/vcell-solvers:v0.0.42-dev3
+FROM ghcr.io/virtualcell/vcell-solvers:v0.8.1.2
 
 RUN apt-get -y update && \
     apt-get install -y  curl && \
 	apt-get install -y wget gdebi-core apt-utils libfreetype6 fontconfig fonts-dejavu && \
-	pip install thrift
+    pip3 install thrift
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true
