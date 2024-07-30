@@ -1,8 +1,14 @@
 package cbit.vcell.export;
 
+import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.solvers.CartesianMesh;
+import org.vcell.util.BeanUtils;
 
 public class MeshToImage {
+
+    public record ImageFromMesh(double[] data, int sizeX, int sizeY, int sizeZ){
+
+    }
 
     /**
      * When a simulation is executed, the borders of this simulation world abruptly end, and because of that
@@ -11,109 +17,64 @@ public class MeshToImage {
      * the same ratio of space taken.
      * @return double[]
      */
-    public static double[] convertMeshIntoImage(double[] data, CartesianMesh mesh){
+    public static ImageFromMesh convertMeshIntoImage(double[] data, CartesianMesh mesh) throws GeometryException {
         int dimensions = mesh.getGeometryDimension();
         if (dimensions == 2){
-            return convert2DMeshIntoImage(data, mesh);
+            return convert2DMeshIntoImage(data, mesh.getSizeX(), mesh.getSizeY());
         }
         else if (dimensions == 3) {
-            return convert3DMeshIntoImage(data, mesh);
+            return convert3DMeshIntoImage(data, mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
         }
-        return new double[] {};
+        throw new GeometryException("Does not support 1D mesh to image conversions");
     }
 
-    private static double[] convert2DMeshIntoImage(double[] data, CartesianMesh mesh){
-        int newSize = ((mesh.getSizeX() - 2) * (mesh.getSizeY() - 2) * 4) + // internal rectangle
-                ((mesh.getSizeY() - 2) * 2 * 2) + ((mesh.getSizeX() - 2) * 2 * 2) + // sides
-                4; //corners
+    public static ImageFromMesh convertMeshIntoImage(double[] data, int sizeX, int sizeY, int sizeZ) throws GeometryException {
+        if (sizeZ == 1){
+            return convert2DMeshIntoImage(data, sizeX, sizeY);
+        } else if (sizeZ > 1) {
+            return convert3DMeshIntoImage(data, sizeX, sizeY, sizeZ);
+        }
+        throw new GeometryException("Does not support 1D mesh to image conversions");
+    }
+
+    public static int newNumElements(int oldNElements){
+        return oldNElements == 1 ? 1 : ((oldNElements - 2) * 2) + 2;
+    }
+
+    private static ImageFromMesh convert2DMeshIntoImage(double[] data, int sizeX, int sizeY){
+        int newWidth = newNumElements(sizeX);
+        int newHeight = newNumElements(sizeY);
+        int newSize = newWidth * newHeight;
         double[] newData = new double[newSize];
-        int newWidth = ((mesh.getSizeX() - 2) * 2) + 2;
-        int newHeight = ((mesh.getSizeY() - 2) * 2) + 2;
-        newSize = newWidth * newHeight;
-        IndexConversion indexConversion = new IndexConversion(false);
-        for (int i =0; i < data.length; i++){
-            int[] cords = indexConversion.rowToIndex(i, mesh.getSizeX());
-            int x = cords[0], y = cords[1];
-            boolean topOrBottom = y == 0 || y == mesh.getSizeY() - 1;
-            boolean leftOrRight = x == 0 || x == mesh.getSizeX() - 1;
-            if (leftOrRight && topOrBottom){
-                int i1 = indexConversion.rowMajorIndex(x, y, 0, newWidth);
-                newData[i1] = data[i];
+        for (int i =0; i < newWidth; i++){
+            for (int j=0; j < newHeight; j++){
+                int oldI = (int) Math.ceil(i / 2.0);
+                int oldJ = (int) Math.ceil(j / 2.0);
+                int oldIndex = BeanUtils.coordinateToIndex(new int[] {oldI, oldJ}, new int[] {sizeX, sizeY});
+                int newIndex = BeanUtils.coordinateToIndex(new int[] {i, j}, new int[] {newWidth, newHeight});
+                newData[newIndex] = data[oldIndex];
             }
-            else if (leftOrRight){
-                int i1 = indexConversion.rowMajorIndex(x, y, 0, newWidth), i2 = indexConversion.rowMajorIndex(x, y + 1, 0, newWidth);
-                newData[i1] = data[i];
-                newData[i2] = data[i];
-            }
-            else if (topOrBottom){
-                int i1 = indexConversion.rowMajorIndex(x, y, 0, newWidth), i2 = indexConversion.rowMajorIndex(x + 1, y, 0, newWidth);
-                newData[i1] = data[i];
-                newData[i2] = data[i];
-            } else{
-                int i1 = indexConversion.rowMajorIndex(x,y,0,newWidth), i2 = indexConversion.rowMajorIndex(x, y + 1, 0, newWidth);
-                int i3 = indexConversion.rowMajorIndex(x + 1, y, 0, newWidth), i4 = indexConversion.rowMajorIndex(x + 1, y + 1, 0, newWidth);
-                newData[i1] = data[i];
-                newData[i2] = data[i];
-                newData[i3] = data[i];
-                newData[i4] = data[i];
-            }
-
         }
-        return newData;
+        return new ImageFromMesh(newData, newWidth, newHeight, 1);
     }
 
-    private static double[] convert3DMeshIntoImage(double[] data, CartesianMesh mesh){
-        int newSize = ((mesh.getSizeX() - 2) * (mesh.getSizeY() - 2) * (mesh.getSizeZ() - 2) * 8) + // internal
-                ((mesh.getSizeY() - 2) * 2 * 4) + ((mesh.getSizeX() - 2) * 2 * 4) + ((mesh.getSizeZ() - 2) * 2 * 4) + //sides
-                + 4;
+    private static ImageFromMesh convert3DMeshIntoImage(double[] data, int sizeX, int sizeY, int sizeZ){
+        int newWidth = newNumElements(sizeX), newHeight = newNumElements(sizeY), newDepth = newNumElements(sizeZ);
+        int newSize = newWidth * newHeight * newDepth;
         double[] newData = new double[newSize];
-        int newWidth = (mesh.getSizeX() - 2) * 2 + 2;
-        int newHeight = (mesh.getSizeY() - 2) * 2 + 2;
-        int newDepth = (mesh.getSizeZ());
-        IndexConversion indexConversion = new IndexConversion(true);
-        for (int i = 0; i < data.length; i++){
-            int[] cords = indexConversion.rowToIndex(i, mesh.getSizeX());
-            int x = cords[0], y = cords[1], z = cords[2];
-            boolean topOrBottom = (y == 0 || y == mesh.getSizeY() - 1);
-            boolean leftOrRight = (x == 0 || x == mesh.getSizeX() - 1);
-            boolean zCorners = (z == 0 || z == mesh.getSizeZ() - 1);
-            if (topOrBottom && leftOrRight && zCorners){
-                int i1 = indexConversion.rowMajorIndex(x, y, z, newWidth);
-                newData[i1] = data[i];
-            } else if (topOrBottom && leftOrRight && !zCorners) {
-                int i1 = indexConversion.rowMajorIndex(x, y, z, newWidth);
+        for (int i = 0; i < newWidth; i++){
+            for (int j = 0; j < newHeight; j++){
+                for (int k = 0; k < newDepth; k++){
+                    int oldI = (int) Math.ceil(i / 2.0);
+                    int oldJ = (int) Math.ceil(j / 2.0);
+                    int oldK = (int) Math.ceil(k / 2.0);
+                    int oldIndex = BeanUtils.coordinateToIndex(new int[] {oldI, oldJ, oldK}, new int[] {sizeX, sizeY, sizeZ});
+                    int newIndex = BeanUtils.coordinateToIndex(new int[] {i, j, k}, new int[] {newWidth, newHeight, newDepth});
+                    newData[newIndex] = data[oldIndex];
+                }
             }
         }
-    }
-
-
-    static class IndexConversion{
-        private final boolean threeD;
-        public IndexConversion(boolean threeD){
-            this.threeD = threeD;
-        }
-
-        public int[] rowToIndex(int i, int width){
-            if (threeD){
-
-            }
-            int y = i % width;
-            return new int[] {(i - y) / width, y};
-        }
-
-        public int rowMajorIndex(int x, int y, int z, int width){
-            if (threeD){
-
-            }
-            return (x * width) + y;
-        }
-
-        public int colMajorIndex(int x, int y, int z, int height){
-            if (threeD){
-
-            }
-            return (y * height) + x;
-        }
+        return new ImageFromMesh(newData, newWidth, newHeight, newDepth);
     }
 }
 
