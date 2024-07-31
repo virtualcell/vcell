@@ -3344,8 +3344,9 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 						// TODO: ssld import here
 
+						SsldUtils ssldUtils = new SsldUtils();
 						SsldModel ssldModel = SsldUtils.importSsldFile(file);
-						BioModel bioModel = SsldUtils.fromSsld(ssldModel);
+						BioModel bioModel = ssldUtils.fromSsld(ssldModel);
 
 
 

@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
 
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -2366,8 +2367,19 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         List<MolecularComponent> componentList = mt.getComponentList();
         int dimension = geometry.getDimension();
 
+        // compare the next few lines with LangevinLngvWriter.writeSpeciesInfo() where we have a math
+        // here we must assume that the expression is numeric
+        Expression count = initialCountParameter.getExpression();
+        String scount;
+        try {
+            double ddd = count.evaluateConstant();
+            scount = Integer.toString((int)ddd);
+        } catch (Exception e) {
+            throw new RuntimeException("Initial concentration must be a number");
+        }
+
         sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() +
-                " Number " + initialCountParameter.getExpression().infix() +
+                " Number " + scount +
                 " Site_Types " + componentList.size() + " Total" + "_Sites " + siteAttributesMap.size() +
                 " Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));    // TODO: molecule is flat, unrelated to geometry
         sb.append("\n");

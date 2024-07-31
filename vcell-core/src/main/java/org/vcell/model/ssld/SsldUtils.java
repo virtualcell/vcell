@@ -111,7 +111,11 @@ public class SsldUtils {
             for(Site ssldSite : ssldMolecule.getSiteArray()) {
                 SiteType ssldType = ssldSite.getType();
                 MolecularComponent mc = new MolecularComponent(ssldType.getName());
-                mc.setIndex(ssldSite.getIndex());   // TODO: starts at 1, adjust to start at 0? see export
+
+                // TODO: index starts at 1 in vcell, while it starts at 0 in ssld see export
+                // see also LangevinLngvWriter.writeSpeciesInfo()
+                // see also MolecularInternalLinkSpec.writeLink()
+                mc.setIndex(ssldSite.getIndex());
                 for(State ssldState : ssldType.getStates()) {
                     ComponentStateDefinition csd = new ComponentStateDefinition(ssldState.getName());
                     mc.addComponentStateDefinition(csd);
@@ -123,9 +127,8 @@ public class SsldUtils {
             m.put(ssldMolecule, mt);
             model.getRbmModelContainer().addMolecularType(mt, false);
         }
-
         // reaction rules
-       for(BindingReaction ssldReaction : ssldModel.getBindingReactions()) {
+        for(BindingReaction ssldReaction : ssldModel.getBindingReactions()) {
             boolean reversible = ssldReaction.getkoff() != 0 ? true : false;
             Molecule ssldReactantOne = ssldReaction.getMolecule(0);
             Molecule ssldReactantTwo = ssldReaction.getMolecule(1);
@@ -143,16 +146,35 @@ public class SsldUtils {
             ReactionRule reactionRule = new ReactionRule(model, ssldReaction.getName(), structure, reversible);
             RbmKineticLaw.RateLawType rateLawType = RbmKineticLaw.RateLawType.MassAction;
             reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
-            SpeciesPattern sp = getSpeciesPattern(ssldReactantOne, m);
+            SpeciesPattern spReactantOne = getSpeciesPattern(ssldReactantOne, m);
+            SpeciesPattern spReactantTwo = getSpeciesPattern(ssldReactantTwo, m);
+            SpeciesPattern spProduct = getSpeciesPattern(ssldReactantOne, ssldReactantTwo, m);
+            ReactantPattern rpOne = new ReactantPattern(spReactantOne, model.getStructure(locationOne));
+            ReactantPattern rpTwo = new ReactantPattern(spReactantTwo, model.getStructure(locationTwo));
+            ProductPattern pp = new ProductPattern(spProduct, structure);
+            // at this point everything is trivial
+            // TODO: now we need to adjust each sp to satisfy the bond condition
 
 
-
+            reactionRule.addReactant(rpOne);
+            reactionRule.addReactant(rpTwo);
+            reactionRule.addProduct(pp);
+            bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
+            m.put(ssldReaction, reactionRule);
         }
 
 
         return bioModel;
     }
 
+    private SpeciesPattern getSpeciesPattern(Molecule moleculeOne, Molecule moleculeTwo, Mapping m) {
+        SpeciesPattern sp = new SpeciesPattern();
+        MolecularTypePattern mtpOne = getMolecularTypePattern(moleculeOne, m);
+        sp.addMolecularTypePattern(mtpOne);
+        MolecularTypePattern mtpTwo = getMolecularTypePattern(moleculeOne, m);
+        sp.addMolecularTypePattern(mtpTwo);
+        return sp;
+    }
     private SpeciesPattern getSpeciesPattern(Molecule molecule, Mapping m) {
         SpeciesPattern sp = new SpeciesPattern();
         MolecularTypePattern mtp = getMolecularTypePattern(molecule, m);

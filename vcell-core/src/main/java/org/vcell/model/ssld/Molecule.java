@@ -311,7 +311,7 @@ public class Molecule {
         }
         sc.close();
         ArrayList<Molecule> molecules = new ArrayList<>();
-        for(String data : moleculeStrings){
+        for(String data : moleculeStrings) {
             Molecule mol = Molecule.readMolecule(new Scanner(data));
             mol.setAnchors();
             molecules.add(mol);
