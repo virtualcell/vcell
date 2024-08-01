@@ -265,6 +265,7 @@ public class VCellApiMain {
 	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 			PropertyLoader.vcellServerIDProperty,
 			PropertyLoader.vcellServerPrefixV0,
+			PropertyLoader.vcellSoftwareVersion,
 			PropertyLoader.installationRoot,
 			PropertyLoader.dbConnectURL,
 			PropertyLoader.dbDriverName,
