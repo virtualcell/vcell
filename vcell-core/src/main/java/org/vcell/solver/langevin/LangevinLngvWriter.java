@@ -895,11 +895,13 @@ public class LangevinLngvWriter {
 			Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = lpmt.getInternalLinkSpec();
 			for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : lpmt.getInternalLinkSpec()) {
 				sb.append("     ");
-				// we take advantage of the fact that there is one to one relationship between molecular component (site type) and site
+				// here we use the math, not the physiology, so we cannot extract the site index directly from the class
+				// // instead we take advantage of the fact that there is one to one relationship between molecular
+				// component (site type) and site
 				int indexOne = lpmt.getComponentList().indexOf(pair.one);
 				int indexTwo = lpmt.getComponentList().indexOf(pair.two);
-				// TODO: in vcell the index starts with 1, in ssld is zero
-				// need to adjust when importing and exporting
+				// here the index is computed differently - and starts with 0
+				// here there is no need to adjust when importing and exporting
 				// see also MolecularInternalLinkSpec.writeLink() == the other export
 				// see also SsldUtils.fromSsld() == import
 				sb.append("LINK: Site " + indexOne + " ::: Site " + indexTwo);

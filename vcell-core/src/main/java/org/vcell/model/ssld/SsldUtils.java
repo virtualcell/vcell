@@ -112,10 +112,10 @@ public class SsldUtils {
                 SiteType ssldType = ssldSite.getType();
                 MolecularComponent mc = new MolecularComponent(ssldType.getName());
 
-                // TODO: index starts at 1 in vcell, while it starts at 0 in ssld see export
+                // TODO: site index starts at 1 in vcell, while it starts at 0 in ssld
                 // see also LangevinLngvWriter.writeSpeciesInfo()
                 // see also MolecularInternalLinkSpec.writeLink()
-                mc.setIndex(ssldSite.getIndex());
+                mc.setIndex(ssldSite.getIndex()+1);
                 for(State ssldState : ssldType.getStates()) {
                     ComponentStateDefinition csd = new ComponentStateDefinition(ssldState.getName());
                     mc.addComponentStateDefinition(csd);
@@ -149,6 +149,22 @@ public class SsldUtils {
             SpeciesPattern spReactantOne = getSpeciesPattern(ssldReactantOne, m);
             SpeciesPattern spReactantTwo = getSpeciesPattern(ssldReactantTwo, m);
             SpeciesPattern spProduct = getSpeciesPattern(ssldReactantOne, ssldReactantTwo, m);
+
+            Molecule ssldMoleculeOne = ssldReaction.getMolecule(0);
+            SiteType ssldSiteTypeOne = ssldReaction.getType(0);
+            State ssldStateOne = ssldReaction.getState(0);
+            MolecularType mtOne = m.get(ssldMoleculeOne);
+            MolecularTypePattern mtpOne = spReactantOne.getMolecularTypePatterns(ssldMoleculeOne.getName()).get(0);
+            MolecularComponentPattern mcpOne = mtpOne.getMolecularComponentPattern(ssldSiteTypeOne.getName());
+            ComponentStatePattern cspOne = new ComponentStatePattern(new ComponentStateDefinition(ssldStateOne.getName()));
+            mcpOne.setComponentStatePattern(cspOne);
+            mcpOne.setBondType(MolecularComponentPattern.BondType.None);
+
+            Molecule ssldMoleculeTwo = ssldReaction.getMolecule(1);
+            SiteType ssldSiteTypeTwo = ssldReaction.getType(1);
+            State ssldStateTwo = ssldReaction.getState(1);
+            MolecularType mtTwo = m.get(ssldMoleculeTwo);
+
             ReactantPattern rpOne = new ReactantPattern(spReactantOne, model.getStructure(locationOne));
             ReactantPattern rpTwo = new ReactantPattern(spReactantTwo, model.getStructure(locationTwo));
             ProductPattern pp = new ProductPattern(spProduct, structure);
@@ -171,7 +187,7 @@ public class SsldUtils {
         SpeciesPattern sp = new SpeciesPattern();
         MolecularTypePattern mtpOne = getMolecularTypePattern(moleculeOne, m);
         sp.addMolecularTypePattern(mtpOne);
-        MolecularTypePattern mtpTwo = getMolecularTypePattern(moleculeOne, m);
+        MolecularTypePattern mtpTwo = getMolecularTypePattern(moleculeTwo, m);
         sp.addMolecularTypePattern(mtpTwo);
         return sp;
     }
