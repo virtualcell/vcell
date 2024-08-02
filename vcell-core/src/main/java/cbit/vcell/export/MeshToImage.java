@@ -28,15 +28,6 @@ public class MeshToImage {
         throw new GeometryException("Does not support 1D mesh to image conversions");
     }
 
-    public static ImageFromMesh convertMeshIntoImage(double[] data, int sizeX, int sizeY, int sizeZ) throws GeometryException {
-        if (sizeZ == 1){
-            return convert2DMeshIntoImage(data, sizeX, sizeY);
-        } else if (sizeZ > 1) {
-            return convert3DMeshIntoImage(data, sizeX, sizeY, sizeZ);
-        }
-        throw new GeometryException("Does not support 1D mesh to image conversions");
-    }
-
     public static int newNumElements(int oldNElements){
         return oldNElements == 1 ? 1 : ((oldNElements - 2) * 2) + 2;
     }
@@ -50,8 +41,8 @@ public class MeshToImage {
             for (int j=0; j < newHeight; j++){
                 int oldI = (int) Math.ceil(i / 2.0);
                 int oldJ = (int) Math.ceil(j / 2.0);
-                int oldIndex = BeanUtils.coordinateToIndex(new int[] {oldI, oldJ}, new int[] {sizeX, sizeY});
-                int newIndex = BeanUtils.coordinateToIndex(new int[] {i, j}, new int[] {newWidth, newHeight});
+                int oldIndex = BeanUtils.coordinateToIndex(new int[] {oldI, oldJ}, new int[] {sizeX - 1, sizeY - 1});
+                int newIndex = BeanUtils.coordinateToIndex(new int[] {i, j}, new int[] {newWidth - 1, newHeight - 1});
                 newData[newIndex] = data[oldIndex];
             }
         }
@@ -68,8 +59,8 @@ public class MeshToImage {
                     int oldI = (int) Math.ceil(i / 2.0);
                     int oldJ = (int) Math.ceil(j / 2.0);
                     int oldK = (int) Math.ceil(k / 2.0);
-                    int oldIndex = BeanUtils.coordinateToIndex(new int[] {oldI, oldJ, oldK}, new int[] {sizeX, sizeY, sizeZ});
-                    int newIndex = BeanUtils.coordinateToIndex(new int[] {i, j, k}, new int[] {newWidth, newHeight, newDepth});
+                    int oldIndex = BeanUtils.coordinateToIndex(new int[] {oldI, oldJ, oldK}, new int[] {sizeX - 1, sizeY - 1, sizeZ - 1}); //size is not 0 indexed so -1
+                    int newIndex = BeanUtils.coordinateToIndex(new int[] {i, j, k}, new int[] {newWidth - 1, newHeight - 1, newDepth - 1});
                     newData[newIndex] = data[oldIndex];
                 }
             }
