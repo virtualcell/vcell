@@ -10,6 +10,7 @@
 
 package cbit.vcell.export.server;
 
+import cbit.vcell.export.MeshToImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.resource.PropertyLoader;
@@ -73,12 +74,25 @@ public class N5Exporter implements ExportConstants {
 		// output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
 
 
-		int numVariables = variableNames.length + 1; //the extra variable length is for the mask generated for every  N5 Export
 		CartesianMesh mesh = dataServer.getMesh(user, vcDataID);
+		int sizeX = MeshToImage.newNumElements(mesh.getSizeX()), sizeY = MeshToImage.newNumElements(mesh.getSizeY()), sizeZ = MeshToImage.newNumElements(mesh.getSizeZ());
+		double lengthPerPixelX = mesh.getExtent().getX() / sizeX, lengthPerPixelY = mesh.getExtent().getY() / sizeY, lengthPerPixelZ = mesh.getExtent().getZ() / sizeZ;
+		int numVariables = variableNames.length + 1; //the extra variable length is for the mask generated for every  N5 Export
 		int numTimes = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex(); //end index is an actual index within the array and not representative of length
-		long[] dimensions = {mesh.getSizeX(), mesh.getSizeY(), numVariables, mesh.getSizeZ(), numTimes + 1};
-		// 51X, 51Y, 1Z, 1C, 2T
-		int[] blockSize = {mesh.getSizeX(), mesh.getSizeY(), 1, mesh.getSizeZ(), 1};
+		long[] dimensions = {sizeX, sizeY, numVariables, sizeZ, numTimes + 1};
+		int[] blockSize = {sizeX, sizeY, 1, sizeZ, 1};
+
+		// rewrite so that it still results in a tmp file does not raise File already exists error
+		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
+		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
+		n5FSWriter.createDataset(String.valueOf(jobID), datasetAttributes);
+
+
+		//Create mask
+		double[] mask = new double[mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ()];
+		for (int i =0; i < mesh.getSizeX() * mesh.getSizeY() * mesh.getSizeZ(); i++){
+			mask[i] = (double) mesh.getSubVolumeFromVolumeIndex(i);
+		}
 
 		HashMap<Integer, Object> channelInfo = new HashMap<>();
 		for (int i = 0; i < variableNames.length; i++){
@@ -99,43 +113,38 @@ public class N5Exporter implements ExportConstants {
 							hdf5DataProcessingReaderPure.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcDataID,false, outputContext), hdf5File);
 
 					ISize iSize = dataProcessingOutputInfo.getVariableISize(variableName);
-					dimensions = new long[]{iSize.getX(), iSize.getY(), numVariables, iSize.getZ(), numTimes + 1};
-					blockSize = new int[]{iSize.getX(), iSize.getY(), 1, iSize.getZ(), 1};
-                }
-			}
-		}
-
-
-		// rewrite so that it still results in a tmp file does not raise File already exists error
-		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
-		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
-		n5FSWriter.createDataset(String.valueOf(jobID), datasetAttributes);
-		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter,
-				n5Specs.dataSetName, numVariables, blockSize[3], allTimes.length,
-				exportSpecs.getHumanReadableExportData().subVolume,
-				(mesh.getExtent().getY() / mesh.getSizeY()), (mesh.getExtent().getX() / mesh.getSizeX()),
-				(mesh.getExtent().getZ() / mesh.getSizeZ()), lengthUnit.getSymbol(), channelInfo);
-
-
-		for (int variableIndex=0; variableIndex < (numVariables -1); variableIndex++){
-			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
-
-				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
-				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex], allTimes[timeIndex]).getData();
-				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
-				n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
-				if(timeIndex % 3 == 0){
-					double progress = (double) (variableIndex + normalizedTimeIndex) / (numVariables + (numTimes * numVariables));
-					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
+					lengthPerPixelX = mesh.getExtent().getX() / iSize.getX(); lengthPerPixelY = mesh.getExtent().getY() / iSize.getY(); lengthPerPixelZ = mesh.getExtent().getZ() / iSize.getZ();
+					sizeX = iSize.getX(); sizeY = iSize.getY(); sizeZ = iSize.getZ();
+					dimensions = new long[]{sizeX, sizeY, numVariables, sizeZ, numTimes + 1};
+					blockSize = new int[]{sizeX, sizeY, 1, sizeZ, 1};
+                } else {
+					mask = MeshToImage.convertMeshIntoImage(mask, mesh).data();
 				}
 			}
 		}
 
-		//Create mask
-		double[] mask = new double[mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ()];
-		for (int i =0; i < mesh.getSizeX() * mesh.getSizeY() * mesh.getSizeZ(); i++){
-			mask[i] = (double) mesh.getSubVolumeFromVolumeIndex(i);
+		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter,
+				n5Specs.dataSetName, numVariables, sizeZ, allTimes.length,
+				exportSpecs.getHumanReadableExportData().subVolume,
+				lengthPerPixelY, lengthPerPixelX, lengthPerPixelZ, lengthUnit.getSymbol(), channelInfo);
+
+		int timeLoops = 1;
+		for (int variableIndex=0; variableIndex < (numVariables -1); variableIndex++){
+			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
+				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
+				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex], allTimes[timeIndex]).getData();
+				data = getSpecificDI(variableNames[variableIndex], outputContext).getVariableType().equals(VariableType.POSTPROCESSING) ? data : MeshToImage.convertMeshIntoImage(data, mesh).data();
+				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
+				n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
+				if(timeIndex % 3 == 0){
+					double progress = (double) (variableIndex + timeLoops) / (numVariables + numTimes);
+					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
+				}
+				timeLoops += 1;
+			}
 		}
+
+		// write mask
 		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
 			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, (numVariables - 1), 0, normalizedTimeIndex}, mask);
