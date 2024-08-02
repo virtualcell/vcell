@@ -3350,7 +3350,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 
 
-
+						doc = bioModel;
 					} else if (!externalDocInfo.isXML()) {
 						if (hashTable.containsKey(BNG_UNIT_SYSTEM)) { // not XML, look for BNGL etc.
 							// we use the BngUnitSystem already created during the 1st pass

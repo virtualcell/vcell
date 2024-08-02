@@ -29,6 +29,9 @@ public class SsldUtils {
         Map<ReactionRule, Reaction> reactionRuleToReactionMap = new LinkedHashMap<>();
         Map<ReactionRule, ReactionRuleSpec.Subtype> reactionRuleToSubtype = new LinkedHashMap<>();
 
+        Map<Molecule, ReactantPattern> reactantToReactantPattern = new LinkedHashMap<>();   // these are unidirectional
+        Map<Molecule, ProductPattern> reactantToProductPattern = new LinkedHashMap<>();
+
         public Mapping(SsldModel ssldModel, BioModel bioModel) {
             this.ssldModel = ssldModel;
             this.bioModel = bioModel;
@@ -74,6 +77,20 @@ public class SsldUtils {
             return reactionRuleToSubtype.get(rr);
         }
 
+        void put(Molecule ssldMolecule, ReactantPattern rp) {
+            reactantToReactantPattern.put(ssldMolecule, rp);
+        }
+        ReactantPattern getReactantPattern(Molecule ssldMolecule) {
+            return reactantToReactantPattern.get(ssldMolecule);
+        }
+        void put(Molecule ssldMolecule, ProductPattern pp) {
+            reactantToProductPattern.put(ssldMolecule, pp);
+        }
+        ProductPattern getProductPattern(Molecule ssldMolecule) {
+            return reactantToProductPattern.get(ssldMolecule);
+        }
+
+
     }
 
 
@@ -112,7 +129,7 @@ public class SsldUtils {
                 SiteType ssldType = ssldSite.getType();
                 MolecularComponent mc = new MolecularComponent(ssldType.getName());
 
-                // TODO: site index starts at 1 in vcell, while it starts at 0 in ssld
+                // site index starts at 1 in vcell, while it starts at 0 in ssld
                 // see also LangevinLngvWriter.writeSpeciesInfo()
                 // see also MolecularInternalLinkSpec.writeLink()
                 mc.setIndex(ssldSite.getIndex()+1);
@@ -150,27 +167,19 @@ public class SsldUtils {
             SpeciesPattern spReactantTwo = getSpeciesPattern(ssldReactantTwo, m);
             SpeciesPattern spProduct = getSpeciesPattern(ssldReactantOne, ssldReactantTwo, m);
 
-            Molecule ssldMoleculeOne = ssldReaction.getMolecule(0);
-            SiteType ssldSiteTypeOne = ssldReaction.getType(0);
-            State ssldStateOne = ssldReaction.getState(0);
-            MolecularType mtOne = m.get(ssldMoleculeOne);
-            MolecularTypePattern mtpOne = spReactantOne.getMolecularTypePatterns(ssldMoleculeOne.getName()).get(0);
-            MolecularComponentPattern mcpOne = mtpOne.getMolecularComponentPattern(ssldSiteTypeOne.getName());
-            ComponentStatePattern cspOne = new ComponentStatePattern(new ComponentStateDefinition(ssldStateOne.getName()));
-            mcpOne.setComponentStatePattern(cspOne);
-            mcpOne.setBondType(MolecularComponentPattern.BondType.None);
-
-            Molecule ssldMoleculeTwo = ssldReaction.getMolecule(1);
-            SiteType ssldSiteTypeTwo = ssldReaction.getType(1);
-            State ssldStateTwo = ssldReaction.getState(1);
-            MolecularType mtTwo = m.get(ssldMoleculeTwo);
-
             ReactantPattern rpOne = new ReactantPattern(spReactantOne, model.getStructure(locationOne));
             ReactantPattern rpTwo = new ReactantPattern(spReactantTwo, model.getStructure(locationTwo));
             ProductPattern pp = new ProductPattern(spProduct, structure);
-            // at this point everything is trivial
-            // TODO: now we need to adjust each sp to satisfy the bond condition
 
+            m.put(ssldReactantOne, rpOne);
+            m.put(ssldReactantTwo, rpTwo);
+            m.put(ssldReactantOne, pp);
+            m.put(ssldReactantTwo, pp);
+            // at this point everything is trivial
+            // now we start adjusting the binding sites
+            adjustReactantSite(ssldReaction, 0, m);
+            adjustReactantSite(ssldReaction, 1, m);
+            adjustProductSite(ssldReaction, m);
 
             reactionRule.addReactant(rpOne);
             reactionRule.addReactant(rpTwo);
@@ -181,6 +190,49 @@ public class SsldUtils {
 
 
         return bioModel;
+    }
+
+    private void adjustProductSite(BindingReaction ssldReaction, Mapping m) {
+        Molecule ssldMoleculeOne = ssldReaction.getMolecule(0);
+        SiteType ssldSiteTypeOne = ssldReaction.getType(0);
+        State ssldStateOne = ssldReaction.getState(0);
+        SpeciesPattern spProduct = m.getProductPattern(ssldMoleculeOne).getSpeciesPattern();
+        MolecularTypePattern mtpProductOne = spProduct.getMolecularTypePatterns(ssldMoleculeOne.getName()).get(0);
+        MolecularComponentPattern mcpProductOne = mtpProductOne.getMolecularComponentPattern(ssldSiteTypeOne.getName());
+        ComponentStatePattern cspProductOne = new ComponentStatePattern(new ComponentStateDefinition(ssldStateOne.getName()));
+        mcpProductOne.setComponentStatePattern(cspProductOne);
+
+        Molecule ssldMoleculeTwo = ssldReaction.getMolecule(1);
+        SiteType ssldSiteTypeTwo = ssldReaction.getType(1);
+        State ssldStateTwo = ssldReaction.getState(1);
+        SpeciesPattern spProductTwo = m.getProductPattern(ssldMoleculeTwo).getSpeciesPattern();
+        if(spProduct != spProductTwo) {     // we load spProductTwo just to verify consistency
+            throw new RuntimeException("Instances of the same species pattern should be equal");
+        }
+        MolecularTypePattern mtpProductTwo = spProduct.getMolecularTypePatterns(ssldMoleculeTwo.getName()).get(0);
+        MolecularComponentPattern mcpProductTwo = mtpProductTwo.getMolecularComponentPattern(ssldSiteTypeTwo.getName());
+        ComponentStatePattern cspProductTwo = new ComponentStatePattern(new ComponentStateDefinition(ssldStateTwo.getName()));
+        mcpProductTwo.setComponentStatePattern(cspProductTwo);
+
+        // we know for sure that this is the only explicit bond in each of the 2 molecular type patterns of the product
+        int bondId = 1;     // correct would be:  sp.nextBondId();
+        mcpProductOne.setBondId(bondId);    // this also sets the BondType to Specified
+        mcpProductOne.setBondId(bondId);
+        // very abusive way of bypassing the fact that the Bond constructor is private
+        mcpProductOne.setBond(SpeciesPattern.generateBond(mtpProductTwo, mcpProductTwo));
+        mcpProductTwo.setBond(SpeciesPattern.generateBond(mtpProductOne, mcpProductOne));
+    }
+    private void adjustReactantSite(BindingReaction ssldReaction, int reactantIndex, Mapping m) {
+        Molecule ssldMolecule = ssldReaction.getMolecule(reactantIndex);
+        SiteType ssldSiteType = ssldReaction.getType(reactantIndex);
+        State ssldState = ssldReaction.getState(reactantIndex);
+        SpeciesPattern spReactant = m.getReactantPattern(ssldMolecule).getSpeciesPattern();
+        MolecularTypePattern mtpReactant = spReactant.getMolecularTypePatterns(ssldMolecule.getName()).get(0);
+        MolecularComponentPattern mcpReactant = mtpReactant.getMolecularComponentPattern(ssldSiteType.getName());
+        ComponentStatePattern cspReactant = new ComponentStatePattern(new ComponentStateDefinition(ssldState.getName()));
+        mcpReactant.setComponentStatePattern(cspReactant);
+        mcpReactant.setBondType(MolecularComponentPattern.BondType.None);
+        mcpReactant.setBond(null);
     }
 
     private SpeciesPattern getSpeciesPattern(Molecule moleculeOne, Molecule moleculeTwo, Mapping m) {
