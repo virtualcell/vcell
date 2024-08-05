@@ -49,15 +49,25 @@
 <!--      <input matInput type="number" [(ngModel)]="publication.wittid" name="wittid">-->
 <!--    </mat-form-field>-->
 
-    <mat-form-field class="full-width">
-      <mat-label>Biomodel IDs</mat-label>
-      <textarea matInput [ngModel]="publication.biomodelRefs?.join(',')" (ngModelChange)="publication.biomodelRefs = $event.split(',')" name="biomodelRefs"></textarea>
-    </mat-form-field>
+    <div>
+      <h4>Biomodel IDs</h4>
+      <div *ngFor="let biomodelRef of publication.biomodelRefs; let i = index">
+        <span>{{ "("+biomodelRef.bmKey+") '"+biomodelRef.name+"'" }}</span>
+        <button type="button" (click)="removeBiomodelRef(i)">Remove</button>
+      </div>
+      <input type="number" [(ngModel)]="newBiomodelKey" placeholder="Enter Biomodel Key" [ngModelOptions]="{standalone: true}">
+      <button type="button" (click)="addBiomodelRef(newBiomodelKey)">Add Biomodel +</button>
+    </div>
 
-    <mat-form-field class="full-width">
-      <mat-label>Mathmodel IDs</mat-label>
-      <textarea matInput [ngModel]="publication.mathmodelRefs?.join(',')" (ngModelChange)="publication.mathmodelRefs = $event.split(',')" name="mathmodelRefs"></textarea>
-    </mat-form-field>
+    <div>
+      <h4>Mathmodel IDs</h4>
+      <div *ngFor="let mathmodelRef of publication.mathmodelRefs; let i = index">
+        <span>{{ mathmodelRef.name }}</span>
+        <button type="button" (click)="removeMathmodelRef(i)">Remove</button>
+      </div>
+      <input type="number" [(ngModel)]="newMathmodelKey" placeholder="Enter Mathmodel Key" [ngModelOptions]="{standalone: true}">
+      <button type="button" (click)="addMathmodelRef(newMathmodelKey)">Add Mathmodel</button>
+    </div>
 
 <!--    <mat-form-field class="full-width">-->
 <!--      <mat-label>Date</mat-label>-->

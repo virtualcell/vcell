@@ -1,5 +1,7 @@
 <br/>
-<h4>{{ "Publication id=" + publication.pubKey }}</h4>
-<br/>
+<h4 *ngIf="publication?.pubKey; else loading">{{ "Publication id=" + publication.pubKey }}</h4>
+<ng-template #loading>
+  <h4>Loading publication...</h4>
+</ng-template><br/>
 
 <app-publication-edit [publication]="publication" (save)="saveUpdatedPublication($event)" (cancel)="cancel()"></app-publication-edit>
