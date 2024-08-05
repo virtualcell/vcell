@@ -1116,6 +1116,9 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 	@SuppressWarnings("unchecked")
 	private void initializeComboBoxURI() {
 //		jComboBoxURI = getJComboBoxURI();
+		if (selectedObject == null && vcMetaData == null){
+			return;
+		}
 		Identifiable entity = getIdentifiable(selectedObject);
 		defaultComboBoxModelURI.removeAllElements();
 		List<String> tooltips = new ArrayList<> ();
