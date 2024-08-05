@@ -3,6 +3,7 @@ import {CommonModule} from '@angular/common';
 import {Publication} from "../../core/modules/openapi";
 import {PublicationService} from "../publication-list/publication.service";
 import {PublicationEditComponent} from "../publication-edit/publication-edit.component";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-publication-new',
@@ -14,7 +15,7 @@ import {PublicationEditComponent} from "../publication-edit/publication-edit.com
 export class PublicationNewComponent {
   newPublication: Publication;
 
-  constructor(private publicationService: PublicationService) {
+  constructor(private publicationService: PublicationService, private router: Router) {
     this.newPublication = this.onNew();
   }
 
@@ -37,16 +38,22 @@ export class PublicationNewComponent {
     };
   }
 
-  saveEdit(pub: Publication) {
+  saveNewPublication(pub: Publication) {
     // Call the service to save the publication
-    this.publicationService.updatePublication(pub).subscribe({
+    this.publicationService.createPublication(pub).subscribe({
       next: () => {
         console.log("saved publication");
+        this.router.navigate(['/publications']);
       },
       error: (err) => {
         console.error("Error saving publication", err);
       }
     });
+  }
+
+  cancel() {
+    console.log("Creation cancelled");
+    this.router.navigate(['/publications']);
   }
 
 }

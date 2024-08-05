@@ -1,1 +1,5 @@
-<p>publication-detail works!</p>
+<br/>
+<h4>{{ "Publication id=" + publication.pubKey }}</h4>
+<br/>
+
+<app-publication-edit [publication]="publication" (save)="saveUpdatedPublication($event)" (cancel)="cancel()"></app-publication-edit>
