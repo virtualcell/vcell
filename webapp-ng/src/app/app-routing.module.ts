@@ -7,6 +7,8 @@ import { AuthGuard } from '@auth0/auth0-angular';
 import { PublicationListComponent } from './components/publication-list/publication-list.component';
 import {LoginSuccessComponent} from "./pages/login-success/login-success.component";
 import {AdminComponent} from "./pages/admin/admin.component";
+import {PublicationNewComponent} from "./components/publication-new/publication-new.component";
+import {PublicationDetailComponent} from "./components/publication-detail/publication-detail.component";
 
 const routes: Routes = [
   {
@@ -22,6 +24,16 @@ const routes: Routes = [
   {
     path: 'publications',
     component: PublicationListComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'publications/new',
+    component: PublicationNewComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'publications/:pubId',
+    component: PublicationDetailComponent,
     canActivate: [AuthGuard],
   },
   {

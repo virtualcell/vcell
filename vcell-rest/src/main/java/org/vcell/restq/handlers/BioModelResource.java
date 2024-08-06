@@ -9,11 +9,14 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.vcell.restq.Main;
 import org.vcell.restq.db.BioModelRestDB;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.restq.models.BioModel;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -28,7 +31,7 @@ public class BioModelResource {
     private final UserRestDB userRestDB;
 
     @Inject
-    public BioModelResource(BioModelRestDB bioModelRestDB, UserRestDB userRestDB) throws DataAccessException {
+    public BioModelResource(BioModelRestDB bioModelRestDB, UserRestDB userRestDB) {
         this.bioModelRestDB = bioModelRestDB;
         this.userRestDB = userRestDB;
     }
@@ -36,14 +39,22 @@ public class BioModelResource {
     @GET
     @Path("{bioModelID}")
     @Operation(operationId = "getBiomodelById", summary = "Get BioModel information in JSON format by ID.")
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "return BioModel information in JSON format"),
+            @APIResponse(responseCode = "404", description = "BioModel not found")
+    })
     @Produces(MediaType.APPLICATION_JSON)
     public BioModel getBioModelInfo(@PathParam("bioModelID") String bioModelID) throws SQLException, DataAccessException, ExpressionException {
         User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
         if (vcellUser == null) {
             vcellUser = Main.DUMMY_USER;
         }
-        BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
-        return BioModel.fromBioModelRep(bioModelRep);
+        try {
+            BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
+            return BioModel.fromBioModelRep(bioModelRep);
+        }catch (ObjectNotFoundException e) {
+            throw new WebApplicationException("BioModel not found", 404);
+        }
     }
 
     // TODO: Specify the media type instead of leaving it as wildcard
@@ -52,7 +63,7 @@ public class BioModelResource {
     @Operation(operationId = "getBioModelVCML", summary = "Get the BioModel in VCML format.", hidden = true)
     @Produces(MediaType.APPLICATION_XML)
     public void getBioModelVCML(@PathParam("bioModelID") String bioModelID){
-
+        throw new WebApplicationException("Not implemented", 501);
     }
 
     @GET
@@ -60,7 +71,7 @@ public class BioModelResource {
     @Operation(operationId = "getBioModelSBML", summary = "Get the BioModel in SBML format.", hidden = true)
     @Produces(MediaType.APPLICATION_XML)
     public void getBioModelSBML(@PathParam("bioModelID") String bioModelID){
-
+        throw new WebApplicationException("Not implemented", 501);
     }
 
     @GET
@@ -68,7 +79,7 @@ public class BioModelResource {
     @Operation(operationId = "getBioModelOMEX", summary = "Get the BioModel in OMEX format.", hidden = true)
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelOMEX(@PathParam("bioModelID") String bioModelID){
-
+        throw new WebApplicationException("Not implemented", 501);
     }
 
     @GET
@@ -76,7 +87,7 @@ public class BioModelResource {
     @Operation(operationId = "getBioModelBNGL", summary = "Get the BioModel in BNGL format.", hidden = true)
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelBNGL(@PathParam("bioModelID") String bioModelID){
-
+        throw new WebApplicationException("Not implemented", 501);
     }
 
     @GET
@@ -84,7 +95,7 @@ public class BioModelResource {
     @Operation(operationId = "getBioModelDIAGRAM", summary = "Get the BioModels diagram.", hidden = true)
     @Produces(MediaType.MEDIA_TYPE_WILDCARD)
     public void getBioModelDiagram(@PathParam("bioModelID") String bioModelID){
-
+        throw new WebApplicationException("Not implemented", 501);
     }
 
     @POST

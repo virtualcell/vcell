@@ -1,7 +1,14 @@
 package org.vcell.restq;
 
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.*;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -17,6 +24,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import java.beans.PropertyVetoException;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -105,5 +113,23 @@ public class TestEndpointUtils {
         publication.setMathmodelRefs(new ArrayList<>());
         publication.setDate(LocalDate.now());
         return publication;
+    }
+
+    public static BioModel defaultBiomodel() throws Exception {
+        BioModel biomodel = new BioModel(null);
+        Feature comp = biomodel.getModel().createFeature();
+        SpeciesContext sc = biomodel.getModel().createSpeciesContext(comp);
+        SimpleReaction simpleReaction = biomodel.getModel().createSimpleReaction(comp);
+        simpleReaction.addReactant(sc,1);
+        simpleReaction.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).setExpression(new Expression(1.0));
+        SimulationContext simContext1 = biomodel.addNewSimulationContext("application1", SimulationContext.Application.NETWORK_DETERMINISTIC);
+        SimulationContext.MathMappingCallback callback = new SimulationContext.MathMappingCallback() {
+            @Override public void setMessage(String message) {}
+            @Override public void setProgressFraction(float fractionDone) {}
+            @Override public boolean isInterrupted() { return false;}
+        };
+        Simulation simulation = simContext1.addNewSimulation("simulation1", callback, SimulationContext.NetworkGenerationRequirements.ComputeLongTimeout);
+        simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, 10));
+        return biomodel;
     }
 }

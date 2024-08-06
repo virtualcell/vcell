@@ -1,6 +1,21 @@
 .publication-edit-container {
-    /* Example style */
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 600px) {
+  .publication-edit-container {
+    grid-template-columns: auto 1fr;
   }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.button-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}

@@ -73,38 +73,42 @@ public final class BeanUtils {
         return CompressionUtils.fromSerialized(CompressionUtils.toSerialized(obj));
     }
 
-    public static int coordinateToIndex(int[] coordinates, int[] bounds){
-        // computes linearized index of a position in an n-dimensional matrix
-        // see also related method indexToCoordinate()
-        if(coordinates.length != bounds.length)
+    public static int parameterScanCoordinateToJobIndex(int[] parameterScanCoordinate, int[] scanBounds){
+        // Used to look up simulation job index from parameter scans in MathOverrides
+        // see also jobIndexToScanParameterCoordinate()
+        //     Note 1: scanBounds is the highest zero-based index in each dimension (e.g. 4,5,6 for 3D matrix of size 5x6x7)
+        //     Note 2: PLEASE DO NOT CHANGE MAPPING - it is immortalized by stored simulation job datasets
+        if(parameterScanCoordinate.length != scanBounds.length)
             throw new RuntimeException("coordinates and bounds arrays have different lengths");
-        int index = 0;
-        for(int i = 0; i < bounds.length; i++){
-            if(coordinates[i] < 0 || bounds[i] < coordinates[i]) throw new RuntimeException("invalid coordinate");
+        int jobIndex = 0;
+        for(int i = 0; i < scanBounds.length; i++){
+            if(parameterScanCoordinate[i] < 0 || scanBounds[i] < parameterScanCoordinate[i]) throw new RuntimeException("invalid coordinate");
             int offset = 1;
-            for(int j = i + 1; j < bounds.length; j++){
-                offset *= bounds[j] + 1;
+            for(int j = i + 1; j < scanBounds.length; j++){
+                offset *= scanBounds[j] + 1;
             }
-            index += coordinates[i] * offset;
+            jobIndex += parameterScanCoordinate[i] * offset;
         }
-        return index;
+        return jobIndex;
     }
 
-    public static int[] indexToCoordinate(int index, int[] bounds){
-        // computes coordinates of a position in an n-dimensional matrix from linearized index
-        // see also related method coordinateToIndex()
-        if(index < 0) throw new RuntimeException("invalid index, negative number");
-        int[] coordinates = new int[bounds.length];
-        for(int i = 0; i < bounds.length; i++){
+    public static int[] jobIndexToScanParameterCoordinate(int jobIndex, int[] scanBounds){
+        // Used to look up MathOverrides parameter scan indices from simulation Job indices
+        // see also parameterScanCoordinateToJobIndex()
+        //     Note 1: scanBounds is the highest zero-based index in each dimension (e.g. 4,5,6 for 3D matrix of size 5x6x7)
+        //     Note 2: PLEASE DO NOT CHANGE MAPPING - it is immortalized by stored simulation job datasets
+        if(jobIndex < 0) throw new RuntimeException("invalid index, negative number");
+        int[] parameterScanCoordinates = new int[scanBounds.length];
+        for(int i = 0; i < scanBounds.length; i++){
             int offset = 1;
-            for(int j = i + 1; j < bounds.length; j++){
-                offset *= bounds[j] + 1;
+            for(int j = i + 1; j < scanBounds.length; j++){
+                offset *= scanBounds[j] + 1;
             }
-            coordinates[i] = index / offset;
-            if(coordinates[i] > bounds[i]) throw new RuntimeException("invalid index, number too large");
-            index -= offset * coordinates[i];
+            parameterScanCoordinates[i] = jobIndex / offset;
+            if(parameterScanCoordinates[i] > scanBounds[i]) throw new RuntimeException("invalid index, number too large");
+            jobIndex -= offset * parameterScanCoordinates[i];
         }
-        return coordinates;
+        return parameterScanCoordinates;
     }
 
     public static String forceStringLength(String originalString, int targetLength, String pad, boolean shouldPrependPad){

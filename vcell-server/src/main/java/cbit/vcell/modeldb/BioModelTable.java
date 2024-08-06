@@ -250,7 +250,7 @@ public String getPreparedStatement_BioModelReps(String conditions, OrderBy order
 					"(" + subquery + " " + additionalConditionsClause + " " + orderByClause + ") " +
 					"where rownum <= ?";
 		}else if (dbSyntax == DatabaseSyntax.POSTGRES){
-			sql = subquery + " LIMIT ?";
+			sql = subquery + " " + additionalConditionsClause + " " + orderByClause + " LIMIT ?";
 		}else throw new RuntimeException("unexpected database syntax "+dbSyntax);
 	}else{
 		// full query, limit start and limit
@@ -261,7 +261,7 @@ public String getPreparedStatement_BioModelReps(String conditions, OrderBy order
 					" where rownum <= ? ) " +
 					"where rnum >= ?";
 		}else if (dbSyntax == DatabaseSyntax.POSTGRES){
-			sql = subquery + " LIMIT ? OFFSET ? ";
+			sql = subquery + " " + additionalConditionsClause + " " + orderByClause + " LIMIT ? OFFSET ? ";
 		}else throw new RuntimeException("unexpected database syntax "+dbSyntax);
 	}
 
