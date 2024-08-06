@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.*;
 import java.util.prefs.Preferences;
 
+import static org.vcell.model.ssld.TransitionReaction.ANY_STATE;
 import static org.vcell.solver.langevin.LangevinLngvWriter.*;
 
 public class SsldUtils {
@@ -29,12 +30,23 @@ public class SsldUtils {
         Map<ReactionRule, Reaction> reactionRuleToReactionMap = new LinkedHashMap<>();
         Map<ReactionRule, ReactionRuleSpec.Subtype> reactionRuleToSubtype = new LinkedHashMap<>();
 
+        // since we don't accept duplicates, all these maps need cleaning after each reaction
+        // because the same molecule may be part of many reactions
         Map<Molecule, ReactantPattern> reactantToReactantPattern = new LinkedHashMap<>();   // these are unidirectional
         Map<Molecule, ProductPattern> reactantToProductPattern = new LinkedHashMap<>();
+        Map<Molecule, ReactantPattern> conditionToReactantPattern = new LinkedHashMap<>();
+        Map<Molecule, ProductPattern> conditionToProductPattern = new LinkedHashMap<>();
 
         public Mapping(SsldModel ssldModel, BioModel bioModel) {
             this.ssldModel = ssldModel;
             this.bioModel = bioModel;
+        }
+
+        void cleanReactionsMaps() {
+            reactantToReactantPattern.clear();
+            reactantToProductPattern.clear();
+            conditionToReactantPattern.clear();
+            conditionToProductPattern.clear();
         }
 
         void put(Molecule ssldMolecule, MolecularType mt) {
@@ -60,6 +72,12 @@ public class SsldUtils {
         }
 
         void put(Reaction r, ReactionRule rr) {
+            if(reactionToReactionRuleMap.containsKey(r)) {
+                throw new RuntimeException("reactionToReactionRuleMap: Duplicate Key");
+            }
+            if(reactionRuleToReactionMap.containsKey(rr)) {
+                throw new RuntimeException("reactionRuleToReactionMap: Duplicate Key");
+            }
             reactionToReactionRuleMap.put(r, rr);
             reactionRuleToReactionMap.put(rr, r);
         }
@@ -71,6 +89,9 @@ public class SsldUtils {
         }
 
         void put(ReactionRule rr, ReactionRuleSpec.Subtype st) {
+            if(reactionRuleToSubtype.containsKey(rr)) {
+                throw new RuntimeException("reactionRuleToSubtype: Duplicate Key");
+            }
             reactionRuleToSubtype.put(rr, st);
         }
         ReactionRuleSpec.Subtype getSubtype(ReactionRule rr) {
@@ -78,16 +99,41 @@ public class SsldUtils {
         }
 
         void put(Molecule ssldMolecule, ReactantPattern rp) {
+            if(reactantToReactantPattern.containsKey(ssldMolecule)) {
+                throw new RuntimeException("reactantToReactantPattern: Duplicate Key");
+            }
             reactantToReactantPattern.put(ssldMolecule, rp);
         }
         ReactantPattern getReactantPattern(Molecule ssldMolecule) {
             return reactantToReactantPattern.get(ssldMolecule);
         }
         void put(Molecule ssldMolecule, ProductPattern pp) {
+            if(reactantToProductPattern.containsKey(ssldMolecule)) {
+                throw new RuntimeException("reactantToProductPattern: Duplicate Key");
+            }
             reactantToProductPattern.put(ssldMolecule, pp);
         }
         ProductPattern getProductPattern(Molecule ssldMolecule) {
             return reactantToProductPattern.get(ssldMolecule);
+        }
+
+        void putCondition(Molecule ssldMolecule, ReactantPattern rp) {
+            if(conditionToReactantPattern.containsKey(ssldMolecule)) {
+                throw new RuntimeException("conditionToReactantPattern: Duplicate Key");
+            }
+            conditionToReactantPattern.put(ssldMolecule, rp);
+        }
+        ReactantPattern getConditionReactantPattern(Molecule ssldMolecule) {
+            return conditionToReactantPattern.get(ssldMolecule);
+        }
+        void putCondition(Molecule ssldMolecule, ProductPattern pp) {
+            if(conditionToProductPattern.containsKey(ssldMolecule)) {
+                throw new RuntimeException("conditionToProductPattern: Duplicate Key");
+            }
+            conditionToProductPattern.put(ssldMolecule, pp);
+        }
+        ProductPattern getConditionProductPattern(Molecule ssldMolecule) {
+            return conditionToProductPattern.get(ssldMolecule);
         }
 
 
@@ -144,8 +190,42 @@ public class SsldUtils {
             m.put(ssldMolecule, mt);
             model.getRbmModelContainer().addMolecularType(mt, false);
         }
-        // reaction rules
+        // ---------- TransitionReactions
+        for(TransitionReaction ssldReaction : ssldModel.getTransitionReactions()) {
+            m.cleanReactionsMaps();
+            boolean reversible = false;
+            Molecule ssldTransitionMolecule = ssldReaction.getMolecule();
+            Molecule ssldConditionalMolecule = ssldReaction.getConditionalMolecule();   //
+            String location = ssldTransitionMolecule.getLocation(); // reaction happens in the same structure, no transport
+            Structure structure = model.getStructure(location);
+
+            ReactionRule reactionRule = new ReactionRule(model, ssldReaction.getName(), structure, reversible);
+            RbmKineticLaw.RateLawType rateLawType = RbmKineticLaw.RateLawType.MassAction;
+            reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
+            SpeciesPattern spReactant = getSpeciesPattern(ssldConditionalMolecule, ssldTransitionMolecule, m);
+            SpeciesPattern spProduct = getSpeciesPattern(ssldConditionalMolecule, ssldTransitionMolecule, m);
+
+            ReactantPattern rp = new ReactantPattern(spReactant, structure);
+            ProductPattern pp = new ProductPattern(spProduct, structure);
+
+            if(ssldConditionalMolecule != null) {
+                m.putCondition(ssldConditionalMolecule, rp);
+                m.putCondition(ssldConditionalMolecule, pp);
+            }
+            m.put(ssldTransitionMolecule, rp);
+            m.put(ssldTransitionMolecule, pp);
+            // at this point everything is trivial
+            // now we start adjusting the binding sites
+            adjustTransitionReactionSites(ssldReaction, m);
+
+            reactionRule.addReactant(rp);
+            reactionRule.addProduct(pp);
+            bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
+            m.put(ssldReaction, reactionRule);
+        }
+        // ---------- BindingReaction
         for(BindingReaction ssldReaction : ssldModel.getBindingReactions()) {
+            m.cleanReactionsMaps();
             boolean reversible = ssldReaction.getkoff() != 0 ? true : false;
             Molecule ssldReactantOne = ssldReaction.getMolecule(0);
             Molecule ssldReactantTwo = ssldReaction.getMolecule(1);
@@ -192,6 +272,57 @@ public class SsldUtils {
         return bioModel;
     }
 
+    private void adjustTransitionReactionSites(TransitionReaction ssldReaction, Mapping m) {
+        Molecule ssldConditionalMolecule = ssldReaction.getConditionalMolecule();
+        if(ssldConditionalMolecule != null) {
+            if(!ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
+                throw new RuntimeException("Inconsistent transition reaction");
+            }
+            SiteType conditionalType = ssldReaction.getConditionalType();
+            State conditionalState = ssldReaction.getConditionalState();
+
+            SpeciesPattern spReactant = m.getConditionReactantPattern(ssldConditionalMolecule).getSpeciesPattern();
+            MolecularTypePattern mtpConditionReactant = spReactant.getMolecularTypePatterns(ssldConditionalMolecule.getName()).get(0);
+            MolecularComponentPattern mcpConditionReactant = mtpConditionReactant.getMolecularComponentPattern(conditionalType.getName());
+            if(conditionalState != TransitionReaction.ANY_STATE) {
+                ComponentStatePattern cspConditionalReactant = new ComponentStatePattern(new ComponentStateDefinition(conditionalState.getName()));
+                mcpConditionReactant.setComponentStatePattern(cspConditionalReactant);
+            }
+            mcpConditionReactant.setBondType(MolecularComponentPattern.BondType.Exists);
+            mcpConditionReactant.setBond(null);
+
+            SpeciesPattern spProduct = m.getConditionProductPattern(ssldConditionalMolecule).getSpeciesPattern();
+            MolecularTypePattern mtpConditionProduct = spProduct.getMolecularTypePatterns(ssldConditionalMolecule.getName()).get(0);
+            MolecularComponentPattern mcpConditionProduct = mtpConditionProduct.getMolecularComponentPattern(conditionalType.getName());
+            if(conditionalState != TransitionReaction.ANY_STATE) {
+                ComponentStatePattern cspConditionalProduct = new ComponentStatePattern(new ComponentStateDefinition(conditionalState.getName()));
+                mcpConditionProduct.setComponentStatePattern(cspConditionalProduct);
+            }
+            mcpConditionProduct.setBondType(MolecularComponentPattern.BondType.Exists);
+            mcpConditionProduct.setBond(null);
+
+        }
+        Molecule ssldTransitionMolecule = ssldReaction.getMolecule();
+        SiteType ssldSiteType = ssldReaction.getType();
+        State ssldInitialState = ssldReaction.getInitialState();
+        State ssldFinalState = ssldReaction.getFinalState();
+        SpeciesPattern spReactant = m.getReactantPattern(ssldTransitionMolecule).getSpeciesPattern();
+        MolecularTypePattern mtpTransitionReactant = spReactant.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(0);
+        MolecularComponentPattern mcpTransitionReactant = mtpTransitionReactant.getMolecularComponentPattern(ssldSiteType.getName());
+        ComponentStatePattern cspTransitionReactant = new ComponentStatePattern(new ComponentStateDefinition(ssldInitialState.getName()));
+        mcpTransitionReactant.setComponentStatePattern(cspTransitionReactant);
+        // bond is already set to Any
+
+        SpeciesPattern spProduct = m.getReactantPattern(ssldTransitionMolecule).getSpeciesPattern();
+        MolecularTypePattern mtpTransitionProduct = spProduct.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(0);
+        MolecularComponentPattern mcpTransitionProduct = mtpTransitionProduct.getMolecularComponentPattern(ssldSiteType.getName());
+        ComponentStatePattern cspTransitionProduct = new ComponentStatePattern(new ComponentStateDefinition(ssldFinalState.getName()));
+        mcpTransitionProduct.setComponentStatePattern(cspTransitionProduct);
+
+    }
+
+
+
     private void adjustProductSite(BindingReaction ssldReaction, Mapping m) {
         Molecule ssldMoleculeOne = ssldReaction.getMolecule(0);
         SiteType ssldSiteTypeOne = ssldReaction.getType(0);
@@ -236,6 +367,12 @@ public class SsldUtils {
     }
 
     private SpeciesPattern getSpeciesPattern(Molecule moleculeOne, Molecule moleculeTwo, Mapping m) {
+        if(moleculeOne == null) {
+            // binding reaction products have 2 molecules
+            // conditional transition reactions have 2 molecules, condition being the first
+            // all the rest have one molecule
+            return getSpeciesPattern(moleculeTwo, m);
+        }
         SpeciesPattern sp = new SpeciesPattern();
         MolecularTypePattern mtpOne = getMolecularTypePattern(moleculeOne, m);
         sp.addMolecularTypePattern(mtpOne);

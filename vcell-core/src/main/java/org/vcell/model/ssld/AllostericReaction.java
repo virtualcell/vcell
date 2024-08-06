@@ -100,21 +100,7 @@ public class AllostericReaction extends Reaction {
     @Historical
     @Override
     public String writeReaction() {
-        // <editor-fold defaultstate="collapsed" desc="Method Code">
-        StringBuilder sb = new StringBuilder();
-//        sb.append("'").append(name).append("' ::     ");
-//        if(molecule != null && site != null && initialState != null && finalState != null){
-//            sb.append("'").append(molecule.getName()).append("' : ");
-//            sb.append("Site ").append(site.getIndex()).append(" : '");
-//            sb.append(initialState.getName()).append("'");
-//            sb.append(" --> ");
-//            sb.append("'").append(finalState.getName()).append("' ");
-//            sb.append(" Rate ").append(Double.toString(rate));
-//            sb.append(" Allosteric_Site ").append(allostericSite.getIndex());
-//            sb.append(" State '").append(allostericState.getName()).append("'");
-//        }
-        return sb.toString();
-        // </editor-fold>
+        throw new UnsupportedOperationException("This operation is implemented elsewhere for the vcell version of springsalad");
     }
 
     @Override

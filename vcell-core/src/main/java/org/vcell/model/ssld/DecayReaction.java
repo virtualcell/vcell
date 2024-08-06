@@ -3,6 +3,7 @@ package org.vcell.model.ssld;
 import java.util.Scanner;
 import java.util.ArrayList;
 
+import cbit.vcell.Historical;
 import org.vcell.util.springsalad.IOHelp;
 
 public class DecayReaction extends Reaction {
@@ -41,6 +42,8 @@ public class DecayReaction extends Reaction {
     // Only need this because we extend Reaction class.  Does nothing here.
     @Override
     public void setName(String name) { }
+
+    @Historical
     @Override
     public String writeReaction() {
         throw new UnsupportedOperationException("This operation is implemented elsewhere for the vcell version of springsalad");

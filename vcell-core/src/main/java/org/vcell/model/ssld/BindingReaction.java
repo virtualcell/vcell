@@ -124,23 +124,7 @@ public class BindingReaction extends Reaction {
     @Historical
     @Override
     public String writeReaction() {
-        // <editor-fold defaultstate="collapsed" desc="Method Code">
-        StringBuilder sb = new StringBuilder();
-//        sb.append("'").append(name).append("'       ");
-//        if(molecule[0] != null && molecule[1] != null){
-//            sb.append("'").append(molecule[0].getName()).append("' : '")
-//                    .append(type[0].getName()).append("' : '")
-//                    .append(state[0].toString());
-//            sb.append("'  +  '");
-//            sb.append(molecule[1].getName()).append("' : '")
-//                    .append(type[1].getName()).append("' : '")
-//                    .append(state[1].toString());
-//            sb.append("'  kon ").append(Double.toString(kon));
-//            sb.append("  koff ").append(Double.toString(koff));
-//            sb.append("  Bond_Length ").append(Double.toString(bondLength));
-//        }
-        return sb.toString();
-        // </editor-fold>
+        throw new UnsupportedOperationException("This operation is implemented elsewhere for the vcell version of springsalad");
     }
 
     /*
