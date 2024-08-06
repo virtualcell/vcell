@@ -76,7 +76,9 @@ public class N5Exporter implements ExportConstants {
 
 		CartesianMesh mesh = dataServer.getMesh(user, vcDataID);
 		int sizeX = MeshToImage.newNumElements(mesh.getSizeX()), sizeY = MeshToImage.newNumElements(mesh.getSizeY()), sizeZ = MeshToImage.newNumElements(mesh.getSizeZ());
-		double lengthPerPixelX = mesh.getExtent().getX() / sizeX, lengthPerPixelY = mesh.getExtent().getY() / sizeY, lengthPerPixelZ = mesh.getExtent().getZ() / sizeZ;
+		double lengthPerPixelX = mesh.getExtent().getX() / sizeX,
+				lengthPerPixelY = mesh.getExtent().getY() / sizeY,
+				lengthPerPixelZ = mesh.getExtent().getZ() / sizeZ;
 		int numVariables = variableNames.length + 1; //the extra variable length is for the mask generated for every  N5 Export
 		int numTimes = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex(); //end index is an actual index within the array and not representative of length
 		long[] dimensions = {sizeX, sizeY, numVariables, sizeZ, numTimes + 1};
@@ -95,18 +97,12 @@ public class N5Exporter implements ExportConstants {
 		}
 
 		HashMap<Integer, Object> channelInfo = new HashMap<>();
-		for (int i = 0; i < variableNames.length; i++){
-			String variableName = variableNames[i];
-			DataIdentifier specie = getSpecificDI(variableName, outputContext);
-			if (specie != null){
-				boolean unsupported = unsupportedTypes.contains(specie.getVariableType());
-				HashMap<String, Object> variableInfo = new HashMap<>();
-				variableInfo.put("Name", variableName);
-				variableInfo.put("Domain", specie.getDomain().getName());
-				channelInfo.put(i, variableInfo);
-				if (unsupported){
-					throw new RuntimeException("Tried to export a variable type that is not supported!");
-				} else if (specie.getVariableType().equals(VariableType.POSTPROCESSING)) {
+
+		boolean containsPostProcessed = containsPostProcessedVariable(variableNames, outputContext);
+
+		if (containsPostProcessed){
+			for (String variableName : variableNames){
+				if (getSpecificDI(variableName, outputContext).getVariableType().compareEqual(VariableType.POSTPROCESSING)){
 					File hdf5File = dataServer.getVCellSimFiles(vcDataID.getOwner(), vcDataID).postprocessingFile;
 					Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 					DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
@@ -117,11 +113,22 @@ public class N5Exporter implements ExportConstants {
 					sizeX = iSize.getX(); sizeY = iSize.getY(); sizeZ = iSize.getZ();
 					dimensions = new long[]{sizeX, sizeY, numVariables, sizeZ, numTimes + 1};
 					blockSize = new int[]{sizeX, sizeY, 1, sizeZ, 1};
-                } else {
-					mask = MeshToImage.convertMeshIntoImage(mask, mesh).data();
+				} else {
+					throw new RuntimeException("All variable types must be of POST-PROCESSING if you want to export a post-processed variable.");
 				}
 			}
+		} else {
+			for (int i = 0; i < variableNames.length; i++){
+				String variableName = variableNames[i];
+				DataIdentifier specie = getSpecificDI(variableName, outputContext);
+				HashMap<String, Object> variableInfo = new HashMap<>();
+				variableInfo.put("Name", variableName);
+				variableInfo.put("Domain", specie.getDomain().getName());
+				channelInfo.put(i, variableInfo);
+			}
+			mask = MeshToImage.convertMeshIntoImage(mask, mesh).data();
 		}
+
 
 		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter,
 				n5Specs.dataSetName, numVariables, sizeZ, allTimes.length,
@@ -129,15 +136,19 @@ public class N5Exporter implements ExportConstants {
 				lengthPerPixelY, lengthPerPixelX, lengthPerPixelZ, lengthUnit.getSymbol(), channelInfo);
 
 		int timeLoops = 1;
+		double progress = 0;
 		for (int variableIndex=0; variableIndex < (numVariables -1); variableIndex++){
 			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
+
 				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex], allTimes[timeIndex]).getData();
-				data = getSpecificDI(variableNames[variableIndex], outputContext).getVariableType().equals(VariableType.POSTPROCESSING) ? data : MeshToImage.convertMeshIntoImage(data, mesh).data();
+				data = containsPostProcessed ? data : MeshToImage.convertMeshIntoImage(data, mesh).data();
+
 				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
 				n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
-				if(timeIndex % 3 == 0){
-					double progress = (double) (variableIndex + timeLoops) / (numVariables + numTimes);
+
+				if(timeIndex % 2 == 0){
+					progress = (double) (variableIndex + timeLoops) / (numVariables + numTimes + numTimes);
 					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
 				}
 				timeLoops += 1;
@@ -149,10 +160,27 @@ public class N5Exporter implements ExportConstants {
 			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
 			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, (numVariables - 1), 0, normalizedTimeIndex}, mask);
 			n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
+			if(timeIndex % 2 == 0){
+				progress = (double) (progress + timeLoops) / (numVariables + numTimes + numTimes);
+				exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
+			}
+			timeLoops += 1;
 		}
 		n5FSWriter.close();
 		ExportOutput exportOutput = new ExportOutput(true, "." + N5Specs.n5Suffix, vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
 		return exportOutput;
+	}
+
+	private boolean containsPostProcessedVariable(String[] variableNames, OutputContext outputContext) throws IOException, DataAccessException {
+		for (String variableName: variableNames){
+			DataIdentifier specie = getSpecificDI(variableName, outputContext);
+			if(specie.getVariableType().compareEqual(VariableType.POSTPROCESSING)){
+				return true;
+			} else if (unsupportedTypes.contains(specie.getVariableType())) {
+				throw new RuntimeException("Attempting to export unsupported type of: " + specie.getVariableType().getTypeName() + ". The variable with this type is: " + variableName);
+			}
+		}
+		return false;
 	}
 
 	public void initalizeDataControllers(User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) throws IOException, DataAccessException {
