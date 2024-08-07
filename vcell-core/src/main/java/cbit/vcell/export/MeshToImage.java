@@ -37,6 +37,14 @@ public class MeshToImage {
         }
     }
 
+    public static ImageFromMesh convertImageIntoMesh(double[] data, int sizeX, int sizeY, int sizeZ, boolean threeD){
+        if(threeD){
+            return null;
+        }else {
+            return convert2DImageIntoMesh(data, sizeX, sizeY);
+        }
+    }
+
     public static int coordinateToIndex2D(int x, int y, int width, int height){
         return (y * width) + x;
     }
@@ -55,12 +63,10 @@ public class MeshToImage {
         int newSize = newWidth * newHeight;
         double[] newData = new double[newSize];
         for (int i =0; i < newWidth; i++){
+            int oldI = (int) Math.ceil(i / 2.0);
             for (int j=0; j < newHeight; j++){
-                int oldI = (int) Math.ceil(i / 2.0);
                 int oldJ = (int) Math.ceil(j / 2.0);
-//                int oldIndex = BeanUtils.coordinateToIndex(new int[] {oldI, oldJ}, new int[] {sizeX - 1, sizeY - 1});
                 int oldIndex = coordinateToIndex2D(oldI, oldJ, sizeX, sizeY);
-//                int newIndex = BeanUtils.coordinateToIndex(new int[] {i, j}, new int[] {newWidth - 1, newHeight - 1});
                 int newIndex = coordinateToIndex2D(i, j, newWidth, newHeight);
                 newData[newIndex] = data[oldIndex];
             }
@@ -73,13 +79,11 @@ public class MeshToImage {
         int newSize = newWidth * newHeight * newDepth;
         double[] newData = new double[newSize];
         for (int i = 0; i < newWidth; i++){
+            int oldI = (int) Math.ceil(i / 2.0);
             for (int j = 0; j < newHeight; j++){
+                int oldJ = (int) Math.ceil(j / 2.0);
                 for (int k = 0; k < newDepth; k++){
-                    int oldI = (int) Math.ceil(i / 2.0);
-                    int oldJ = (int) Math.ceil(j / 2.0);
                     int oldK = (int) Math.ceil(k / 2.0);
-//                    int oldIndex = BeanUtils.coordinateToIndex(new int[] {oldI, oldJ, oldK}, new int[] {sizeX - 1, sizeY - 1, sizeZ - 1}); //size is not 0 indexed so -1
-//                    int newIndex = BeanUtils.coordinateToIndex(new int[] {i, j, k}, new int[] {newWidth - 1, newHeight - 1, newDepth - 1});
 
                     int oldIndex = coordinateToIndex3D(oldI, oldJ, oldK, sizeX, sizeY);
                     int newIndex = coordinateToIndex3D(i, j, k, newWidth, newHeight);
@@ -88,6 +92,27 @@ public class MeshToImage {
             }
         }
         return new ImageFromMesh(newData, newWidth, newHeight, newDepth);
+    }
+
+    public static int oldNumElements(int newNumElements){
+        return ((newNumElements - 2) / 2) + 2;
+    }
+
+    private static ImageFromMesh convert2DImageIntoMesh(double[] data, int sizeX, int sizeY){
+        int meshWidth = oldNumElements(sizeX);
+        int meshHeight = oldNumElements(sizeY);
+        double[] newData = new double[meshHeight * meshWidth];
+        for (int i = 0; i < sizeX; i++){
+            int meshI = (int) Math.ceil(i / 2.0);
+            for (int j = 0; j < sizeY; j++){
+                int meshJ = (int) Math.ceil(j / 2.0);
+
+                int meshIndex = coordinateToIndex2D(meshI, meshJ, meshWidth, meshHeight);
+                int imageIndex = coordinateToIndex2D(i, j, sizeX, sizeY);
+                newData[meshIndex] = data[imageIndex];
+            }
+        }
+        return new ImageFromMesh(newData, meshWidth, meshHeight, 1);
     }
 }
 
