@@ -39,9 +39,23 @@ public class MeshToImage {
 
     public static ImageFromMesh convertImageIntoMesh(double[] data, int sizeX, int sizeY, int sizeZ, boolean threeD){
         if(threeD){
-            return null;
+            return convert3DImageIntoMesh(data, sizeX, sizeY, sizeZ);
         }else {
             return convert2DImageIntoMesh(data, sizeX, sizeY);
+        }
+    }
+
+
+    /**
+     * Use the Cartesian mesh that is associated with the Image data.
+     */
+    public static ImageFromMesh convertImageIntoMesh(double[] data, CartesianMesh mesh){
+        int dim = mesh.getGeometryDimension();
+        if (dim >2 ){
+            return convert3DImageIntoMesh(data, newNumElements(mesh.getSizeX()), newNumElements(mesh.getSizeY()),
+                    newNumElements(mesh.getSizeZ()));
+        } else {
+            return convert2DImageIntoMesh(data, newNumElements(mesh.getSizeX()), newNumElements(mesh.getSizeY()));
         }
     }
 
@@ -110,6 +124,27 @@ public class MeshToImage {
                 int meshIndex = coordinateToIndex2D(meshI, meshJ, meshWidth, meshHeight);
                 int imageIndex = coordinateToIndex2D(i, j, sizeX, sizeY);
                 newData[meshIndex] = data[imageIndex];
+            }
+        }
+        return new ImageFromMesh(newData, meshWidth, meshHeight, 1);
+    }
+
+    private static ImageFromMesh convert3DImageIntoMesh(double[] data, int sizeX, int sizeY, int sizeZ){
+        int meshWidth = oldNumElements(sizeX);
+        int meshHeight = oldNumElements(sizeY);
+        int meshDepth = oldNumElements(sizeZ);
+        double[] newData = new double[meshHeight * meshWidth];
+        for (int i = 0; i < sizeX; i++){
+            int meshI = (int) Math.ceil(i / 2.0);
+            for (int j = 0; j < sizeY; j++){
+                int meshJ = (int) Math.ceil(j / 2.0);
+                for(int k = 0; k < sizeZ; k++){
+                    int meshK = (int) Math.ceil(k / 2.0);
+
+                    int meshIndex = coordinateToIndex3D(meshI, meshJ, meshK, meshWidth, meshHeight);
+                    int imageIndex = coordinateToIndex3D(i, j, k, sizeX, sizeY);
+                    newData[meshIndex] = data[imageIndex];
+                }
             }
         }
         return new ImageFromMesh(newData, meshWidth, meshHeight, 1);
