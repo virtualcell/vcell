@@ -12,6 +12,7 @@ import java.io.*;
 import java.util.prefs.Preferences;
 
 import static org.vcell.model.ssld.TransitionReaction.ANY_STATE;
+import static org.vcell.model.ssld.TransitionReaction.ANY_STATE_STRING;
 import static org.vcell.solver.langevin.LangevinLngvWriter.*;
 
 public class SsldUtils {
@@ -32,8 +33,11 @@ public class SsldUtils {
 
         // since we don't accept duplicates, all these maps need cleaning after each reaction
         // because the same molecule may be part of many reactions
-        Map<Molecule, ReactantPattern> reactantToReactantPattern = new LinkedHashMap<>();   // these are unidirectional
-        Map<Molecule, ProductPattern> reactantToProductPattern = new LinkedHashMap<>();
+        Map<Molecule, ReactantPattern> reactantToReactantPatternOne = new LinkedHashMap<>();   // these are unidirectional
+        Map<Molecule, ProductPattern> reactantToProductPatternOne = new LinkedHashMap<>();
+        // for binding, the molecule may be the same for both reactants, and we'd have duplicated entries
+        Map<Molecule, ReactantPattern> reactantToReactantPatternTwo = new LinkedHashMap<>();   // these are unidirectional
+        Map<Molecule, ProductPattern> reactantToProductPatternTwo = new LinkedHashMap<>();
         Map<Molecule, ReactantPattern> conditionToReactantPattern = new LinkedHashMap<>();
         Map<Molecule, ProductPattern> conditionToProductPattern = new LinkedHashMap<>();
 
@@ -43,8 +47,10 @@ public class SsldUtils {
         }
 
         void cleanReactionsMaps() {
-            reactantToReactantPattern.clear();
-            reactantToProductPattern.clear();
+            reactantToReactantPatternOne.clear();
+            reactantToProductPatternOne.clear();
+            reactantToReactantPatternTwo.clear();
+            reactantToProductPatternTwo.clear();
             conditionToReactantPattern.clear();
             conditionToProductPattern.clear();
         }
@@ -98,25 +104,48 @@ public class SsldUtils {
             return reactionRuleToSubtype.get(rr);
         }
 
-        void put(Molecule ssldMolecule, ReactantPattern rp) {
-            if(reactantToReactantPattern.containsKey(ssldMolecule)) {
-                throw new RuntimeException("reactantToReactantPattern: Duplicate Key");
+
+        // -------------------------------------------------------------------------------
+        void putMoleculeToReactantPatternOne(Molecule ssldMolecule, ReactantPattern rp) {
+            if(reactantToReactantPatternOne.containsKey(ssldMolecule)) {
+                throw new RuntimeException("reactantToReactantPatternOne: Duplicate Key");
             }
-            reactantToReactantPattern.put(ssldMolecule, rp);
+            reactantToReactantPatternOne.put(ssldMolecule, rp);
         }
-        ReactantPattern getReactantPattern(Molecule ssldMolecule) {
-            return reactantToReactantPattern.get(ssldMolecule);
+        ReactantPattern getReactantPatternOneFromMolecule(Molecule ssldMolecule) {
+            return reactantToReactantPatternOne.get(ssldMolecule);
         }
-        void put(Molecule ssldMolecule, ProductPattern pp) {
-            if(reactantToProductPattern.containsKey(ssldMolecule)) {
-                throw new RuntimeException("reactantToProductPattern: Duplicate Key");
+        void putMoleculeToProductPatternOne(Molecule ssldMolecule, ProductPattern pp) {
+            if(reactantToProductPatternOne.containsKey(ssldMolecule)) {
+                throw new RuntimeException("reactantToProductPatternOne: Duplicate Key");
             }
-            reactantToProductPattern.put(ssldMolecule, pp);
+            reactantToProductPatternOne.put(ssldMolecule, pp);
         }
-        ProductPattern getProductPattern(Molecule ssldMolecule) {
-            return reactantToProductPattern.get(ssldMolecule);
+        ProductPattern getProductPatternOneFromMolecule(Molecule ssldMolecule) {
+            return reactantToProductPatternOne.get(ssldMolecule);
         }
 
+        // -------------------------------------------------------------------------------
+        void putMoleculeToReactantPatternTwo(Molecule ssldMolecule, ReactantPattern rp) {
+            if(reactantToReactantPatternTwo.containsKey(ssldMolecule)) {
+                throw new RuntimeException("reactantToReactantPatternTwo: Duplicate Key");
+            }
+            reactantToReactantPatternTwo.put(ssldMolecule, rp);
+        }
+        ReactantPattern getReactantPatternTwoFromMolecule(Molecule ssldMolecule) {
+            return reactantToReactantPatternTwo.get(ssldMolecule);
+        }
+        void putMoleculeToProductPatternTwo(Molecule ssldMolecule, ProductPattern pp) {
+            if(reactantToProductPatternTwo.containsKey(ssldMolecule)) {
+                throw new RuntimeException("reactantToProductPatternTwo: Duplicate Key");
+            }
+            reactantToProductPatternTwo.put(ssldMolecule, pp);
+        }
+        ProductPattern getProductPatternTwoFromMolecule(Molecule ssldMolecule) {
+            return reactantToProductPatternTwo.get(ssldMolecule);
+        }
+
+        // -----------------------------------------------------------------
         void putCondition(Molecule ssldMolecule, ReactantPattern rp) {
             if(conditionToReactantPattern.containsKey(ssldMolecule)) {
                 throw new RuntimeException("conditionToReactantPattern: Duplicate Key");
@@ -212,8 +241,8 @@ public class SsldUtils {
                 m.putCondition(ssldConditionalMolecule, rp);
                 m.putCondition(ssldConditionalMolecule, pp);
             }
-            m.put(ssldTransitionMolecule, rp);
-            m.put(ssldTransitionMolecule, pp);
+            m.putMoleculeToReactantPatternOne(ssldTransitionMolecule, rp);
+            m.putMoleculeToProductPatternOne(ssldTransitionMolecule, pp);
             // at this point everything is trivial
             // now we start adjusting the binding sites
             adjustTransitionReactionSites(ssldReaction, m);
@@ -251,10 +280,11 @@ public class SsldUtils {
             ReactantPattern rpTwo = new ReactantPattern(spReactantTwo, model.getStructure(locationTwo));
             ProductPattern pp = new ProductPattern(spProduct, structure);
 
-            m.put(ssldReactantOne, rpOne);
-            m.put(ssldReactantTwo, rpTwo);
-            m.put(ssldReactantOne, pp);
-            m.put(ssldReactantTwo, pp);
+            // TODO: if the same molecule is in both reactants, the map will fire "duplicate" exception
+            m.putMoleculeToReactantPatternOne(ssldReactantOne, rpOne);
+            m.putMoleculeToReactantPatternTwo(ssldReactantTwo, rpTwo);
+            m.putMoleculeToProductPatternOne(ssldReactantOne, pp);
+            m.putMoleculeToProductPatternTwo(ssldReactantTwo, pp);
             // at this point everything is trivial
             // now we start adjusting the binding sites
             adjustReactantSite(ssldReaction, 0, m);
@@ -306,14 +336,14 @@ public class SsldUtils {
         SiteType ssldSiteType = ssldReaction.getType();
         State ssldInitialState = ssldReaction.getInitialState();
         State ssldFinalState = ssldReaction.getFinalState();
-        SpeciesPattern spReactant = m.getReactantPattern(ssldTransitionMolecule).getSpeciesPattern();
+        SpeciesPattern spReactant = m.getReactantPatternOneFromMolecule(ssldTransitionMolecule).getSpeciesPattern();
         MolecularTypePattern mtpTransitionReactant = spReactant.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(0);
         MolecularComponentPattern mcpTransitionReactant = mtpTransitionReactant.getMolecularComponentPattern(ssldSiteType.getName());
         ComponentStatePattern cspTransitionReactant = new ComponentStatePattern(new ComponentStateDefinition(ssldInitialState.getName()));
         mcpTransitionReactant.setComponentStatePattern(cspTransitionReactant);
         // bond is already set to Any
 
-        SpeciesPattern spProduct = m.getReactantPattern(ssldTransitionMolecule).getSpeciesPattern();
+        SpeciesPattern spProduct = m.getProductPatternOneFromMolecule(ssldTransitionMolecule).getSpeciesPattern();
         MolecularTypePattern mtpTransitionProduct = spProduct.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(0);
         MolecularComponentPattern mcpTransitionProduct = mtpTransitionProduct.getMolecularComponentPattern(ssldSiteType.getName());
         ComponentStatePattern cspTransitionProduct = new ComponentStatePattern(new ComponentStateDefinition(ssldFinalState.getName()));
@@ -327,24 +357,28 @@ public class SsldUtils {
         Molecule ssldMoleculeOne = ssldReaction.getMolecule(0);
         SiteType ssldSiteTypeOne = ssldReaction.getType(0);
         State ssldStateOne = ssldReaction.getState(0);
-        SpeciesPattern spProduct = m.getProductPattern(ssldMoleculeOne).getSpeciesPattern();
+        SpeciesPattern spProduct = m.getProductPatternOneFromMolecule(ssldMoleculeOne).getSpeciesPattern();
         MolecularTypePattern mtpProductOne = spProduct.getMolecularTypePatterns(ssldMoleculeOne.getName()).get(0);
         MolecularComponentPattern mcpProductOne = mtpProductOne.getMolecularComponentPattern(ssldSiteTypeOne.getName());
-        ComponentStatePattern cspProductOne = new ComponentStatePattern(new ComponentStateDefinition(ssldStateOne.getName()));
-        mcpProductOne.setComponentStatePattern(cspProductOne);
-
+        String ssldStateOneName = ssldStateOne.getName();
+        if(!ssldStateOneName.contentEquals(ANY_STATE_STRING)) {
+            ComponentStatePattern cspProductOne = new ComponentStatePattern(new ComponentStateDefinition(ssldStateOneName));
+            mcpProductOne.setComponentStatePattern(cspProductOne);
+        }
         Molecule ssldMoleculeTwo = ssldReaction.getMolecule(1);
         SiteType ssldSiteTypeTwo = ssldReaction.getType(1);
         State ssldStateTwo = ssldReaction.getState(1);
-        SpeciesPattern spProductTwo = m.getProductPattern(ssldMoleculeTwo).getSpeciesPattern();
+        SpeciesPattern spProductTwo = m.getProductPatternTwoFromMolecule(ssldMoleculeTwo).getSpeciesPattern();
         if(spProduct != spProductTwo) {     // we load spProductTwo just to verify consistency
             throw new RuntimeException("Instances of the same species pattern should be equal");
         }
         MolecularTypePattern mtpProductTwo = spProduct.getMolecularTypePatterns(ssldMoleculeTwo.getName()).get(0);
         MolecularComponentPattern mcpProductTwo = mtpProductTwo.getMolecularComponentPattern(ssldSiteTypeTwo.getName());
-        ComponentStatePattern cspProductTwo = new ComponentStatePattern(new ComponentStateDefinition(ssldStateTwo.getName()));
-        mcpProductTwo.setComponentStatePattern(cspProductTwo);
-
+        String ssldStateTwoName = ssldStateTwo.getName();
+        if(!ssldStateTwoName.contentEquals(ANY_STATE_STRING)) {
+            ComponentStatePattern cspProductTwo = new ComponentStatePattern(new ComponentStateDefinition(ssldStateTwoName));
+            mcpProductTwo.setComponentStatePattern(cspProductTwo);
+        }
         // we know for sure that this is the only explicit bond in each of the 2 molecular type patterns of the product
         int bondId = 1;     // correct would be:  sp.nextBondId();
         mcpProductOne.setBondId(bondId);    // this also sets the BondType to Specified
@@ -357,11 +391,19 @@ public class SsldUtils {
         Molecule ssldMolecule = ssldReaction.getMolecule(reactantIndex);
         SiteType ssldSiteType = ssldReaction.getType(reactantIndex);
         State ssldState = ssldReaction.getState(reactantIndex);
-        SpeciesPattern spReactant = m.getReactantPattern(ssldMolecule).getSpeciesPattern();
+        SpeciesPattern spReactant = null;
+        if(reactantIndex == 0) {
+            spReactant = m.getReactantPatternOneFromMolecule(ssldMolecule).getSpeciesPattern();
+        } else {
+            spReactant = m.getReactantPatternTwoFromMolecule(ssldMolecule).getSpeciesPattern();
+        }
         MolecularTypePattern mtpReactant = spReactant.getMolecularTypePatterns(ssldMolecule.getName()).get(0);
         MolecularComponentPattern mcpReactant = mtpReactant.getMolecularComponentPattern(ssldSiteType.getName());
-        ComponentStatePattern cspReactant = new ComponentStatePattern(new ComponentStateDefinition(ssldState.getName()));
-        mcpReactant.setComponentStatePattern(cspReactant);
+        String ssldStateName = ssldState.getName();
+        if(!ssldStateName.contentEquals(ANY_STATE_STRING)) {
+            ComponentStatePattern cspReactant = new ComponentStatePattern(new ComponentStateDefinition(ssldStateName));
+            mcpReactant.setComponentStatePattern(cspReactant);
+        }
         mcpReactant.setBondType(MolecularComponentPattern.BondType.None);
         mcpReactant.setBond(null);
     }
