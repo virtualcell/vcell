@@ -2253,15 +2253,16 @@ private void updateChoiceVariableType(PDEDataContext pdeDataContext){
 
 		DataIdentifier[] dataIDArr = pdeDataContext.getDataIdentifiers();
 		for (int i = 0; i < dataIDArr.length; i++) {
-//			String vmPrefix = (dataIDArr[i].getVariableType().equals(VariableType.VOLUME)
-//								?"V"
-//								:(dataIDArr[i].getVariableType().equals(VariableType.MEMBRANE)?"M":"?"));
+			VariableType variableType = dataIDArr[i].getVariableType();
+
 			String varListName = dataIDArr[i].getName();//"("+vmPrefix+")  "+dataIDArr[i].getName();
+			boolean volumeButtonDecision = variableType.equals(VariableType.VOLUME) ||
+					(variableType.equals(VariableType.POSTPROCESSING) && !getSelectedFormat().equals(ExportFormat.N5));
 			if(getBothVarRadioButton().isSelected()){
 				dataIdentifierTreeSet.add(varListName);
-			}else if(getVolVarRadioButton().isSelected() && (dataIDArr[i].getVariableType().equals(VariableType.VOLUME) || dataIDArr[i].getVariableType().equals(VariableType.POSTPROCESSING))){
+			}else if(getVolVarRadioButton().isSelected() && volumeButtonDecision){
 				dataIdentifierTreeSet.add(varListName);
-			}else if(getMembVarRadioButton().isSelected() && dataIDArr[i].getVariableType().equals(VariableType.MEMBRANE)){
+			}else if(getMembVarRadioButton().isSelected() && variableType.equals(VariableType.MEMBRANE)){
 				dataIdentifierTreeSet.add(varListName);
 			}
 		}
