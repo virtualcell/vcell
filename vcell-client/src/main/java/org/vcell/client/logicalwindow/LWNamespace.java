@@ -126,7 +126,7 @@ public interface LWNamespace {
             lg.debug(ExecutionTrace.justClassName(swingParent) + " does not implement " + ExecutionTrace.justClassName(clzz));
 
         }
-        Container up = swingParent.getParent();
+        Container up = swingParent == null ? null : swingParent.getParent();
         if (up == null) {
             lg.error("top level object " + ExecutionTrace.justClassName(swingParent) + " does not implement " + ExecutionTrace.justClassName(clzz));
             return null;

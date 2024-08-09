@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.server;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +38,6 @@ import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
-import edu.uchc.connjur.wb.ExecutionTrace;
 
 /**
  * {@link AsynchMessageManager} polls from {@link VCellConnection} to get remote messages. Remote Messages include the following:
@@ -48,415 +48,305 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * {@link AsynchMessageManager} also listens to {@link ClientJobManager} if user stops the simulation, then it will notify TopLevelWindowManager
  * to update the status.
  */
-public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener,DataJobListenerHolder {
+public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener, DataJobListenerHolder {
     private static final long BASE_POLL_SECONDS = 3;
-    private static final long ATTEMPT_POLL_SECONDS = 3;
-	private static Logger lg = LogManager.getLogger(AsynchMessageManager.class);
+    private static final long RETRY_POLL_SECONDS = 1;
+    private static final long DEFAULT_TIMEOUT_MS = 1500;
+    private static final Logger lg = LogManager.getLogger(AsynchMessageManager.class);
 
-	private EventListenerList listenerList = new EventListenerList();
-    private ClientServerManager clientServerManager = null;
+    private final EventListenerList listenerList = new EventListenerList();
+    private final ClientServerManager clientServerManager;
     private int failureCount = 0;
     private ScheduledExecutorService executorService = null;
     private long counter = 0;
-    private long pollTime = BASE_POLL_SECONDS;
-	private AtomicBoolean bPoll = new AtomicBoolean(false);
-	private ScheduledFuture<?> pollingHandle = null;
-	/**
-	 * for {@link #schedule(long)} method
-	 */
-	private final ReentrantLock scheduleLock = new ReentrantLock();
+    private final AtomicBoolean isPollingEnabled = new AtomicBoolean(false);
+    private ScheduledFuture<?> pollingHandle = null;
+    /**
+     * for {@link #schedule(long)} method
+     */
+    private final ReentrantLock scheduleLock = new ReentrantLock();
+    private final ReentrantLock connectionLock = new ReentrantLock();
 
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 4:55:22 PM)
- */
-public AsynchMessageManager(ClientServerManager csm) {
-	this.clientServerManager = csm;
-}
-/**
- * start polling for connection. Should be called after connect
- * no-op if already called
- */
-public synchronized void startPolling() {
-	if (!bPoll.get()) {
-		bPoll.set(true);
-		if (executorService == null) {
-			executorService = VCellExecutorService.get();
-			DataAccessException.addListener(this);
-		}
-		schedule(pollTime);
-	}
-}
-
-public void stopPolling() {
-//	lg.trace("stopping polling");
-	bPoll.set(false);
-}
-
-@Override
-public void created(DataAccessException dae) {
-//	if (lg.isTraceEnabled()) {
-//		lg.trace("scheduling now due to " + dae.getMessage());
-//	}
-	schedule(0);
-}
-private void poll( )  {
-	if (!bPoll.get()) {
-		if (lg.isDebugEnabled()){
-			lg.debug("polling stopped");
-		}
-		return;
-	}
-	
-	if (lg.isDebugEnabled()){
-		lg.debug("polling");
-	}
-	boolean report = counter%50 == 0;
-	long begin = 0;
-	long end = 0;
-	 //
-    // ask remote message listener (really should be "message producer") for any queued events.
-    //
-    try {
-    	MessageEvent[] queuedEvents = null;
-    	if (report) {
-	    	// time the call
-		    begin = System.currentTimeMillis();
-    	}
-	    synchronized (this) {
-	    	if (!clientServerManager.isStatusConnected()) {
-	    		clientServerManager.attemptReconnect( );
-	    		return;
-	    	}
-		    pollTime = BASE_POLL_SECONDS;
-	    	queuedEvents = clientServerManager.getMessageEvents();
-		}
-    	if (report) {
-		    end = System.currentTimeMillis();
-    	}
-	    failureCount = 0; //this is skipped if the connection has failed:w
-	    // deal with events, if any
-	    if (queuedEvents != null) {
-		    for (MessageEvent messageEvent : queuedEvents){
-		    	onMessageEvent(messageEvent);
-		    }
-	    }
-	    // report polling call performance
-	    if (report) {
-		    double duration = ((double)(end - begin)) / 1000;
-	    	PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
-			    this, null, new PerformanceData(
-				    "AsynchMessageManager.poll()",
-				    MessageEvent.POLLING_STAT,
-				    new PerformanceDataEntry[] {new PerformanceDataEntry("remote call duration", Double.toString(duration))}
-			    )
-			);
-	    }
-    } catch (Exception exc) {
-	    System.out.println(">> polling failure << " + exc.getMessage());
-	    pollTime = ATTEMPT_POLL_SECONDS;
-	    failureCount ++;
-	    if (failureCount % 3 == 0) {
-	    	bPoll.set(false);
-	    	clientServerManager.setDisconnected();
-	    }
+    public AsynchMessageManager(ClientServerManager csm) {
+        this.clientServerManager = csm;
     }
-    finally {
-    	if (lg.isDebugEnabled()) {
-    		lg.debug(ExecutionTrace.justClassName(this) + " poll time " + pollTime + " seconds");
-    	}
-    	if (bPoll.get()){
-    		schedule(pollTime);
-    	}
+
+    /**
+     * start polling for connection. Should be called after connect
+     * no-op if already called
+     */
+    public synchronized void startPolling() {
+        if (this.isPollingEnabled.get()) return;
+        lg.debug("Asynch Polling initiated");
+        this.isPollingEnabled.set(true);
+        if (this.executorService == null) {
+            this.executorService = VCellExecutorService.get();
+            DataAccessException.addListener(this);
+        }
+        this.schedule(AsynchMessageManager.BASE_POLL_SECONDS);
+        lg.debug("Asynch polling active");
     }
-}
 
-/**
- * schedule poll, replacing previously scheduled instance, if any
- * @param delay
- */
-private void schedule(long delay) {
-	scheduleLock.lock();
-	try {
-		if (pollingHandle != null && !pollingHandle.isDone()) {
-			pollingHandle.cancel(true);
-		}
-		pollingHandle =  executorService.schedule(this::poll, delay,TimeUnit.SECONDS);
-	}
-	finally {
-		scheduleLock.unlock();
-	}
-}
+    public void stopPolling() {
+        this.isPollingEnabled.set(false);
+        lg.debug("Asynch polling disabled, stopping polling");
+    }
 
+    @Override
+    public void created(DataAccessException dae) {
+		lg.debug("scheduling now due to " + dae.getMessage());
+        this.schedule(0);
+    }
 
-private void onMessageEvent(MessageEvent event) {
-	if (event instanceof SimulationJobStatusEvent) {
-		fireSimulationJobStatusEvent((SimulationJobStatusEvent)event);
-	} else if (event instanceof ExportEvent) {
-		fireExportEvent((ExportEvent)event);
-	} else if (event instanceof DataJobEvent) {
-		fireDataJobEvent((DataJobEvent)event);
-	} else if (event instanceof VCellMessageEvent) {
-		fireVCellMessageEvent((VCellMessageEvent)event);
-	} else {
-		System.err.println("AsynchMessageManager.onMessageEvent() : unknown message event " + event);
-	}
-}
+    private void poll() {
+        if (!this.isPollingEnabled.get()) {
+            lg.debug("polling is not currently enabled");
+            return;
+        }
 
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2001 5:18:16 PM)
- * @param listener ExportListener
- */
-public synchronized void addDataJobListener(DataJobListener listener) {
-	listenerList.add(DataJobListener.class, listener);
-}
+        if (lg.isTraceEnabled()) lg.debug("Attempting a single poll...");
+        boolean shouldReport = this.counter++ % 50 == 0;
+        long begin = 0;
+        long end = 0;
 
+        // ask remote message listener (really should be "message producer") for any queued events.
+        try {
+            MessageEvent[] queuedEvents;
+            if (shouldReport) begin = System.currentTimeMillis(); // time the call
 
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2001 5:18:16 PM)
- * @param listener ExportListener
- */
-public synchronized void addExportListener(ExportListener listener) {
-	listenerList.add(ExportListener.class, listener);
-}
+            if (!this.clientServerManager.isStatusConnected()) {
+                if (!this.connectionLock.tryLock()) return;
+                this.clientServerManager.attemptReconnect();
+                return;
+            }
 
+            queuedEvents = this.clientServerManager.getMessageEvents(AsynchMessageManager.DEFAULT_TIMEOUT_MS);
 
-/**
- * addSimulationStatusEventListener method comment.
- */
-public synchronized void addSimStatusListener(SimStatusListener listener) {
-	listenerList.add(SimStatusListener.class, listener);
-}
+            if (shouldReport) end = System.currentTimeMillis();
 
+            this.failureCount = 0; //this is skipped if the connection has failed:w
+            // deal with events, if any
+            if (queuedEvents != null) for (MessageEvent messageEvent : queuedEvents) this.onMessageEvent(messageEvent);
+            if (!shouldReport) return;
 
-/**
- * addSimulationStatusEventListener method comment.
- */
-public synchronized void addSimulationJobStatusListener(SimulationJobStatusListener listener) {
-	listenerList.add(SimulationJobStatusListener.class, listener);
-}
+            // report polling call performance
+            double duration = ((double) (end - begin)) / 1000;
+            PerformanceMonitorEvent performanceMonitorEvent = new PerformanceMonitorEvent(
+                    this, null, new PerformanceData(
+                    "AsynchMessageManager.poll()",
+                    MessageEvent.POLLING_STAT,
+                    new PerformanceDataEntry[]{new PerformanceDataEntry("remote call duration", Double.toString(duration))}
+            )
+            );
+        } catch (Exception exc) {
+            lg.error(">> POLLING FAILURE <<", exc);
+            this.failureCount++;
+            if (this.failureCount % 3 == 0) {
+                this.isPollingEnabled.set(false);
+                this.clientServerManager.setDisconnected();
+            }
+        } finally {
+            long retryTime = this.failureCount > 0 ?
+                    AsynchMessageManager.RETRY_POLL_SECONDS : AsynchMessageManager.BASE_POLL_SECONDS;
+            if (lg.isTraceEnabled())
+                lg.debug("Poll concluded; Next poll in " + retryTime + " seconds");
+            if (this.connectionLock.isHeldByCurrentThread()) this.connectionLock.unlock();
+            if (this.isPollingEnabled.get()) this.schedule(retryTime);
+        }
+    }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/19/2006 12:51:56 PM)
- * @param listener cbit.vcell.desktop.controls.ExportListener
- */
-public void addVCellMessageEventListener(VCellMessageEventListener listener) {
-	listenerList.add(VCellMessageEventListener.class, listener);
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2000 11:43:22 AM)
- * @param event cbit.rmi.event.ExportEvent
- */
-protected void fireDataJobEvent(DataJobEvent event) {
-	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
-	// Reset the source to allow proper wiring
-	event.setSource(this);
-	// Process the listeners last to first, notifying
-	// those that are interested in this event
-	for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==DataJobListener.class) {
-		    fireDataJobEvent(event, (DataJobListener)listeners[i+1]);
-	    }
-	}
-}
+    /**
+     * schedule poll, replacing previously scheduled instance, if any
+     *
+     * @param delay
+     */
+    private void schedule(long delay) {
+        this.scheduleLock.lock();
+        try {
+            if (this.pollingHandle != null && !this.pollingHandle.isDone()) {
+                this.pollingHandle.cancel(true);
+            }
+            this.pollingHandle = this.executorService.schedule(this::poll, delay, TimeUnit.SECONDS);
+        } finally {
+            this.scheduleLock.unlock();
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 3:49:15 PM)
- */
-private void fireDataJobEvent(final DataJobEvent event, final DataJobListener listener) {
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-		    listener.dataJobMessage(event);
-	    }
-	});
-}
+    private void onMessageEvent(MessageEvent event) {
+        if (event instanceof SimulationJobStatusEvent) {
+            this.fireSimulationJobStatusEvent((SimulationJobStatusEvent) event);
+        } else if (event instanceof ExportEvent) {
+            this.fireExportEvent((ExportEvent) event);
+        } else if (event instanceof DataJobEvent) {
+            this.fireDataJobEvent((DataJobEvent) event);
+        } else if (event instanceof VCellMessageEvent) {
+            this.fireVCellMessageEvent((VCellMessageEvent) event);
+        } else {
+            System.err.println("AsynchMessageManager.onMessageEvent() : unknown message event " + event);
+        }
+    }
+
+    public void addDataJobListener(DataJobListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.add(DataJobListener.class, listener);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2000 11:43:22 AM)
- * @param event cbit.rmi.event.ExportEvent
- */
-protected void fireExportEvent(ExportEvent event) {
-	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
-	// Reset the source to allow proper wiring
-	event.setSource(this);
-	// Process the listeners last to first, notifying
-	// those that are interested in this event
-	for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==ExportListener.class) {
-		    fireExportEvent(event, (ExportListener)listeners[i+1]);
-	    }
-	}
-}
+    public void addExportListener(ExportListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.add(ExportListener.class, listener);
+        }
+    }
+
+    public void addSimStatusListener(SimStatusListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.add(SimStatusListener.class, listener);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 3:49:15 PM)
- */
-private void fireExportEvent(final ExportEvent event, final ExportListener listener) {
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-		    listener.exportMessage(event);
-	    }
-	});
-}
+    public void addSimulationJobStatusListener(SimulationJobStatusListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.add(SimulationJobStatusListener.class, listener);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2000 11:43:22 AM)
- * @param event cbit.rmi.event.JobCompletedEvent
- */
-protected void fireSimStatusEvent(SimStatusEvent event) {
-	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
-	// Process the listeners last to first, notifying
-	// those that are interested in this event
-	for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==SimStatusListener.class) {
-		    fireSimStatusEvent(event, (SimStatusListener)listeners[i+1]);
-	    }
-	}
-}
+    public void addVCellMessageEventListener(VCellMessageEventListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.add(VCellMessageEventListener.class, listener);
+        }
+    }
+
+    protected void fireDataJobEvent(DataJobEvent event) {
+        // Guaranteed to return a non-null array
+        Object[] listeners = this.listenerList.getListenerList();
+        // Reset the source to allow proper wiring
+        event.setSource(this);
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] != DataJobListener.class) continue;
+            this.fireDataJobEvent(event, (DataJobListener) listeners[i + 1]);
+        }
+    }
+
+    private void fireDataJobEvent(final DataJobEvent event, final DataJobListener listener) {
+        SwingUtilities.invokeLater(() -> listener.dataJobMessage(event));
+    }
+
+    protected void fireExportEvent(ExportEvent event) {
+        // Guaranteed to return a non-null array
+        Object[] listeners = this.listenerList.getListenerList();
+        // Reset the source to allow proper wiring
+        event.setSource(this);
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] != ExportListener.class) continue;
+            this.fireExportEvent(event, (ExportListener) listeners[i + 1]);
+        }
+    }
+
+    private void fireExportEvent(final ExportEvent event, final ExportListener listener) {
+        SwingUtilities.invokeLater(() -> listener.exportMessage(event));
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 3:49:15 PM)
- */
-private void fireSimStatusEvent(final SimStatusEvent event, final SimStatusListener listener) {
-	listener.simStatusChanged(event);
-}
+    protected void fireSimStatusEvent(SimStatusEvent event) {
+        // Guaranteed to return a non-null array
+        Object[] listeners = this.listenerList.getListenerList();
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] != SimStatusListener.class) continue;
+            this.fireSimStatusEvent(event, (SimStatusListener) listeners[i + 1]);
+        }
+    }
+
+    private void fireSimStatusEvent(final SimStatusEvent event, final SimStatusListener listener) {
+        listener.simStatusChanged(event);
+    }
+
+    protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
+        // Guaranteed to return a non-null array
+        Object[] listeners = this.listenerList.getListenerList();
+        // Reset the source to allow proper wiring
+        event.setSource(this);
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] != SimulationJobStatusListener.class) continue;
+            this.fireSimulationJobStatusEvent(event, (SimulationJobStatusListener) listeners[i + 1]);
+        }
+    }
+
+    private void fireSimulationJobStatusEvent(final SimulationJobStatusEvent event, final SimulationJobStatusListener listener) {
+        listener.simulationJobStatusChanged(event);
+    }
+
+    protected void fireVCellMessageEvent(VCellMessageEvent event) {
+        // Guaranteed to return a non-null array
+        Object[] listeners = this.listenerList.getListenerList();
+        // Reset the source to allow proper wiring
+        event.setSource(this);
+        // Process the listeners last to first, notifying
+        // those that are interested in this event
+        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+            if (listeners[i] == VCellMessageEventListener.class) {
+                this.fireVCellMessageEvent(event, (VCellMessageEventListener) listeners[i + 1]);
+            }
+        }
+    }
+
+    private void fireVCellMessageEvent(final VCellMessageEvent event, final VCellMessageEventListener listener) {
+        SwingUtilities.invokeLater(() -> listener.onVCellMessageEvent(event));
+    }
+
+    public void removeDataJobListener(DataJobListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.remove(DataJobListener.class, listener);
+        }
+    }
+
+    public void removeExportListener(ExportListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.remove(ExportListener.class, listener);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2000 11:43:22 AM)
- * @param event cbit.rmi.event.JobCompletedEvent
- */
-protected void fireSimulationJobStatusEvent(SimulationJobStatusEvent event) {
-	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
-	// Reset the source to allow proper wiring
-	event.setSource(this);
-	// Process the listeners last to first, notifying
-	// those that are interested in this event
-	for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==SimulationJobStatusListener.class) {
-		    fireSimulationJobStatusEvent(event, (SimulationJobStatusListener)listeners[i+1]);
-	    }
-	}
-}
+    /**
+     * removeSimulationStatusEventListener method comment.
+     */
+    public void removeSimStatusListener(SimStatusListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.remove(SimStatusListener.class, listener);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 3:49:15 PM)
- */
-private void fireSimulationJobStatusEvent(final SimulationJobStatusEvent event, final SimulationJobStatusListener listener) {
-    listener.simulationJobStatusChanged(event);
-}
+    /**
+     * removeSimulationStatusEventListener method comment.
+     */
+    public void removeSimulationJobStatusListener(SimulationJobStatusListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.remove(SimulationJobStatusListener.class, listener);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2000 11:43:22 AM)
- * @param event cbit.rmi.event.ExportEvent
- */
-protected void fireVCellMessageEvent(VCellMessageEvent event) {
-	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
-	// Reset the source to allow proper wiring
-	event.setSource(this);
-	// Process the listeners last to first, notifying
-	// those that are interested in this event
-	for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==VCellMessageEventListener.class) {
-		    fireVCellMessageEvent(event, (VCellMessageEventListener)listeners[i+1]);
-	    }
-	}
-}
+    public void removeVCellMessageEventListener(VCellMessageEventListener listener) {
+        synchronized (this.listenerList) {
+            this.listenerList.remove(VCellMessageEventListener.class, listener);
+        }
+    }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 3:49:15 PM)
- */
-private void fireVCellMessageEvent(final VCellMessageEvent event, final VCellMessageEventListener listener) {
-	SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-		    listener.onVCellMessageEvent(event);
-	    }
-	});
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2001 5:18:16 PM)
- * @param listener ExportListener
- */
-public synchronized void removeDataJobListener(DataJobListener listener) {
-	listenerList.remove(DataJobListener.class, listener);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2001 5:18:16 PM)
- * @param listener ExportListener
- */
-public synchronized void removeExportListener(ExportListener listener) {
-	listenerList.remove(ExportListener.class, listener);
-}
-
-
-/**
- * removeSimulationStatusEventListener method comment.
- */
-public synchronized void removeSimStatusListener(SimStatusListener listener) {
-	listenerList.remove(SimStatusListener.class, listener);
-}
-
-
-/**
- * removeSimulationStatusEventListener method comment.
- */
-public synchronized void removeSimulationJobStatusListener(SimulationJobStatusListener listener) {
-	listenerList.remove(SimulationJobStatusListener.class, listener);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/19/2006 12:54:05 PM)
- * @param listener cbit.vcell.desktop.controls.ExportListener
- */
-public void removeVCellMessageEventListener(VCellMessageEventListener listener) {
-	listenerList.remove(VCellMessageEventListener.class, listener);
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (6/9/2004 2:27:28 PM)
- * @param newJobStatus cbit.vcell.messaging.db.SimulationJobStatus
- * @param progress java.lang.Double
- * @param timePoint java.lang.Double
- */
-public void simStatusChanged(SimStatusEvent simStatusEvent) {
-	// refire for swing
-	fireSimStatusEvent(simStatusEvent);
-}
+    public void simStatusChanged(SimStatusEvent simStatusEvent) {
+        // refire for swing
+        this.fireSimStatusEvent(simStatusEvent);
+    }
 
 }

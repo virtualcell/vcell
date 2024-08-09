@@ -47,6 +47,8 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.gui.PdeTimePlotMultipleVariablesPanel.MultiTimePlotHelper;
+import swingthreads.TaskEventKeys;
+
 /**
  * Insert the type's description here.
  * Creation date: (12/14/2004 9:38:13 AM)
@@ -2039,7 +2041,7 @@ public class KymographPanel extends javax.swing.JPanel implements org.vcell.util
 
 				Throwable timeSeriesJobFailed = (Throwable)hashTable.get(PDEDataViewer.StringKey_timeSeriesJobException);
 				if (timeSeriesJobFailed == null) {
-					timeSeriesJobFailed = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_USER);
+					timeSeriesJobFailed = (Throwable)hashTable.get(TaskEventKeys.TASK_ABORTED_BY_USER.toString());
 				}
 				if (failMethod(timeSeriesJobFailed, dataIdentifer)) {
 					return;

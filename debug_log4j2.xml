@@ -10,13 +10,13 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="org.vcell" level="info" additivity="false">
+        <Logger name="org.vcell" level="debug" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
-        <Logger name="cbit" level="info" additivity="false">
+        <Logger name="cbit" level="debug" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
-        <Logger name="cbit" level="info" additivity="false">
+        <Logger name="cbit" level="debug" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
         <Logger name="org.apache.http" level="info" additivity="false">
@@ -28,7 +28,7 @@
         <Logger name = "io.jhdf" level="warn" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
-        <Root level="info">
+        <Root level="debug">
             <AppenderRef ref="console"/>
         </Root>
     </Loggers>

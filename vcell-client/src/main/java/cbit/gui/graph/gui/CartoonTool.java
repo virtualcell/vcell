@@ -48,11 +48,13 @@ import cbit.gui.graph.actions.CartoonToolPaintingActions;
 import cbit.gui.graph.actions.CartoonToolSaveAsImageActions;
 import cbit.gui.graph.actions.GraphViewAction;
 import cbit.gui.graph.groups.VCGroupManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.gui.GeneralGuiUtils;
 
 public abstract class CartoonTool implements GraphView, MouseListener,
 		MouseMotionListener, ActionListener, KeyListener {
-
+	private static final Logger lg = LogManager.getLogger(CartoonTool.class);
 	public static final boolean GROUPS_ARE_ENABLED = false;
 	
 	private GraphPane graphPane = null;
@@ -359,7 +361,7 @@ public abstract class CartoonTool implements GraphView, MouseListener,
 				return;
 			}
 		}
-		System.out.println("ERROR: button with actionCommand " + actionCommand + " not found");
+        lg.warn("ERROR: button with actionCommand {} not found", actionCommand);
 		return;
 	}
 

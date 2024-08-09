@@ -37,6 +37,7 @@ import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.xml.merge.XmlTreeDiff;
+import swingthreads.TaskEventKeys;
 
 public abstract class DocumentWindowManager extends TopLevelWindowManager implements java.awt.event.ActionListener, DataViewerManager {
 	
@@ -119,7 +120,7 @@ public void compareWithSaved() {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try {
-				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
+				if (hashTable.get(TaskEventKeys.TASK_ABORTED_BY_ERROR.toString()) == null) {
 					XmlTreeDiff xmlTreeDiff = (XmlTreeDiff)hashTable.get("xmlTreeDiff");
 					String baselineDesc = getVCDocument()+ ", " + (getVCDocument().getVersion() == null ? "not saved" : getVCDocument().getVersion().getDate());
 					String modifiedDesc = "Opened document instance";

@@ -429,7 +429,7 @@ public static void blur( short[] ins, short[] outs, int width, int height, int r
 				AsynchClientTask failTask = new AsynchClientTask("Check fail...",AsynchClientTask.TASKTYPE_SWING_BLOCKING,false,false,true) {
 					@Override
 					public void run(Hashtable<String, Object> hashTable) throws Exception {
-						Throwable throwable = (Throwable)hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+						Throwable throwable = (Throwable)hashTable.get(swingthreads.TaskEventKeys.TASK_ABORTED_BY_ERROR.toString());
 						if(throwable != null){
 							//cleanup
 							ComboboxROIName[] comboboxROINames = overlayEditorPanelJAI.getAllCompositeROINamesAndColors();

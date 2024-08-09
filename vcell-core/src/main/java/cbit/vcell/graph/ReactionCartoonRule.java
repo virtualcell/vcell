@@ -57,7 +57,7 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //					}
 //				}
 //			} else if(node.nodeType == NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE) {
-//				System.out.println("ReactionCartoonRule, rebindAll(), wrong NodeReference type RULE_PARTICIPANT_SIGNATURE_FULL_NODE");
+//				lg.trace("ReactionCartoonRule, rebindAll(), wrong NodeReference type RULE_PARTICIPANT_SIGNATURE_FULL_NODE");
 //			}
 //		}
 	}
@@ -98,7 +98,7 @@ public class ReactionCartoonRule extends ReactionCartoon {
 				obj = getModel().getRbmModelContainer().getReactionRule(node.name);
 				break;
 			case NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE:		// obj is a RuleParticipantSignature
-				System.out.println("ReactionCartoonRule, RULE_PARTICIPANT_SIGNATURE_FULL_NODE detected");
+				lg.warn("ReactionCartoonRule, RULE_PARTICIPANT_SIGNATURE_FULL_NODE detected");
 				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
 					if (signature instanceof RuleParticipantLongSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), GroupingCriteria.full)){
 						obj = signature;
@@ -172,7 +172,7 @@ public class ReactionCartoonRule extends ReactionCartoon {
 						((SpeciesContext) shape.getModelObject()).getName(),
 						shape.getSpaceManager().getRelPos()));
 			} else if (shape instanceof RuleParticipantSignatureFullDiagramShape) {
-				System.out.println("ReactionCartoonRule, Invalid shape type 'RuleParticipantSignatureFullDiagramShape'");
+				lg.warn("ReactionCartoonRule, Invalid shape type 'RuleParticipantSignatureFullDiagramShape'");
 				RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
 				if (ruleParticipantSignature.getStructure() == diagram.getStructure()) {
 					String spAsString = ruleParticipantSignature.getFirstSpeciesPatternAsString();
@@ -199,7 +199,7 @@ public class ReactionCartoonRule extends ReactionCartoon {
 			if (getModel() == null || getStructureSuite() == null) {
 				return;
 			}
-			System.out.println("ReactionCartoonRule, RefreshAll()");
+			lg.trace("ReactionCartoonRule, RefreshAll()");
 			for(Structure structure : structureSuite.getStructures()) {
 				Diagram diagram = getModel().getDiagram(structure);
 				if (diagram != null) {
@@ -351,7 +351,7 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //							RuleParticipantShortSignature ruleParticipantShortSignature = null;
 //							for (RuleParticipantSignature signature : ruleParticipantSignatures) {
 //								if (signature instanceof RuleParticipantLongSignature && signature.getStructure() == participant.getStructure()) {
-//									System.out.println("ReactionCartoonMolecule, refreshAll(), RuleParticipantLongSignature");
+//									lg.trace("ReactionCartoonMolecule, refreshAll(), RuleParticipantLongSignature");
 //									break;
 //								}
 //							}
@@ -430,21 +430,21 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //			//TODO: uncomment the following block to track the instances of participants and signatures during transitions
 ////			String msg1 = transitioning ? "transitioning to " : "staying ";
 ////			msg1 += ruleParticipantGroupingCriteria == RuleParticipantSignature.Criteria.full ? "full" : "short";
-////			System.out.println(" --------------------------------- " + msg1 + " ------------------------");
+////			lg.debug(" --------------------------------- " + msg1 + " ------------------------");
 ////			for (RuleParticipantSignature signature : ruleParticipantSignatures) {
 ////				String sSign = RbmUtils.toBnglString(signature.getSpeciesPattern(), null, CompartmentMode.hide, 0);
 ////				String msg2 = "sign ";
 ////				msg2 += signature instanceof RuleParticipantLongSignature ? "full:  " : "short: ";
 ////				String hashSignature = System.identityHashCode(signature) + "";
 ////				String hashSP = System.identityHashCode(signature.getSpeciesPattern()) + "";
-////				System.out.println(msg2 + sSign + ", sp hash: " + hashSP + ", signature hash: " + hashSignature);
+////				lg.debug(msg2 + sSign + ", sp hash: " + hashSP + ", signature hash: " + hashSignature);
 ////			}
 ////			for(ReactionRule rr : getModel().getRbmModelContainer().getReactionRuleList()) {
 ////				for(ReactionRuleParticipant participant : rr.getReactionRuleParticipants()) {
 ////					String hashParticipant = System.identityHashCode(participant) + "";
 ////					String hashSP = System.identityHashCode(participant.getSpeciesPattern()) + "";
 ////					String sPart = RbmUtils.toBnglString(participant.getSpeciesPattern(), null, CompartmentMode.hide, 0);
-////					System.out.println("part: " + sPart + ", sp hash: " + hashSP + ", participant hash: " + hashParticipant);
+////					lg.debug("part: " + sPart + ", sp hash: " + hashSP + ", participant hash: " + hashParticipant);
 ////				}
 ////			}
 //			
@@ -455,7 +455,7 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //				if(getStructureSuite().areReactionsShownFor(structure)) {
 //					ReactionContainerShape reactionContainerShape =	(ReactionContainerShape) getShapeFromModelObject(structure);
 //					if(reactionContainerShape == null) {
-//						System.out.println("Reaction container shape is null for structure " + structure +
+//						lg.debug("Reaction container shape is null for structure " + structure +
 //								" for reaction step " + reactionStep);
 //					}
 //					ReactionStepShape reactionStepShape = (ReactionStepShape) getShapeFromModelObject(reactionStep);

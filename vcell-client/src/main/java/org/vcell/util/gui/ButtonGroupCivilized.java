@@ -10,6 +10,9 @@
 
 package org.vcell.util.gui;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Enumeration;
 
 import javax.swing.AbstractButton;
@@ -21,6 +24,7 @@ import javax.swing.ButtonModel;
  */
 @SuppressWarnings("serial")
 public class ButtonGroupCivilized extends PropertyChangeButtonGroup {
+	private static final Logger lg = LogManager.getLogger(ButtonGroupCivilized.class);
 	/**
  * ButtonGroupCivilized constructor comment.
  */
@@ -67,7 +71,7 @@ public void setSelection(String actionCommand) {
 	// if we get this far and there actually were some buttons in the group...
 	//
 	if (buttonModel != null) {
-		System.out.println("ERROR: button with actionCommand " + actionCommand + " not found");
+        lg.warn("ERROR: button with actionCommand {} not found", actionCommand);
 	}
 }
 	/**

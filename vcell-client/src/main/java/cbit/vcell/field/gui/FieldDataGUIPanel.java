@@ -80,6 +80,7 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solvers.CartesianMesh;
+import swingthreads.TaskEventKeys;
 
 public class FieldDataGUIPanel extends JPanel{
 
@@ -1388,7 +1389,7 @@ private void refreshMainNode(final DefaultMutableTreeNode mainNode){
 					getJTree1().expandPath(new TreePath(varNode.getPath()));
 				}
 			}catch(Throwable e){
-				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
+				hash.put(TaskEventKeys.TASK_ABORTED_BY_ERROR.toString(), e);
 			}
 		}
 	};

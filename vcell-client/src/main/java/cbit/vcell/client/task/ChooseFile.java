@@ -111,7 +111,7 @@ public class ChooseFile extends ExportTask {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	VCDocument documentToExport = fetch(hashTable,DocumentToExport.EXPORT_DOCUMENT,VCDocument.class, true) ;
+	VCDocument documentToExport = ResultsHashUtils.fetch(hashTable,DocumentToExport.EXPORT_DOCUMENT,VCDocument.class, true) ;
 	File exportFile = null;
 	if (documentToExport instanceof BioModel) {
 		exportFile = showBioModelXMLFileChooser(hashTable);

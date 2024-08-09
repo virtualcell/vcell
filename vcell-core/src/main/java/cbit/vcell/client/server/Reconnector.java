@@ -90,8 +90,8 @@ public class Reconnector {
 	 * @param p
 	 */
 	void notificationPause(boolean p) {
-		if (lg.isDebugEnabled()) {
-			lg.debug("set paused to " + p);
+		if (lg.isTraceEnabled()) {
+            lg.debug("set paused to {}", p);
 		}
 		paused.set(p);
 	}
@@ -110,14 +110,13 @@ public class Reconnector {
 	 */
 	private void countdown( ) {
 		try {
-			lg.debug("countdown");
+			lg.trace("countdown");
 			if (!active.get( ) || paused.get()) {
 				return;
 			}
 			--remaining;
-			if (lg.isDebugEnabled()) {
-				lg.debug(remaining + " seconds remaining, " + listeners.size() + " listening");
-			}
+            lg.debug("Reconnecting: {} seconds remaining, {} listening", remaining, listeners.size());
+
 
 			Runnable r = () -> listeners.stream().forEach((rl) -> rl.refactorCountdown(remaining));
 			SwingUtilities.invokeLater( r );
@@ -128,7 +127,7 @@ public class Reconnector {
 					waitTime = Math.min(MAX_WAIT_SECONDS, ++reconnectTries * 10) ;
 				}
 				remaining = waitTime;
-				if (lg.isDebugEnabled()) {
+				if (lg.isTraceEnabled()) {
 					lg.debug("new time " + remaining);
 				}
 			}

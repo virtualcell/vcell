@@ -634,9 +634,9 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		AsynchClientTask reshowInterface = new AsynchClientTask("Reshow interface...",AsynchClientTask.TASKTYPE_NONSWING_BLOCKING,false,true) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Object error = hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+				Object error = hashTable.get(swingthreads.TaskEventKeys.TASK_ABORTED_BY_ERROR.toString());
 				if(assignmentHelper.getAssignmentInterface() != null && error != null) {
-					hashTable.remove(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR);
+					hashTable.remove(swingthreads.TaskEventKeys.TASK_ABORTED_BY_ERROR.toString());
 					//Reshow the interface if there was an error
 					new Thread(new Runnable() {
 						@Override

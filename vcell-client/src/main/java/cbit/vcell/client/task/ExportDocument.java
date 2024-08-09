@@ -118,10 +118,10 @@ public static class FileCloseHelper{
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	VCDocument documentToExport = (VCDocument)hashTable.get("documentToExport");
-	File exportFile = fetch(hashTable,EXPORT_FILE,File.class, true);
-	ExtensionFilter fileFilter = fetch(hashTable,FILE_FILTER,ExtensionFilter.class, true);
+	File exportFile = ResultsHashUtils.fetch(hashTable,EXPORT_FILE,File.class, true);
+	ExtensionFilter fileFilter = ResultsHashUtils.fetch(hashTable,FILE_FILTER,ExtensionFilter.class, true);
 	
-	DocumentManager documentManager = fetch(hashTable,DocumentManager.IDENT,DocumentManager.class,true);
+	DocumentManager documentManager = ResultsHashUtils.fetch(hashTable,DocumentManager.IDENT,DocumentManager.class,true);
 	String resultString = null;
 	FileCloseHelper closeThis = null;
 	try{
@@ -130,7 +130,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 				throw new Exception("Expecting fileFilter type "+SelectorExtensionFilter.class.getName()+" but got "+fileFilter.getClass().getName());
 			}
 			BioModel bioModel = (BioModel)documentToExport;
-			SimulationContext chosenSimContext = fetch(hashTable,SIM_CONTEXT,SimulationContext.class, false);
+			SimulationContext chosenSimContext = ResultsHashUtils.fetch(hashTable,SIM_CONTEXT,SimulationContext.class, false);
 			((SelectorExtensionFilter)fileFilter).writeBioModel(documentManager, bioModel, exportFile, chosenSimContext); 
 	/*		DELETE this after finishing validation testing
 			
