@@ -99,8 +99,8 @@ jobs:
           context: .
           file: ./Dockerfile
           outputs: type=docker,dest=/tmp/image.tar
-          build-args: | # Max ram for Ubuntu GitHub workflow is 7GB (as of 12/9/22), using MB for precision (0.8 of 7gb)
-            MAX_JAVA_MEM=5734
+          build-args: | # Max ram for Ubuntu GitHub workflow is 16GB (as of 8/9/24), using MB for precision (0.8 of 16GB) https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners
+            MAX_JAVA_MEM=13107
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
