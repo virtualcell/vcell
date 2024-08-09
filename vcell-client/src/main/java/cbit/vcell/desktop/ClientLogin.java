@@ -6,12 +6,15 @@ import cbit.vcell.client.VCellClientMain;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.server.Auth0ConnectionUtils;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Key;
+import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.vcell.DependencyConstants;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.VCellIcons;
+import scala.util.parsing.combinator.testing.Str;
 
 import javax.swing.*;
 import java.util.Hashtable;
@@ -103,13 +106,18 @@ public class ClientLogin {
         return task;
     }
 
+    @Inject @Named(DependencyConstants.VCELL_QUARKUS_API_HOST)
+    static String hostname;
+
     @Inject
     public static AsynchClientTask connectToServer(Auth0ConnectionUtils auth0ConnectionUtils,
                                                    ClientServerInfo clientServerInfo){
 
         AsynchClientTask task  = new AsynchClientTask("Connecting to Server", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                String hostname = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_QUARKUS_API_HOST)));
+
+
+//                String hostname = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_QUARKUS_API_HOST)));
                 // try server connection
                 boolean login = (boolean)hashTable.get("login");
                 boolean isGuest = (boolean)hashTable.get("guest");

@@ -53,7 +53,7 @@ public class VCellClientDevMain {
 		try {
 			ErrorUtils.setDebug(true);
 			PropertyLoader.loadProperties(ArrayUtils.addAll(REQUIRED_CLIENT_PROPERTIES, REQUIRED_LOCAL_PROPERTIES));
-			Injector injector = Guice.createInjector(new VCellServerModule());
+			Injector injector = Guice.createInjector(new VCellStandaloneModule());
 
 			VCellClientDevMain vcellClientStandalone = injector.getInstance(VCellClientDevMain.class);
 

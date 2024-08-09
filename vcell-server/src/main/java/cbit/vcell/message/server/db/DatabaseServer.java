@@ -139,6 +139,10 @@ public static void main(java.lang.String[] args) {
 private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.vcellServerIDProperty,
 		PropertyLoader.vcellSoftwareVersion,
+		PropertyLoader.s3ExportBaseURLProperty,
+		PropertyLoader.exportBaseURLProperty,
+		PropertyLoader.exportBaseDirInternalProperty,
+		PropertyLoader.n5DataDir,
 		PropertyLoader.installationRoot,
 		PropertyLoader.dbConnectURL,
 		PropertyLoader.dbDriverName,
