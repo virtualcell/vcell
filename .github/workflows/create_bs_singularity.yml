@@ -8,7 +8,7 @@ on:
         default: 3ca1093da599a0ff4229b1130efe7a3924ff2b4c
 
 env:
-  python-version: "3.9"
+  python-version: "3.12"
 
 jobs:
   CD:

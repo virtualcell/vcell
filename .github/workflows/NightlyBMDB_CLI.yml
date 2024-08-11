@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  python-version: "3.9"
+  python-version: "3.12"
   poetry-version: "1.2.1"
 
 jobs:
