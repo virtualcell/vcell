@@ -10,7 +10,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout Our Code
         uses: actions/checkout@v3
@@ -117,7 +117,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
   published:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       matrix:
@@ -190,7 +190,7 @@ jobs:
         if: ${{ failure() }}
 
   bmdb:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       matrix:
@@ -268,7 +268,7 @@ jobs:
         if: ${{ failure() }}
 
   published_results:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: published
 
     steps:
@@ -288,7 +288,7 @@ jobs:
 
 
   bmdb_results:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: bmdb
 
     steps:
