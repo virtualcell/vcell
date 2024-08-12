@@ -5,13 +5,16 @@ import {CommonModule} from "@angular/common";
 import {MatInputModule} from "@angular/material/input";
 import {MatButtonModule} from "@angular/material/button";
 import {BioModel, BiomodelRef, BioModelResourceService} from "../../core/modules/openapi";
-import {HttpResponse} from "@angular/common/http"; // Adjust the import path as necessary
+import {HttpResponse} from "@angular/common/http";
+import {MatCardModule} from "@angular/material/card";
+import {MatIconModule} from "@angular/material/icon";
+import {MatSnackBar} from "@angular/material/snack-bar"; // Adjust the import path as necessary
 
 @Component({
   selector: 'app-publication-edit',
   templateUrl: './publication-edit.component.html',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatInputModule, MatButtonModule],
+  imports: [CommonModule, FormsModule, MatInputModule, MatButtonModule, MatCardModule, MatIconModule],
   styleUrls: ['./publication-edit.component.css']
 })
 export class PublicationEditComponent {
@@ -21,7 +24,7 @@ export class PublicationEditComponent {
   newBiomodelKey: number | undefined;
   newMathmodelKey: number | undefined;
 
-  constructor(private bioModelService: BioModelResourceService) { }
+  constructor(private bioModelService: BioModelResourceService, private snackBar: MatSnackBar) { }
 
   addBiomodelRef(key: number | undefined) {
     console.log("addBiomodelRef, key: " + key);
@@ -31,6 +34,7 @@ export class PublicationEditComponent {
     this.bioModelService.getBiomodelById(key.toString(), "response").subscribe({
       next: (biomodelResponse: HttpResponse<BioModel>) => {
         if (biomodelResponse.status !== 200) {
+          this.snackBar.open("Error fetching biomodel", "Dismiss", {duration: 5000});
           console.error("Error fetching biomodel", biomodelResponse);
           return;
         }
@@ -46,8 +50,10 @@ export class PublicationEditComponent {
           versionFlag: biomodel.privacy
         };
         this.publication.biomodelRefs.push(biomodelRef);
+        this.newBiomodelKey = undefined;
       },
       error: (err: any) => {
+        this.snackBar.open("Error fetching biomodel", "Dismiss", {duration: 5000});
         console.error("Error fetching biomodel", err);
       }
     });
@@ -68,6 +74,7 @@ export class PublicationEditComponent {
     if (!this.publication.mathmodelRefs) {
       this.publication.mathmodelRefs = [];
     }
+    this.snackBar.open("adding MathModels not yet implemented - requires API changes", "Dismiss", {duration: 5000});
     console.error("add MathmodelRef not yet implemented");
     // this.publicationService.getMathmodelRef(key).subscribe((mathmodelRef: MathmodelRef) => {
     //   this.publication.mathmodelRefs.push(mathmodelRef);

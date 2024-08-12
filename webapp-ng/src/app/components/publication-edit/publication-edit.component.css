@@ -19,3 +19,16 @@
   justify-content: flex-end;
   gap: 1rem;
 }
+
+.sub-form {
+  margin-left: 40px;
+  margin-right: 40px;
+}
+
+.list-item {
+  margin-top: 0;
+  margin-bottom: 0;
+  /*height: min-content; !* Adjust this value as needed *!*/
+  /*display: flex;*/
+  align-items: center;
+}

@@ -8,7 +8,8 @@
 
     <mat-form-field class="full-width">
       <mat-label>Authors</mat-label>
-      <input matInput [ngModel]="publication.authors?.join(',')" (ngModelChange)="publication.authors = $event.split(',')" name="authors" required>
+      <input matInput [ngModel]="publication.authors?.join(',')"
+             (ngModelChange)="publication.authors = $event.split(',')" name="authors" required>
       <mat-error *ngIf="publicationForm.controls['authors']?.invalid">Authors are required</mat-error>
     </mat-form-field>
 
@@ -34,48 +35,60 @@
       <input matInput [(ngModel)]="publication.doi" name="doi">
     </mat-form-field>
 
-<!--    <mat-form-field class="full-width">-->
-<!--      <mat-label>Endnote ID</mat-label>-->
-<!--      <input matInput type="number" [(ngModel)]="publication.endnoteid" name="endnoteid">-->
-<!--    </mat-form-field>-->
-
     <mat-form-field class="full-width">
       <mat-label>URL</mat-label>
       <input matInput [(ngModel)]="publication.url" name="url">
     </mat-form-field>
 
-<!--    <mat-form-field class="full-width">-->
-<!--      <mat-label>Witt ID</mat-label>-->
-<!--      <input matInput type="number" [(ngModel)]="publication.wittid" name="wittid">-->
-<!--    </mat-form-field>-->
-
-    <div>
+    <div class="sub-form">
       <h4>Biomodel IDs</h4>
-      <div *ngFor="let biomodelRef of publication.biomodelRefs; let i = index">
-        <span>{{ "("+biomodelRef.bmKey+") '"+biomodelRef.name+"'" }}</span>
-        <button type="button" (click)="removeBiomodelRef(i)">Remove</button>
+      <div *ngFor="let biomodelRef of publication.biomodelRefs; let i = index" class="list-item">
+        <mat-card class="biomodel-card">
+          <mat-card-content>
+            <span>{{ "BioModel (" + biomodelRef.ownerName + " : " + biomodelRef.bmKey + " : " + biomodelRef.name + ")" }}</span>
+            <button mat-icon-button color="warn" (click)="removeBiomodelRef(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-card-content>
+        </mat-card>
       </div>
-      <input type="number" [(ngModel)]="newBiomodelKey" placeholder="Enter Biomodel Key" [ngModelOptions]="{standalone: true}">
-      <button type="button" (click)="addBiomodelRef(newBiomodelKey)">Add Biomodel +</button>
+      <mat-form-field class="full-width">
+        <mat-label>Enter Biomodel Key</mat-label>
+        <input matInput type="number" [(ngModel)]="newBiomodelKey" [ngModelOptions]="{standalone: true}">
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="addBiomodelRef(newBiomodelKey)">Add Biomodel +</button>
     </div>
 
-    <div>
+    <br>
+
+    <div class="sub-form">
       <h4>Mathmodel IDs</h4>
-      <div *ngFor="let mathmodelRef of publication.mathmodelRefs; let i = index">
-        <span>{{ mathmodelRef.name }}</span>
-        <button type="button" (click)="removeMathmodelRef(i)">Remove</button>
+      <div *ngFor="let mathmodelRef of publication.mathmodelRefs; let i = index" class="list-item">
+        <mat-card class="mathmodel-card">
+          <mat-card-content>
+            <span>{{ "MathModel (" + mathmodelRef.ownerName + " : " + mathmodelRef.mmKey + " : " + mathmodelRef.name + ")" }}</span>
+            <button mat-icon-button color="warn" (click)="removeMathmodelRef(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-card-content>
+        </mat-card>
       </div>
-      <input type="number" [(ngModel)]="newMathmodelKey" placeholder="Enter Mathmodel Key" [ngModelOptions]="{standalone: true}">
-      <button type="button" (click)="addMathmodelRef(newMathmodelKey)">Add Mathmodel</button>
+      <mat-form-field class="full-width">
+        <mat-label>Enter Mathmodel Key</mat-label>
+        <input matInput type="number" [(ngModel)]="newMathmodelKey" [ngModelOptions]="{standalone: true}">
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="addMathmodelRef(newMathmodelKey)">Add Mathmodel +</button>
     </div>
 
-<!--    <mat-form-field class="full-width">-->
-<!--      <mat-label>Date</mat-label>-->
-<!--      <input matInput type="date" [(ngModel)]="publication.date" name="date">-->
-<!--    </mat-form-field>-->
+    <!--    <mat-form-field class="full-width">-->
+    <!--      <mat-label>Date</mat-label>-->
+    <!--      <input matInput type="date" [(ngModel)]="publication.date" name="date">-->
+    <!--    </mat-form-field>-->
 
     <div class="button-row">
-      <button mat-raised-button color="primary" type="button" (click)="onSave()" [disabled]="publicationForm.invalid">Save</button>
+      <button mat-raised-button color="primary" type="button" (click)="onSave()" [disabled]="publicationForm.invalid">
+        Save
+      </button>
       <button mat-raised-button type="button" (click)="onCancel()">Cancel</button>
     </div>
   </form>
