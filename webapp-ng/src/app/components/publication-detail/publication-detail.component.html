@@ -5,3 +5,4 @@
 </ng-template><br/>
 
 <app-publication-edit [publication]="publication" (save)="saveUpdatedPublication($event)" (cancel)="cancel()"></app-publication-edit>
+<button mat-raised-button color="warn" (click)="deletePublication(publication)" [disabled]="!publication">Delete Publication {{publication.pubKey}}</button>
