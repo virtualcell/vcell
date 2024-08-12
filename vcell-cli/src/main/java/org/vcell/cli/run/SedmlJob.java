@@ -66,7 +66,7 @@ public class SedmlJob {
     public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive, File rootOutputDir,
                     String resultsDirPath, String sedmlPath2d3dString, CLIRecordable cliRecorder,
                     boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride,
-                    StringBuilder logOmexMessage){
+                    StringBuilder logOmexMessage) throws ExecutionException {
         this.MASTER_OMEX_ARCHIVE = masterOmexArchive;
         this.SEDML_LOCATION = sedmlLocation;
         this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
@@ -134,8 +134,7 @@ public class SedmlJob {
             }
             
             for(AbstractTask at : sedmlFromOmex.getTasks()) {
-                if(at instanceof RepeatedTask) {
-                    RepeatedTask rt = (RepeatedTask)at;
+                if(at instanceof RepeatedTask rt) {
                     List<SetValue> changes = rt.getChanges();
                     if(changes != null && !changes.isEmpty()) {
                         this.hasScans = true;
@@ -377,8 +376,7 @@ public class SedmlJob {
         PythonCalls.genPlotsPseudoSedml(this.SEDML_LOCATION, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML.toString());    // generate the plots
         // We assume if no exception is returned that the plots pass
         for (Output output : this.sedml.getOutputs()){
-            if (!(output instanceof Plot2D)) continue;
-            Plot2D plot = (Plot2D) output;
+            if (!(output instanceof Plot2D plot)) continue;
             PythonCalls.updatePlotStatusYml(this.SEDML_LOCATION, plot.getId(), Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
         }
     }

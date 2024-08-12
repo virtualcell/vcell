@@ -76,7 +76,7 @@ public class ExecutionJob {
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues.
      */
-    public void preprocessArchive() throws PythonStreamException, IOException {
+    public void preprocessArchive() throws PythonStreamException, IOException, ExecutionException {
         // Start the clock
         this.startTime = System.currentTimeMillis();
 
@@ -96,6 +96,12 @@ public class ExecutionJob {
             this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "IO error with OmexHandler");
             logger.error(error);
             throw new RuntimeException(error, e);
+        } catch (ExecutionException e) {
+            String error = e.getMessage() + ", error during execution of " + inputFilePath;
+            this.cliRecorder.writeErrorList(bioModelBaseName);
+            this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "IO error with OmexHandler");
+            logger.error(error);
+            throw e;
         } catch (Exception e) {
             String error = e.getMessage() + ", error for archive " + inputFilePath;
             logger.error(error);

@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.JDOMException;
 import org.vcell.cli.CLIUtils;
+import org.vcell.cli.exceptions.ExecutionException;
 
 import java.io.File;
 import java.io.IOException;
@@ -111,7 +112,7 @@ public class OmexHandler {
         }
     }
 
-    public ArrayList<String> getSedmlLocationsRelative(){
+    public ArrayList<String> getSedmlLocationsRelative() throws ExecutionException {
         ArrayList<String> sedmlList = new ArrayList<>();
 
         Collection<ArchiveEntry> entries = this.archive.getEntries();
@@ -119,29 +120,20 @@ public class OmexHandler {
         int masterCount = 0;
 
         for (ArchiveEntry entry : entries) {
-            if (entry.isMainEntry()) {
-                if (isSedmlFormat(entry)) {
-                    masterCount++;
-                } else {
-                    throw new RuntimeException("No SED-ML's are intended to be executed (non SED-ML file is set to be master)");
-                }
-            }
+            if (!entry.isMainEntry()) continue;
+            if (!this.isSedmlFormat(entry))
+                throw new ExecutionException("Non SED-ML file is set to be master, we can not execute without a master SED-ML file.");
+            masterCount++;
         }
 
-        if( masterCount > 1) {
-            throw new RuntimeException("More than two master SED-ML's found");
+        if(masterCount > 1) {
+            throw new ExecutionException("More than one master SED-ML file detected, found: " + masterCount);
         }
 
         for (ArchiveEntry entry : entries) {
-            if(masterCount == 0 ) {
-                if (isSedmlFormat(entry)) {
-                    sedmlList.add(entry.getFilePath());
-                }
-            } else {
-                if (isSedmlFormat(entry) && entry.isMainEntry()) {
-                    sedmlList.add(entry.getFilePath());
-                }
-            }
+            if (!this.isSedmlFormat(entry)) continue;
+            if (masterCount == 0 || entry.isMainEntry())
+                sedmlList.add(entry.getFilePath());
         }
 
         return sedmlList;
@@ -153,7 +145,7 @@ public class OmexHandler {
     }
 
 
-    public ArrayList<String> getSedmlLocationsAbsolute(){
+    public ArrayList<String> getSedmlLocationsAbsolute() throws ExecutionException {
         ArrayList<String> sedmlListAbsolute = new ArrayList<>();
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
 
@@ -163,7 +155,7 @@ public class OmexHandler {
         return sedmlListAbsolute;
     }
 
-    public String getOutputPathFromSedml(String absoluteSedmlPath) {
+    public String getOutputPathFromSedml(String absoluteSedmlPath) throws ExecutionException {
         String outputPath = "";
         //String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
         ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
@@ -176,13 +168,13 @@ public class OmexHandler {
         return outputPath;
     }
 
-    public void extractOmex() {
+    public void extractOmex() throws ExecutionException {
         try {
             this.archive.extractTo(new File(this.tempPath));
         } catch (IOException e) {
             String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
             logger.error(message+": "+e.getMessage(), e);
-            throw new RuntimeException(message);
+            throw new ExecutionException(message);
         }
     }
 
