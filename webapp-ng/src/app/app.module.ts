@@ -56,7 +56,6 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
     LoadingComponent,
     LoginSuccessComponent,
     PublicationListComponent,
-    PublicationEditComponent,
     VcellIdentityComponent,
     ErrorComponent
   ],
@@ -85,6 +84,7 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
     ApiModule,
     MatCardModule,
     MatCheckboxModule,
+    PublicationEditComponent,
   ],
   providers: [
     {
@@ -120,5 +120,8 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
 
   ],
   bootstrap: [AppComponent],
+  exports: [
+    PublicationEditComponent
+  ]
 })
 export class AppModule {}

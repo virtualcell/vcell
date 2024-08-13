@@ -14,7 +14,6 @@ import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.math.*;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.*;
-import jscl.math.function.Exp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
@@ -22,7 +21,6 @@ import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext.ContextType;
 
 import java.util.*;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -353,7 +351,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
             for(int i = 0; i < names.length; i++){
                 bounds[i] = getConstantArraySpec(names[i]).getNumValues() - 1;
             }
-            int[] coordinates = BeanUtils.indexToCoordinate(index, bounds);
+            int[] coordinates = BeanUtils.jobIndexToScanParameterCoordinate(index, bounds);
             int localIndex = coordinates[java.util.Arrays.binarySearch(names, key)];
             return getConstantArraySpec(key).getConstants()[localIndex].getExpression();
         }

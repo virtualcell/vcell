@@ -1,49 +1,61 @@
 <h1>Publications</h1>
-<input matInput (keyup)="applyFilterTarget($event.target)" placeholder="Filter"/>
+<ng-container *ngIf="isCurator$ | async">
+  <div class="new-button-container">
+    <button mat-raised-button [routerLink]="['/publications/new']">
+      <mat-icon>add</mat-icon> New Publication
+    </button>
+  </div>
+</ng-container>
+<mat-form-field appearance="outline">
+  <mat-label>Filter</mat-label>
+  <input matInput (keyup)="applyFilterTarget($event.target)" placeholder="Filter"/>
+</mat-form-field>
 <mat-table [dataSource]="publications" matSort>
   <ng-container matColumnDef="pubKey">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> PubKey</th>
-    <td mat-cell *matCellDef="let row"> {{ row.pubKey }}</td>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-pubKey"> PubKey</th>
+    <td mat-cell *matCellDef="let row" class="column-pubKey">
+      <a [routerLink]="['/publications', row.pubKey]">{{ row.pubKey }}</a>
+    </td>
   </ng-container>
   <ng-container matColumnDef="title">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Title</th>
-    <td mat-cell *matCellDef="let row"> {{ row.title }}</td>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-title"> Title</th>
+    <td mat-cell *matCellDef="let row" class="column-title"> {{ row.title }}</td>
   </ng-container>
   <ng-container matColumnDef="authors">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Authors</th>
-    <td mat-cell *matCellDef="let row"> {{ row.authors }}</td>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-authors"> Authors</th>
+    <td mat-cell *matCellDef="let row" class="column-authors"> {{ row.authors }}</td>
   </ng-container>
   <ng-container matColumnDef="year">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Year</th>
-    <td mat-cell *matCellDef="let row"> {{ row.year }}</td>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-year"> Year</th>
+    <td mat-cell *matCellDef="let row" class="column-year"> {{ row.year }}</td>
   </ng-container>
   <ng-container matColumnDef="citation">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Citation</th>
-    <td mat-cell *matCellDef="let row"> {{ row.citation }}</td>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-citation"> Citation</th>
+    <td mat-cell *matCellDef="let row" class="column-citation"> {{ row.citation }}</td>
   </ng-container>
   <ng-container matColumnDef="pubmedid">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Pubmed ID</th>
-    <td mat-cell *matCellDef="let row"> <a href="https://pubmed.ncbi.nlm.nih.gov/{{row.pubmedid}}/">{{ row.pubmedid }}</a></td>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-pubmedid"> PMID</th>
+    <td mat-cell *matCellDef="let row" class="column-pubmedid"> <a href="https://pubmed.ncbi.nlm.nih.gov/{{row.pubmedid}}/">{{ row.pubmedid }}</a></td>
   </ng-container>
   <ng-container matColumnDef="doi">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> DOI</th>
-    <td mat-cell *matCellDef="let row"> {{ row.doi }}</td>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-doi"> DOI</th>
+    <td mat-cell *matCellDef="let row" class="column-doi"> {{ row.doi }}</td>
   </ng-container>
-  <ng-container matColumnDef="endnoteid">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Endnote ID</th>
-    <td mat-cell *matCellDef="let row"> {{ row.endnoteid }}</td>
-  </ng-container>
+<!--  <ng-container matColumnDef="endnoteid">-->
+<!--    <th mat-header-cell *matHeaderCellDef mat-sort-header> Endnote ID</th>-->
+<!--    <td mat-cell *matCellDef="let row"> {{ row.endnoteid }}</td>-->
+<!--  </ng-container>-->
   <ng-container matColumnDef="url">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> URL</th>
-    <td mat-cell *matCellDef="let row"> {{ row.url }}</td>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-url"> URL</th>
+    <td mat-cell *matCellDef="let row" class="column-url"> {{ row.url }}</td>
   </ng-container>
-  <ng-container matColumnDef="wittid">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Witt ID</th>
-    <td mat-cell *matCellDef="let row"> {{ row.wittid }}</td>
-  </ng-container>
+<!--  <ng-container matColumnDef="wittid">-->
+<!--    <th mat-header-cell *matHeaderCellDef mat-sort-header> Witt ID</th>-->
+<!--    <td mat-cell *matCellDef="let row"> {{ row.wittid }}</td>-->
+<!--  </ng-container>-->
   <ng-container matColumnDef="biomodelRefs">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Biomodels</th>
-    <td mat-cell *matCellDef="let row">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-biomodelRefs"> Biomodels</th>
+    <td mat-cell *matCellDef="let row" class="column-biomodelRefs">
       <a *ngFor="let ref of row.biomodelRefs"
          href="/api/v0/biomodel/{{ref.bmKey}}">
         {{ ref.bmKey }}
@@ -51,8 +63,8 @@
     </td>
   </ng-container>
   <ng-container matColumnDef="mathmodelRefs">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mathmodels</th>
-    <td mat-cell *matCellDef="let row">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-mathmodelRefs"> Mathmodels</th>
+    <td mat-cell *matCellDef="let row" class="column-mathmodelRefs">
       <a *ngFor="let ref of row.mathmodelRefs"
          href="/api/v0/mathmodel/{{ref.mmKey}}">
         {{ ref.mmKey }}
@@ -60,40 +72,12 @@
     </td>
   </ng-container>
   <ng-container matColumnDef="date">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header> Date</th>
-    <td mat-cell *matCellDef="let row"> {{ row.date }}</td>
+    <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-date"> Date</th>
+    <td mat-cell *matCellDef="let row" class="column-date"> {{ row.date }}</td>
   </ng-container>
 
-  <ng-container matColumnDef="edit">
-    <th mat-header-cell *matHeaderCellDef> Edit</th>
-    <td mat-cell *matCellDef="let row">
-      <button mat-raised-button (click)="onEdit(row)">Edit</button>
-    </td>
-  </ng-container>
-  <ng-container matColumnDef="delete">
-    <th mat-header-cell *matHeaderCellDef> Delete</th>
-    <td mat-cell *matCellDef="let row">
-      <button mat-raised-button (click)="onDelete(row)">Delete</button>
-    </td>
-  </ng-container>
-
-  <ng-container *ngIf="isCurator$ | async">
-    <tr mat-header-row *matHeaderRowDef="displayedColumns.concat(['edit', 'delete']);"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns.concat(['edit', 'delete']);"></tr>
-  </ng-container>
-
-  <ng-container *ngIf="!(isCurator$ | async)">
-    <tr mat-header-row *matHeaderRowDef="displayedColumns;"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns;"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
 </mat-table>
 <mat-paginator [pageSizeOptions]="[10, 20]" showFirstLastButtons></mat-paginator>
-<ng-container *ngIf="isCurator$ | async">
-  <button (click)="onNew()">New</button>
-</ng-container>
-<div>
-  <app-publication-edit *ngIf="editingPublication" [publication]="editingPublication"
-      (save)="saveEdit($event)" (cancel)="cancelEdit()">
-  </app-publication-edit>
-</div>

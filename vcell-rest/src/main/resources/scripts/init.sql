@@ -108,3 +108,5 @@ INSERT INTO vc_specialusers VALUES ( 22,'publicationEditors',20,NULL);
 INSERT INTO vc_specialusers VALUES ( 23,'powerUsers',20,NULL);
 INSERT INTO vc_specialusers VALUES ( 24,'admins',20,NULL);
 INSERT INTO vc_publication VALUES ( 25,'Numerical Approach to Spatial Deterministic-Stochastic Models Arising in Cell Biology','Schaff, J.C., Gao, F., Li, Y., Novak, I.L., Slepchenko, B.M.',2016,'Schaff JC, Gao F, Li Y, Novak IL, Slepchenko BM. Numerical Approach to Spatial Deterministic-Stochastic Models Arising in Cell Biology. PLoS Comput Biol. 2016 Dec 13;12(12):e1005236. doi: 10.1371/journal.pcbi.1005236. PMID: 27959915; PMCID: PMC5154471.','27959915','10.1371/journal.pcbi.1005236',NULL,'http://www.vcell.org',NULL,CURRENT_TIMESTAMP );
+INSERT INTO vc_model VALUES ( 26,'ModelName',4,0,NULL,CURRENT_TIMESTAMP,0,NULL,27,NULL,NULL,NULL );
+INSERT INTO vc_biomodel VALUES ( 28,'BioModelName',4,0,NULL,CURRENT_TIMESTAMP,0,NULL,29,26,NULL,NULL );

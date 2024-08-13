@@ -387,7 +387,7 @@ private int getSelectedParamScanJobIndex(){
 	}
 	int selectedJobIndex = -1;
 	try {
-		selectedJobIndex = BeanUtils.coordinateToIndex(indices, bounds);
+		selectedJobIndex = BeanUtils.parameterScanCoordinateToJobIndex(indices, bounds);
 	} catch (RuntimeException exc) {
 		exc.printStackTrace();
 	}
