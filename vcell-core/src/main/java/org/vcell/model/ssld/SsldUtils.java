@@ -56,6 +56,12 @@ public class SsldUtils {
         }
 
         void put(Molecule ssldMolecule, MolecularType mt) {
+            if(moleculeToMolecularTypeMap.containsKey(ssldMolecule)) {
+                throw new RuntimeException("moleculeToMolecularTypeMap: Duplicate Key");
+            }
+            if(molecularTypeToMoleculeMap.containsKey(mt)) {
+                throw new RuntimeException("molecularTypeToMoleculeMap: Duplicate Key");
+            }
             moleculeToMolecularTypeMap.put(ssldMolecule, mt);
             molecularTypeToMoleculeMap.put(mt, ssldMolecule);
         }
@@ -67,6 +73,12 @@ public class SsldUtils {
         }
 
         void put(SiteType st, MolecularComponent mc) {
+            if(typeToComponentMap.containsKey(st)) {
+                throw new RuntimeException("typeToComponentMap: Duplicate Key");
+            }
+            if(componentToTypeMap.containsKey(mc)) {
+                throw new RuntimeException("componentToTypeMap: Duplicate Key");
+            }
             typeToComponentMap.put(st, mc);
             componentToTypeMap.put(mc, st);
         }
@@ -255,7 +267,8 @@ public class SsldUtils {
         // ---------- BindingReaction
         for(BindingReaction ssldReaction : ssldModel.getBindingReactions()) {
             m.cleanReactionsMaps();
-            boolean reversible = ssldReaction.getkoff() != 0 ? true : false;
+//            boolean reversible = ssldReaction.getkoff() != 0 ? true : false;
+            boolean reversible = true;      // in springsalad, binding reactions must be reversible
             Molecule ssldReactantOne = ssldReaction.getMolecule(0);
             Molecule ssldReactantTwo = ssldReaction.getMolecule(1);
             String locationOne = ssldReactantOne.getLocation();
@@ -304,10 +317,12 @@ public class SsldUtils {
 
     private void adjustTransitionReactionSites(TransitionReaction ssldReaction, Mapping m) {
         Molecule ssldConditionalMolecule = ssldReaction.getConditionalMolecule();
+        int transitionMoleculeIndexInSpeciesPattern;
         if(ssldConditionalMolecule != null) {
             if(!ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
                 throw new RuntimeException("Inconsistent transition reaction");
             }
+            transitionMoleculeIndexInSpeciesPattern = 1;
             SiteType conditionalType = ssldReaction.getConditionalType();
             State ssldConditionalState = ssldReaction.getConditionalState();
 
@@ -334,6 +349,8 @@ public class SsldUtils {
             }
             mcpConditionProduct.setBondType(MolecularComponentPattern.BondType.Exists);
             mcpConditionProduct.setBond(null);
+        } else {
+            transitionMoleculeIndexInSpeciesPattern = 0;
         }
         Molecule ssldTransitionMolecule = ssldReaction.getMolecule();
         SiteType ssldSiteType = ssldReaction.getType();
@@ -341,21 +358,38 @@ public class SsldUtils {
         State ssldFinalState = ssldReaction.getFinalState();
 
         SpeciesPattern spReactant = m.getReactantPatternOneFromMolecule(ssldTransitionMolecule).getSpeciesPattern();
-        MolecularTypePattern mtpTransitionReactant = spReactant.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(0);
+        MolecularTypePattern mtpTransitionReactant = spReactant.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(transitionMoleculeIndexInSpeciesPattern);
         MolecularComponentPattern mcpTransitionReactant = mtpTransitionReactant.getMolecularComponentPattern(ssldSiteType.getName());
         String ssldInitialStateName = ssldInitialState.getName();
         ComponentStateDefinition csdInitial = mcpTransitionReactant.getMolecularComponent().getComponentStateDefinition(ssldInitialStateName);
         ComponentStatePattern cspTransitionReactant = new ComponentStatePattern(csdInitial);
         mcpTransitionReactant.setComponentStatePattern(cspTransitionReactant);
         // bond is already set to Any
+        if(ssldReaction.getCondition().equals(TransitionReaction.NO_CONDITION)) {
+            for(MolecularComponentPattern mcp : mtpTransitionReactant.getComponentPatternList()) {
+                if(mcp == mcpTransitionReactant) {
+                    continue;
+                }
+                mcp.setBondType(MolecularComponentPattern.BondType.None);
+            }
+        }
 
         SpeciesPattern spProduct = m.getProductPatternOneFromMolecule(ssldTransitionMolecule).getSpeciesPattern();
-        MolecularTypePattern mtpTransitionProduct = spProduct.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(0);
+        MolecularTypePattern mtpTransitionProduct = spProduct.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(transitionMoleculeIndexInSpeciesPattern);
         MolecularComponentPattern mcpTransitionProduct = mtpTransitionProduct.getMolecularComponentPattern(ssldSiteType.getName());
         String ssldFinalStateName = ssldFinalState.getName();
         ComponentStateDefinition csdFinal = mcpTransitionProduct.getMolecularComponent().getComponentStateDefinition(ssldFinalStateName);
         ComponentStatePattern cspTransitionProduct = new ComponentStatePattern(csdFinal);
         mcpTransitionProduct.setComponentStatePattern(cspTransitionProduct);
+        System.out.println("  " + ssldReaction.getCondition());
+        if(ssldReaction.getCondition().equals(TransitionReaction.NO_CONDITION)) {
+            for(MolecularComponentPattern mcp : mtpTransitionProduct.getComponentPatternList()) {
+                if(mcp == mcpTransitionProduct) {
+                    continue;
+                }
+                mcp.setBondType(MolecularComponentPattern.BondType.None);
+            }
+        }
     }
 
 
@@ -433,9 +467,9 @@ public class SsldUtils {
             return getSpeciesPattern(moleculeTwo, m);
         }
         SpeciesPattern sp = new SpeciesPattern();
-        MolecularTypePattern mtpOne = getMolecularTypePattern(moleculeOne, m);
+        MolecularTypePattern mtpOne = getMolecularTypePattern(moleculeOne, m);      // condition molecule
         sp.addMolecularTypePattern(mtpOne);
-        MolecularTypePattern mtpTwo = getMolecularTypePattern(moleculeTwo, m);
+        MolecularTypePattern mtpTwo = getMolecularTypePattern(moleculeTwo, m);      // transition molecule
         sp.addMolecularTypePattern(mtpTwo);
         return sp;
     }

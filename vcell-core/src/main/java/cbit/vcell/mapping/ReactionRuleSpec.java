@@ -99,6 +99,13 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 			return null;
 		}
 	}
+	// transition site is bond Possible and in explicit state
+	// all the other sites are unbound AND in "Any" state
+	// ==> TransitionCondition.NONE;	// condition is "None"
+	//
+	// transition site is bond Possible and in explicit state
+	// all the other sites are bond Possible AND in "Any" state
+	// ==> TransitionCondition.FREE;	// transition reaction condition is "Free"
 	public enum TransitionCondition {	// everywhere internally in vcell we use RBM bond type naming conventions
 		NONE("Unbound", "None"),		// MolecularComponentPattern.BondType.None		(-)
 		FREE("Any", "Free"),			// MolecularComponentPattern.BondType.Possible	(?)
