@@ -317,12 +317,18 @@ public class SsldUtils {
 
     private void adjustTransitionReactionSites(TransitionReaction ssldReaction, Mapping m) {
         Molecule ssldConditionalMolecule = ssldReaction.getConditionalMolecule();
+        Molecule ssldTransitionMolecule = ssldReaction.getMolecule();
+
         int transitionMoleculeIndexInSpeciesPattern;
         if(ssldConditionalMolecule != null) {
             if(!ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
                 throw new RuntimeException("Inconsistent transition reaction");
             }
-            transitionMoleculeIndexInSpeciesPattern = 1;
+            if(ssldTransitionMolecule != ssldConditionalMolecule) {
+                transitionMoleculeIndexInSpeciesPattern = 0;
+            } else {
+                transitionMoleculeIndexInSpeciesPattern = 1;
+            }
             SiteType conditionalType = ssldReaction.getConditionalType();
             State ssldConditionalState = ssldReaction.getConditionalState();
 
@@ -352,7 +358,6 @@ public class SsldUtils {
         } else {
             transitionMoleculeIndexInSpeciesPattern = 0;
         }
-        Molecule ssldTransitionMolecule = ssldReaction.getMolecule();
         SiteType ssldSiteType = ssldReaction.getType();
         State ssldInitialState = ssldReaction.getInitialState();
         State ssldFinalState = ssldReaction.getFinalState();
