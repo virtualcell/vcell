@@ -45,13 +45,16 @@ public class MeshToImage {
         }
     }
 
+    public static ImageFromMesh convertImageIntoMesh(double[] data, CartesianMesh mesh){
+        return convertImageIntoMesh(data, mesh, mesh.getGeometryDimension() > 2);
+    }
 
     /**
      * Use the Cartesian mesh that is associated with the Image data.
      */
-    public static ImageFromMesh convertImageIntoMesh(double[] data, CartesianMesh mesh){
+    public static ImageFromMesh convertImageIntoMesh(double[] data, CartesianMesh mesh, boolean overRideThreeD){
         int dim = mesh.getGeometryDimension();
-        if (dim >2 ){
+        if (dim >2 && overRideThreeD){
             return convert3DImageIntoMesh(data, newNumElements(mesh.getSizeX()), newNumElements(mesh.getSizeY()),
                     newNumElements(mesh.getSizeZ()));
         } else {
@@ -148,6 +151,20 @@ public class MeshToImage {
             }
         }
         return new ImageFromMesh(newData, meshWidth, meshHeight, 1);
+    }
+
+    public static double[] getXYFromXYZArray(double[] xyzArray, CartesianMesh mesh, int zSlice){
+        return getXYFromXYZArray(xyzArray, mesh.getSizeX(), mesh.getSizeY(), zSlice);
+    }
+
+    public static double[] getXYFromXYZArray(double[] xyzArray, int sizeX, int sizeY, int zSlice){
+        double[] xyArray = new double[sizeX * sizeY];
+        int xyIndex = 0;
+        for (int xyzIndex = (zSlice * sizeX * sizeY); xyzIndex < ((zSlice + 1) * sizeX * sizeY); xyzIndex++){
+            xyArray[xyIndex] = xyzArray[xyzIndex];
+            xyIndex++;
+        }
+        return xyArray;
     }
 }
 

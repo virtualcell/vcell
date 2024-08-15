@@ -43,8 +43,8 @@ public class N5ExporterTest {
 
     enum TestModels{
         fourDModel("597714292"),
-        fiveDModel("1136922340"),
-        fiveDModelPostProcess("1136922340");
+        fiveDModel("868220316"), // Ezequiel's Blank 3D Model
+        fiveDModelPostProcess("868220316");
 
         private final String simID;
         TestModels(String simID){
@@ -60,9 +60,6 @@ public class N5ExporterTest {
     private User testUser;
     private CartesianMesh modelMesh;
     private double[] times;
-    private static final String fourDModelID = "597714292";
-    private static final String fiveDModelID = "1136922340";
-    private static final String fiveDModelPostProcessID = "1136922340";
 
 
     private ArrayList<DataIdentifier> dataIdentifiers;
@@ -254,7 +251,7 @@ public class N5ExporterTest {
             assert("Dummy".equals(dummyMaskInfo.get("0")));
             assert("Test".equals(dummyMaskInfo.get("1")));
 
-            int[] expectedBlockSize = {sizeX, sizeY, 1, sizeZ, 1};
+            int[] expectedBlockSize = {sizeX, sizeY, 1, 1, 1};
             assertArrayEquals(expectedBlockSize, datasetAttributes.getBlockSize(),"Block Size of model " + model);
         }
     }
@@ -296,31 +293,41 @@ public class N5ExporterTest {
         int endTimeIndex = times.length - 1;
         makeN5FileWithSpecificSimulationResults(compressionLevel, 0, endTimeIndex, model.simID);
 
+        int sizeZ = postProcessVariable ? modelMesh.getSizeZ() : MeshToImage.newNumElements(modelMesh.getSizeZ());
+        int sizeX = postProcessVariable ? modelMesh.getSizeX() : MeshToImage.newNumElements(modelMesh.getSizeX());
+        int sizeY = postProcessVariable ? modelMesh.getSizeY() : MeshToImage.newNumElements(modelMesh.getSizeY());
+
         for(int i = 0; i < variables.size(); i++){
             for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
-                DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model.simID);
-                DataBlock<?> dataBlock = n5Reader.readBlock(model.simID, datasetAttributes, new long[]{0, 0, i, 0, timeSlice});
-
-                double[] exportedRawData = (double[]) dataBlock.getData();
                 double[] constData = dataServer.getSimDataBlock(outputContext, testUser, this.vcDataID, variables.get(i).getName(), times[timeSlice]).getData();
-                if(!postProcessVariable){
-                    double[] meshToImage = MeshToImage.convertMeshIntoImage(constData, modelMesh).data();
-                    double[] imageToMesh = MeshToImage.convertImageIntoMesh(exportedRawData, modelMesh).data();
+                double[] meshToImage = MeshToImage.convertMeshIntoImage(constData, modelMesh).data();
+                for (int z = 0; z < sizeZ; z++){
+                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model.simID);
+                    DataBlock<?> dataBlock = n5Reader.readBlock(model.simID, datasetAttributes, new long[]{0, 0, i, z, timeSlice});
 
-                    assertArrayEquals(meshToImage, exportedRawData, 0,
-                            "Data of model " + model + " with species " + variables.get(i).getName() +
-                                    " with type " + variables.get(i).getVariableType() + " at time " + timeSlice +
-                                    ". The compression is " + compressionLevel + " and conversion of mesh to image.");
+                    double[] testConst;
+                    double[] exportedRawData = (double[]) dataBlock.getData();
+                    if(!postProcessVariable){
+                        double[] testMeshToImage = MeshToImage.getXYFromXYZArray(meshToImage, sizeX, sizeY, z);
+                        double[] imageToMesh = MeshToImage.convertImageIntoMesh(exportedRawData, sizeX, sizeY, sizeZ, false).data();
+                        testConst = MeshToImage.getXYFromXYZArray(constData, modelMesh, (int) Math.ceil(z / 2.0));
 
-                    assertArrayEquals(constData, imageToMesh, 0,
-                            "Data of model " + model + " with species " + variables.get(i).getName() +
-                                    " with type " + variables.get(i).getVariableType() + " at time " + timeSlice +
-                                    ". The compression is " + compressionLevel + " and conversion of image to mesh.");
+                        assertArrayEquals(testMeshToImage, exportedRawData, 0,
+                                "Data of model " + model + " with species " + variables.get(i).getName() +
+                                        " with type " + variables.get(i).getVariableType() + " at time " + timeSlice +
+                                        ". The compression is " + compressionLevel + " and conversion of mesh to image.");
 
-                } else{
-                    assertArrayEquals(constData, exportedRawData, 0,
-                            "Data of model " + model + " with species " + variables.get(i).getName() +
-                                    " with type " + variables.get(i).getVariableType() + " at time " + timeSlice);
+                        assertArrayEquals(testConst, imageToMesh, 0,
+                                "Data of model " + model + " with species " + variables.get(i).getName() +
+                                        " with type " + variables.get(i).getVariableType() + " at time " + timeSlice +
+                                        ". The compression is " + compressionLevel + " and conversion of image to mesh.");
+
+                    } else{
+                        testConst = MeshToImage.getXYFromXYZArray(constData, modelMesh, z);
+                        assertArrayEquals(testConst, exportedRawData, 0,
+                                "Data of model " + model + " with species " + variables.get(i).getName() +
+                                        " with type " + variables.get(i).getVariableType() + " at time " + timeSlice);
+                    }
                 }
             }
         }

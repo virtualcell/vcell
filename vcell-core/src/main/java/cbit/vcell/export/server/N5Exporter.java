@@ -84,7 +84,7 @@ public class N5Exporter implements ExportConstants {
 		int numVariables = variableNames.length + 1; //the extra variable length is for the mask generated for every  N5 Export
 		int numTimes = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex(); //end index is an actual index within the array and not representative of length
 		long[] dimensions = {sizeX, sizeY, numVariables, sizeZ, numTimes + 1};
-		int[] blockSize = {sizeX, sizeY, 1, sizeZ, 1};
+		int[] blockSize = {sizeX, sizeY, 1, 1, 1};
 
 		// rewrite so that it still results in a tmp file does not raise File already exists error
 		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
@@ -114,7 +114,7 @@ public class N5Exporter implements ExportConstants {
 					lengthPerPixelX = mesh.getExtent().getX() / iSize.getX(); lengthPerPixelY = mesh.getExtent().getY() / iSize.getY(); lengthPerPixelZ = mesh.getExtent().getZ() / iSize.getZ();
 					sizeX = iSize.getX(); sizeY = iSize.getY(); sizeZ = iSize.getZ();
 					dimensions = new long[]{sizeX, sizeY, numVariables, sizeZ, numTimes + 1};
-					blockSize = new int[]{sizeX, sizeY, 1, sizeZ, 1};
+					blockSize = new int[]{sizeX, sizeY, 1, 1, 1};
 				} else {
 					throw new RuntimeException("All variable types must be of POST-PROCESSING if you want to export a post-processed variable.");
 				}
@@ -145,9 +145,12 @@ public class N5Exporter implements ExportConstants {
 
 				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex], allTimes[timeIndex]).getData();
 				data = containsPostProcessed ? data : MeshToImage.convertMeshIntoImage(data, mesh).data();
+				for (int z=0; z < sizeZ; z++){
+					double[] dataToWrite = MeshToImage.getXYFromXYZArray(data, sizeX, sizeY, z);
+					DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, z, (normalizedTimeIndex)}, dataToWrite);
+					n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
+				}
 
-				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
-				n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
 
 				if(timeIndex % 2 == 0){
 					progress = (double) (variableIndex + timeLoops) / (numVariables + numTimes + numTimes);
@@ -160,8 +163,12 @@ public class N5Exporter implements ExportConstants {
 		// write mask
 		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
-			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, (numVariables - 1), 0, normalizedTimeIndex}, mask);
-			n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
+
+			for (int z = 0; z < sizeZ; z++){
+				double[] writeData = MeshToImage.getXYFromXYZArray(mask, sizeX, sizeY, z);
+				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, (numVariables - 1), z, normalizedTimeIndex}, writeData);
+				n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
+			}
 			if(timeIndex % 2 == 0){
 				progress = (double) (progress + timeLoops) / (numVariables + numTimes + numTimes);
 				exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
