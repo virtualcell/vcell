@@ -2,7 +2,9 @@ package org.vcell.model.ssld;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.ReactionRuleSpec;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.*;
+import cbit.vcell.parser.Expression;
 import org.vcell.model.rbm.*;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 
@@ -209,7 +211,7 @@ public class SsldUtils {
         newstructures.toArray(structarray);
         model.setStructures(structarray);
 
-        // molecular types
+        // ---------- Molecular Types
         for(Molecule ssldMolecule : ssldModel.getMolecules()) {
             MolecularType mt = new MolecularType(ssldMolecule.getName(), model);
             for(Site ssldSite : ssldMolecule.getSiteArray()) {
@@ -231,7 +233,10 @@ public class SsldUtils {
             m.put(ssldMolecule, mt);
             model.getRbmModelContainer().addMolecularType(mt, false);
         }
-        // ---------- TransitionReactions
+        // ---------- Species Contexts
+        // TODO: make these
+
+        // ---------- Transition Reactions
         for(TransitionReaction ssldReaction : ssldModel.getTransitionReactions()) {
             m.cleanReactionsMaps();
             boolean reversible = false;
@@ -240,12 +245,15 @@ public class SsldUtils {
             String location = ssldTransitionMolecule.getLocation(); // reaction happens in the same structure, no transport
             Structure structure = model.getStructure(location);
 
+            double ssldKf = ssldReaction.getRate();
+            Expression kf = new Expression(ssldKf);
             ReactionRule reactionRule = new ReactionRule(model, ssldReaction.getName(), structure, reversible);
             RbmKineticLaw.RateLawType rateLawType = RbmKineticLaw.RateLawType.MassAction;
             reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
+            reactionRule.getKineticLaw().setLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate, kf);
+
             SpeciesPattern spReactant = getSpeciesPattern(ssldConditionalMolecule, ssldTransitionMolecule, m);
             SpeciesPattern spProduct = getSpeciesPattern(ssldConditionalMolecule, ssldTransitionMolecule, m);
-
             ReactantPattern rp = new ReactantPattern(spReactant, structure);
             ProductPattern pp = new ProductPattern(spProduct, structure);
 
@@ -282,9 +290,17 @@ public class SsldUtils {
                 // both reactants must be in the same compartment, the product will also stay there
                 structure = model.getStructure(locationOne);
             }
+
+            double ssldKf = ssldReaction.getkon();
+            Expression kf = new Expression(ssldKf);
+            double ssldKr = ssldReaction.getkoff();
+            Expression kr = new Expression(ssldKr);
             ReactionRule reactionRule = new ReactionRule(model, ssldReaction.getName(), structure, reversible);
             RbmKineticLaw.RateLawType rateLawType = RbmKineticLaw.RateLawType.MassAction;
             reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
+            reactionRule.getKineticLaw().setLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate, kf);
+            reactionRule.getKineticLaw().setLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionReverseRate, kr);
+
             SpeciesPattern spReactantOne = getSpeciesPattern(ssldReactantOne, m);
             SpeciesPattern spReactantTwo = getSpeciesPattern(ssldReactantTwo, m);
             SpeciesPattern spProduct = getSpeciesPattern(ssldReactantOne, ssldReactantTwo, m);
@@ -293,7 +309,6 @@ public class SsldUtils {
             ReactantPattern rpTwo = new ReactantPattern(spReactantTwo, model.getStructure(locationTwo));
             ProductPattern pp = new ProductPattern(spProduct, structure);
 
-            // TODO: if the same molecule is in both reactants, the map will fire "duplicate" exception
             m.putMoleculeToReactantPatternOne(ssldReactantOne, rpOne);
             m.putMoleculeToReactantPatternTwo(ssldReactantTwo, rpTwo);
             m.putMoleculeToProductPatternOne(ssldReactantOne, pp);
@@ -309,6 +324,91 @@ public class SsldUtils {
             reactionRule.addProduct(pp);
             bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
             m.put(ssldReaction, reactionRule);
+        }
+
+        // ---------- Decay reactions
+        // in vcell creation and destruction reactions are separate
+        // ssls decay reactions are being stored in the molecule rather than the model
+        Map<Molecule, DecayReaction> ssldMoleculeToCreationReactions = new LinkedHashMap<>();
+        Map<Molecule, DecayReaction> ssldMoleculeToDestructionReactions = new LinkedHashMap<>();
+        for(Molecule ssldMolecule : ssldModel.getMolecules()) {
+            DecayReaction ssldReaction = ssldMolecule.getDecayReaction();
+            if(ssldReaction != null && ssldReaction.getCreationRate() != 0) {
+                ssldMoleculeToCreationReactions.put(ssldMolecule, ssldReaction);
+            }
+            if(ssldReaction != null && ssldReaction.getDecayRate() != 0) {
+                ssldMoleculeToDestructionReactions.put(ssldMolecule, ssldReaction);
+            }
+        }
+        if(!ssldMoleculeToCreationReactions.isEmpty()) {
+            MolecularType mtSource = new MolecularType(SpeciesContextSpec.SourceMoleculeString, model);
+            model.getRbmModelContainer().addMolecularType(mtSource, false);
+            for (Map.Entry<Molecule, DecayReaction> entry : ssldMoleculeToCreationReactions.entrySet()) {
+                // mtSource -> ssldMolecule  (Creation Reaction)
+                Molecule ssldMolecule = entry.getKey();
+                DecayReaction ssldReaction = entry.getValue();
+                double ssldRate = ssldReaction.getCreationRate();
+                Expression kf = new Expression(ssldRate);
+                String suffix = ""; // if a ssld molecule has both rates, we need to add a suffix to reaction names (because we make 2 distinct reactions)
+                if(ssldReaction.getDecayRate() != 0) {
+                    suffix = "_Creation";
+                }
+
+                String location = ssldMolecule.getLocation();
+                Structure structure = model.getStructure(location);
+                boolean reversible = false;
+                ReactionRule reactionRule = new ReactionRule(model, ssldReaction.getName() + suffix, structure, reversible);
+                RbmKineticLaw.RateLawType rateLawType = RbmKineticLaw.RateLawType.MassAction;
+                reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
+                reactionRule.getKineticLaw().setLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate, kf);
+
+                SpeciesPattern spReactant = new SpeciesPattern();
+                MolecularTypePattern mtpReactant = new MolecularTypePattern(mtSource);
+                spReactant.addMolecularTypePattern(mtpReactant);
+                ReactantPattern rp = new ReactantPattern(spReactant, structure);
+                reactionRule.addReactant(rp);
+
+                SpeciesPattern spProduct = getSpeciesPattern(ssldMolecule, m);
+                // TODO: sp must not be ambiguous! it must be a concrete species! all sites must be unbound and with specified states
+                ProductPattern pp = new ProductPattern(spProduct, structure);
+                reactionRule.addProduct(pp);
+                bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
+            }
+        }
+        if(!ssldMoleculeToDestructionReactions.isEmpty()) {
+            MolecularType mtSink = new MolecularType(SpeciesContextSpec.SinkMoleculeString, model);
+            model.getRbmModelContainer().addMolecularType(mtSink, false);
+            for (Map.Entry<Molecule, DecayReaction> entry : ssldMoleculeToDestructionReactions.entrySet()) {
+                // ssldMolecule -> mtSink (Decay reaction)
+                Molecule ssldMolecule = entry.getKey();
+                DecayReaction ssldReaction = entry.getValue();
+                double ssldRate = ssldReaction.getDecayRate();
+                Expression kf = new Expression(ssldRate);
+                String suffix = "";
+                if(ssldReaction.getCreationRate() != 0) {
+                    suffix = "_Decay";
+                }
+
+                String location = ssldMolecule.getLocation();
+                Structure structure = model.getStructure(location);
+                boolean reversible = false;
+                ReactionRule reactionRule = new ReactionRule(model, ssldReaction.getName() + suffix, structure, reversible);
+                RbmKineticLaw.RateLawType rateLawType = RbmKineticLaw.RateLawType.MassAction;
+                reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
+                reactionRule.getKineticLaw().setLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate, kf);
+
+                SpeciesPattern spReactant = getSpeciesPattern(ssldMolecule, m);
+                // TODO: sp must not be ambiguous! it must be a concrete species! all sites must be unbound and with specified states
+                ReactantPattern rp = new ReactantPattern(spReactant, structure);
+                reactionRule.addReactant(rp);
+
+                SpeciesPattern spProduct = new SpeciesPattern();
+                MolecularTypePattern mtpProduct = new MolecularTypePattern(mtSink);
+                spProduct.addMolecularTypePattern(mtpProduct);
+                ProductPattern pp = new ProductPattern(spProduct, structure);
+                reactionRule.addProduct(pp);
+                bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
+            }
         }
 
 
@@ -520,7 +620,6 @@ public class SsldUtils {
                         Molecule.loadMoleculesFiles(model, sc.next().trim(), model.molecules);
                         break;
                     case DECAY_REACTIONS:
-                        // TODO: looks like we load the reactions but never save them in the model. CHECK this
                         DecayReaction.loadReactions(model, new Scanner(sc.next().trim()));
                         break;
                     case TRANSITION_REACTIONS:
