@@ -14,6 +14,8 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.message.server.bootstrap.client.LocalVCellConnectionMessaging;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.ApiAccessToken;
+import cbit.vcell.modeldb.ApiClient;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
@@ -47,13 +49,15 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Date;
+import java.util.List;
 
 /**
  * This type was created in VisualAge.
  */
 public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 	public static final Logger lg = LogManager.getLogger(LocalVCellConnectionFactory.class);
-	
+
 	private ConnectionFactory connectionFactory = null;
 	private final Auth0ConnectionUtils auth0ConnectionUtils;
 	private final VCellApiClient vcellApiClient;
@@ -74,13 +78,14 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 			if (connectionFactory == null) {
 				connectionFactory = DatabaseService.getInstance().createConnectionFactory();
 			}
-			AccesTokenRepresentationRecord accessTokenRep = this.vcellApiClient.getLegacyToken();
-			userLoginInfo.setUser(new User(accessTokenRep.getUserId(), new KeyValue(accessTokenRep.getUserKey())));
 
 			KeyFactory keyFactory = connectionFactory.getKeyFactory();
 			LocalVCellConnection.setDatabaseResources(connectionFactory, keyFactory);
 			AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(connectionFactory);
 			DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(connectionFactory,keyFactory);
+
+			userLoginInfo.setUser(adminDbTopLevel.getUser(userLoginInfo.getUserName(), true));
+
 			boolean bCache = false;
 			Cachetable cacheTable = null;
 			DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cacheTable,
@@ -90,7 +95,7 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 			ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 			LocalVCellConnection vcConn = new LocalVCellConnection(userLoginInfo, simulationDatabase, dataSetControllerImpl, exportServiceImpl);
 			return vcConn;
-		} catch (ApiException | SQLException | FileNotFoundException | DataAccessException apiException){
+		} catch (SQLException | FileNotFoundException | DataAccessException apiException){
 			throw new RuntimeException(apiException);
 		}
     }

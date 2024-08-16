@@ -10,11 +10,14 @@
 
 package cbit.vcell.export.server;
 
+import cbit.vcell.export.MeshToImage;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.units.VCUnitDefinition;
 import com.google.gson.GsonBuilder;
 import edu.uchc.connjur.wb.ExecutionTrace;
 import org.apache.commons.codec.binary.Hex;
@@ -34,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 
 public class N5Exporter implements ExportConstants {
@@ -54,7 +58,9 @@ public class N5Exporter implements ExportConstants {
 			VariableType.POINT_VARIABLE,
 			VariableType.NONSPATIAL,
 			VariableType.CONTOUR,
-			VariableType.CONTOUR_REGION
+			VariableType.CONTOUR_REGION,
+			VariableType.MEMBRANE_REGION,
+			VariableType.VOLUME_REGION
 	));
 
 
@@ -63,72 +69,127 @@ public class N5Exporter implements ExportConstants {
 }
 
 	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws Exception {
+		VCUnitDefinition lengthUnit = ModelUnitSystem.createDefaultVCModelUnitSystem().getLengthUnit();
 		double[] allTimes = dataServer.getDataSetTimes(user, vcDataID);
 		TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
 		String[] variableNames = exportSpecs.getVariableSpecs().getVariableNames();
 		// output context expects a list of annotated functions, vcData seems to already have a set of annotated functions
 
 
-		int numVariables = variableNames.length + 1; //the extra variable length is for the mask generated for every  N5 Export
 		CartesianMesh mesh = dataServer.getMesh(user, vcDataID);
+		int sizeX = MeshToImage.newNumElements(mesh.getSizeX()), sizeY = MeshToImage.newNumElements(mesh.getSizeY()), sizeZ = MeshToImage.newNumElements(mesh.getSizeZ());
+		double lengthPerPixelX = mesh.getExtent().getX() / sizeX,
+				lengthPerPixelY = mesh.getExtent().getY() / sizeY,
+				lengthPerPixelZ = mesh.getExtent().getZ() / sizeZ;
+		int numVariables = variableNames.length + 1; //the extra variable length is for the mask generated for every  N5 Export
 		int numTimes = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex(); //end index is an actual index within the array and not representative of length
-		long[] dimensions = {mesh.getSizeX(), mesh.getSizeY(), numVariables, mesh.getSizeZ(), numTimes + 1};
-		// 51X, 51Y, 1Z, 1C, 2T
-		int[] blockSize = {mesh.getSizeX(), mesh.getSizeY(), 1, mesh.getSizeZ(), 1};
+		long[] dimensions = {sizeX, sizeY, numVariables, sizeZ, numTimes + 1};
+		int[] blockSize = {sizeX, sizeY, 1, 1, 1};
 
+		// rewrite so that it still results in a tmp file does not raise File already exists error
+		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
+		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
+		n5FSWriter.createDataset(String.valueOf(jobID), datasetAttributes);
+
+
+		//Create mask
 		double[] mask = new double[mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ()];
 		for (int i =0; i < mesh.getSizeX() * mesh.getSizeY() * mesh.getSizeZ(); i++){
 			mask[i] = (double) mesh.getSubVolumeFromVolumeIndex(i);
 		}
 
-		for (String variableName: variableNames){
-			DataIdentifier specie = getSpecificDI(variableName, outputContext);
-			if (specie != null){
-				if (unsupportedTypes.contains(specie.getVariableType())){
-					throw new RuntimeException("Tried to export a variable type that is not supported!");
-				} else if (specie.getVariableType().equals(VariableType.POSTPROCESSING)) {
+		HashMap<Integer, Object> channelInfo = new HashMap<>();
+
+		boolean containsPostProcessed = containsPostProcessedVariable(variableNames, outputContext);
+
+		if (containsPostProcessed){
+			for (String variableName : variableNames){
+				if (getSpecificDI(variableName, outputContext).getVariableType().compareEqual(VariableType.POSTPROCESSING)){
 					File hdf5File = dataServer.getVCellSimFiles(vcDataID.getOwner(), vcDataID).postprocessingFile;
 					Hdf5DataProcessingReaderPure hdf5DataProcessingReaderPure = new Hdf5DataProcessingReaderPure();
 					DataOperationResults.DataProcessingOutputInfo dataProcessingOutputInfo =
 							hdf5DataProcessingReaderPure.getDataProcessingOutput(new DataOperation.DataProcessingOutputInfoOP(vcDataID,false, outputContext), hdf5File);
 
 					ISize iSize = dataProcessingOutputInfo.getVariableISize(variableName);
-					dimensions = new long[]{iSize.getX(), iSize.getY(), numVariables, iSize.getZ(), numTimes + 1};
-					blockSize = new int[]{iSize.getX(), iSize.getY(), 1, iSize.getZ(), 1};
-                }
-			}
-		}
-
-
-		// rewrite so that it still results in a tmp file does not raise File already exists error
-		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
-		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
-		n5FSWriter.createDataset(String.valueOf(jobID), datasetAttributes);
-		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter, n5Specs.dataSetName, numVariables, blockSize[3], allTimes.length, exportSpecs.getHumanReadableExportData().subVolume);
-
-		//Create mask
-		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
-			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
-			DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, 0, 0, normalizedTimeIndex}, mask);
-			n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
-		}
-
-		for (int variableIndex=1; variableIndex < numVariables; variableIndex++){
-			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
-
-				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
-				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex - 1], allTimes[timeIndex]).getData();
-				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, 0, (normalizedTimeIndex)}, data);
-				n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
-				if(timeIndex % 3 == 0){
-					double progress = (double) (variableIndex + normalizedTimeIndex) / (numVariables + (numTimes * numVariables));
-					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
+					lengthPerPixelX = mesh.getExtent().getX() / iSize.getX(); lengthPerPixelY = mesh.getExtent().getY() / iSize.getY(); lengthPerPixelZ = mesh.getExtent().getZ() / iSize.getZ();
+					sizeX = iSize.getX(); sizeY = iSize.getY(); sizeZ = iSize.getZ();
+					dimensions = new long[]{sizeX, sizeY, numVariables, sizeZ, numTimes + 1};
+					blockSize = new int[]{sizeX, sizeY, 1, 1, 1};
+				} else {
+					throw new RuntimeException("All variable types must be of POST-PROCESSING if you want to export a post-processed variable.");
 				}
 			}
+		} else {
+			for (int i = 0; i < variableNames.length; i++){
+				String variableName = variableNames[i];
+				DataIdentifier specie = getSpecificDI(variableName, outputContext);
+				HashMap<String, Object> variableInfo = new HashMap<>();
+				variableInfo.put("Name", variableName);
+				variableInfo.put("Domain", specie.getDomain().getName());
+				channelInfo.put(i, variableInfo);
+			}
+			mask = MeshToImage.convertMeshIntoImage(mask, mesh).data();
+		}
+
+
+		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter,
+				n5Specs.dataSetName, numVariables, sizeZ, allTimes.length,
+				exportSpecs.getHumanReadableExportData().subVolume,
+				lengthPerPixelY, lengthPerPixelX, lengthPerPixelZ, lengthUnit.getSymbol(), channelInfo);
+
+		int timeLoops = 1;
+		double progress = 0;
+		for (int variableIndex=0; variableIndex < (numVariables -1); variableIndex++){
+			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
+				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
+
+				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex], allTimes[timeIndex]).getData();
+				data = containsPostProcessed ? data : MeshToImage.convertMeshIntoImage(data, mesh).data();
+				for (int z=0; z < sizeZ; z++){
+					double[] dataToWrite = MeshToImage.getXYFromXYZArray(data, sizeX, sizeY, z);
+					DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, variableIndex, z, (normalizedTimeIndex)}, dataToWrite);
+					n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
+				}
+
+
+				if(timeIndex % 2 == 0){
+					progress = (double) (variableIndex + timeLoops) / (numVariables + numTimes + numTimes);
+					exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
+				}
+				timeLoops += 1;
+			}
+		}
+
+		// write mask
+		for(int timeIndex = timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
+			int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
+
+			for (int z = 0; z < sizeZ; z++){
+				double[] writeData = MeshToImage.getXYFromXYZArray(mask, sizeX, sizeY, z);
+				DoubleArrayDataBlock doubleArrayDataBlock = new DoubleArrayDataBlock(blockSize, new long[]{0, 0, (numVariables - 1), z, normalizedTimeIndex}, writeData);
+				n5FSWriter.writeBlock(String.valueOf(jobID), datasetAttributes, doubleArrayDataBlock);
+			}
+			if(timeIndex % 2 == 0){
+				progress = (double) (progress + timeLoops) / (numVariables + numTimes + numTimes);
+				exportServiceImpl.fireExportProgress(jobID, vcDataID, N5Specs.n5Suffix.toUpperCase(), progress);
+			}
+			timeLoops += 1;
 		}
 		n5FSWriter.close();
 		ExportOutput exportOutput = new ExportOutput(true, "." + N5Specs.n5Suffix, vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
 		return exportOutput;
+	}
+
+	private boolean containsPostProcessedVariable(String[] variableNames, OutputContext outputContext) throws IOException, DataAccessException {
+		for (String variableName: variableNames){
+			DataIdentifier specie = getSpecificDI(variableName, outputContext);
+			if(specie.getVariableType().compareEqual(VariableType.POSTPROCESSING)){
+				return true;
+			} else if (unsupportedTypes.contains(specie.getVariableType())) {
+				throw new RuntimeException("Attempting to export unsupported type of: " + specie.getVariableType().getTypeName() + ". The variable with this type is: " + variableName);
+			}
+		}
+		return false;
 	}
 
 	public void initalizeDataControllers(User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) throws IOException, DataAccessException {

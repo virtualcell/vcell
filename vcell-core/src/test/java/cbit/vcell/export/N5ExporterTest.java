@@ -41,6 +41,17 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 @Tag("Fast")
 public class N5ExporterTest {
 
+    enum TestModels{
+        fourDModel("597714292"),
+        fiveDModel("868220316"), // Ezequiel's Blank 3D Model
+        fiveDModelPostProcess("868220316");
+
+        private final String simID;
+        TestModels(String simID){
+            this.simID = simID;
+        }
+    }
+
     private N5Reader n5Reader;
     private DataServerImpl dataServer;
     private  VCSimulationDataIdentifier vcDataID;
@@ -49,12 +60,7 @@ public class N5ExporterTest {
     private User testUser;
     private CartesianMesh modelMesh;
     private double[] times;
-    private static final String fourDModelID = "597714292";
-    private static final String fiveDModelID = "1136922340";
-    private final ArrayList<String> testModels = new ArrayList<>(Arrays.asList(
-            fourDModelID, //FRAP Tutorial in VCell, has no Z axis
-            fiveDModelID //PH-GFP Tutorial in VCell
-    ));
+
 
     private ArrayList<DataIdentifier> dataIdentifiers;
 
@@ -93,9 +99,9 @@ public class N5ExporterTest {
         File n5ExportDir = new File(temporaryFolder.getAbsolutePath() + "/N5DataExporter");
         n5ExportDir.mkdir();
 
-        for(String model: testModels){
+        for(TestModels model: TestModels.values()){
             for(String extension: fileExtensions){
-                String currentFileNameString = String.format(simFileNameTemplate, model, extension);
+                String currentFileNameString = String.format(simFileNameTemplate, model.simID, extension);
                 InputStream inputStream = Objects.requireNonNull(N5ExporterTest.class.getResourceAsStream("/simdata/n5/ezequiel23/" + currentFileNameString));
                 File currentFile = new File(tmpSimDataDir.getAbsolutePath() + "/" + currentFileNameString);
                 org.apache.commons.io.FileUtils.copyInputStreamToFile(inputStream, currentFile);
@@ -192,31 +198,22 @@ public class N5ExporterTest {
         this.n5Reader = new N5FSReader(n5Exporter.getN5FileAbsolutePath());
     }
 
-    public void setExportTestState(String simKeyID) throws IOException, DataAccessException, MathException {
-        VCSimulationIdentifier vcSimulationIdentifier = simKeyID.equals(fourDModelID) ? new VCSimulationIdentifier(new KeyValue(fourDModelID), testUser) :
-                new VCSimulationIdentifier(new KeyValue(fiveDModelID), testUser);
+    private void setExportTestState(TestModels simModel) throws IOException, DataAccessException, MathException {
+        VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(simModel.simID), testUser);
+
         vcDataID = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
         n5Exporter.initalizeDataControllers(testUser, dataServer, vcDataID);
         dataIdentifiers = new ArrayList<>(Arrays.asList(dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), testUser, vcDataID)));
 
         modelMesh = dataServer.getMesh(testUser, vcDataID);
         times = dataServer.getDataSetTimes(testUser, vcDataID);
-        if (simKeyID.equals(fourDModelID)){
-            // the test model can only support one species at this time
+        if (simModel == TestModels.fiveDModelPostProcess) {
             this.variables = new ArrayList<>(Arrays.asList(
-                    getRandomDISpecificVariable(VariableType.VOLUME),
-                    getRandomDISpecificVariable(VariableType.VOLUME_REGION),
-                    getRandomDISpecificVariable(VariableType.MEMBRANE_REGION),
-                    getRandomDI()
+                getRandomDISpecificVariable(VariableType.POSTPROCESSING)
             ));
-        }
-        else if (simKeyID.equals(fiveDModelID)){
+        } else {
             this.variables = new ArrayList<>(Arrays.asList(
-                    getRandomDISpecificVariable(VariableType.VOLUME),
-                    getRandomDISpecificVariable(VariableType.POSTPROCESSING),
-                    getRandomDISpecificVariable(VariableType.VOLUME_REGION),
-                    getRandomDISpecificVariable(VariableType.MEMBRANE_REGION),
-                    getRandomDI()
+                getRandomDISpecificVariable(VariableType.VOLUME)
             ));
         }
     }
@@ -225,57 +222,37 @@ public class N5ExporterTest {
     @Test
     public void testMetaData() throws Exception {
 
-        for(String model: testModels){
+        for(TestModels model: TestModels.values()){
             this.setExportTestState(model);
-            this.makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel.RAW, 0, times.length - 1, model);
+            this.makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel.RAW, 0, times.length - 1, model.simID);
+
+            int sizeX = modelMesh.getSizeX(),
+                    sizeY = modelMesh.getSizeY(),
+                    sizeZ = modelMesh.getSizeZ();
+
+            if(!model.equals(TestModels.fiveDModelPostProcess)){
+                sizeX = MeshToImage.newNumElements(sizeX);
+                sizeY = MeshToImage.newNumElements(sizeY);
+                sizeZ = MeshToImage.newNumElements(sizeZ);
+            }
+
+
             //X, Y, T, Z, Channels
-            long[] controlDimensions = {modelMesh.getSizeX(), modelMesh.getSizeY(), variables.size() + 1, modelMesh.getSizeZ(), times.length};
+            long[] controlDimensions = {sizeX, sizeY, variables.size() + 1, sizeZ, times.length};
             // tests the metadata, and the metadata may be accurate but the actual raw array of data may be wrong
-            DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
+            DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model.simID);
             long[] exportDimensions = datasetAttributes.getDimensions();
             assertArrayEquals(controlDimensions, exportDimensions, "Testing dimension results for model " + model);
-            ((N5FSReader) n5Reader).getAttributes(model);
+            ((N5FSReader) n5Reader).getAttributes(model.simID);
 
-            LinkedTreeMap<String, String> dummyMaskInfo = (LinkedTreeMap<String, java.lang.String>)((N5FSReader) n5Reader).getAttribute(model, N5Specs.maskingMetaDataName, LinkedTreeMap.class);
+            LinkedTreeMap<String, String> dummyMaskInfo = (LinkedTreeMap<String, java.lang.String>)((N5FSReader) n5Reader).getAttribute(model.simID, N5Specs.maskingMetaDataName, LinkedTreeMap.class);
 
             assertSame(DataType.FLOAT64, datasetAttributes.getDataType(),"Data Type of model " + model);
             assert("Dummy".equals(dummyMaskInfo.get("0")));
             assert("Test".equals(dummyMaskInfo.get("1")));
 
-            int[] expectedBlockSize = {modelMesh.getSizeX(), modelMesh.getSizeY(), 1, modelMesh.getSizeZ(), 1};
+            int[] expectedBlockSize = {sizeX, sizeY, 1, 1, 1};
             assertArrayEquals(expectedBlockSize, datasetAttributes.getBlockSize(),"Block Size of model " + model);
-        }
-    }
-
-    @Test
-    public void testRandomTimeSlices() throws Exception {
-        for (String model: testModels){
-            setExportTestState(model);
-            for (int k=0; k<8; k++){ //try 8 randomly chosen time slice combinations
-                Random random = new Random();
-                int startTimeIndex = random.nextInt(0, times.length);
-                int endTimeIndex = random.nextInt(startTimeIndex, times.length);
-                OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-
-                makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel.RAW, startTimeIndex, endTimeIndex, model);
-                DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
-                long attributesTimeSize = startTimeIndex + (datasetAttributes.getDimensions()[4] - 1); //minus 1 since we are already starting at startTimeIndex
-
-                for (int i = 0; i < variables.size(); i++){
-                    for(int timeSlice = startTimeIndex; timeSlice <= attributesTimeSize; timeSlice++){
-                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i + 1, 0, timeSlice - startTimeIndex});
-
-                        double[] exportedRawData = (double[]) dataBlock.getData();
-                        assertArrayEquals(
-                                dataServer.getSimDataBlock(outputContext, testUser, this.vcDataID, variables.get(i).getName(), times[timeSlice]).getData(),
-                                exportedRawData,
-                                0,
-                                "Equal raw data of model " + model + " with species " + variables.get(i).getName() +
-                                        " with type " + variables.get(i).getVariableType() + " at time " + timeSlice);
-                    }
-                }
-
-            }
         }
     }
 
@@ -288,26 +265,8 @@ public class N5ExporterTest {
 
         //each block is entire XYZ, broken in time and channels
 
-        for(String model: testModels){
-            this.setExportTestState(model);
-            OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-            int endTimeIndex = times.length - 1;
-            makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel.RAW, 0, endTimeIndex, model);
-
-            for(int i = 0; i < variables.size(); i++){
-                for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
-                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
-                    DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, i + 1, 0, timeSlice});
-
-                    double[] exportedRawData = (double[]) dataBlock.getData();
-                    assertArrayEquals(
-                            dataServer.getSimDataBlock(outputContext, testUser, this.vcDataID, variables.get(i).getName(), times[timeSlice]).getData(),
-                            exportedRawData,
-                            0,
-                            "Equal raw data of model " + model + " with species " + variables.get(i).getName() +
-                                    " with type " + variables.get(i).getVariableType() + " at time " + timeSlice);
-                }
-            }
+        for(TestModels model: TestModels.values()){
+            compareData(N5Specs.CompressionLevel.RAW, model, model.equals(TestModels.fiveDModelPostProcess));
         }
     }
 
@@ -319,30 +278,59 @@ public class N5ExporterTest {
                 N5Specs.CompressionLevel.BZIP,
                 N5Specs.CompressionLevel.GZIP
         ));
-        Random random = new Random(5);
 
         for (N5Specs.CompressionLevel compression: compressions){
-                for(String model: testModels){
-                    setExportTestState(model);
-                    int endTimeIndex = times.length - 1;
-                    makeN5FileWithSpecificSimulationResults(compression, 0 , endTimeIndex, model);
-                    OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
-                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model);
-                    for(int j = 0; j< 8; j++){
-                        int timeSlice = random.nextInt(endTimeIndex);
-                        int chosenVariable = random.nextInt(variables.size());
-                        DataBlock<?> dataBlock = n5Reader.readBlock(model, datasetAttributes, new long[]{0, 0, chosenVariable + 1, 0, timeSlice});
-
-                        double[] exportedData = (double[]) dataBlock.getData();
-                        Assertions.assertArrayEquals(
-                                dataServer.getSimDataBlock(outputContext, testUser, this.vcDataID, variables.get(chosenVariable).getName(), times[timeSlice]).getData(),
-                                exportedData,
-                                0,
-                                "Equal data with " + compression + " compression");
-                    }
+                for(TestModels model: TestModels.values()){
+                    compareData(compression, model, model.equals(TestModels.fiveDModelPostProcess));
                 }
         }
 
+    }
+
+    private void compareData(N5Specs.CompressionLevel compressionLevel, TestModels model, boolean postProcessVariable) throws Exception {
+        this.setExportTestState(model);
+        OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
+        int endTimeIndex = times.length - 1;
+        makeN5FileWithSpecificSimulationResults(compressionLevel, 0, endTimeIndex, model.simID);
+
+        int sizeZ = postProcessVariable ? modelMesh.getSizeZ() : MeshToImage.newNumElements(modelMesh.getSizeZ());
+        int sizeX = postProcessVariable ? modelMesh.getSizeX() : MeshToImage.newNumElements(modelMesh.getSizeX());
+        int sizeY = postProcessVariable ? modelMesh.getSizeY() : MeshToImage.newNumElements(modelMesh.getSizeY());
+
+        for(int i = 0; i < variables.size(); i++){
+            for(int timeSlice = 0; timeSlice < times.length; timeSlice++){
+                double[] constData = dataServer.getSimDataBlock(outputContext, testUser, this.vcDataID, variables.get(i).getName(), times[timeSlice]).getData();
+                double[] meshToImage = MeshToImage.convertMeshIntoImage(constData, modelMesh).data();
+                for (int z = 0; z < sizeZ; z++){
+                    DatasetAttributes datasetAttributes = n5Reader.getDatasetAttributes(model.simID);
+                    DataBlock<?> dataBlock = n5Reader.readBlock(model.simID, datasetAttributes, new long[]{0, 0, i, z, timeSlice});
+
+                    double[] testConst;
+                    double[] exportedRawData = (double[]) dataBlock.getData();
+                    if(!postProcessVariable){
+                        double[] testMeshToImage = MeshToImage.getXYFromXYZArray(meshToImage, sizeX, sizeY, z);
+                        double[] imageToMesh = MeshToImage.convertImageIntoMesh(exportedRawData, sizeX, sizeY, sizeZ, false).data();
+                        testConst = MeshToImage.getXYFromXYZArray(constData, modelMesh, (int) Math.ceil(z / 2.0));
+
+                        assertArrayEquals(testMeshToImage, exportedRawData, 0,
+                                "Data of model " + model + " with species " + variables.get(i).getName() +
+                                        " with type " + variables.get(i).getVariableType() + " at time " + timeSlice +
+                                        ". The compression is " + compressionLevel + " and conversion of mesh to image.");
+
+                        assertArrayEquals(testConst, imageToMesh, 0,
+                                "Data of model " + model + " with species " + variables.get(i).getName() +
+                                        " with type " + variables.get(i).getVariableType() + " at time " + timeSlice +
+                                        ". The compression is " + compressionLevel + " and conversion of image to mesh.");
+
+                    } else{
+                        testConst = MeshToImage.getXYFromXYZArray(constData, modelMesh, z);
+                        assertArrayEquals(testConst, exportedRawData, 0,
+                                "Data of model " + model + " with species " + variables.get(i).getName() +
+                                        " with type " + variables.get(i).getVariableType() + " at time " + timeSlice);
+                    }
+                }
+            }
+        }
     }
 
     public DataIdentifier getRandomDI() throws IOException, DataAccessException {

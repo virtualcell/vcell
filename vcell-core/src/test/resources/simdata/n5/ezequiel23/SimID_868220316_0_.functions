@@ -1,0 +1,12 @@
+##---------------------------------------------
+##  /Users/evalencia/.vcell/simdata/temp/SimID_868220316_0_.functions
+##---------------------------------------------
+
+subdomain0::J_r0; s0; ; Volume_VariableType; false
+subdomain0::s0_init_uM; (x + (5.0 * y) + (25.0 * z)); ; Volume_VariableType; false
+subdomain0::s1_init_uM; (x < y); ; Volume_VariableType; false
+subdomain0::Size_c0; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+subdomain0_subdomain1_membrane::sobj_subdomain11_subdomain00_size; vcRegionArea('subdomain0_subdomain1_membrane'); ; Membrane_Region_VariableType; false
+subdomain0::vobj_subdomain00_size; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+subdomain1::vobj_subdomain11_size; vcRegionVolume('subdomain1'); ; Volume_Region_VariableType; false
+

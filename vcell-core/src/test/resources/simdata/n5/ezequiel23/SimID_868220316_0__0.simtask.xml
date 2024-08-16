@@ -1,0 +1,148 @@
+<SimulationTask xmlns="http://sourceforge.net/projects/vcell/vcml" TaskId="0" JobIndex="0" isPowerUser="false">
+  <MathDescription Name="Copy of 3D Multi Domain_generated">
+    <Constant Name="_F_">96485.3321</Constant>
+    <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+    <Constant Name="_K_GHK_">1.0E-9</Constant>
+    <Constant Name="_N_pmol_">6.02214179E11</Constant>
+    <Constant Name="_PI_">3.141592653589793</Constant>
+    <Constant Name="_R_">8314.46261815</Constant>
+    <Constant Name="_T_">300.0</Constant>
+    <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+    <Constant Name="Kf">1.0</Constant>
+    <Constant Name="KMOLE">0.001660538783162726</Constant>
+    <Constant Name="Kr">0.0</Constant>
+    <Constant Name="s0_diffusionRate">10.0</Constant>
+    <Constant Name="s1_diffusionRate">10.0</Constant>
+    <Constant Name="SpeciesValue0_diffusionRate">10.0</Constant>
+    <Constant Name="SpeciesValue0_init_uM">0.0</Constant>
+    <Constant Name="SpeciesValue1_diffusionRate">10.0</Constant>
+    <Constant Name="SpeciesValue1_init_uM">1.0</Constant>
+    <Constant Name="UnitFactor_molecules_um_neg_3_uM_neg_1">(1.0 * pow(KMOLE,-1.0))</Constant>
+    <Constant Name="VolumePerUnitVolume_c0">1.0</Constant>
+    <VolumeVariable Name="s0" Domain="subdomain0" />
+    <VolumeVariable Name="s1" Domain="subdomain0" />
+    <VolumeVariable Name="SpeciesValue0" Domain="subdomain0" />
+    <VolumeVariable Name="SpeciesValue1" Domain="subdomain0" />
+    <Function Name="J_r0" Domain="subdomain0">((Kf * s0) - (Kr * s1))</Function>
+    <Function Name="s0_init_uM" Domain="subdomain0">((x + (5.0 * y)) + (25.0 * z))</Function>
+    <Function Name="s1_init_uM" Domain="subdomain0">(x &lt; y)</Function>
+    <Function Name="Size_c0" Domain="subdomain0">(VolumePerUnitVolume_c0 * vcRegionVolume('subdomain0'))</Function>
+    <Function Name="sobj_subdomain11_subdomain00_size" Domain="subdomain0_subdomain1_membrane">vcRegionArea('subdomain0_subdomain1_membrane')</Function>
+    <Function Name="vobj_subdomain00_size" Domain="subdomain0">vcRegionVolume('subdomain0')</Function>
+    <Function Name="vobj_subdomain11_size" Domain="subdomain1">vcRegionVolume('subdomain1')</Function>
+    <CompartmentSubDomain Name="subdomain1">
+      <BoundaryType Boundary="Xm" Type="Value" />
+      <BoundaryType Boundary="Xp" Type="Value" />
+      <BoundaryType Boundary="Ym" Type="Value" />
+      <BoundaryType Boundary="Yp" Type="Value" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+    </CompartmentSubDomain>
+    <CompartmentSubDomain Name="subdomain0">
+      <BoundaryType Boundary="Xm" Type="Flux" />
+      <BoundaryType Boundary="Xp" Type="Flux" />
+      <BoundaryType Boundary="Ym" Type="Flux" />
+      <BoundaryType Boundary="Yp" Type="Flux" />
+      <BoundaryType Boundary="Zm" Type="Flux" />
+      <BoundaryType Boundary="Zp" Type="Flux" />
+      <PdeEquation Name="s0" SolutionType="Unknown">
+        <Rate>- J_r0</Rate>
+        <Diffusion>s0_diffusionRate</Diffusion>
+        <Initial>s0_init_uM</Initial>
+      </PdeEquation>
+      <PdeEquation Name="s1" SolutionType="Unknown">
+        <Rate>J_r0</Rate>
+        <Diffusion>s1_diffusionRate</Diffusion>
+        <Initial>s1_init_uM</Initial>
+      </PdeEquation>
+      <PdeEquation Name="SpeciesValue1" SolutionType="Unknown">
+        <Rate>0.0</Rate>
+        <Diffusion>SpeciesValue1_diffusionRate</Diffusion>
+        <Initial>SpeciesValue1_init_uM</Initial>
+      </PdeEquation>
+      <PdeEquation Name="SpeciesValue0" SolutionType="Unknown">
+        <Rate>0.0</Rate>
+        <Diffusion>SpeciesValue0_diffusionRate</Diffusion>
+        <Initial>SpeciesValue0_init_uM</Initial>
+      </PdeEquation>
+    </CompartmentSubDomain>
+    <MembraneSubDomain Name="subdomain0_subdomain1_membrane" InsideCompartment="subdomain0" OutsideCompartment="subdomain1">
+      <BoundaryType Boundary="Xm" Type="Value" />
+      <BoundaryType Boundary="Xp" Type="Value" />
+      <BoundaryType Boundary="Ym" Type="Value" />
+      <BoundaryType Boundary="Yp" Type="Value" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+      <JumpCondition Name="s0">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <JumpCondition Name="s1">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <JumpCondition Name="SpeciesValue1">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+      <JumpCondition Name="SpeciesValue0">
+        <InFlux>0.0</InFlux>
+        <OutFlux>0.0</OutFlux>
+      </JumpCondition>
+    </MembraneSubDomain>
+    <Version Name="Copy of 3D Multi Domain_generated" KeyValue="273691663" BranchId="273691664" Archived="0" Date="05-Aug-2024 13:54:24" FromVersionable="false">
+      <Owner Name="ezequiel23" Identifier="258925427" />
+      <GroupAccess Type="1" />
+    </Version>
+    <PostProcessing>
+      <Convolution Name="fluor">
+        <Kernel Type="Gaussian">
+          <SigmaXY>0.3</SigmaXY>
+          <SigmaZ>1.5</SigmaZ>
+        </Kernel>
+        <VolumeFunction>(0.0 + (UnitFactor_molecules_um_neg_3_uM_neg_1 * s0))</VolumeFunction>
+        <MembraneFunction>0.0</MembraneFunction>
+      </Convolution>
+    </PostProcessing>
+  </MathDescription>
+  <Simulation Name="3D Small Mesh_1_1_1">
+    <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+      <TimeBound StartTime="0.0" EndTime="0.5" />
+      <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+      <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+      <OutputOptions OutputTimeStep="0.1" />
+      <SundialsSolverOptions>
+        <maxOrderAdvection>2</maxOrderAdvection>
+      </SundialsSolverOptions>
+      <NumberProcessors>1</NumberProcessors>
+    </SolverTaskDescription>
+    <MathOverrides />
+    <MeshSpecification>
+      <Size X="5" Y="5" Z="5" />
+    </MeshSpecification>
+    <Version Name="temp simulation" KeyValue="868220316" BranchId="1" Archived="1" Date="14-Aug-2024 13:52:08" FromVersionable="false">
+      <Owner Name="temp" Identifier="123" />
+      <GroupAccess Type="1" />
+    </Version>
+  </Simulation>
+  <Geometry Name="Geometry3" Dimension="3">
+    <Extent X="4.0" Y="4.0" Z="4.0" />
+    <Origin X="0.0" Y="0.0" Z="0.0" />
+    <SubVolume Name="subdomain1" Handle="1" Type="Analytical" KeyValue="273691656">
+      <AnalyticExpression>((((x - 2.0) ^ 2.0) + ((y - 2.0) ^ 2.0) + ((z - 2.0) ^ 2.0)) &lt; (1.5 ^ 2.0))</AnalyticExpression>
+    </SubVolume>
+    <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="273691657">
+      <AnalyticExpression>1.0</AnalyticExpression>
+    </SubVolume>
+    <SurfaceClass Name="subdomain0_subdomain1_membrane" SubVolume1Ref="subdomain0" SubVolume2Ref="subdomain1" KeyValue="273691658" />
+    <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="101" CutoffFrequency="0.3">
+      <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="49.848383999999996" Unit="um3" />
+      <VolumeRegion Name="subdomain11" RegionID="1" SubVolume="subdomain1" Size="14.151615999999999" Unit="um3" />
+      <MembraneRegion Name="membrane_subdomain00_subdomain11" VolumeRegion1="subdomain11" VolumeRegion2="subdomain00" Size="28.267519043093913" Unit="um2" />
+    </SurfaceDescription>
+    <Version Name="Geometry3" KeyValue="273691653" BranchId="273690979" Archived="0" Date="05-Aug-2024 13:54:24" FromVersionable="false">
+      <Owner Name="ezequiel23" Identifier="258925427" />
+      <GroupAccess Type="1" />
+    </Version>
+  </Geometry>
+</SimulationTask>
