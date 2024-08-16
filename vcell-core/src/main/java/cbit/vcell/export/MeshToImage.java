@@ -2,11 +2,14 @@ package cbit.vcell.export;
 
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.solvers.CartesianMesh;
-import org.vcell.util.BeanUtils;
 
 public class MeshToImage {
 
-    public record ImageFromMesh(double[] data, int sizeX, int sizeY, int sizeZ){
+    public record ImageData(double[] data, int sizeX, int sizeY, int sizeZ){
+
+    }
+
+    public record MeshData(double[] data, int sizeX, int sizeY, int sizeZ){
 
     }
 
@@ -17,50 +20,68 @@ public class MeshToImage {
      * the same ratio of space taken.
      * @return double[]
      */
-    public static ImageFromMesh convertMeshIntoImage(double[] data, CartesianMesh mesh) throws GeometryException {
+    public static ImageData convertMeshIntoImage(double[] data, CartesianMesh mesh) throws GeometryException {
         int dimensions = mesh.getGeometryDimension();
-        if (dimensions == 2){
-            return convert2DMeshIntoImage(data, mesh.getSizeX(), mesh.getSizeY());
+        if (dimensions == 1){
+            throw new GeometryException("Does not support 1D mesh to image conversions");
         }
-        else if (dimensions == 3) {
-            return convert3DMeshIntoImage(data, mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
-        }
-        throw new GeometryException("Does not support 1D mesh to image conversions");
+        return convertMeshIntoImage(data, mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ(), dimensions > 2);
     }
 
-    public static ImageFromMesh convertMeshIntoImage(double[] data, int sizeX, int sizeY, int sizeZ, boolean threeD){
-        if(threeD){
-            return convert3DMeshIntoImage(data, sizeX, sizeY, sizeZ);
-        }
-        else{
-            return convert2DMeshIntoImage(data, sizeX, sizeY);
-        }
-    }
-
-    public static ImageFromMesh convertImageIntoMesh(double[] data, int sizeX, int sizeY, int sizeZ, boolean threeD){
-        if(threeD){
-            return convert3DImageIntoMesh(data, sizeX, sizeY, sizeZ);
-        }else {
-            return convert2DImageIntoMesh(data, sizeX, sizeY);
-        }
-    }
-
-    public static ImageFromMesh convertImageIntoMesh(double[] data, CartesianMesh mesh){
+    public static MeshData convertImageIntoMesh(double[] data, CartesianMesh mesh) throws GeometryException {
         return convertImageIntoMesh(data, mesh, mesh.getGeometryDimension() > 2);
     }
 
-    /**
-     * Use the Cartesian mesh that is associated with the Image data.
-     */
-    public static ImageFromMesh convertImageIntoMesh(double[] data, CartesianMesh mesh, boolean overRideThreeD){
+    public static MeshData convertImageIntoMesh(double[] data, CartesianMesh mesh, boolean overRideThreeD) throws GeometryException {
         int dim = mesh.getGeometryDimension();
-        if (dim >2 && overRideThreeD){
-            return convert3DImageIntoMesh(data, newNumElements(mesh.getSizeX()), newNumElements(mesh.getSizeY()),
-                    newNumElements(mesh.getSizeZ()));
-        } else {
-            return convert2DImageIntoMesh(data, newNumElements(mesh.getSizeX()), newNumElements(mesh.getSizeY()));
+        if (dim == 1){
+            throw new GeometryException("Does not support 1D image to mesh conversion");
         }
+        return convertImageIntoMesh(data, mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ(), dim > 2 && overRideThreeD);
     }
+
+    public static ImageData convertMeshIntoImage(double[] data, int sizeX, int sizeY, int sizeZ, boolean threeD){
+        int newDepth = threeD ? newNumElements(sizeZ) : 1;
+        int newWidth = newNumElements(sizeX), newHeight = newNumElements(sizeY);
+        int newSize = newWidth * newHeight * newDepth;
+        double[] newData = new double[newSize];
+        for (int i = 0; i < newWidth; i++){
+            int oldI = (int) Math.ceil(i / 2.0);
+            for (int j = 0; j < newHeight; j++){
+                int oldJ = (int) Math.ceil(j / 2.0);
+                for (int k = 0; k < newDepth; k++){
+                    int oldK = (int) Math.ceil(k / 2.0);
+
+                    int oldIndex = threeD ? coordinateToIndex3D(oldI, oldJ, oldK, sizeX, sizeY) : coordinateToIndex2D(oldI, oldJ, sizeX, sizeY);
+                    int newIndex = threeD ? coordinateToIndex3D(i, j, k, newWidth, newHeight) : coordinateToIndex2D(i, j, newWidth, newHeight);
+                    newData[newIndex] = data[oldIndex];
+                }
+            }
+        }
+        return new ImageData(newData, newWidth, newHeight, newDepth);
+    }
+
+    public static MeshData convertImageIntoMesh(double[] data, int sizeX, int sizeY, int sizeZ, boolean threeD){
+        int meshWidth = oldNumElements(sizeX);
+        int meshHeight = oldNumElements(sizeY);
+        int meshDepth = threeD ? oldNumElements(sizeZ) : 1;
+        double[] newData = new double[meshHeight * meshWidth * meshDepth];
+        for (int i = 0; i < sizeX; i++){
+            int meshI = (int) Math.ceil(i / 2.0);
+            for (int j = 0; j < sizeY; j++){
+                int meshJ = (int) Math.ceil(j / 2.0);
+                for(int k = 0; k < sizeZ; k++){
+                    int meshK = (int) Math.ceil(k / 2.0);
+
+                    int meshIndex = threeD ? coordinateToIndex3D(meshI, meshJ, meshK, meshWidth, meshHeight) : coordinateToIndex2D(meshI, meshJ, meshWidth, meshHeight);
+                    int imageIndex = threeD ?  coordinateToIndex3D(i, j, k, sizeX, sizeY) : coordinateToIndex2D(i, j, sizeX, sizeY);
+                    newData[meshIndex] = data[imageIndex];
+                }
+            }
+        }
+        return new MeshData(newData, meshWidth, meshHeight, 1);
+    }
+
 
     public static int coordinateToIndex2D(int x, int y, int width, int height){
         return (y * width) + x;
@@ -74,83 +95,8 @@ public class MeshToImage {
         return oldNElements == 1 ? 1 : ((oldNElements - 2) * 2) + 2;
     }
 
-    private static ImageFromMesh convert2DMeshIntoImage(double[] data, int sizeX, int sizeY){
-        int newWidth = newNumElements(sizeX);
-        int newHeight = newNumElements(sizeY);
-        int newSize = newWidth * newHeight;
-        double[] newData = new double[newSize];
-        for (int i =0; i < newWidth; i++){
-            int oldI = (int) Math.ceil(i / 2.0);
-            for (int j=0; j < newHeight; j++){
-                int oldJ = (int) Math.ceil(j / 2.0);
-                int oldIndex = coordinateToIndex2D(oldI, oldJ, sizeX, sizeY);
-                int newIndex = coordinateToIndex2D(i, j, newWidth, newHeight);
-                newData[newIndex] = data[oldIndex];
-            }
-        }
-        return new ImageFromMesh(newData, newWidth, newHeight, 1);
-    }
-
-    private static ImageFromMesh convert3DMeshIntoImage(double[] data, int sizeX, int sizeY, int sizeZ){
-        int newWidth = newNumElements(sizeX), newHeight = newNumElements(sizeY), newDepth = newNumElements(sizeZ);
-        int newSize = newWidth * newHeight * newDepth;
-        double[] newData = new double[newSize];
-        for (int i = 0; i < newWidth; i++){
-            int oldI = (int) Math.ceil(i / 2.0);
-            for (int j = 0; j < newHeight; j++){
-                int oldJ = (int) Math.ceil(j / 2.0);
-                for (int k = 0; k < newDepth; k++){
-                    int oldK = (int) Math.ceil(k / 2.0);
-
-                    int oldIndex = coordinateToIndex3D(oldI, oldJ, oldK, sizeX, sizeY);
-                    int newIndex = coordinateToIndex3D(i, j, k, newWidth, newHeight);
-                    newData[newIndex] = data[oldIndex];
-                }
-            }
-        }
-        return new ImageFromMesh(newData, newWidth, newHeight, newDepth);
-    }
-
     public static int oldNumElements(int newNumElements){
         return ((newNumElements - 2) / 2) + 2;
-    }
-
-    private static ImageFromMesh convert2DImageIntoMesh(double[] data, int sizeX, int sizeY){
-        int meshWidth = oldNumElements(sizeX);
-        int meshHeight = oldNumElements(sizeY);
-        double[] newData = new double[meshHeight * meshWidth];
-        for (int i = 0; i < sizeX; i++){
-            int meshI = (int) Math.ceil(i / 2.0);
-            for (int j = 0; j < sizeY; j++){
-                int meshJ = (int) Math.ceil(j / 2.0);
-
-                int meshIndex = coordinateToIndex2D(meshI, meshJ, meshWidth, meshHeight);
-                int imageIndex = coordinateToIndex2D(i, j, sizeX, sizeY);
-                newData[meshIndex] = data[imageIndex];
-            }
-        }
-        return new ImageFromMesh(newData, meshWidth, meshHeight, 1);
-    }
-
-    private static ImageFromMesh convert3DImageIntoMesh(double[] data, int sizeX, int sizeY, int sizeZ){
-        int meshWidth = oldNumElements(sizeX);
-        int meshHeight = oldNumElements(sizeY);
-        int meshDepth = oldNumElements(sizeZ);
-        double[] newData = new double[meshHeight * meshWidth];
-        for (int i = 0; i < sizeX; i++){
-            int meshI = (int) Math.ceil(i / 2.0);
-            for (int j = 0; j < sizeY; j++){
-                int meshJ = (int) Math.ceil(j / 2.0);
-                for(int k = 0; k < sizeZ; k++){
-                    int meshK = (int) Math.ceil(k / 2.0);
-
-                    int meshIndex = coordinateToIndex3D(meshI, meshJ, meshK, meshWidth, meshHeight);
-                    int imageIndex = coordinateToIndex3D(i, j, k, sizeX, sizeY);
-                    newData[meshIndex] = data[imageIndex];
-                }
-            }
-        }
-        return new ImageFromMesh(newData, meshWidth, meshHeight, 1);
     }
 
     public static double[] getXYFromXYZArray(double[] xyzArray, CartesianMesh mesh, int zSlice){
