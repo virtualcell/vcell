@@ -2256,11 +2256,11 @@ private void updateChoiceVariableType(PDEDataContext pdeDataContext){
 			VariableType variableType = dataIDArr[i].getVariableType();
 
 			String varListName = dataIDArr[i].getName();//"("+vmPrefix+")  "+dataIDArr[i].getName();
-			boolean volumeButtonDecision = variableType.equals(VariableType.VOLUME) ||
+			boolean allowedVolumeExport = variableType.equals(VariableType.VOLUME) ||
 					(variableType.equals(VariableType.POSTPROCESSING) && !getSelectedFormat().equals(ExportFormat.N5));
 			if(getBothVarRadioButton().isSelected()){
 				dataIdentifierTreeSet.add(varListName);
-			}else if(getVolVarRadioButton().isSelected() && volumeButtonDecision){
+			}else if(getVolVarRadioButton().isSelected() && allowedVolumeExport){
 				dataIdentifierTreeSet.add(varListName);
 			}else if(getMembVarRadioButton().isSelected() && variableType.equals(VariableType.MEMBRANE)){
 				dataIdentifierTreeSet.add(varListName);

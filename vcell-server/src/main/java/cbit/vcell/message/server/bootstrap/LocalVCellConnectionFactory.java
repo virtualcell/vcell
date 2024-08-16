@@ -57,7 +57,6 @@ import java.util.List;
  */
 public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 	public static final Logger lg = LogManager.getLogger(LocalVCellConnectionFactory.class);
-	public final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 
 	private ConnectionFactory connectionFactory = null;
 	private final Auth0ConnectionUtils auth0ConnectionUtils;
