@@ -7,7 +7,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.restq.Simulations.Control.SimulationDispatcherEngine;
+import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngineCopy;
 import org.vcell.restq.Simulations.DTO.SimulationStatus;
 import org.vcell.restq.Simulations.DTO.StatusMessage;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -31,13 +31,13 @@ public class SimulationRestDB {
 
     private final DatabaseServerImpl databaseServerImpl;
     private final SimulationDatabaseDirect simulationDatabaseDirect;
-    private final SimulationDispatcherEngine simulationDispatcherEngine;
+    private final SimulationDispatcherEngineCopy simulationDispatcherEngine;
     private final BioModelRestDB bioModelRestDB;
 
     public SimulationRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         simulationDatabaseDirect = new SimulationDatabaseDirect(new AdminDBTopLevel(agroalConnectionFactory), databaseServerImpl, true);
-        simulationDispatcherEngine = new SimulationDispatcherEngine();
+        simulationDispatcherEngine = new SimulationDispatcherEngineCopy();
         bioModelRestDB = new BioModelRestDB(this, databaseServerImpl);
     }
 
@@ -96,8 +96,9 @@ public class SimulationRestDB {
         VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKey, vcellUser);
         SimulationRep simRep = getAndCheckSimRep(simId, vcellUser);
         try {
-            return simulationDispatcherEngine.onStartRequest(vcSimulationIdentifier, vcellUser, simRep.getScanCount(),
+            ArrayList<cbit.vcell.message.messages.StatusMessage> statusMessages = simulationDispatcherEngine.onStartRequest(vcSimulationIdentifier, vcellUser, simRep.getScanCount(),
                     simulationDatabaseDirect, null, null);
+            return StatusMessage.convertServerStatusMessages(statusMessages);
         } catch (VCMessagingException e) {
             throw new RuntimeException(e);
         }
@@ -107,7 +108,9 @@ public class SimulationRestDB {
         KeyValue simKey = new KeyValue(simId);
         getAndCheckSimRep(simId, vcellUser);
         VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKey, vcellUser);
-        return simulationDispatcherEngine.onStopRequest(vcSimulationIdentifier, vcellUser, simulationDatabaseDirect, null);
+        ArrayList<cbit.vcell.message.messages.StatusMessage> statusMessages = simulationDispatcherEngine.onStopRequest(
+                vcSimulationIdentifier, vcellUser, simulationDatabaseDirect, null);
+        return StatusMessage.convertServerStatusMessages(statusMessages);
     }
 
     public SimulationStatus getBioModelSimulationStatus(String simID, String bioModelID, User vcellUser) throws DataAccessException, SQLException {

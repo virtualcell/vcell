@@ -27,7 +27,7 @@ public record SimulationJobStatus(
                 s.getSchedulerStatus(),
                 s.getSimulationMessage(),
                 s.getTaskID(),
-                s.getServerID().toString(),
+                s.getServerID() != null ? s.getServerID().toString() : null,
                 s.getJobIndex(),
                 SimulationExecutionStatus.fromSimulationExecutionStatus(s.getSimulationExecutionStatus()),
                 SimulationQueueEntryStatus.fromStatusRecord(s.getSimulationQueueEntryStatus())
