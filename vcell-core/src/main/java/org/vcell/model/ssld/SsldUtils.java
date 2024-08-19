@@ -43,6 +43,7 @@ public class SsldUtils {
         Map<Molecule, ReactantPattern> conditionToReactantPattern = new LinkedHashMap<>();
         Map<Molecule, ProductPattern> conditionToProductPattern = new LinkedHashMap<>();
 
+
         public Mapping(SsldModel ssldModel, BioModel bioModel) {
             this.ssldModel = ssldModel;
             this.bioModel = bioModel;
@@ -179,6 +180,84 @@ public class SsldUtils {
             return conditionToProductPattern.get(ssldMolecule);
         }
 
+        // creation / decay reactions have special needs
+        Map<Molecule, DecayReaction> ssldMoleculeToCreationReactions = new LinkedHashMap<>();   // creation only
+        Map<Molecule, DecayReaction> ssldMoleculeToDecayReactions = new LinkedHashMap<>();      // destruction only
+        Map<Molecule, MolecularType> moleculeToSourceMap = new LinkedHashMap<>();  // molecules being created need a source
+        Map<Molecule, MolecularType> moleculeToSinkMap = new LinkedHashMap<>();     // molecules being destroyed need a sink
+        Map<Structure, MolecularType> structureToSourceMap = new LinkedHashMap<>(); // structure where the Source species will be located
+        Map<Structure, MolecularType> structureToSinkMap = new LinkedHashMap<>();   // structure where the Sink species will be located
+
+        void putMoleculeCreated(Molecule ssldMolecule, DecayReaction ssldReaction) {
+            if(ssldMoleculeToCreationReactions.containsKey(ssldMolecule)) {
+                throw new RuntimeException("ssldMoleculeToCreationReactions: Duplicate key");
+            }
+            ssldMoleculeToCreationReactions.put(ssldMolecule, ssldReaction);
+        }
+        DecayReaction getCreationReactionOfMolecule(Molecule ssldMolecule) {
+            return ssldMoleculeToCreationReactions.get(ssldMolecule);
+        }
+        void putMoleculeDecayed(Molecule ssldMolecule, DecayReaction ssldReaction) {
+            if(ssldMoleculeToDecayReactions.containsKey(ssldMolecule)) {
+                throw new RuntimeException("ssldMoleculeToDecayReactions: Duplicate key");
+            }
+            ssldMoleculeToDecayReactions.put(ssldMolecule, ssldReaction);
+        }
+        DecayReaction getDecayReactionOfMolecule(Molecule ssldMolecule) {
+            return ssldMoleculeToDecayReactions.get(ssldMolecule);
+        }
+        Map<Molecule, DecayReaction> getMoleculeToCreationReactionsMap() {
+            return (ssldMoleculeToCreationReactions);
+        }
+        Map<Molecule, DecayReaction> getMoleculeToDecayReactionsMap() {
+            return (ssldMoleculeToDecayReactions);
+        }
+        // --------------------------------------------------------------------------
+        void putMoleculeToSource(Molecule ssldMolecule, MolecularType source) {     // the Source used to create this ssld molecule
+            if(moleculeToSourceMap.containsKey(ssldMolecule)) {
+                throw new RuntimeException("moleculeToSourceMap: Duplicate key");
+            }
+            moleculeToSourceMap.put(ssldMolecule, source);
+        }
+        void putMoleculeToSink(Molecule ssldMolecule, MolecularType sink) {     // the Sink into which this ssld molecule decays
+            if(moleculeToSinkMap.containsKey(ssldMolecule)) {
+                throw new RuntimeException("moleculeToSinkMap: Duplicate key");
+            }
+            moleculeToSinkMap.put(ssldMolecule, sink);
+        }
+        MolecularType getSource(Molecule ssldMolecule) {    // the vcell Source molecule used to create this ssld molecule
+            return moleculeToSourceMap.get(ssldMolecule);
+        }
+        MolecularType getSink(Molecule ssldMolecule) {    // the vcell Sink molecule used to create this ssld molecule
+            return moleculeToSinkMap.get(ssldMolecule);
+        }
+        // ----------------------------------------------------------------------------
+        void putStructureOfSource(Structure structure, MolecularType source) {  // this structure will have a Source species context for this molecule
+            if(structureToSourceMap.containsKey(structure)) {
+                MolecularType thatSource = structureToSourceMap.get(structure);
+                if(thatSource != source) {
+                    throw new RuntimeException("structureToSourceMap: Different value already present for this key");
+                }
+                return;
+            }
+            structureToSourceMap.put(structure, source);
+        }
+        void putStructureOfSink(Structure structure, MolecularType sink) {  // this structure will have a Sink species context for this molecule
+            if(structureToSinkMap.containsKey(structure)) {
+                MolecularType thatSink = structureToSinkMap.get(structure);
+                if(thatSink == sink) {
+                    throw new RuntimeException("structureToSinkMap: Different value already present for this key");
+                }
+                return;     // already there
+            }
+            structureToSinkMap.put(structure, sink);
+        }
+        MolecularType getSource(Structure structure) {
+            return structureToSourceMap.get(structure);
+        }
+        MolecularType getSink(Structure structure) {
+            return structureToSinkMap.get(structure);
+        }
 
     }
 
@@ -233,8 +312,48 @@ public class SsldUtils {
             m.put(ssldMolecule, mt);
             model.getRbmModelContainer().addMolecularType(mt, false);
         }
-        // ---------- Species Contexts
+
+        // if we have creation / decay reactions we must make the reserved molecules Sink and Source.
+        for(Molecule ssldMolecule : ssldModel.getMolecules()) {
+            DecayReaction ssldReaction = ssldMolecule.getDecayReaction();
+            if(ssldReaction != null && ssldReaction.getCreationRate() != 0) {
+                m.putMoleculeCreated(ssldMolecule, ssldReaction);
+            }
+            if(ssldReaction != null && ssldReaction.getDecayRate() != 0) {
+                m.putMoleculeDecayed(ssldMolecule, ssldReaction);
+            }
+        }
+        MolecularType mtSource = null;  // make the molecular type for Source and Sink if needed
+        MolecularType mtSink = null;
+        if(!m.getMoleculeToCreationReactionsMap().isEmpty()) {
+            mtSource = new MolecularType(SpeciesContextSpec.SourceMoleculeString, model);
+            model.getRbmModelContainer().addMolecularType(mtSource, false);
+        }
+        if(!m.getMoleculeToDecayReactionsMap().isEmpty()) {
+            mtSink = new MolecularType(SpeciesContextSpec.SinkMoleculeString, model);
+            model.getRbmModelContainer().addMolecularType(mtSink, false);
+        }
+        for(Molecule ssldMolecule : ssldModel.getMolecules()) {
+            DecayReaction ssldReaction = ssldMolecule.getDecayReaction();
+            if(ssldReaction != null && ssldReaction.getCreationRate() != 0) {
+                m.putMoleculeToSource(ssldMolecule, mtSource);
+                Structure struct = bioModel.getModel().getStructure(ssldMolecule.getLocation());
+                m.putStructureOfSource(struct, mtSource);
+
+            }
+            if(ssldReaction != null && ssldReaction.getDecayRate() != 0) {
+                m.putMoleculeToSink(ssldMolecule, mtSink);
+                Structure struct = bioModel.getModel().getStructure(ssldMolecule.getLocation());
+                m.putStructureOfSink(struct, mtSink);
+            }
+        }
+
+            // ---------- Species Contexts
         // TODO: make these
+        if(mtSource != null) {
+
+        }
+
 
         // ---------- Transition Reactions
         for(TransitionReaction ssldReaction : ssldModel.getTransitionReactions()) {
@@ -329,30 +448,14 @@ public class SsldUtils {
         // ---------- Decay reactions
         // in vcell creation and destruction reactions are separate
         // ssls decay reactions are being stored in the molecule rather than the model
-        Map<Molecule, DecayReaction> ssldMoleculeToCreationReactions = new LinkedHashMap<>();
-        Map<Molecule, DecayReaction> ssldMoleculeToDestructionReactions = new LinkedHashMap<>();
-        for(Molecule ssldMolecule : ssldModel.getMolecules()) {
-            DecayReaction ssldReaction = ssldMolecule.getDecayReaction();
-            if(ssldReaction != null && ssldReaction.getCreationRate() != 0) {
-                ssldMoleculeToCreationReactions.put(ssldMolecule, ssldReaction);
-            }
-            if(ssldReaction != null && ssldReaction.getDecayRate() != 0) {
-                ssldMoleculeToDestructionReactions.put(ssldMolecule, ssldReaction);
-            }
-        }
-        if(!ssldMoleculeToCreationReactions.isEmpty()) {
-            MolecularType mtSource = new MolecularType(SpeciesContextSpec.SourceMoleculeString, model);
-            model.getRbmModelContainer().addMolecularType(mtSource, false);
-            for (Map.Entry<Molecule, DecayReaction> entry : ssldMoleculeToCreationReactions.entrySet()) {
+        if(!m.getMoleculeToCreationReactionsMap().isEmpty()) {
+            for (Map.Entry<Molecule, DecayReaction> entry : m.ssldMoleculeToCreationReactions.entrySet()) {
                 // mtSource -> ssldMolecule  (Creation Reaction)
                 Molecule ssldMolecule = entry.getKey();
-                DecayReaction ssldReaction = entry.getValue();
+                DecayReaction ssldReaction = entry.getValue();  // the reaction name is the name of the molecule
                 double ssldRate = ssldReaction.getCreationRate();
                 Expression kf = new Expression(ssldRate);
-                String suffix = ""; // if a ssld molecule has both rates, we need to add a suffix to reaction names (because we make 2 distinct reactions)
-                if(ssldReaction.getDecayRate() != 0) {
-                    suffix = "_Creation";
-                }
+                String suffix = "_Creation"; // we add a suffix to reaction names (because we may make 2 distinct reactions)
 
                 String location = ssldMolecule.getLocation();
                 Structure structure = model.getStructure(location);
@@ -375,19 +478,14 @@ public class SsldUtils {
                 bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
             }
         }
-        if(!ssldMoleculeToDestructionReactions.isEmpty()) {
-            MolecularType mtSink = new MolecularType(SpeciesContextSpec.SinkMoleculeString, model);
-            model.getRbmModelContainer().addMolecularType(mtSink, false);
-            for (Map.Entry<Molecule, DecayReaction> entry : ssldMoleculeToDestructionReactions.entrySet()) {
+        if(!m.getMoleculeToDecayReactionsMap().isEmpty()) {
+            for (Map.Entry<Molecule, DecayReaction> entry : m.getMoleculeToDecayReactionsMap().entrySet()) {
                 // ssldMolecule -> mtSink (Decay reaction)
                 Molecule ssldMolecule = entry.getKey();
-                DecayReaction ssldReaction = entry.getValue();
+                DecayReaction ssldReaction = entry.getValue();  // the reaction name is the name of the molecule
                 double ssldRate = ssldReaction.getDecayRate();
                 Expression kf = new Expression(ssldRate);
-                String suffix = "";
-                if(ssldReaction.getCreationRate() != 0) {
-                    suffix = "_Decay";
-                }
+                String suffix = "_Decay";
 
                 String location = ssldMolecule.getLocation();
                 Structure structure = model.getStructure(location);
