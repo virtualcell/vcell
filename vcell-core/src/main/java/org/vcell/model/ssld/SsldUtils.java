@@ -28,6 +28,9 @@ public class SsldUtils {
         Map<MolecularType, Molecule> molecularTypeToMoleculeMap = new LinkedHashMap<>();
         Map<SiteType, MolecularComponent> typeToComponentMap = new LinkedHashMap<>();
         Map<MolecularComponent, SiteType> componentToTypeMap = new LinkedHashMap<>();
+        // ssld initial condition <-> vcell species contexts
+        Map<Molecule, SpeciesContext> moleculeToSpeciesContextMap = new LinkedHashMap<>();
+        Map<SpeciesContext, Molecule> speciesContextToMoleculeMap = new LinkedHashMap<>();
 
         Map<Reaction, ReactionRule> reactionToReactionRuleMap = new LinkedHashMap<>();
         Map<ReactionRule, Reaction> reactionRuleToReactionMap = new LinkedHashMap<>();
@@ -90,6 +93,23 @@ public class SsldUtils {
         }
         MolecularComponent get(SiteType st) {
             return typeToComponentMap.get(st);
+        }
+
+        void put(Molecule ssldMolecule, SpeciesContext sc) {
+            if(moleculeToSpeciesContextMap.containsKey(ssldMolecule)) {
+                throw new RuntimeException("moleculeToSpeciesContextMap: Duplicate Key");
+            }
+            if(speciesContextToMoleculeMap.containsKey(ssldMolecule)) {
+                throw new RuntimeException("speciesContextToMoleculeMap: Duplicate Key");
+            }
+            moleculeToSpeciesContextMap.put(ssldMolecule, sc);
+            speciesContextToMoleculeMap.put(sc, ssldMolecule);
+        }
+        SpeciesContext getSpeciesContext(Molecule ssldMolecule) {
+            return moleculeToSpeciesContextMap.get(ssldMolecule);
+        }
+        Molecule getMolecule(SpeciesContext sp) {
+            return speciesContextToMoleculeMap.get(sp);
         }
 
         void put(Reaction r, ReactionRule rr) {
@@ -348,14 +368,72 @@ public class SsldUtils {
             }
         }
 
-            // ---------- Species Contexts
-        // TODO: make these
+        // ---------- Species Contexts
+        // the Source and the Sink species contexts, if exist
         if(mtSource != null) {
+            for(Map.Entry<Structure, MolecularType> entry : m.structureToSourceMap.entrySet()) {
+                Structure struct = entry.getKey();
+                MolecularType mt = entry.getValue();
+                if(mtSource != mt) {
+                    throw new RuntimeException("The 'Source' molecular type is duplicated");
+                }
+                MolecularTypePattern mtp = new MolecularTypePattern(mt, false);     // we shouldn't have any components
+                SpeciesPattern sp = new SpeciesPattern();
+                sp.addMolecularTypePattern(mtp);
+                Species species = new Species(mt.getName(), mt.getName());
+                SpeciesContext speciesContext = new SpeciesContext(species, struct, sp);
+                model.addSpecies(speciesContext.getSpecies());
+                model.addSpeciesContext(speciesContext);
+            }
+        }
+        if(mtSink != null) {
+            for(Map.Entry<Structure, MolecularType> entry : m.structureToSinkMap.entrySet()) {
+                Structure struct = entry.getKey();
+                MolecularType mt = entry.getValue();
+                if(mtSink != mt) {
+                    throw new RuntimeException("The 'Sink' molecular type is duplicated");
+                }
+                MolecularTypePattern mtp = new MolecularTypePattern(mt, false);     // we shouldn't have any components
+                SpeciesPattern sp = new SpeciesPattern();
+                sp.addMolecularTypePattern(mtp);
+                Species species = new Species(mt.getName(), mt.getName());
+                SpeciesContext speciesContext = new SpeciesContext(species, struct, sp);
+                model.addSpecies(speciesContext.getSpecies());
+                model.addSpeciesContext(speciesContext);
+            }
+        }
+        // make the concrete species (SpeciesContexts)
+        for(Molecule ssldMolecule : ssldModel.getMolecules()) {
+            MolecularType mt = m.get(ssldMolecule);
+            Structure struct = bioModel.getModel().getStructure(ssldMolecule.getLocation());
+            List<MolecularComponentPattern> mcpList = new ArrayList<> ();
+            ArrayList<Site> ssldSiteList = ssldMolecule.getSiteArray();
+            for(Site ssldSite : ssldSiteList) {
+                SiteType ssldType = ssldSite.getType();
+                MolecularComponent mc = m.get(ssldType);
+                State ssldState = ssldSite.getInitialState();
+                ComponentStateDefinition csd = mc.getComponentStateDefinition(ssldState.getName());
+                ComponentStatePattern csp = new ComponentStatePattern(csd);
+                MolecularComponentPattern mcp = new MolecularComponentPattern(mc);
+                mcp.setComponentStatePattern(csp);
+                mcp.setBondType(MolecularComponentPattern.BondType.None);
+                mcpList.add(mcp);
+            }
+            MolecularTypePattern mtp = new MolecularTypePattern(mt, false);
+            mtp.setComponentPatterns(mcpList);
 
+            SpeciesPattern sp = new SpeciesPattern();
+            sp.addMolecularTypePattern(mtp);
+            Species species = new Species(mt.getName(), mt.getName());
+            SpeciesContext speciesContext = new SpeciesContext(species, struct, sp);    // makes name from species and struct names
+            speciesContext.setName(mt.getName());       // we want species context name identical with molecule name
+            model.addSpecies(speciesContext.getSpecies());
+            model.addSpeciesContext(speciesContext);
+            m.put(ssldMolecule, speciesContext);
         }
 
 
-        // ---------- Transition Reactions
+            // ---------- Transition Reactions
         for(TransitionReaction ssldReaction : ssldModel.getTransitionReactions()) {
             m.cleanReactionsMaps();
             boolean reversible = false;
