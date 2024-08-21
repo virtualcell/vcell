@@ -4,33 +4,140 @@ import cbit.vcell.message.server.cmd.CommandServiceSshNative;
 import cbit.vcell.message.server.htc.HtcJobStatus;
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.HtcJobID;
+import cbit.vcell.simdata.PortableCommand;
+import cbit.vcell.solvers.ExecutableCommand;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 import org.vcell.util.exe.ExecutableException;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
-@Disabled
 public class SlurmProxyTest {
 
     @BeforeAll
-    public static void setLogger() throws MalformedURLException
+    public static void setProperties() throws MalformedURLException
     {
-//        System.setProperty("log4j.configurationFile","/Users/schaff/Documents/workspace-modular/vcell/docker/trace.log4j2.xml");
+		System.setProperty(PropertyLoader.vcellServerIDProperty,"REL");
+		System.setProperty(PropertyLoader.htcLogDirExternal,"/share/apps/vcell3/htclogs");
+		System.setProperty(PropertyLoader.slurm_partition,"vcell");
+		System.setProperty(PropertyLoader.slurm_reservation,"");
+		System.setProperty(PropertyLoader.slurm_qos,"vcell");
+		System.setProperty(PropertyLoader.primarySimDataDirExternalProperty,"/share/apps/vcell3/users");
+		System.setProperty(PropertyLoader.secondarySimDataDirExternalProperty,"/share/apps/vcell7/users");
+		System.setProperty(PropertyLoader.jmsSimHostExternal, "rke-wn-01.cam.uchc.edu");
+		System.setProperty(PropertyLoader.jmsSimPortExternal, "31618");
+		System.setProperty(PropertyLoader.jmsSimRestPortExternal, "30163");
+		System.setProperty(PropertyLoader.jmsUser, "clientUser");
+		System.setProperty(PropertyLoader.jmsPasswordValue, "dummy");
+		System.setProperty(PropertyLoader.mongodbHostExternal, "rke-wn-01.cam.uchc.edu");
+		System.setProperty(PropertyLoader.mongodbPortExternal, "30019");
+		System.setProperty(PropertyLoader.mongodbDatabase, "test");
+		System.setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.6.0_build_28");
+		System.setProperty(PropertyLoader.vcellbatch_singularity_image, "/state/partition1/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img");
+		System.setProperty(PropertyLoader.slurm_tmpdir, "/scratch/vcell");
+		System.setProperty(PropertyLoader.slurm_central_singularity_dir, "/share/apps/vcell3/singularityImages");
+		System.setProperty(PropertyLoader.slurm_local_singularity_dir, "/state/partition1/singularityImages");
+		System.setProperty(PropertyLoader.slurm_singularity_module_name, "singularity/vcell-3.10.0");
+		System.setProperty(PropertyLoader.simDataDirArchiveExternal, "/share/apps/vcell12/users");
+		System.setProperty(PropertyLoader.simDataDirArchiveInternal, "/share/apps/vcell12/users");
+		System.setProperty(PropertyLoader.nativeSolverDir_External, "/share/apps/vcell3/nativesolvers");
+		System.setProperty(PropertyLoader.jmsBlobMessageMinSize, "100000");
+		System.setProperty(PropertyLoader.simulationPostprocessor, "JavaPostprocessor64");
+		System.setProperty(PropertyLoader.simulationPreprocessor, "JavaPreprocessor64");
     }
-    
-	
+
+	@Test
+	public void testSimJobScript() throws IOException, XmlParseException, ExpressionException {
+
+		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource("slurm_fixtures/finite_volume/SimID_274514696_0__0.simtask.xml"));
+
+		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
+		// make temp file
+		Path submitScript = Files.createTempFile("submit_script",".sh");
+		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_274514696_0_0.slurm.sub");
+		String JOB_NAME = "V_REL_274514696_0_0";
+
+		KeyValue simKey = simTask.getSimKey();
+		User simOwner = simTask.getSimulation().getVersion().getOwner();
+		final int jobId = simTask.getSimulationJob().getJobIndex();
+
+		// preprocessor
+		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_274514696_0__0.simtask.xml";
+		File primaryUserDirExternal = new File("/share/apps/vcell3/users/schaff");
+		List<String> args = new ArrayList<>( 4 );
+		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
+		args.add( simTaskFilePathExternal );
+		args.add( primaryUserDirExternal.getAbsolutePath() );
+		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
+
+		// finite volume solver invocation
+		ExecutableCommand solverCmd = new ExecutableCommand(
+				new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64"),
+				"/usr/local/app/localsolvers/linux64/FiniteVolume_x64",
+				"/share/apps/vcell3/users/schaff/SimID_274514696_0_.fvinput",
+				"-tid",
+				"0");
+
+		// postprocessor
+		final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
+		ExecutableCommand postprocessorCmd = new ExecutableCommand(null,false, false,
+				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor),
+				simKey.toString(),
+				simOwner.getName(),
+				simOwner.getID().toString(),
+				Integer.toString(jobId),
+				Integer.toString(simTask.getTaskID()),
+				SOLVER_EXIT_CODE_REPLACE_STRING,
+				subFileExternal.getAbsolutePath());
+		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
+
+		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
+		commandSet.add(preprocessorCmd);
+		commandSet.add(solverCmd);
+		commandSet.add(postprocessorCmd);
+
+		int NUM_CPUs = 1;
+		int MEM_SIZE_MB = 1000;
+		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/finite_volume/V_REL_274514696_0_0.slurm.sub");
+		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
+		String slurmScript = FileUtils.readFileToString(submitScript.toFile());
+		Assertions.assertEquals(expectedSlurmScript, slurmScript);
+	}
+
+	private String readTextFileFromResource(String filename) throws IOException {
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filename);
+		if (inputStream == null) {
+			throw new IOException("Resource not found: " + filename);
+		}
+		String xmlString;
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+			xmlString = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+		}
+		return xmlString;
+	}
+
+	@Disabled // this test is disabled because it requires a running slurm server
 	@Test
 	public void testSingularitySupport() throws IOException, ExecutableException {
 		CommandServiceSshNative cmd = null;
@@ -115,12 +222,12 @@ public class SlurmProxyTest {
 		}
 	}
 
-	
+
+	@Disabled // this test is disabled because it requires a running slurm server
 	@Test
 	public void testSLURM() throws IOException, ExecutableException {
 		System.setProperty("log4j2.trace","true");
 		PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "Test2");
-		PropertyLoader.setProperty(PropertyLoader.htcLogDirExternal, "/Volumes/vcell/htclogs");
 		VCMongoMessage.enabled=false;
 		String partitions[] = new String[] { "vcell", "vcell2" };
 		PropertyLoader.setProperty(PropertyLoader.slurm_partition, partitions[0]);

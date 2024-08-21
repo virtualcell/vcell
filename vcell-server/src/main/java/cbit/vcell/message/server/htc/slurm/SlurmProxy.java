@@ -1,15 +1,5 @@
 package cbit.vcell.message.server.htc.slurm;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.*;
-
-import org.vcell.util.FileUtils;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.exe.ExecutableException;
-
 import cbit.vcell.message.server.cmd.CommandService;
 import cbit.vcell.message.server.cmd.CommandService.CommandOutput;
 import cbit.vcell.message.server.cmd.CommandServiceLocal;
@@ -28,6 +18,15 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
 import edu.uchc.connjur.wb.LineStringBuilder;
+import org.vcell.util.FileUtils;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.exe.ExecutableException;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.*;
 
 public class SlurmProxy extends HtcProxy {
 	
@@ -811,17 +810,21 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	@Override
-	public HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException {
-		try {
+	public HtcJobID submitJob(String jobName, File sub_file_as_internal_path, File sub_file_with_external_path, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException, IOException {
+		saveJobScript(jobName, sub_file_as_internal_path, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+		return submitJobFile(sub_file_with_external_path);
+	}
+
+	public void saveJobScript(String jobName, File sub_file_as_internal_path, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws IOException {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
 			}
 			SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
 			final String SUB = ".sub";
-			//String slurmRootName = sub_file_external.getName().substring(0, sub_file_external.getName().length()-SUB.length());
+			//String slurmRootName = sub_file_with_external_path.getName().substring(0, sub_file_with_external_path.getName().length()-SUB.length());
 			//String child = slurmRootName+".sh";
-			//File intSolverScriptFile = new File(sub_file_internal.getParentFile(),child);
-			//File extSolverScriptFile = new File(sub_file_external.getParentFile(),child);
+			//File intSolverScriptFile = new File(sub_file_as_internal_path.getParentFile(),child);
+			//File extSolverScriptFile = new File(sub_file_with_external_path.getParentFile(),child);
 			StringBuilder scriptContent = new StringBuilder();
 
 			//Write the .slurm.sh File that the .slurm.sub file references and make it executable
@@ -1013,8 +1016,8 @@ public class SlurmProxy extends HtcProxy {
 			//----------Add solver script path to sbatch file, write the .slurm.sub file
 			String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
 //			if(isCompleteMultiTrialArray) {
-//				substitutedSbatchCommands = substitutedSbatchCommands.replaceAll("#SBATCH -o.*", "#SBATCH -o "+new File(sub_file_external.getParent(),slurmRootName+".log").getAbsolutePath()+"_%a");
-//				substitutedSbatchCommands = substitutedSbatchCommands.replaceAll("#SBATCH -e.*", "#SBATCH -e "+new File(sub_file_external.getParent(),slurmRootName+".log").getAbsolutePath()+"_%a");
+//				substitutedSbatchCommands = substitutedSbatchCommands.replaceAll("#SBATCH -o.*", "#SBATCH -o "+new File(sub_file_with_external_path.getParent(),slurmRootName+".log").getAbsolutePath()+"_%a");
+//				substitutedSbatchCommands = substitutedSbatchCommands.replaceAll("#SBATCH -e.*", "#SBATCH -e "+new File(sub_file_with_external_path.getParent(),slurmRootName+".log").getAbsolutePath()+"_%a");
 //				substitutedSbatchCommands+= "#SBATCH --array=1-"+slurmArrayCount;
 //			}
 			File tempFile = File.createTempFile("tempSubFile", SUB);
@@ -1026,18 +1029,10 @@ public class SlurmProxy extends HtcProxy {
 
 			// move submission file to final location (either locally or remotely).
 			if (LG.isDebugEnabled()) {
-				LG.debug("moving local SLURM submit file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_external+"'");
+				LG.debug("moving local SLURM submit file '"+tempFile.getAbsolutePath()+"' to remote file '"+sub_file_as_internal_path+"'");
 			}
-			FileUtils.copyFile(tempFile, sub_file_internal);
+			FileUtils.copyFile(tempFile, sub_file_as_internal_path);
 			tempFile.delete();
-			//----------
-
-		} catch (IOException ex) {
-			LG.error(ex);
-			return null;
-		}
-
-		return submitJobFile(sub_file_external);
 	}
 
 	HtcJobID submitJobFile(File sub_file_external) throws ExecutableException {
