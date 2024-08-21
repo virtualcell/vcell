@@ -66,23 +66,21 @@ public class SlurmProxyTest {
 		System.setProperty(PropertyLoader.simulationPreprocessor, "JavaPreprocessor64");
     }
 
-	@Test
-	public void testSimJobScriptFiniteVolume() throws IOException, XmlParseException, ExpressionException {
+	public String createScriptForNativeSolvers(String simTaskResourcePath, String solverExeName, String inputFileSuffix, String outputFileSuffix, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
-		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource("slurm_fixtures/finite_volume/SimID_274514696_0__0.simtask.xml"));
+		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
+		KeyValue simKey = simTask.getSimKey();
 
 		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
 		// make temp file
 		Path submitScript = Files.createTempFile("submit_script",".sh");
-		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_274514696_0_0.slurm.sub");
-		String JOB_NAME = "V_REL_274514696_0_0";
+		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_"+simKey+"_0_0.slurm.sub");
 
-		KeyValue simKey = simTask.getSimKey();
 		User simOwner = simTask.getSimulation().getVersion().getOwner();
 		final int jobId = simTask.getSimulationJob().getJobIndex();
 
 		// preprocessor
-		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_274514696_0__0.simtask.xml";
+		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0__0.simtask.xml";
 		File primaryUserDirExternal = new File("/share/apps/vcell3/users/schaff");
 		List<String> args = new ArrayList<>( 4 );
 		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
@@ -90,13 +88,16 @@ public class SlurmProxyTest {
 		args.add( primaryUserDirExternal.getAbsolutePath() );
 		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
 
-		// finite volume solver invocation
-		ExecutableCommand solverCmd = new ExecutableCommand(
-				new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64"),
-				"/usr/local/app/localsolvers/linux64/FiniteVolume_x64",
-				"/share/apps/vcell3/users/schaff/SimID_274514696_0_.fvinput",
-				"-tid",
-				"0");
+		ExecutableCommand.LibraryPath libraryPath = new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64");
+		String command = "/usr/local/app/localsolvers/linux64/"+solverExeName;
+		String inputFilePath = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0_."+inputFileSuffix;
+		String outputFilePath = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0_."+outputFileSuffix;
+		final ExecutableCommand solverCmd;
+		if (outputFileSuffix == null) {
+			solverCmd = new ExecutableCommand(libraryPath, command, inputFilePath, "-tid", "0");
+		} else {
+			solverCmd = new ExecutableCommand(libraryPath, command, inputFilePath, outputFilePath, "-tid", "0");
+		}
 
 		// postprocessor
 		final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
@@ -119,190 +120,99 @@ public class SlurmProxyTest {
 		int NUM_CPUs = 1;
 		int MEM_SIZE_MB = 1000;
 		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
-		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/finite_volume/V_REL_274514696_0_0.slurm.sub");
 		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
 		String slurmScript = FileUtils.readFileToString(submitScript.toFile());
+		return slurmScript;
+	}
+
+	public String createScriptForJavaSolvers(String simTaskResourcePath, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
+
+		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
+		KeyValue simKey = simTask.getSimKey();
+
+		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
+		// make temp file
+		Path submitScript = Files.createTempFile("submit_script",".sh");
+		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_"+simKey+"_0_0.slurm.sub");
+
+		User simOwner = simTask.getSimulation().getVersion().getOwner();
+		final int jobId = simTask.getSimulationJob().getJobIndex();
+
+		ExecutableCommand.LibraryPath libraryPath = null;
+		String command = "JavaSimExe64";
+		String userDir = "/share/apps/vcell3/users/schaff";
+		String simTaskRemoteFilename = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0__0.simtask.xml";
+        final ExecutableCommand solverCmd = new ExecutableCommand(libraryPath, command, simTaskRemoteFilename, userDir);
+
+		// postprocessor
+		final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
+		ExecutableCommand postprocessorCmd = new ExecutableCommand(null,false, false,
+				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor),
+				simKey.toString(),
+				simOwner.getName(),
+				simOwner.getID().toString(),
+				Integer.toString(jobId),
+				Integer.toString(simTask.getTaskID()),
+				SOLVER_EXIT_CODE_REPLACE_STRING,
+				subFileExternal.getAbsolutePath());
+		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
+
+		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
+		commandSet.add(solverCmd);
+		commandSet.add(postprocessorCmd);
+
+		int NUM_CPUs = 1;
+		int MEM_SIZE_MB = 1000;
+		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
+		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
+		String slurmScript = FileUtils.readFileToString(submitScript.toFile());
+		return slurmScript;
+	}
+
+	@Test
+	public void testSimJobScriptFiniteVolume() throws IOException, XmlParseException, ExpressionException {
+		String simTaskResourcePath = "slurm_fixtures/finite_volume/SimID_274514696_0__0.simtask.xml";
+		String JOB_NAME = "V_REL_274514696_0_0";
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, "FiniteVolume_x64", "fvinput", null, JOB_NAME);
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/finite_volume/V_REL_274514696_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript, slurmScript);
 	}
 
 	@Test
 	public void testSimJobScriptSmoldyn() throws IOException, XmlParseException, ExpressionException {
-
-		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource("slurm_fixtures/smoldyn/SimID_274630052_0__0.simtask.xml"));
-
-		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
-		// make temp file
-		Path submitScript = Files.createTempFile("submit_script",".sh");
-		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_274630052_0_0.slurm.sub");
+		String simTaskResourcePath = "slurm_fixtures/smoldyn/SimID_274630052_0__0.simtask.xml";
 		String JOB_NAME = "V_REL_274630052_0_0";
-
-		KeyValue simKey = simTask.getSimKey();
-		User simOwner = simTask.getSimulation().getVersion().getOwner();
-		final int jobId = simTask.getSimulationJob().getJobIndex();
-
-		// preprocessor
-		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_274630052_0__0.simtask.xml";
-		File primaryUserDirExternal = new File("/share/apps/vcell3/users/schaff");
-		List<String> args = new ArrayList<>( 4 );
-		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
-		args.add( simTaskFilePathExternal );
-		args.add( primaryUserDirExternal.getAbsolutePath() );
-		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
-
-		// finite volume solver invocation
-		ExecutableCommand solverCmd = new ExecutableCommand(
-				new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64"),
-				"/usr/local/app/localsolvers/linux64/smoldyn_x64",
-				"/share/apps/vcell3/users/schaff/SimID_274630052_0_.smoldynInput",
-				"-tid",
-				"0");
-
-		// postprocessor
-		final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
-		ExecutableCommand postprocessorCmd = new ExecutableCommand(null,false, false,
-				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor),
-				simKey.toString(),
-				simOwner.getName(),
-				simOwner.getID().toString(),
-				Integer.toString(jobId),
-				Integer.toString(simTask.getTaskID()),
-				SOLVER_EXIT_CODE_REPLACE_STRING,
-				subFileExternal.getAbsolutePath());
-		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
-
-		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
-		commandSet.add(preprocessorCmd);
-		commandSet.add(solverCmd);
-		commandSet.add(postprocessorCmd);
-
-		int NUM_CPUs = 1;
-		int MEM_SIZE_MB = 1000;
-		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, "smoldyn_x64", "smoldynInput", null, JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/smoldyn/V_REL_274630052_0_0.slurm.sub");
-		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
-		String slurmScript = FileUtils.readFileToString(submitScript.toFile());
 		Assertions.assertEquals(expectedSlurmScript, slurmScript);
 	}
 
 	@Test
 	public void testSimJobScriptCVODE() throws IOException, XmlParseException, ExpressionException {
-
-		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource("slurm_fixtures/cvode/SimID_274630682_0__0.simtask.xml"));
-
-		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
-		// make temp file
-		Path submitScript = Files.createTempFile("submit_script",".sh");
-		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_274630682_0_0.slurm.sub");
+		String simTaskResourcePath = "slurm_fixtures/cvode/SimID_274630682_0__0.simtask.xml";
 		String JOB_NAME = "V_REL_274630682_0_0";
-
-		KeyValue simKey = simTask.getSimKey();
-		User simOwner = simTask.getSimulation().getVersion().getOwner();
-		final int jobId = simTask.getSimulationJob().getJobIndex();
-
-		// preprocessor
-		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_274630682_0__0.simtask.xml";
-		File primaryUserDirExternal = new File("/share/apps/vcell3/users/schaff");
-		List<String> args = new ArrayList<>( 4 );
-		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
-		args.add( simTaskFilePathExternal );
-		args.add( primaryUserDirExternal.getAbsolutePath() );
-		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
-
-		// finite volume solver invocation
-		ExecutableCommand solverCmd = new ExecutableCommand(
-				new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64"),
-				"/usr/local/app/localsolvers/linux64/SundialsSolverStandalone_x64",
-				"/share/apps/vcell3/users/schaff/SimID_274630682_0_.cvodeInput",
-				"/share/apps/vcell3/users/schaff/SimID_274630682_0_.ida",
-				"-tid",
-				"0");
-
-		// postprocessor
-		final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
-		ExecutableCommand postprocessorCmd = new ExecutableCommand(null,false, false,
-				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor),
-				simKey.toString(),
-				simOwner.getName(),
-				simOwner.getID().toString(),
-				Integer.toString(jobId),
-				Integer.toString(simTask.getTaskID()),
-				SOLVER_EXIT_CODE_REPLACE_STRING,
-				subFileExternal.getAbsolutePath());
-		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
-
-		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
-		commandSet.add(preprocessorCmd);
-		commandSet.add(solverCmd);
-		commandSet.add(postprocessorCmd);
-
-		int NUM_CPUs = 1;
-		int MEM_SIZE_MB = 1000;
-		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, "SundialsSolverStandalone_x64", "cvodeInput", "ida", JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/cvode/V_REL_274630682_0_0.slurm.sub");
-		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
-		String slurmScript = FileUtils.readFileToString(submitScript.toFile());
 		Assertions.assertEquals(expectedSlurmScript, slurmScript);
 	}
 
 	@Test
 	public void testSimJobScriptRK45() throws IOException, XmlParseException, ExpressionException {
-
-		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource("slurm_fixtures/runge_kutta_fehlberg/SimID_274631114_0__0.simtask.xml"));
-
-		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
-		// make temp file
-		Path submitScript = Files.createTempFile("submit_script",".sh");
-		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_274631114_0_0.slurm.sub");
+		String simTaskResourcePath = "slurm_fixtures/runge_kutta_fehlberg/SimID_274631114_0__0.simtask.xml";
 		String JOB_NAME = "V_REL_274631114_0_0";
-
-		KeyValue simKey = simTask.getSimKey();
-		User simOwner = simTask.getSimulation().getVersion().getOwner();
-		final int jobId = simTask.getSimulationJob().getJobIndex();
-
-		// preprocessor
-//		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_274631114_0__0.simtask.xml";
-//		File primaryUserDirExternal = new File("/share/apps/vcell3/users/schaff");
-//		List<String> args = new ArrayList<>( 4 );
-//		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
-//		args.add( simTaskFilePathExternal );
-//		args.add( primaryUserDirExternal.getAbsolutePath() );
-//		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
-
-		// finite volume solver invocation
-		ExecutableCommand.LibraryPath libraryPath = null;
-		ExecutableCommand solverCmd = new ExecutableCommand(
-				libraryPath,
-				"JavaSimExe64",
-				"/share/apps/vcell3/users/schaff/SimID_274631114_0__0.simtask.xml",
-				"/share/apps/vcell3/users/schaff");
-
-		// postprocessor
-		final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
-		ExecutableCommand postprocessorCmd = new ExecutableCommand(null,false, false,
-				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor),
-				simKey.toString(),
-				simOwner.getName(),
-				simOwner.getID().toString(),
-				Integer.toString(jobId),
-				Integer.toString(simTask.getTaskID()),
-				SOLVER_EXIT_CODE_REPLACE_STRING,
-				subFileExternal.getAbsolutePath());
-		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
-
-		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
-//		commandSet.add(preprocessorCmd);
-		commandSet.add(solverCmd);
-		commandSet.add(postprocessorCmd);
-
-		int NUM_CPUs = 1;
-		int MEM_SIZE_MB = 1000;
-		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
+		String slurmScript = createScriptForJavaSolvers(simTaskResourcePath, JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/runge_kutta_fehlberg/V_REL_274631114_0_0.slurm.sub");
-		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
-		String slurmScript = FileUtils.readFileToString(submitScript.toFile());
 		Assertions.assertEquals(expectedSlurmScript, slurmScript);
 	}
 
+	@Test
+	public void testSimJobScriptAdamsMoulton() throws IOException, XmlParseException, ExpressionException {
+		String simTaskResourcePath = "slurm_fixtures/adams_moulton/SimID_274633859_0__0.simtask.xml";
+		String JOB_NAME = "V_REL_274633859_0_0";
+		String slurmScript = createScriptForJavaSolvers(simTaskResourcePath, JOB_NAME);
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/adams_moulton/V_REL_274633859_0_0.slurm.sub");
+		Assertions.assertEquals(expectedSlurmScript, slurmScript);
+	}
 
 	private String readTextFileFromResource(String filename) throws IOException {
 		InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filename);
