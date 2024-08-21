@@ -370,38 +370,39 @@ public class SsldUtils {
 
         // ---------- Species Contexts
         // the Source and the Sink species contexts, if exist
-        if(mtSource != null) {
-            for(Map.Entry<Structure, MolecularType> entry : m.structureToSourceMap.entrySet()) {
-                Structure struct = entry.getKey();
-                MolecularType mt = entry.getValue();
-                if(mtSource != mt) {
-                    throw new RuntimeException("The 'Source' molecular type is duplicated");
-                }
-                MolecularTypePattern mtp = new MolecularTypePattern(mt, false);     // we shouldn't have any components
-                SpeciesPattern sp = new SpeciesPattern();
-                sp.addMolecularTypePattern(mtp);
-                Species species = new Species(mt.getName(), mt.getName());
-                SpeciesContext speciesContext = new SpeciesContext(species, struct, sp);
-                model.addSpecies(speciesContext.getSpecies());
-                model.addSpeciesContext(speciesContext);
-            }
-        }
-        if(mtSink != null) {
-            for(Map.Entry<Structure, MolecularType> entry : m.structureToSinkMap.entrySet()) {
-                Structure struct = entry.getKey();
-                MolecularType mt = entry.getValue();
-                if(mtSink != mt) {
-                    throw new RuntimeException("The 'Sink' molecular type is duplicated");
-                }
-                MolecularTypePattern mtp = new MolecularTypePattern(mt, false);     // we shouldn't have any components
-                SpeciesPattern sp = new SpeciesPattern();
-                sp.addMolecularTypePattern(mtp);
-                Species species = new Species(mt.getName(), mt.getName());
-                SpeciesContext speciesContext = new SpeciesContext(species, struct, sp);
-                model.addSpecies(speciesContext.getSpecies());
-                model.addSpeciesContext(speciesContext);
-            }
-        }
+        // actually... we don't need species contextx for Sink and Source
+//        if(mtSource != null) {
+//            for(Map.Entry<Structure, MolecularType> entry : m.structureToSourceMap.entrySet()) {
+//                Structure struct = entry.getKey();
+//                MolecularType mt = entry.getValue();
+//                if(mtSource != mt) {
+//                    throw new RuntimeException("The 'Source' molecular type is duplicated");
+//                }
+//                MolecularTypePattern mtp = new MolecularTypePattern(mt, false);     // we shouldn't have any components
+//                SpeciesPattern sp = new SpeciesPattern();
+//                sp.addMolecularTypePattern(mtp);
+//                Species species = new Species(mt.getName(), mt.getName());
+//                SpeciesContext speciesContext = new SpeciesContext(species, struct, sp);
+//                model.addSpecies(speciesContext.getSpecies());
+//                model.addSpeciesContext(speciesContext);
+//            }
+//        }
+//        if(mtSink != null) {
+//            for(Map.Entry<Structure, MolecularType> entry : m.structureToSinkMap.entrySet()) {
+//                Structure struct = entry.getKey();
+//                MolecularType mt = entry.getValue();
+//                if(mtSink != mt) {
+//                    throw new RuntimeException("The 'Sink' molecular type is duplicated");
+//                }
+//                MolecularTypePattern mtp = new MolecularTypePattern(mt, false);     // we shouldn't have any components
+//                SpeciesPattern sp = new SpeciesPattern();
+//                sp.addMolecularTypePattern(mtp);
+//                Species species = new Species(mt.getName(), mt.getName());
+//                SpeciesContext speciesContext = new SpeciesContext(species, struct, sp);
+//                model.addSpecies(speciesContext.getSpecies());
+//                model.addSpeciesContext(speciesContext);
+//            }
+//        }
         // make the concrete species (SpeciesContexts)
         for(Molecule ssldMolecule : ssldModel.getMolecules()) {
             MolecularType mt = m.get(ssldMolecule);
@@ -432,8 +433,24 @@ public class SsldUtils {
             m.put(ssldMolecule, speciesContext);
         }
 
+        // ---------- Allosteric Reactions
+        for(AllostericReaction ssldAllostericReaction : ssldModel.getAllostericReactions()) {
+            m.cleanReactionsMaps();
+            boolean reversible = false;
+            // note that the transition and the condition apply to the same molecule
+            Molecule ssldMolecule = ssldAllostericReaction.getMolecule();
+            Site ssldAllostericSite = ssldAllostericReaction.getAllostericSite();   // allosteric condition
+            State ssldAllostericState = ssldAllostericReaction.getAllostericState();
+            Site ssldTransitionSite = ssldAllostericReaction.getSite();             // transitioning site
+            State ssldInitialTransitionState = ssldAllostericReaction.getInitialState();
+            State ssldFinalTransitionState = ssldAllostericReaction.getFinalState();
 
-            // ---------- Transition Reactions
+            // TODO: continue allosteric transition work
+
+
+        }
+
+        // ---------- Transition Reactions
         for(TransitionReaction ssldReaction : ssldModel.getTransitionReactions()) {
             m.cleanReactionsMaps();
             boolean reversible = false;
@@ -549,8 +566,10 @@ public class SsldUtils {
                 ReactantPattern rp = new ReactantPattern(spReactant, structure);
                 reactionRule.addReactant(rp);
 
-                SpeciesPattern spProduct = getSpeciesPattern(ssldMolecule, m);
-                // TODO: sp must not be ambiguous! it must be a concrete species! all sites must be unbound and with specified states
+                SpeciesContext sc = m.getSpeciesContext(ssldMolecule);
+                SpeciesPattern spSpeciesContext = sc.getSpeciesPattern();
+                // sp must not be ambiguous! it must be a concrete species! all sites must be unbound and with specified states
+                SpeciesPattern spProduct = new SpeciesPattern(model, spSpeciesContext);
                 ProductPattern pp = new ProductPattern(spProduct, structure);
                 reactionRule.addProduct(pp);
                 bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
@@ -573,8 +592,10 @@ public class SsldUtils {
                 reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
                 reactionRule.getKineticLaw().setLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate, kf);
 
-                SpeciesPattern spReactant = getSpeciesPattern(ssldMolecule, m);
-                // TODO: sp must not be ambiguous! it must be a concrete species! all sites must be unbound and with specified states
+                SpeciesContext sc = m.getSpeciesContext(ssldMolecule);
+                SpeciesPattern spSpeciesContext = sc.getSpeciesPattern();
+                // sp must not be ambiguous! it must be a concrete species! all sites must be unbound and with specified states
+                SpeciesPattern spReactant = new SpeciesPattern(model, spSpeciesContext);
                 ReactantPattern rp = new ReactantPattern(spReactant, structure);
                 reactionRule.addReactant(rp);
 
