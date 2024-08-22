@@ -208,6 +208,23 @@ public class SlurmProxyTest {
 	}
 
 	@Test
+	public void testSimJobScriptLangevin() throws IOException, XmlParseException, ExpressionException {
+		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_274672135_0__0.simtask.xml";
+		String JOB_NAME = "V_REL_274672135_0_0";
+
+		String executable = "/usr/local/app/localsolvers/linux64/langevin_x64";
+		String outputLog = "/share/apps/vcell3/users/schaff/SimID_274672135_0_.log";
+		String messagingConfig = "/share/apps/vcell3/users/schaff/SimID_274672135_0_.langevinMessagingConfig";
+		String inputFilePath = "/share/apps/vcell3/users/schaff/SimID_274672135_0_.langevinInput";
+		String[] command = new String[] { executable, "simulate", "--output-log="+outputLog,
+				"--vc-send-status-config="+messagingConfig, inputFilePath, "0", "-tid", "0" };
+
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_REL_274672135_0_0.slurm.sub");
+		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
+	}
+
+	@Test
 	public void testSimJobScriptNFsim() throws IOException, XmlParseException, ExpressionException {
 		String simTaskResourcePath = "slurm_fixtures/nfsim/SimID_274642453_0__0.simtask.xml";
 		String JOB_NAME = "V_REL_274642453_0_0";
