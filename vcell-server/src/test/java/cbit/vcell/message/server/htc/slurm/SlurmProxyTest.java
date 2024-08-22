@@ -22,47 +22,63 @@ import org.vcell.util.exe.ExecutableException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
 @Tag("Fast")
 public class SlurmProxyTest {
 
-    @BeforeAll
-    public static void setProperties()
+	private HashMap<String,String> originalProperties = new HashMap<>();
+
+	private void setProperty(String key, String value) {
+		originalProperties.put(key, System.getProperty(key));
+		System.setProperty(key, value);
+	}
+
+	private void restoreProperties() {
+		for (String key : originalProperties.keySet()) {
+			System.setProperty(key, originalProperties.get(key));
+		}
+		originalProperties.clear();
+	}
+
+    @BeforeEach
+    public void setup()
     {
-		System.setProperty(PropertyLoader.vcellServerIDProperty,"REL");
-		System.setProperty(PropertyLoader.htcLogDirExternal,"/share/apps/vcell3/htclogs");
-		System.setProperty(PropertyLoader.slurm_partition,"vcell");
-		System.setProperty(PropertyLoader.slurm_reservation,"");
-		System.setProperty(PropertyLoader.slurm_qos,"vcell");
-		System.setProperty(PropertyLoader.primarySimDataDirExternalProperty,"/share/apps/vcell3/users");
-		System.setProperty(PropertyLoader.secondarySimDataDirExternalProperty,"/share/apps/vcell7/users");
-		System.setProperty(PropertyLoader.jmsSimHostExternal, "rke-wn-01.cam.uchc.edu");
-		System.setProperty(PropertyLoader.jmsSimPortExternal, "31618");
-		System.setProperty(PropertyLoader.jmsSimRestPortExternal, "30163");
-		System.setProperty(PropertyLoader.jmsUser, "clientUser");
-		System.setProperty(PropertyLoader.jmsPasswordValue, "dummy");
-		System.setProperty(PropertyLoader.mongodbHostExternal, "rke-wn-01.cam.uchc.edu");
-		System.setProperty(PropertyLoader.mongodbPortExternal, "30019");
-		System.setProperty(PropertyLoader.mongodbDatabase, "test");
-		System.setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.6.0_build_28");
-		System.setProperty(PropertyLoader.vcellbatch_singularity_image, "/state/partition1/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img");
-		System.setProperty(PropertyLoader.slurm_tmpdir, "/scratch/vcell");
-		System.setProperty(PropertyLoader.slurm_central_singularity_dir, "/share/apps/vcell3/singularityImages");
-		System.setProperty(PropertyLoader.slurm_local_singularity_dir, "/state/partition1/singularityImages");
-		System.setProperty(PropertyLoader.slurm_singularity_module_name, "singularity/vcell-3.10.0");
-		System.setProperty(PropertyLoader.simDataDirArchiveExternal, "/share/apps/vcell12/users");
-		System.setProperty(PropertyLoader.simDataDirArchiveInternal, "/share/apps/vcell12/users");
-		System.setProperty(PropertyLoader.nativeSolverDir_External, "/share/apps/vcell3/nativesolvers");
-		System.setProperty(PropertyLoader.jmsBlobMessageMinSize, "100000");
-		System.setProperty(PropertyLoader.simulationPostprocessor, "JavaPostprocessor64");
-		System.setProperty(PropertyLoader.simulationPreprocessor, "JavaPreprocessor64");
+		setProperty(PropertyLoader.vcellServerIDProperty,"REL");
+		setProperty(PropertyLoader.htcLogDirExternal,"/share/apps/vcell3/htclogs");
+		setProperty(PropertyLoader.slurm_partition,"vcell");
+		setProperty(PropertyLoader.slurm_reservation,"");
+		setProperty(PropertyLoader.slurm_qos,"vcell");
+		setProperty(PropertyLoader.primarySimDataDirExternalProperty,"/share/apps/vcell3/users");
+		setProperty(PropertyLoader.secondarySimDataDirExternalProperty,"/share/apps/vcell7/users");
+		setProperty(PropertyLoader.jmsSimHostExternal, "rke-wn-01.cam.uchc.edu");
+		setProperty(PropertyLoader.jmsSimPortExternal, "31618");
+		setProperty(PropertyLoader.jmsSimRestPortExternal, "30163");
+		setProperty(PropertyLoader.jmsUser, "clientUser");
+		setProperty(PropertyLoader.jmsPasswordValue, "dummy");
+		setProperty(PropertyLoader.mongodbHostExternal, "rke-wn-01.cam.uchc.edu");
+		setProperty(PropertyLoader.mongodbPortExternal, "30019");
+		setProperty(PropertyLoader.mongodbDatabase, "test");
+		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.6.0_build_28");
+		setProperty(PropertyLoader.vcellbatch_singularity_image, "/state/partition1/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img");
+		setProperty(PropertyLoader.slurm_tmpdir, "/scratch/vcell");
+		setProperty(PropertyLoader.slurm_central_singularity_dir, "/share/apps/vcell3/singularityImages");
+		setProperty(PropertyLoader.slurm_local_singularity_dir, "/state/partition1/singularityImages");
+		setProperty(PropertyLoader.slurm_singularity_module_name, "singularity/vcell-3.10.0");
+		setProperty(PropertyLoader.simDataDirArchiveExternal, "/share/apps/vcell12/users");
+		setProperty(PropertyLoader.simDataDirArchiveInternal, "/share/apps/vcell12/users");
+		setProperty(PropertyLoader.nativeSolverDir_External, "/share/apps/vcell3/nativesolvers");
+		setProperty(PropertyLoader.jmsBlobMessageMinSize, "100000");
+		setProperty(PropertyLoader.simulationPostprocessor, "JavaPostprocessor64");
+		setProperty(PropertyLoader.simulationPreprocessor, "JavaPreprocessor64");
     }
+
+	@AfterEach
+	public void teardown() {
+		restoreProperties();
+	}
 
 	public String createScriptForNativeSolvers(String simTaskResourcePath, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
