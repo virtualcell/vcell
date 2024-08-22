@@ -438,15 +438,37 @@ public class SsldUtils {
             m.cleanReactionsMaps();
             boolean reversible = false;
             // note that the transition and the condition apply to the same molecule
-            Molecule ssldMolecule = ssldAllostericReaction.getMolecule();
-            Site ssldAllostericSite = ssldAllostericReaction.getAllostericSite();   // allosteric condition
-            State ssldAllostericState = ssldAllostericReaction.getAllostericState();
-            Site ssldTransitionSite = ssldAllostericReaction.getSite();             // transitioning site
-            State ssldInitialTransitionState = ssldAllostericReaction.getInitialState();
-            State ssldFinalTransitionState = ssldAllostericReaction.getFinalState();
+            Molecule ssldTransitionMolecule = ssldAllostericReaction.getMolecule();
+//            Site ssldAllostericSite = ssldAllostericReaction.getAllostericSite();   // allosteric condition
+//            State ssldAllostericState = ssldAllostericReaction.getAllostericState();
+//            Site ssldTransitionSite = ssldAllostericReaction.getSite();             // transitioning site
+//            State ssldInitialTransitionState = ssldAllostericReaction.getInitialState();
+//            State ssldFinalTransitionState = ssldAllostericReaction.getFinalState();
+            String location = ssldTransitionMolecule.getLocation(); // reaction happens in the same structure, no transport
+            double ssldKf = ssldAllostericReaction.getRate();
 
-            // TODO: continue allosteric transition work
+            Structure structure = model.getStructure(location);
+            Expression kf = new Expression(ssldKf);
+            ReactionRule reactionRule = new ReactionRule(model, ssldAllostericReaction.getName(), structure, reversible);
+            RbmKineticLaw.RateLawType rateLawType = RbmKineticLaw.RateLawType.MassAction;
+            reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
+            reactionRule.getKineticLaw().setLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate, kf);
 
+            SpeciesPattern spReactant = getSpeciesPattern(ssldTransitionMolecule, m);
+            SpeciesPattern spProduct = getSpeciesPattern(ssldTransitionMolecule, m);
+            ReactantPattern rp = new ReactantPattern(spReactant, structure);
+            ProductPattern pp = new ProductPattern(spProduct, structure);
+
+            m.putMoleculeToReactantPatternOne(ssldTransitionMolecule, rp);
+            m.putMoleculeToProductPatternOne(ssldTransitionMolecule, pp);
+            // at this point everything is trivial
+            // now we start adjusting the binding sites
+            adjustAllostericReactionSites(ssldAllostericReaction, m);
+
+            reactionRule.addReactant(rp);
+            reactionRule.addProduct(pp);
+            bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
+            m.put(ssldAllostericReaction, reactionRule);
 
         }
 
@@ -525,7 +547,7 @@ public class SsldUtils {
 
             m.putMoleculeToReactantPatternOne(ssldReactantOne, rpOne);
             m.putMoleculeToReactantPatternTwo(ssldReactantTwo, rpTwo);
-            m.putMoleculeToProductPatternOne(ssldReactantOne, pp);
+            m.putMoleculeToProductPatternOne(ssldReactantOne, pp);      // there is only one product pattern
             m.putMoleculeToProductPatternTwo(ssldReactantTwo, pp);
             // at this point everything is trivial
             // now we start adjusting the binding sites
@@ -610,6 +632,47 @@ public class SsldUtils {
 
 
         return bioModel;
+    }
+
+    private void adjustAllostericReactionSites(AllostericReaction ssldReaction, Mapping m) {
+        Molecule ssldTransitionMolecule = ssldReaction.getMolecule();
+        Site ssldAllostericSite = ssldReaction.getAllostericSite();   // allosteric condition
+        State ssldAllostericState = ssldReaction.getAllostericState();
+        Site ssldTransitionSite = ssldReaction.getSite();             // transitioning site
+        State ssldInitialTransitionState = ssldReaction.getInitialState();
+        State ssldFinalTransitionState = ssldReaction.getFinalState();
+        String location = ssldTransitionMolecule.getLocation(); // reaction happens in the same structure, no transport
+        if(ssldAllostericSite == ssldTransitionSite) {
+            throw new RuntimeException("Importing AllostericReaction: the transition and allosteric sites cannot be the same");
+        }
+        SiteType ssldAllostericSiteType = ssldAllostericSite.getType();
+        SiteType ssldTransitionSiteType = ssldTransitionSite.getType();
+
+        // all bonds are in the "Possible" BondType (represented as "?")
+        SpeciesPattern spReactant = m.getReactantPatternOneFromMolecule(ssldTransitionMolecule).getSpeciesPattern();
+        MolecularTypePattern mtpReactant = spReactant.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(0);
+        MolecularComponentPattern mcpTransitionReactant = mtpReactant.getMolecularComponentPattern(ssldTransitionSiteType.getName());
+        String ssldInitialStateName = ssldInitialTransitionState.getName();
+        ComponentStateDefinition csdInitial = mcpTransitionReactant.getMolecularComponent().getComponentStateDefinition(ssldInitialStateName);
+        ComponentStatePattern cspTransitionReactant = new ComponentStatePattern(csdInitial);
+        mcpTransitionReactant.setComponentStatePattern(cspTransitionReactant);
+        MolecularComponentPattern mcpAllostericReactant = mtpReactant.getMolecularComponentPattern(ssldAllostericSiteType.getName());
+        String ssldAllostericStateName = ssldAllostericState.getName();     // must be explicit!
+        ComponentStateDefinition csdAllosteric = mcpAllostericReactant.getMolecularComponent().getComponentStateDefinition(ssldAllostericStateName);
+        ComponentStatePattern cspAllostericReactant = new ComponentStatePattern(csdAllosteric);
+        mcpAllostericReactant.setComponentStatePattern(cspAllostericReactant);
+
+        SpeciesPattern spProduct = m.getProductPatternOneFromMolecule(ssldTransitionMolecule).getSpeciesPattern();
+        MolecularTypePattern mtpProduct = spProduct.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(0);
+        MolecularComponentPattern mcpTransitionProduct = mtpProduct.getMolecularComponentPattern(ssldTransitionSiteType.getName());
+        String ssldFinalStateName = ssldFinalTransitionState.getName();
+        ComponentStateDefinition csdFinal = mcpTransitionProduct.getMolecularComponent().getComponentStateDefinition(ssldFinalStateName);
+        ComponentStatePattern cspTransitionProduct = new ComponentStatePattern(csdFinal);
+        mcpTransitionProduct.setComponentStatePattern(cspTransitionProduct);
+        MolecularComponentPattern mcpAllostericProduct = mtpProduct.getMolecularComponentPattern(ssldAllostericSiteType.getName());
+        // csdAllosteric is the same for the reactant and the product (is it? what id the user wants to edit one???)
+        ComponentStatePattern cspAllostericProduct = new ComponentStatePattern(csdAllosteric);
+        mcpAllostericProduct.setComponentStatePattern(cspAllostericProduct);
     }
 
     private void adjustTransitionReactionSites(TransitionReaction ssldReaction, Mapping m) {
