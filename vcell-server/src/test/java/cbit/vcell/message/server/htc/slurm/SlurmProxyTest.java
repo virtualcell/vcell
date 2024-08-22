@@ -70,6 +70,9 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.jmsBlobMessageMinSize, "100000");
 		setProperty(PropertyLoader.simulationPostprocessor, "JavaPostprocessor64");
 		setProperty(PropertyLoader.simulationPreprocessor, "JavaPreprocessor64");
+
+		setProperty(PropertyLoader.primarySimDataDirInternalProperty, "/share/apps/vcell3/users");
+		setProperty(PropertyLoader.vcellopt_singularity_image, "/state/partition1/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img");
     }
 
 	@AfterEach
@@ -121,7 +124,7 @@ public class SlurmProxyTest {
 		int NUM_CPUs = 1;
 		int MEM_SIZE_MB = 1000;
 		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
-        return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
+		return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
 	}
 
 	public String createScriptForJavaSolvers(String simTaskResourcePath, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
@@ -162,6 +165,23 @@ public class SlurmProxyTest {
 		int MEM_SIZE_MB = 1000;
 		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
 		return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
+	}
+
+	public String createScriptForOptimizations(String JOB_NAME, int job_id) throws IOException, XmlParseException, ExpressionException {
+		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
+		File optProblemInputFile = new File("/share/apps/vcell3/users/parest_data/CopasiParest_"+job_id+"_optProblem.json");
+		File optProblemOutputFile = new File("/share/apps/vcell3/users/parest_data/CopasiParest_"+job_id+"_optRun.json");
+		File optProblemReportFile = new File("/share/apps/vcell3/users/parest_data/CopasiParest_"+job_id+"_optReport.txt");
+		return slurmProxy.createOptJobScript(JOB_NAME, optProblemInputFile, optProblemOutputFile, optProblemReportFile);
+	}
+
+	@Test
+	public void testOptimization() throws IOException, XmlParseException, ExpressionException {
+		String JOB_NAME = "CopasiParest_152878";
+		int job_id = 152878;
+		String slurmScript = createScriptForOptimizations(JOB_NAME, job_id);
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/opt/CopasiParest_152878.sub");
+		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
 	}
 
 	@Test

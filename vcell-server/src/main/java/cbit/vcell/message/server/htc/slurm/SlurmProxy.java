@@ -816,7 +816,7 @@ public class SlurmProxy extends HtcProxy {
 		return submitJobFile(sub_file_with_external_path);
 	}
 
-	public String createJobScriptText(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws IOException {
+	String createJobScriptText(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws IOException {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
 			}
@@ -864,69 +864,67 @@ public class SlurmProxy extends HtcProxy {
 	public HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,
 										  File optProblemInputFile,File optProblemOutputFile,File optReportFile) throws ExecutableException{
 		try {
-			if (LG.isDebugEnabled()) {
-				LG.debug("generating local SLURM submit script for jobName="+jobName);
-			}
-//			String text = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
-			LG.info("sub_file_internal: "+sub_file_internal.getAbsolutePath());
-			LG.info("sub_file_external: "+sub_file_external.getAbsolutePath());
-			LG.info("optProblemInput: "+optProblemInputFile.getAbsolutePath());
-			LG.info("optProblemOutput: "+optProblemOutputFile.getAbsolutePath());
-			LG.info("optReport: "+optReportFile.getAbsolutePath());
-
-			String primaryDataDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
-			String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
-		    String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
-			String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
-			String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-			String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellopt_singularity_image);
-			String slurm_singularity_local_image_filepath = remote_singularity_image;
-//			String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
-			String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
-			String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
-			String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
-			String slurm_singularity_module_name = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
-			String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
-			String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
-			File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
-
-			HtcProxy.MemLimitResults memoryMBAllowed = new HtcProxy.MemLimitResults(256, "Optimization Default");
-			String[] environmentVars = new String[] {
-					"datadir_external="+primaryDataDirExternal,
-			};
-
-			LineStringBuilder lsb = new LineStringBuilder();
-			slurmScriptInit(jobName, false, memoryMBAllowed, lsb);
-			File optDataDir = optProblemInputFile.getParentFile();
-			File optDataDirExternal = new File(optDataDir.getAbsolutePath().replace(primaryDataDirInternal, primaryDataDirExternal));
-			if (!optDataDirExternal.exists() && !optDataDirExternal.mkdir()){
-				LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
-			}
-//			if (optDataDirExternal.setWritable(true,false))
-			slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), Optional.empty(), htclogdir_external, softwareVersion,
-					slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
-					slurm_local_singularity_dir, simDataDirArchiveExternal, simDataDirArchiveInternal,
-					slurm_singularity_central_filepath, slurm_singularity_module_name, environmentVars);
-
-			lsb.write("   cmd_prefix=\"$container_prefix\"");
-			lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
-			lsb.append("echo command = ");
-			lsb.write("${cmd_prefix}" + "");
-
-			String optProblemInput_container_filename = optProblemInputFile.getAbsolutePath().replace(optProblemInputFile.getParent(),"/simdata");
-			String optProblemOutput_container_filename = optProblemOutputFile.getAbsolutePath().replace(optProblemOutputFile.getParent(),"/simdata");
-			String optReport_container_filename = optReportFile.getAbsolutePath().replace(optReportFile.getParent(),"/simdata");
-			lsb.write("${cmd_prefix} " + optProblemInput_container_filename + " " + optProblemOutput_container_filename + " " + optReport_container_filename);
-
-			String scriptText = toUnixStyleText(lsb.toString());
+			String scriptText = createOptJobScript(jobName, optProblemInputFile, optProblemOutputFile, optReportFile);
+			LG.info("sub_file_internal: " + sub_file_internal.getAbsolutePath() +
+					", sub_file_external: " + sub_file_external.getAbsolutePath() +
+					", optProblemInput: " + optProblemInputFile.getAbsolutePath() +
+					", optProblemOutput: " + optProblemOutputFile.getAbsolutePath() +
+					", optReport: " + optReportFile.getAbsolutePath());
 			Files.writeString(sub_file_internal.toPath(), scriptText);
-
 		} catch (IOException ex) {
 			LG.error(ex);
 			return null;
 		}
 
 		return submitJobFile(sub_file_external);
+	}
+
+	String createOptJobScript(String jobName, File optProblemInputFile, File optProblemOutputFile, File optReportFile) throws IOException {
+		String primaryDataDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
+		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
+		String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellopt_singularity_image);
+		String slurm_singularity_local_image_filepath = remote_singularity_image;
+//			String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
+		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
+		String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
+		String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
+		String slurm_singularity_module_name = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
+		String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
+		String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
+		File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
+
+		MemLimitResults memoryMBAllowed = new MemLimitResults(256, "Optimization Default");
+		String[] environmentVars = new String[] {
+				"datadir_external="+primaryDataDirExternal,
+		};
+
+		LineStringBuilder lsb = new LineStringBuilder();
+		slurmScriptInit(jobName, false, memoryMBAllowed, lsb);
+		File optDataDir = optProblemInputFile.getParentFile();
+		File optDataDirExternal = new File(optDataDir.getAbsolutePath().replace(primaryDataDirInternal, primaryDataDirExternal));
+		if (!optDataDirExternal.exists() && !optDataDirExternal.mkdir()){
+			LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
+		}
+//			if (optDataDirExternal.setWritable(true,false))
+		slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), Optional.empty(), htclogdir_external, softwareVersion,
+				slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
+				slurm_local_singularity_dir, simDataDirArchiveExternal, simDataDirArchiveInternal,
+				slurm_singularity_central_filepath, slurm_singularity_module_name, environmentVars);
+
+		lsb.write("   cmd_prefix=\"$container_prefix\"");
+		lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
+		lsb.append("echo command = ");
+		lsb.write("${cmd_prefix}" + "");
+
+		String optProblemInput_container_filename = optProblemInputFile.getAbsolutePath().replace(optProblemInputFile.getParent(),"/simdata");
+		String optProblemOutput_container_filename = optProblemOutputFile.getAbsolutePath().replace(optProblemOutputFile.getParent(),"/simdata");
+		String optReport_container_filename = optReportFile.getAbsolutePath().replace(optReportFile.getParent(),"/simdata");
+		lsb.write("${cmd_prefix} " + optProblemInput_container_filename + " " + optProblemOutput_container_filename + " " + optReport_container_filename);
+
+        return toUnixStyleText(lsb.toString());
 	}
 
 
