@@ -14,16 +14,12 @@ import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.exe.ExecutableException;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -32,10 +28,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+
+@Tag("Fast")
 public class SlurmProxyTest {
 
     @BeforeAll
-    public static void setProperties() throws MalformedURLException
+    public static void setProperties()
     {
 		System.setProperty(PropertyLoader.vcellServerIDProperty,"REL");
 		System.setProperty(PropertyLoader.htcLogDirExternal,"/share/apps/vcell3/htclogs");
@@ -66,7 +64,7 @@ public class SlurmProxyTest {
 		System.setProperty(PropertyLoader.simulationPreprocessor, "JavaPreprocessor64");
     }
 
-	public String createScriptForNativeSolvers(String simTaskResourcePath, String solverExeName, String subcommand, String inputFileSuffix, String outputFileSuffix, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
+	public String createScriptForNativeSolvers(String simTaskResourcePath, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
 		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
 		KeyValue simKey = simTask.getSimKey();
@@ -89,20 +87,7 @@ public class SlurmProxyTest {
 		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
 
 		ExecutableCommand.LibraryPath libraryPath = new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64");
-		String command = "/usr/local/app/localsolvers/linux64/"+solverExeName;
-		String inputFilePath = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0_."+inputFileSuffix;
-		String outputFilePath = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0_."+outputFileSuffix;
-		final ExecutableCommand solverCmd;
-		if (outputFileSuffix == null) {
-			new ExecutableCommand(libraryPath, new String[0]);
-			solverCmd = new ExecutableCommand(libraryPath, command, inputFilePath, "-tid", "0");
-		} else {
-			if (subcommand != null) {
-				solverCmd = new ExecutableCommand(libraryPath, command, subcommand, inputFilePath, outputFilePath, "-tid", "0");
-			} else {
-				solverCmd = new ExecutableCommand(libraryPath, command, inputFilePath, outputFilePath, "-tid", "0");
-			}
-		}
+		final ExecutableCommand solverCmd = new ExecutableCommand(libraryPath, command);
 
 		// postprocessor
 		final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
@@ -126,8 +111,7 @@ public class SlurmProxyTest {
 		int MEM_SIZE_MB = 1000;
 		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
 		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
-		String slurmScript = FileUtils.readFileToString(submitScript.toFile());
-		return slurmScript;
+        return FileUtils.readFileToString(submitScript.toFile());
 	}
 
 	public String createScriptForJavaSolvers(String simTaskResourcePath, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
@@ -143,7 +127,7 @@ public class SlurmProxyTest {
 		User simOwner = simTask.getSimulation().getVersion().getOwner();
 		final int jobId = simTask.getSimulationJob().getJobIndex();
 
-		ExecutableCommand.LibraryPath libraryPath = null;
+		final ExecutableCommand.LibraryPath libraryPath = null;
 		String command = "JavaSimExe64";
 		String userDir = "/share/apps/vcell3/users/schaff";
 		String simTaskRemoteFilename = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0__0.simtask.xml";
@@ -170,15 +154,19 @@ public class SlurmProxyTest {
 		int MEM_SIZE_MB = 1000;
 		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
 		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
-		String slurmScript = FileUtils.readFileToString(submitScript.toFile());
-		return slurmScript;
+        return FileUtils.readFileToString(submitScript.toFile());
 	}
 
 	@Test
 	public void testSimJobScriptFiniteVolume() throws IOException, XmlParseException, ExpressionException {
 		String simTaskResourcePath = "slurm_fixtures/finite_volume/SimID_274514696_0__0.simtask.xml";
 		String JOB_NAME = "V_REL_274514696_0_0";
-		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, "FiniteVolume_x64", null,"fvinput", null, JOB_NAME);
+
+		String executable = "/usr/local/app/localsolvers/linux64/FiniteVolume_x64";
+		String inputFilePath = "/share/apps/vcell3/users/schaff/SimID_274514696_0_.fvinput";
+		String[] command = new String[] { executable, inputFilePath, "-tid", "0" };
+
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/finite_volume/V_REL_274514696_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript, slurmScript);
 	}
@@ -187,7 +175,12 @@ public class SlurmProxyTest {
 	public void testSimJobScriptSmoldyn() throws IOException, XmlParseException, ExpressionException {
 		String simTaskResourcePath = "slurm_fixtures/smoldyn/SimID_274630052_0__0.simtask.xml";
 		String JOB_NAME = "V_REL_274630052_0_0";
-		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, "smoldyn_x64", null, "smoldynInput", null, JOB_NAME);
+
+		String executable = "/usr/local/app/localsolvers/linux64/smoldyn_x64";
+		String inputFilePath = "/share/apps/vcell3/users/schaff/SimID_274630052_0_.smoldynInput";
+		String[] command = new String[] { executable, inputFilePath, "-tid", "0" };
+
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/smoldyn/V_REL_274630052_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript, slurmScript);
 	}
@@ -196,7 +189,13 @@ public class SlurmProxyTest {
 	public void testSimJobScriptCVODE() throws IOException, XmlParseException, ExpressionException {
 		String simTaskResourcePath = "slurm_fixtures/cvode/SimID_274630682_0__0.simtask.xml";
 		String JOB_NAME = "V_REL_274630682_0_0";
-		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, "SundialsSolverStandalone_x64", null, "cvodeInput", "ida", JOB_NAME);
+
+		String executable = "/usr/local/app/localsolvers/linux64/SundialsSolverStandalone_x64";
+		String inputFilePath = "/share/apps/vcell3/users/schaff/SimID_274630682_0_.cvodeInput";
+		String outputFilePath = "/share/apps/vcell3/users/schaff/SimID_274630682_0_.ida";
+		String[] command = new String[] { executable, inputFilePath, outputFilePath, "-tid", "0" };
+
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/cvode/V_REL_274630682_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript, slurmScript);
 	}
@@ -205,7 +204,14 @@ public class SlurmProxyTest {
 	public void testSimJobScriptGibson() throws IOException, XmlParseException, ExpressionException {
 		String simTaskResourcePath = "slurm_fixtures/gibson/SimID_274635122_0__0.simtask.xml";
 		String JOB_NAME = "V_REL_274635122_0_0";
-		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, "VCellStoch_x64", "gibson", "stochInput", "ida", JOB_NAME);
+
+		String executable = "/usr/local/app/localsolvers/linux64/VCellStoch_x64";
+		String subcommand = "gibson";
+		String inputFilePath = "/share/apps/vcell3/users/schaff/SimID_274635122_0_.stochInput";
+		String outputFilePath = "/share/apps/vcell3/users/schaff/SimID_274635122_0_.ida";
+		String[] command = new String[] { executable, subcommand, inputFilePath, outputFilePath, "-tid", "0" };
+
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/gibson/V_REL_274635122_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript, slurmScript);
 	}
@@ -242,7 +248,7 @@ public class SlurmProxyTest {
 
 	@Disabled // this test is disabled because it requires a running slurm server
 	@Test
-	public void testSingularitySupport() throws IOException, ExecutableException {
+	public void testSingularitySupport() {
 		CommandServiceSshNative cmd = null;
 		try {
 			Random r = new Random();
@@ -262,7 +268,7 @@ public class SlurmProxyTest {
 			File sub_file_localpath = new File("/Volumes/vcell/htclogs/"+jobName+".slurm.sub");
 			File sub_file_remotepath = new File("/share/apps/vcell3/htclogs/"+jobName+".slurm.sub");
 			
-			StringBuffer subfileContent = new StringBuffer();
+			StringBuilder subfileContent = new StringBuilder();
 			subfileContent.append("#!/usr/bin/bash\n");
 			String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
 			subfileContent.append("#SBATCH --partition="+partition+"\n");
