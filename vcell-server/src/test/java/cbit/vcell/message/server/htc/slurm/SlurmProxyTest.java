@@ -7,14 +7,11 @@ import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,8 +83,6 @@ public class SlurmProxyTest {
 		KeyValue simKey = simTask.getSimKey();
 
 		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
-		// make temp file
-		Path submitScript = Files.createTempFile("submit_script",".sh");
 		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_"+simKey+"_0_0.slurm.sub");
 
 		User simOwner = simTask.getSimulation().getVersion().getOwner();
@@ -126,8 +121,7 @@ public class SlurmProxyTest {
 		int NUM_CPUs = 1;
 		int MEM_SIZE_MB = 1000;
 		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
-		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
-        return FileUtils.readFileToString(submitScript.toFile());
+        return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
 	}
 
 	public String createScriptForJavaSolvers(String simTaskResourcePath, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
@@ -136,8 +130,6 @@ public class SlurmProxyTest {
 		KeyValue simKey = simTask.getSimKey();
 
 		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
-		// make temp file
-		Path submitScript = Files.createTempFile("submit_script",".sh");
 		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_"+simKey+"_0_0.slurm.sub");
 
 		User simOwner = simTask.getSimulation().getVersion().getOwner();
@@ -169,8 +161,7 @@ public class SlurmProxyTest {
 		int NUM_CPUs = 1;
 		int MEM_SIZE_MB = 1000;
 		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
-		slurmProxy.saveJobScript(JOB_NAME, submitScript.toFile(), commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
-        return FileUtils.readFileToString(submitScript.toFile());
+		return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
 	}
 
 	@Test
