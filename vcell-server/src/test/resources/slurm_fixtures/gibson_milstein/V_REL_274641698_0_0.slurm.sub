@@ -1,0 +1,164 @@
+#!/usr/bin/bash
+#SBATCH --partition=vcell
+#SBATCH --reservation=
+#SBATCH --qos=vcell
+#SBATCH -J V_REL_274641698_0_0
+#SBATCH -o /share/apps/vcell3/htclogs/V_REL_274641698_0_0.slurm.log
+#SBATCH -e /share/apps/vcell3/htclogs/V_REL_274641698_0_0.slurm.log
+#SBATCH --mem=4096M
+#SBATCH --no-kill
+#SBATCH --no-requeue
+# VCell SlurmProxy memory limit source=Exception NoSuchFileException used FALLBACK_MEM_LIMIT_MB
+
+
+#BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------
+set -x
+
+TMPDIR=/scratch/vcell
+echo "using TMPDIR=$TMPDIR"
+if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi
+echo `hostname`
+
+export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles
+
+source /usr/share/Modules/init/bash
+
+module load singularity/vcell-3.10.0
+
+echo "job running on host `hostname -f`"
+
+echo "id is `id`"
+
+echo "bash version is `bash --version`"
+date
+
+echo ENVIRONMENT
+env
+
+container_prefix=
+if command -v singularity >/dev/null 2>&1; then
+   #
+   # Copy of singularity image will be downloaded if not found in /state/partition1/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img
+   #
+   localSingularityImage=/state/partition1/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img
+   if [ ! -e "$localSingularityImage" ]; then
+       echo "local singularity image $localSingularityImage not found, trying to download to hpc from "/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img
+       mkdir -p /state/partition1/singularityImages
+       singularitytempfile=$(mktemp -up /share/apps/vcell3/singularityImages)
+		  flock -E 100 -n /tmp/vcellSingularityLock_Rel_Version_7.6.0_build_28.lock sh -c "cp /share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img ${singularitytempfile} ; mv -n ${singularitytempfile} /state/partition1/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img"
+		  theStatus=$?
+		  if [ $theStatus -eq 100 ]
+		  then
+		      echo "lock in use, waiting for lock owner to copy singularityImage"
+		      let c=0
+		      until [ -f $localSingularityImage ]
+		      do
+		  	    sleep 3
+		  	    let c=c+1
+		  		if [ $c -eq 20 ]
+		  		then
+		  			echo "Exceeded wait time for lock owner to copy singularityImage"
+		  			break
+		  		fi
+		      done
+		  else
+		      if [ $theStatus -eq 0 ]
+		      then
+		            echo copy succeeded
+		      else
+		            echo copy failed
+		      fi
+		  fi
+       rm -f ${singularitytempfile}
+       if [ ! -e "$localSingularityImage" ]; then
+           echo "Failed to copy $localSingularityImage to hpc from central"
+           exit 1
+       else
+           echo successful copy from /share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img to /state/partition1/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img
+       fi
+   fi
+   container_prefix="singularity run --bind /share/apps/vcell3/users:/simdata --bind /share/apps/vcell7/users:/simdata_secondary --bind /share/apps/vcell12/users:/share/apps/vcell12/users --bind /share/apps/vcell3/htclogs:/htclogs  --bind /scratch/vcell:/solvertmp $localSingularityImage  --env java_mem_Xmx=4096M --env jmshost_sim_internal=rke-wn-01.cam.uchc.edu --env jmsport_sim_internal=31618 --env jmsrestport_sim_internal=30163 --env jmsuser=clientUser --env jmspswd=dummy --env jmsblob_minsize=100000 --env mongodbhost_internal=rke-wn-01.cam.uchc.edu --env mongodbport_internal=30019 --env mongodb_database=test --env primary_datadir_external=/share/apps/vcell3/users --env secondary_datadir_external=/share/apps/vcell7/users --env htclogdir_external=/share/apps/vcell3/htclogs --env softwareVersion=Rel_Version_7.6.0_build_28 --env serverid=REL "
+else
+    echo "Required singularity command not found (maybe 'module load singularity/vcell-3.10.0' command didn't work) "
+    exit 1
+fi
+echo "container_prefix is '${container_prefix}'"
+echo "3 date=`date`"
+#END---------SlurmProxy.generateScript():slurmInitSingularity----------
+
+#BEGIN---------SlurmProxy.generateScript():sendFailureMsg----------
+sendFailureMsg() {
+  echo ${container_prefix}  --msg-userid clientUser --msg-password dummy --msg-host rke-wn-01.cam.uchc.edu --msg-port 31618 --msg-job-host `hostname` --msg-job-userid schaff --msg-job-simkey 274641698 --msg-job-jobindex 0 --msg-job-taskid 0 --msg-job-errmsg "$1" SendErrorMsg
+  ${container_prefix}  --msg-userid clientUser --msg-password dummy --msg-host rke-wn-01.cam.uchc.edu --msg-port 31618 --msg-job-host `hostname` --msg-job-userid schaff --msg-job-simkey 274641698 --msg-job-jobindex 0 --msg-job-taskid 0 --msg-job-errmsg "$1" SendErrorMsg
+  stat=$?
+  if [[ $stat -ne 0 ]]; then
+    echo 'failed to send error message, retcode=$stat'
+  else
+    echo 'sent failure message'
+  fi
+}
+#END---------SlurmProxy.generateScript():sendFailureMsg----------
+#BEGIN---------SlurmProxy.generateScript():hasExitProcessor----------
+callExitProcessor( ) {
+	echo exitCommand = ${container_prefix}JavaPostprocessor64 274641698 schaff 17 0 0 $1 /share/apps/vcell3/htclogs/V_REL_274641698_0_0.slurm.sub 
+	${container_prefix}JavaPostprocessor64 274641698 schaff 17 0 0 $1 /share/apps/vcell3/htclogs/V_REL_274641698_0_0.slurm.sub 
+}
+#END---------SlurmProxy.generateScript():hasExitProcessor----------
+echo
+echo
+#BEGIN---------SlurmProxy.generateScript():ExecutableCommand----------JavaPreprocessor64
+echo "testing existance of native exe '/share/apps/vcell3/nativesolvers/JavaPreprocessor64' which overrides container invocations"
+nativeExe=/share/apps/vcell3/nativesolvers/JavaPreprocessor64
+if [ -e "${nativeExe}" ]; then
+   cmd_prefix="/share/apps/vcell3/nativesolvers/"
+else
+   cmd_prefix="$container_prefix"
+fi
+echo "cmd_prefix is '${cmd_prefix}'"
+echo "5 date=`date`"
+echo command = ${cmd_prefix}JavaPreprocessor64 /share/apps/vcell3/users/schaff/SimID_274641698_0__0.simtask.xml /share/apps/vcell3/users/schaff 
+      command="${cmd_prefix}JavaPreprocessor64 /share/apps/vcell3/users/schaff/SimID_274641698_0__0.simtask.xml /share/apps/vcell3/users/schaff "
+      $command
+stat=$?
+echo ${cmd_prefix}JavaPreprocessor64 /share/apps/vcell3/users/schaff/SimID_274641698_0__0.simtask.xml /share/apps/vcell3/users/schaff returned $stat
+if [ $stat -ne 0 ]; then
+	callExitProcessor $stat
+	echo returning $stat to Slurm
+	exit $stat
+fi
+#END---------SlurmProxy.generateScript():ExecutableCommand----------JavaPreprocessor64
+echo "1 date=`date`"
+
+echo
+#BEGIN---------SlurmProxy.generateScript():ExecutableCommand----------/usr/local/app/localsolvers/linux64/Hybrid_EM_x64
+echo "testing existance of native exe '/share/apps/vcell3/nativesolvers/Hybrid_EM_x64' which overrides container invocations"
+nativeExe=/share/apps/vcell3/nativesolvers/Hybrid_EM_x64
+if [ -e "${nativeExe}" ]; then
+   cmd_prefix="/share/apps/vcell3/nativesolvers/"
+else
+   cmd_prefix="$container_prefix"
+fi
+echo "cmd_prefix is '${cmd_prefix}'"
+echo "5 date=`date`"
+echo command = ${cmd_prefix}Hybrid_EM_x64 /share/apps/vcell3/users/schaff/SimID_274641698_0_.nc 100.0 10.0 0.01 0.1 -OV -tid 0 
+if [ -z ${LD_LIBRARY_PATH+x} ]; then
+    export LD_LIBRARY_PATH=/usr/local/app/localsolvers/linux64
+else
+    export LD_LIBRARY_PATH=/usr/local/app/localsolvers/linux64:$LD_LIBRARY_PATH
+fi
+      command="${cmd_prefix}Hybrid_EM_x64 /share/apps/vcell3/users/schaff/SimID_274641698_0_.nc 100.0 10.0 0.01 0.1 -OV -tid 0 "
+      $command
+stat=$?
+echo ${cmd_prefix}Hybrid_EM_x64 /share/apps/vcell3/users/schaff/SimID_274641698_0_.nc 100.0 10.0 0.01 0.1 -OV -tid 0 returned $stat
+if [ $stat -ne 0 ]; then
+	callExitProcessor $stat
+	echo returning $stat to Slurm
+	exit $stat
+fi
+#END---------SlurmProxy.generateScript():ExecutableCommand----------Hybrid_EM_x64
+callExitProcessor 0
+
+
+#Following commands (if any) are read by JavaPostProcessor64
+
+

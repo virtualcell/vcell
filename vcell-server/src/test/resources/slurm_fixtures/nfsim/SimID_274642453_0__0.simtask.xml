@@ -1,0 +1,268 @@
+<SimulationTask xmlns="http://sourceforge.net/projects/vcell/vcml" TaskId="0" JobIndex="0" isPowerUser="false">
+  <MathDescription Name="Copy of Application0_generated">
+    <Annotation>cloned from 'Copy of Application0_generated' owned by user danv</Annotation>
+    <ParticleMolecularType Name="Cargo">
+      <Component Name="carrier" />
+    </ParticleMolecularType>
+    <ParticleMolecularType Name="Carrier">
+      <Component Name="cargo" />
+    </ParticleMolecularType>
+    <Constant Name="_F_">96485.3321</Constant>
+    <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+    <Constant Name="_N_pmol_">6.02214179E11</Constant>
+    <Constant Name="_PI_">3.141592653589793</Constant>
+    <Constant Name="_R_">8314.46261815</Constant>
+    <Constant Name="_T_">300.0</Constant>
+    <Constant Name="cargo_cyt_Count_init_uM">1.0</Constant>
+    <Constant Name="cargo_ex_Count_init_uM">0.0</Constant>
+    <Constant Name="carrier_cyt_Count_init_uM">1.0</Constant>
+    <Constant Name="carrier_ex_Count_init_uM">0.0</Constant>
+    <Constant Name="complex_cyt_Count_init_uM">0.0</Constant>
+    <Constant Name="complex_ex_Count_init_uM">0.0</Constant>
+    <Constant Name="Kf">1.0</Constant>
+    <Constant Name="KMOLE">0.001660538783162726</Constant>
+    <Constant Name="Size_cyt">1.0</Constant>
+    <Constant Name="Size_ex">1.0</Constant>
+    <Constant Name="Size_mem">0.3</Constant>
+    <Constant Name="UnitFactor_molecules_uM_neg_1_um_neg_3">(1.0 * pow(KMOLE, - 1.0))</Constant>
+    <Constant Name="UnitFactor_uM_um3_molecules_neg_1">(1.0 * pow(KMOLE,1.0))</Constant>
+    <Constant Name="Voltage_mem">0.0</Constant>
+    <VolumeParticleSpeciesPattern Location="mem" Name="speciesPattern0" Domain="Compartment">
+      <MolecularType Name="Cargo" MatchLabel="*">
+        <Component Name="carrier" State="*" Bond="?" />
+      </MolecularType>
+    </VolumeParticleSpeciesPattern>
+    <VolumeParticleSpeciesPattern Location="cyt" Name="speciesPattern1" Domain="Compartment">
+      <MolecularType Name="Carrier" MatchLabel="*">
+        <Component Name="cargo" State="*" Bond="?" />
+      </MolecularType>
+    </VolumeParticleSpeciesPattern>
+    <VolumeParticleSpeciesPattern Location="cyt" Name="speciesPattern2" Domain="Compartment">
+      <MolecularType Name="Carrier" MatchLabel="*">
+        <Component Name="cargo" State="*" Bond="-" />
+      </MolecularType>
+    </VolumeParticleSpeciesPattern>
+    <VolumeParticleSpeciesPattern Location="cyt" Name="speciesPattern3" Domain="Compartment">
+      <MolecularType Name="Cargo" MatchLabel="*">
+        <Component Name="carrier" State="*" Bond="-" />
+      </MolecularType>
+    </VolumeParticleSpeciesPattern>
+    <VolumeParticleSpeciesPattern Location="cyt" Name="speciesPattern4" Domain="Compartment">
+      <MolecularType Name="Carrier" MatchLabel="*">
+        <Component Name="cargo" State="*" Bond="1" />
+      </MolecularType>
+      <MolecularType Name="Cargo" MatchLabel="*">
+        <Component Name="carrier" State="*" Bond="1" />
+      </MolecularType>
+    </VolumeParticleSpeciesPattern>
+    <VolumeParticleSpeciesPattern Location="ex" Name="speciesPattern5" Domain="Compartment">
+      <MolecularType Name="Cargo" MatchLabel="*">
+        <Component Name="carrier" State="*" Bond="-" />
+      </MolecularType>
+    </VolumeParticleSpeciesPattern>
+    <VolumeParticleSpeciesPattern Location="ex" Name="speciesPattern6" Domain="Compartment">
+      <MolecularType Name="Carrier" MatchLabel="*">
+        <Component Name="cargo" State="*" Bond="-" />
+      </MolecularType>
+    </VolumeParticleSpeciesPattern>
+    <VolumeParticleSpeciesPattern Location="cyt" Name="speciesPattern7" Domain="Compartment">
+      <MolecularType Name="Cargo" MatchLabel="*">
+        <Component Name="carrier" State="*" Bond="1" />
+      </MolecularType>
+      <MolecularType Name="Carrier" MatchLabel="*">
+        <Component Name="cargo" State="*" Bond="1" />
+      </MolecularType>
+    </VolumeParticleSpeciesPattern>
+    <VolumeParticleSpeciesPattern Location="ex" Name="speciesPattern8" Domain="Compartment">
+      <MolecularType Name="Cargo" MatchLabel="*">
+        <Component Name="carrier" State="*" Bond="1" />
+      </MolecularType>
+      <MolecularType Name="Carrier" MatchLabel="*">
+        <Component Name="cargo" State="*" Bond="1" />
+      </MolecularType>
+    </VolumeParticleSpeciesPattern>
+    <VolumeParticleObservable Name="cargo_cyt_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+      <VolumeParticleSpeciesPatterns>
+        <VolumeParticleSpeciesPattern Name="speciesPattern3" />
+      </VolumeParticleSpeciesPatterns>
+    </VolumeParticleObservable>
+    <VolumeParticleObservable Name="cargo_ex_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+      <VolumeParticleSpeciesPatterns>
+        <VolumeParticleSpeciesPattern Name="speciesPattern5" />
+      </VolumeParticleSpeciesPatterns>
+    </VolumeParticleObservable>
+    <VolumeParticleObservable Name="carrier_cyt_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+      <VolumeParticleSpeciesPatterns>
+        <VolumeParticleSpeciesPattern Name="speciesPattern2" />
+      </VolumeParticleSpeciesPatterns>
+    </VolumeParticleObservable>
+    <VolumeParticleObservable Name="carrier_ex_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+      <VolumeParticleSpeciesPatterns>
+        <VolumeParticleSpeciesPattern Name="speciesPattern6" />
+      </VolumeParticleSpeciesPatterns>
+    </VolumeParticleObservable>
+    <VolumeParticleObservable Name="complex_cyt_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+      <VolumeParticleSpeciesPatterns>
+        <VolumeParticleSpeciesPattern Name="speciesPattern7" />
+      </VolumeParticleSpeciesPatterns>
+    </VolumeParticleObservable>
+    <VolumeParticleObservable Name="complex_ex_Count" Domain="Compartment" MolecularType="Species" SequenceType="Multimolecular">
+      <VolumeParticleSpeciesPatterns>
+        <VolumeParticleSpeciesPattern Name="speciesPattern8" />
+      </VolumeParticleSpeciesPatterns>
+    </VolumeParticleObservable>
+    <VolumeParticleObservable Name="O0_Cargo_tot_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+      <VolumeParticleSpeciesPatterns>
+        <VolumeParticleSpeciesPattern Name="speciesPattern0" />
+      </VolumeParticleSpeciesPatterns>
+    </VolumeParticleObservable>
+    <VolumeParticleObservable Name="O0_Carrier_tot_Count" Domain="Compartment" MolecularType="Molecules" SequenceType="Multimolecular">
+      <VolumeParticleSpeciesPatterns>
+        <VolumeParticleSpeciesPattern Name="speciesPattern1" />
+      </VolumeParticleSpeciesPatterns>
+    </VolumeParticleObservable>
+    <Function Name="cargo_cyt" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * cargo_cyt_Count) / Size_cyt)</Function>
+    <Function Name="cargo_cyt_Count_initCount" Domain="Compartment">(UnitFactor_molecules_uM_neg_1_um_neg_3 * cargo_cyt_Count_init_uM * Size_cyt)</Function>
+    <Function Name="cargo_ex" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * cargo_ex_Count) / Size_ex)</Function>
+    <Function Name="cargo_ex_Count_initCount" Domain="Compartment">(UnitFactor_molecules_uM_neg_1_um_neg_3 * cargo_ex_Count_init_uM * Size_ex)</Function>
+    <Function Name="carrier_cyt" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * carrier_cyt_Count) / Size_cyt)</Function>
+    <Function Name="carrier_cyt_Count_initCount" Domain="Compartment">(UnitFactor_molecules_uM_neg_1_um_neg_3 * carrier_cyt_Count_init_uM * Size_cyt)</Function>
+    <Function Name="carrier_ex" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * carrier_ex_Count) / Size_ex)</Function>
+    <Function Name="carrier_ex_Count_initCount" Domain="Compartment">(UnitFactor_molecules_uM_neg_1_um_neg_3 * carrier_ex_Count_init_uM * Size_ex)</Function>
+    <Function Name="complex_cyt" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * complex_cyt_Count) / Size_cyt)</Function>
+    <Function Name="complex_cyt_Count_initCount" Domain="Compartment">(UnitFactor_molecules_uM_neg_1_um_neg_3 * complex_cyt_Count_init_uM * Size_cyt)</Function>
+    <Function Name="complex_ex" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * complex_ex_Count) / Size_ex)</Function>
+    <Function Name="complex_ex_Count_initCount" Domain="Compartment">(UnitFactor_molecules_uM_neg_1_um_neg_3 * complex_ex_Count_init_uM * Size_ex)</Function>
+    <Function Name="O0_Cargo_tot" Domain="Compartment">(O0_Cargo_tot_Count / Size_mem)</Function>
+    <Function Name="O0_Carrier_tot" Domain="Compartment">((O0_Carrier_tot_Count * UnitFactor_uM_um3_molecules_neg_1) / Size_cyt)</Function>
+    <Function Name="P_cyt_binding_probabilityRate" Domain="Compartment">((UnitFactor_uM_um3_molecules_neg_1 * Kf) / Size_cyt)</Function>
+    <CompartmentSubDomain Name="Compartment">
+      <BoundaryType Boundary="Xm" Type="Value" />
+      <BoundaryType Boundary="Xp" Type="Value" />
+      <BoundaryType Boundary="Ym" Type="Value" />
+      <BoundaryType Boundary="Yp" Type="Value" />
+      <BoundaryType Boundary="Zm" Type="Value" />
+      <BoundaryType Boundary="Zp" Type="Value" />
+      <ParticleJumpProcess Name="cyt_binding" ProcessSymmetryFactor="1.0">
+        <SelectedParticle Name="speciesPattern2" />
+        <SelectedParticle Name="speciesPattern3" />
+        <MacroscopicRateConstant>P_cyt_binding_probabilityRate</MacroscopicRateConstant>
+        <Effect VarName="speciesPattern2" Operation="destroy" />
+        <Effect VarName="speciesPattern3" Operation="destroy" />
+        <Effect VarName="speciesPattern4" Operation="create" />
+      </ParticleJumpProcess>
+      <ParticleProperties Name="speciesPattern3">
+        <ParticleInitialCount>
+          <ParticleCount>cargo_cyt_Count_initCount</ParticleCount>
+          <ParticleLocationX>0.0</ParticleLocationX>
+          <ParticleLocationY>u</ParticleLocationY>
+          <ParticleLocationZ>u</ParticleLocationZ>
+        </ParticleInitialCount>
+        <ParticleDiffusion>0.0</ParticleDiffusion>
+        <ParticleDriftX>0.0</ParticleDriftX>
+        <ParticleDriftY>0.0</ParticleDriftY>
+        <ParticleDriftZ>0.0</ParticleDriftZ>
+      </ParticleProperties>
+      <ParticleProperties Name="speciesPattern5">
+        <ParticleInitialCount>
+          <ParticleCount>cargo_ex_Count_initCount</ParticleCount>
+          <ParticleLocationX>0.0</ParticleLocationX>
+          <ParticleLocationY>u</ParticleLocationY>
+          <ParticleLocationZ>u</ParticleLocationZ>
+        </ParticleInitialCount>
+        <ParticleDiffusion>0.0</ParticleDiffusion>
+        <ParticleDriftX>0.0</ParticleDriftX>
+        <ParticleDriftY>0.0</ParticleDriftY>
+        <ParticleDriftZ>0.0</ParticleDriftZ>
+      </ParticleProperties>
+      <ParticleProperties Name="speciesPattern2">
+        <ParticleInitialCount>
+          <ParticleCount>carrier_cyt_Count_initCount</ParticleCount>
+          <ParticleLocationX>0.0</ParticleLocationX>
+          <ParticleLocationY>u</ParticleLocationY>
+          <ParticleLocationZ>u</ParticleLocationZ>
+        </ParticleInitialCount>
+        <ParticleDiffusion>0.0</ParticleDiffusion>
+        <ParticleDriftX>0.0</ParticleDriftX>
+        <ParticleDriftY>0.0</ParticleDriftY>
+        <ParticleDriftZ>0.0</ParticleDriftZ>
+      </ParticleProperties>
+      <ParticleProperties Name="speciesPattern6">
+        <ParticleInitialCount>
+          <ParticleCount>carrier_ex_Count_initCount</ParticleCount>
+          <ParticleLocationX>0.0</ParticleLocationX>
+          <ParticleLocationY>u</ParticleLocationY>
+          <ParticleLocationZ>u</ParticleLocationZ>
+        </ParticleInitialCount>
+        <ParticleDiffusion>0.0</ParticleDiffusion>
+        <ParticleDriftX>0.0</ParticleDriftX>
+        <ParticleDriftY>0.0</ParticleDriftY>
+        <ParticleDriftZ>0.0</ParticleDriftZ>
+      </ParticleProperties>
+      <ParticleProperties Name="speciesPattern7">
+        <ParticleInitialCount>
+          <ParticleCount>complex_cyt_Count_initCount</ParticleCount>
+          <ParticleLocationX>0.0</ParticleLocationX>
+          <ParticleLocationY>u</ParticleLocationY>
+          <ParticleLocationZ>u</ParticleLocationZ>
+        </ParticleInitialCount>
+        <ParticleDiffusion>0.0</ParticleDiffusion>
+        <ParticleDriftX>0.0</ParticleDriftX>
+        <ParticleDriftY>0.0</ParticleDriftY>
+        <ParticleDriftZ>0.0</ParticleDriftZ>
+      </ParticleProperties>
+      <ParticleProperties Name="speciesPattern8">
+        <ParticleInitialCount>
+          <ParticleCount>complex_ex_Count_initCount</ParticleCount>
+          <ParticleLocationX>0.0</ParticleLocationX>
+          <ParticleLocationY>u</ParticleLocationY>
+          <ParticleLocationZ>u</ParticleLocationZ>
+        </ParticleInitialCount>
+        <ParticleDiffusion>0.0</ParticleDiffusion>
+        <ParticleDriftX>0.0</ParticleDriftX>
+        <ParticleDriftY>0.0</ParticleDriftY>
+        <ParticleDriftZ>0.0</ParticleDriftZ>
+      </ParticleProperties>
+    </CompartmentSubDomain>
+    <Version Name="Copy of Application0_generated" KeyValue="274642429" BranchId="100956758" Archived="0" Date="22-Aug-2024 01:05:28" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+      <Annotation>cloned from 'Copy of Application0_generated' owned by user danv</Annotation>
+    </Version>
+  </MathDescription>
+  <Simulation Name="Simulation2">
+    <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="NFSim">
+      <TimeBound StartTime="0.0" EndTime="1.0" />
+      <TimeStep DefaultTime="0.1" MinTime="1.0E-8" MaxTime="1.0" />
+      <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
+      <OutputOptions OutputTimeStep="0.05" />
+      <NFSimSimulationOptions>
+        <ObservableComputationOff>true</ObservableComputationOff>
+        <PreventIntraBonds>false</PreventIntraBonds>
+        <AggregateBookkeeping>true</AggregateBookkeeping>
+        <MatchComplexes>true</MatchComplexes>
+        <MoleculeDistance>1000</MoleculeDistance>
+        <NumOfTrials>1</NumOfTrials>
+      </NFSimSimulationOptions>
+      <NumberProcessors>1</NumberProcessors>
+    </SolverTaskDescription>
+    <MathOverrides />
+    <Version Name="Simulation2" KeyValue="274642453" BranchId="274642454" Archived="0" Date="22-Aug-2024 01:05:28" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+    </Version>
+  </Simulation>
+  <Geometry Name="non-spatial453902550" Dimension="0">
+    <Annotation>cloned from 'non-spatial453902550' owned by user danv
+cloned from 'non-spatial1747226078' owned by user mblinov</Annotation>
+    <Extent X="10.0" Y="10.0" Z="10.0" />
+    <Origin X="0.0" Y="0.0" Z="0.0" />
+    <SubVolume Name="Compartment" Handle="0" Type="Compartmental" KeyValue="269179903" />
+    <Version Name="non-spatial453902550" KeyValue="269179900" BranchId="100956750" Archived="0" Date="29-Feb-2024 18:38:37" FromVersionable="false">
+      <Owner Name="schaff" Identifier="17" />
+      <GroupAccess Type="1" />
+      <Annotation>cloned from 'non-spatial453902550' owned by user danv
+cloned from 'non-spatial1747226078' owned by user mblinov</Annotation>
+    </Version>
+  </Geometry>
+</SimulationTask>
