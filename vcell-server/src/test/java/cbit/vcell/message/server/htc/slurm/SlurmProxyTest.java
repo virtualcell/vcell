@@ -1,14 +1,8 @@
 package cbit.vcell.message.server.htc.slurm;
 
-import cbit.vcell.message.server.cmd.CommandServiceSshNative;
-import cbit.vcell.message.server.htc.HtcJobStatus;
-import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
-import cbit.vcell.message.server.htc.HtcProxy.PartitionStatistics;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.HtcJobID;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.xml.XmlHelper;
@@ -17,19 +11,20 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.exe.ExecutableException;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
 @Tag("Fast")
 public class SlurmProxyTest {
 
-	private HashMap<String,String> originalProperties = new HashMap<>();
+	private final HashMap<String,String> originalProperties = new HashMap<>();
 
 	private void setProperty(String key, String value) {
 		originalProperties.put(key, System.getProperty(key));
@@ -38,7 +33,12 @@ public class SlurmProxyTest {
 
 	private void restoreProperties() {
 		for (String key : originalProperties.keySet()) {
-			System.setProperty(key, originalProperties.get(key));
+			String originalPropertyValue = originalProperties.get(key);
+			if (originalPropertyValue == null) {
+				System.clearProperty(key);
+			} else {
+				System.setProperty(key, originalPropertyValue);
+			}
 		}
 		originalProperties.clear();
 	}
@@ -308,126 +308,126 @@ public class SlurmProxyTest {
 		return xmlString;
 	}
 
-	@Disabled // this test is disabled because it requires a running slurm server
-	@Test
-	public void testSingularitySupport() {
-		CommandServiceSshNative cmd = null;
-		try {
-			Random r = new Random();
-			System.setProperty("log4j2.trace","true");
-			PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "Test2");
-			PropertyLoader.setProperty(PropertyLoader.htcLogDirExternal, "/Volumes/vcell/htclogs");
-			VCMongoMessage.enabled=false;
-			String partitions[] = new String[] { "vcell", "vcell2" };
-			PropertyLoader.setProperty(PropertyLoader.slurm_partition, partitions[1]);
-			
-			
-			cmd = new CommandServiceSshNative(new String[] {"vcell-service.cam.uchc.edu"}, "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
-			SlurmProxy slurmProxy = new SlurmProxy(cmd, "vcell");
-
-			String jobName = "V_TEST2_999999999_0_"+r.nextInt(10000);
-			System.out.println("job name is "+jobName);
-			File sub_file_localpath = new File("/Volumes/vcell/htclogs/"+jobName+".slurm.sub");
-			File sub_file_remotepath = new File("/share/apps/vcell3/htclogs/"+jobName+".slurm.sub");
-			
-			StringBuilder subfileContent = new StringBuilder();
-			subfileContent.append("#!/usr/bin/bash\n");
-			String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
-			subfileContent.append("#SBATCH --partition="+partition+"\n");
-			subfileContent.append("#SBATCH -J "+jobName+"\n");
-			subfileContent.append("#SBATCH -o /share/apps/vcell3/htclogs/"+jobName+".slurm.log\n");
-			subfileContent.append("#SBATCH -e /share/apps/vcell3/htclogs/"+jobName+".slurm.log\n");
-			subfileContent.append("#SBATCH --mem=1000M\n");
-			subfileContent.append("#SBATCH --no-kill\n");
-			subfileContent.append("#SBATCH --no-requeue\n");
-			subfileContent.append("env\n");
-			subfileContent.append("echo `hostname`\n");
-			subfileContent.append("python -c \"some_str = ' ' * 51200000\"\n");
-			subfileContent.append("retcode=$?\n");
-			subfileContent.append("echo \"return code was $retcode\"\n");
-			subfileContent.append("if [[ $retcode == 137 ]]; then\n");
-			subfileContent.append("   echo \"job was killed via kill -9 (probably out of memory)\"\n");
-			subfileContent.append("fi\n");
-			subfileContent.append("sleep 20\n");
-			subfileContent.append("exit $retcode\n");
-			//subfileContent.append("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
-			//subfileContent.append("source /usr/share/Modules/init/bash\n");
-//			subfileContent.append("module load singularity\n");
-//			subfileContent.append("if command -v singularity >/dev/null 2>&1; then\n");
-//			subfileContent.append("   echo 'singularity command exists'\n");
-//			subfileContent.append("   exit 0\n");
-//			subfileContent.append("else\n");
-//			subfileContent.append("   echo 'singularity command not found'\n");
-//			subfileContent.append("   exit 1\n");
+//	@Disabled // this test is disabled because it requires a running slurm server
+//	@Test
+//	public void testSingularitySupport() {
+//		CommandServiceSshNative cmd = null;
+//		try {
+//			Random r = new Random();
+//			System.setProperty("log4j2.trace","true");
+//			PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "Test2");
+//			PropertyLoader.setProperty(PropertyLoader.htcLogDirExternal, "/Volumes/vcell/htclogs");
+//			VCMongoMessage.enabled=false;
+//			String partitions[] = new String[] { "vcell", "vcell2" };
+//			PropertyLoader.setProperty(PropertyLoader.slurm_partition, partitions[1]);
+//
+//
+//			cmd = new CommandServiceSshNative(new String[] {"vcell-service.cam.uchc.edu"}, "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
+//			SlurmProxy slurmProxy = new SlurmProxy(cmd, "vcell");
+//
+//			String jobName = "V_TEST2_999999999_0_"+r.nextInt(10000);
+//			System.out.println("job name is "+jobName);
+//			File sub_file_localpath = new File("/Volumes/vcell/htclogs/"+jobName+".slurm.sub");
+//			File sub_file_remotepath = new File("/share/apps/vcell3/htclogs/"+jobName+".slurm.sub");
+//
+//			StringBuilder subfileContent = new StringBuilder();
+//			subfileContent.append("#!/usr/bin/bash\n");
+//			String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
+//			subfileContent.append("#SBATCH --partition="+partition+"\n");
+//			subfileContent.append("#SBATCH -J "+jobName+"\n");
+//			subfileContent.append("#SBATCH -o /share/apps/vcell3/htclogs/"+jobName+".slurm.log\n");
+//			subfileContent.append("#SBATCH -e /share/apps/vcell3/htclogs/"+jobName+".slurm.log\n");
+//			subfileContent.append("#SBATCH --mem=1000M\n");
+//			subfileContent.append("#SBATCH --no-kill\n");
+//			subfileContent.append("#SBATCH --no-requeue\n");
+//			subfileContent.append("env\n");
+//			subfileContent.append("echo `hostname`\n");
+//			subfileContent.append("python -c \"some_str = ' ' * 51200000\"\n");
+//			subfileContent.append("retcode=$?\n");
+//			subfileContent.append("echo \"return code was $retcode\"\n");
+//			subfileContent.append("if [[ $retcode == 137 ]]; then\n");
+//			subfileContent.append("   echo \"job was killed via kill -9 (probably out of memory)\"\n");
 //			subfileContent.append("fi\n");
-
-			FileUtils.writeStringToFile(sub_file_localpath, subfileContent.toString());
-			HtcJobID htcJobId = slurmProxy.submitJobFile(sub_file_remotepath);
-			System.out.println("running job "+htcJobId);
-			HtcJobInfo htcJobInfo = new HtcJobInfo(htcJobId, jobName);
-
-			ArrayList<HtcJobInfo> jobInfos = new ArrayList<HtcJobInfo>();
-			jobInfos.add(htcJobInfo);
-			
-			Map<HtcJobInfo, HtcJobStatus> jobStatusMap = slurmProxy.getJobStatus(jobInfos);
-			
-			int attempts = 0;
-			while (attempts<80 && (jobStatusMap.get(htcJobInfo)==null || !jobStatusMap.get(htcJobInfo).isDone())){
-				try { Thread.sleep(1000); } catch (InterruptedException e){}
-				jobStatusMap = slurmProxy.getJobStatus(jobInfos);
-				System.out.println(jobStatusMap.get(htcJobInfo));
-				if (attempts==5) {
-					slurmProxy.killJobs(jobName);
-				}
-				attempts++;
-			}
-			System.out.println(jobStatusMap.get(htcJobInfo));
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-            Assertions.fail(e.getMessage());
-		}finally {
-			if (cmd != null) {
-				cmd.close();
-			}
-		}
-	}
-
-
-	@Disabled // this test is disabled because it requires a running slurm server
-	@Test
-	public void testSLURM() throws IOException, ExecutableException {
-		System.setProperty("log4j2.trace","true");
-		PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "Test2");
-		VCMongoMessage.enabled=false;
-		String partitions[] = new String[] { "vcell", "vcell2" };
-		PropertyLoader.setProperty(PropertyLoader.slurm_partition, partitions[0]);
-		
-		CommandServiceSshNative cmd = null;
-		try {
-			cmd = new CommandServiceSshNative(new String[] {"vcell-service.cam.uchc.edu"}, "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
-			SlurmProxy slurmProxy = new SlurmProxy(cmd, "vcell");
-			Map<HtcJobInfo, HtcJobStatus> runningJobs = slurmProxy.getRunningJobs();
-			for (HtcJobInfo jobInfo : runningJobs.keySet()) {
-				HtcJobStatus jobStatus = runningJobs.get(jobInfo);
-				System.out.println("job "+jobInfo.getHtcJobID()+" "+jobInfo.getJobName()+", status="+jobStatus.toString());
-			}
-			for (String partition : partitions) {
-				PropertyLoader.setProperty(PropertyLoader.slurm_partition, partition);
-				PartitionStatistics partitionStatistics = slurmProxy.getPartitionStatistics();
-				System.out.println("partition statistics for partition "+partition+": "+partitionStatistics);
-				System.out.println("number of cpus allocated = "+partitionStatistics.numCpusAllocated);
-				System.out.println("load = "+partitionStatistics.load);
-				System.out.println("number of cpus total = "+partitionStatistics.numCpusTotal);
-			}
-		}catch (Exception e) {
-			e.printStackTrace();
-            Assertions.fail(e.getMessage());
-		}finally {
-			if (cmd != null) {
-				cmd.close();
-			}
-		}
-	}
+//			subfileContent.append("sleep 20\n");
+//			subfileContent.append("exit $retcode\n");
+//			//subfileContent.append("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
+//			//subfileContent.append("source /usr/share/Modules/init/bash\n");
+////			subfileContent.append("module load singularity\n");
+////			subfileContent.append("if command -v singularity >/dev/null 2>&1; then\n");
+////			subfileContent.append("   echo 'singularity command exists'\n");
+////			subfileContent.append("   exit 0\n");
+////			subfileContent.append("else\n");
+////			subfileContent.append("   echo 'singularity command not found'\n");
+////			subfileContent.append("   exit 1\n");
+////			subfileContent.append("fi\n");
+//
+//			FileUtils.writeStringToFile(sub_file_localpath, subfileContent.toString());
+//			HtcJobID htcJobId = slurmProxy.submitJobFile(sub_file_remotepath);
+//			System.out.println("running job "+htcJobId);
+//			HtcJobInfo htcJobInfo = new HtcJobInfo(htcJobId, jobName);
+//
+//			ArrayList<HtcJobInfo> jobInfos = new ArrayList<HtcJobInfo>();
+//			jobInfos.add(htcJobInfo);
+//
+//			Map<HtcJobInfo, HtcJobStatus> jobStatusMap = slurmProxy.getJobStatus(jobInfos);
+//
+//			int attempts = 0;
+//			while (attempts<80 && (jobStatusMap.get(htcJobInfo)==null || !jobStatusMap.get(htcJobInfo).isDone())){
+//				try { Thread.sleep(1000); } catch (InterruptedException e){}
+//				jobStatusMap = slurmProxy.getJobStatus(jobInfos);
+//				System.out.println(jobStatusMap.get(htcJobInfo));
+//				if (attempts==5) {
+//					slurmProxy.killJobs(jobName);
+//				}
+//				attempts++;
+//			}
+//			System.out.println(jobStatusMap.get(htcJobInfo));
+//
+//		}catch (Exception e) {
+//			e.printStackTrace();
+//            Assertions.fail(e.getMessage());
+//		}finally {
+//			if (cmd != null) {
+//				cmd.close();
+//			}
+//		}
+//	}
+//
+//
+//	@Disabled // this test is disabled because it requires a running slurm server
+//	@Test
+//	public void testSLURM() throws IOException, ExecutableException {
+//		System.setProperty("log4j2.trace","true");
+//		PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "Test2");
+//		VCMongoMessage.enabled=false;
+//		String partitions[] = new String[] { "vcell", "vcell2" };
+//		PropertyLoader.setProperty(PropertyLoader.slurm_partition, partitions[0]);
+//
+//		CommandServiceSshNative cmd = null;
+//		try {
+//			cmd = new CommandServiceSshNative(new String[] {"vcell-service.cam.uchc.edu"}, "vcell", new File("/Users/schaff/.ssh/schaff_rsa"));
+//			SlurmProxy slurmProxy = new SlurmProxy(cmd, "vcell");
+//			Map<HtcJobInfo, HtcJobStatus> runningJobs = slurmProxy.getRunningJobs();
+//			for (HtcJobInfo jobInfo : runningJobs.keySet()) {
+//				HtcJobStatus jobStatus = runningJobs.get(jobInfo);
+//				System.out.println("job "+jobInfo.getHtcJobID()+" "+jobInfo.getJobName()+", status="+jobStatus.toString());
+//			}
+//			for (String partition : partitions) {
+//				PropertyLoader.setProperty(PropertyLoader.slurm_partition, partition);
+//				PartitionStatistics partitionStatistics = slurmProxy.getPartitionStatistics();
+//				System.out.println("partition statistics for partition "+partition+": "+partitionStatistics);
+//				System.out.println("number of cpus allocated = "+partitionStatistics.numCpusAllocated);
+//				System.out.println("load = "+partitionStatistics.load);
+//				System.out.println("number of cpus total = "+partitionStatistics.numCpusTotal);
+//			}
+//		}catch (Exception e) {
+//			e.printStackTrace();
+//            Assertions.fail(e.getMessage());
+//		}finally {
+//			if (cmd != null) {
+//				cmd.close();
+//			}
+//		}
+//	}
 
 }
