@@ -69,7 +69,6 @@ public class N5Exporter implements ExportConstants {
 }
 
 	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws Exception {
-		VCUnitDefinition lengthUnit = ModelUnitSystem.createDefaultVCModelUnitSystem().getLengthUnit();
 		double[] allTimes = dataServer.getDataSetTimes(user, vcDataID);
 		TimeSpecs timeSpecs = exportSpecs.getTimeSpecs();
 		String[] variableNames = exportSpecs.getVariableSpecs().getVariableNames();
@@ -135,7 +134,7 @@ public class N5Exporter implements ExportConstants {
 		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter,
 				n5Specs.dataSetName, numVariables, sizeZ, allTimes.length,
 				exportSpecs.getHumanReadableExportData().subVolume,
-				lengthPerPixelY, lengthPerPixelX, lengthPerPixelZ, lengthUnit.getSymbol(), channelInfo);
+				lengthPerPixelY, lengthPerPixelX, lengthPerPixelZ, getLengthUnit(), getTimeUnit(),channelInfo);
 
 		int timeLoops = 1;
 		double progress = 0;
@@ -190,6 +189,21 @@ public class N5Exporter implements ExportConstants {
 			}
 		}
 		return false;
+	}
+
+	private String getTimeUnit(){
+		VCUnitDefinition timeUnit = ModelUnitSystem.createDefaultVCModelUnitSystem().getTimeUnit();
+		return timeUnit.getSymbol();
+	}
+
+	private String getSpeciesUnit(){
+		VCUnitDefinition speciesUnit = ModelUnitSystem.createDefaultVCModelUnitSystem().getVolumeConcentrationUnit();
+		return speciesUnit.getSymbol();
+	}
+
+	private String getLengthUnit(){
+		VCUnitDefinition lengthUnit = ModelUnitSystem.createDefaultVCModelUnitSystem().getLengthUnit();
+		return lengthUnit.getSymbol();
 	}
 
 	public void initalizeDataControllers(User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) throws IOException, DataAccessException {
