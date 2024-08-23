@@ -24,9 +24,11 @@ public class MockSimulationDB implements SimulationDatabase{
         if (simList == null){
             return null;
         }
-        SimulationJobStatus latestSim = simList.get(0);
+        SimulationJobStatus latestSim = null;
         for (SimulationJobStatus jobStatus : simList){
-            if (jobStatus.getJobIndex() == jobIndex && latestSim.getSubmitDate().after(jobStatus.getSubmitDate())){
+            boolean equalJobIndex = jobStatus.getJobIndex() == jobIndex;
+            boolean isLatestSimNull = latestSim == null;
+            if ((equalJobIndex && isLatestSimNull) || (!isLatestSimNull && equalJobIndex && latestSim.getSubmitDate().after(jobStatus.getSubmitDate()))){
                 latestSim = jobStatus;
             }
         }
@@ -60,6 +62,11 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus) throws DataAccessException, UpdateSynchronizationException, SQLException {
+        updateSimulationJobStatus(newSimulationJobStatus, null);
+    }
+
+    @Override
+    public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus, StateInfo runningStateInfo) throws DataAccessException, UpdateSynchronizationException, SQLException {
         String simKey = newSimulationJobStatus.getVCSimulationIdentifier().getSimulationKey().toString();
         ArrayList<SimulationJobStatus> jobStatuses = dbTable.get(simKey);
         for (int i = 0; i < jobStatuses.size(); i++){
@@ -70,11 +77,6 @@ public class MockSimulationDB implements SimulationDatabase{
                 break;
             }
         }
-    }
-
-    @Override
-    public void updateSimulationJobStatus(SimulationJobStatus newSimulationJobStatus, StateInfo runningStateInfo) throws DataAccessException, UpdateSynchronizationException, SQLException {
-
     }
 
     @Override
@@ -89,7 +91,7 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(Simulation sim) throws DataAccessException {
-        throw new DataAccessException();
+        return null;
     }
 
     @Override

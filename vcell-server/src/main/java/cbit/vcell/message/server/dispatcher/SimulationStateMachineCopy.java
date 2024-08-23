@@ -141,7 +141,7 @@ public class SimulationStateMachineCopy {
         return true;
     }
 
-    protected SimulationJobStatus produceSimulationJobStatusFromWorkerEvent(
+    private SimulationJobStatus produceStateFromWorkerEvent(
             WorkerEvent workerEvent,
             SimulationJobStatus oldSimulationJobStatus){
 
@@ -332,7 +332,7 @@ public class SimulationStateMachineCopy {
         SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getLatestSimulationJobStatus(simKey, jobIndex);
 
         SimulationJobStatus.SchedulerStatus oldSchedulerStatus = oldSimulationJobStatus.getSchedulerStatus();
-        SimulationJobStatus newJobStatus = produceSimulationJobStatusFromWorkerEvent(workerEvent, oldSimulationJobStatus);
+        SimulationJobStatus newJobStatus = produceStateFromWorkerEvent(workerEvent, oldSimulationJobStatus);
 
         if (newJobStatus!=null){
             if (!newJobStatus.compareEqual(oldSimulationJobStatus) || workerEvent.isProgressEvent() || workerEvent.isNewDataEvent()) {
@@ -421,13 +421,9 @@ public class SimulationStateMachineCopy {
 
         // new exe status
         Date lastUpdateDate = new Date();
-        String computeHost = null;
-        Date startDate = null;
-        Date endDate = null;
-        HtcJobID htcJobID = null;
         boolean hasData = false;
 
-        SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
+        SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(null, null, lastUpdateDate, null, hasData, null);
 
         VCellServerID vcServerID = VCellServerID.getSystemServerID();
         Date submitDate = currentDate;
