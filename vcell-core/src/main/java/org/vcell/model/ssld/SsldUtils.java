@@ -1,7 +1,10 @@
 package org.vcell.model.ssld;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.ReactionRuleSpec;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
@@ -23,6 +26,7 @@ public class SsldUtils {
 
         final SsldModel ssldModel;
         final BioModel bioModel;
+        SimulationContext simContext;   // set late (after we construct the physiology)
 
         Map<Molecule, MolecularType> moleculeToMolecularTypeMap = new LinkedHashMap<>();
         Map<MolecularType, Molecule> molecularTypeToMoleculeMap = new LinkedHashMap<>();
@@ -50,6 +54,7 @@ public class SsldUtils {
         public Mapping(SsldModel ssldModel, BioModel bioModel) {
             this.ssldModel = ssldModel;
             this.bioModel = bioModel;
+            this.simContext = null;
         }
 
         void cleanReactionsMaps() {
@@ -59,6 +64,22 @@ public class SsldUtils {
             reactantToProductPatternTwo.clear();
             conditionToReactantPattern.clear();
             conditionToProductPattern.clear();
+        }
+
+        SsldModel getSsldModel() {
+            return ssldModel;
+        }
+        BioModel getBioModel() {
+            return bioModel;
+        }
+        void set(SimulationContext simContext) {
+            if(this.simContext != null) {
+                throw new RuntimeException("SsldImporting: the SpringSaLaD application may be set only once");
+            }
+            this.simContext = simContext;
+        }
+        SimulationContext getSimulationContext() {
+            return simContext;
         }
 
         void put(Molecule ssldMolecule, MolecularType mt) {
@@ -281,8 +302,39 @@ public class SsldUtils {
 
     }
 
-
     public BioModel fromSsld(SsldModel ssldModel) throws Exception {
+
+
+        Mapping m = importPhysiologyFromSsld(ssldModel);
+        BioModel bioModel = m.getBioModel();
+//        String newApplicationName = bioModel.getFreeSimulationContextName();
+        SimulationContext springSaLaDSimContext = bioModel.addNewSimulationContext("SpringSaLaD",
+                SimulationContext.Application.SPRINGSALAD);     // make new default SpringSaLaD application
+        springSaLaDSimContext.setUsingConcentration(true, false);
+        m.set(springSaLaDSimContext);
+        importApplicationFromSsld(m);
+
+
+        return bioModel;
+    }
+
+    public void importApplicationFromSsld(Mapping m) throws Exception {
+        final BioModel bioModel = m.getBioModel();
+        final SsldModel ssldModel = m.getSsldModel();
+        SimulationContext simContext = m.getSimulationContext();    // default ssld application
+
+        // TODO: import application specific stuff here
+
+        GeometryContext geometryContext = simContext.getGeometryContext();
+        Geometry geometry = simContext.getGeometry();
+
+        ReactionRuleSpec[] rrSpecs = simContext.getReactionContext().getReactionRuleSpecs();
+        SpeciesContextSpec[] scSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
+
+
+    }
+
+    public Mapping importPhysiologyFromSsld(SsldModel ssldModel) throws Exception {
 
         ModelUnitSystem mus = ModelUnitSystem.createDefaultVCModelUnitSystem();
         BioModel bioModel = new BioModel(null);
@@ -629,9 +681,7 @@ public class SsldUtils {
                 bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
             }
         }
-
-
-        return bioModel;
+        return m;
     }
 
     private void adjustAllostericReactionSites(AllostericReaction ssldReaction, Mapping m) {

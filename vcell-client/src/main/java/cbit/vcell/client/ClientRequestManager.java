@@ -3346,9 +3346,15 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 						SsldUtils ssldUtils = new SsldUtils();
 						SsldModel ssldModel = SsldUtils.importSsldFile(file);
+						// the ModelUnitSystem is being initialized within SsldUtils.fromSsld()
+//						ModelUnitSystem mus = ModelUnitSystem.createDefaultVCModelUnitSystem();
 						BioModel bioModel = ssldUtils.fromSsld(ssldModel);
 
-
+						// we also add an empty rule-based application, just for testing
+						// it's going to be incomplete because we did not import the initial condition from the ssld model
+						SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("NFSim app",
+								SimulationContext.Application.RULE_BASED_STOCHASTIC);
+						ruleBasedSimContext.setUsingConcentration(true, false);
 
 						doc = bioModel;
 					} else if (!externalDocInfo.isXML()) {
