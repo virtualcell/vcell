@@ -2,18 +2,20 @@ package org.vcell.model.ssld;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.ReactionRuleSpec;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.*;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
 import org.vcell.model.rbm.*;
 import org.vcell.solver.langevin.LangevinLngvWriter;
+import org.vcell.util.Coordinate;
+import org.vcell.util.springsalad.Colors;
+import org.vcell.util.springsalad.NamedColor;
 
+import java.awt.*;
 import java.util.*;
 import java.io.BufferedReader;
 import java.io.*;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import static org.vcell.model.ssld.TransitionReaction.ANY_STATE;
@@ -27,6 +29,9 @@ public class SsldUtils {
         final SsldModel ssldModel;
         final BioModel bioModel;
         SimulationContext simContext;   // set late (after we construct the physiology)
+
+        Map<Site, SiteType> siteToTypeMap = new LinkedHashMap<> ();
+        Map<SiteType, Site> typeToSiteMap = new LinkedHashMap<> ();
 
         Map<Molecule, MolecularType> moleculeToMolecularTypeMap = new LinkedHashMap<>();
         Map<MolecularType, Molecule> molecularTypeToMoleculeMap = new LinkedHashMap<>();
@@ -80,6 +85,23 @@ public class SsldUtils {
         }
         SimulationContext getSimulationContext() {
             return simContext;
+        }
+
+        void put(Site site, SiteType type) {
+            if(siteToTypeMap.containsKey(site)) {
+                throw new RuntimeException("siteToTypeMap: Duplicate Key");
+            }
+            if(typeToSiteMap.containsKey(type)) {
+                throw new RuntimeException("typeToSiteMap: Duplicate Key");
+            }
+            siteToTypeMap.put(site, type);
+            typeToSiteMap.put(type, site);
+        }
+        Site getSite(SiteType type) {
+            return typeToSiteMap.get(type);
+        }
+        SiteType getType(Site site) {
+            return siteToTypeMap.get(site);
         }
 
         void put(Molecule ssldMolecule, MolecularType mt) {
@@ -310,10 +332,11 @@ public class SsldUtils {
 //        String newApplicationName = bioModel.getFreeSimulationContextName();
         SimulationContext springSaLaDSimContext = bioModel.addNewSimulationContext("SpringSaLaD",
                 SimulationContext.Application.SPRINGSALAD);     // make new default SpringSaLaD application
-        springSaLaDSimContext.setUsingConcentration(true, false);
+        // we always import count, so we start with default count
+        // TODO: in specifications, initial conditions must be set to count; also add button to switch between count and concentration
+        springSaLaDSimContext.setUsingConcentration(false, false);
         m.set(springSaLaDSimContext);
         importApplicationFromSsld(m);
-
 
         return bioModel;
     }
@@ -331,7 +354,70 @@ public class SsldUtils {
         ReactionRuleSpec[] rrSpecs = simContext.getReactionContext().getReactionRuleSpecs();
         SpeciesContextSpec[] scSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
 
+        for(SpeciesContextSpec scs : scSpecs) {
+            importSpeciesContextSpecForSsld(scs, m);
 
+        }
+
+
+
+    }
+
+    private void importSpeciesContextSpecForSsld(SpeciesContextSpec scs, Mapping m) throws Exception {
+
+        Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<>();
+        Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
+
+        SpeciesPattern sp = scs.getSpeciesContext().getSpeciesPattern();
+        MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
+        MolecularType mt = mtp.getMolecularType();
+        List<MolecularComponentPattern> mcpList = mtp.getComponentPatternList();
+
+        Molecule ssldMolecule = m.get(mt);
+        List<Site> ssldSiteArray = ssldMolecule.getSiteArray();
+        List<SiteType> ssldTypeArray = ssldMolecule.getTypeArray();
+
+        for(MolecularComponentPattern mcp : mcpList) {
+            MolecularComponent mc = mcp.getMolecularComponent();
+            SiteType ssldType = m.get(mc);
+            Site ssldSite = m.getSite(ssldType);
+
+            String ssldStructure = ssldSite.getLocation();  // structure of site, may differ from molecule structure
+            Structure structure = m.getBioModel().getModel().getStructure(ssldStructure);
+            String colorName = ssldType.getColorName();
+            NamedColor namedColor = Colors.getColorByName(colorName);
+            Coordinate coordinate = new Coordinate(ssldSite.x, ssldSite.y, ssldSite.z);
+
+            SiteAttributesSpec sas = new SiteAttributesSpec(scs, mcp, structure);
+            sas.setCoordinate(coordinate);
+            sas.setColor(namedColor);
+            sas.setRadius(ssldType.getRadius());
+            sas.setDiffusionRate(ssldType.getD());
+
+            siteAttributesMap.put(mcp, sas);
+        }
+        for(Link ssldLink : ssldMolecule.getLinkArray()) {
+            // ssldLink -> ssldSite1 -> ssldType1 -> mc1 -> mcp1 -> mils
+            //          -> ssldSite2 -> ssldType2 -> mc2 -> mcp2 ->
+            Site ssldSite1 = ssldLink.getSite1();
+            Site ssldSite2 = ssldLink.getSite2();
+            SiteType ssldType1 = m.getType(ssldSite1);
+            SiteType ssldType2 = m.getType(ssldSite2);
+            MolecularComponent mc1 = m.get(ssldType1);
+            MolecularComponent mc2 = m.get(ssldType2);
+            MolecularComponentPattern mcp1 = mtp.getMolecularComponentPattern(mc1);
+            MolecularComponentPattern mcp2 = mtp.getMolecularComponentPattern(mc2);
+
+            MolecularInternalLinkSpec mils = new MolecularInternalLinkSpec(scs, mcp1, mcp2);
+            internalLinkSet.add(mils);
+        }
+        scs.setSiteAttributesMap(siteAttributesMap);
+        scs.setInternalLinkSet(internalLinkSet);
+
+        SpeciesContextSpec.SpeciesContextSpecParameter countParam = scs.getInitialCountParameter();
+        InitialCondition ssldIc = ssldMolecule.getInitialCondition();
+        Expression countExp = new Expression(ssldIc.getNumber());
+        countParam.setExpression(countExp);
     }
 
     public Mapping importPhysiologyFromSsld(SsldModel ssldModel) throws Exception {
@@ -367,8 +453,10 @@ public class SsldUtils {
             MolecularType mt = new MolecularType(ssldMolecule.getName(), model);
             for(Site ssldSite : ssldMolecule.getSiteArray()) {
                 SiteType ssldType = ssldSite.getType();
-                MolecularComponent mc = new MolecularComponent(ssldType.getName());
+                // in vcell we only accept a 1 to 1 relationship between type and site
+                m.put(ssldSite, ssldType);
 
+                MolecularComponent mc = new MolecularComponent(ssldType.getName());
                 // site index starts at 1 in vcell, while it starts at 0 in ssld
                 // see also LangevinLngvWriter.writeSpeciesInfo()
                 // see also MolecularInternalLinkSpec.writeLink()
