@@ -333,8 +333,7 @@ public class SsldUtils {
         SimulationContext springSaLaDSimContext = bioModel.addNewSimulationContext("SpringSaLaD",
                 SimulationContext.Application.SPRINGSALAD);     // make new default SpringSaLaD application
         // we always import count, so we start with default count
-        // TODO: in specifications, initial conditions must be set to count; also add button to switch between count and concentration
-        springSaLaDSimContext.setUsingConcentration(false, false);
+        springSaLaDSimContext.setUsingConcentration(false, true);
         m.set(springSaLaDSimContext);
         importApplicationFromSsld(m);
 

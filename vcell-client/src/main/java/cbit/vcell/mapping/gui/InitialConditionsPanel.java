@@ -393,7 +393,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                 getRandomizeInitCondnCheckbox().setSelected(getSimulationContext().isRandomizeInitCondition());
                 break;
             }
-            case RULE_BASED_STOCHASTIC: {
+            case RULE_BASED_STOCHASTIC, SPRINGSALAD: {
                 getRadioButtonAndCheckboxPanel().setVisible(true);
                 boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
                 getConcentrationRadioButton().setSelected(bUsingConcentration);

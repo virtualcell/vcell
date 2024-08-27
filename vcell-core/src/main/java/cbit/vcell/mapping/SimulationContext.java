@@ -2988,7 +2988,8 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
     }
 
     public void setUsingConcentration(boolean bUseConcentration, boolean bTransformIfNeeded) throws PropertyVetoException, MappingException, MatrixException, ModelException, MathException, ExpressionException /*throws MappingException, PropertyVetoException*/{
-        if(applicationType == Application.NETWORK_STOCHASTIC || applicationType == Application.RULE_BASED_STOCHASTIC){
+        if(applicationType == Application.NETWORK_STOCHASTIC || applicationType == Application.RULE_BASED_STOCHASTIC ||
+            applicationType == Application.SPRINGSALAD) {
             boolean oldValue = bConcentration;
             if(bUseConcentration != oldValue && bTransformIfNeeded){
                 MathMapping mathMapping = createNewMathMapping();

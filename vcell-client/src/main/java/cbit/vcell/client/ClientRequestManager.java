@@ -3348,6 +3348,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						SsldModel ssldModel = SsldUtils.importSsldFile(file);
 						// the ModelUnitSystem is being initialized within SsldUtils.fromSsld()
 //						ModelUnitSystem mus = ModelUnitSystem.createDefaultVCModelUnitSystem();
+						// inside fromSsld() we will set to using count by default
 						BioModel bioModel = ssldUtils.fromSsld(ssldModel);
 
 						// we also add an empty rule-based application, just for testing
