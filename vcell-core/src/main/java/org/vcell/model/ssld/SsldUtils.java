@@ -346,8 +346,6 @@ public class SsldUtils {
         final SsldModel ssldModel = m.getSsldModel();
         SimulationContext simContext = m.getSimulationContext();    // default ssld application
 
-        // TODO: import application specific stuff here
-
         GeometryContext geometryContext = simContext.getGeometryContext();
         Geometry geometry = simContext.getGeometry();
 
@@ -356,11 +354,24 @@ public class SsldUtils {
 
         for(SpeciesContextSpec scs : scSpecs) {
             importSpeciesContextSpecForSsld(scs, m);
-
+        }
+        for(ReactionRuleSpec rrs : rrSpecs) {
+            importReactionRuleSpecForSsld(rrs, m);
         }
 
 
 
+    }
+
+    private void importReactionRuleSpecForSsld(ReactionRuleSpec rrs, Mapping m) throws Exception {
+        ReactionRule rr = rrs.getReactionRule();
+        Reaction ssldReaction = m.get(rr);
+        if(!(ssldReaction instanceof BindingReaction)) {
+            return;     // only the BindingReaction has extra ssld-specific parameters
+        }
+        BindingReaction ssldBindingReaction = (BindingReaction)ssldReaction;
+        double bondLength = ssldBindingReaction.getBondLength();
+        rrs.setFieldBondLength(bondLength);
     }
 
     private void importSpeciesContextSpecForSsld(SpeciesContextSpec scs, Mapping m) throws Exception {
@@ -418,6 +429,9 @@ public class SsldUtils {
         InitialCondition ssldIc = ssldMolecule.getInitialCondition();
         Expression countExp = new Expression(ssldIc.getNumber());
         countParam.setExpression(countExp);
+
+        // TODO: something is wrong here, it shows 0 in vcell UI
+
     }
 
     public Mapping importPhysiologyFromSsld(SsldModel ssldModel) throws Exception {
@@ -609,7 +623,6 @@ public class SsldUtils {
             reactionRule.addProduct(pp);
             bioModel.getModel().getRbmModelContainer().addReactionRule(reactionRule);
             m.put(ssldAllostericReaction, reactionRule);
-
         }
 
         // ---------- Transition Reactions
@@ -895,8 +908,6 @@ public class SsldUtils {
         }
     }
 
-
-
     private void adjustProductSite(BindingReaction ssldReaction, Mapping m) {
         Molecule ssldMoleculeOne = ssldReaction.getMolecule(0);
         SiteType ssldSiteTypeOne = ssldReaction.getType(0);
@@ -984,8 +995,6 @@ public class SsldUtils {
     }
     private MolecularTypePattern getMolecularTypePattern(Molecule molecule, Mapping m) {
         MolecularTypePattern mtp = new MolecularTypePattern(m.get(molecule));
-
-
         return mtp;
     }
 
