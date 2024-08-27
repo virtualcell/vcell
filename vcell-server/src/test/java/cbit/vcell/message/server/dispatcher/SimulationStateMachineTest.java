@@ -41,6 +41,9 @@ public class SimulationStateMachineTest {
     private static final VCSimulationIdentifier simID = new VCSimulationIdentifier(simKey, testUser);
 
     public static String previousServerID = "";
+    public static String previousHtcMax = "";
+    public static String previousHtcMin = "";
+    public static String previousHtcPowerFloor = "";
 
     private MockSimulationDB simulationDB;
     private SimulationStateMachineCopy stateMachine;
@@ -49,11 +52,23 @@ public class SimulationStateMachineTest {
     public static void setSystemProperties(){
         previousServerID = PropertyLoader.getProperty(PropertyLoader.vcellServerIDProperty, "");
         PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "");
+
+        previousHtcMax = PropertyLoader.getProperty(PropertyLoader.htcMaxMemoryMB, "");
+        PropertyLoader.setProperty(PropertyLoader.htcMaxMemoryMB, "4096");
+
+        previousHtcMin = PropertyLoader.getProperty(PropertyLoader.htcMinMemoryMB, "");
+        PropertyLoader.setProperty(PropertyLoader.htcMinMemoryMB, "1024");
+
+        previousHtcPowerFloor = PropertyLoader.getProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "");
+        PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "51200");
     }
 
     @AfterAll
     public static void restoreSystemProperties(){
         PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, previousServerID);
+        PropertyLoader.setProperty(PropertyLoader.htcMaxMemoryMB, previousHtcMax);
+        PropertyLoader.setProperty(PropertyLoader.htcMinMemoryMB, previousHtcMin);
+        PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, previousHtcPowerFloor);
     }
 
     @BeforeEach

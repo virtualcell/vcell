@@ -80,6 +80,9 @@ public class PropertyLoader {
 	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",ValueType.GEN);
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",ValueType.GEN);
 	public static final String htcNodeList                   = record("vcell.htc.nodelist",ValueType.GEN);
+	public static final String htcMinMemoryMB				= record("vcell.htc.memory.min.mb", ValueType.INT); // minimum memory request in MB, currently 4g
+	public static final String htcMaxMemoryMB				= record("vcell.htc.memory.max.mb", ValueType.INT); // maximum memory request in MB
+	public static final String htcPowerUserMemoryFloorMB	= record("vcell.htc.memory.pu.floor.mb", ValueType.INT); // MIN memory allowed if declared to be a power user, currently 50g (Previously Existing Value)
 	public static final String slurm_cmd_sbatch				= record("vcell.slurm.cmd.sbatch",ValueType.GEN);
 	public static final String slurm_cmd_scancel				= record("vcell.slurm.cmd.scancel",ValueType.GEN);
 	public static final String slurm_cmd_sacct				= record("vcell.slurm.cmd.sacct",ValueType.GEN);

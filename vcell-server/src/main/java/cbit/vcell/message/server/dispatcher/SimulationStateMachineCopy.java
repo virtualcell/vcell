@@ -13,6 +13,7 @@ import cbit.vcell.message.messages.WorkerEventMessage;
 import cbit.vcell.message.server.htc.HtcProxy;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.SimulationMessage;
@@ -458,16 +459,13 @@ public class SimulationStateMachineCopy {
         }
         SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID,null,isPowerUser);
 
-        double requiredMemMB = simulationTask.getEstimatedMemorySizeMB();
-        //SimulationStateMachine ultimately instantiated from {vcellroot}/docker/build/Dockerfile-sched-dev by way of cbit.vcell.message.server.dispatcher.SimulationDispatcher
-        String vcellUserid = simulationTask.getUser().getName();
-        KeyValue simID = simulationTask.getSimulationInfo().getSimulationVersion().getVersionKey();
-        SolverDescription solverDescription = simulationTask.getSimulation().getSolverTaskDescription().getSolverDescription();
-
-        HtcProxy.MemLimitResults allowableMemMB = HtcProxy.getMemoryLimit(vcellUserid,simID,solverDescription, requiredMemMB, isPowerUser);
+        double estimatedMemMB = simulationTask.getEstimatedMemorySizeMB();
+        double htcMinMemoryMB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcMinMemoryMB));
+        double htcMaxMemoryMB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcMaxMemoryMB));
+        double requestedMemoryMB = Math.max(estimatedMemMB, htcMinMemoryMB);
 
         final SimulationJobStatus newSimJobStatus;
-        if (requiredMemMB > allowableMemMB.getMemLimit()) {
+        if (requestedMemoryMB > htcMaxMemoryMB) {
             //
             // fail the simulation
             //
@@ -477,7 +475,7 @@ public class SimulationStateMachineCopy {
             SimulationExecutionStatus newSimExeStatus = new SimulationExecutionStatus(null,  null, new Date(), null, false, null);
             newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
                     oldSimulationJobStatus.getSubmitDate(), SimulationJobStatus.SchedulerStatus.FAILED,taskID,
-                    SimulationMessage.jobFailed("simulation required "+requiredMemMB+"MB of memory, only "+allowableMemMB.getMemLimit()+"MB allowed from "+allowableMemMB.getMemLimitSource()),
+                    SimulationMessage.jobFailed("simulation required "+estimatedMemMB+"MB of memory, only "+htcMaxMemoryMB+"MB allowed"),
                     newQueueStatus,newSimExeStatus);
 
             simulationDatabase.updateSimulationJobStatus(newSimJobStatus);
