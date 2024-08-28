@@ -145,11 +145,10 @@ jobs:
             sed -i 's/_VC_VERSION_TAG_/${{github.event.inputs.biosimulators_vcell_tag}}/g' biosimulators.json
             python -m biosimulators_test_suite.exec_cli.main --verbose biosimulators.json
 
-      # If tmate is useful for a particular debugging issue, comment this back in:
-      # - name: Setup tmate session 3 (if failed)
-      #   uses: mxschmitt/action-tmate@v3
-      #   if: ${{ failure() }}
-      #   timeout-minutes: 40
+      - name: Setup tmate session 3 (if failed)
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+        timeout-minutes: 40
 
       - name: Save test results
         uses: actions/upload-artifact@v2
