@@ -110,6 +110,11 @@ jobs:
           # VCell Docker registry (GHCR)
           echo ${{ secrets.ACTION_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTION_USER }} --password-stdin
 
+      - name: configure biosimulations.json
+        working-directory: ${{ github.workspace }}
+        run: |
+          sed -i 's/_VC_VERSION_TAG_/${{github.event.inputs.biosimulators_vcell_tag}}/g' biosimulators.json
+
       - name: Get the VCell version from tags
         id: version
         run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
@@ -142,7 +147,6 @@ jobs:
           working-directory: ${{ github.workspace }}
           run: |
             python -m pip install --upgrade biosimulators_utils
-            sed -i 's/_VC_VERSION_TAG_/${{github.event.inputs.biosimulators_vcell_tag}}/g' biosimulators.json
             python -m biosimulators_test_suite.exec_cli.main --verbose biosimulators.json
 
       - name: Setup tmate session 3 (if failed)
