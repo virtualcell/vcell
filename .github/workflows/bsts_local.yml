@@ -108,7 +108,11 @@ jobs:
       - name: Login into Docker registries
         run: |
           # VCell Docker registry (GHCR)
-          docker login ghcr.io --username ${{ secrets.GHCR_USERNAME }} --password ${{ secrets.GHCR_TOKEN }}
+          echo ${{ secrets.ACTION_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTION_USER }} --password-stdin
+
+      - name: Get the VCell version from tags
+        id: version
+        run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
 
       - id: validateCommitSimulator
         name: Validate and commit simulator
@@ -138,6 +142,7 @@ jobs:
           working-directory: ${{ github.workspace }}
           run: |
             python -m pip install --upgrade biosimulators_utils
+            sed -i 's/_VC_VERSION_TAG_/${{steps.version.outputs.tag}}/g' biosimulators.json
             python -m biosimulators_test_suite.exec_cli.main --verbose biosimulators.json
 
       # If tmate is useful for a particular debugging issue, comment this back in:
