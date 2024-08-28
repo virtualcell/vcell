@@ -7,7 +7,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngineCopy;
+import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngine;
 import org.vcell.restq.Simulations.DTO.SimulationStatus;
 import org.vcell.restq.Simulations.DTO.StatusMessage;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -31,13 +31,13 @@ public class SimulationRestDB {
 
     private final DatabaseServerImpl databaseServerImpl;
     private final SimulationDatabaseDirect simulationDatabaseDirect;
-    private final SimulationDispatcherEngineCopy simulationDispatcherEngine;
+    private final SimulationDispatcherEngine simulationDispatcherEngine;
     private final BioModelRestDB bioModelRestDB;
 
     public SimulationRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         simulationDatabaseDirect = new SimulationDatabaseDirect(new AdminDBTopLevel(agroalConnectionFactory), databaseServerImpl, true);
-        simulationDispatcherEngine = new SimulationDispatcherEngineCopy();
+        simulationDispatcherEngine = new SimulationDispatcherEngine();
         bioModelRestDB = new BioModelRestDB(this, databaseServerImpl);
     }
 

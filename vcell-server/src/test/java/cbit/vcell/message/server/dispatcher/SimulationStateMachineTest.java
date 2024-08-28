@@ -46,7 +46,7 @@ public class SimulationStateMachineTest {
     public static String previousHtcPowerFloor = "";
 
     private MockSimulationDB simulationDB;
-    private SimulationStateMachineCopy stateMachine;
+    private SimulationStateMachine stateMachine;
 
     @BeforeAll
     public static void setSystemProperties(){
@@ -74,7 +74,7 @@ public class SimulationStateMachineTest {
     @BeforeEach
     public void setUp(){
         simulationDB = new MockSimulationDB();
-        stateMachine = new SimulationStateMachineCopy(simKey, jobIndex);
+        stateMachine = new SimulationStateMachine(simKey, jobIndex);
     }
 
     private record ChangedStateValues(

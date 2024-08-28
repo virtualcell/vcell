@@ -26,7 +26,7 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.SimulationResourceApi;
 import org.vcell.restclient.model.SchedulerStatus;
 import org.vcell.restclient.model.Status;
-import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngineCopy;
+import cbit.vcell.message.server.dispatcher.SimulationDispatcherEngine;
 import org.vcell.restq.Simulations.DTO.SimulationStatus;
 import org.vcell.restq.Simulations.DTO.StatusMessage;
 import org.vcell.restq.TestEndpointUtils;
@@ -188,7 +188,7 @@ public class SimulationApiTest {
         SimulationJob simulationJob = new SimulationJob(simulation, 0, null);
         SimulationTask simulationTask = new SimulationTask(simulationJob, 0);
         WorkerEvent workerEvent = new WorkerEvent(WorkerEvent.JOB_ACCEPTED, "testService", simulationTask, "testHost", SimulationMessage.MESSAGE_JOB_ACCEPTED);
-        SimulationDispatcherEngineCopy simulationDispatcherEngine = new SimulationDispatcherEngineCopy();
+        SimulationDispatcherEngine simulationDispatcherEngine = new SimulationDispatcherEngine();
 
         simulationDispatcherEngine.onWorkerEvent(workerEvent, simulationDatabaseDirect, null);
 
