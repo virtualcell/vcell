@@ -682,6 +682,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             if (molecularType != null && molecularType != mt) {
                 return;        // this molecule is unchanged, nothing to do
             }
+
+            boolean initialPass = false;
             // molecularType == null : full initialization
             // molecularType != null and molecularType == mt : this molecule has a different
             //   number of components or a different component order
@@ -690,9 +692,9 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             // step 1.1: superficial sanity check, before changing anything
             final String saMapExceptionPrefix = "SiteAttributeMap of SpeciesContextSpec of Species '" + getSpeciesContext().getName() + "' ";
             if(siteAttributesMap == null || siteAttributesMap.isEmpty()) {
-                ;           // do nothing, map is empty, initialization phase
-            } else {        // if map not empty, now we need to check
-                            // we don't fire exceptions, size mismatch may be correct if we delete or add sites to a molecule
+                initialPass = true; // map is empty, initialization phase
+            } else {                // if map not empty, now we need to check
+                                    // we don't fire exceptions, size mismatch may be correct if we delete or add sites to a molecule
                 if (siteAttributesMap.size() > componentList.size()) {
                     System.out.println(saMapExceptionPrefix + "has obsolete attributes");
                 } else if (siteAttributesMap.size() < componentList.size()) {
@@ -752,6 +754,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             oldMcpSet.clear();
 
             // step 3.4: we add any new instance of authoritative mcp not there yet, and we initialize with default sas
+            int componentCount = 0;
             for (MolecularComponent mc : componentList) {
                 MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
                 if (siteAttributesMap.containsKey(mcp)) {
@@ -760,8 +763,15 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 SiteAttributesSpec sas = siteAttributesMap.get(mcp);
                 if (sas == null || sas.getMolecularComponentPattern() == null) {
                     sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
+                    if(initialPass == true) {
+                        Coordinate coordinate = new Coordinate(0, 0, (componentCount+1)*4);
+                        sas.setCoordinate(coordinate);
+                        NamedColor nextColor = Colors.COLORARRAY[componentCount];
+                        sas.setColor(nextColor);
+                    }
                     siteAttributesMap.put(mcp, sas);
                 }
+                componentCount++;
             }
             // at this point the siteAttributesMap should be fully reconstructed
 
