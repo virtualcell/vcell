@@ -129,8 +129,8 @@ jobs:
           # python -m pip cache purge
           # python -m pip install --no-cache-dir "biosimulators_utils @ git+https://github.com/biosimulators/Biosimulators_utils@depFixes#egg=biosimulators_utils[containers,sbml]"
           # python -m pip install git+https://github.com/biosimulators/RBApy.git#egg=rbapy
-          python -m pip install docker python-libsbml "urllib3<2.0"
-          python -m pip install -e .[all]
+          python -m pip install docker python-libsbml "urllib3<2.0" "biosimulations-test-suite[containers,sbml]"
+          # python -m pip install -e .[all]
           python --version
           python -m pip freeze
 
