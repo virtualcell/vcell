@@ -23,7 +23,7 @@ on:
 jobs:
   validateCommit:
     name: Validate and/or commit simulator
-    runs-on: ubuntu-20.04 # includes Docker
+    runs-on: ubuntu-22.04 # includes Docker
     steps:
       - name: Install Python
         uses: actions/setup-python@v3
