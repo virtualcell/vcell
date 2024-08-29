@@ -1,6 +1,8 @@
 package org.vcell.restq.Simulations;
 
+import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
+import cbit.vcell.message.local.LocalVCMessageAdapter;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -33,6 +35,7 @@ public class SimulationRestDB {
     private final SimulationDatabaseDirect simulationDatabaseDirect;
     private final SimulationDispatcherEngine simulationDispatcherEngine;
     private final BioModelRestDB bioModelRestDB;
+    private final VCMessageSession mockSession = new LocalVCMessageAdapter(null); // TODO: Replace with actual session
 
     public SimulationRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
@@ -97,7 +100,7 @@ public class SimulationRestDB {
         SimulationRep simRep = getAndCheckSimRep(simId, vcellUser);
         try {
             ArrayList<cbit.vcell.message.messages.StatusMessage> statusMessages = simulationDispatcherEngine.onStartRequest(vcSimulationIdentifier, vcellUser, simRep.getScanCount(),
-                    simulationDatabaseDirect, null, null);
+                    simulationDatabaseDirect, mockSession, null);
             return StatusMessage.convertServerStatusMessages(statusMessages);
         } catch (VCMessagingException e) {
             throw new RuntimeException(e);
@@ -109,7 +112,7 @@ public class SimulationRestDB {
         getAndCheckSimRep(simId, vcellUser);
         VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simKey, vcellUser);
         ArrayList<cbit.vcell.message.messages.StatusMessage> statusMessages = simulationDispatcherEngine.onStopRequest(
-                vcSimulationIdentifier, vcellUser, simulationDatabaseDirect, null);
+                vcSimulationIdentifier, vcellUser, simulationDatabaseDirect, mockSession);
         return StatusMessage.convertServerStatusMessages(statusMessages);
     }
 
