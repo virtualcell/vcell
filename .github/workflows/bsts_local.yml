@@ -90,9 +90,17 @@ jobs:
       - name: checkout vcell
         uses: actions/checkout@v3
 
+      - name: Login into Docker registries
+        run: |
+          # VCell Docker registry (GHCR)
+          echo ${{ secrets.ACTION_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTION_USER }} --password-stdin
+
       - name: configure biosimulations.json
         working-directory: ${{ github.workspace }}
         run: |
+          docker pull ghcr.io/virtualcell/biosimulators_vcell:${{ github.event.inputs.biosimulators_vcell_tag }}
+          IMAGE_DIGEST=$(docker image inspect ghcr.io/virtualcell/biosimulators_vcell:${{ github.event.inputs.biosimulators_vcell_tag }} | jq -r '.[0].RepoDigests[0]' | cut -d "@" -f 2-)
+          sed -i "s/_VC_DIGEST_TAG_/${IMAGE_DIGEST}/g" biosimulators.json
           sed -i 's/_VC_VERSION_TAG_/${{github.event.inputs.biosimulators_vcell_tag}}/g' biosimulators.json
 
       - name: save updated biosimulators.json
@@ -125,11 +133,6 @@ jobs:
           python -m pip install -e .[all]
           python --version
           python -m pip freeze
-
-      - name: Login into Docker registries
-        run: |
-          # VCell Docker registry (GHCR)
-          echo ${{ secrets.ACTION_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTION_USER }} --password-stdin
 
       - id: validateCommitSimulator
         name: Validate and commit simulator

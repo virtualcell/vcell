@@ -11,6 +11,7 @@
   ],
   "image": {
     "url": "ghcr.io/virtualcell/biosimulators_vcell:_VC_VERSION_TAG_",
+    "digest": "_VC_DIGEST_TAG_",
     "format": {
       "namespace": "EDAM",
       "id": "format_3973",
