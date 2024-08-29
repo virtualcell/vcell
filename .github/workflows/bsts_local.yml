@@ -103,66 +103,17 @@ jobs:
           sed -i "s/_VC_DIGEST_TAG_/${IMAGE_DIGEST}/g" biosimulators.json
           sed -i 's/_VC_VERSION_TAG_/${{github.event.inputs.biosimulators_vcell_tag}}/g' biosimulators.json
 
-      - name: save updated biosimulators.json
-        uses: actions/upload-artifact@v2
-        with:
-          name: biosimulators.json
-          path: ${{ github.workspace }}/biosimulators.json
-          overwrite: true
-
-      - name: Checkout BioSimulators test suite
-        uses: actions/checkout@v3
-        with:
-          repository: biosimulators/biosimulators_test_suite
-          fetch-depth: 1
-          ref: depFixes
-
-      - name: retrieve updated biosimulators.json
-        uses: actions/download-artifact@v2
-        with:
-          name: biosimulators.json
-          path: ${{ github.workspace }}
-
       - name: Install simulator validation utilities
         working-directory: ${{ github.workspace }}
         run: |
-          # python -m pip cache purge
-          # python -m pip install --no-cache-dir "biosimulators_utils @ git+https://github.com/biosimulators/Biosimulators_utils@depFixes#egg=biosimulators_utils[containers,sbml]"
-          # python -m pip install git+https://github.com/biosimulators/RBApy.git#egg=rbapy
-          python -m pip install docker python-libsbml "urllib3<2.0" "biosimulations-test-suite[containers,sbml]"
-          # python -m pip install -e .[all]
+          python -m pip install "biosimulators-test-suite[containers,sbml]"
           python --version
           python -m pip freeze
 
-      - id: validateCommitSimulator
-        name: Validate and commit simulator
-        uses: GabrielBB/xvfb-action@v1
-        env:
-          GH_REPO: ${{ github.repository }}
-          GH_ACTION_RUN_ID: ${{ github.run_id }}
-          GH_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_ISSUES_USER: ${{ secrets.GH_ISSUES_USER }}
-          GH_ISSUES_ACCESS_TOKEN: ${{ secrets.GH_ISSUES_ACCESS_TOKEN }}
-
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-          DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
-          DOCKER_REGISTRY_USERNAME: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
-          DOCKER_REGISTRY_TOKEN: ${{ secrets.DOCKER_REGISTRY_TOKEN }}
-
-          BIOSIMULATORS_API_CLIENT_ID: ${{ secrets.BIOSIMULATORS_API_CLIENT_ID }}
-          BIOSIMULATORS_API_CLIENT_SECRET: ${{ secrets.BIOSIMULATORS_API_CLIENT_SECRET }}
-          # BIOSIMULATORS_API_ENDPOINT: https://api.biosimulators.dev/ # uncomment to use the dev deployment of the BioSimulators API
-
-          RUNBIOSIMULATIONS_API_CLIENT_ID: ${{ secrets.RUNBIOSIMULATIONS_API_CLIENT_ID }}
-          RUNBIOSIMULATIONS_API_CLIENT_SECRET: ${{ secrets.RUNBIOSIMULATIONS_API_CLIENT_SECRET }}
-          # RUNBIOSIMULATIONS_API_ENDPOINT: https://api.biosimulations.dev/ # uncomment to use the dev deployment of the BioSimulators API
-        with:
-          working-directory: ${{ github.workspace }}
-          run: |
-            python -m pip install --upgrade biosimulators_utils
-            biosimulators-test-suite --verbose biosimulators.json
+      - name: Validate and commit simulator
+        working-directory: ${{ github.workspace }}
+        run: |
+          biosimulators-test-suite --verbose biosimulators.json
 
       - name: Setup tmate session 3 (if failed)
         uses: mxschmitt/action-tmate@v3
