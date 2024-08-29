@@ -5,9 +5,8 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.MathSymbolMapping;
 import cbit.vcell.math.*;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.message.local.LocalVCMessageAdapter;
+import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.resource.PropertyLoader;
@@ -28,13 +27,14 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.NoSuchElementException;
 
 @Tag("Fast")
 public class SimulationStateMachineTest {
 
     private static final VCellServerID testVCellServerID = VCellServerID.getServerID("test");
     private static final User testUser = new User("Alice", new KeyValue("0"));
-    private static final VCMessageSession testMessageSession = new LocalVCMessageAdapter(null);
+    private static final MockVCMessageSession testMessageSession = new MockVCMessageSession();
     private static final int jobIndex = 0;
     private static final int taskID = 0;
     private static final KeyValue simKey = new KeyValue("1");
@@ -44,6 +44,7 @@ public class SimulationStateMachineTest {
     public static String previousHtcMax = "";
     public static String previousHtcMin = "";
     public static String previousHtcPowerFloor = "";
+    public static String previousMongoBlob = "";
 
     private MockSimulationDB simulationDB;
     private SimulationStateMachine stateMachine;
@@ -61,6 +62,9 @@ public class SimulationStateMachineTest {
 
         previousHtcPowerFloor = PropertyLoader.getProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "");
         PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "51200");
+
+        previousMongoBlob = PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageUseMongo, "");
+        PropertyLoader.setProperty(PropertyLoader.jmsBlobMessageUseMongo, "");
     }
 
     @AfterAll
@@ -69,6 +73,7 @@ public class SimulationStateMachineTest {
         PropertyLoader.setProperty(PropertyLoader.htcMaxMemoryMB, previousHtcMax);
         PropertyLoader.setProperty(PropertyLoader.htcMinMemoryMB, previousHtcMin);
         PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, previousHtcPowerFloor);
+        PropertyLoader.setProperty(PropertyLoader.jmsBlobMessageUseMongo, previousMongoBlob);
     }
 
     @BeforeEach
@@ -139,6 +144,10 @@ public class SimulationStateMachineTest {
         return simulationDB.getLatestSimulationJobStatus(simKey, jobIndex);
     }
 
+    private SimulationJobStatus getClientTopicMessage(){
+        return (SimulationJobStatus) testMessageSession.getTopicMessage(VCellTopic.ClientStatusTopic).getObjectContent();
+    }
+
     @Test
     public void workerEventRejectionsTest() throws SQLException, DataAccessException {
         int taskID = 16;
@@ -179,28 +188,33 @@ public class SimulationStateMachineTest {
 
         for (ChangedStateValues changedValue : changedValues){
             insertOrUpdateStatus();
-            stateMachine.onWorkerEvent(createWorkerEvent(changedValue), simulationDB, null);
+            stateMachine.onWorkerEvent(createWorkerEvent(changedValue), simulationDB, testMessageSession);
             SimulationJobStatus result = getLatestJobSubmission();
             Assertions.assertTrue(result.getSchedulerStatus().isFailed(), changedValue.changesResult);
+            Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), changedValue.changesResult);
         }
 
         simulationDB = new MockSimulationDB();
-        StatusMessage statusMessage =  stateMachine.onStartRequest(new User("Bob", new KeyValue("1")), simID, simulationDB, null);
+        StatusMessage statusMessage =  stateMachine.onStartRequest(new User("Bob", new KeyValue("1")), simID, simulationDB, testMessageSession);
         Assertions.assertTrue(statusMessage.getSimulationJobStatus().getSchedulerStatus().isFailed(), "Different from initial user that owns the simulation");
 
         SimulationJobStatus jobStatus = getLatestJobSubmission();
         Assertions.assertNull(jobStatus, "If it fails on start request, there should be nothing in the DB.");
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "Only the client receives start request failure status.");
 
         insertOrUpdateStatus();
         Assertions.assertThrows(RuntimeException.class,
                 () -> {stateMachine.onStartRequest(testUser, simID, simulationDB, testMessageSession);},
                 "Can't start simulation job unless previous is done.");
+        Assertions.assertThrows(NoSuchElementException.class,() -> getClientTopicMessage().getSchedulerStatus().isFailed(), "No message sent to client.");
+
 
         insertOrUpdateStatus();
         jobStatus = getLatestJobSubmission();
         stateMachine.onSystemAbort(jobStatus, "Test Abort", simulationDB, testMessageSession);
         jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isFailed());
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "On abort client gets failed status.");
 
 //
         Simulation memoryIntensiveSimulation = createMockSimulation(900, 900, 900);
@@ -209,16 +223,18 @@ public class SimulationStateMachineTest {
         Assertions.assertThrows(RuntimeException.class,
                 () -> {stateMachine.onDispatch(memoryIntensiveSimulation, getLatestJobSubmission(), simulationDB, testMessageSession);},
                 "Can't dispatch simulation that is already running.");
+        Assertions.assertThrows(NoSuchElementException.class, () -> getClientTopicMessage().getSchedulerStatus().isFailed(), "Client receives failure because simulation is already running.");
 
         insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING);
         stateMachine.onDispatch(memoryIntensiveSimulation, getLatestJobSubmission(), simulationDB, testMessageSession);
-
         jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isFailed(), "Memory size to large");
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "Failed because of memory size.");
 
         insertOrUpdateStatus();
         statusMessage = stateMachine.onStopRequest(new User("Bob", new KeyValue("2")), getLatestJobSubmission(), simulationDB, testMessageSession);
         Assertions.assertTrue(statusMessage.getSimulationJobStatus().getSchedulerStatus().isFailed(), "Stopping as another user.");
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "Can't stop as another user.");
     }
 
     @Test
@@ -226,6 +242,7 @@ public class SimulationStateMachineTest {
         stateMachine.onStartRequest(testUser, simID, simulationDB, testMessageSession);
         SimulationJobStatus jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isWaiting(), "Just started new task.");
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isWaiting());
     }
 
     @Test
@@ -235,6 +252,7 @@ public class SimulationStateMachineTest {
         stateMachine.onWorkerEvent(acceptedWorker, simulationDB, testMessageSession);
         SimulationJobStatus jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched(), "Job recently got accepted, only works if previous state was waiting.");
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isDispatched());
 
         insertOrUpdateStatus();
         stateMachine.onWorkerEvent(acceptedWorker, simulationDB, testMessageSession);
@@ -247,6 +265,7 @@ public class SimulationStateMachineTest {
         stateMachine.onDispatch(simulation, getLatestJobSubmission(), simulationDB, testMessageSession);
         jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched());
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isDispatched());
     }
 
     @Test
@@ -258,8 +277,12 @@ public class SimulationStateMachineTest {
             SimulationJobStatus jobStatus = getLatestJobSubmission();
             if (workerEvent.isProgressEvent() || workerEvent.isNewDataEvent() || workerEvent.isStartingEvent() || workerEvent.isWorkerAliveEvent()){
                 Assertions.assertTrue(jobStatus.getSchedulerStatus().isRunning());
+                Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isRunning());
             } else {
                 Assertions.assertFalse(jobStatus.getSchedulerStatus().isRunning());
+                try {
+                    Assertions.assertFalse(getClientTopicMessage().getSchedulerStatus().isRunning());
+                } catch (NoSuchElementException ignored){}
             }
         }
     }
@@ -273,8 +296,12 @@ public class SimulationStateMachineTest {
             SimulationJobStatus jobStatus = getLatestJobSubmission();
             if (workerEvent.isCompletedEvent()){
                 Assertions.assertTrue(jobStatus.getSchedulerStatus().isCompleted());
+                Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isCompleted());
             } else {
                 Assertions.assertFalse(jobStatus.getSchedulerStatus().isCompleted());
+                try {
+                    Assertions.assertFalse(getClientTopicMessage().getSchedulerStatus().isCompleted());
+                } catch (NoSuchElementException ignored){}
             }
         }
     }
@@ -287,9 +314,13 @@ public class SimulationStateMachineTest {
             if (status.isActive()){
                 stateMachine.onStopRequest(testUser, getLatestJobSubmission(), simulationDB, testMessageSession);
                 Assertions.assertTrue(getLatestJobSubmission().getSchedulerStatus().isStopped(), "");
+                Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isStopped());
             } else {
                 StatusMessage statusMessage = stateMachine.onStopRequest(testUser, getLatestJobSubmission(), simulationDB, testMessageSession);
                 Assertions.assertNull(statusMessage);
+                try {
+                    Assertions.assertFalse(getClientTopicMessage().getSchedulerStatus().isCompleted());
+                } catch (NoSuchElementException ignored){}
             }
         }
     }

@@ -346,13 +346,13 @@ public class SimulationStateMachine {
                 StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, progress, timepoint);
 
                 // TODO: Implement messaging to client
-                //                msgForClient.sendToClient(session);
+                msgForClient.sendToClient(session);
                 if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
             } else {
                 simulationDatabase.updateSimulationJobStatus(newJobStatus);
                 StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
                 // TODO: Implement messaging to client
-                //                msgForClient.sendToClient(session);
+                msgForClient.sendToClient(session);
                 if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
             }
         }else if (workerEvent.isProgressEvent() || workerEvent.isNewDataEvent()){
@@ -365,7 +365,7 @@ public class SimulationStateMachine {
             simulationDatabase.updateSimulationJobStatus(oldSimulationJobStatus,runningStateInfo);
             StatusMessage msgForClient = new StatusMessage(oldSimulationJobStatus, userName, progress, timepoint);
             // TODO: Implement messaging to client
-            //                msgForClient.sendToClient(session);
+            msgForClient.sendToClient(session);
             if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
         }else{
             VCMongoMessage.sendInfo("onWorkerEvent() ignoring WorkerEvent (currState="+oldSchedulerStatus.getDescription()+"): "+workerEvent.show());
@@ -376,18 +376,20 @@ public class SimulationStateMachine {
 
     public synchronized StatusMessage onStartRequest(User user, VCSimulationIdentifier vcSimID, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, DataAccessException, SQLException {
 
+        StatusMessage statusMessage;
         if (!user.equals(vcSimID.getOwner())) {
             lg.error(user + " is not authorized to start simulation (key=" + simKey + ")");
             SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null,
                     SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to start this simulation!"), null, null);
-            StatusMessage message = new StatusMessage(simulationJobStatus, user.getName(), null, null);
+            statusMessage = new StatusMessage(simulationJobStatus, user.getName(), null, null);
             VCMongoMessage.sendInfo("onStartRequest("+vcSimID.getID()+") ignoring start simulation request - wrong user): simID="+vcSimID);
-            return message;
+            statusMessage.sendToClient(session);
+            return statusMessage;
         }
-
         SimulationJobStatus newJobStatus = saveSimulationStartRequest(vcSimID, jobIndex, simulationDatabase);
-
-        return new StatusMessage(newJobStatus, user.getName(), null, null);
+        statusMessage = new StatusMessage(newJobStatus, user.getName(), null, null);
+        statusMessage.sendToClient(session);
+        return statusMessage;
     }
 
     public static SimulationJobStatus saveSimulationStartRequest(VCSimulationIdentifier vcSimID, int jobIndex, SimulationDatabase simulationDatabase) throws DataAccessException, SQLException {
@@ -510,13 +512,16 @@ public class SimulationStateMachine {
     public synchronized StatusMessage onStopRequest(User user, SimulationJobStatus simJobStatus, SimulationDatabase simulationDatabase, VCMessageSession session) throws VCMessagingException, DataAccessException, SQLException {
         updateSolverProcessTimestamp();
 
+        StatusMessage statusMessage;
         if (!user.equals(simJobStatus.getVCSimulationIdentifier().getOwner())) {
             lg.error(user + " is not authorized to stop simulation (key=" + simKey + ")");
             SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), simJobStatus.getVCSimulationIdentifier(), 0, null,
                     SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to stop this simulation!"), null, null);
 
             VCMongoMessage.sendInfo("onStopRequest("+simJobStatus.getVCSimulationIdentifier()+") ignoring stop simulation request - wrong user)");
-            return new StatusMessage(simulationJobStatus, user.getName(), null, null);
+            statusMessage = new StatusMessage(simulationJobStatus, user.getName(), null, null);
+            statusMessage.sendToClient(session);
+            return statusMessage;
         }
 
         // stop latest task if active
@@ -537,8 +542,10 @@ public class SimulationStateMachine {
             );
 
             simulationDatabase.updateSimulationJobStatus(newJobStatus);
+            statusMessage = new StatusMessage(simulationJobStatusRecord, user.getName(), null, null);
+            statusMessage.sendToClient(session);
 
-            return new StatusMessage(simulationJobStatusRecord, user.getName(), null, null);
+            return statusMessage;
         }
         return null;
     }
