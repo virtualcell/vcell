@@ -7,16 +7,22 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCellServerID;
+import org.vcell.util.document.*;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.*;
 
 public class MockSimulationDB implements SimulationDatabase{
 
-    private final HashMap<String, ArrayList<SimulationJobStatus>> dbTable = new HashMap<>();
+    private HashMap<String, ArrayList<SimulationJobStatus>> dbTable = new HashMap<>();
+
+    public static User.SpecialUser specialAdmin = new User.SpecialUser("Tom", new KeyValue("999"), new User.SPECIAL_CLAIM[User.SPECIAL_CLAIM.admins.ordinal()]);
+
+    private final HashMap<String, User> users = new HashMap<>(){
+        {put(specialAdmin.getName(), specialAdmin); put(DispatcherTestUtils.alice.getName(), DispatcherTestUtils.alice);}
+    };
 
     @Override
     public SimulationJobStatus getLatestSimulationJobStatus(KeyValue simKey, int jobIndex) throws DataAccessException, SQLException {
@@ -47,7 +53,15 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public SimulationJobStatus[] getActiveJobs(VCellServerID vcellServerID) throws DataAccessException, SQLException {
-        throw new SQLException();
+        ArrayList<SimulationJobStatus> allActiveJobs = new ArrayList<>();
+        for (ArrayList<SimulationJobStatus> jobStatuses : dbTable.values()){
+            for (SimulationJobStatus jobStatus: jobStatuses){
+                if (jobStatus.getSchedulerStatus().isActive()){
+                    allActiveJobs.add(jobStatus);
+                }
+            }
+        }
+        return allActiveJobs.toArray(new SimulationJobStatus[]{});
     }
 
     @Override
@@ -101,7 +115,12 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public User.SpecialUser getUser(String username) throws DataAccessException, SQLException {
-        return null;
+        User user = users.get(username);
+        if (user instanceof User.SpecialUser){
+            return (User.SpecialUser) user;
+        }
+        User.SpecialUser specialUser = new User.SpecialUser(user.getName(), user.getID(), new User.SPECIAL_CLAIM[]{});
+        return specialUser;
     }
 
     @Override
@@ -111,7 +130,7 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public SimulationInfo getSimulationInfo(User user, KeyValue simKey) throws ObjectNotFoundException, DataAccessException {
-        return null;
+        return mockSimulationInfo(user, simKey);
     }
 
     @Override
@@ -121,6 +140,7 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws ObjectNotFoundException, DataAccessException {
+//        dbTable.get(simulationKey.toString()).get(0);
         return null;
     }
 
@@ -128,4 +148,22 @@ public class MockSimulationDB implements SimulationDatabase{
     public SimpleJobStatus[] getSimpleJobStatus(User user, SimpleJobStatusQuerySpec simStatusQuerySpec) throws ObjectNotFoundException, DataAccessException {
         return new SimpleJobStatus[0];
     }
+
+
+    private SimulationInfo mockSimulationInfo(User user, KeyValue simKey){
+        KeyValue versionKey = new KeyValue("22");
+        KeyValue versionBranchPoint = new KeyValue("23");
+        VersionFlag versionFlag = VersionFlag.fromInt(0);
+        KeyValue parentSimulationRef = new KeyValue("24");
+        SimulationVersion simulationVersion = new SimulationVersion(versionKey, "Mock Sim Info", user, null,
+               versionBranchPoint, new BigDecimal(22), Date.from(Instant.now()), versionFlag, "Version annot",
+                parentSimulationRef);
+        SimulationInfo simulationInfo = new SimulationInfo(simKey, simulationVersion, VCellSoftwareVersion.fromString("50"));
+        return simulationInfo;
+    }
+
+    public void resetDataBase(){
+        dbTable = new HashMap<>();
+    }
+
 }

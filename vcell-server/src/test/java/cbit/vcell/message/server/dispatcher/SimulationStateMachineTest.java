@@ -1,79 +1,46 @@
 package cbit.vcell.message.server.dispatcher;
 
 import cbit.rmi.event.WorkerEvent;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.MathSymbolMapping;
-import cbit.vcell.math.*;
-import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.math.MathException;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.VCellTopic;
 import cbit.vcell.message.messages.StatusMessage;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.HtcJobID;
-import cbit.vcell.server.SimulationExecutionStatus;
 import cbit.vcell.server.SimulationJobStatus;
-import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import org.junit.jupiter.api.*;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.ISize;
-import org.vcell.util.document.*;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCellServerID;
 
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.NoSuchElementException;
 
 @Tag("Fast")
 public class SimulationStateMachineTest {
-
-    private static final VCellServerID testVCellServerID = VCellServerID.getServerID("test");
-    private static final User testUser = new User("Alice", new KeyValue("0"));
+    private static final User testUser = DispatcherTestUtils.alice;
     private static final MockVCMessageSession testMessageSession = new MockVCMessageSession();
-    private static final int jobIndex = 0;
-    private static final int taskID = 0;
-    private static final KeyValue simKey = new KeyValue("1");
-    private static final VCSimulationIdentifier simID = new VCSimulationIdentifier(simKey, testUser);
-
-    public static String previousServerID = "";
-    public static String previousHtcMax = "";
-    public static String previousHtcMin = "";
-    public static String previousHtcPowerFloor = "";
-    public static String previousMongoBlob = "";
+    private static final int jobIndex = DispatcherTestUtils.jobIndex;
+    private static final int taskID = DispatcherTestUtils.taskID;
+    private static final KeyValue simKey = DispatcherTestUtils.simKey;
+    private static final VCSimulationIdentifier simID = DispatcherTestUtils.simID;
 
     private MockSimulationDB simulationDB;
     private SimulationStateMachine stateMachine;
 
     @BeforeAll
     public static void setSystemProperties(){
-        previousServerID = PropertyLoader.getProperty(PropertyLoader.vcellServerIDProperty, "");
-        PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "");
-
-        previousHtcMax = PropertyLoader.getProperty(PropertyLoader.htcMaxMemoryMB, "");
-        PropertyLoader.setProperty(PropertyLoader.htcMaxMemoryMB, "4096");
-
-        previousHtcMin = PropertyLoader.getProperty(PropertyLoader.htcMinMemoryMB, "");
-        PropertyLoader.setProperty(PropertyLoader.htcMinMemoryMB, "1024");
-
-        previousHtcPowerFloor = PropertyLoader.getProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "");
-        PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "51200");
-
-        previousMongoBlob = PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageUseMongo, "");
-        PropertyLoader.setProperty(PropertyLoader.jmsBlobMessageUseMongo, "");
+        DispatcherTestUtils.setRequiredProperties();
     }
 
     @AfterAll
     public static void restoreSystemProperties(){
-        PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, previousServerID);
-        PropertyLoader.setProperty(PropertyLoader.htcMaxMemoryMB, previousHtcMax);
-        PropertyLoader.setProperty(PropertyLoader.htcMinMemoryMB, previousHtcMin);
-        PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, previousHtcPowerFloor);
-        PropertyLoader.setProperty(PropertyLoader.jmsBlobMessageUseMongo, previousMongoBlob);
+        DispatcherTestUtils.restoreRequiredProperties();
     }
 
     @BeforeEach
@@ -98,48 +65,6 @@ public class SimulationStateMachineTest {
                 acceptedSimulationMessage);
     }
 
-    private Simulation createMockSimulation(int iSizeX, int iSizeY, int iSizeZ) throws PropertyVetoException, MathException, ExpressionBindingException {
-        VolVariable volVariable = new VolVariable("t", new Variable.Domain(new CompartmentSubDomain("t", 1)));
-        VolVariable volVariable2 = new VolVariable("b", new Variable.Domain(new CompartmentSubDomain("b", 2)));
-        MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
-        Geometry geometry = new Geometry("T", 3);
-        MathModel mathModel = new MathModel(new Version("Test", testUser));
-        MathDescription mathDescription = new MathDescription("Test", mathSymbolMapping);
-        mathDescription.setGeometry(new Geometry("T", 3));
-        Simulation simulation = new Simulation(SimulationVersion.createTempSimulationVersion(),
-                mathDescription, mathModel);
-        MeshSpecification meshSpecification = new MeshSpecification(geometry);
-        meshSpecification.setSamplingSize(new ISize(iSizeX, iSizeY, iSizeZ));
-        simulation.setMeshSpecification(meshSpecification);
-        mathDescription.setAllVariables(new Variable[]{volVariable, volVariable2});
-        return simulation;
-    }
-
-    private void insertOrUpdateStatus(KeyValue simKey, int jobIndex, int taskID, User user, SimulationJobStatus.SchedulerStatus status) throws SQLException, DataAccessException {
-        SimulationJobStatus jobStatus = simulationDB.getLatestSimulationJobStatus(simKey, jobIndex);
-        VCSimulationIdentifier simID = new VCSimulationIdentifier(simKey, user);
-        SimulationJobStatus simulationJobStatus = new SimulationJobStatus(testVCellServerID, simID, jobIndex, Date.from(Instant.now()), status, taskID,
-                SimulationMessage.workerAccepted("accepted"), null,
-                new SimulationExecutionStatus(Date.from(Instant.now()), "",
-                Date.from(Instant.now()), Date.from(Instant.now()), false, new HtcJobID("2", HtcJobID.BatchSystemType.SLURM)));
-        if (jobStatus == null){
-            simulationDB.insertSimulationJobStatus(simulationJobStatus);
-        } else {
-            simulationDB.updateSimulationJobStatus(simulationJobStatus);
-        }
-    }
-
-    private void insertOrUpdateStatus(KeyValue simKey, int jobIndex, int taskID, User user) throws SQLException, DataAccessException {
-        insertOrUpdateStatus(simKey, jobIndex, taskID, user, SimulationJobStatus.SchedulerStatus.RUNNING);
-    }
-
-    /**
-    Defaults to a running status.
-     */
-    private void insertOrUpdateStatus() throws SQLException, DataAccessException {
-        insertOrUpdateStatus(simKey, jobIndex, taskID, testUser);
-    }
-
     private SimulationJobStatus getLatestJobSubmission() throws SQLException, DataAccessException {
         return simulationDB.getLatestSimulationJobStatus(simKey, jobIndex);
     }
@@ -161,7 +86,7 @@ public class SimulationStateMachineTest {
         for (int i = 0; i < changedValues.size(); i++){
             ChangedStateValues workerEventChangedValues = changedValues.get(i);
             if (i > 1) {
-                insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, workerEventChangedValues.schedulerStatus);
+                DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, workerEventChangedValues.schedulerStatus, simulationDB);
             }
             WorkerEvent workerEvent = createWorkerEvent(workerEventChangedValues);
             Assertions.assertFalse(stateMachine.isWorkerEventOkay(workerEvent, simulationDB), workerEventChangedValues.changesResult);
@@ -172,7 +97,7 @@ public class SimulationStateMachineTest {
 
         for (SimulationJobStatus.SchedulerStatus passingStatus: SimulationJobStatus.SchedulerStatus.values()){
             if (!passingStatus.isDone()){
-                insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, passingStatus);
+                DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, passingStatus, simulationDB);
                 Assertions.assertTrue(stateMachine.isWorkerEventOkay(passingWorkerEvent, simulationDB));
             }
         }
@@ -187,7 +112,7 @@ public class SimulationStateMachineTest {
         }};
 
         for (ChangedStateValues changedValue : changedValues){
-            insertOrUpdateStatus();
+            DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
             stateMachine.onWorkerEvent(createWorkerEvent(changedValue), simulationDB, testMessageSession);
             SimulationJobStatus result = getLatestJobSubmission();
             Assertions.assertTrue(result.getSchedulerStatus().isFailed(), changedValue.changesResult);
@@ -195,21 +120,21 @@ public class SimulationStateMachineTest {
         }
 
         simulationDB = new MockSimulationDB();
-        StatusMessage statusMessage =  stateMachine.onStartRequest(new User("Bob", new KeyValue("1")), simID, simulationDB, testMessageSession);
+        StatusMessage statusMessage =  stateMachine.onStartRequest(DispatcherTestUtils.bob, simID, simulationDB, testMessageSession);
         Assertions.assertTrue(statusMessage.getSimulationJobStatus().getSchedulerStatus().isFailed(), "Different from initial user that owns the simulation");
 
         SimulationJobStatus jobStatus = getLatestJobSubmission();
         Assertions.assertNull(jobStatus, "If it fails on start request, there should be nothing in the DB.");
         Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "Only the client receives start request failure status.");
 
-        insertOrUpdateStatus();
+        DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
         Assertions.assertThrows(RuntimeException.class,
                 () -> {stateMachine.onStartRequest(testUser, simID, simulationDB, testMessageSession);},
                 "Can't start simulation job unless previous is done.");
         Assertions.assertThrows(NoSuchElementException.class,() -> getClientTopicMessage().getSchedulerStatus().isFailed(), "No message sent to client.");
 
 
-        insertOrUpdateStatus();
+        DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
         jobStatus = getLatestJobSubmission();
         stateMachine.onSystemAbort(jobStatus, "Test Abort", simulationDB, testMessageSession);
         jobStatus = getLatestJobSubmission();
@@ -217,22 +142,22 @@ public class SimulationStateMachineTest {
         Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "On abort client gets failed status.");
 
 //
-        Simulation memoryIntensiveSimulation = createMockSimulation(900, 900, 900);
+        Simulation memoryIntensiveSimulation = DispatcherTestUtils.createMockSimulation(900, 900, 900);
 
-        insertOrUpdateStatus();
+        DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
         Assertions.assertThrows(RuntimeException.class,
                 () -> {stateMachine.onDispatch(memoryIntensiveSimulation, getLatestJobSubmission(), simulationDB, testMessageSession);},
                 "Can't dispatch simulation that is already running.");
         Assertions.assertThrows(NoSuchElementException.class, () -> getClientTopicMessage().getSchedulerStatus().isFailed(), "Client receives failure because simulation is already running.");
 
-        insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING);
+        DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING, simulationDB);
         stateMachine.onDispatch(memoryIntensiveSimulation, getLatestJobSubmission(), simulationDB, testMessageSession);
         jobStatus = getLatestJobSubmission();
-        Assertions.assertTrue(jobStatus.getSchedulerStatus().isFailed(), "Memory size to large");
+        Assertions.assertTrue(jobStatus.getSchedulerStatus().isFailed(), "Memory size too large");
         Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "Failed because of memory size.");
 
-        insertOrUpdateStatus();
-        statusMessage = stateMachine.onStopRequest(new User("Bob", new KeyValue("2")), getLatestJobSubmission(), simulationDB, testMessageSession);
+        DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
+        statusMessage = stateMachine.onStopRequest(DispatcherTestUtils.bob, getLatestJobSubmission(), simulationDB, testMessageSession);
         Assertions.assertTrue(statusMessage.getSimulationJobStatus().getSchedulerStatus().isFailed(), "Stopping as another user.");
         Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "Can't stop as another user.");
     }
@@ -247,21 +172,21 @@ public class SimulationStateMachineTest {
 
     @Test
     public void stateShouldTransitionToDispatched() throws SQLException, DataAccessException, VCMessagingException, PropertyVetoException, MathException, ExpressionBindingException {
-        insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING);
+        DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING, simulationDB);
         WorkerEvent acceptedWorker = createWorkerEvent(new ChangedStateValues(simID, null, WorkerEvent.JOB_ACCEPTED, taskID, "Worker just got accepted"));
         stateMachine.onWorkerEvent(acceptedWorker, simulationDB, testMessageSession);
         SimulationJobStatus jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched(), "Job recently got accepted, only works if previous state was waiting.");
         Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isDispatched());
 
-        insertOrUpdateStatus();
+        DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
         stateMachine.onWorkerEvent(acceptedWorker, simulationDB, testMessageSession);
         jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isRunning(), "The state has not changed from running, because something that is running can not be dispatched.");
 
 
-        insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING);
-        Simulation simulation = createMockSimulation(50, 50, 50);
+        DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING, simulationDB);
+        Simulation simulation = DispatcherTestUtils.createMockSimulation(50, 50, 50);
         stateMachine.onDispatch(simulation, getLatestJobSubmission(), simulationDB, testMessageSession);
         jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched());
@@ -272,7 +197,7 @@ public class SimulationStateMachineTest {
     public void stateShouldTransitionToRunning() throws SQLException, DataAccessException, VCMessagingException {
         for (int workerStatus: WorkerEvent.ALL_JOB_EVENTS){
             WorkerEvent workerEvent = createWorkerEvent(new ChangedStateValues(simID, null, workerStatus, taskID, ""));
-            insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING);
+            DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING, simulationDB);
             stateMachine.onWorkerEvent(workerEvent, simulationDB, testMessageSession);
             SimulationJobStatus jobStatus = getLatestJobSubmission();
             if (workerEvent.isProgressEvent() || workerEvent.isNewDataEvent() || workerEvent.isStartingEvent() || workerEvent.isWorkerAliveEvent()){
@@ -291,7 +216,7 @@ public class SimulationStateMachineTest {
     public void stateShouldTransitionToCompleted() throws SQLException, VCMessagingException, DataAccessException {
         for (int workerStatus : WorkerEvent.ALL_JOB_EVENTS){
             WorkerEvent workerEvent = createWorkerEvent(new ChangedStateValues(simID, SimulationJobStatus.SchedulerStatus.RUNNING, workerStatus, taskID, ""));
-            insertOrUpdateStatus();
+            DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
             stateMachine.onWorkerEvent(workerEvent, simulationDB, testMessageSession);
             SimulationJobStatus jobStatus = getLatestJobSubmission();
             if (workerEvent.isCompletedEvent()){
@@ -310,7 +235,7 @@ public class SimulationStateMachineTest {
     public void stateShouldTransitionToStopped() throws SQLException, DataAccessException, VCMessagingException {
 
         for (SimulationJobStatus.SchedulerStatus status : SimulationJobStatus.SchedulerStatus.values()){
-            insertOrUpdateStatus(simKey,jobIndex, taskID,testUser, status);
+            DispatcherTestUtils.insertOrUpdateStatus(simKey,jobIndex, taskID,testUser, status, simulationDB);
             if (status.isActive()){
                 stateMachine.onStopRequest(testUser, getLatestJobSubmission(), simulationDB, testMessageSession);
                 Assertions.assertTrue(getLatestJobSubmission().getSchedulerStatus().isStopped(), "");
