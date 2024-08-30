@@ -10,6 +10,8 @@ import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.IModelContent;
 
 public class ArchiveModelResolver implements IModelResolver {
+    public final static String SPACE_URI_ESCAPE_SEQUENCE = "%20";
+
   private ArchiveComponents ac;
   private String sedmlPath = "";
     public ArchiveModelResolver(ArchiveComponents ac) {
@@ -17,7 +19,7 @@ public class ArchiveModelResolver implements IModelResolver {
     }
     public String getModelXMLFor(URI modelURI) {
         List<IModelContent> children = ac.getModelFiles();
-    	String modelStr = modelURI.toString();
+    	String modelStr = modelURI.toString().replace(SPACE_URI_ESCAPE_SEQUENCE, " ");
     	// try direct match first
         for (IModelContent imc: children) {
             String modelElementStr = imc.getName();

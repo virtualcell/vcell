@@ -30,9 +30,9 @@ public class URIValidator implements ISedMLValidator {
 		for (Model model: models){
 			
 				try {
-					URI uri = new URI(model.getSource());
+					URI uri = model.getSourceURI();
 				} catch (URISyntaxException e) {
-					errs.add(new SedMLError(0,"ErrMessageRoot[" + model.getSource() +"]", ERROR_SEVERITY.WARNING ));
+					errs.add(new SedMLError(0,"ErrMessageRoot[" + model.getSourcePathOrURIString() +"]", ERROR_SEVERITY.WARNING ));
 				}
 			
 			

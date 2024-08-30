@@ -733,7 +733,7 @@ public final class SedML extends SEDBase {
     public List<Model> getBaseModels() {
         Set<Model> set = new HashSet<Model>();
         for (Model m : getModels()) {
-            if (getModelWithId(m.getSource()) == null) {
+            if (getModelWithId(m.getSourcePathOrURIString()) == null) {
                 set.add(m);
             }
         }

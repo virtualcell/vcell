@@ -119,7 +119,7 @@ class SEDMLWriter {
             node.setAttribute(SEDMLTags.MODEL_ATTR_LANGUAGE, s); // insert
                                                                  // 'type'
                                                                  // attribute
-        s = sedmlModel.getSource();
+        s = sedmlModel.getSourcePathOrURIString();
         if (s != null)
             node.setAttribute(SEDMLTags.MODEL_ATTR_SOURCE, s); // insert
                                                                // 'source'
