@@ -29,21 +29,17 @@ import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.*;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import com.google.gson.Gson;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
-import org.vcell.dependency.server.VCellServerModule;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
@@ -99,6 +95,7 @@ public class SimulationDispatcher {
 
 	private final HtcProxy htcProxy;
 	public static Logger lg = LogManager.getLogger(SimulationDispatcher.class);
+	public final SimulationService simServiceImpl;
 
 	public class SimulationServiceImpl implements SimulationService {
 
@@ -547,25 +544,37 @@ public class SimulationDispatcher {
 		}
 	}
 
-	/**
-	 * Scheduler constructor comment.
-	 */
-	public SimulationDispatcher() throws Exception {
+	public static SimulationDispatcher simulationDispatcherCreator(SimulationDatabase simulationDatabase, VCMessagingService messagingServiceInternal,
+																   VCMessagingService messagingServiceSim){
+		return new SimulationDispatcher(simulationDatabase, messagingServiceInternal, messagingServiceSim);
+	}
+
+	public static SimulationDispatcher simulationDispatcherCreator() throws SQLException, DataAccessException {
 		ConnectionFactory conFactory = DatabaseService.getInstance().createConnectionFactory();
 		KeyFactory keyFactory = conFactory.getKeyFactory();
 		DatabaseServerImpl databaseServerImpl = new DatabaseServerImpl(conFactory, keyFactory);
 		AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
-		this.simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true);
+		SimulationDatabase simulationDatabase = new SimulationDatabaseDirect(adminDbTopLevel, databaseServerImpl, true);
 
-		this.vcMessagingService_int = new VCMessagingServiceActiveMQ();
+		VCMessagingService vcMessagingServiceInternal = new VCMessagingServiceActiveMQ();
 		String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
 		int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
-		this.vcMessagingService_int.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
+		vcMessagingServiceInternal.setConfiguration(new ServerMessagingDelegate(), jmshost_int, jmsport_int);
 
-		this.vcMessagingService_sim = new VCMessagingServiceActiveMQ();
+		VCMessagingService vcMessagingServiceSim = new VCMessagingServiceActiveMQ();
 		String jmshost_sim = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostInternal);
 		int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
-		this.vcMessagingService_sim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
+		vcMessagingServiceSim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
+
+		return SimulationDispatcher.simulationDispatcherCreator(simulationDatabase, vcMessagingServiceInternal, vcMessagingServiceSim);
+	}
+
+	private SimulationDispatcher(SimulationDatabase simulationDatabase, VCMessagingService messagingServiceInternal,
+								 VCMessagingService messagingServiceSim){
+		this.simulationDatabase = simulationDatabase;
+		this.vcMessagingService_int = messagingServiceInternal;
+		this.vcMessagingService_sim = messagingServiceSim;
+
 		QueueListener workerEventListener = new QueueListener() {
 			public void onQueueMessage(VCMessage vcMessage, VCMessageSession session) throws RollbackException {
 				onWorkerEventMessage(vcMessage, session);
@@ -579,7 +588,7 @@ public class SimulationDispatcher {
 		//
 		// set up consumer for Simulation Request (non-blocking RPC) messages
 		//
-		SimulationService simServiceImpl = new SimulationServiceImpl();
+		simServiceImpl = new SimulationServiceImpl();
 
 		VCMessageSelector simRequestSelector = null;
 		threadName = "Sim Request Consumer";
@@ -597,11 +606,6 @@ public class SimulationDispatcher {
 		this.simMonitorThreadSession_sim = this.vcMessagingService_sim.createProducerSession();
 		this.simMonitor = new SimulationMonitor();
 		this.htcProxy = SlurmProxy.createRemoteProxy();
-	}
-
-
-	public void init() {
-
 	}
 
 
@@ -657,57 +661,5 @@ public class SimulationDispatcher {
 				" commencing run cycle at " +  new SimpleDateFormat("k:m:s").format(new Date( )) );
 		}
 	}
-	
-	/**
-	 * Starts the application.
-	 * @param args an array of command-line arguments
-	 */
-	public static void main(java.lang.String[] args) {
-
-		if (args.length != 0) {
-			System.out.println("No arguments expected: " + SimulationDispatcher.class.getName());
-			System.exit(1);
-		}
-
-		try {
-			OperatingSystemInfo.getInstance();
-			PropertyLoader.loadProperties(REQUIRED_SERVICE_PROPERTIES);
-
-			Injector injector = Guice.createInjector(new VCellServerModule());
-
-			SimulationDispatcher simulationDispatcher = injector.getInstance(SimulationDispatcher.class);
-			simulationDispatcher.init();
-
-		} catch (Throwable e) {
-			lg.error("uncaught exception initializing SimulationDispatcher: "+e.getLocalizedMessage(), e);
-			System.exit(1);
-		}
-	}
-
-
-	private static final String REQUIRED_SERVICE_PROPERTIES[] = {
-			PropertyLoader.vcellServerIDProperty,
-			PropertyLoader.installationRoot,
-			PropertyLoader.dbConnectURL,
-			PropertyLoader.dbDriverName,
-			PropertyLoader.dbUserid,
-			PropertyLoader.dbPasswordFile,
-			PropertyLoader.userTimezone,
-			PropertyLoader.mongodbHostInternal,
-			PropertyLoader.mongodbPortInternal,
-			PropertyLoader.mongodbDatabase,
-			PropertyLoader.jmsIntHostInternal,
-			PropertyLoader.jmsIntPortInternal,
-			PropertyLoader.jmsSimHostInternal,
-			PropertyLoader.jmsSimPortInternal,
-			PropertyLoader.jmsUser,
-			PropertyLoader.jmsPasswordFile,
-			PropertyLoader.htcUser,
-			PropertyLoader.jmsBlobMessageUseMongo,
-			PropertyLoader.maxJobsPerScan,
-			PropertyLoader.maxOdeJobsPerUser,
-			PropertyLoader.maxPdeJobsPerUser,
-			PropertyLoader.slurm_partition
-		};
 
 }
