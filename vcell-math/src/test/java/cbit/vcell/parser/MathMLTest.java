@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag("Fast")
-public class MathMLTester {
+public class MathMLTest {
 
 	public static Collection<Expression> testCases() throws ExpressionException {
 		int depthOfExpressionTree = 2;
