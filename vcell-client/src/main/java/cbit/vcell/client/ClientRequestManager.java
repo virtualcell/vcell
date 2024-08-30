@@ -3351,6 +3351,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						// inside fromSsld() we will set to using count by default
 						BioModel bioModel = ssldUtils.fromSsld(ssldModel);
 
+
+
 						// we also add an empty rule-based application, just for testing
 						// it's going to be incomplete because we did not import the initial condition from the ssld model
 						SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("NFSim app",

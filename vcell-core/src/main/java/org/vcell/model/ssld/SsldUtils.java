@@ -2,9 +2,14 @@ package org.vcell.model.ssld;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.*;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.solver.LangevinSimulationOptions;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
+import cbit.vcell.solver.SolverTaskDescription;
 import org.vcell.model.rbm.*;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.Coordinate;
@@ -321,11 +326,9 @@ public class SsldUtils {
         MolecularType getSink(Structure structure) {
             return structureToSinkMap.get(structure);
         }
-
     }
 
     public BioModel fromSsld(SsldModel ssldModel) throws Exception {
-
 
         Mapping m = importPhysiologyFromSsld(ssldModel);
         BioModel bioModel = m.getBioModel();
@@ -335,7 +338,10 @@ public class SsldUtils {
         // we always import count, so we start with default count
         springSaLaDSimContext.setUsingConcentration(false, true);
         m.set(springSaLaDSimContext);
+
         importApplicationFromSsld(m);
+        importGeometryFromSsld(m);
+        importSimulationFromSsld(m);
 
         return bioModel;
     }
@@ -344,9 +350,6 @@ public class SsldUtils {
         final BioModel bioModel = m.getBioModel();
         final SsldModel ssldModel = m.getSsldModel();
         SimulationContext simContext = m.getSimulationContext();    // default ssld application
-
-        GeometryContext geometryContext = simContext.getGeometryContext();
-        Geometry geometry = simContext.getGeometry();
 
         ReactionRuleSpec[] rrSpecs = simContext.getReactionContext().getReactionRuleSpecs();
         SpeciesContextSpec[] scSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
@@ -357,10 +360,62 @@ public class SsldUtils {
         for(ReactionRuleSpec rrs : rrSpecs) {
             importReactionRuleSpecForSsld(rrs, m);
         }
+    }
 
+    private void importSimulationFromSsld(Mapping m) throws Exception {
 
+        final SsldModel ssldModel = m.getSsldModel();
+        BoxGeometry ssldBoxGeometry = ssldModel.boxGeometry;
+        /* --- SystemTimes
+            private double totalTime;
+            private double dt;
+            private double dtspring;
+            private double dtdata;
+            private double dtimage;
+         */
+        SystemTimes ssldSystemTimes = ssldModel.systemTimes;
+
+        final BioModel bioModel = m.getBioModel();
+        SimulationContext simContext = m.getSimulationContext();
+
+        SimulationContext.MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
+        SimulationContext.NetworkGenerationRequirements networkGenerationRequirements = null; // network generation should not be executed
+        simContext.refreshMathDescription(callback,networkGenerationRequirements);
+        Simulation sim = simContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX, callback, networkGenerationRequirements);
+
+        SolverTaskDescription lstd = sim.getSolverTaskDescription();
+        LangevinSimulationOptions lso = lstd.getLangevinSimulationOptions();
+        lso.setNPart(ssldBoxGeometry.getNpart());
+
+        // TODO: system times
 
     }
+
+    private void importGeometryFromSsld(Mapping m) throws Exception {
+        /*
+        L_x: 0.1
+        L_y: 0.1
+        L_z_out: 0.010000000000000009
+        L_z_in: 0.09
+        Partition Nx: 10    // partitions imported in importSimulationFromSsld(), see above
+        Partition Ny: 10
+        Partition Nz: 10
+
+        double x, y, zin, zout,  int[3] npart
+         */
+        final SsldModel ssldModel = m.getSsldModel();
+        BoxGeometry ssldBoxGeometry = ssldModel.boxGeometry;
+
+        final BioModel bioModel = m.getBioModel();
+        SimulationContext simContext = m.getSimulationContext();
+        GeometryContext geometryContext = simContext.getGeometryContext();
+        Geometry geometry = simContext.getGeometry();
+        GeometrySpec geometrySpec = geometry.getGeometrySpec();
+
+        // TODO: see LangevinLngvWriter #938 for intracellularSubVolume expression, it's complicated
+
+    }
+
 
     private void importReactionRuleSpecForSsld(ReactionRuleSpec rrs, Mapping m) throws Exception {
         ReactionRule rr = rrs.getReactionRule();

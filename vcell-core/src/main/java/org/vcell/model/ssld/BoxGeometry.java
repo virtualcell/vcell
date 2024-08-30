@@ -88,6 +88,13 @@ public class BoxGeometry {
                 System.out.println("Invalid input in BoxGeometry.setDpart(i).  Got i = " + i);
         }
     }
+    public int [] getNpart() {
+        return npart;
+    }
+
+    public int getNpart(int i) {
+        return npart[i];
+    }
 
 
 }

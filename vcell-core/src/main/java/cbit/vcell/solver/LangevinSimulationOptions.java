@@ -27,11 +27,17 @@ import cbit.vcell.math.VCML;
 
 public class LangevinSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
+	// TODO: add the partition definitions in the LangevinOptionsPanel
+
+	public final static String Partition_Nx = "Partition Nx: ";
+	public final static String Partition_Ny = "Partition Ny: ";
+	public final static String Partition_Nz = "Partition Nz: ";
 
 	protected int numOfTrials = 1;
 	protected int runIndex = 0;				// run index, will result in Run0 (followed by Run1, 2,...)
 	protected double intervalSpring = 1.00E-9;	// default: dt_spring: 1.00E-9	- from advanced
 	protected double intervalImage = 1.00E-4;	// default: dt_image: 1.00E-4	- from advanced
+	protected int[] npart = { 10, 10, 10 };		// default number of partitions on each axis
 
 	protected transient PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoChange;
@@ -87,6 +93,10 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public double getIntervalImage() {
 		return intervalImage;
 	}
+	public int getNPart(int index) {
+		return npart[index];
+	}
+
 	public final void setRunIndex(int newValue) {
 		this.runIndex = newValue;
 	}
@@ -98,6 +108,11 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 	public final void setIntervalImage(double newValue) {
 		this.intervalImage = newValue;
+	}
+	public final void setNPart(int[] npart) {
+		this.npart[0] = npart[0];
+		this.npart[1] = npart[1];
+		this.npart[2] = npart[2];
 	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
@@ -135,8 +150,11 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		buffer.append("\t" + VCML.LangevinSimulationOptions + " " + VCML.BeginBlock + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numOfTrials + " " + numOfTrials + "\n");			
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_runIndex + " " + runIndex + "\n");			
-		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalSpring + " " + intervalSpring + "\n");			
-		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalImage + " " + intervalImage + "\n");			
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalSpring + " " + intervalSpring + "\n");
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalImage + " " + intervalImage + "\n");
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nx + " " + npart[0] + "\n");
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Ny + " " + npart[1] + "\n");
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nz + " " + npart[2] + "\n");
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
 	}
@@ -163,6 +181,15 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_intervalImage)) {
 				token = tokens.nextToken();
 				intervalImage = Double.parseDouble(token);
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_Partition_Nx)) {
+				token = tokens.nextToken();
+				npart[0] = Integer.parseInt(token);
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_Partition_Ny)) {
+				token = tokens.nextToken();
+				npart[1] = Integer.parseInt(token);
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_Partition_Nz)) {
+				token = tokens.nextToken();
+				npart[2] = Integer.parseInt(token);
 			} else if (token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numOfTrials)) {
 				token = tokens.nextToken();
 				int val2 = Integer.parseInt(token);
