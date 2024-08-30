@@ -121,7 +121,7 @@ public class ModelResolver {
                 srcURI = sedml.getModelWithId(modelRef).getSourceURI();
                 // If we need to recurse to the next level:
                 modelRef = sedml.getModelWithId(modelRef.startsWith("#") ?
-                        modelRef.substring(1): modelRef).getSource();
+                        modelRef.substring(1): modelRef).getSourcePathOrURIString();
             } while (srcURI != null && srcURI.toString().contains("#"));
         } catch (URISyntaxException e) {
             logger.error(MODEL_SRC_NOT_VALID_URI+": "+e.getMessage(), e);
@@ -187,7 +187,7 @@ public class ModelResolver {
     }
 
     void getModelModificationTree(Model m, List<String> modelRefs2) {
-        String modelSrcRef = m.getSource();
+        String modelSrcRef = m.getSourcePathOrURIString();
 
         modelRefs2.add(m.getId());
         if (sedml.getModelWithId(modelSrcRef) != null) {
