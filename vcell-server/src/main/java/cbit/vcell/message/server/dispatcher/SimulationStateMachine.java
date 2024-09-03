@@ -2,10 +2,7 @@ package cbit.vcell.message.server.dispatcher;
 
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.message.VCMessageSession;
-import cbit.vcell.message.VCMessagingConstants;
-import cbit.vcell.message.VCMessagingException;
-import cbit.vcell.message.VCellTopic;
+import cbit.vcell.message.*;
 import cbit.vcell.message.messages.MessageConstants;
 import cbit.vcell.message.messages.SimulationTaskMessage;
 import cbit.vcell.message.messages.StatusMessage;
@@ -345,13 +342,11 @@ public class SimulationStateMachine {
                 simulationDatabase.updateSimulationJobStatus(newJobStatus,runningStateInfo);
                 StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, progress, timepoint);
 
-                // TODO: Implement messaging to client
                 msgForClient.sendToClient(session);
                 if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
             } else {
                 simulationDatabase.updateSimulationJobStatus(newJobStatus);
                 StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
-                // TODO: Implement messaging to client
                 msgForClient.sendToClient(session);
                 if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
             }
@@ -540,6 +535,20 @@ public class SimulationStateMachine {
                     null, new VCSimulationIdentifier(simKey, user), jobIndex, simJobStatus.getSubmitDate(),
                     SimulationJobStatus.SchedulerStatus.STOPPED, taskID, simJobStatus.getSimulationMessage(), simQueueEntryStatus, simExeStatus
             );
+
+            //
+            // send stopSimulation to serviceControl topic
+            //
+            VCMessage msg = session.createMessage();
+            msg.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE);
+            msg.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simKey + ""));
+            msg.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, jobIndex);
+            msg.setIntProperty(MessageConstants.TASKID_PROPERTY, taskID);
+            msg.setStringProperty(VCMessagingConstants.USERNAME_PROPERTY, user.getName());
+            if (simExeStatus.getHtcJobID()!=null){
+                msg.setStringProperty(MessageConstants.HTCJOBID_PROPERTY, simExeStatus.getHtcJobID().toDatabase());
+            }
+            session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);
 
             simulationDatabase.updateSimulationJobStatus(newJobStatus);
             statusMessage = new StatusMessage(simulationJobStatusRecord, user.getName(), null, null);

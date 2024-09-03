@@ -8,10 +8,11 @@ import java.util.List;
 public class MockMessagingService implements VCMessagingService {
 
     public ArrayList<VCMessagingConsumer> messagingConsumers = new ArrayList<>();
+    public final MockVCMessageSession mockVCMessageSession = new MockVCMessageSession();
 
     @Override
     public VCMessageSession createProducerSession() {
-        return new MockVCMessageSession();
+        return mockVCMessageSession;
     }
 
     @Override

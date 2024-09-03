@@ -2,30 +2,23 @@ package cbit.vcell.message.server.dispatcher;
 
 import cbit.vcell.message.*;
 import cbit.vcell.message.jms.VCMessageJms;
+import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.vcell.util.document.UserLoginInfo;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
+import javax.jms.TextMessage;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class MockVCMessageSession implements VCMessageSession {
 
-    private Connection connection;
-    private Session session;
 
-    public MockVCMessageSession(){
-        try {
-//            connection = ActiveMQConnection.makeConnection("");
-//            session = connection.createSession();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public MockVCMessageSession(){ }
 
     private final HashMap<VCellTopic, Queue<VCMessage>> topics = new HashMap<>(){{
         put(VCellTopic.ClientStatusTopic, new LinkedList<>());
@@ -77,7 +70,7 @@ public class MockVCMessageSession implements VCMessageSession {
 
     @Override
     public VCMessage createMessage() {
-        return null;
+        return new VCMessageJms(new ActiveMQMessage(), null, null);
     }
 
     @Override
