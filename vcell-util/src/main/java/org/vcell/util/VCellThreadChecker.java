@@ -14,31 +14,16 @@ import javax.swing.SwingUtilities;
 
 public class VCellThreadChecker {
 
-	private static final ThreadLocal<Integer> cpuSuppressed = new ThreadLocal<Integer>() {
-		@Override
-		protected Integer initialValue() {
-			return 0;
-		}
-	};
+	private static final ThreadLocal<Integer> cpuSuppressed = ThreadLocal.withInitial(() -> 0);
 
-	private static final ThreadLocal<Integer> remoteSuppressed = new ThreadLocal<Integer>() {
-		@Override
-		protected Integer initialValue() {
-			return 0;
-		}
-	};
+	private static final ThreadLocal<Integer> remoteSuppressed = ThreadLocal.withInitial(() -> 0);
 
 
 	public interface GUIThreadChecker {
-		public boolean isEventDispatchThread();
+		boolean isEventDispatchThread();
 	}
 
-	private static GUIThreadChecker guiThreadChecker = new GUIThreadChecker() {
-
-		public boolean isEventDispatchThread() {
-			return SwingUtilities.isEventDispatchThread();
-		}
-	};
+	private static GUIThreadChecker guiThreadChecker = SwingUtilities::isEventDispatchThread;
 
 	public static void setGUIThreadChecker(GUIThreadChecker argGuiThreadChecker){
 		guiThreadChecker = argGuiThreadChecker;
@@ -85,6 +70,7 @@ public class VCellThreadChecker {
 			super(cpuSuppressed);
 		}
 	}
+
 	public static class SuppressRemote extends Suppressor {
 		public SuppressRemote() {
 			super(remoteSuppressed);

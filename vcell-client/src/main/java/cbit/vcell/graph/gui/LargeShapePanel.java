@@ -2,6 +2,8 @@ package cbit.vcell.graph.gui;
 
 import javax.swing.JPanel;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -17,6 +19,7 @@ import cbit.vcell.model.ReactionRule;
 
 @SuppressWarnings("serial")
 public abstract class LargeShapePanel extends JPanel implements LargeShapeCanvas, ShapeModeInterface {
+	private static final Logger lg = LogManager.getLogger(LargeShapePanel.class);
 	
 	private boolean showDifferencesOnly = false;
 	private boolean bShowMoleculeColor = false;
@@ -138,10 +141,10 @@ public abstract class LargeShapePanel extends JPanel implements LargeShapeCanvas
 		zoomFactor--;
 		if(zoomFactor <= SmallestZoomFactor) {
 			zoomFactor = SmallestZoomFactor;
-			System.out.println("MIN. Factor is " + zoomFactor);
+			lg.debug("MIN. Factor is " + zoomFactor);
 			return false;
 		} else {
-			System.out.println("Down. Factor is " + zoomFactor);
+			lg.debug("Down. Factor is " + zoomFactor);
 			return true;
 		}
 	}

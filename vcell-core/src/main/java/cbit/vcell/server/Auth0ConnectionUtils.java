@@ -9,6 +9,7 @@ import org.vcell.restclient.ApiException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -30,6 +31,9 @@ public final class Auth0ConnectionUtils {
             boolean ignoreSSLCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
             if (!isGuest) vcellApiClient.authenticate(ignoreSSLCertProblems);
             else vcellApiClient.createDefaultQuarkusClient(ignoreSSLCertProblems);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("VCell can not attempt to login:\n\n" +
+                    "VCell was unable to connect to the internet while trying to connect to '" + e.getMessage() + "'\n\n", e);
         } catch (ApiException | URISyntaxException | IOException | ParseException e){
             throw new RuntimeException(e);
         }

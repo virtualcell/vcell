@@ -37,7 +37,7 @@ public DeleteOldDocument() {
 
 
 @Override
-protected Collection<KeyInfo> requiredKeys() {
+public Collection<KeyInfo> requiredKeys() {
 	ArrayList<KeyInfo> rval = new ArrayList<>();
 	rval.add(DOCUMENT_WINDOW_MANAGER);
 	rval.add(DOCUMENT_MANAGER);
@@ -52,9 +52,9 @@ protected Collection<KeyInfo> requiredKeys() {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	DocumentWindowManager dwm = (DocumentWindowManager) fetch(hashTable,DOCUMENT_WINDOW_MANAGER);
+	DocumentWindowManager dwm = (DocumentWindowManager) ResultsHashUtils.fetch(hashTable,DOCUMENT_WINDOW_MANAGER);
 	VCDocument currentDocument = dwm.getVCDocument();
-	DocumentManager documentManager = (DocumentManager)fetch(hashTable,DOCUMENT_MANAGER);
+	DocumentManager documentManager = (DocumentManager) ResultsHashUtils.fetch(hashTable,DOCUMENT_MANAGER);
 	switch (currentDocument.getDocumentType()) {
 		case BIOMODEL_DOC: {
 			// make the info

@@ -26,6 +26,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.*;
 import cbit.vcell.xml.gui.MiriamTreeModel;
 import cbit.vcell.xml.gui.MiriamTreeModel.LinkNode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.sybil.models.AnnotationQualifiers;
@@ -59,6 +61,8 @@ import java.util.*;
  */
 @SuppressWarnings("serial")
 public class AnnotationsPanel extends DocumentEditorSubPanel {
+	private static Logger lg = LogManager.getLogger(AnnotationsPanel.class);
+
 	private BioModel bioModel = null;
 	private VCMetaData vcMetaData = null;
 	MiriamTreeModel miriamTreeModel = null;
@@ -517,7 +521,7 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					VCMetaDataDataType mdt = (VCMetaDataDataType)jComboBoxURI.getSelectedItem();
-					System.out.println("aici");
+					lg.debug("aici");
 					if(mdt != null && mdt.isSearchable()) {
 						getJButtonSearchRef().setEnabled(true);
 					} else {

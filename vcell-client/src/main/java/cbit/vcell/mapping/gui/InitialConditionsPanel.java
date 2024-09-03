@@ -306,7 +306,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
+                if (hashTable.get(swingthreads.TaskEventKeys.TASK_ABORTED_BY_ERROR.toString()) != null) {
                     getSimulationContext().setUsingConcentration(false, true);
                     updateTopScrollPanel();
                 }
@@ -347,7 +347,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
+                if (hashTable.get(swingthreads.TaskEventKeys.TASK_ABORTED_BY_ERROR.toString()) != null) {
                     getSimulationContext().setUsingConcentration(true, true);
                     updateTopScrollPanel();
                 }

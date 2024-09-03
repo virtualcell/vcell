@@ -102,7 +102,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
 
-public class ClientDocumentManager implements DocumentManager{
+public class ClientDocumentManager implements DocumentManager {
 	private static final Logger lg = LogManager.getLogger(ClientDocumentManager.class);
 	//
 	//
@@ -803,24 +803,20 @@ public BioModelInfo[] getBioModelInfos() {
 
 
 private XMLHolder<BioModel> getBioModelXML(KeyValue vKey) throws DataAccessException {
-
 	try{
-		String xmlString = (String)xmlHash.get(vKey);
-		if (xmlString==null){
-			BigString xmlBS = sessionManager.getUserMetaDbServer().getBioModelXML(vKey);
-			xmlString = (xmlBS != null?xmlBS.toString():null);
-			if(xmlString != null){
-				BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(xmlString));
-				String newXmlString = XmlHelper.bioModelToXML(bioModel);
-				xmlHash.put(vKey,newXmlString);
-				return new XMLHolder<BioModel>(newXmlString,bioModel);
-			}else{
-				throw new RuntimeException("unexpected: UserMetaDbServer.getBioModelXML() returned null");
-			}
-		}else{
-			return new XMLHolder<BioModel>(xmlString);
-		}
-	}catch (ObjectNotFoundException e){
+		String xmlString = xmlHash.get(vKey);
+		if (null != xmlString) return new XMLHolder<>(xmlString);
+        BigString xmlBS = sessionManager.getUserMetaDbServer().getBioModelXML(vKey);
+        xmlString = (xmlBS != null?xmlBS.toString():null);
+        if(xmlString != null){
+            BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(xmlString));
+            String newXmlString = XmlHelper.bioModelToXML(bioModel);
+            xmlHash.put(vKey,newXmlString);
+            return new XMLHolder<>(newXmlString, bioModel);
+        }else{
+            throw new RuntimeException("unexpected: UserMetaDbServer.getBioModelXML() returned null");
+        }
+    }catch (ObjectNotFoundException e){
 		throw new DataAccessException("BioModel (id=" + vKey + ") does not exist. It either " +
 			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
 	}catch(Exception e){
