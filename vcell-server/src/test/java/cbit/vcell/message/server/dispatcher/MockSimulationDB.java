@@ -24,6 +24,8 @@ public class MockSimulationDB implements SimulationDatabase{
         {put(specialAdmin.getName(), specialAdmin); put(DispatcherTestUtils.alice.getName(), DispatcherTestUtils.alice);}
     };
 
+    private final HashMap<String, Simulation> simulations = new HashMap<>();
+
     @Override
     public SimulationJobStatus getLatestSimulationJobStatus(KeyValue simKey, int jobIndex) throws DataAccessException, SQLException {
         ArrayList<SimulationJobStatus> simList = dbTable.get(simKey.toString());
@@ -100,7 +102,7 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public Simulation getSimulation(User user, KeyValue simKey) throws DataAccessException {
-        throw new DataAccessException();
+        return simulations.get(simKey.toString() + user.getName());
     }
 
     @Override
@@ -164,6 +166,10 @@ public class MockSimulationDB implements SimulationDatabase{
 
     public void resetDataBase(){
         dbTable = new HashMap<>();
+    }
+
+    public void insertSimulation(User user, Simulation sim){
+        simulations.put(sim.getKey().toString() + user.getName(), sim);
     }
 
 }

@@ -87,7 +87,7 @@ public class SimulationDispatcher {
 
 	private final SimulationDispatcherEngine simDispatcherEngine = new SimulationDispatcherEngine();
 
-	private final DispatchThread dispatchThread;
+	protected final DispatchThread dispatchThread;
 	private final SimulationMonitor simMonitor;
 	private final VCMessageSession dispatcherQueueSession_int;
 	private final VCMessageSession clientStatusTopicSession_int;
@@ -235,7 +235,7 @@ public class SimulationDispatcher {
 	}
 	public class DispatchThread extends Thread {
 
-		Object notifyObject = new Object();
+		final Object notifyObject = new Object();
 
 		public DispatchThread() {
 			super();
@@ -545,8 +545,8 @@ public class SimulationDispatcher {
 	}
 
 	public static SimulationDispatcher simulationDispatcherCreator(SimulationDatabase simulationDatabase, VCMessagingService messagingServiceInternal,
-																   VCMessagingService messagingServiceSim){
-		return new SimulationDispatcher(simulationDatabase, messagingServiceInternal, messagingServiceSim);
+																   VCMessagingService messagingServiceSim, HtcProxy htcProxy){
+		return new SimulationDispatcher(simulationDatabase, messagingServiceInternal, messagingServiceSim, htcProxy);
 	}
 
 	public static SimulationDispatcher simulationDispatcherCreator() throws SQLException, DataAccessException {
@@ -566,11 +566,12 @@ public class SimulationDispatcher {
 		int jmsport_sim = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortInternal));
 		vcMessagingServiceSim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
 
-		return SimulationDispatcher.simulationDispatcherCreator(simulationDatabase, vcMessagingServiceInternal, vcMessagingServiceSim);
+		return SimulationDispatcher.simulationDispatcherCreator(simulationDatabase,
+				vcMessagingServiceInternal, vcMessagingServiceSim, SlurmProxy.createRemoteProxy());
 	}
 
 	private SimulationDispatcher(SimulationDatabase simulationDatabase, VCMessagingService messagingServiceInternal,
-								 VCMessagingService messagingServiceSim){
+								 VCMessagingService messagingServiceSim, HtcProxy htcProxy){
 		this.simulationDatabase = simulationDatabase;
 		this.vcMessagingService_int = messagingServiceInternal;
 		this.vcMessagingService_sim = messagingServiceSim;
@@ -605,7 +606,7 @@ public class SimulationDispatcher {
 
 		this.simMonitorThreadSession_sim = this.vcMessagingService_sim.createProducerSession();
 		this.simMonitor = new SimulationMonitor();
-		this.htcProxy = SlurmProxy.createRemoteProxy();
+		this.htcProxy = htcProxy;
 	}
 
 

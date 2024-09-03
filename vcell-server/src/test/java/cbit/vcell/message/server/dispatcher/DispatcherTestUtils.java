@@ -36,6 +36,8 @@ public class DispatcherTestUtils {
     private static String previousHTCUser = "";
     private static String previousHTCUserKeyFile = "";
     private static String previousMaxJobsPerScan = "";
+    private static String previousOdeJobsPerUser = "";
+    private static String previousPdeJobsPerUser = "";
 
     public static final VCellServerID testVCellServerID = VCellServerID.getServerID("test");
     public static final MockVCMessageSession testMessageSession = new MockVCMessageSession();
@@ -48,7 +50,7 @@ public class DispatcherTestUtils {
 
     public static void setRequiredProperties(){
         previousServerID = PropertyLoader.getProperty(PropertyLoader.vcellServerIDProperty, "");
-        PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "");
+        PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, testVCellServerID.toString());
 
         previousHtcMax = PropertyLoader.getProperty(PropertyLoader.htcMaxMemoryMB, "");
         PropertyLoader.setProperty(PropertyLoader.htcMaxMemoryMB, "4096");
@@ -85,6 +87,12 @@ public class DispatcherTestUtils {
 
         previousMaxJobsPerScan = PropertyLoader.getProperty(PropertyLoader.maxJobsPerScan, "");
         PropertyLoader.setProperty(PropertyLoader.maxJobsPerScan, "100");
+
+        previousPdeJobsPerUser = PropertyLoader.getProperty(PropertyLoader.maxPdeJobsPerUser, "");
+        PropertyLoader.setProperty(PropertyLoader.maxPdeJobsPerUser, "100");
+
+        previousOdeJobsPerUser = PropertyLoader.getProperty(PropertyLoader.maxOdeJobsPerUser, "");
+        PropertyLoader.setProperty(PropertyLoader.maxOdeJobsPerUser, "100");
     }
 
     public static void restoreRequiredProperties(){
@@ -136,6 +144,10 @@ public class DispatcherTestUtils {
 
     public static void insertOrUpdateStatus(KeyValue simKey, int jobIndex, int taskID, User user, SimulationDatabase simulationDB) throws SQLException, DataAccessException {
         insertOrUpdateStatus(simKey, jobIndex, taskID, user, SimulationJobStatus.SchedulerStatus.RUNNING, simulationDB);
+    }
+
+    public static void insertOrUpdateStatus(SimulationDatabase simulationDatabase, SimulationJobStatus.SchedulerStatus status) throws SQLException, DataAccessException {
+        insertOrUpdateStatus(simKey, jobIndex, taskID, alice, status, simulationDatabase);
     }
 
     /**

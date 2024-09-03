@@ -21,6 +21,7 @@ public class SimulationDispatcherTest {
     private MockSimulationDB mockSimulationDB = new MockSimulationDB();
     private MockMessagingService mockMessagingServiceInternal = new MockMessagingService();
     private MockMessagingService mockMessagingServiceSim = new MockMessagingService();
+    private MockHtcProxy mockHtcProxy = new MockHtcProxy(null, null);
 
     @BeforeAll
     public static void setSystemProperties(){
@@ -59,5 +60,46 @@ public class SimulationDispatcherTest {
         String s = mockMessagingServiceInternal.mockVCMessageSession.getTopicMessage(VCellTopic.ServiceControlTopic).getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY);
         Assertions.assertEquals(MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE, s);
     }
+
+
+    //###################### Test Dispatcher Thread ###########################
+    @Test
+    public void dispatcherThreadTest() throws SQLException, DataAccessException, InterruptedException, PropertyVetoException, MathException, ExpressionBindingException {
+        DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB, SimulationJobStatus.SchedulerStatus.WAITING);
+        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal, mockMessagingServiceSim, mockHtcProxy);
+        SimulationDispatcher.DispatchThread thread = simulationDispatcher.dispatchThread;
+        synchronized (thread.notifyObject){
+            thread.notifyObject.notify();
+        }
+        SimulationJobStatus jobStatus = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, 0);
+        Assertions.assertTrue(jobStatus.getSchedulerStatus().isWaiting(), "Still waiting.");
+
+        // needs time for the dispatcher thread to fully update
+        Thread.sleep(1000);
+
+        jobStatus = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, 0);
+        Assertions.assertTrue(jobStatus.getSchedulerStatus().isFailed(), "Simulation gets aborted since theres no simulation in DB.");
+
+        Simulation mockSimulation = DispatcherTestUtils.createMockSimulation(20, 20, 20);
+        mockSimulationDB.insertSimulation(DispatcherTestUtils.alice, mockSimulation);
+        DispatcherTestUtils.insertOrUpdateStatus(mockSimulation.getKey(), DispatcherTestUtils.jobIndex, DispatcherTestUtils.taskID, DispatcherTestUtils.alice,
+                SimulationJobStatus.SchedulerStatus.WAITING, mockSimulationDB);
+        synchronized (thread.notifyObject){
+            thread.notifyObject.notify();
+        }
+        Thread.sleep(1000);
+
+        jobStatus = mockSimulationDB.getLatestSimulationJobStatus(mockSimulation.getKey(), 0);
+        Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched(), "Dispatches");
+    }
+
+
+
+    //###################### Test Simulation Monitor
+
+
+
+
+
 
 }
