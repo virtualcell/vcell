@@ -1,6 +1,7 @@
 package org.vcell.model.ssld;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.*;
@@ -13,6 +14,7 @@ import cbit.vcell.solver.SolverTaskDescription;
 import org.vcell.model.rbm.*;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.Coordinate;
+import org.vcell.util.Extent;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
 
@@ -392,28 +394,34 @@ public class SsldUtils {
     }
 
     private void importGeometryFromSsld(Mapping m) throws Exception {
-        /*
-        L_x: 0.1
+        /* --- example:
+        L_x: 0.1    // micrometers
         L_y: 0.1
         L_z_out: 0.010000000000000009
         L_z_in: 0.09
         Partition Nx: 10    // partitions imported in importSimulationFromSsld(), see above
         Partition Ny: 10
         Partition Nz: 10
-
-        double x, y, zin, zout,  int[3] npart
          */
         final SsldModel ssldModel = m.getSsldModel();
-        BoxGeometry ssldBoxGeometry = ssldModel.boxGeometry;
+        BoxGeometry ssldBoxGeometry = ssldModel.boxGeometry;    // double x, y, zin, zout,  int[3] npart
+        double x = ssldBoxGeometry.getX();
+        double y = ssldBoxGeometry.getY();
+        double zin = ssldBoxGeometry.getZin();
+        double zout = ssldBoxGeometry.getZout();
 
-        final BioModel bioModel = m.getBioModel();
         SimulationContext simContext = m.getSimulationContext();
-        GeometryContext geometryContext = simContext.getGeometryContext();
         Geometry geometry = simContext.getGeometry();
         GeometrySpec geometrySpec = geometry.getGeometrySpec();
 
-        // TODO: see LangevinLngvWriter #938 for intracellularSubVolume expression, it's complicated
+        // see LangevinLngvWriter #938 for intracellularSubVolume producer (exporter)
+        AnalyticSubVolume intracellularSubVolume = (AnalyticSubVolume) geometrySpec.getSubVolumes(0);
+        Expression expression = new Expression("z < " + (zin/1000));
+        intracellularSubVolume.setExpression(expression);
 
+        // we need micrometers for the extent but all distances in BoxGeometry are nm
+        Extent extent = new Extent(x/1000, y/1000, (zin + zout)/1000);
+        geometrySpec.setExtent(extent);
     }
 
 

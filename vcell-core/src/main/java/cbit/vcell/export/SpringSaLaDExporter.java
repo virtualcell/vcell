@@ -197,7 +197,6 @@ public class SpringSaLaDExporter {
 			/* ********* WRITE THE SPATIAL INFORMATION **********/
 			sb.append("*** " + SPATIAL_INFORMATION + " ***");
 			sb.append("\n");
-
 			LangevinLngvWriter.writeSpatialInformation(geometrySpec, simulation, sb);
 			sb.append("\n");
 

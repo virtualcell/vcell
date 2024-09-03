@@ -36,6 +36,37 @@ public class BoxGeometry {
         }
     }
 
+    public void setX(double x) {
+        this.x = x;
+        setDpart(0);
+    }
+    public double getX() {
+        return x;
+    }
+    public void setY(double y) {
+        this.y = y;
+        setDpart(1);
+    }
+    public double getY() {
+        return y;
+    }
+    public void setZin(double zin) {
+        this.zin = zin;
+        setDpart(2);
+    }
+    public double getZin() {
+        return zin;
+    }
+    public void setZout(double zout) {
+        this.zout = zout;
+        setDpart(2);
+    }
+    public double getZout() {
+        return zout;
+    }
+
+    // in the ssld file the distances are expressed in micrometers while distances in BpxGeometry
+    // are expressed in nm - hence the  x1000
     public void loadData(String dataString) {
         Scanner sc = new Scanner(dataString);
         while(sc.hasNextLine()) {
