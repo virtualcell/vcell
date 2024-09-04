@@ -26,6 +26,17 @@ public class MockSimulationDB implements SimulationDatabase{
 
     private final HashMap<String, Simulation> simulations = new HashMap<>();
 
+    // Return a latest simulation that differs in one of these ways
+    public enum BadLatestSimulation{
+        HIGHER_TASK_ID,
+        RETURN_NULL,
+        IS_DONE,
+        DO_NOTHING
+    }
+
+    public BadLatestSimulation badLatestSimulation = BadLatestSimulation.DO_NOTHING;
+
+
     @Override
     public SimulationJobStatus getLatestSimulationJobStatus(KeyValue simKey, int jobIndex) throws DataAccessException, SQLException {
         ArrayList<SimulationJobStatus> simList = dbTable.get(simKey.toString());
@@ -40,7 +51,21 @@ public class MockSimulationDB implements SimulationDatabase{
                 latestSim = jobStatus;
             }
         }
-        return latestSim;
+        switch (badLatestSimulation){
+            case RETURN_NULL -> {
+                return null;
+            } case HIGHER_TASK_ID -> {
+                SimulationJobStatus simulationJobStatus = new SimulationJobStatus(latestSim.getServerID(), latestSim.getVCSimulationIdentifier(), latestSim.getJobIndex(),
+                        latestSim.getSubmitDate(), latestSim.getSchedulerStatus(), latestSim.getTaskID() + 1, latestSim.getSimulationMessage(), latestSim.getSimulationQueueEntryStatus(), latestSim.getSimulationExecutionStatus());
+                return simulationJobStatus;
+            } case IS_DONE -> {
+                return new SimulationJobStatus(latestSim.getServerID(), latestSim.getVCSimulationIdentifier(), latestSim.getJobIndex(), latestSim.getSubmitDate(), SimulationJobStatus.SchedulerStatus.COMPLETED,
+                        latestSim.getTaskID(), latestSim.getSimulationMessage(), latestSim.getSimulationQueueEntryStatus(), null);
+            }default -> {
+                return latestSim;
+            }
+        }
+
     }
 
     @Override
@@ -166,6 +191,7 @@ public class MockSimulationDB implements SimulationDatabase{
 
     public void resetDataBase(){
         dbTable = new HashMap<>();
+        badLatestSimulation = BadLatestSimulation.DO_NOTHING;
     }
 
     public void insertSimulation(User user, Simulation sim){

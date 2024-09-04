@@ -47,6 +47,7 @@ public class DispatcherTestUtils {
     public static User alice = new User("Alice", new KeyValue("0"));
     public static User bob = new User("Bob", new KeyValue("1"));
     public static final VCSimulationIdentifier simID = new VCSimulationIdentifier(simKey, alice);
+    public static final HtcJobID htcJobID = new HtcJobID("2", HtcJobID.BatchSystemType.SLURM);
 
     public static void setRequiredProperties(){
         previousServerID = PropertyLoader.getProperty(PropertyLoader.vcellServerIDProperty, "");
@@ -109,6 +110,8 @@ public class DispatcherTestUtils {
         PropertyLoader.setProperty(PropertyLoader.htcUser, previousHTCUser);
         PropertyLoader.setProperty(PropertyLoader.htcUserKeyFile, previousHTCUserKeyFile);
         PropertyLoader.setProperty(PropertyLoader.maxJobsPerScan, previousMaxJobsPerScan);
+        PropertyLoader.setProperty(PropertyLoader.maxOdeJobsPerUser, previousOdeJobsPerUser);
+        PropertyLoader.setProperty(PropertyLoader.maxPdeJobsPerUser, previousPdeJobsPerUser);
     }
 
     public static Simulation createMockSimulation(int iSizeX, int iSizeY, int iSizeZ) throws PropertyVetoException, MathException, ExpressionBindingException {
@@ -134,7 +137,7 @@ public class DispatcherTestUtils {
         SimulationJobStatus simulationJobStatus = new SimulationJobStatus(testVCellServerID, simID, jobIndex, Date.from(Instant.now()), status, taskID,
                 SimulationMessage.workerAccepted("accepted"), null,
                 new SimulationExecutionStatus(Date.from(Instant.now()), "",
-                        Date.from(Instant.now()), Date.from(Instant.now()), false, new HtcJobID("2", HtcJobID.BatchSystemType.SLURM)));
+                        Date.from(Instant.now()), Date.from(Instant.now()), false, htcJobID));
         if (jobStatus == null){
             simulationDB.insertSimulationJobStatus(simulationJobStatus);
         } else {

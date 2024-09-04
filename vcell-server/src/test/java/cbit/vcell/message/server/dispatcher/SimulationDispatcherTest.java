@@ -8,20 +8,29 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.spi.ExtendedLogger;
 import org.junit.jupiter.api.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
 import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.SQLException;
 
 @Tag("Fast")
 public class SimulationDispatcherTest {
+    public static ExtendedLogger lg = LoggerContext.getContext().getLogger(SimulationDispatcher.class);
     private final static User testUser = DispatcherTestUtils.alice;
     private MockSimulationDB mockSimulationDB = new MockSimulationDB();
-    private MockMessagingService mockMessagingServiceInternal = new MockMessagingService();
-    private MockMessagingService mockMessagingServiceSim = new MockMessagingService();
-    private MockHtcProxy mockHtcProxy = new MockHtcProxy(null, null);
+    private final MockMessagingService mockMessagingServiceInternal = new MockMessagingService();
+    private final MockMessagingService mockMessagingServiceSim = new MockMessagingService();
+    private final MockHtcProxy mockHtcProxy = new MockHtcProxy(null, null, mockSimulationDB);
 
     @BeforeAll
     public static void setSystemProperties(){
@@ -35,7 +44,7 @@ public class SimulationDispatcherTest {
 
     @BeforeEach
     public void beforeEach(){
-        mockSimulationDB = new MockSimulationDB();
+        mockSimulationDB.resetDataBase();
     }
 
     //################# Test Simulation Service Impl #######################
@@ -95,8 +104,44 @@ public class SimulationDispatcherTest {
 
 
 
-    //###################### Test Simulation Monitor
+    //###################### Test Simulation Monitor ##########################
 
+    @Test
+    public void zombieKillerTest() throws SQLException, DataAccessException, InterruptedException, IOException {
+        Level pastLevel = lg.getLevel();
+        Configurator.setLevel(lg, Level.WARN);
+        StringWriter logOutput = new StringWriter();
+        WriterAppender appender = WriterAppender.newBuilder().setTarget(logOutput).setName("test").build();
+        LoggerContext.getContext(false).getConfiguration().addLoggerAppender((Logger) lg, appender);
+        appender.start();
+        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal, mockMessagingServiceSim, mockHtcProxy);
+        DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB);
+
+        mockSimulationDB.badLatestSimulation = MockSimulationDB.BadLatestSimulation.HIGHER_TASK_ID;
+        SimulationDispatcher.SimulationMonitor.ZombieKiller zombieKiller = simulationDispatcher.simMonitor.initialZombieKiller;
+        zombieKiller.run();
+        Assertions.assertTrue(logOutput.toString().contains(SimulationDispatcher.SimulationMonitor.ZombieKiller.newJobFound));
+        Assertions.assertEquals(1, mockHtcProxy.jobsKilledSafely.size());
+
+        mockSimulationDB.badLatestSimulation = MockSimulationDB.BadLatestSimulation.RETURN_NULL;
+        zombieKiller.run();
+        Assertions.assertTrue(logOutput.toString().contains(SimulationDispatcher.SimulationMonitor.ZombieKiller.noJob));
+        Assertions.assertEquals(2, mockHtcProxy.jobsKilledSafely.size());
+
+        mockSimulationDB.badLatestSimulation = MockSimulationDB.BadLatestSimulation.IS_DONE;
+        zombieKiller.run();
+        Assertions.assertTrue(logOutput.toString().contains(SimulationDispatcher.SimulationMonitor.ZombieKiller.jobIsAlreadyDone));
+        Assertions.assertEquals(3, mockHtcProxy.jobsKilledSafely.size());
+
+        appender.stop();
+        logOutput.close();
+        Configurator.setLevel(lg, pastLevel);
+    }
+
+
+    public void queueFlusherTest(){
+
+    }
 
 
 

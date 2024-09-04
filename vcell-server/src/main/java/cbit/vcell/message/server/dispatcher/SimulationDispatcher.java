@@ -88,7 +88,7 @@ public class SimulationDispatcher {
 	private final SimulationDispatcherEngine simDispatcherEngine = new SimulationDispatcherEngine();
 
 	protected final DispatchThread dispatchThread;
-	private final SimulationMonitor simMonitor;
+	protected final SimulationMonitor simMonitor;
 	private final VCMessageSession dispatcherQueueSession_int;
 	private final VCMessageSession clientStatusTopicSession_int;
 	private final VCMessageSession simMonitorThreadSession_sim;
@@ -233,7 +233,7 @@ public class SimulationDispatcher {
 		}
 		lastSpecialUserCheck = System.currentTimeMillis();
 	}
-	public class DispatchThread extends Thread {
+	protected class DispatchThread extends Thread {
 
 		final Object notifyObject = new Object();
 
@@ -350,9 +350,11 @@ public class SimulationDispatcher {
 		}
 	}
 
-	class SimulationMonitor implements ThreadFactory, RejectedExecutionHandler {
-		private ScheduledThreadPoolExecutor executor; 
+	protected class SimulationMonitor implements ThreadFactory, RejectedExecutionHandler {
+		protected final ScheduledThreadPoolExecutor executor;
 		private int threadCount;
+		protected ZombieKiller initialZombieKiller = new ZombieKiller();
+		protected QueueFlusher initialQueueFlusher = new QueueFlusher();
 		/**
 		 * synchronizes {@link SimulationDispatcher#onWorkerEventMessage(VCMessage, VCMessageSession)} and
 		 * {@link QueueFlusher#flushWorkerEventQueue()}
@@ -362,14 +364,17 @@ public class SimulationDispatcher {
 		public SimulationMonitor( ) {
 			threadCount = 1;
 			executor =  new ScheduledThreadPoolExecutor(2,this,this);
-			executor.scheduleAtFixedRate(new ZombieKiller( ), 0, ZOMBIE_MINUTES, TimeUnit.MINUTES); 
-			executor.scheduleAtFixedRate(new QueueFlusher( ), 1,FLUSH_QUEUE_MINUTES,TimeUnit.MINUTES);
+			executor.scheduleAtFixedRate(initialZombieKiller, 0, ZOMBIE_MINUTES, TimeUnit.MINUTES);
+			executor.scheduleAtFixedRate(initialQueueFlusher, 1,FLUSH_QUEUE_MINUTES,TimeUnit.MINUTES);
 		}
 
 		/**
 		 * find and kill zombie processes
 		 */
-		class ZombieKiller implements Runnable {
+		protected class ZombieKiller implements Runnable {
+			public static final String noJob = "no jobStatus found in database for running htc job";
+			public static final String newJobFound = "newer task found in database for running htc job";
+			public static final String jobIsAlreadyDone = "jobStatus Done in database for running htc job";
 			@Override
 			public void run() {
 				try {
@@ -387,13 +392,13 @@ public class SimulationDispatcher {
 							String failureMessage = null;
 							boolean killJob = false;
 							if (simJobStatus==null){
-								failureMessage = "no jobStatus found in database for running htc job";
+								failureMessage = noJob;
 								killJob = true;
 							}else if (simTaskInfo.taskId < simJobStatus.getTaskID()){
-								failureMessage = "newer task found in database for running htc job";
+								failureMessage = newJobFound;
 								killJob = true;
 							}else if (simJobStatus.getSchedulerStatus().isDone()){
-								failureMessage = "jobStatus Done in database for running htc job";
+								failureMessage = jobIsAlreadyDone;
 								if (simJobStatus.getSimulationExecutionStatus()==null){
 									killJob = true;
 								}else{
@@ -406,9 +411,8 @@ public class SimulationDispatcher {
 							}
 							if (killJob && HtcProxy.isMySimulationJob(htcJobInfo)){
 								if (lg.isWarnEnabled()) {
-									lg.warn("killing " + htcJobInfo + ", " + failureMessage);
+                                    lg.warn("killing {}; {}; {}", htcJobInfo, failureMessage, simJobStatus);
 								}
-								VCMongoMessage.sendZombieJob(simJobStatus,failureMessage,htcJobInfo.getHtcJobID());
 								htcProxy.killJobSafe(htcJobInfo);
 							}
 						}catch (Exception e){
@@ -428,7 +432,7 @@ public class SimulationDispatcher {
 		/**
 		 * flush message queue
 		 */
-		class QueueFlusher implements Runnable {
+		protected class QueueFlusher implements Runnable {
 			public void run() {
 				try {
 					traceThread(this);
