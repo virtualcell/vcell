@@ -419,9 +419,22 @@ public class SsldUtils {
         Expression expression = new Expression("z < " + (zin/1000));
         intracellularSubVolume.setExpression(expression);
 
-        // we need micrometers for the extent but all distances in BoxGeometry are nm
+        // we need micrometers for the extent but all distances in BoxGeometry are in nm, hence the 1000 scaling down
+        // note that the alternate zin/1000 + zout/1000 will result in a systemic rounding error
         Extent extent = new Extent(x/1000, y/1000, (zin + zout)/1000);
-        geometrySpec.setExtent(extent);
+
+        // the following call will fire events which will trigger a race condition that will invalidate the
+        // GeometrySurfaceDescription.GeometricRegion[] in another thread
+        // this, in turn, will trigger an Issue error evaluation within the MathDescription, where the call to
+        // GeometricRegion regions[] = geometry.getGeometrySurfaceDescription().getGeometricRegions();
+        // will result in a null pointer (MathDescription.gatherIssues(), line #2404)
+        // context: the SsldUtils.importFromSsld() is being invoked from ClientRequestManager.updateAferChecking()
+        // AsynchClientTask.task1() line #3343
+        geometrySpec.setExtent(extent); // this will invalidate the GeometricRegion[] array
+
+        // this is the fix!!!
+        // always call updateAll() and recalculateDependencies() when you mess with any class that implements these methods
+        geometry.getGeometrySurfaceDescription().updateAll();
     }
 
 
