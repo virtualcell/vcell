@@ -14,6 +14,7 @@ import jscl.text.ParseException;
 import org.jmathml.ASTNode;
 import org.jmathml.MathMLReader;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -25,13 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag("Fast")
-public class MathMLTester {
-
-	private Expression expression;
-
-	public MathMLTester(Expression exp) {
-		this.expression = exp;
-	}
+public class MathMLTest {
 
 	public static Collection<Expression> testCases() throws ExpressionException {
 		int depthOfExpressionTree = 2;
@@ -72,9 +67,23 @@ public class MathMLTester {
 		return expressions;
 	}
 
+	@Test
+	public void testMathMLParsing_XOR() throws IOException, ExpressionException {
+		// XOR is supported as an SBML operator for importing only
+		Expression exp = new Expression("(x && !y) || (!x && y)");
+		String temp_mathMLStr_with_and = ExpressionMathMLPrinter.getMathML(new Expression("x && y"), true,
+				ExpressionMathMLPrinter.MathType.REAL, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
+		String mathMLStr_with_xor = temp_mathMLStr_with_and.replace("and", "xor");
+		Expression xor_from_MathML = new ExpressionMathMLParser(null).fromMathML(mathMLStr_with_xor, "t");
+		boolean equiv = ExpressionUtils.functionallyEquivalent(exp, xor_from_MathML, true);
+		String msg = "not equivalent: origExp='"+exp.infix()+"', expMathML='"+xor_from_MathML.infix()+"'";
+		assertTrue(equiv, msg);
+	}
+
+
 	@ParameterizedTest
 	@MethodSource("testCases")
-	public void testMathML_SBMLSubset() throws IOException, ExpressionException {
+	public void testMathML_SBMLSubset(Expression expression) throws IOException, ExpressionException {
 		if (expression.infix().contains("atan")){
 			return;
 		}
@@ -88,7 +97,7 @@ public class MathMLTester {
 
 	@ParameterizedTest
 	@MethodSource("testCases")
-	public void test_vcell_mathml_jMathML_mathml_vcell() throws IOException, ExpressionException {
+	public void test_vcell_mathml_jMathML_mathml_vcell(Expression expression) throws IOException, ExpressionException {
 		List<String> tokensToAvoid = Arrays.asList(
 				"atan",
 				"sech", "csch", "coth",
@@ -119,7 +128,7 @@ public class MathMLTester {
 
 	@ParameterizedTest
 	@MethodSource("testCases")
-	public void testMathML_GeneralSubset() throws IOException, ExpressionException {
+	public void testMathML_GeneralSubset(Expression expression) throws IOException, ExpressionException {
 		if (expression.infix().contains("atan")){
 			return;
 		}
@@ -133,14 +142,14 @@ public class MathMLTester {
 
 	@ParameterizedTest
 	@MethodSource("testCases")
-	public void testFlatten() throws ExpressionException {
+	public void testFlatten(Expression expression) throws ExpressionException {
 		Expression expFlattened = expression.flatten();
         assertTrue(functionallyEquivalent(expression, expFlattened, false), "not equivalent: origExp='" + expression.infix() + "', expFlattened='" + expFlattened.infix() + "'");
 	}
 
 	@ParameterizedTest
 	@MethodSource("testCases")
-	public void testJSCLParseInfix() throws ExpressionException, ParseException {
+	public void testJSCLParseInfix(Expression expression) throws ExpressionException, ParseException {
 		List<String> tokensToAvoid = Arrays.asList(
 				"<",">","=","&","|","!"
 		);
@@ -168,7 +177,7 @@ public class MathMLTester {
 
 	@ParameterizedTest
 	@MethodSource("testCases")
-	public void testJSCLSimplifyInfix() {
+	public void testJSCLSimplifyInfix(Expression expression) {
 		Expression expSimplified = null;
 		try {
 			expSimplified = expression.simplifyJSCL(20000, true);

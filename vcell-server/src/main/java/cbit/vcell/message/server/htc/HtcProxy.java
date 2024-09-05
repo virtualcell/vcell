@@ -1,13 +1,12 @@
 package cbit.vcell.message.server.htc;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -169,7 +168,7 @@ public abstract class HtcProxy {
 	 * @throws ExecutableException
 	 */
 	public abstract HtcJobID submitJob(String jobName, File sub_file_internal, File sub_file_external, ExecutableCommand.Container commandSet,
-			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException;
+			int ncpus, double memSize, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException, IOException;
 	public abstract HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,
 												   File optProblemInputFile,File optProblemOutputFile,File optReportFile)throws ExecutableException;
 	public abstract HtcProxy cloneThreadsafe();
@@ -223,29 +222,22 @@ public abstract class HtcProxy {
 		return HTC_SIMULATION_JOB_NAME_PREFIX+simTaskInfo.simId.toString()+"_"+simTaskInfo.jobIndex+"_"+simTaskInfo.taskId;
 	}
 
-	public static void writeUnixStyleTextFile(File file, String javaString) throws IOException {
-		try (FileOutputStream fos = new FileOutputStream(file)) {
-			Charset asciiCharset = Charset.forName("US-ASCII");
-			CharsetEncoder encoder = asciiCharset.newEncoder();
-			CharBuffer unicodeCharBuffer = CharBuffer.wrap(javaString);
-			ByteBuffer asciiByteBuffer = encoder.encode(unicodeCharBuffer);
-			byte[] asciiArray = asciiByteBuffer.array();
-			ByteBuffer unixByteBuffer = ByteBuffer.allocate(asciiArray.length);
-			int count = 0;
-			for (int i=0;i<asciiArray.length;i++){
-				if (asciiArray[i] != 0x0d){  // skip \r character
-					unixByteBuffer.put(asciiArray[i]);
-					count++;
-				}
-			}
-			//do this to not write the zeros at the end of unixByteBuffer
-			ByteBuffer bb = ByteBuffer.wrap(unixByteBuffer.array(),0,count);
-
-			try (FileChannel fc = fos.getChannel()) {
-				fc.write(bb);
-				fc.close();
+	public static String toUnixStyleText(String javaString) throws IOException {
+		Charset asciiCharset = StandardCharsets.US_ASCII;
+		CharsetEncoder encoder = asciiCharset.newEncoder();
+		CharBuffer unicodeCharBuffer = CharBuffer.wrap(javaString);
+		ByteBuffer asciiByteBuffer = encoder.encode(unicodeCharBuffer);
+		byte[] asciiArray = asciiByteBuffer.array();
+		ByteBuffer unixByteBuffer = ByteBuffer.allocate(asciiArray.length);
+		int count = 0;
+		for (int i = 0; i < asciiArray.length; i++) {
+			if (asciiArray[i] != 0x0d) {  // skip \r character
+				unixByteBuffer.put(asciiArray[i]);
+				count++;
 			}
 		}
+		ByteBuffer bb = ByteBuffer.wrap(unixByteBuffer.array(), 0, count);
+		return new String(bb.array(), 0, bb.limit(), asciiCharset);
 	}
 
 	public abstract String getSubmissionFileExtension();

@@ -39,7 +39,7 @@ public class ModelCyclesDetector extends AbstractDocumentValidator {
         List<SedMLError> errs = new ArrayList<SedMLError>();
         List<Model> models = sedml.getModels();
         for (Model model : models) {
-            String src = model.getSource();
+            String src = model.getSourcePathOrURIString();
             String id = model.getId();
             Set<String> ids = new HashSet<String>();
             ids.add(id);
@@ -50,12 +50,12 @@ public class ModelCyclesDetector extends AbstractDocumentValidator {
                     errs.add(new SedMLError(line,
                             "Cycles detected in source references for model "
                                     + newID + " and "
-                                    + sedml.getModelWithId(newID).getSource(),
+                                    + sedml.getModelWithId(newID).getSourcePathOrURIString(),
                             ERROR_SEVERITY.ERROR));
                     return errs;
                 } else {
                     ids.add(newID);
-                    src = sedml.getModelWithId(src).getSource();
+                    src = sedml.getModelWithId(src).getSourcePathOrURIString();
                 }
             }
         }

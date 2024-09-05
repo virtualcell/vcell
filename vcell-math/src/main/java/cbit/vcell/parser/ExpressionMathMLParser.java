@@ -141,6 +141,27 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 			vcellOperationNode = new ASTAndNode();
 		} else if (operation.getName().equals(MathMLTags.OR)){
 			vcellOperationNode = new ASTOrNode();
+		} else if (operation.getName().equals(MathMLTags.XOR)){
+			// XOR(A,B) --> OR(AND(A,NOT(B)),AND(NOT(A),B))
+			// NOT(B)
+			ASTNotNode notNode = new ASTNotNode();
+			notNode.jjtAddChild(getRootNode((Element)children.get(2), timeSymbol));
+			// AND(A,NOT(B))
+			ASTAndNode andNode1 = new ASTAndNode();
+			andNode1.jjtAddChild(getRootNode((Element)children.get(1), timeSymbol));
+			andNode1.jjtAddChild(notNode);
+			// NOT(A)
+			ASTNotNode notNode2 = new ASTNotNode();
+			notNode2.jjtAddChild(getRootNode((Element)children.get(1), timeSymbol));
+			// AND(NOT(A),B)
+			ASTAndNode andNode2 = new ASTAndNode();
+			andNode2.jjtAddChild(notNode2);
+			andNode2.jjtAddChild(getRootNode((Element)children.get(2), timeSymbol));
+			// OR(AND(A,NOT(B)),AND(NOT(A),B))
+			ASTOrNode orNode = new ASTOrNode();
+			orNode.jjtAddChild(andNode1);
+			orNode.jjtAddChild(andNode2);
+			return orNode;
 		} else if (operation.getName().equals(MathMLTags.NOT)){
 			vcellOperationNode = new ASTNotNode();
 		} else if (operation.getName().equals(MathMLTags.PLUS)){

@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 
+import static org.jlibsedml.execution.ArchiveModelResolver.SPACE_URI_ESCAPE_SEQUENCE;
+
 /**
  * Encapsulates a SED-ML Model element. Note that this object is not the
  * computational model itself, but holds information about the model within
@@ -19,7 +21,7 @@ import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 public final class Model extends AbstractIdentifiableElement {
 
 	private String language = null;
-	private String source = null; 
+	private final String source_path_or_URI_string;
 
 	/**
 	 * Sets the model  language that this element refers to.  This should ideally be a URN, 
@@ -45,21 +47,21 @@ public final class Model extends AbstractIdentifiableElement {
 	 *            This should ideally be a URN, which may already be defined in
 	 *            {@link SUPPORTED_LANGUAGE}. If no language describes this
 	 *            model, the argument may be <code>null</code>.
-	 * @param source
-	 *            A mandatory URI to the model source.
+	 * @param source_path_or_URI_string
+	 *            A mandatory URI or local path to the model source.
 	 * @throws IllegalArgumentException
 	 *             if any argument except <code>name</code> is null or an empty
 	 *             string.
 	 */
-	public Model(String id, String name, String language, String source) {
+	public Model(String id, String name, String language, String source_path_or_URI_string) {
 		super(id, name);
 		if (SEDMLElementFactory.getInstance().isStrictCreation()) {
-			Assert.checkNoNullArgs(source);
-			Assert.stringsNotEmpty(source);
+			Assert.checkNoNullArgs(source_path_or_URI_string);
+			Assert.stringsNotEmpty(source_path_or_URI_string);
 		}
 
 		this.language = language;
-		this.source = source;
+		this.source_path_or_URI_string = source_path_or_URI_string;
 	}
 
 	/**
@@ -76,7 +78,7 @@ public final class Model extends AbstractIdentifiableElement {
 	 *             if any argument is null
 	 */
 	public Model(Model toCopy, String id) {
-		this(id, toCopy.getName(), toCopy.getLanguage(), toCopy.getSource());
+		this(id, toCopy.getName(), toCopy.getLanguage(), toCopy.getSourcePathOrURIString());
 	}
 
 	/**
@@ -139,9 +141,8 @@ public final class Model extends AbstractIdentifiableElement {
 	 * 
 	 * @return A <code>String</code>
 	 */
-	public String getSource() {
-
-		return source;
+	public String getSourcePathOrURIString() {
+		return this.source_path_or_URI_string;
 	}
 
 	/**
@@ -231,9 +232,7 @@ public final class Model extends AbstractIdentifiableElement {
 	 *             cannot be converted to a URI.
 	 */
 	public URI getSourceURI() throws URISyntaxException {
-
-		return new URI(source);
-
+		return new URI(this.source_path_or_URI_string.replace(" ", SPACE_URI_ESCAPE_SEQUENCE));
 	}
 
 	/**
@@ -269,21 +268,11 @@ public final class Model extends AbstractIdentifiableElement {
 	 */
 	public boolean isSourceValidURI() {
 		try {
-			new URI(getSource());
+			getSourceURI();
 		} catch (URISyntaxException e) {
 			return false;
 		}
 		return true;
-	}
-
-	/**
-	 * 
-	 * @param srcString
-	 *            A URI of where this model can be retrieved.
-	 *            Attention: if the string is a model reference, it should be prefixed with "#"
-	 */
-	public void setSource(String srcString) {
-		source = srcString;
 	}
 
 	/**
@@ -293,7 +282,7 @@ public final class Model extends AbstractIdentifiableElement {
 		return new StringBuffer().append("Model [").append("id=").append(
 				getId()).append(", ").append("name=").append(getName())
 				.append(", ").append("language=").append(language).append(
-				", ").append("src=").append(source).append("]").toString();
+				", ").append("src=").append(this.source_path_or_URI_string).append("]").toString();
 	}
 
 	@Override
@@ -311,6 +300,5 @@ public final class Model extends AbstractIdentifiableElement {
                 }
             }
             return true;
-        
     }
 }

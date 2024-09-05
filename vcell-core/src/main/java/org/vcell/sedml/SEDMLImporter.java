@@ -807,7 +807,7 @@ public class SEDMLImporter {
 		
 		// Group models by type for processing order
 		for (Model model : models){
-			if (model.getSource().startsWith("#")){
+			if (model.getSourcePathOrURIString().startsWith("#")){
 				advancedModelsList.get(ADVANCED_MODEL_TYPES.REFERENCING_MODELS.ordinal()).add(model);
 			} else if (!model.getListOfChanges().isEmpty()) {
 				advancedModelsList.get(ADVANCED_MODEL_TYPES.CHANGED_MODELS.ordinal()).add(model);
@@ -866,13 +866,13 @@ public class SEDMLImporter {
 	}
 
 	private String getReferenceId(Model model){
-		String referenceId = model.getSource();
+		String referenceId = model.getSourcePathOrURIString();
 		return referenceId.startsWith("#") ? referenceId.substring(1) : referenceId;
 	}
 
 	private BioModel getModelReference(String referenceId, Model model, Map<String, BioModel> idToBiomodelMap) throws SEDMLImportException {
 		// Were we given a reference ID? We need to check if the parent was processed yet.
-		if (referenceId != null && !model.getSource().equals(referenceId)){
+		if (referenceId != null && !model.getSourcePathOrURIString().equals(referenceId)){
 			boolean canTranslate;
 			BioModel parentBiomodel = idToBiomodelMap.get(referenceId);
 
