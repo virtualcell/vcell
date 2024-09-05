@@ -73,7 +73,11 @@ public class SlurmProxyTest {
 
 		setProperty(PropertyLoader.primarySimDataDirInternalProperty, "/share/apps/vcell3/users");
 		setProperty(PropertyLoader.vcellopt_singularity_image, "/state/partition1/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img");
-    }
+
+		setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "51200");
+		setProperty(PropertyLoader.htcMinMemoryMB, "4096");
+		setProperty(PropertyLoader.htcMaxMemoryMB, "81920");
+	}
 
 	@AfterEach
 	public void teardown() {
