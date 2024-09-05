@@ -191,7 +191,7 @@ public class SpringSaLaDExporter {
 			/* ********* BEGIN BY WRITING THE TIMES *********/
 			sb.append("*** " + TIME_INFORMATION + " ***");
 			sb.append("\n");
-			writeTimeInformation(sb, simulation);
+			LangevinLngvWriter.writeTimeInformation(sb, simulation);
 			sb.append("\n");
 
 			/* ********* WRITE THE SPATIAL INFORMATION **********/
@@ -349,21 +349,6 @@ public class SpringSaLaDExporter {
 			ex.printStackTrace(System.out);
 		}
 		return null;
-	}
-
-	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
-		if(!simulation.getSimulationOwner().getMathDescription().isLangevin()) {
-			throw new RuntimeException("Langevin Math expected.");
-		}
-		// general stuff is in solver task description
-		simulation.getSolverTaskDescription().writeTimeInformation(sb);	// for exporting we only use default data from a "fake" simulation
-		
-		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
-		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
-		sb.append("\n");
-		sb.append("dt_image: " + lso.getIntervalImage());		// 1.00E-4 default
-		sb.append("\n");
-
 	}
 
 	public void writeDocumentStringToFile(String resultString, String parent, String name, Component parentComponent) throws IOException {

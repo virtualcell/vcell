@@ -726,10 +726,16 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
                         nfsimSimulationOptions = new NFsimSimulationOptions();
                     }
                 }
-                if(solverDescription.isLangevinSolver()){
-                    if(langevinSimulationOptions == null){
+                if(solverDescription.isLangevinSolver()) {  // ------ Langevin defaults (very specific)
+                    double endingTime = LangevinSimulationOptions.DefaultEndingTime;            // default 1E-2
+                    TimeBounds timeBounds = new TimeBounds(0, endingTime);
+                    setTimeBounds(timeBounds);
+                    setTimeStep(TimeStep.getDefaultLangevinTimeStep());                         // default 1E-8
+                    if(langevinSimulationOptions == null) {
                         langevinSimulationOptions = new LangevinSimulationOptions();
                     }
+                    double outputTime = LangevinSimulationOptions.DefaultIntervalOutputTime;    // default 1E-4
+                    setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
                 }
                 if(solverDescription.isChomboSolver()){
                     if(chomboSolverSpec == null && getSimulation() != null){
@@ -1563,7 +1569,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         sb.append("\n");
 
         double defaultTimeStep = getTimeStep().getDefaultTimeStep();
-        sb.append("dt: " + defaultTimeStep);        // TODO: initialize to 1.00E-8
+        sb.append("dt: " + defaultTimeStep);
         sb.append("\n");
 
         if(!(getOutputTimeSpec() instanceof UniformOutputTimeSpec)){

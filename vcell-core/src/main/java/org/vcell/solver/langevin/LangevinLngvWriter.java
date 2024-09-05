@@ -250,7 +250,7 @@ public class LangevinLngvWriter {
 		return ret;
 	}
 	
-	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
+	public static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
 		if(!simulation.getMathDescription().isLangevin()) {
 			throw new RuntimeException("Langevin Math expected.");
 		}
@@ -259,7 +259,7 @@ public class LangevinLngvWriter {
 		
 		// for fast simulation for a simple transition state model, select the following time simulation options: 
 		// - ending:				0.01	(langevin: total time)
-		// - time step (default):	1E-7 	(langevin: dt)
+		// - time step (default):	1E-9 	(langevin: dt)
 		// - output interval:		1E-4	(langevin: dt_data)
 		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
 		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default

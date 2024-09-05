@@ -33,10 +33,17 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public final static String Partition_Ny = "Partition Ny: ";
 	public final static String Partition_Nz = "Partition Nz: ";
 
+	public final static double DefaultEndingTime = 1E-2;				// default: totalTime
+	public final static double DefaultIntervalOutputTime = 1.00E-4;		// default: dtdata
+
+	public final static double DefaultMinimumTimeStep = 1.00E-8;
+	public final static double DefaultDefaultTimeStep = 1.00E-8;		// default: dt
+	public final static double DefaultMaximumTimeStep = 1.00E-8;
+
 	protected int numOfTrials = 1;
 	protected int runIndex = 0;				// run index, will result in Run0 (followed by Run1, 2,...)
-	protected double intervalSpring = 1.00E-9;	// default: dt_spring: 1.00E-9	- from advanced
-	protected double intervalImage = 1.00E-4;	// default: dt_image: 1.00E-4	- from advanced
+	protected double intervalSpring = 1.00E-9;	// default: dtspring: 1.00E-9	- from advanced
+	protected double intervalImage = 1.00E-4;	// default: dtimage: 1.00E-4	- from advanced
 	protected int[] npart = { 10, 10, 10 };		// default number of partitions on each axis
 
 	protected transient PropertyChangeSupport propertyChange;
@@ -53,11 +60,14 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		intervalImage = langevinSimulationOptions.intervalImage;
 		numOfTrials = langevinSimulationOptions.numOfTrials;
 		runIndex = langevinSimulationOptions.runIndex;
+		npart[0] = langevinSimulationOptions.npart[0];
+		npart[1] = langevinSimulationOptions.npart[1];
+		npart[2] = langevinSimulationOptions.npart[2];
 	}
 
 	public LangevinSimulationOptions(CommentStringTokenizer tokens) throws DataAccessException {
 		this();
-		readVCML(tokens);	// TODO: implement read
+		readVCML(tokens);
 	}
 	
 	public boolean compareEqual(Matchable obj) {
@@ -75,6 +85,11 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 			return false;
 		}
 		if(intervalImage != langevinSimulationOptions.intervalImage) {
+			return false;
+		}
+		if(npart[0] != langevinSimulationOptions.npart[0] ||
+				npart[1] != langevinSimulationOptions.npart[1] ||
+				npart[2] != langevinSimulationOptions.npart[2]) {
 			return false;
 		}
 		return true;
@@ -95,6 +110,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 	public int getNPart(int index) {
 		return npart[index];
+	}
+	public int[] getNPart() {
+		return npart;
 	}
 
 	public final void setRunIndex(int newValue) {
