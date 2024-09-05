@@ -30,21 +30,29 @@ public class SimulationDispatcherTest {
     private MockSimulationDB mockSimulationDB = new MockSimulationDB();
     private final MockMessagingService mockMessagingServiceInternal = new MockMessagingService();
     private final MockMessagingService mockMessagingServiceSim = new MockMessagingService();
-    private final MockHtcProxy mockHtcProxy = new MockHtcProxy(null, null, mockSimulationDB);
+    private final MockHtcProxy mockHtcProxy = new MockHtcProxy(null, "htcUser", mockSimulationDB);
+    private static StringWriter logOutPut;
+    private static WriterAppender appender;
+    private static Level pastLevel;
 
     @BeforeAll
     public static void setSystemProperties(){
         DispatcherTestUtils.setRequiredProperties();
+
+        pastLevel = lg.getLevel();
+        Configurator.setLevel(lg, Level.WARN);
+        logOutPut = new StringWriter();
+        appender = WriterAppender.newBuilder().setTarget(logOutPut).setName("Simulation Dispatcher Test").build();
+        LoggerContext.getContext(false).getConfiguration().addLoggerAppender((Logger) lg, appender);
+        appender.start();
     }
 
     @AfterAll
-    public static void restoreSystemProperties(){
+    public static void restoreSystemProperties() throws IOException {
         DispatcherTestUtils.restoreRequiredProperties();
-    }
-
-    @BeforeEach
-    public void beforeEach(){
-        mockSimulationDB.resetDataBase();
+        appender.stop();
+        logOutPut.close();
+        Configurator.setLevel(lg, pastLevel);
     }
 
     //################# Test Simulation Service Impl #######################
@@ -52,7 +60,8 @@ public class SimulationDispatcherTest {
 
     @Test
     public void onStartRequestTest() throws DataAccessException, SQLException {
-        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal, mockMessagingServiceSim, mockHtcProxy);
+        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
+                mockMessagingServiceSim, mockHtcProxy, false);
         SimulationStatus simStatus = simulationDispatcher.simServiceImpl.startSimulation(testUser, DispatcherTestUtils.simID, 1);
         SimulationJobStatus jobStatus = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, 0);
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isWaiting());
@@ -61,7 +70,8 @@ public class SimulationDispatcherTest {
     @Test
     public void onStopRequestTest() throws DataAccessException, SQLException {
         DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB);
-        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal, mockMessagingServiceSim, mockHtcProxy);
+        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
+                mockMessagingServiceSim, mockHtcProxy, false);
         SimulationStatus simStatus = simulationDispatcher.simServiceImpl.stopSimulation(testUser, DispatcherTestUtils.simID);
         SimulationJobStatus jobStatus = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, 0);
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isStopped());
@@ -75,16 +85,18 @@ public class SimulationDispatcherTest {
     @Test
     public void dispatcherThreadTest() throws SQLException, DataAccessException, InterruptedException, PropertyVetoException, MathException, ExpressionBindingException {
         DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB, SimulationJobStatus.SchedulerStatus.WAITING);
-        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal, mockMessagingServiceSim, mockHtcProxy);
+        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
+                mockMessagingServiceSim, mockHtcProxy, true);
         SimulationDispatcher.DispatchThread thread = simulationDispatcher.dispatchThread;
-        synchronized (thread.notifyObject){
-            thread.notifyObject.notify();
+        synchronized (thread.dispatcherNotifyObject){
+            thread.dispatcherNotifyObject.notify();
         }
         SimulationJobStatus jobStatus = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, 0);
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isWaiting(), "Still waiting.");
 
-        // needs time for the dispatcher thread to fully update
-        Thread.sleep(1000);
+        synchronized (thread.finishListener){
+            thread.finishListener.wait();
+        }
 
         jobStatus = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, 0);
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isFailed(), "Simulation gets aborted since theres no simulation in DB.");
@@ -93,10 +105,12 @@ public class SimulationDispatcherTest {
         mockSimulationDB.insertSimulation(DispatcherTestUtils.alice, mockSimulation);
         DispatcherTestUtils.insertOrUpdateStatus(mockSimulation.getKey(), DispatcherTestUtils.jobIndex, DispatcherTestUtils.taskID, DispatcherTestUtils.alice,
                 SimulationJobStatus.SchedulerStatus.WAITING, mockSimulationDB);
-        synchronized (thread.notifyObject){
-            thread.notifyObject.notify();
+        synchronized (thread.dispatcherNotifyObject){
+            thread.dispatcherNotifyObject.notify();
         }
-        Thread.sleep(1000);
+        synchronized (thread.finishListener){
+            thread.finishListener.wait();
+        }
 
         jobStatus = mockSimulationDB.getLatestSimulationJobStatus(mockSimulation.getKey(), 0);
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched(), "Dispatches");
@@ -108,43 +122,86 @@ public class SimulationDispatcherTest {
 
     @Test
     public void zombieKillerTest() throws SQLException, DataAccessException, InterruptedException, IOException {
-        Level pastLevel = lg.getLevel();
-        Configurator.setLevel(lg, Level.WARN);
-        StringWriter logOutput = new StringWriter();
-        WriterAppender appender = WriterAppender.newBuilder().setTarget(logOutput).setName("test").build();
-        LoggerContext.getContext(false).getConfiguration().addLoggerAppender((Logger) lg, appender);
-        appender.start();
-        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal, mockMessagingServiceSim, mockHtcProxy);
+        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
+                mockMessagingServiceSim, mockHtcProxy, false);
         DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB);
 
         mockSimulationDB.badLatestSimulation = MockSimulationDB.BadLatestSimulation.HIGHER_TASK_ID;
         SimulationDispatcher.SimulationMonitor.ZombieKiller zombieKiller = simulationDispatcher.simMonitor.initialZombieKiller;
         zombieKiller.run();
-        Assertions.assertTrue(logOutput.toString().contains(SimulationDispatcher.SimulationMonitor.ZombieKiller.newJobFound));
+        Assertions.assertTrue(logOutPut.toString().contains(SimulationDispatcher.SimulationMonitor.ZombieKiller.newJobFound));
         Assertions.assertEquals(1, mockHtcProxy.jobsKilledSafely.size());
 
         mockSimulationDB.badLatestSimulation = MockSimulationDB.BadLatestSimulation.RETURN_NULL;
         zombieKiller.run();
-        Assertions.assertTrue(logOutput.toString().contains(SimulationDispatcher.SimulationMonitor.ZombieKiller.noJob));
+        Assertions.assertTrue(logOutPut.toString().contains(SimulationDispatcher.SimulationMonitor.ZombieKiller.noJob));
         Assertions.assertEquals(2, mockHtcProxy.jobsKilledSafely.size());
 
         mockSimulationDB.badLatestSimulation = MockSimulationDB.BadLatestSimulation.IS_DONE;
         zombieKiller.run();
-        Assertions.assertTrue(logOutput.toString().contains(SimulationDispatcher.SimulationMonitor.ZombieKiller.jobIsAlreadyDone));
+        Assertions.assertTrue(logOutPut.toString().contains(SimulationDispatcher.SimulationMonitor.ZombieKiller.jobIsAlreadyDone));
         Assertions.assertEquals(3, mockHtcProxy.jobsKilledSafely.size());
-
-        appender.stop();
-        logOutput.close();
-        Configurator.setLevel(lg, pastLevel);
     }
 
+    @Test
+    public void queueFlusherTest() throws SQLException, DataAccessException, InterruptedException {
+        SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
+                mockMessagingServiceSim, mockHtcProxy, false);
+        DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB);
 
-    public void queueFlusherTest(){
+        SimulationDispatcher.SimulationMonitor simMonitor = simulationDispatcher.simMonitor;
+        SimulationDispatcher.SimulationMonitor.QueueFlusher queueFlusher = simMonitor.initialQueueFlusher;
+        SimulationStateMachine sm = simulationDispatcher.simDispatcherEngine.getSimulationStateMachine(DispatcherTestUtils.simKey, DispatcherTestUtils.jobIndex);
+        sm.setSolverProcessTimestamp(0);
+        Thread queueThread = new Thread(queueFlusher);
+        queueThread.start();
+        int retries = 0;
+        while (queueThread.getState() != Thread.State.TIMED_WAITING){
+            if (retries == 10){
+                break;
+            }
+            Thread.sleep(500);
+            retries += 1;
+        }
+        synchronized (simMonitor.monitorNotifyObject){
+            simMonitor.monitorNotifyObject.notify();
+        }
+        synchronized (queueFlusher.finishListener){
+            queueFlusher.finishListener.wait();
+        }
 
+        SimulationJobStatus status = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, DispatcherTestUtils.jobIndex);
+        Assertions.assertTrue(status.getSchedulerStatus().isFailed());
+        Assertions.assertTrue(mockHtcProxy.jobsKilledUnsafely.contains(status.getSimulationExecutionStatus().getHtcJobID()));
+        Assertions.assertTrue(logOutPut.toString().contains(SimulationDispatcher.SimulationMonitor.QueueFlusher.timeOutFailure));
+
+        // reset for next test
+        simulationDispatcher.simDispatcherEngine.resetTimeStamps();
+        mockHtcProxy.jobsKilledUnsafely.clear();
+        mockSimulationDB.resetDataBase();
+
+        mockSimulationDB.insertUnreferencedSimKey(DispatcherTestUtils.simKey);
+        DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB);
+        queueThread = new Thread(queueFlusher);
+        queueThread.start();
+        retries = 0;
+        while (queueThread.getState() != Thread.State.TIMED_WAITING){
+            if (retries == 10){
+                break;
+            }
+            Thread.sleep(500);
+            retries += 1;
+        }
+        synchronized (simMonitor.monitorNotifyObject){
+            simMonitor.monitorNotifyObject.notify();
+        }
+        synchronized (queueFlusher.finishListener){
+            queueFlusher.finishListener.wait();
+        }
+        status = mockSimulationDB.getLatestSimulationJobStatus(DispatcherTestUtils.simKey, DispatcherTestUtils.jobIndex);
+        Assertions.assertTrue(status.getSchedulerStatus().isFailed());
+        Assertions.assertTrue(mockHtcProxy.jobsKilledUnsafely.contains(status.getSimulationExecutionStatus().getHtcJobID()));
+        Assertions.assertTrue(logOutPut.toString().contains(SimulationDispatcher.SimulationMonitor.QueueFlusher.unreferencedFailure));
     }
-
-
-
-
 
 }

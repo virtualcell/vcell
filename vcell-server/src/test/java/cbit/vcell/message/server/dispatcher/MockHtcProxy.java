@@ -26,6 +26,7 @@ public class MockHtcProxy extends HtcProxy {
         this.mockSimulationDB = mockSimulationDB;
     }
     public final ArrayList<HtcJobInfo> jobsKilledSafely = new ArrayList<>();
+    public final ArrayList<HtcJobID> jobsKilledUnsafely = new ArrayList<>();
 
     @Override
     public void killJobSafe(HtcJobInfo htcJobInfo) throws ExecutableException, HtcJobNotFoundException, HtcException {
@@ -34,7 +35,7 @@ public class MockHtcProxy extends HtcProxy {
 
     @Override
     public void killJobUnsafe(HtcJobID htcJobId) throws ExecutableException, HtcJobNotFoundException, HtcException {
-
+        jobsKilledUnsafely.add(htcJobId);
     }
 
     @Override

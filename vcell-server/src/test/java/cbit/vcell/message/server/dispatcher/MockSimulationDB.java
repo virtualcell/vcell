@@ -26,6 +26,8 @@ public class MockSimulationDB implements SimulationDatabase{
 
     private final HashMap<String, Simulation> simulations = new HashMap<>();
 
+    private final Set<KeyValue> unreferencedSimKeys = new HashSet<>();
+
     // Return a latest simulation that differs in one of these ways
     public enum BadLatestSimulation{
         HIGHER_TASK_ID,
@@ -93,12 +95,16 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public SimulationJobStatus[] queryJobs(SimpleJobStatusQuerySpec simStatusQuerySpec) throws ObjectNotFoundException, DataAccessException {
-        return new SimulationJobStatus[0];
+        throw new ObjectNotFoundException("");
     }
 
     @Override
     public Map<KeyValue, SimulationRequirements> getSimulationRequirements(Collection<KeyValue> simKeys) throws SQLException {
-        return Map.of();
+        HashMap<KeyValue, SimulationRequirements> map = new HashMap<>();
+        for (KeyValue simKey : simKeys){
+            map.put(simKey, new SimulationRequirements(simKey, 3));
+        }
+        return map;
     }
 
     @Override
@@ -132,12 +138,12 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(Simulation sim) throws DataAccessException {
-        return null;
+        return new FieldDataIdentifierSpec[0];
     }
 
     @Override
     public Set<KeyValue> getUnreferencedSimulations() throws SQLException {
-        return Set.of();
+        return unreferencedSimKeys;
     }
 
     @Override
@@ -152,7 +158,11 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> getSpecialUsers() throws DataAccessException, SQLException {
-        return null;
+        TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> map = new TreeMap<>();
+        TreeMap<User, String> subMap = new TreeMap<>();
+        subMap.put(specialAdmin, "f");
+        map.put(User.SPECIAL_CLAIM.admins, subMap);
+        return map;
     }
 
     @Override
@@ -167,13 +177,14 @@ public class MockSimulationDB implements SimulationDatabase{
 
     @Override
     public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws ObjectNotFoundException, DataAccessException {
-//        dbTable.get(simulationKey.toString()).get(0);
-        return null;
+        SimulationJobStatus status = dbTable.get(simulationKey.toString()).get(0);
+        SimulationStatus simulationStatus = new SimulationStatus(new SimulationJobStatus[]{status});
+        return simulationStatus;
     }
 
     @Override
     public SimpleJobStatus[] getSimpleJobStatus(User user, SimpleJobStatusQuerySpec simStatusQuerySpec) throws ObjectNotFoundException, DataAccessException {
-        return new SimpleJobStatus[0];
+        throw new ObjectNotFoundException("");
     }
 
 
@@ -192,10 +203,16 @@ public class MockSimulationDB implements SimulationDatabase{
     public void resetDataBase(){
         dbTable = new HashMap<>();
         badLatestSimulation = BadLatestSimulation.DO_NOTHING;
+        unreferencedSimKeys.clear();
+        simulations.clear();
     }
 
     public void insertSimulation(User user, Simulation sim){
         simulations.put(sim.getKey().toString() + user.getName(), sim);
+    }
+
+    public void insertUnreferencedSimKey(KeyValue k){
+        unreferencedSimKeys.add(k);
     }
 
 }

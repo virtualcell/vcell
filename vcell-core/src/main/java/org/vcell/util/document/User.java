@@ -20,10 +20,16 @@ import org.vcell.util.Matchable;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class User implements java.io.Serializable, Matchable, Immutable {
+public class User implements java.io.Serializable, Matchable, Immutable, Comparable {
 	private final static String PREVIOUS_DATABASE_VALUE_ADMIN = "special0";
 	private final static String PREVIOUS_DATABASE_VALUE_POWERUSER = "special1";
 	private final static String PREVIOUS_DATABASE_VALUE_PUBLICATION = "publication";
+
+	@Override
+	public int compareTo(Object o) {
+		User user = (User) o;
+		return this.getID().compareTo(user.key);
+	}
 
 	public enum SPECIAL_CLAIM {
 		admins/*special0*/,

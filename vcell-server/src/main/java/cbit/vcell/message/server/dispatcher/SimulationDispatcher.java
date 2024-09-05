@@ -75,7 +75,7 @@ public class SimulationDispatcher {
 	/**
 	 * queue flush wait time
 	 */
-	public static final long QUEUE_FLUSH_WAITIME = MessageConstants.MINUTE_IN_MS*5;
+	public final static long QUEUE_FLUSH_WAITIME = MessageConstants.MINUTE_IN_MS*5;
 
 	private final VCMessagingService vcMessagingService_int;
 	private final VCMessagingService vcMessagingService_sim;
@@ -85,7 +85,7 @@ public class SimulationDispatcher {
 	private final VCQueueConsumer simRequestConsumer_int;
 	private final VCRpcMessageHandler rpcMessageHandler_int;
 
-	private final SimulationDispatcherEngine simDispatcherEngine = new SimulationDispatcherEngine();
+	protected final SimulationDispatcherEngine simDispatcherEngine = new SimulationDispatcherEngine();
 
 	protected final DispatchThread dispatchThread;
 	protected final SimulationMonitor simMonitor;
@@ -141,8 +141,8 @@ public class SimulationDispatcher {
 			// wake up dispatcher thread
 			if (dispatchThread!=null){
 				try {
-					synchronized (dispatchThread.notifyObject){
-						dispatchThread.notifyObject.notify();
+					synchronized (dispatchThread.dispatcherNotifyObject){
+						dispatchThread.dispatcherNotifyObject.notify();
 					}
 				}catch (IllegalMonitorStateException e){
 					lg.error("failed to notify dispatchThread",e);
@@ -235,7 +235,8 @@ public class SimulationDispatcher {
 	}
 	protected class DispatchThread extends Thread {
 
-		final Object notifyObject = new Object();
+		final Object dispatcherNotifyObject = new Object();
+		final Object finishListener = new Object();
 
 		public DispatchThread() {
 			super();
@@ -313,7 +314,7 @@ public class SimulationDispatcher {
 									tempSimulationMap.put(simKey, sim);
 								}
 								if (lg.isDebugEnabled()) {
-									lg.debug("dispatching simKey="+vcSimID+", jobId="+jobStatus.getJobIndex()+", taskId="+jobStatus.getTaskID());
+                                    lg.debug("dispatching simKey={}, jobId={}, taskId={}", vcSimID, jobStatus.getJobIndex(), jobStatus.getTaskID());
 								}
 								simDispatcherEngine.onDispatch(sim, jobStatus, simulationDatabase, dispatcherQueueSession_int);
 								bDispatchedAnyJobs = true;
@@ -328,14 +329,19 @@ public class SimulationDispatcher {
 				} catch (Exception ex) {
 					lg.error(ex.getMessage(), ex);
 				}
+				finally {
+					synchronized (finishListener){
+						finishListener.notify();
+					}
+				}
 
 				// if there are no messages or no qualified jobs or exceptions, sleep for a few seconds while
 				// this will be interrupted if there is a start request.
 				if (!bDispatchedAnyJobs){
-					synchronized (notifyObject) {
+					synchronized (dispatcherNotifyObject) {
 						try {
 							long waitTime = 5 * MessageConstants.SECOND_IN_MS;
-							notifyObject.wait(waitTime);
+							dispatcherNotifyObject.wait(waitTime);
 						} catch (InterruptedException ex) {
 							lg.debug("Dispatch thread wait interrupted", ex);
 						}
@@ -359,7 +365,7 @@ public class SimulationDispatcher {
 		 * synchronizes {@link SimulationDispatcher#onWorkerEventMessage(VCMessage, VCMessageSession)} and
 		 * {@link QueueFlusher#flushWorkerEventQueue()}
 		 */
-		Object notifyObject = new Object();
+		final Object monitorNotifyObject = new Object();
 
 		public SimulationMonitor( ) {
 			threadCount = 1;
@@ -433,6 +439,9 @@ public class SimulationDispatcher {
 		 * flush message queue
 		 */
 		protected class QueueFlusher implements Runnable {
+			protected final static String timeOutFailure = "failed: timed out";
+			protected final static String unreferencedFailure = "failed: unreferenced simulation";
+			protected final Object finishListener = new Object();
 			public void run() {
 				try {
 					traceThread(this);
@@ -450,20 +459,24 @@ public class SimulationDispatcher {
 					abortStalledOrUnreferencedSimulationTasks(messageFlushTimeMS);
 				} catch (Exception e1) {
 					lg.error(e1.getMessage(), e1);
+				} finally {
+					synchronized (finishListener){
+						finishListener.notify();
+					}
 				}
 			}
 			
 			private void flushWorkerEventQueue() throws VCMessagingException{
 				VCMessage message = simMonitorThreadSession_sim.createObjectMessage(VCMongoMessage.getServiceStartupTime());
 				message.setStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_FLUSH_VALUE);
-				synchronized (notifyObject) {
+				synchronized (monitorNotifyObject) {
 					simMonitorThreadSession_sim.sendQueueMessage(VCellQueue.WorkerEventQueue, message, false, MessageConstants.MINUTE_IN_MS*5L);
 					try {
 						long startWaitTime = System.currentTimeMillis();
-						notifyObject.wait(QUEUE_FLUSH_WAITIME);
+						monitorNotifyObject.wait(QUEUE_FLUSH_WAITIME);
 						long endWaitTime = System.currentTimeMillis();
 						long elapsedFlushTime = endWaitTime-startWaitTime;
-						VCMongoMessage.sendInfo("flushed worker event queue: elapsedTime="+(elapsedFlushTime/1000.0)+" s");
+                        lg.info("flushed worker event queue: elapsedTime={} s", elapsedFlushTime / 1000.0);
 						if (elapsedFlushTime >= QUEUE_FLUSH_WAITIME){
 							throw new VCMessagingException("worker event queue flush timed out (>"+QUEUE_FLUSH_WAITIME+" s), considerable message backlog?");
 						}
@@ -515,11 +528,11 @@ public class SimulationDispatcher {
 					boolean bUnreferencedSimulation = unreferencedSimKeys.contains(activeJobStatus.getVCSimulationIdentifier().getSimulationKey());
 
 					if (bTimedOutSimulation || bUnreferencedSimulation){
-						String failureMessage = (bTimedOutSimulation) ? ("failed: timed out") : ("failed: unreferenced simulation");
-						lg.info("obsolete job detected at timestampMS="+currentTimeMS+", status=(" + activeJobStatus + ")");
+						String failureMessage = (bTimedOutSimulation) ? timeOutFailure : unreferencedFailure;
+                        lg.info("obsolete job detected at timestampMS={}, status={}", currentTimeMS, activeJobStatus);
 						//SimulationStateMachine simStateMachine = simDispatcherEngine.getSimulationStateMachine(activeJobStatus.getVCSimulationIdentifier().getSimulationKey(), activeJobStatus.getJobIndex());
 						//					lg.debug(simStateMachine.show());
-						VCMongoMessage.sendObsoleteJob(activeJobStatus,failureMessage);
+						lg.warn("{} {}", activeJobStatus, failureMessage);
 						simDispatcherEngine.onSystemAbort(activeJobStatus, failureMessage, simulationDatabase, clientStatusTopicSession_int);
 						if (activeJobStatus.getSimulationExecutionStatus()!=null && activeJobStatus.getSimulationExecutionStatus().getHtcJobID()!=null){
 							HtcJobID htcJobId = activeJobStatus.getSimulationExecutionStatus().getHtcJobID();
@@ -549,8 +562,8 @@ public class SimulationDispatcher {
 	}
 
 	public static SimulationDispatcher simulationDispatcherCreator(SimulationDatabase simulationDatabase, VCMessagingService messagingServiceInternal,
-																   VCMessagingService messagingServiceSim, HtcProxy htcProxy){
-		return new SimulationDispatcher(simulationDatabase, messagingServiceInternal, messagingServiceSim, htcProxy);
+																   VCMessagingService messagingServiceSim, HtcProxy htcProxy, boolean startDispatcher){
+		return new SimulationDispatcher(simulationDatabase, messagingServiceInternal, messagingServiceSim, htcProxy, startDispatcher);
 	}
 
 	public static SimulationDispatcher simulationDispatcherCreator() throws SQLException, DataAccessException {
@@ -571,11 +584,11 @@ public class SimulationDispatcher {
 		vcMessagingServiceSim.setConfiguration(new ServerMessagingDelegate(), jmshost_sim, jmsport_sim);
 
 		return SimulationDispatcher.simulationDispatcherCreator(simulationDatabase,
-				vcMessagingServiceInternal, vcMessagingServiceSim, SlurmProxy.createRemoteProxy());
+				vcMessagingServiceInternal, vcMessagingServiceSim, SlurmProxy.createRemoteProxy(), true);
 	}
 
 	private SimulationDispatcher(SimulationDatabase simulationDatabase, VCMessagingService messagingServiceInternal,
-								 VCMessagingService messagingServiceSim, HtcProxy htcProxy){
+								 VCMessagingService messagingServiceSim, HtcProxy htcProxy, boolean startDispatcher){
 		this.simulationDatabase = simulationDatabase;
 		this.vcMessagingService_int = messagingServiceInternal;
 		this.vcMessagingService_sim = messagingServiceSim;
@@ -605,12 +618,17 @@ public class SimulationDispatcher {
 		this.dispatcherQueueSession_int = this.vcMessagingService_int.createProducerSession();
 		this.clientStatusTopicSession_int = this.vcMessagingService_int.createProducerSession();
 
-		this.dispatchThread = new DispatchThread();
-		this.dispatchThread.start();
 
 		this.simMonitorThreadSession_sim = this.vcMessagingService_sim.createProducerSession();
-		this.simMonitor = new SimulationMonitor();
 		this.htcProxy = htcProxy;
+
+		// Wait until all resources are created to start separate threads
+
+		this.simMonitor = new SimulationMonitor();
+		this.dispatchThread = new DispatchThread();
+		if (startDispatcher){
+			this.dispatchThread.start();
+		}
 	}
 
 
@@ -626,8 +644,8 @@ public class SimulationDispatcher {
 			if (vcMessage.propertyExists(VCMessagingConstants.MESSAGE_TYPE_PROPERTY) && vcMessage.getStringProperty(VCMessagingConstants.MESSAGE_TYPE_PROPERTY).equals(MessageConstants.MESSAGE_TYPE_FLUSH_VALUE)){
 				if (simMonitor!=null){
 					try {
-						synchronized (simMonitor.notifyObject){
-							simMonitor.notifyObject.notify();
+						synchronized (simMonitor.monitorNotifyObject){
+							simMonitor.monitorNotifyObject.notify();
 						}
 					}catch (IllegalMonitorStateException e){
 						lg.warn(e);
