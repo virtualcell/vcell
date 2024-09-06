@@ -122,6 +122,7 @@ public class SimulationDispatcherTest {
 
     @Test
     public void zombieKillerTest() throws SQLException, DataAccessException, InterruptedException, IOException {
+        SimulationDispatcher.INITIAL_ZOMBIE_DELAY = 10;
         SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
                 mockMessagingServiceSim, mockHtcProxy, false);
         DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB);

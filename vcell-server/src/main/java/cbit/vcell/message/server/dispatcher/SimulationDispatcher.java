@@ -73,7 +73,9 @@ public class SimulationDispatcher {
 	/**
 	 * minutes between zombie kill runs
 	 */
-	public static final int ZOMBIE_MINUTES = 1; 
+	public static final int ZOMBIE_MINUTES = 1;
+	// changed only for testing
+	static int INITIAL_ZOMBIE_DELAY = 0;
 	/**
 	 * minutes between queue flushing
 	 */
@@ -376,7 +378,7 @@ public class SimulationDispatcher {
 		public SimulationMonitor( ) {
 			threadCount = 1;
 			executor =  new ScheduledThreadPoolExecutor(2,this,this);
-			executor.scheduleAtFixedRate(initialZombieKiller, 0, ZOMBIE_MINUTES, TimeUnit.MINUTES);
+			executor.scheduleAtFixedRate(initialZombieKiller, INITIAL_ZOMBIE_DELAY, ZOMBIE_MINUTES, TimeUnit.MINUTES);
 			executor.scheduleAtFixedRate(initialQueueFlusher, 1,FLUSH_QUEUE_MINUTES,TimeUnit.MINUTES);
 		}
 
