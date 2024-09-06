@@ -8,7 +8,7 @@
 #SBATCH --mem=4096M
 #SBATCH --no-kill
 #SBATCH --no-requeue
-# VCell SlurmProxy memory limit source=Exception NoSuchFileException used FALLBACK_MEM_LIMIT_MB
+# VCell SlurmProxy memory limit source=default memory limit
 
 
 #BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------
