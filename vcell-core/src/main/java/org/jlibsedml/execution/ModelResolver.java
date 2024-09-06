@@ -118,7 +118,11 @@ public class ModelResolver {
         try {
             String modelRef = baseModelRef;
             do {
-                srcURI = sedml.getModelWithId(modelRef).getSourceURI();
+                org.jlibsedml.Model mod = sedml.getModelWithId(modelRef);
+                URI testURI = new URI("test%20model.xml");
+                String roundTrip = testURI.toASCIIString();
+                roundTrip = testURI.toString();
+                srcURI = mod.getSourceURI();
                 // If we need to recurse to the next level:
                 modelRef = sedml.getModelWithId(modelRef.startsWith("#") ?
                         modelRef.substring(1): modelRef).getSourcePathOrURIString();

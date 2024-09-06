@@ -13,10 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class OmexHandler {
     String tempPath;
@@ -111,40 +108,35 @@ public class OmexHandler {
         }
     }
 
-    public ArrayList<String> getSedmlLocationsRelative(){
-        ArrayList<String> sedmlList = new ArrayList<>();
-
+    public List<String> getSedmlLocationsRelative(){
         Collection<ArchiveEntry> entries = this.archive.getEntries();
 
+        int MASTER = 1;
+        int REGULAR = 2;
         int masterCount = 0;
+        Map<Integer, ArrayList<ArchiveEntry>> sedmlMap = new HashMap<>();
+        sedmlMap.put(MASTER, new ArrayList<>());
+        sedmlMap.put(REGULAR, new ArrayList<>());
+
 
         for (ArchiveEntry entry : entries) {
-            if (entry.isMainEntry()) {
-                if (isSedmlFormat(entry)) {
-                    masterCount++;
-                } else {
-                    throw new RuntimeException("No SED-ML's are intended to be executed (non SED-ML file is set to be master)");
-                }
-            }
+            boolean isMaster = entry.isMainEntry();
+            if (isMaster) masterCount++;
+            if (!this.isSedmlFormat(entry)) continue;
+            sedmlMap.get(isMaster ? MASTER : REGULAR).add(entry);
         }
 
-        if( masterCount > 1) {
-            throw new RuntimeException("More than two master SED-ML's found");
+        // Test corner cases
+        if (sedmlMap.get(MASTER).isEmpty()){
+            if (masterCount > 0)
+                throw new RuntimeException("No SED-MLs are intended to be executed (non SED-ML file is set to be master)");
+            if (sedmlMap.get(REGULAR).isEmpty())
+                throw new RuntimeException("There are no SED-MLs in the archive to execute");
+
+            return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
         }
 
-        for (ArchiveEntry entry : entries) {
-            if(masterCount == 0 ) {
-                if (isSedmlFormat(entry)) {
-                    sedmlList.add(entry.getFilePath());
-                }
-            } else {
-                if (isSedmlFormat(entry) && entry.isMainEntry()) {
-                    sedmlList.add(entry.getFilePath());
-                }
-            }
-        }
-
-        return sedmlList;
+        return sedmlMap.get(MASTER).stream().map(ArchiveEntry::getFilePath).toList();
     }
 
     private boolean isSedmlFormat(ArchiveEntry entry) {
@@ -155,7 +147,7 @@ public class OmexHandler {
 
     public ArrayList<String> getSedmlLocationsAbsolute(){
         ArrayList<String> sedmlListAbsolute = new ArrayList<>();
-        ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
+        List<String> sedmlListRelative = this.getSedmlLocationsRelative();
 
         for (String sedmlFileRelative : sedmlListRelative) {
             sedmlListAbsolute.add(Paths.get(this.tempPath, sedmlFileRelative).normalize().toString());
@@ -166,7 +158,7 @@ public class OmexHandler {
     public String getOutputPathFromSedml(String absoluteSedmlPath) {
         String outputPath = "";
         //String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
-        ArrayList<String> sedmlListRelative = this.getSedmlLocationsRelative();
+        List<String> sedmlListRelative = this.getSedmlLocationsRelative();
         for (String sedmlFileRelative : sedmlListRelative) {
             boolean check = absoluteSedmlPath.contains(Paths.get(sedmlFileRelative).normalize().toString());
             if (check) {
