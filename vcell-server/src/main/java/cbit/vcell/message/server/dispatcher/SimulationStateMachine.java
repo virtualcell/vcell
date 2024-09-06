@@ -421,8 +421,12 @@ public class SimulationStateMachine {
         // new exe status
         Date lastUpdateDate = new Date();
         boolean hasData = false;
+        String computeHost = null;
+        Date startDate = null;
+        Date endDate = null;
+        HtcJobID htcJobID = null;
 
-        SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(null, null, lastUpdateDate, null, hasData, null);
+        SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
         VCellServerID vcServerID = VCellServerID.getSystemServerID();
         Date submitDate = currentDate;
@@ -533,10 +537,6 @@ public class SimulationStateMachine {
 
 
             if (lg.isTraceEnabled()) lg.trace("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
-            SimulationJobStatus simulationJobStatusRecord = new SimulationJobStatus(
-                    null, new VCSimulationIdentifier(simKey, user), jobIndex, simJobStatus.getSubmitDate(),
-                    SchedulerStatus.STOPPED, taskID, simJobStatus.getSimulationMessage(), simQueueEntryStatus, simExeStatus
-            );
 
             //
             // send stopSimulation to serviceControl topic
@@ -553,7 +553,7 @@ public class SimulationStateMachine {
             session.sendTopicMessage(VCellTopic.ServiceControlTopic, msg);
 
             simulationDatabase.updateSimulationJobStatus(newJobStatus);
-            statusMessage = new StatusMessage(simulationJobStatusRecord, user.getName(), null, null);
+            statusMessage = new StatusMessage(newJobStatus, user.getName(), null, null);
             statusMessage.sendToClient(session);
 
             return statusMessage;
