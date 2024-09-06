@@ -7,14 +7,12 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.*;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SolverTaskDescription;
+import cbit.vcell.solver.*;
 import org.vcell.model.rbm.*;
 import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
+import org.vcell.util.ISize;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
 
@@ -342,7 +340,7 @@ public class SsldUtils {
         m.set(springSaLaDSimContext);
 
         importApplicationFromSsld(m);
-        importGeometryFromSsld(m);
+        importGeometryFromSsld(m);      // geometry must be imported before the simulation
         importSimulationFromSsld(m);
 
         return bioModel;
@@ -384,13 +382,35 @@ public class SsldUtils {
         SimulationContext.NetworkGenerationRequirements networkGenerationRequirements = null; // network generation should not be executed
         simContext.refreshMathDescription(callback,networkGenerationRequirements);
         Simulation sim = simContext.addNewSimulation(SimulationOwner.DEFAULT_SIM_NAME_PREFIX, callback, networkGenerationRequirements);
+        Geometry geometry = simContext.getGeometry();   // geometry is already imported
 
         SolverTaskDescription lstd = sim.getSolverTaskDescription();
         LangevinSimulationOptions lso = lstd.getLangevinSimulationOptions();
+
+        // NPart should become the mesh, take it out of LangevinSimulationOptions
+        // fix the export, to use the mesh (keep the default statics from LangevinSimulationOptions.DefaultNPart
+        // properly initialize the MeshSpecification on new Simulation()
+        // dan, 09/06/24: mesh and partition don't map, commenting out the mesh code
+//        ISize isize = new ISize(ssldBoxGeometry.getNpart(0), ssldBoxGeometry.getNpart(1), ssldBoxGeometry.getNpart(2));
+//        MeshSpecification ms = new MeshSpecification(geometry);
+//        ms.setSamplingSize(isize);
+//        sim.setMeshSpecification(ms);   // setting the mesh
         lso.setNPart(ssldBoxGeometry.getNpart());
 
-        // TODO: system times
+        double endingTime = ssldSystemTimes.getTotalTime();
+        double timeStep = ssldSystemTimes.getdt();
+        double outputTime = ssldSystemTimes.getdtdata();
+        double intervalImage = ssldSystemTimes.getdtimage();
+        double intervalSpring = ssldSystemTimes.getdtspring();
 
+        TimeBounds timeBounds = new TimeBounds(0, endingTime);
+        lstd.setTimeBounds(timeBounds);
+        TimeStep ts = new TimeStep(timeStep, timeStep, timeStep);
+        lstd.setTimeStep(ts);
+        UniformOutputTimeSpec ots = new UniformOutputTimeSpec(outputTime);
+        lstd.setOutputTimeSpec(ots);
+        lso.setIntervalImage(intervalImage);
+        lso.setIntervalSpring(intervalSpring);
     }
 
     private void importGeometryFromSsld(Mapping m) throws Exception {

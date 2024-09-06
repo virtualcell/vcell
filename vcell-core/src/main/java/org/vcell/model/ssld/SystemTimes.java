@@ -24,7 +24,7 @@ public class SystemTimes {
     private double dtimage;
 
     /* *********** Constructor just sets some defaults *****************/
-    public SystemTimes(){
+    public SystemTimes() {
         totalTime = 1e-2;
         dt = 1e-8;
         dtspring = 1e-9;
@@ -32,7 +32,23 @@ public class SystemTimes {
         dtimage = 1e-4;
     }
 
-    public void loadData(String dataString){
+    public double getTotalTime() {
+        return totalTime;
+    }
+    public double getdt() {
+        return dt;
+    }
+    public double getdtspring() {
+        return dtspring;
+    }
+    public double getdtdata() {
+        return dtdata;
+    }
+    public double getdtimage() {
+        return dtimage;
+    }
+
+    public void loadData(String dataString) {
         // System.out.println(dataString);
         Scanner sc = new Scanner(dataString);
         while(sc.hasNextLine()){

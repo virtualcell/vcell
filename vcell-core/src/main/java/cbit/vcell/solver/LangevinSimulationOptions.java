@@ -40,11 +40,13 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public final static double DefaultDefaultTimeStep = 1.00E-8;		// default: dt
 	public final static double DefaultMaximumTimeStep = 1.00E-8;
 
+	public final static int[] DefaultNPart = { 10, 10, 10 };
+
 	protected int numOfTrials = 1;
 	protected int runIndex = 0;				// run index, will result in Run0 (followed by Run1, 2,...)
 	protected double intervalSpring = 1.00E-9;	// default: dtspring: 1.00E-9	- from advanced
 	protected double intervalImage = 1.00E-4;	// default: dtimage: 1.00E-4	- from advanced
-	protected int[] npart = { 10, 10, 10 };		// default number of partitions on each axis
+	protected int[] npart = {DefaultNPart[0], DefaultNPart[1], DefaultNPart[2]};	// number of partitions on each axis
 
 	protected transient PropertyChangeSupport propertyChange;
 	protected transient VetoableChangeSupport vetoChange;
