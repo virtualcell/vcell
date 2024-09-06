@@ -94,6 +94,8 @@ public class DispatcherTestUtils {
 
         previousOdeJobsPerUser = PropertyLoader.getProperty(PropertyLoader.maxOdeJobsPerUser, "");
         PropertyLoader.setProperty(PropertyLoader.maxOdeJobsPerUser, "100");
+
+        PropertyLoader.setProperty(PropertyLoader.mongodbDatabase, "fakehost");
     }
 
     public static void restoreRequiredProperties(){

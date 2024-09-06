@@ -9,10 +9,13 @@ import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.Simulation;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.spi.ExtendedLogger;
 import org.junit.jupiter.api.*;
 import org.vcell.util.DataAccessException;
@@ -33,18 +36,16 @@ public class SimulationDispatcherTest {
     private final MockHtcProxy mockHtcProxy = new MockHtcProxy(null, "htcUser", mockSimulationDB);
     private static StringWriter logOutPut;
     private static WriterAppender appender;
-    private static Level pastLevel;
 
     @BeforeAll
     public static void setSystemProperties(){
         DispatcherTestUtils.setRequiredProperties();
 
-        pastLevel = lg.getLevel();
-        Configurator.setLevel(lg, Level.WARN);
         logOutPut = new StringWriter();
         appender = WriterAppender.newBuilder().setTarget(logOutPut).setName("Simulation Dispatcher Test").build();
-        LoggerContext.getContext(false).getConfiguration().addLoggerAppender((Logger) lg, appender);
-        appender.start();
+        LoggerContext context = LoggerContext.getContext(false);
+        Configuration configuration = context.getConfiguration();
+        configuration.addLoggerAppender((Logger) lg, appender);
     }
 
     @AfterAll
@@ -52,7 +53,6 @@ public class SimulationDispatcherTest {
         DispatcherTestUtils.restoreRequiredProperties();
         appender.stop();
         logOutPut.close();
-        Configurator.setLevel(lg, pastLevel);
     }
 
     //################# Test Simulation Service Impl #######################
@@ -125,6 +125,7 @@ public class SimulationDispatcherTest {
         SimulationDispatcher simulationDispatcher = SimulationDispatcher.simulationDispatcherCreator(mockSimulationDB, mockMessagingServiceInternal,
                 mockMessagingServiceSim, mockHtcProxy, false);
         DispatcherTestUtils.insertOrUpdateStatus(mockSimulationDB);
+        mockHtcProxy.jobsKilledSafely.clear();
 
         mockSimulationDB.badLatestSimulation = MockSimulationDB.BadLatestSimulation.HIGHER_TASK_ID;
         SimulationDispatcher.SimulationMonitor.ZombieKiller zombieKiller = simulationDispatcher.simMonitor.initialZombieKiller;

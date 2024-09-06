@@ -219,7 +219,7 @@ public abstract class HtcProxy {
 	}
 
 	public static String createHtcSimJobName(SimTaskInfo simTaskInfo) {
-		return HTC_SIMULATION_JOB_NAME_PREFIX+simTaskInfo.simId.toString()+"_"+simTaskInfo.jobIndex+"_"+simTaskInfo.taskId;
+		return simulationJobNamePrefix()+simTaskInfo.simId.toString()+"_"+simTaskInfo.jobIndex+"_"+simTaskInfo.taskId;
 	}
 
 	public static String toUnixStyleText(String javaString) throws IOException {

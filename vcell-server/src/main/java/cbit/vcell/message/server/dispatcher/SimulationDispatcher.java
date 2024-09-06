@@ -35,8 +35,13 @@ import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import com.google.gson.Gson;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseService;
 import org.vcell.db.KeyFactory;
@@ -47,6 +52,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.exe.ExecutableException;
 
+import java.io.StringWriter;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -233,10 +239,10 @@ public class SimulationDispatcher {
 		}
 		lastSpecialUserCheck = System.currentTimeMillis();
 	}
-	protected class DispatchThread extends Thread {
+	public class DispatchThread extends Thread {
 
 		final Object dispatcherNotifyObject = new Object();
-		final Object finishListener = new Object();
+		final Object finishListener = new Object(); //used for tests
 
 		public DispatchThread() {
 			super();
@@ -356,11 +362,11 @@ public class SimulationDispatcher {
 		}
 	}
 
-	protected class SimulationMonitor implements ThreadFactory, RejectedExecutionHandler {
+	class SimulationMonitor implements ThreadFactory, RejectedExecutionHandler {
 		protected final ScheduledThreadPoolExecutor executor;
 		private int threadCount;
-		protected ZombieKiller initialZombieKiller = new ZombieKiller();
-		protected QueueFlusher initialQueueFlusher = new QueueFlusher();
+		ZombieKiller initialZombieKiller = new ZombieKiller();
+		QueueFlusher initialQueueFlusher = new QueueFlusher();
 		/**
 		 * synchronizes {@link SimulationDispatcher#onWorkerEventMessage(VCMessage, VCMessageSession)} and
 		 * {@link QueueFlusher#flushWorkerEventQueue()}
@@ -377,7 +383,7 @@ public class SimulationDispatcher {
 		/**
 		 * find and kill zombie processes
 		 */
-		protected class ZombieKiller implements Runnable {
+		class ZombieKiller implements Runnable {
 			public static final String noJob = "no jobStatus found in database for running htc job";
 			public static final String newJobFound = "newer task found in database for running htc job";
 			public static final String jobIsAlreadyDone = "jobStatus Done in database for running htc job";
@@ -385,7 +391,6 @@ public class SimulationDispatcher {
 			public void run() {
 				try {
 					traceThread(this);
-
 					Map<HtcJobInfo, HtcJobStatus> runningJobs = htcProxy.getRunningJobs();
 					for (HtcJobInfo htcJobInfo : runningJobs.keySet()){
 						try {
@@ -438,10 +443,10 @@ public class SimulationDispatcher {
 		/**
 		 * flush message queue
 		 */
-		protected class QueueFlusher implements Runnable {
+		 class QueueFlusher implements Runnable {
 			protected final static String timeOutFailure = "failed: timed out";
 			protected final static String unreferencedFailure = "failed: unreferenced simulation";
-			protected final Object finishListener = new Object();
+			protected final Object finishListener = new Object(); //used for tests
 			public void run() {
 				try {
 					traceThread(this);
