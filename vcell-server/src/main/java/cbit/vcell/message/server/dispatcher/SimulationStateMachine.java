@@ -16,6 +16,8 @@ import cbit.vcell.solver.server.SimulationMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
+import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.server.SimulationJobStatus.SimulationQueueID;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
@@ -25,7 +27,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 public class SimulationStateMachine {
-    public static final Logger lg = LogManager.getLogger(cbit.vcell.message.server.dispatcher.SimulationStateMachine.class);
+    public static final Logger lg = LogManager.getLogger(SimulationStateMachine.class);
 
     // bitmapped counter so that allows 3 retries for each request (but preserves ordinal nature)
     // bits 0-3: retry count
@@ -189,7 +191,7 @@ public class SimulationStateMachine {
             //
             if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued()) {
                 // new queue status
-                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
 
                 // new exe status
                 lastUpdateDate = new Date();
@@ -197,7 +199,7 @@ public class SimulationStateMachine {
                 endDate = null;
                 SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
-                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SimulationJobStatus.SchedulerStatus.DISPATCHED,
+                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.DISPATCHED,
                         taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
             }
 
@@ -205,7 +207,7 @@ public class SimulationStateMachine {
             // only update database when the job event changes from started to running. The later progress event will not be recorded.
             if ( oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()) {
                 // new queue status
-                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
 
                 // new exe status
                 lastUpdateDate = new Date();
@@ -214,17 +216,17 @@ public class SimulationStateMachine {
                 }
                 SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
-                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SimulationJobStatus.SchedulerStatus.RUNNING,
+                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
                         taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
             }
 
         } else if (workerEvent.isNewDataEvent()) {
             if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
 
-                if (!oldSchedulerStatus.isRunning() || simQueueID != SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL || hasData==false){
+                if (!oldSchedulerStatus.isRunning() || simQueueID != SimulationQueueID.QUEUE_ID_NULL || hasData==false){
 
                     // new queue status
-                    SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+                    SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
 
                     // new exe status
                     if (startDate == null){
@@ -233,7 +235,7 @@ public class SimulationStateMachine {
                     hasData = true;
                     SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
-                    newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SimulationJobStatus.SchedulerStatus.RUNNING,
+                    newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
                             taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
                 }
             }
@@ -242,9 +244,9 @@ public class SimulationStateMachine {
             if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
 
 
-                if (!oldSchedulerStatus.isRunning() || simQueueID != SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL){
+                if (!oldSchedulerStatus.isRunning() || simQueueID != SimulationQueueID.QUEUE_ID_NULL){
                     // new queue status
-                    SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+                    SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
 
                     // new exe status
                     if (startDate == null){
@@ -252,16 +254,16 @@ public class SimulationStateMachine {
                     }
                     SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
-                    newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SimulationJobStatus.SchedulerStatus.RUNNING,
+                    newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
                             taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
 
                 }else if (oldSchedulerStatus.isRunning()){
                     if (oldSimExeStatus != null) {
                         // new queue status
-                        SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+                        SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
                         SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
-                        newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SimulationJobStatus.SchedulerStatus.RUNNING,
+                        newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.RUNNING,
                                 taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
                     }
                 }
@@ -270,38 +272,38 @@ public class SimulationStateMachine {
         } else if (workerEvent.isCompletedEvent()) {
             if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
                 // new queue status
-                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
                 // new exe status
                 endDate = new Date();
                 hasData = true;
 
                 SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
-                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SimulationJobStatus.SchedulerStatus.COMPLETED,
+                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.COMPLETED,
                         taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
             }
 
         } else if (workerEvent.isFailedEvent()) {
             if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
                 // new queue status
-                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
                 // new exe status
                 endDate = new Date();
 
                 SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
-                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SimulationJobStatus.SchedulerStatus.FAILED,
+                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.FAILED,
                         taskID, workerEventSimulationMessage, newQueueStatus, newExeStatus);
 
             }
         } else if (workerEvent.isWorkerExitErrorEvent()) {
             if (oldSchedulerStatus.isWaiting() || oldSchedulerStatus.isQueued() || oldSchedulerStatus.isDispatched() || oldSchedulerStatus.isRunning()){
                 // new queue status
-                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+                SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(queueDate, queuePriority, SimulationQueueID.QUEUE_ID_NULL);
                 // new exe status
                 endDate = new Date();
                 SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(startDate, computeHost, lastUpdateDate, endDate, hasData, htcJobID);
 
                 SimulationMessage simulationMessage = SimulationMessage.workerFailure("solver stopped unexpectedly, "+workerEventSimulationMessage.getDisplayMessage());
-                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SimulationJobStatus.SchedulerStatus.FAILED,
+                newJobStatus = new SimulationJobStatus(vcServerID, vcSimDataID.getVcSimID(), jobIndex, submitDate, SchedulerStatus.FAILED,
                         taskID, simulationMessage, newQueueStatus, newExeStatus);
 
             }
@@ -328,7 +330,7 @@ public class SimulationStateMachine {
         KeyValue simKey = vcSimDataID.getSimulationKey();
         SimulationJobStatus oldSimulationJobStatus = simulationDatabase.getLatestSimulationJobStatus(simKey, jobIndex);
 
-        SimulationJobStatus.SchedulerStatus oldSchedulerStatus = oldSimulationJobStatus.getSchedulerStatus();
+        SchedulerStatus oldSchedulerStatus = oldSimulationJobStatus.getSchedulerStatus();
         SimulationJobStatus newJobStatus = produceStateFromWorkerEvent(workerEvent, oldSimulationJobStatus);
 
         if (newJobStatus!=null){
@@ -375,7 +377,7 @@ public class SimulationStateMachine {
         if (!user.equals(vcSimID.getOwner())) {
             lg.error(user + " is not authorized to start simulation (key=" + simKey + ")");
             SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, 0, null,
-                    SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to start this simulation!"), null, null);
+                    SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to start this simulation!"), null, null);
             statusMessage = new StatusMessage(simulationJobStatus, user.getName(), null, null);
             VCMongoMessage.sendInfo("onStartRequest("+vcSimID.getID()+") ignoring start simulation request - wrong user): simID="+vcSimID);
             statusMessage.sendToClient(session);
@@ -414,7 +416,7 @@ public class SimulationStateMachine {
 
         Date currentDate = new Date();
         // new queue status
-        SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationJobStatus.SimulationQueueID.QUEUE_ID_WAITING);
+        SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationQueueID.QUEUE_ID_WAITING);
 
         // new exe status
         Date lastUpdateDate = new Date();
@@ -425,7 +427,7 @@ public class SimulationStateMachine {
         VCellServerID vcServerID = VCellServerID.getSystemServerID();
         Date submitDate = currentDate;
 
-        SimulationJobStatus newJobStatus = new SimulationJobStatus(vcServerID, vcSimID, jobIndex, submitDate, SimulationJobStatus.SchedulerStatus.WAITING,
+        SimulationJobStatus newJobStatus = new SimulationJobStatus(vcServerID, vcSimID, jobIndex, submitDate, SchedulerStatus.WAITING,
                 newTaskID, SimulationMessage.MESSAGE_JOB_WAITING, newQueueStatus, newExeStatus);
 
         simulationDatabase.insertSimulationJobStatus(newJobStatus);
@@ -467,10 +469,10 @@ public class SimulationStateMachine {
             //
             Date currentDate = new Date();
             // new queue status
-            SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+            SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationQueueID.QUEUE_ID_NULL);
             SimulationExecutionStatus newSimExeStatus = new SimulationExecutionStatus(null,  null, new Date(), null, false, null);
             newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
-                    oldSimulationJobStatus.getSubmitDate(), SimulationJobStatus.SchedulerStatus.FAILED,taskID,
+                    oldSimulationJobStatus.getSubmitDate(), SchedulerStatus.FAILED,taskID,
                     SimulationMessage.jobFailed("simulation required "+estimatedMemMB+"MB of memory, only "+htcMaxMemoryMB+"MB allowed"),
                     newQueueStatus,newSimExeStatus);
 
@@ -484,10 +486,10 @@ public class SimulationStateMachine {
             // dispatch the simulation, new queue status
             //
             Date currentDate = new Date();
-            SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationJobStatus.SimulationQueueID.QUEUE_ID_SIMULATIONJOB);
+            SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentDate, PRIORITY_DEFAULT, SimulationQueueID.QUEUE_ID_SIMULATIONJOB);
             SimulationExecutionStatus newSimExeStatus = new SimulationExecutionStatus(null,  null, new Date(), null, false, null);
             newSimJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(),vcSimID,jobIndex,
-                    oldSimulationJobStatus.getSubmitDate(), SimulationJobStatus.SchedulerStatus.DISPATCHED,taskID,
+                    oldSimulationJobStatus.getSubmitDate(), SchedulerStatus.DISPATCHED,taskID,
                     SimulationMessage.MESSAGE_JOB_DISPATCHED,
                     newQueueStatus,newSimExeStatus);
 
@@ -496,7 +498,7 @@ public class SimulationStateMachine {
 
             simulationDatabase.updateSimulationJobStatus(newSimJobStatus);
 
-            cbit.vcell.message.messages.StatusMessage message = new cbit.vcell.message.messages.StatusMessage(newSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
+            StatusMessage message = new StatusMessage(newSimJobStatus, simulation.getVersion().getOwner().getName(), null, null);
             message.sendToClient(session);
 
         }
@@ -511,7 +513,7 @@ public class SimulationStateMachine {
         if (!user.equals(simJobStatus.getVCSimulationIdentifier().getOwner())) {
             lg.error(user + " is not authorized to stop simulation (key=" + simKey + ")");
             SimulationJobStatus simulationJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), simJobStatus.getVCSimulationIdentifier(), 0, null,
-                    SimulationJobStatus.SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to stop this simulation!"), null, null);
+                    SchedulerStatus.FAILED, 0, SimulationMessage.workerFailure("You are not authorized to stop this simulation!"), null, null);
 
             VCMongoMessage.sendInfo("onStopRequest("+simJobStatus.getVCSimulationIdentifier()+") ignoring stop simulation request - wrong user)");
             statusMessage = new StatusMessage(simulationJobStatus, user.getName(), null, null);
@@ -520,20 +522,20 @@ public class SimulationStateMachine {
         }
 
         // stop latest task if active
-        SimulationJobStatus.SchedulerStatus schedulerStatus = simJobStatus.getSchedulerStatus();
+        SchedulerStatus schedulerStatus = simJobStatus.getSchedulerStatus();
         int taskID = simJobStatus.getTaskID();
 
         if (schedulerStatus.isActive()){
             SimulationQueueEntryStatus simQueueEntryStatus = simJobStatus.getSimulationQueueEntryStatus();
             SimulationExecutionStatus simExeStatus = simJobStatus.getSimulationExecutionStatus();
             SimulationJobStatus newJobStatus = new SimulationJobStatus(simJobStatus.getServerID(),simJobStatus.getVCSimulationIdentifier(),jobIndex,simJobStatus.getSubmitDate(),
-                    SimulationJobStatus.SchedulerStatus.STOPPED,taskID,SimulationMessage.solverStopped("simulation stopped by user"),simQueueEntryStatus,simExeStatus);
+                    SchedulerStatus.STOPPED,taskID,SimulationMessage.solverStopped("simulation stopped by user"),simQueueEntryStatus,simExeStatus);
 
 
             if (lg.isTraceEnabled()) lg.trace("send " + MessageConstants.MESSAGE_TYPE_STOPSIMULATION_VALUE + " to " + VCellTopic.ServiceControlTopic.getName() + " topic");
             SimulationJobStatus simulationJobStatusRecord = new SimulationJobStatus(
                     null, new VCSimulationIdentifier(simKey, user), jobIndex, simJobStatus.getSubmitDate(),
-                    SimulationJobStatus.SchedulerStatus.STOPPED, taskID, simJobStatus.getSimulationMessage(), simQueueEntryStatus, simExeStatus
+                    SchedulerStatus.STOPPED, taskID, simJobStatus.getSimulationMessage(), simQueueEntryStatus, simExeStatus
             );
 
             //
@@ -569,21 +571,21 @@ public class SimulationStateMachine {
         //
         CurrentState currentState = new CurrentState(oldJobStatus.getSimulationExecutionStatus(), oldJobStatus.getSimulationQueueEntryStatus(), oldJobStatus);
 
-        SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentState.queueDate, currentState.queuePriority, SimulationJobStatus.SimulationQueueID.QUEUE_ID_NULL);
+        SimulationQueueEntryStatus newQueueStatus = new SimulationQueueEntryStatus(currentState.queueDate, currentState.queuePriority, SimulationQueueID.QUEUE_ID_NULL);
 
         Date endDate = new Date();
         Date lastUpdateDate = new Date();
 
         SimulationExecutionStatus newExeStatus = new SimulationExecutionStatus(currentState.startDate, currentState.computeHost, lastUpdateDate, endDate, currentState.hasData, currentState.htcJobID);
 
-        SimulationJobStatus newJobStatus = new SimulationJobStatus(currentState.vcServerID, oldJobStatus.getVCSimulationIdentifier(), jobIndex, currentState.submitDate, SimulationJobStatus.SchedulerStatus.FAILED,
+        SimulationJobStatus newJobStatus = new SimulationJobStatus(currentState.vcServerID, oldJobStatus.getVCSimulationIdentifier(), jobIndex, currentState.submitDate, SchedulerStatus.FAILED,
                 taskID, SimulationMessage.jobFailed(failureMessage), newQueueStatus, newExeStatus);
 
         simulationDatabase.updateSimulationJobStatus(newJobStatus);
 //		addStateMachineTransition(new StateMachineTransition(new AbortStateMachineEvent(taskID, failureMessage), oldJobStatus, newJobStatus));
 
         String userName = VCMessagingConstants.USERNAME_PROPERTY_VALUE_ALL;
-        cbit.vcell.message.messages.StatusMessage msgForClient = new cbit.vcell.message.messages.StatusMessage(newJobStatus, userName, null, null);
+        StatusMessage msgForClient = new StatusMessage(newJobStatus, userName, null, null);
         msgForClient.sendToClient(session);
         if (lg.isTraceEnabled()) lg.trace("Send status to client: " + msgForClient);
     }
