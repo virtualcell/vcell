@@ -107,7 +107,7 @@ public boolean compareEqual(Matchable obj) {
 
 /**
  * Sets the geometry property (cbit.vcell.geometry.Geometry) value.
- * @param geometry The new value for the property.
+ * @param meshSpec
  * @see #getGeometry
  */
 public void copyFrom(MeshSpecification meshSpec) {

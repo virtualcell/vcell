@@ -62,6 +62,11 @@ public static TimeStep getDefaultSundialsTimeStep() {
 public static TimeStep getDefaultSmoldynTimeStep() {
 	return new TimeStep(1e-4,1e-4,1e-4);
 }
+public static TimeStep getDefaultLangevinTimeStep() {
+	return new TimeStep(LangevinSimulationOptions.DefaultMinimumTimeStep,
+			LangevinSimulationOptions.DefaultDefaultTimeStep,
+			LangevinSimulationOptions.DefaultMaximumTimeStep);
+}
 /**
  * TimeStep constructor comment.
  */
@@ -83,7 +88,7 @@ public TimeStep(TimeStep timeStep) {
 /**
  * Checks for internal representation of objects, not keys from database
  * @return boolean
- * @param obj java.lang.Object
+ * @param object java.lang.Object
  */
 public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object) {

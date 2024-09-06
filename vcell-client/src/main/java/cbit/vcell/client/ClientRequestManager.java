@@ -95,6 +95,8 @@ import org.vcell.model.bngl.gui.BNGLDebuggerPanel;
 import org.vcell.model.bngl.gui.BNGLUnitsPanel;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
+import org.vcell.model.ssld.SsldModel;
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
 import org.vcell.util.document.VCDocument.DocumentCreationInfo;
@@ -3338,6 +3340,16 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							}
 						}
 						isSEDML = true; // treat the same since OMEX is just and archive with SED-ML file(s)
+					} else if(file != null && !file.getName().isEmpty() && file.getName().toLowerCase().endsWith(".ssld")) {
+
+						// TODO: ssld import here
+
+						SsldUtils ssldUtils = new SsldUtils();
+						SsldModel ssldModel = SsldUtils.importSsldFile(file);
+						// the ModelUnitSystem is being initialized within SsldUtils.fromSsld()
+						BioModel bioModel = ssldUtils.fromSsld(ssldModel);
+						doc = bioModel;
+
 					} else if (!externalDocInfo.isXML()) {
 						if (hashTable.containsKey(BNG_UNIT_SYSTEM)) { // not XML, look for BNGL etc.
 							// we use the BngUnitSystem already created during the 1st pass

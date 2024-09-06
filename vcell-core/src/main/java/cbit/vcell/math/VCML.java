@@ -248,6 +248,9 @@ public class VCML {
 	public final static String LangevinSimulationOptions_runIndex	= "RunIndex";
 	public final static String LangevinSimulationOptions_intervalSpring	= "IntervalSpring";
 	public final static String LangevinSimulationOptions_intervalImage	= "IntervalImage";
+	public final static String LangevinSimulationOptions_Partition_Nx = "Partition Nx";
+	public final static String LangevinSimulationOptions_Partition_Ny = "Partition Ny";
+	public final static String LangevinSimulationOptions_Partition_Nz = "Partition Nz";
 
 	public final static String NFSimSimulationOptions	= "NFSimSimulationOptions";
 	public final static String NFSimSimulationOptions_observableComputationOff	= "ObservableComputationOff";
