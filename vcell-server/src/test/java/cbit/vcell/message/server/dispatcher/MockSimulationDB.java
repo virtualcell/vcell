@@ -157,9 +157,9 @@ public class MockSimulationDB implements SimulationDatabase{
     }
 
     @Override
-    public Map<User.SPECIAL_CLAIM, Map<User, String>> getSpecialUsers() throws DataAccessException, SQLException {
-        Map<User.SPECIAL_CLAIM, Map<User, String>> map = new HashMap<>();
-        Map<User, String> subMap = new HashMap<>();
+    public TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> getSpecialUsers() throws DataAccessException, SQLException {
+        TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> map = new TreeMap<>();
+        TreeMap<User, String> subMap = new TreeMap<>(new User.UserNameComparator());
         subMap.put(specialAdmin, "f");
         map.put(User.SPECIAL_CLAIM.admins, subMap);
         return map;
