@@ -87,7 +87,7 @@ public class ExecutionJob {
         // Unpack the Omex Archive
         try { // It's unlikely, but if we get errors here they're fatal.
             this.sedmlPath2d3d = Paths.get(outputDir, "temp");
-            this.omexHandler = new OmexHandler(inputFilePath, outputDir, true);
+            this.omexHandler = new OmexHandler(inputFilePath, outputDir);
             this.omexHandler.extractOmex();
             this.sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
         } catch (IOException e){

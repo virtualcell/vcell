@@ -26,11 +26,12 @@ public class OmexHandler {
 
     // Assuming omexPath will always be absolute path
     // NB: Need to convert class to use Log4j2
-    public OmexHandler(String omexPath, String outDir, boolean readOnlyMode) throws IOException {
+    public OmexHandler(String omexPath, String outDir) throws IOException {
         this.omexPath = omexPath;
         this.outDirPath = outDir;
 
-        if (!new File(omexPath).exists()) {
+        File omexFile = new File(omexPath);
+        if (!omexFile.exists()) {
             String[] omexNameArray = omexPath.split("/", -2);
             String omexName = omexNameArray[omexNameArray.length - 1];
             IOException e = new IOException("Provided OMEX `" + omexName + "` is not present at path: " + omexPath);
@@ -40,9 +41,16 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
         this.tempPath = RunUtils.getTempDir();
+
         try {
-            if (!readOnlyMode) replaceMetadataRdfFiles(Paths.get(omexPath));
-            this.archive = new CombineArchive(new File(omexPath));
+            try (CombineArchive initialArchive = new CombineArchive(omexFile)){
+                // Archive may have RDF errors; we can try and clear them here.
+                if (!omexFile.canWrite() || !initialArchive.hasErrors()
+                        || !initialArchive.getErrors().contains(".rdf")) return;
+
+                this.replaceMetadataRdfFiles(Paths.get(omexPath));
+            }
+            this.archive = new CombineArchive(omexFile);
             if (this.archive.hasErrors()){
                 String message = "Unable to initialise OMEX archive "+this.omexName+": "+this.archive.getErrors();
                 logger.error(message);
@@ -55,9 +63,9 @@ public class OmexHandler {
         }
     }
 
-    public OmexHandler(String omexPath, String outDir) throws IOException {
-        this(omexPath, outDir, false);
-    }
+//    public OmexHandler(String omexPath, String outDir) throws IOException {
+//        this(omexPath, outDir);
+//    }
 
     private void replaceMetadataRdfFiles(Path zipFilePath) {
         try (FileSystem fs = FileSystems.newFileSystem(zipFilePath)) {
