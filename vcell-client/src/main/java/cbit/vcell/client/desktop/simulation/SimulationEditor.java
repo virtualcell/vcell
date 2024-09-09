@@ -18,6 +18,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
+import cbit.vcell.mapping.SimulationContext;
 import org.vcell.util.BeanUtils;
 
 import cbit.vcell.geometry.ChomboInvalidGeometryException;
@@ -275,6 +276,10 @@ public void prepareToEdit(Simulation simulation, Component parent) throws Chombo
 			meshSpec.getGeometry() != null &&
 			meshSpec.getGeometry().getDimension() > 0){
 				shouldMeshBeEnabled = true;
+		}
+		SimulationOwner so = simulation.getSimulationOwner();
+		if(so instanceof SimulationContext &&  ((SimulationContext)so).getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+			shouldMeshBeEnabled = false;
 		}
 		if (!shouldMeshBeEnabled) {
 			getJTabbedPane1().remove(getMeshTabPanel());
