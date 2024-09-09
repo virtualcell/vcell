@@ -23,10 +23,10 @@ public class OmexHandler {
     CombineArchive archive;
 
     private final static Logger logger = LogManager.getLogger(OmexHandler.class);
-    
+
     // Assuming omexPath will always be absolute path
     // NB: Need to convert class to use Log4j2
-    public OmexHandler(String omexPath, String outDir) throws IOException {
+    public OmexHandler(String omexPath, String outDir, boolean readOnlyMode) throws IOException {
         this.omexPath = omexPath;
         this.outDirPath = outDir;
 
@@ -41,7 +41,7 @@ public class OmexHandler {
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
         this.tempPath = RunUtils.getTempDir();
         try {
-            replaceMetadataRdfFiles(Paths.get(omexPath));
+            if (!readOnlyMode) replaceMetadataRdfFiles(Paths.get(omexPath));
             this.archive = new CombineArchive(new File(omexPath));
             if (this.archive.hasErrors()){
                 String message = "Unable to initialise OMEX archive "+this.omexName+": "+this.archive.getErrors();
@@ -55,8 +55,12 @@ public class OmexHandler {
         }
     }
 
-    private void replaceMetadataRdfFiles(Path zipFilePath) throws IOException {
-        try( FileSystem fs = FileSystems.newFileSystem(zipFilePath) ) {
+    public OmexHandler(String omexPath, String outDir) throws IOException {
+        this(omexPath, outDir, false);
+    }
+
+    private void replaceMetadataRdfFiles(Path zipFilePath) {
+        try (FileSystem fs = FileSystems.newFileSystem(zipFilePath)) {
             for (Path root : fs.getRootDirectories()) {
                 Files.walk(root)
                         .filter(Files::isRegularFile)
@@ -82,6 +86,8 @@ public class OmexHandler {
                         });
             }
 
+        } catch (IOException | ReadOnlyFileSystemException e) {
+            throw new RuntimeException("Unable to delete metadata.rdf file from OMEX archive: ", e);
         }
     }
 
