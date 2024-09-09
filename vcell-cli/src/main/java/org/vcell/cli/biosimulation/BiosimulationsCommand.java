@@ -106,14 +106,14 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 try {
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
                 } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error("Error closing python process:", e);
                 }
                 logger.debug("Finished all execution.");
             }
         } catch (Exception e) {
             if (!bQuiet) {
                 Tracer.reportErrors(bDebug);
-                logger.error(e.getMessage(), e);
+                logger.error("Unexpected Error in BioSimulations execution:", e);
             }
             return 1;
         }
