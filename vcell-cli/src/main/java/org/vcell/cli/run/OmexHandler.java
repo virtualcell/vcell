@@ -14,6 +14,7 @@ import java.net.URI;
 import java.nio.file.*;
 import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class OmexHandler {
     String tempPath;
@@ -70,30 +71,41 @@ public class OmexHandler {
     private void replaceMetadataRdfFiles(Path zipFilePath) {
         try (FileSystem fs = FileSystems.newFileSystem(zipFilePath)) {
             for (Path root : fs.getRootDirectories()) {
-                Files.walk(root)
+                try (Stream<Path> rdfFiles = Files.walk(root)
                         .filter(Files::isRegularFile)
-                        .filter(path -> path.toString().endsWith(".rdf"))
-                        .forEach(path -> {
-                            try {
-                                // write empty RDF file to temp file and replace the file inside the zip
-                                Path tempFile = Files.createTempFile("temp", ".rdf");
-                                String new_rdf_content =
+                        .filter(path -> path.toString().endsWith(".rdf"))){
+
+                    if (rdfFiles.findAny().isEmpty()){
+                        Path targetPath = Paths.get(root.toString(), "metadata.rdf");
+                        Files.write(targetPath, "fileToBeReplaced".getBytes());
+                    }
+                }
+
+                try (Stream<Path> rdfFiles = Files.walk(root)
+                        .filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".rdf"))){
+
+                    rdfFiles.forEach(path -> {
+                        try {
+                            // write empty RDF file to temp file and replace the file inside the zip
+                            Path tempFile = Files.createTempFile("temp", ".rdf");
+                            String new_rdf_content =
                                     """
                                     <?xml version='1.0' encoding='UTF-8'?>
                                     <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
                                     </rdf:RDF>
                                     """;
-                                Files.write(tempFile, new_rdf_content.getBytes());
-                                // replace fileInsideZipPath with temp file
-                                Files.delete(path);
-                                Files.copy(tempFile, path);
-                                Files.delete(tempFile);
-                            } catch (IOException e) {
-                                logger.error("Unable to delete metadata.rdf file from OMEX archive: " + e.getMessage(), e);
-                            }
-                        });
+                            Files.write(tempFile, new_rdf_content.getBytes());
+                            // replace fileInsideZipPath with temp file
+                            Files.delete(path);
+                            Files.copy(tempFile, path);
+                            Files.delete(tempFile);
+                        } catch (IOException e) {
+                            logger.error("Unable to delete metadata.rdf file from OMEX archive: " + e.getMessage(), e);
+                        }
+                    });
+                }
             }
-
         } catch (IOException | ReadOnlyFileSystemException e) {
             throw new RuntimeException("Unable to delete metadata.rdf file from OMEX archive: ", e);
         }
