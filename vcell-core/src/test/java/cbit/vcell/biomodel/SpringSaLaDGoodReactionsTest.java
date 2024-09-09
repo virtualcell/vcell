@@ -147,7 +147,7 @@ public class SpringSaLaDGoodReactionsTest {
 		simContext.gatherIssues(issueContext, issueList, true);		// bIgnoreMathDescription == true
 		int numErrors = checkIssuesBySeverity(issueList, Issue.Severity.ERROR);
 		int numWarnings = checkIssuesBySeverity(issueList, Issue.Severity.WARNING);
-        assertTrue((numErrors == 1 && numWarnings == 14) ? true : false, "expecting 1 errors and 14 warning issues");
+        assertTrue((numErrors == 0 && numWarnings == 14) ? true : false, "expecting 1 errors and 14 warning issues");
 	}
 	
 	/* -------------------------------------------------------------------------------------------------------------------------

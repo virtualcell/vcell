@@ -5,6 +5,7 @@ import java.util.*;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.model.Structure;
+import cbit.vcell.solver.*;
 import org.vcell.util.Pair;
 
 import cbit.vcell.geometry.Geometry;
@@ -43,11 +44,6 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverException;
 //import org.jdom.output.Format;
 
 public class LangevinLngvWriter {
@@ -145,7 +141,7 @@ public class LangevinLngvWriter {
 		/* ********* WRITE THE SPATIAL INFORMATION **********/
 		sb.append("*** " + SPATIAL_INFORMATION + " ***");
 		sb.append("\n");
-		writeSpatialInformation(geometrySpec, sb);
+		writeSpatialInformation(geometrySpec, simulation, sb);
 		sb.append("\n");
 
 		/* ******* WRITE THE SPECIES INFORMATION ***********/
@@ -254,7 +250,7 @@ public class LangevinLngvWriter {
 		return ret;
 	}
 	
-	private static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
+	public static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
 		if(!simulation.getMathDescription().isLangevin()) {
 			throw new RuntimeException("Langevin Math expected.");
 		}
@@ -263,7 +259,7 @@ public class LangevinLngvWriter {
 		
 		// for fast simulation for a simple transition state model, select the following time simulation options: 
 		// - ending:				0.01	(langevin: total time)
-		// - time step (default):	1E-7 	(langevin: dt)
+		// - time step (default):	1E-9 	(langevin: dt)
 		// - output interval:		1E-4	(langevin: dt_data)
 		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
 		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
@@ -895,9 +891,15 @@ public class LangevinLngvWriter {
 			Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = lpmt.getInternalLinkSpec();
 			for(Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent> pair : lpmt.getInternalLinkSpec()) {
 				sb.append("     ");
-				// we take advantage of the fact that there is one to one relationship between molecular component (site type) and site
+				// here we use the math, not the physiology, so we cannot extract the site index directly from the class
+				// // instead we take advantage of the fact that there is one to one relationship between molecular
+				// component (site type) and site
 				int indexOne = lpmt.getComponentList().indexOf(pair.one);
 				int indexTwo = lpmt.getComponentList().indexOf(pair.two);
+				// here the index is computed differently - and starts with 0
+				// here there is no need to adjust when importing and exporting
+				// see also MolecularInternalLinkSpec.writeLink() == the other export
+				// see also SsldUtils.fromSsld() == import
 				sb.append("LINK: Site " + indexOne + " ::: Site " + indexTwo);
 				sb.append("\n");
 			}
@@ -916,7 +918,7 @@ public class LangevinLngvWriter {
 		return;
 	}
 
-	public static void writeSpatialInformation(GeometrySpec geometrySpec, StringBuilder sb) {    // SpringSaLaD exporting the time information
+	public static void writeSpatialInformation(GeometrySpec geometrySpec, Simulation simulation, StringBuilder sb) {    // SpringSaLaD exporting the time information
         if (geometrySpec.getDimension() != 3) {
             throw new RuntimeException("SpringSaLaD requires 3D geometry");
         }
@@ -979,12 +981,15 @@ public class LangevinLngvWriter {
         sb.append("\n");
         sb.append("L_z_in: " + Lz_intra);		// 0.09
         sb.append("\n");
-        sb.append("Partition Nx: 10");			// TODO: make number of partitions on each axes part of Langevin Simulations Options
-        sb.append("\n");
-        sb.append("Partition Ny: 10");
-        sb.append("\n");
-        sb.append("Partition Nz: 10");
-        sb.append("\n");
+
+		SolverTaskDescription lstd = simulation.getSolverTaskDescription();
+		LangevinSimulationOptions lso = lstd.getLangevinSimulationOptions();
+		sb.append(LangevinSimulationOptions.Partition_Nx + lso.getNPart(0));
+		sb.append("\n");
+		sb.append(LangevinSimulationOptions.Partition_Ny + lso.getNPart(1));
+		sb.append("\n");
+		sb.append(LangevinSimulationOptions.Partition_Nz + lso.getNPart(2));
+		sb.append("\n");
     }
 
 	public static void writeMoleculeCounters(StringBuilder sb) {

@@ -36,10 +36,10 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	private transient boolean bHighlighted = false;
 	
 	public enum BondType {
-		Specified(""), // numbers
-		Exists("+"),    // "+"
-		Possible("?"),  // "?"
-		None("-");  	   //
+		Specified(""), // numbers	// explicit
+		Exists("+"),    // "+"		// bound
+		Possible("?"),  // "?"		// any
+		None("-");  	   				// unbound
 		
 		public String symbol;
 		BondType(String s) {

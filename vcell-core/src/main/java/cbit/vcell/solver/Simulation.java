@@ -22,16 +22,9 @@ import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Displayable;
-import org.vcell.util.Issue;
+import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext;
-import org.vcell.util.Matchable;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.PropertyConstants;
@@ -318,10 +311,22 @@ public Simulation(MathDescription mathDescription, SimulationOwner simulationOwn
 	//  Must set the MathDescription before constructing these...
 	if (mathDescription.getGeometry().getDimension()>0){
 		fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());
+		// The following commented out code would map the springsalad partitions over the mesh
+		// I don't think these 2 concepts can be reconciled, I'm keeping pth partitions as springsalad-specific properties
+//		if(simulationOwner instanceof SimulationContext) {
+//			SimulationContext simContext = (SimulationContext)simulationOwner;
+//			if(simContext.getApplicationType() == Application.SPRINGSALAD) {
+//				ISize isize = new ISize(LangevinSimulationOptions.DefaultNPart[0], LangevinSimulationOptions.DefaultNPart[1], LangevinSimulationOptions.DefaultNPart[2]);
+//				try {
+//					fieldMeshSpecification.setSamplingSize(isize);
+//				} catch (PropertyVetoException e) {
+//					throw new RuntimeException("Couldn't initialize default SpringSaLaD mesh, ",e);
+//				}
+//			}
+//		}
 	}
 	fieldMathOverrides = new MathOverrides(this);
 	fieldSolverTaskDescription = new SolverTaskDescription(this);
-
 }
 
 

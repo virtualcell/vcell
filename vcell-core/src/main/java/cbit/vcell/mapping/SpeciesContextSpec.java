@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
 
+import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -681,6 +682,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             if (molecularType != null && molecularType != mt) {
                 return;        // this molecule is unchanged, nothing to do
             }
+
+            boolean initialPass = false;
             // molecularType == null : full initialization
             // molecularType != null and molecularType == mt : this molecule has a different
             //   number of components or a different component order
@@ -689,9 +692,9 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             // step 1.1: superficial sanity check, before changing anything
             final String saMapExceptionPrefix = "SiteAttributeMap of SpeciesContextSpec of Species '" + getSpeciesContext().getName() + "' ";
             if(siteAttributesMap == null || siteAttributesMap.isEmpty()) {
-                ;           // do nothing, map is empty, initialization phase
-            } else {        // if map not empty, now we need to check
-                            // we don't fire exceptions, size mismatch may be correct if we delete or add sites to a molecule
+                initialPass = true; // map is empty, initialization phase
+            } else {                // if map not empty, now we need to check
+                                    // we don't fire exceptions, size mismatch may be correct if we delete or add sites to a molecule
                 if (siteAttributesMap.size() > componentList.size()) {
                     System.out.println(saMapExceptionPrefix + "has obsolete attributes");
                 } else if (siteAttributesMap.size() < componentList.size()) {
@@ -751,6 +754,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             oldMcpSet.clear();
 
             // step 3.4: we add any new instance of authoritative mcp not there yet, and we initialize with default sas
+            int componentCount = 0;
             for (MolecularComponent mc : componentList) {
                 MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
                 if (siteAttributesMap.containsKey(mcp)) {
@@ -759,8 +763,15 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 SiteAttributesSpec sas = siteAttributesMap.get(mcp);
                 if (sas == null || sas.getMolecularComponentPattern() == null) {
                     sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
+                    if(initialPass == true) {
+                        Coordinate coordinate = new Coordinate(0, 0, (componentCount+1)*4);
+                        sas.setCoordinate(coordinate);
+                        NamedColor nextColor = Colors.COLORARRAY[componentCount];
+                        sas.setColor(nextColor);
+                    }
                     siteAttributesMap.put(mcp, sas);
                 }
+                componentCount++;
             }
             // at this point the siteAttributesMap should be fully reconstructed
 
@@ -2366,8 +2377,19 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         List<MolecularComponent> componentList = mt.getComponentList();
         int dimension = geometry.getDimension();
 
+        // compare the next few lines with LangevinLngvWriter.writeSpeciesInfo() where we have a math
+        // here we must assume that the expression is numeric
+        Expression count = initialCountParameter.getExpression();
+        String scount;
+        try {
+            double ddd = count.evaluateConstant();
+            scount = Integer.toString((int)ddd);
+        } catch (Exception e) {
+            throw new RuntimeException("Initial concentration must be a number");
+        }
+
         sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() +
-                " Number " + initialCountParameter.getExpression().infix() +
+                " Number " + scount +
                 " Site_Types " + componentList.size() + " Total" + "_Sites " + siteAttributesMap.size() +
                 " Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));    // TODO: molecule is flat, unrelated to geometry
         sb.append("\n");

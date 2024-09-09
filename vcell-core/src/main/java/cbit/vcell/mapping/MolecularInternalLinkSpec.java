@@ -243,7 +243,11 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		if(getSite2() == null) {
 			System.out.println("Site 2 is null.");
 		}
-		sb.append("LINK: Site " + getSite1().getIndex() + " ::: Site " + getSite2().getIndex());
+		// in vcell the index starts with 1, in ssld is 0
+		// need to adjust when importing and exporting
+		// see also LangevinLngvWriter.writeSpeciesInfo() == the other export
+		// see also SsldUtils.fromSsld() == import
+		sb.append("LINK: Site " + (getSite1().getIndex()-1) + " ::: Site " + (getSite2().getIndex()-1));
 		sb.append("\n");
 	}
 

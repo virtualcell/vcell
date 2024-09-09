@@ -99,6 +99,13 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 			return null;
 		}
 	}
+	// transition site is bond Possible and in explicit state
+	// all the other sites are unbound AND in "Any" state
+	// ==> TransitionCondition.NONE;	// condition is "None"
+	//
+	// transition site is bond Possible and in explicit state
+	// all the other sites are bond Possible AND in "Any" state
+	// ==> TransitionCondition.FREE;	// transition reaction condition is "Free"
 	public enum TransitionCondition {	// everywhere internally in vcell we use RBM bond type naming conventions
 		NONE("Unbound", "None"),		// MolecularComponentPattern.BondType.None		(-)
 		FREE("Any", "Free"),			// MolecularComponentPattern.BondType.Possible	(?)
@@ -884,6 +891,7 @@ private final static String SpringSaLaDMsgIncompatibleWithAny = "Reaction incomp
 private final static String SpringSaLaDMsgSubtypeMustBeIrreversible = "This reaction subtype must be irreversible. Make the reaction ireversible.";
 private final static String SpringSaLaDMsgTransmembraneBinding = "Transmembrane binding not supported";
 private final static String SpringSaLaDMsgSubtypeMustBeReversible = "This reaction subtype must be reversible. Make the reaction reversible and keep Kr at 0.";
+private static final String SpringSaLaDMsgNoComplexes = "SpringSaLaD does not accept explicit complexes in the list of reactants";
 
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList, ReactionContext rc) {
 	ReactionRuleCombo r = new ReactionRuleCombo(this, rc);
@@ -920,6 +928,19 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 			return;
 		}
+		// dan 07/31/24 correction: transition bound reactions accept complexes in the reactant pattern
+		// since one molecule may represent the transition while another has the condition
+		// interestingly, for allosteric reactions the conditional state must be in the same molecule
+		// which undergoes transition
+//		for(ReactantPattern rp : rpList) {
+//			List<MolecularTypePattern> mtpList = rp.getSpeciesPattern().getMolecularTypePatterns();
+//			if(mtpList.size() > 1) {
+//				String msg = SpringSaLaDMsgNoComplexes;
+//				String tip = GenericTip;
+//				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+//				return;
+//			}
+//		}
 		int numReactants = rpList.size();
 		int numProducts = ppList.size();
 		if(numReactants == 0 || numProducts == 0) {
@@ -930,13 +951,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		}
 
 		// no reaction can be on the membrane
-		String reactionStructure = reactionRule.getStructure().getName();
-		if(SpringStructureEnum.Membrane.columnName.equals(reactionStructure)) {
-			String msg = SpringSaLaDMsgReactionsCannotBe;
-			String tip = msg;
-			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-			return;
-		}
+		// dan 7/31/24 correction: a reaction involving a Membrane molecule can be on a membrane
+//		String reactionStructure = reactionRule.getStructure().getName();
+//		if(SpringStructureEnum.Membrane.columnName.equals(reactionStructure)) {
+//			String msg = SpringSaLaDMsgReactionsCannotBe;
+//			String tip = msg;
+//			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+//			return;
+//		}
 		
 		// the reaction and its participants must all be in the same Structure.
 		// TODO: this has to be refined, actually reactants bound to a membrane may have sites in the right compartment

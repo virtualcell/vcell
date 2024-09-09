@@ -284,6 +284,7 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 	// TODO: stop directly modifying the molecularTypePatterns list outside this class !!!
 	public void recalculateIndexes() {
 		for (int i = 0; i < molecularTypePatterns.size(); i++) {
+			// ATTENTION !!! indexes start at 1
 			molecularTypePatterns.get(i).setIndex(i+1);		// recalculate the indexes
 		}
 	}
@@ -359,6 +360,13 @@ public class SpeciesPattern extends RbmElementAbstract implements Matchable, Iss
 				mcp.setBond(null);
 			}
 		}
+	}
+
+	// ATTENTION !!! this defeats the purpose of making the Bond constructor private
+	// and very likely will break the integrity of the species pattern and the bond id
+	// use it only if you really must AND if you know what you're doing
+	public static Bond generateBond(MolecularTypePattern mtp, MolecularComponentPattern mcp) {
+		return new Bond(mtp, mcp);
 	}
 	public void setBond(MolecularTypePattern mtpTo, MolecularComponentPattern mcpTo, MolecularTypePattern mtpFrom, MolecularComponentPattern mcpFrom) {
 		// ATTENTION: used just for display purposes (sp small shape), the set is incomplete (bond id for example, other flags)

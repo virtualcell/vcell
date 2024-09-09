@@ -134,8 +134,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 	 * adding an internal bond within an existing or new species pattern
 	 * removal of a molecule of a molecular type
 	 * adding a fully defined molecule
-	 * @param label 
-	 * @throws ExpressionBindingException 
+	 * @throws ExpressionBindingException
 	 */
 	
 	public ReactionRule(Model model, String name, Structure structure, boolean reversible) {
