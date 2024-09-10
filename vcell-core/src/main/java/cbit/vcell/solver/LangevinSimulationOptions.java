@@ -42,8 +42,10 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 
 	public final static int[] DefaultNPart = { 10, 10, 10 };
 
-	protected int numOfTrials = 1;
-	protected int runIndex = 0;				// run index, will result in Run0 (followed by Run1, 2,...)
+	protected int numOfTrials = 1;				// how many runs of the solver for this simulation
+	protected int numOfParallelLocalRuns = 1;	// how many instances of the solver run in parallel
+	protected int runIndex = 0;					// run index, will result in Run0 (followed by Run1, 2,...)
+
 	protected double intervalSpring = 1.00E-9;	// default: dtspring: 1.00E-9	- from advanced
 	protected double intervalImage = 1.00E-4;	// default: dtimage: 1.00E-4	- from advanced
 	protected int[] npart = {DefaultNPart[0], DefaultNPart[1], DefaultNPart[2]};	// number of partitions on each axis
@@ -104,6 +106,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public int getNumOfTrials() {
 		return numOfTrials;
 	}
+	public int getNumOfParallelLocalRuns() {
+		return numOfParallelLocalRuns;
+	}
 	public double getIntervalSpring() {
 		return intervalSpring;
 	}
@@ -122,6 +127,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 	public final void setNumOfTrials(int newValue) {
 		this.numOfTrials = newValue;
+	}
+	public final void setNumOfParallelLocalRuns(int newValue) {
+		this.numOfParallelLocalRuns = newValue;
 	}
 	public final void setIntervalSpring(double newValue) {
 		this.intervalSpring = newValue;

@@ -28,7 +28,9 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 
 	private JLabel numOfTrialsLabel = null;
 	private JTextField ivjJTextFieldNumOfTrials = null;
-	
+	private JLabel numOfParallelLocalRuns = null;
+	private JTextField ivjJTextFieldNumOfParallelLocalRuns = null;
+
 	private JTextField intervalImageTextField = null;
 	private JTextField intervalSpringTextField = null;
 
@@ -54,9 +56,11 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 //			}
 			if (e.getSource() == getTrajectoryButton()) {
 				getJTextFieldNumOfTrials().setEnabled(false);
+				getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
 				setNewOptions();
 			} else if (e.getSource() == getMultiRunButton()) {
 				getJTextFieldNumOfTrials().setEnabled(true);
+				getJTextFieldNumOfParallelLocalRuns().setEnabled(true);
 				setNewOptions();
 			}
 		}
@@ -69,6 +73,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				return;
 			}
 			if (e.getSource() == getJTextFieldNumOfTrials() ||
+				e.getSource() == getJTextFieldNumOfParallelLocalRuns() ||
 				e.getSource() == getJTextFieldIntervalImage() ||
 				e.getSource() == getJTextFieldIntervalSpring()) { 
 				setNewOptions();
@@ -156,12 +161,35 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			trialPanel.add(getJTextFieldNumOfTrials(), gbc);
 
 			gbc = new GridBagConstraints();
-			gbc.gridx = 3;
-			gbc.gridy = 1;
-			gbc.anchor = GridBagConstraints.EAST;
+			gbc.gridx = 1;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.weightx = 1.0;
-			trialPanel.add(new JLabel(""), gbc);
+			gbc.insets = new Insets(0,22,1,6);
+			trialPanel.add(getNumOfParallelLocalRunsLabel(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(0,5,3,1);
+			trialPanel.add(getJTextFieldNumOfParallelLocalRuns(), gbc);
+
+
+
+
+
+
+
+
+//			gbc = new GridBagConstraints();		// --- empty panel (filler)
+//			gbc.gridx = 3;
+//			gbc.gridy = 1;
+//			gbc.anchor = GridBagConstraints.EAST;
+//			gbc.fill = GridBagConstraints.HORIZONTAL;
+//			gbc.weightx = 1.0;
+//			trialPanel.add(new JLabel(""), gbc);
 			
 			// ----- centerPanel -----------------------------------------------------
 			gbc = new GridBagConstraints();
@@ -227,6 +255,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			getButtonGroupTrials().setSelected(getTrajectoryButton().getModel(), true);
 
 			getJTextFieldNumOfTrials().setEnabled(false);
+			getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
 
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);		
@@ -292,6 +321,32 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		}
 		return numOfTrialsLabel;
 	}
+	private javax.swing.JTextField getJTextFieldNumOfParallelLocalRuns() {
+		if (ivjJTextFieldNumOfParallelLocalRuns == null) {
+			try {
+				ivjJTextFieldNumOfParallelLocalRuns = new javax.swing.JTextField();
+				ivjJTextFieldNumOfParallelLocalRuns.setName("JTextFieldNumOfParallelLocalRuns");
+				ivjJTextFieldNumOfParallelLocalRuns.setColumns(3);
+				ivjJTextFieldNumOfParallelLocalRuns.setText("1");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return ivjJTextFieldNumOfParallelLocalRuns;
+	}
+	private javax.swing.JLabel getNumOfParallelLocalRunsLabel() {
+		if (numOfParallelLocalRuns == null) {
+			try {
+				numOfParallelLocalRuns = new javax.swing.JLabel();
+				numOfParallelLocalRuns.setName("NumOfParallelLocalRuns");
+				numOfParallelLocalRuns.setText("Parallel Local Runs");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return numOfParallelLocalRuns;
+	}
+
 	private JTextField getJTextFieldIntervalImage() {
 		if (intervalImageTextField == null) {
 			try {
@@ -349,6 +404,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		getMultiRunButton().addActionListener(ivjEventHandler);
 		
 		getJTextFieldNumOfTrials().addFocusListener(ivjEventHandler);
+		getJTextFieldNumOfParallelLocalRuns().addFocusListener(ivjEventHandler);
 		getJTextFieldIntervalImage().addFocusListener(ivjEventHandler);
 		getJTextFieldIntervalSpring().addFocusListener(ivjEventHandler);
 	}
@@ -365,13 +421,17 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		
 		LangevinSimulationOptions lso = solverTaskDescription.getLangevinSimulationOptions();
 		int numTrials = lso.getNumOfTrials();
+		int numOfParallelLocalRuns = lso.getNumOfParallelLocalRuns();
 		if(numTrials == 1) {
 			getTrajectoryButton().setSelected(true);
 			getJTextFieldNumOfTrials().setEnabled(false);
+			getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
 		} else {
 			getMultiRunButton().setSelected(true);
 			getJTextFieldNumOfTrials().setEnabled(true);
 			getJTextFieldNumOfTrials().setText(numTrials+"");
+			getJTextFieldNumOfParallelLocalRuns().setEnabled(true);
+			getJTextFieldNumOfParallelLocalRuns().setText(numOfParallelLocalRuns + "");
 		}
 		getJTextFieldIntervalImage().setText(lso.getIntervalImage()+"");
 		getJTextFieldIntervalSpring().setText(lso.getIntervalSpring()+"");
@@ -393,12 +453,15 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		try {
 			LangevinSimulationOptions sso = solverTaskDescription.getLangevinSimulationOptions();
 		int numTrials = 1;
+		int numOfParallelLocalRuns = 1;
 		double intervalImage = solverTaskDescription.getLangevinSimulationOptions().getIntervalImage();
 		double intervalSpring = solverTaskDescription.getLangevinSimulationOptions().getIntervalSpring();
 
 		if(getMultiRunButton().isSelected()) {
 			numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
 			sso.setNumOfTrials(numTrials);
+			numOfParallelLocalRuns = Integer.parseInt(getJTextFieldNumOfParallelLocalRuns().getText());
+			sso.setNumOfParallelLocalRuns(numOfParallelLocalRuns);
 		}
 		
 		intervalImage = Double.parseDouble(getJTextFieldIntervalImage().getText());
