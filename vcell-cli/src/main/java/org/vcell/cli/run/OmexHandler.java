@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.jdom2.JDOMException;
 import org.vcell.cli.CLIUtils;
 
+import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -42,31 +43,37 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
         this.tempPath = RunUtils.getTempDir();
-
-        try {
-            try (CombineArchive initialArchive = new CombineArchive(omexFile)){
-                // Archive may have RDF errors; we can try and clear them here.
-                if (!omexFile.canWrite() || !initialArchive.hasErrors()
-                        || !initialArchive.getErrors().contains(".rdf")) return;
-
+        boolean initiallyEncounteredErrors = false;
+        try (CombineArchive initialArchive = new CombineArchive(omexFile, true)){
+            // With the `continueOnError` flag set, an exception won't be thrown.
+            initiallyEncounteredErrors = initialArchive.hasErrors();
+            // We want to try and repair any RDF issue the archive has, because we don't care that much about RDF validity.
+            // so, if (1) We have RDF errors; OR (2) have no rdf file, then we add / find & replace
+            if ((initiallyEncounteredErrors && omexFile.canWrite() && initialArchive.getErrors().contains(".rdf"))
+                || initialArchive.getEntries().stream().map(ArchiveEntry::getFileName).noneMatch(name->name.endsWith(".rdf")))
+                this.replaceMetadataRdfFiles(Paths.get(omexPath)); // Replace the offending files
+        } catch (CombineArchiveException | JDOMException | ParseException e) {
+            // Alright, we got errors, AND an exception. Let's try a hail mary.
+            if (omexFile.canWrite() && e.getMessage().contains(".rdf"))
                 this.replaceMetadataRdfFiles(Paths.get(omexPath));
-            }
+        }
+
+        try { // If we still have problems here, we're bombing out.
             this.archive = new CombineArchive(omexFile);
-            if (this.archive.hasErrors()){
-                String message = "Unable to initialise OMEX archive "+this.omexName+": "+this.archive.getErrors();
-                logger.error(message);
-                throw new IOException(message);
+            if (!this.archive.hasErrors()){
+                if (initiallyEncounteredErrors) logger.info("Successfully Repaired `" + this.omexName + "`");
+                return;
             }
-        }catch (CombineArchiveException | JDOMException | ParseException e) {
+            // We're unable to solve the remaining errors, so we're officially rejecting this archive.
+            String message = "Unable to initialise OMEX archive " + this.omexName + ": " + this.archive.getErrors();
+            logger.error(message);
+            throw new IOException(message);
+        } catch (CombineArchiveException | JDOMException | ParseException e) {
             String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
             logger.error(message+": "+e.getMessage(), e);
             throw new IOException(e);
         }
     }
-
-//    public OmexHandler(String omexPath, String outDir) throws IOException {
-//        this(omexPath, outDir);
-//    }
 
     private void replaceMetadataRdfFiles(Path zipFilePath) {
         try (FileSystem fs = FileSystems.newFileSystem(zipFilePath)) {
