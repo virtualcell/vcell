@@ -108,7 +108,7 @@ jobs:
     steps:
     - name: download generated installers
       if: ${{ github.event.inputs.server_only != 'true' }}
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
     - name: notarize mac installer
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
@@ -162,7 +162,7 @@ jobs:
       with:
         ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: retrieve installers and variables
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
     - name: setenv
       run: |
         for line in $(cat variables/variables); do echo $line >> $GITHUB_ENV; done
