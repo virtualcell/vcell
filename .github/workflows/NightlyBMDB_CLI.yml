@@ -273,7 +273,7 @@ jobs:
 
     steps:
       - name: Gather Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: ${{ github.workspace }}/published-results
 
@@ -293,7 +293,7 @@ jobs:
 
     steps:
       - name: Gather Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: ${{ github.workspace }}/bmdb-results
 
