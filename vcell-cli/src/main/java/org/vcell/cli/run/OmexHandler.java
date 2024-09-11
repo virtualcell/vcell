@@ -5,6 +5,7 @@ import de.unirostock.sems.cbarchive.CombineArchive;
 import de.unirostock.sems.cbarchive.CombineArchiveException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdom2.IllegalNameException;
 import org.jdom2.JDOMException;
 import org.vcell.cli.CLIUtils;
 
@@ -52,9 +53,9 @@ public class OmexHandler {
             if ((initiallyEncounteredErrors && omexFile.canWrite() && initialArchive.getErrors().contains(".rdf"))
                 || initialArchive.getEntries().stream().map(ArchiveEntry::getFileName).noneMatch(name->name.endsWith(".rdf")))
                 this.replaceMetadataRdfFiles(Paths.get(omexPath)); // Replace the offending files
-        } catch (CombineArchiveException | JDOMException | ParseException e) {
+        } catch (CombineArchiveException | JDOMException | IllegalNameException | ParseException e) {
             // Alright, we got errors, AND an exception. Let's try a hail mary.
-            if (omexFile.canWrite() && e.getMessage().contains(".rdf"))
+            if (omexFile.canWrite())
                 this.replaceMetadataRdfFiles(Paths.get(omexPath));
         }
 
