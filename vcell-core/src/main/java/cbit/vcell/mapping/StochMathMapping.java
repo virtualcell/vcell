@@ -200,12 +200,6 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 
 		//local structure mapping list
 		StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
-		//We have to check if all the reactions are able to tranform to stochastic jump processes before generating the math.
-		String stochChkMsg =simContext.getModel().isValidForStochApp();
-		if(!(stochChkMsg.equals("")))
-		{
-			throw new ModelException("Problem updating math description: "+ simContext.getName()+"\n"+stochChkMsg);
-		}
 
 		simContext.checkValidity();
 		

@@ -350,11 +350,6 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 		//local structure mapping list
 		StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
 		//We have to check if all the reactions are able to tranform to stochastic jump processes before generating the math.
-		String stochChkMsg =simContext.getModel().isValidForStochApp();
-		if(!(stochChkMsg.equals("")))
-		{
-			throw new ModelException("Problem updating math description: "+ simContext.getName()+"\n"+stochChkMsg);
-		}
 		//All sizes must be set for new ODE models and ratios must be set for old ones.
 		simContext.checkValidity();
 		

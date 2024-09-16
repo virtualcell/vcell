@@ -634,10 +634,6 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
     public SimulationContext(SimulationContext oldSimulationContext, Geometry newClonedGeometry, Application appType) throws PropertyVetoException{
 
         if(appType == Application.NETWORK_STOCHASTIC){
-            String msg = oldSimulationContext.getModel().isValidForStochApp();
-            if(!msg.equals("")){
-                throw new RuntimeException("Error constructing a new simulation context:\n" + msg); //no need to show popup here, the exception passes to upper level.
-            }
             this.bConcentration = oldSimulationContext.bConcentration;
         } else {
             this.bConcentration = true; //deterministic method use concentration only.

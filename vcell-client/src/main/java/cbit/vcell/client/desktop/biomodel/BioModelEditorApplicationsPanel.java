@@ -496,14 +496,6 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 			PopupGenerator.showErrorDialog(this, "Please select an application.");
 			return;
 		}
-		if (appType == Application.NETWORK_STOCHASTIC) {
-			//check validity if copy to stochastic application
-			String message = bioModel.getModel().isValidForStochApp();
-			if (!message.equals("")) {
-				PopupGenerator.showErrorDialog(this, message);
-				return;
-			}
-		}
 		AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, appType);
 		AsynchClientTask[] allTasks = new AsynchClientTask[copyTasks.length + 1];
 		System.arraycopy(copyTasks, 0, allTasks, 0, copyTasks.length);
@@ -517,14 +509,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 		ClientTaskDispatcher.dispatch(this, new Hashtable<String, Object>(), allTasks,  false);
 	}
 	private void newApplication(java.awt.event.ActionEvent event,SimulationContext.Application appType) {
-		if (appType == Application.NETWORK_STOCHASTIC) {
-			String message = bioModel.getModel().isValidForStochApp();
-			if (!message.equals("")) {
-				PopupGenerator.showErrorDialog(this, message);
-				return;
-			}
-		}
-		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(this,bioModel,appType); 
+		AsynchClientTask[] newApplicationTasks = ClientTaskManager.newApplication(this,bioModel,appType);
 		AsynchClientTask[] tasks = new AsynchClientTask[newApplicationTasks.length + 1];
 		System.arraycopy(newApplicationTasks, 0, tasks, 0, newApplicationTasks.length);
 		tasks[newApplicationTasks.length] = new AsynchClientTask("show application", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
