@@ -21,10 +21,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.LaunchVirtualFRAP;
 import cbit.vcell.desktop.ClientLogin;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.TransformMassActions;
-import cbit.vcell.model.TransformMassActions.TransformedReaction;
-import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
@@ -43,7 +39,6 @@ import org.vcell.util.document.VersionFlag;
 import org.vcell.util.gui.*;
 import org.vcell.util.gui.exporter.FileFilters;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
-import scala.collection.mutable.HashTable;
 
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
@@ -130,7 +125,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
     private JMenuItem ivjRunVFrapMenuItem = null;
     //Added Oct. 17th, 2007. To put a tool menu in
     private JMenu toolMenu = null;
-    private JMenuItem transMAMenuItem = null;
     private JMenuItem viewJobsMenuItem = null;
     private JMenuItem jMenuItemPermissions = null;
     private JLabel warningText = null;
@@ -219,8 +213,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 }
                 if (e.getSource() == DocumentWindow.this.getRunVFrapItem())
                     DocumentWindow.this.startVirtualFRAP();
-                if (e.getSource() == DocumentWindow.this.getTransMAMenuItem())
-                    DocumentWindow.this.showTransMADialog();
                 if (e.getSource() == DocumentWindow.this.getViewJobsMenuItem())
                     DocumentWindow.this.showViewJobsDialog();
                 if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData())
@@ -422,26 +414,12 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.toolMenu.add(this.getRunVFrapItem());
                 this.toolMenu.add(this.getExportedDataViewer());
                 this.toolMenu.add(new JSeparator());
-                this.toolMenu.add(this.getTransMAMenuItem());
 //			toolMenu.add(getViewJobsMenuItem());		// moved to Server
             } catch (Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
         }
         return this.toolMenu;
-    }
-
-    private javax.swing.JMenuItem getTransMAMenuItem() {
-        if (this.transMAMenuItem == null) {
-            try {
-                this.transMAMenuItem = new javax.swing.JMenuItem();
-                this.transMAMenuItem.setName("TransMA");
-                this.transMAMenuItem.setText("Transform to Stochastic Capable");
-            } catch (java.lang.Throwable ivjExc) {
-                this.handleException(ivjExc);
-            }
-        }
-        return this.transMAMenuItem;
     }
 
     private javax.swing.JMenuItem getViewJobsMenuItem() {
@@ -1399,7 +1377,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         this.getNewHelpMenuItem().addActionListener(this.ivjEventHandler);
 //	getRunBNGMenuItem().addActionListener(ivjEventHandler);
         this.getRunVFrapItem().addActionListener(this.ivjEventHandler);
-        this.getTransMAMenuItem().addActionListener(this.ivjEventHandler);
         this.getViewJobsMenuItem().addActionListener(this.ivjEventHandler);
         this.getJMenuItemFieldData().addActionListener(this.ivjEventHandler);
         this.getPermissionsMenuItem().addActionListener(this.ivjEventHandler);
@@ -1700,11 +1677,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 this.getJMenuItemFieldData().setEnabled(true);
 //			getJMenuItemMIRIAM().setEnabled(true);
                 this.getJMenuItemPreferences().setEnabled(true);
-                this.getTransMAMenuItem().setEnabled(
-                        this.getWindowManager() != null &&
-                                this.getWindowManager().getVCDocument() != null &&
-                                this.getWindowManager().getVCDocument() instanceof BioModel
-                );
                 this.getViewJobsMenuItem().setEnabled(true);
                 //getJMenuImportPathway().setEnabled(getWindowManager().getVCDocument() instanceof BioModel);
                 this.getPermissionsMenuItem().setEnabled(bVersionedDocument && this.getWindowManager().getVCDocument().getVersion().getOwner().equals(this.getWindowManager().getUser()));
@@ -1817,81 +1789,6 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             });
         }
         return this.jMenuItemPreferences;
-    }
-
-    public void showTransMADialog() {
-        String disclaimer = "Transforming reactions to stochastic capable cannot be undone. You may want to make a copy of the model.\nAlso some existing applications may need to be recreated in order to maintain consistency.\nLast but not least, stochastic transfomation may not be mathematically equivalent to the orignal model. \nDo you wish to proceed?";
-        JTextArea ta = new JTextArea(disclaimer);
-        ta.setEditable(false);
-        int userChoice = PopupGenerator.showComponentOKCancelDialog(this, ta, "Model Transformation Warning");
-        if (userChoice != JOptionPane.OK_OPTION) {
-            return;
-        }
-        BioModel biomodel = null;
-        if (this.getWindowManager().getVCDocument() instanceof BioModel) {
-            biomodel = (BioModel) this.getWindowManager().getVCDocument();
-        }
-        TransformMassActionPanel transMAPanel = new TransformMassActionPanel();
-        TransformMassActions transformMassActions = new TransformMassActions();
-
-        Hashtable<String, Object> hashTable = new Hashtable<>();
-        hashTable.put("biomodel", biomodel);
-        hashTable.put("window", this);
-
-        ProgressDialog progressDialog = new LinearDefiniteProgressDialog(this);
-
-        AsynchClientTask task1 = new AsynchClientTask("transform", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-            @Override
-            public void run(Hashtable<String, Object> hashTable) throws Exception {
-                BioModel biomodel = (BioModel) hashTable.get("biomodel");
-                if (biomodel == null) {
-                    throw new RuntimeException("Biomodel cannot be null");
-                }
-                try {
-                    transMAPanel.setModel(biomodel.getModel());
-                    ReactionStep[] origReactions = biomodel.getModel().getReactionSteps();
-                    transformMassActions.initializeTransformation(origReactions);
-                    for (int i = 0; i < origReactions.length; i++) {
-                        progressDialog.setProgress(i * 100 / origReactions.length);
-                        TransformedReaction[] transReactionSteps = transformMassActions.getTransformedReactionSteps();
-                        boolean[] isTransformable = transformMassActions.getIsTransformable();
-
-                        transReactionSteps[i] = transformMassActions.transformOne(origReactions[i]);    // here all the work is done
-                        isTransformable[i] = transReactionSteps[i].getTransformType() == TransformedReaction.TRANSFORMABLE;
-                    }
-                    progressDialog.setProgress(100);
-                    transMAPanel.setTransformation(transformMassActions);
-                } catch (Throwable e) {
-                    System.out.println(e.getMessage());
-                }
-                System.out.println("done");
-            }
-        };
-
-        AsynchClientTask task2 = new AsynchClientTask("starting exporting", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
-            @Override
-            public void run(Hashtable<String, Object> hashTable) throws Exception {
-                // if we hit Cancel on the ProgressDialog, this task won't get executed
-                Component requester = (Component) hashTable.get("window");
-                int choice = DialogUtils.showComponentOKCancelDialog(requester, transMAPanel, "Transform to Stochastic Capable Model");
-                if (choice == JOptionPane.OK_OPTION) {
-                    try {
-                        transMAPanel.saveTransformedReactions();
-                    } catch (Exception e) {
-                        PopupGenerator.showWarningDialog(DocumentWindow.this.getTopLevelWindowManager(), null, new UserMessage(e.getMessage(), new String[]{"Ok"}, "Ok"), null);
-                    }
-                }
-            }
-        };
-
-        AsynchClientTask[] tasks = new AsynchClientTask[]{task1, task2};
-        boolean bShowProgressPopup = true;
-        boolean bKnowProgress = true;
-        boolean cancelable = true;
-        boolean bInputBlocking = false;        // default: false
-        ClientTaskDispatcher.dispatch(this, hashTable, tasks, progressDialog,
-                bShowProgressPopup, bKnowProgress, cancelable, null, bInputBlocking,
-                ClientTaskDispatcher.StopStrategy.THREAD_KILL);
     }
 
     public void showViewJobsDialog() {
