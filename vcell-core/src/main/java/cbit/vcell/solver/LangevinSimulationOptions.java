@@ -100,8 +100,14 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 // -----------------------------------------------------------------------------------
 
-	public int getRunIndex() {
-		return runIndex;
+	// can be between 0 and numOfTrials-1
+	public int getRunIndex() {	// for multiple trials the runIndex must be incremented for each run, dynamically
+		if(runIndex > numOfTrials-1) {
+			throw new RuntimeException("Max run index must be smaller than the number of trials.");
+		}
+		int currentRunIndex = runIndex;
+		runIndex++;
+		return currentRunIndex;
 	}
 	public int getNumOfTrials() {
 		return numOfTrials;
@@ -142,6 +148,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		this.npart[1] = npart[1];
 		this.npart[2] = npart[2];
 	}
+	public final void setNPart(int index, int npart) {
+		this.npart[index] = npart;
+	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 		getPropertyChange().addPropertyChangeListener(listener);
@@ -172,7 +181,8 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	private void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws PropertyVetoException {
 		getVetoChange().fireVetoableChange(propertyName, oldValue, newValue);
 	}
-	
+
+	// used for VCML export
 	public String getVCML() {		
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\t" + VCML.LangevinSimulationOptions + " " + VCML.BeginBlock + "\n");
@@ -183,10 +193,12 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nx + " " + npart[0] + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Ny + " " + npart[1] + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nz + " " + npart[2] + "\n");
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numOfParallelLocalRuns + " " + numOfParallelLocalRuns + "\n");
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
 	}
-	
+
+	// used for VCML import
 	public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 		String token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.LangevinSimulationOptions)) {
@@ -203,6 +215,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 			if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_runIndex)) {
 				token = tokens.nextToken();
 				runIndex = Integer.parseInt(token);
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numOfParallelLocalRuns)) {
+				token = tokens.nextToken();
+				numOfParallelLocalRuns = Integer.parseInt(token);
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_intervalSpring)) {
 				token = tokens.nextToken();
 				intervalSpring = Double.parseDouble(token);

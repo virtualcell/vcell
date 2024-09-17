@@ -243,7 +243,44 @@ public class LangevinLngvWriter {
 		sb.append("\n");
 //		writeReactionAnnotations(sb);
 		sb.append("\n");
-			
+
+		/*
+		TODO: The following are being produced when the simulation is created, and are being updated as simulations run (I think)
+		 from C:\TEMP\springsalad-new\spring3reactions\spring3reactions_SIMULATIONS\Simulation0_SIM_FOLDER\Simulation0_SIM.txt
+
+		*** SIMULATION STATE ***
+
+		Runs: 6
+		Parallel: true
+		SimultaneousRuns: 3
+		Aborted: false
+		IsRunning: false
+		HasResults: false
+		RunOnCluster: false
+
+		*** PROCESSOR FILES ***
+
+		MoleculeAverages: 'null'
+		BondAverages: 'null'
+		StateAverages: 'null'
+		RunningTimes: 'null'
+
+		TODO: Here are a bunch of files with aggregate results for each observable, probably produced during postprocessing
+		 ex: Simulation0_SIM_AllData_0_5_FREE NewMolecule0 _ Type0 _ State0.csv
+		 content example: BOUND NewMolecule1 : Type0 : State0
+		 Time, Run0, Run1, Run2, Run3, Run4, Run5,
+		 0.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+		 1.00009999999987E-4, 48.0, 50.0, 50.0, 50.0, 48.0, 48.0,
+		 ...
+
+		*** RAW DATA FILES ***
+
+		'null'
+
+		*** SITE DATA FILES ***
+
+		null
+		 */
 		String ret = sb.toString();
 //		System.out.println(ret);
 		
