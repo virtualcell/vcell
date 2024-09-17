@@ -250,6 +250,10 @@ public RationalExp add(RationalExp rational) {
 	}
 }
 
+public int totalNumTerms() {
+	return numTermList.size() + denTermList.size();
+}
+
 
 /**
  * Insert the method's description here.
@@ -646,7 +650,6 @@ public RationalExp simplify() {
 			return this;
 		}
 	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
 }

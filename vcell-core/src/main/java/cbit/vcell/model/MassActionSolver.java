@@ -40,7 +40,7 @@ public class MassActionSolver {
 	public MassActionSolver()
 	{
 	}
-	public static class MassActionFunction 
+	public static class MassActionFunction
 	{
 		private Expression fRate = null;
 		private Expression rRate = null;
@@ -149,6 +149,9 @@ public class MassActionSolver {
 		ReactionParticipant[] rp = rs.getReactionParticipants();
 		//should use this one to compare functional equavalent since this duplicatedExp has all params substituted.
 		Expression duplicatedExp = substituteParameters(orgExp, false);
+		if (duplicatedExp.infix().length()>200){
+			throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "aborting solving for mass action coefficients, expression too long"));
+		}
 		//separate the reactants and products, fluxes, catalysts
 		String rxnName = rs.getName();
 		
@@ -320,20 +323,44 @@ public class MassActionSolver {
 		}else{
 			// both reactants and products
 			RationalExpMatrix matrix = new RationalExpMatrix(2,3);
-			matrix.set_elem(0, 0, RationalExpUtils.getRationalExp(R_1, true));
-			matrix.set_elem(0, 1, RationalExpUtils.getRationalExp(Expression.negate(P_1), true));
-			matrix.set_elem(0, 2, RationalExpUtils.getRationalExp(J_1, true));
-			matrix.set_elem(1, 0, RationalExpUtils.getRationalExp(R_2, true));
-			matrix.set_elem(1, 1, RationalExpUtils.getRationalExp(Expression.negate(P_2), true));
-			matrix.set_elem(1, 2, RationalExpUtils.getRationalExp(J_2, true));
+			RationalExp elem_0_0 = RationalExpUtils.getRationalExp(R_1, true);
+			RationalExp elem_0_1 = RationalExpUtils.getRationalExp(Expression.negate(P_1), true);
+			RationalExp elem_0_2 = RationalExpUtils.getRationalExp(J_1, true);
+			RationalExp elem_1_0 = RationalExpUtils.getRationalExp(R_2, true);
+			RationalExp elem_1_1 = RationalExpUtils.getRationalExp(Expression.negate(P_2), true);
+			RationalExp elem_1_2 = RationalExpUtils.getRationalExp(J_2, true);
+			final int MAX_TERMS = 10;
+			if (elem_0_0.totalNumTerms()>MAX_TERMS
+					|| elem_0_1.totalNumTerms()>MAX_TERMS
+					|| elem_0_2.totalNumTerms()>MAX_TERMS
+					|| elem_1_0.totalNumTerms()>MAX_TERMS
+					|| elem_1_1.totalNumTerms()>MAX_TERMS
+					|| elem_1_2.totalNumTerms()>MAX_TERMS){
+				throw new ModelException("aborting solution of mass action coefficients, expressions too long");
+			}
+			matrix.set_elem(0, 0, elem_0_0);
+			matrix.set_elem(0, 1, elem_0_1);
+			matrix.set_elem(0, 2, elem_0_2);
+			matrix.set_elem(1, 0, elem_1_0);
+			matrix.set_elem(1, 1, elem_1_1);
+			matrix.set_elem(1, 2, elem_1_2);
+
 			RationalExp[] solution = null;
 			RationalExp[] originalSolution = null;
 			try {
 				//matrix.show();
 				solution = matrix.solveLinearExpressions();
 				originalSolution = matrix.solveLinearExpressions();
-				solution[0] = solution[0].simplify(); //solution[0] is forward rate.
-				solution[1] = solution[1].simplify(); //solution[1] is reverse rate. 
+				try {
+					jscl.math.Expression.timeoutMS.set(System.currentTimeMillis() + 100);
+					if (solution[0].totalNumTerms()>MAX_TERMS || solution[1].totalNumTerms()>MAX_TERMS){
+						throw new ModelException("aborting solution of mass action coefficients, expressions too long");
+					}
+					solution[0] = solution[0].simplify(); //solution[0] is forward rate.
+					solution[1] = solution[1].simplify(); //solution[1] is reverse rate.
+				}finally{
+					jscl.math.Expression.timeoutMS.remove();
+				}
 			} catch(ArithmeticException e) {
 				if(e.getMessage() == null || !e.getMessage().startsWith(jscl.math.Expression.FailedToSimplify)) {
 					throw(e);	// if failed to simplify, continue with what we have, otherwise rethrow
