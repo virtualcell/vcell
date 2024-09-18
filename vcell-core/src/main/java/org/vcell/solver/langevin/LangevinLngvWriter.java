@@ -430,8 +430,8 @@ public class LangevinLngvWriter {
 					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(0);
 			Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern> elementTwo = 
 					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(1);
-			String nameOne = "Any_State";
-			String nameTwo = "Any_State";
+			String nameOne = ReactionRuleSpec.ANY_STATE_STRING;
+			String nameTwo = ReactionRuleSpec.ANY_STATE_STRING;
 			if(elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition() != null) {
 				nameOne = elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName();
 			}
@@ -659,7 +659,8 @@ public class LangevinLngvWriter {
 					}
 					// identify the binding condition site and state 
 					for(ParticleMolecularComponentPattern pmcp : pmtpConditionReactant.getMolecularComponentPatternList()) {
-						if(pmcp.getComponentStatePattern().isAny()) {
+						// condition state may be "any". We need to look for an "existing" bond
+						if(!(pmcp.getBondType() == ParticleMolecularComponentPattern.ParticleBondType.Exists)) {
 							continue;
 						}
 						ParticleComponentStatePattern pcsp = pmcp.getComponentStatePattern();
@@ -708,7 +709,7 @@ public class LangevinLngvWriter {
 				if(TransitionCondition.BOUND == transitionCondition) {
 					sb.append(" '").append(pmtpConditionReactant.getMolecularType().getName()).append("' : '")
 					.append(pmcpConditionReactant.getMolecularComponent().getName()).append("' : '")
-					.append(pcsdConditionReactant);
+					.append(pmcpConditionReactant.getComponentStatePattern().isAny() ? ReactionRuleSpec.ANY_STATE_STRING : pcsdConditionReactant);
 				}
 				sb.append("\n");
 			}						// end if Subtype.TRANSITION
