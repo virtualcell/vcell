@@ -75,7 +75,7 @@ if command -v singularity >/dev/null 2>&1; then
            echo successful copy from /share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img to /state/partition1/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img
        fi
    fi
-   container_prefix="singularity run --bind /share/apps/vcell3/users/parest_data:/simdata --bind /share/apps/vcell12/users:/share/apps/vcell12/users --bind /share/apps/vcell3/htclogs:/htclogs  --bind /scratch/vcell:/solvertmp $localSingularityImage  --env datadir_external=/share/apps/vcell3/users "
+   container_prefix="singularity run --containall --bind /share/apps/vcell3/users/parest_data:/simdata --bind /share/apps/vcell12/users:/share/apps/vcell12/users --bind /share/apps/vcell3/htclogs:/htclogs  --bind /scratch/vcell:/solvertmp $localSingularityImage  --env datadir_external=/share/apps/vcell3/users "
 else
     echo "Required singularity command not found (maybe 'module load singularity/vcell-3.10.0' command didn't work) "
     exit 1
