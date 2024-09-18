@@ -1,7 +1,8 @@
-package cbit.vcell.model;
+package cbit.vcell.mapping.stoch;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MathGenCompareTest;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
@@ -14,7 +15,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.sbml.VcmlTestSuiteFiles;
 
-import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -128,11 +128,11 @@ public class GeneralKineticsSolverTest {
                 .lines().collect(Collectors.joining("\n"));
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
 
-		StochasticKineticsSolver solver = new StochasticKineticsSolver();
+		StochasticTransformer solver = new StochasticTransformer();
 
 		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
             try {
-                StochasticKineticsResults results = solver.transformToStochastic(reactionStep);
+                StochasticFunction results = solver.transformToStochastic(reactionStep);
                 if (results == null || (results.massActionFunction == null) && (results.generalKineticsStochasticFunction == null)) {
                     throw new IllegalStateException("unable to transform stochastic kinetics for reaction "+reactionStep.getName());
                 }

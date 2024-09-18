@@ -11,6 +11,7 @@
 package cbit.vcell.mapping;
 import java.util.*;
 
+import cbit.vcell.mapping.stoch.MassActionStochasticFunction;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.VCellThreadChecker;
@@ -55,7 +56,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.MassActionSolver;
+import cbit.vcell.mapping.stoch.MassActionStochasticTransformer;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
@@ -679,7 +680,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			{
 				Expression expCopy = new Expression(radiusExp);
 				try{
-					MassActionSolver.substituteParameters(expCopy, true).evaluateConstant();
+					MassActionStochasticTransformer.substituteParameters(expCopy, true).evaluateConstant();
 				}catch(ExpressionException e)
 				{
 					throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep.getName(), "Problem in binding radius of " + reactionStep.getName() +":  '" + radiusExp.infix() + "', " + e.getMessage()));
@@ -753,7 +754,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			Expression reverseRate = null;
 			
 			// Using the MassActionFunction to write out the math description 
-			MassActionSolver.MassActionFunction maFunc = null;
+			MassActionStochasticFunction maFunc = null;
 
 			if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
 			   kinetics.getKineticsDescription().equals(KineticsDescription.General) || 
@@ -769,7 +770,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
 					reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
 				}
-				maFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
+				maFunc = MassActionStochasticTransformer.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
 				if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 				{
 					throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");

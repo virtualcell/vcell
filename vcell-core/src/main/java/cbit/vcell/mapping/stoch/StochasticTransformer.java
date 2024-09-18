@@ -1,14 +1,15 @@
-package cbit.vcell.model;
+package cbit.vcell.mapping.stoch;
 
+import cbit.vcell.model.*;
 import cbit.vcell.parser.ExpressionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class StochasticKineticsSolver {
+public class StochasticTransformer {
 
-    private final static Logger lg = LogManager.getLogger(StochasticKineticsSolver.class);
+    private final static Logger lg = LogManager.getLogger(StochasticTransformer.class);
 
-    public StochasticKineticsResults transformToStochastic(ReactionStep reactionStep) throws ExpressionException {
+    public StochasticFunction transformToStochastic(ReactionStep reactionStep) throws ExpressionException {
         Parameter ma_kf = null;
         Parameter ma_kr = null;
         if (reactionStep.getKinetics() instanceof MassActionKinetics ma){
@@ -16,14 +17,14 @@ public class StochasticKineticsSolver {
             ma_kr = ma.getReverseRateParameter();
         }
         try {
-            MassActionSolver.MassActionFunction maResults = MassActionSolver.solveMassAction(ma_kf, ma_kr, reactionStep.getKinetics().getAuthoritativeParameter().getExpression(), reactionStep);
-            StochasticKineticsResults results = new StochasticKineticsResults(maResults, maResults.getReactants(), maResults.getProducts());
+            MassActionStochasticFunction maResults = MassActionStochasticTransformer.solveMassAction(ma_kf, ma_kr, reactionStep.getKinetics().getAuthoritativeParameter().getExpression(), reactionStep);
+            StochasticFunction results = new StochasticFunction(maResults, maResults.getReactants(), maResults.getProducts());
             return results;
         } catch (Exception e) {
             lg.info("Failed to solve mass action kinetics for reaction step: " + reactionStep.getName() + ", " + e.getMessage());
             try {
-                GeneralKineticsSolver.GeneralKineticsStochasticFunction gks = GeneralKineticsSolver.solveGeneralKineticsStochasticFunction(reactionStep);
-                StochasticKineticsResults results = new StochasticKineticsResults(gks, gks.getReactants(), gks.getProducts());
+                GeneralKineticsStochasticFunction gks = GeneralKineticsStochasticTransformer.solveGeneralKineticsStochasticFunction(reactionStep);
+                StochasticFunction results = new StochasticFunction(gks, gks.getReactants(), gks.getProducts());
                 return results;
             } catch (ModelException ex) {
                 lg.info("Failed to solve stochastic kinetics for reaction step: " + reactionStep.getName() + ", " + e.getMessage());

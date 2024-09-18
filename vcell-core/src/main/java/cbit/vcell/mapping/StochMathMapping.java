@@ -10,11 +10,11 @@
 
 package cbit.vcell.mapping;
 import java.beans.PropertyVetoException;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
+import cbit.vcell.mapping.stoch.MassActionStochasticFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
@@ -47,7 +47,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.MassActionSolver;
+import cbit.vcell.mapping.stoch.MassActionStochasticTransformer;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.ModelException;
@@ -103,7 +103,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 	Expression factorExpr = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
 
 	// Using the MassActionFunction to write out the math description 
-	MassActionSolver.MassActionFunction maFunc = null;
+	MassActionStochasticFunction maFunc = null;
 
 	Kinetics kinetics = reactionStep.getKinetics();
 	if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
@@ -120,7 +120,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 			forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
 			reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
 		}
-		maFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
+		maFunc = MassActionStochasticTransformer.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
 		if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null) {
 			throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
 		}
@@ -580,7 +580,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward);
 						reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
 					}
-					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
+					MassActionStochasticFunction maFunc = MassActionStochasticTransformer.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
 					if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 					{
 						throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
@@ -607,7 +607,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 					{
 						Expression KonCopy = new Expression(Kon);
 						try{
-							MassActionSolver.substituteParameters(KonCopy, true).evaluateConstant();
+							MassActionStochasticTransformer.substituteParameters(KonCopy, true).evaluateConstant();
 							forwardRate = new Expression(Kon);
 						}catch(ExpressionException e)
 						{
@@ -748,7 +748,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
 						reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
 					}
-					MassActionSolver.MassActionFunction fluxFunc = MassActionSolver.solveMassAction(forwardRateParameter, reverseRateParameter, fluxRate, (FluxReaction)reactionStep);
+					MassActionStochasticFunction fluxFunc = MassActionStochasticTransformer.solveMassAction(forwardRateParameter, reverseRateParameter, fluxRate, (FluxReaction)reactionStep);
 					//create jump process for forward flux if it exists.
 					Expression rsStructureSize = new Expression(reactionStep.getStructure().getStructureSize(), getNameScope());
 					VCUnitDefinition probRateUnit = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getAreaUnit()).divideBy(modelUnitSystem.getTimeUnit());

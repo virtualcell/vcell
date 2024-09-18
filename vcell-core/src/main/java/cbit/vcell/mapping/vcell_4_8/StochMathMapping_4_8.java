@@ -14,6 +14,7 @@ import java.beans.PropertyVetoException;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import cbit.vcell.mapping.stoch.MassActionStochasticFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
@@ -48,11 +49,10 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.MassActionSolver;
+import cbit.vcell.mapping.stoch.MassActionStochasticTransformer;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Model.ReservedSymbolRole;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.model.Parameter;
@@ -703,7 +703,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				else if (kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
 					Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(null,null,rateExp, reactionStep);
+					MassActionStochasticFunction maFunc = MassActionStochasticTransformer.solveMassAction(null,null,rateExp, reactionStep);
 					if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 					{
 						throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
@@ -855,7 +855,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				{
 					Expression fluxRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
-					MassActionSolver.MassActionFunction fluxFunc = MassActionSolver.solveMassAction(null,null,fluxRate, (FluxReaction)reactionStep);
+					MassActionStochasticFunction fluxFunc = MassActionStochasticTransformer.solveMassAction(null,null,fluxRate, (FluxReaction)reactionStep);
 					//create jump process for forward flux if it exists.
 					if(fluxFunc.getForwardRate() != null && !fluxFunc.getForwardRate().isZero()) 
 					{

@@ -1,27 +1,28 @@
-package cbit.vcell.model;
+package cbit.vcell.mapping.stoch;
 
+import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.parser.Expression;
 
 import java.util.List;
 
-public class StochasticKineticsResults {
-    public final MassActionSolver.MassActionFunction massActionFunction;
-    public final GeneralKineticsSolver.GeneralKineticsStochasticFunction generalKineticsStochasticFunction;
+public class StochasticFunction {
+    final MassActionStochasticFunction massActionFunction;
+    final GeneralKineticsStochasticFunction generalKineticsStochasticFunction;
     private final List<ReactionParticipant> reactants;
     private final List<ReactionParticipant> products;
 
-    public StochasticKineticsResults(MassActionSolver.MassActionFunction massActionFunction,
-                                     List<ReactionParticipant> reactants,
-                                     List<ReactionParticipant> products) {
+    public StochasticFunction(MassActionStochasticFunction massActionFunction,
+                              List<ReactionParticipant> reactants,
+                              List<ReactionParticipant> products) {
         this.massActionFunction = massActionFunction;
         this.generalKineticsStochasticFunction = null;
         this.reactants = reactants;
         this.products = products;
     }
 
-    public StochasticKineticsResults(GeneralKineticsSolver.GeneralKineticsStochasticFunction generalKineticsStochasticFunction,
-                                     List<ReactionParticipant> reactants,
-                                     List<ReactionParticipant> products) {
+    public StochasticFunction(GeneralKineticsStochasticFunction generalKineticsStochasticFunction,
+                              List<ReactionParticipant> reactants,
+                              List<ReactionParticipant> products) {
         this.massActionFunction = null;
         this.generalKineticsStochasticFunction = generalKineticsStochasticFunction;
         this.reactants = reactants;

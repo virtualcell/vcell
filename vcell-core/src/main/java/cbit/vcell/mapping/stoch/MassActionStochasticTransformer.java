@@ -8,13 +8,13 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.model;
+package cbit.vcell.mapping.stoch;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 
+import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
@@ -31,70 +31,16 @@ import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 
-public class MassActionSolver {
-	private final static Logger lg = LogManager.getLogger(MassActionSolver.class);
+public class MassActionStochasticTransformer {
+	private final static Logger lg = LogManager.getLogger(MassActionStochasticTransformer.class);
 
 	public static final double Epsilon = 1e-6; // to be used for double calculation
 	private static final int[] primeIntNumbers = new int[]{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}; 
 	
-	public MassActionSolver()
+	public MassActionStochasticTransformer()
 	{
 	}
-	public static class MassActionFunction
-	{
-		private Expression fRate = null;
-		private Expression rRate = null;
-		private List<ReactionParticipant> reactants = null;
-		private List<ReactionParticipant> products = null;
-		
-		public MassActionFunction()
-		{}
-		public MassActionFunction(Expression forwardRate, Expression reverseRate)
-		{
-			this(forwardRate, reverseRate, null, null);
-		}
-		public MassActionFunction(Expression forwardRate, Expression reverseRate, List<ReactionParticipant> reactants, List<ReactionParticipant> products)
-		{
-			this.fRate = forwardRate;
-			this.rRate = reverseRate;
-			this.reactants = reactants;
-			this.products = products;
-		}
-		
-		public Expression getForwardRate() {
-			return fRate;
-		}
 
-		private void setForwardRate(Expression rate) {
-			fRate = rate;
-		}
-
-		public Expression getReverseRate() {
-			return rRate;
-		}
-
-		private void setReverseRate(Expression rate) {
-			rRate = rate;
-		}
-		public List<ReactionParticipant> getReactants() {
-			return reactants;
-		}
-		public void setReactants(List<ReactionParticipant> reactants) {
-			this.reactants = reactants;
-		}
-		public List<ReactionParticipant> getProducts() {
-			return products;
-		}
-		public void setProducts(List<ReactionParticipant> products) {
-			this.products = products;
-		}
-//		public void show()
-//		{
-//			System.out.println("Forward rate is " + getForwardRate().infix());
-//			System.out.println("Reverse rate is " + getReverseRate().infix());
-//		}
-	}
-	
 	public static Expression substituteParameters(Expression exp, boolean substituteConst) throws ExpressionException 
 	{
 		Expression result = new Expression(exp);
@@ -141,8 +87,8 @@ public class MassActionSolver {
 	}
 
 	
-	public static MassActionFunction solveMassAction(Parameter optionalForwardRateParameter, Parameter optionalReverseRateParameter, Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException, DivideByZeroException{
-		MassActionFunction maFunc = new MassActionFunction();
+	public static MassActionStochasticFunction solveMassAction(Parameter optionalForwardRateParameter, Parameter optionalReverseRateParameter, Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException, DivideByZeroException{
+		MassActionStochasticFunction maFunc = new MassActionStochasticFunction();
 		//get reactants, products, overlaps, non-overlap reactants and non-overlap products
 		ArrayList<ReactionParticipant> reactants = new ArrayList<ReactionParticipant>();
 		ArrayList<ReactionParticipant> products = new ArrayList<ReactionParticipant>();
