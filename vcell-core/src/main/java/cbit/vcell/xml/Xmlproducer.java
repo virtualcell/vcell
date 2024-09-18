@@ -4817,7 +4817,24 @@ private Element getXML(LangevinSimulationOptions lso) {
 	e = new Element(XMLTags.LangevinSO_intervalImage);
 	e.setText(String.valueOf(lso.getIntervalImage()));
 	lsoe.addContent(e);
-	
+
+	e = new Element(XMLTags.LangevinSO_Partition_Nx);
+	e.setText(String.valueOf(lso.getNPart(0)));
+	lsoe.addContent(e);
+
+	e = new Element(XMLTags.LangevinSO_Partition_Ny);
+	e.setText(String.valueOf(lso.getNPart(1)));
+	lsoe.addContent(e);
+
+	e = new Element(XMLTags.LangevinSO_Partition_Nz);
+	e.setText(String.valueOf(lso.getNPart(2)));
+	lsoe.addContent(e);
+
+	e = new Element(XMLTags.LangevinSO_numOfParallelLocalRuns);
+	e.setText(String.valueOf(lso.getNumOfParallelLocalRuns()));
+	lsoe.addContent(e);
+
+
 //	if (lso.getSomethingOptional() != null) {
 //		e = new Element(XMLTags.NFSimSimulationOptions_moleculeDistance);
 //		e.setText(lso.getMoleculeDistance() + "");

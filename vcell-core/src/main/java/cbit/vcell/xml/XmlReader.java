@@ -6700,6 +6700,22 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         if(temp != null){
             lo.setIntervalImage(Double.parseDouble(temp));
         }
+        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_Partition_Nx, vcNamespace);
+        if(temp != null) {
+            lo.setNPart(0, Integer.parseInt(temp));
+        }
+        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_Partition_Ny, vcNamespace);
+        if(temp != null) {
+            lo.setNPart(1, Integer.parseInt(temp));
+        }
+        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_Partition_Nz, vcNamespace);
+        if(temp != null) {
+            lo.setNPart(2, Integer.parseInt(temp));
+        }
+        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numOfParallelLocalRuns, vcNamespace);
+        if(temp != null) {
+            lo.setNumOfParallelLocalRuns(Integer.parseInt(temp));
+        }
         return lo;
     }
 

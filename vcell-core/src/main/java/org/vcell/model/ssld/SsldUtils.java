@@ -395,6 +395,7 @@ public class SsldUtils {
 //        MeshSpecification ms = new MeshSpecification(geometry);
 //        ms.setSamplingSize(isize);
 //        sim.setMeshSpecification(ms);   // setting the mesh
+        // dan 9/16/2024 we decided against using the mesh because incompatibilities with the springsalad concept of Partition
         lso.setNPart(ssldBoxGeometry.getNpart());
 
         double endingTime = ssldSystemTimes.getTotalTime();

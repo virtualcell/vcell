@@ -83,6 +83,13 @@ public class SpringSaLaDExporter {
 		this.ssldMinor = ssldMinor;
 	}
 
+	/*
+	 * Exporting is based on physiology, NOT on the math
+	 * Here we try to just create the topmost SpringSaLaD model file
+	 * We will need an application though, for the springsalad specific entities
+	 * Also, we'll need a simulation, because some fields that are part of the top level springsalad model
+	 * are located in the vcell simulation (however, we are going to use a default, fake simulation)
+	 */
 	public String getDocumentAsString(BioModel bioModel, SimulationContext simContext) {
 		
 		Model model = bioModel.getModel();
@@ -91,7 +98,7 @@ public class SpringSaLaDExporter {
 		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
 		List<ReactionRule> reactionRuleList = model.getRbmModelContainer().getReactionRuleList();
 		
-		if(simContext == null) {	// we just need an application, no simulations are needed
+		if(simContext == null) {	// we need an application
 			throw new RuntimeException("Exporting to SpringSaLaD file format needs at least one SpringSaLaD Application");
 		}
 		if(simContext.getMathDescription() == null) {

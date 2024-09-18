@@ -243,7 +243,44 @@ public class LangevinLngvWriter {
 		sb.append("\n");
 //		writeReactionAnnotations(sb);
 		sb.append("\n");
-			
+
+		/*
+		TODO: The following are being produced when the simulation is created, and are being updated as simulations run (I think)
+		 from C:\TEMP\springsalad-new\spring3reactions\spring3reactions_SIMULATIONS\Simulation0_SIM_FOLDER\Simulation0_SIM.txt
+
+		*** SIMULATION STATE ***
+
+		Runs: 6
+		Parallel: true
+		SimultaneousRuns: 3
+		Aborted: false
+		IsRunning: false
+		HasResults: false
+		RunOnCluster: false
+
+		*** PROCESSOR FILES ***
+
+		MoleculeAverages: 'null'
+		BondAverages: 'null'
+		StateAverages: 'null'
+		RunningTimes: 'null'
+
+		TODO: Here are a bunch of files with aggregate results for each observable, probably produced during postprocessing
+		 ex: Simulation0_SIM_AllData_0_5_FREE NewMolecule0 _ Type0 _ State0.csv
+		 content example: BOUND NewMolecule1 : Type0 : State0
+		 Time, Run0, Run1, Run2, Run3, Run4, Run5,
+		 0.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
+		 1.00009999999987E-4, 48.0, 50.0, 50.0, 50.0, 48.0, 48.0,
+		 ...
+
+		*** RAW DATA FILES ***
+
+		'null'
+
+		*** SITE DATA FILES ***
+
+		null
+		 */
 		String ret = sb.toString();
 //		System.out.println(ret);
 		
@@ -393,8 +430,8 @@ public class LangevinLngvWriter {
 					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(0);
 			Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern> elementTwo = 
 					(new ArrayList<Map.Entry<ParticleMolecularTypePattern, ParticleMolecularComponentPattern>>(mapSet)).get(1);
-			String nameOne = "Any_State";
-			String nameTwo = "Any_State";
+			String nameOne = ReactionRuleSpec.ANY_STATE_STRING;
+			String nameTwo = ReactionRuleSpec.ANY_STATE_STRING;
 			if(elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition() != null) {
 				nameOne = elementOne.getValue().getComponentStatePattern().getParticleComponentStateDefinition().getName();
 			}
@@ -622,7 +659,8 @@ public class LangevinLngvWriter {
 					}
 					// identify the binding condition site and state 
 					for(ParticleMolecularComponentPattern pmcp : pmtpConditionReactant.getMolecularComponentPatternList()) {
-						if(pmcp.getComponentStatePattern().isAny()) {
+						// condition state may be "any". We need to look for an "existing" bond
+						if(!(pmcp.getBondType() == ParticleMolecularComponentPattern.ParticleBondType.Exists)) {
 							continue;
 						}
 						ParticleComponentStatePattern pcsp = pmcp.getComponentStatePattern();
@@ -671,7 +709,7 @@ public class LangevinLngvWriter {
 				if(TransitionCondition.BOUND == transitionCondition) {
 					sb.append(" '").append(pmtpConditionReactant.getMolecularType().getName()).append("' : '")
 					.append(pmcpConditionReactant.getMolecularComponent().getName()).append("' : '")
-					.append(pcsdConditionReactant);
+					.append(pmcpConditionReactant.getComponentStatePattern().isAny() ? ReactionRuleSpec.ANY_STATE_STRING : pcsdConditionReactant);
 				}
 				sb.append("\n");
 			}						// end if Subtype.TRANSITION

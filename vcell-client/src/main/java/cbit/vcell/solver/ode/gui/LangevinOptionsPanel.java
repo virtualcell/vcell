@@ -28,7 +28,19 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 
 	private JLabel numOfTrialsLabel = null;
 	private JTextField ivjJTextFieldNumOfTrials = null;
-	
+	private JLabel numOfParallelLocalRuns = null;
+	private JTextField ivjJTextFieldNumOfParallelLocalRuns = null;
+
+	private JTextField numPartitionsXTextField = null;
+	private JTextField numPartitionsYTextField = null;
+	private JTextField numPartitionsZTextField = null;
+	private JLabel numPartitionsXLabel = null;
+	private JLabel numPartitionsYLabel = null;
+	private JLabel numPartitionsZLabel = null;
+	private JLabel numPartitionsLabel = null;
+
+//	private int[] npart = {LangevinSimulationOptions.DefaultNPart[0], LangevinSimulationOptions.DefaultNPart[1], LangevinSimulationOptions.DefaultNPart[2]};	// number of partitions on each axis
+
 	private JTextField intervalImageTextField = null;
 	private JTextField intervalSpringTextField = null;
 
@@ -54,9 +66,11 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 //			}
 			if (e.getSource() == getTrajectoryButton()) {
 				getJTextFieldNumOfTrials().setEnabled(false);
+				getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
 				setNewOptions();
 			} else if (e.getSource() == getMultiRunButton()) {
 				getJTextFieldNumOfTrials().setEnabled(true);
+				getJTextFieldNumOfParallelLocalRuns().setEnabled(true);
 				setNewOptions();
 			}
 		}
@@ -69,8 +83,12 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				return;
 			}
 			if (e.getSource() == getJTextFieldNumOfTrials() ||
+				e.getSource() == getJTextFieldNumOfParallelLocalRuns() ||
 				e.getSource() == getJTextFieldIntervalImage() ||
-				e.getSource() == getJTextFieldIntervalSpring()) { 
+				e.getSource() == getJTextFieldIntervalSpring() ||
+				e.getSource() == getNumPartitionsXTextField() ||
+				e.getSource() == getNumPartitionsYTextField() ||
+				e.getSource() == getNumPartitionsXTextField()) {
 				setNewOptions();
 			}
 		}
@@ -156,12 +174,86 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			trialPanel.add(getJTextFieldNumOfTrials(), gbc);
 
 			gbc = new GridBagConstraints();
-			gbc.gridx = 3;
-			gbc.gridy = 1;
-			gbc.anchor = GridBagConstraints.EAST;
+			gbc.gridx = 1;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.weightx = 1.0;
-			trialPanel.add(new JLabel(""), gbc);
+			gbc.insets = new Insets(0,22,1,6);
+			trialPanel.add(getNumOfParallelLocalRunsLabel(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(0,5,3,1);
+			trialPanel.add(getJTextFieldNumOfParallelLocalRuns(), gbc);
+
+			// ----- aici
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 3;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(5,5,1,1);
+			trialPanel.add(getNumPartitionsLabel(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 3;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(5,22,1,6);
+			trialPanel.add(getNumPartitionsXLabel(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 3;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(5,5,3,1);
+			trialPanel.add(getNumPartitionsXTextField(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 4;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(0,22,1,6);
+			trialPanel.add(getNumPartitionsYLabel(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 4;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(0,5,3,1);
+			trialPanel.add(getNumPartitionsYTextField(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 5;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(0,22,1,6);
+			trialPanel.add(getNumPartitionsZLabel(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 5;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(0,5,3,1);
+			trialPanel.add(getNumPartitionsZTextField(), gbc);
+
+
+//			gbc = new GridBagConstraints();		// --- empty panel (filler)
+//			gbc.gridx = 3;
+//			gbc.gridy = 1;
+//			gbc.anchor = GridBagConstraints.EAST;
+//			gbc.fill = GridBagConstraints.HORIZONTAL;
+//			gbc.weightx = 1.0;
+//			trialPanel.add(new JLabel(""), gbc);
 			
 			// ----- centerPanel -----------------------------------------------------
 			gbc = new GridBagConstraints();
@@ -210,6 +302,15 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.insets = new Insets(0,6,1,22);
 			centerPanel.add(new JLabel("s"), gbc);
 
+			gbc = new GridBagConstraints();		// --- empty panel (filler)
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.anchor = GridBagConstraints.EAST;
+			gbc.fill = GridBagConstraints.VERTICAL;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
+			centerPanel.add(new JLabel(""), gbc);
+
 			// ----- rightPanel ----------------------------------------------------
 			gbc = new GridBagConstraints();
 			gbc.gridx = 3;
@@ -227,6 +328,11 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			getButtonGroupTrials().setSelected(getTrajectoryButton().getModel(), true);
 
 			getJTextFieldNumOfTrials().setEnabled(false);
+			getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
+
+			getNumPartitionsXTextField().setEnabled(true);
+			getNumPartitionsYTextField().setEnabled(true);
+			getNumPartitionsZTextField().setEnabled(true);
 
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);		
@@ -292,6 +398,122 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		}
 		return numOfTrialsLabel;
 	}
+
+// ======================================================================= Number of Partitions
+	private javax.swing.JTextField getNumPartitionsXTextField() {
+		if (numPartitionsXTextField == null) {
+			try {
+				numPartitionsXTextField = new javax.swing.JTextField();
+				numPartitionsXTextField.setName("NumPartitionsXTextField");
+//				numPartitionsXTextField.setColumns(3);
+				numPartitionsXTextField.setText(LangevinSimulationOptions.DefaultNPart[0]+"");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return numPartitionsXTextField;
+	}
+	private javax.swing.JLabel getNumPartitionsXLabel() {
+		if (numPartitionsXLabel == null) {
+			try {
+				numPartitionsXLabel = new javax.swing.JLabel();
+				numPartitionsXLabel.setName("NumPartitionsXLabel");
+				numPartitionsXLabel.setText("X-axis");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return numPartitionsXLabel;
+	}
+	private javax.swing.JTextField getNumPartitionsYTextField() {
+		if (numPartitionsYTextField == null) {
+			try {
+				numPartitionsYTextField = new javax.swing.JTextField();
+				numPartitionsYTextField.setName("NumPartitionsYTextField");
+//				numPartitionsYTextField.setColumns(3);
+				numPartitionsYTextField.setText(LangevinSimulationOptions.DefaultNPart[1]+"");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return numPartitionsYTextField;
+	}
+	private javax.swing.JLabel getNumPartitionsYLabel() {
+		if (numPartitionsYLabel == null) {
+			try {
+				numPartitionsYLabel = new javax.swing.JLabel();
+				numPartitionsYLabel.setName("NumPartitionsYLabel");
+				numPartitionsYLabel.setText("Y-axis");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return numPartitionsYLabel;
+	}
+	private javax.swing.JTextField getNumPartitionsZTextField() {
+		if (numPartitionsZTextField == null) {
+			try {
+				numPartitionsZTextField = new javax.swing.JTextField();
+				numPartitionsZTextField.setName("NumPartitionsZTextField");
+//				numPartitionsZTextField.setColumns(3);
+				numPartitionsZTextField.setText(LangevinSimulationOptions.DefaultNPart[2]+"");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return numPartitionsZTextField;
+	}
+	private javax.swing.JLabel getNumPartitionsZLabel() {
+		if (numPartitionsZLabel == null) {
+			try {
+				numPartitionsZLabel = new javax.swing.JLabel();
+				numPartitionsZLabel.setName("NumPartitionsZLabel");
+				numPartitionsZLabel.setText("Z-axis");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return numPartitionsZLabel;
+	}
+	private javax.swing.JLabel getNumPartitionsLabel() {
+		if (numPartitionsLabel == null) {
+			try {
+				numPartitionsLabel = new javax.swing.JLabel();
+				numPartitionsLabel.setName("NumPartitionsLabel");
+				numPartitionsLabel.setText("Partitions number");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return numPartitionsLabel;
+	}
+
+	private javax.swing.JTextField getJTextFieldNumOfParallelLocalRuns() {
+		if (ivjJTextFieldNumOfParallelLocalRuns == null) {
+			try {
+				ivjJTextFieldNumOfParallelLocalRuns = new javax.swing.JTextField();
+				ivjJTextFieldNumOfParallelLocalRuns.setName("JTextFieldNumOfParallelLocalRuns");
+				ivjJTextFieldNumOfParallelLocalRuns.setColumns(3);
+				ivjJTextFieldNumOfParallelLocalRuns.setText("1");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return ivjJTextFieldNumOfParallelLocalRuns;
+	}
+	private javax.swing.JLabel getNumOfParallelLocalRunsLabel() {
+		if (numOfParallelLocalRuns == null) {
+			try {
+				numOfParallelLocalRuns = new javax.swing.JLabel();
+				numOfParallelLocalRuns.setName("NumOfParallelLocalRuns");
+				numOfParallelLocalRuns.setText("Parallel Local Runs");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return numOfParallelLocalRuns;
+	}
+
 	private JTextField getJTextFieldIntervalImage() {
 		if (intervalImageTextField == null) {
 			try {
@@ -349,8 +571,12 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		getMultiRunButton().addActionListener(ivjEventHandler);
 		
 		getJTextFieldNumOfTrials().addFocusListener(ivjEventHandler);
+		getJTextFieldNumOfParallelLocalRuns().addFocusListener(ivjEventHandler);
 		getJTextFieldIntervalImage().addFocusListener(ivjEventHandler);
 		getJTextFieldIntervalSpring().addFocusListener(ivjEventHandler);
+		getNumPartitionsXTextField().addFocusListener(ivjEventHandler);
+		getNumPartitionsYTextField().addFocusListener(ivjEventHandler);
+		getNumPartitionsZTextField().addFocusListener(ivjEventHandler);
 	}
 	
 	private void refresh() {
@@ -365,14 +591,23 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		
 		LangevinSimulationOptions lso = solverTaskDescription.getLangevinSimulationOptions();
 		int numTrials = lso.getNumOfTrials();
+		int numOfParallelLocalRuns = lso.getNumOfParallelLocalRuns();
 		if(numTrials == 1) {
 			getTrajectoryButton().setSelected(true);
 			getJTextFieldNumOfTrials().setEnabled(false);
+			getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
 		} else {
 			getMultiRunButton().setSelected(true);
 			getJTextFieldNumOfTrials().setEnabled(true);
 			getJTextFieldNumOfTrials().setText(numTrials+"");
+			getJTextFieldNumOfParallelLocalRuns().setEnabled(true);
+			getJTextFieldNumOfParallelLocalRuns().setText(numOfParallelLocalRuns + "");
 		}
+
+		getNumPartitionsXTextField().setText(lso.getNPart(0) + "");
+		getNumPartitionsYTextField().setText(lso.getNPart(1) + "");
+		getNumPartitionsZTextField().setText(lso.getNPart(2) + "");
+
 		getJTextFieldIntervalImage().setText(lso.getIntervalImage()+"");
 		getJTextFieldIntervalSpring().setText(lso.getIntervalSpring()+"");
 
@@ -393,21 +628,30 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		try {
 			LangevinSimulationOptions sso = solverTaskDescription.getLangevinSimulationOptions();
 		int numTrials = 1;
+		int numOfParallelLocalRuns = 1;
 		double intervalImage = solverTaskDescription.getLangevinSimulationOptions().getIntervalImage();
 		double intervalSpring = solverTaskDescription.getLangevinSimulationOptions().getIntervalSpring();
+		int[] npart = solverTaskDescription.getLangevinSimulationOptions().getNPart();
 
 		if(getMultiRunButton().isSelected()) {
 			numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
 			sso.setNumOfTrials(numTrials);
+			numOfParallelLocalRuns = Integer.parseInt(getJTextFieldNumOfParallelLocalRuns().getText());
+			sso.setNumOfParallelLocalRuns(numOfParallelLocalRuns);
 		}
 		
 		intervalImage = Double.parseDouble(getJTextFieldIntervalImage().getText());
 		intervalSpring = Double.parseDouble(getJTextFieldIntervalSpring().getText());
-		
+
+		npart[0] = Integer.parseInt(getNumPartitionsXTextField().getText());
+		npart[1] = Integer.parseInt(getNumPartitionsYTextField().getText());
+		npart[2] = Integer.parseInt(getNumPartitionsZTextField().getText());
+
 		// make a copy
 		LangevinSimulationOptions lso = new LangevinSimulationOptions(sso);
 		lso.setIntervalImage(intervalImage);
 		lso.setIntervalSpring(intervalSpring);
+		lso.setNPart(npart);
 		solverTaskDescription.setLangevinSimulationOptions(lso);
 		
 		} catch(Exception e) {

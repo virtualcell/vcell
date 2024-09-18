@@ -42,8 +42,10 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 
 	public final static int[] DefaultNPart = { 10, 10, 10 };
 
-	protected int numOfTrials = 1;
-	protected int runIndex = 0;				// run index, will result in Run0 (followed by Run1, 2,...)
+	protected int numOfTrials = 1;				// how many runs of the solver for this simulation
+	protected int numOfParallelLocalRuns = 1;	// how many instances of the solver run in parallel
+	protected int runIndex = 0;					// run index, will result in Run0 (followed by Run1, 2,...)
+
 	protected double intervalSpring = 1.00E-9;	// default: dtspring: 1.00E-9	- from advanced
 	protected double intervalImage = 1.00E-4;	// default: dtimage: 1.00E-4	- from advanced
 	protected int[] npart = {DefaultNPart[0], DefaultNPart[1], DefaultNPart[2]};	// number of partitions on each axis
@@ -98,11 +100,20 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 // -----------------------------------------------------------------------------------
 
-	public int getRunIndex() {
-		return runIndex;
+	// can be between 0 and numOfTrials-1
+	public int getRunIndex() {	// for multiple trials the runIndex must be incremented for each run, dynamically
+		if(runIndex > numOfTrials-1) {
+			throw new RuntimeException("Max run index must be smaller than the number of trials.");
+		}
+		int currentRunIndex = runIndex;
+		runIndex++;
+		return currentRunIndex;
 	}
 	public int getNumOfTrials() {
 		return numOfTrials;
+	}
+	public int getNumOfParallelLocalRuns() {
+		return numOfParallelLocalRuns;
 	}
 	public double getIntervalSpring() {
 		return intervalSpring;
@@ -123,6 +134,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public final void setNumOfTrials(int newValue) {
 		this.numOfTrials = newValue;
 	}
+	public final void setNumOfParallelLocalRuns(int newValue) {
+		this.numOfParallelLocalRuns = newValue;
+	}
 	public final void setIntervalSpring(double newValue) {
 		this.intervalSpring = newValue;
 	}
@@ -133,6 +147,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		this.npart[0] = npart[0];
 		this.npart[1] = npart[1];
 		this.npart[2] = npart[2];
+	}
+	public final void setNPart(int index, int npart) {
+		this.npart[index] = npart;
 	}
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
@@ -164,7 +181,8 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	private void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws PropertyVetoException {
 		getVetoChange().fireVetoableChange(propertyName, oldValue, newValue);
 	}
-	
+
+	// used for VCML export
 	public String getVCML() {		
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\t" + VCML.LangevinSimulationOptions + " " + VCML.BeginBlock + "\n");
@@ -175,10 +193,12 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nx + " " + npart[0] + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Ny + " " + npart[1] + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nz + " " + npart[2] + "\n");
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numOfParallelLocalRuns + " " + numOfParallelLocalRuns + "\n");
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
 	}
-	
+
+	// used for VCML import
 	public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 		String token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.LangevinSimulationOptions)) {
@@ -195,6 +215,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 			if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_runIndex)) {
 				token = tokens.nextToken();
 				runIndex = Integer.parseInt(token);
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numOfParallelLocalRuns)) {
+				token = tokens.nextToken();
+				numOfParallelLocalRuns = Integer.parseInt(token);
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_intervalSpring)) {
 				token = tokens.nextToken();
 				intervalSpring = Double.parseDouble(token);

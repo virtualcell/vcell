@@ -75,7 +75,7 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 		}
 	}
 	
-	public static final String ANY_STATE = "Any_State";		// SpringSaLaD stuff
+	public static final String ANY_STATE_STRING = "Any_State";		// SpringSaLaD stuff
 	private double fieldBondLength = 1;		// only used for Subtype.BINDING reactions
 	
 	public enum Subtype {
@@ -346,7 +346,7 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 			if(cspReactant == null) {
 				stateReactant = "ERROR";
 			} else if(cspReactant.isAny()) {
-				stateReactant = ANY_STATE;
+				stateReactant = ANY_STATE_STRING;
 			} else {
 				ComponentStateDefinition csdReactant = cspReactant.getComponentStateDefinition();
 				stateReactant = csdReactant.getName();
@@ -703,7 +703,7 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 	
 	MolecularTypePattern mtpConditionReactant = null;			// the bound condition molecule
 	MolecularComponentPattern mcpConditionReactant = null;		// the bound condition site (must be bond type "Exists")
-	String stateConditionReactant = ANY_STATE;
+	String stateConditionReactant = ANY_STATE_STRING;
 	
 	// we may have 2 mtp if the reaction condition is "Bound"!
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that this list is not empty

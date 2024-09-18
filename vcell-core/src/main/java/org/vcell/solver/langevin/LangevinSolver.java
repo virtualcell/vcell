@@ -198,6 +198,10 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		String localMessagingOption = "--vc-print-status";
 		
 		LangevinSimulationOptions lso = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
+		// TODO: Very important, in LangevinSolver.getMathExecutableCommand() (or somewhere else??) we should implement
+		//  a loop for multiple runs, so that we could repeatedly launch the solver for the parallel runs.
+		// TODO: The Solver command line argument runIndex must be initialized with 0 and incremented for each run
+		//  (remember not to launch more parralel processes than the numOfParallelLocalRuns variable)
 		int runIndex = lso.getRunIndex();		// run index
 		
 		ArrayList<String> cmds = new ArrayList<>();
