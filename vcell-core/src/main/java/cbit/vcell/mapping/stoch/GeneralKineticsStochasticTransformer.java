@@ -19,11 +19,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 
-public class GeneralKineticsStochasticTransformer {
+class GeneralKineticsStochasticTransformer {
 	private final static Logger lg = LogManager.getLogger(GeneralKineticsStochasticTransformer.class);
 
 
-	public static GeneralKineticsStochasticFunction solveGeneralKineticsStochasticFunction(ReactionStep rs) throws ExpressionException, ModelException, DivideByZeroException{
+	static StochasticFunction solveGeneralKineticsStochasticFunction(ReactionStep rs) throws ExpressionException, ModelException, DivideByZeroException{
 		if(rs.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL || rs.getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY)
 		{
 			throw new ModelException("Kinetics of reaction " + rs.getName() + " has membrane current. It can not be automatically transformed to a stochastic reaction.");
@@ -42,7 +42,7 @@ public class GeneralKineticsStochasticTransformer {
 		Expression netRate = rs.getKinetics().getAuthoritativeParameter().getExpression();
 		Expression forwardRate = Expression.max(new Expression(0.0), netRate);
 		Expression reverseRate = Expression.max(new Expression(0.0), Expression.negate(netRate));
-		return new GeneralKineticsStochasticFunction(forwardRate, reverseRate, reactants, products);
+		return new StochasticFunction(false, forwardRate, reverseRate, reactants, products);
 	}
 	
 }

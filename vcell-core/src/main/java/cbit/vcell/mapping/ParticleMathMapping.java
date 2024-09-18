@@ -9,12 +9,6 @@
  */
 
 package cbit.vcell.mapping;
-import java.util.*;
-
-import cbit.vcell.mapping.stoch.MassActionStochasticFunction;
-import org.vcell.util.Pair;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -26,55 +20,29 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
-import cbit.vcell.math.Action;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.InteractionRadius;
-import cbit.vcell.math.JumpProcessRateDefinition;
-import cbit.vcell.math.MacroscopicRateConstant;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MembraneParticleVariable;
-import cbit.vcell.math.MembraneSubDomain;
-import cbit.vcell.math.ParticleJumpProcess;
+import cbit.vcell.mapping.stoch.StochasticFunction;
+import cbit.vcell.mapping.stoch.StochasticTransformer;
+import cbit.vcell.math.*;
 import cbit.vcell.math.ParticleJumpProcess.ProcessSymmetryFactor;
-import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionConcentration;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
-import cbit.vcell.math.ParticleVariable;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VariableHash;
-import cbit.vcell.math.VolumeParticleVariable;
 import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.model.DistributedKinetics;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.mapping.stoch.MassActionStochasticTransformer;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.util.Pair;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.VCellThreadChecker;
 import ucar.units_vcell.RationalNumber;
+
+import java.util.*;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
@@ -82,15 +50,10 @@ import ucar.units_vcell.RationalNumber;
  */
 public class ParticleMathMapping extends AbstractMathMapping {
 	
-/**
- * This method was created in VisualAge.
- * @param model cbit.vcell.model.Model
- * @param geometry cbit.vcell.geometry.Geometry
- */
+
 protected ParticleMathMapping(SimulationContext simContext, MathMappingCallback callback, NetworkGenerationRequirements networkGenerationRequirements) {
 	super(simContext, callback, networkGenerationRequirements);
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -680,7 +643,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			{
 				Expression expCopy = new Expression(radiusExp);
 				try{
-					MassActionStochasticTransformer.substituteParameters(expCopy, true).evaluateConstant();
+					StochasticTransformer.substituteParameters(expCopy, true).evaluateConstant();
 				}catch(ExpressionException e)
 				{
 					throw new MathException(VCellErrorMessages.getMassActionSolverMessage(reactionStep.getName(), "Problem in binding radius of " + reactionStep.getName() +":  '" + radiusExp.infix() + "', " + e.getMessage()));
@@ -754,36 +717,26 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			Expression reverseRate = null;
 			
 			// Using the MassActionFunction to write out the math description 
-			MassActionStochasticFunction maFunc = null;
+			StochasticFunction maFunc = null;
 
 			if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
 			   kinetics.getKineticsDescription().equals(KineticsDescription.General) || 
 			   kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
 			{
-				Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-				Parameter forwardRateParameter = null;
-				Parameter reverseRateParameter = null;
-				if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction)){
-					forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward);
-					reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
-				}else if (kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability)){
-					forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
-					reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
-				}
-				maFunc = MassActionStochasticTransformer.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
-				if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
+				maFunc = StochasticTransformer.transformToStochastic(reactionStep);
+				if (!maFunc.isMassAction() || (maFunc.forwardRate() == null && maFunc.reverseRate() == null))
 				{
 					throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
 				}
 				else
 				{
-					if(maFunc.getForwardRate() != null)
+					if(maFunc.forwardRate() != null)
 					{
-						forwardRate = maFunc.getForwardRate();
+						forwardRate = maFunc.forwardRate();
 					}
-					if(maFunc.getReverseRate() != null)
+					if(maFunc.reverseRate() != null)
 					{
-						reverseRate = maFunc.getReverseRate();
+						reverseRate = maFunc.reverseRate();
 					}
 				}
 			}
@@ -796,8 +749,8 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				List<ParticleVariable> productParticles = new ArrayList<ParticleVariable>();
 				List<Action> forwardActions = new ArrayList<Action>();
 				List<Action> reverseActions = new ArrayList<Action>();
-				List<ReactionParticipant> reactants = maFunc.getReactants();
-				List<ReactionParticipant> products = maFunc.getProducts();
+				List<ReactionParticipant> reactants = maFunc.reactants();
+				List<ReactionParticipant> products = maFunc.products();
 		
 				for (ReactionParticipant rp : reactants){
 					SpeciesContext sc = rp.getSpeciesContext();
@@ -877,7 +830,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					// convert each reactant from Smoldyn units (molecules/lengthunit^dim) to VCell units 
 					// (where dim is 2 for membrane reactants and 3 for volume reactants)
 					//
-					for (ReactionParticipant reactant : maFunc.getReactants()){
+					for (ReactionParticipant reactant : maFunc.reactants()){
 						VCUnitDefinition vcellReactantUnit = reactant.getSpeciesContext().getUnitDefinition();
 						
 						boolean bForceContinuous = simContext.getReactionContext().getSpeciesContextSpec(reactant.getSpeciesContext()).isForceContinuous();
@@ -918,7 +871,7 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 					// convert each product from Smoldyn units (molecules/lengthunit^dim) to VCell units 
 					// (where dim is 2 for membrane products and 3 for volume products)
 					//
-					for (ReactionParticipant product : maFunc.getProducts()){
+					for (ReactionParticipant product : maFunc.products()){
 						VCUnitDefinition vcellProductUnit = product.getSpeciesContext().getUnitDefinition();
 
 						boolean bForceContinuous = simContext.getReactionContext().getSpeciesContextSpec(product.getSpeciesContext()).isForceContinuous();

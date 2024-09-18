@@ -29,72 +29,25 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.RationalExpUtils;
-import cbit.vcell.parser.SymbolTableEntry;
 
-public class MassActionStochasticTransformer {
+class MassActionStochasticTransformer {
 	private final static Logger lg = LogManager.getLogger(MassActionStochasticTransformer.class);
 
-	public static final double Epsilon = 1e-6; // to be used for double calculation
+	private static final double Epsilon = 1e-6; // to be used for double calculation
 	private static final int[] primeIntNumbers = new int[]{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}; 
 	
-	public MassActionStochasticTransformer()
+	MassActionStochasticTransformer()
 	{
 	}
 
-	public static Expression substituteParameters(Expression exp, boolean substituteConst) throws ExpressionException 
-	{
-		Expression result = new Expression(exp);
-		boolean bSubstituted = true;
-		while (bSubstituted) {
-			bSubstituted = false;
-			String symbols[] = result.getSymbols();
-			for (int k = 0; symbols != null && k < symbols.length; k++) {
-				SymbolTableEntry ste = result.getSymbolBinding(symbols[k]);
-				if (ste instanceof ProxyParameter) {
-					ProxyParameter pp = (ProxyParameter)ste;
-					result.substituteInPlace(new Expression(pp,pp.getNameScope()), new Expression(pp.getTarget(),pp.getTarget().getNameScope()));
-					bSubstituted = true;
-				}else if (ste instanceof Parameter){
-					Parameter kp = (Parameter)ste;
-					try {
-						Expression expKP = kp.getExpression();
-						if (!expKP.flatten().isNumeric() || substituteConst) {
-							result.substituteInPlace(new Expression(symbols[k]), new Expression(kp.getExpression()));
-							bSubstituted = true;
-						}
-					} catch (ExpressionException e1) {
-						lg.error(e1);
-						throw new ExpressionException(e1.getMessage());
-					}
-				}else if (substituteConst && ste instanceof Model.ReservedSymbol){
-					Model.ReservedSymbol rs = (Model.ReservedSymbol)ste;
-					try {
-						if (rs.getExpression() != null) 
-						{
-							result.substituteInPlace(new Expression(symbols[k]), new Expression(rs.getExpression()));
-							bSubstituted = true;
-						}
-					} catch (ExpressionException e1) {
-						lg.error(e1);
-						throw new ExpressionException(e1.getMessage());
-					}
-				}
-					
-			}
 
-		}
-		return result;
-	}
-
-	
-	public static MassActionStochasticFunction solveMassAction(Parameter optionalForwardRateParameter, Parameter optionalReverseRateParameter, Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException, DivideByZeroException{
-		MassActionStochasticFunction maFunc = new MassActionStochasticFunction();
+	static StochasticFunction solveMassAction(Parameter optionalForwardRateParameter, Parameter optionalReverseRateParameter, Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException, DivideByZeroException{
 		//get reactants, products, overlaps, non-overlap reactants and non-overlap products
 		ArrayList<ReactionParticipant> reactants = new ArrayList<ReactionParticipant>();
 		ArrayList<ReactionParticipant> products = new ArrayList<ReactionParticipant>();
 		ReactionParticipant[] rp = rs.getReactionParticipants();
 		//should use this one to compare functional equavalent since this duplicatedExp has all params substituted.
-		Expression duplicatedExp = substituteParameters(orgExp, false);
+		Expression duplicatedExp = StochasticTransformer.substituteParameters(orgExp, false);
 		if (duplicatedExp.infix().length()>200){
 			throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "aborting solving for mass action coefficients, expression too long"));
 		}
@@ -351,7 +304,7 @@ public class MassActionStochasticTransformer {
 			{
 				Expression forwardExpCopy = new Expression(forwardExp);
 				try{
-					substituteParameters(forwardExpCopy, true).evaluateConstant();
+					StochasticTransformer.substituteParameters(forwardExpCopy, true).evaluateConstant();
 				}catch(ExpressionException e)
 				{
 					throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in forward rate '" + forwardExp.infix() + "', " + e.getMessage()));
@@ -362,7 +315,7 @@ public class MassActionStochasticTransformer {
 				if (optionalForwardRateParameter!=null){
 					Expression forwardRateParameterCopy = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
 					try{
-						substituteParameters(forwardRateParameterCopy, true).evaluateConstant();
+						StochasticTransformer.substituteParameters(forwardRateParameterCopy, true).evaluateConstant();
 						if (forwardExpCopy.compareEqual(forwardRateParameterCopy)){
 							forwardExp = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
 						}
@@ -377,7 +330,7 @@ public class MassActionStochasticTransformer {
 			{
 				Expression reverseExpCopy = new Expression(reverseExp);
 				try{
-					substituteParameters(reverseExpCopy, true).evaluateConstant();
+					StochasticTransformer.substituteParameters(reverseExpCopy, true).evaluateConstant();
 				}catch(ExpressionException e)
 				{
 					throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in reverse rate '" + reverseExp.infix() + "', " + e.getMessage()));
@@ -389,7 +342,7 @@ public class MassActionStochasticTransformer {
 				if (optionalReverseRateParameter!=null){
 					Expression reverseRateParameterCopy = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
 					try{
-						substituteParameters(reverseRateParameterCopy, true).evaluateConstant();
+						StochasticTransformer.substituteParameters(reverseRateParameterCopy, true).evaluateConstant();
 						if (reverseExpCopy.compareEqual(reverseRateParameterCopy)){
 							reverseExp = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
 						}
@@ -399,14 +352,7 @@ public class MassActionStochasticTransformer {
 					}
 				}
 			}
-			maFunc.setForwardRate(forwardExp);
-			maFunc.setReverseRate(reverseExp);
-			maFunc.setReactants(reactants);
-			maFunc.setProducts(products);
-//			System.out.println("forward rate = "+maFunc.getForwardRate().infix());
-//			System.out.println("reverse rate = "+maFunc.getReverseRate().infix());
-					
-			return maFunc;
+            return new StochasticFunction(true, forwardExp, reverseExp, reactants, products);
 		}
 	}
 	

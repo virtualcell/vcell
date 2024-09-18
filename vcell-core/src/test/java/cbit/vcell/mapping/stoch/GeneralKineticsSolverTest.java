@@ -133,7 +133,7 @@ public class GeneralKineticsSolverTest {
 		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
             try {
                 StochasticFunction results = solver.transformToStochastic(reactionStep);
-                if (results == null || (results.massActionFunction == null) && (results.generalKineticsStochasticFunction == null)) {
+                if (results == null) {
                     throw new IllegalStateException("unable to transform stochastic kinetics for reaction "+reactionStep.getName());
                 }
             } catch (Exception e) {

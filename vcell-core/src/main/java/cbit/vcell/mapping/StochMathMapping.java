@@ -9,15 +9,6 @@
  */
 
 package cbit.vcell.mapping;
-import java.beans.PropertyVetoException;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Vector;
-
-import cbit.vcell.mapping.stoch.MassActionStochasticFunction;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.util.TokenMangler;
 
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.geometry.SubVolume;
@@ -25,47 +16,28 @@ import cbit.vcell.mapping.SimContextTransformer.ModelEntityMapping;
 import cbit.vcell.mapping.SimContextTransformer.SimContextTransformation;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.math.Action;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.JumpProcess;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.StochVolVariable;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.VarIniCondition;
-import cbit.vcell.math.VarIniCount;
-import cbit.vcell.math.VarIniPoissonExpectedCount;
-import cbit.vcell.math.Variable;
+import cbit.vcell.mapping.stoch.StochasticFunction;
+import cbit.vcell.mapping.stoch.StochasticTransformer;
+import cbit.vcell.math.*;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VariableHash;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.mapping.stoch.MassActionStochasticTransformer;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.units.VCUnitDefinition;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.TokenMangler;
+
+import java.beans.PropertyVetoException;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Vector;
 /**
  * The StochMathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription()
  * for stochastic simulation. To get math description for deterministic simulation please reference @MathMapping.
@@ -103,25 +75,15 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 	Expression factorExpr = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
 
 	// Using the MassActionFunction to write out the math description 
-	MassActionStochasticFunction maFunc = null;
+	StochasticFunction maFunc = null;
 
 	Kinetics kinetics = reactionStep.getKinetics();
 	if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
 	   kinetics.getKineticsDescription().equals(KineticsDescription.General) || 
 	   kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
 	{
-		Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-		Parameter forwardRateParameter = null;
-		Parameter reverseRateParameter = null;
-		if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction)) {
-			forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward);
-			reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
-		} else if (kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability)) {
-			forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
-			reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
-		}
-		maFunc = MassActionStochasticTransformer.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
-		if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null) {
+		maFunc = StochasticTransformer.transformToStochastic(reactionStep);
+		if (maFunc.isMassAction() && maFunc.forwardRate() == null && maFunc.reverseRate() == null) {
 			throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
 		}
 	} else {
@@ -130,11 +92,11 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 
 	List<ReactionParticipant> reacPart;
 	if(isForwardDirection) {
-		reacPart = maFunc.getReactants();
-		lg.debug("forward reaction rate (coefficient?) is "+maFunc.getForwardRate().infix());
+		reacPart = maFunc.reactants();
+		lg.debug("forward reaction rate (coefficient?) is "+maFunc.forwardRate().infix());
 	} else {
-		reacPart = maFunc.getProducts();
-		lg.debug("reverse reaction rate (coefficient?) is "+maFunc.getReverseRate().infix());
+		reacPart = maFunc.products();
+		lg.debug("reverse reaction rate (coefficient?) is "+maFunc.reverseRate().infix());
 	}
 	
 	Expression rxnProbabilityExpr = null;
@@ -573,27 +535,20 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 				if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
 					kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
-					Expression rateExp = new Expression(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate),reactionStep.getNameScope());
-					Parameter forwardRateParameter = null;
-					Parameter reverseRateParameter = null;
-					if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction)){
-						forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward);
-						reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse);
-					}
-					MassActionStochasticFunction maFunc = MassActionStochasticTransformer.solveMassAction(forwardRateParameter, reverseRateParameter, rateExp, reactionStep);
-					if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
+					StochasticFunction maFunc = StochasticTransformer.transformToStochastic(reactionStep);
+					if(maFunc.forwardRate() == null && maFunc.reverseRate() == null)
 					{
 						throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
 					}
 					else
 					{
-						if(maFunc.getForwardRate() != null)
+						if(maFunc.forwardRate() != null)
 						{
-							forwardRate = maFunc.getForwardRate();
+							forwardRate = maFunc.forwardRate();
 						}
-						if(maFunc.getReverseRate() != null)
+						if(maFunc.reverseRate() != null)
 						{
-							reverseRate = maFunc.getReverseRate();
+							reverseRate = maFunc.reverseRate();
 						}
 					}
 				}
@@ -607,7 +562,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 					{
 						Expression KonCopy = new Expression(Kon);
 						try{
-							MassActionStochasticTransformer.substituteParameters(KonCopy, true).evaluateConstant();
+							StochasticTransformer.substituteParameters(KonCopy, true).evaluateConstant();
 							forwardRate = new Expression(Kon);
 						}catch(ExpressionException e)
 						{
@@ -739,30 +694,21 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 				//we could set jump processes for general flux rate in forms of p1*Sout + p2*Sin
 				if(kinetics.getKineticsDescription().equals(KineticsDescription.General) || kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability) )
 				{
-					Expression fluxRate = new Expression(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate),reactionStep.getNameScope());
-					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
-					// forward and reverse rate parameters may be null
-					Parameter forwardRateParameter = null;
-					Parameter reverseRateParameter = null;
-					if (kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability)){
-						forwardRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
-						reverseRateParameter = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Permeability);
-					}
-					MassActionStochasticFunction fluxFunc = MassActionStochasticTransformer.solveMassAction(forwardRateParameter, reverseRateParameter, fluxRate, (FluxReaction)reactionStep);
+					StochasticFunction fluxFunc = StochasticTransformer.transformToStochastic(reactionStep);
 					//create jump process for forward flux if it exists.
 					Expression rsStructureSize = new Expression(reactionStep.getStructure().getStructureSize(), getNameScope());
 					VCUnitDefinition probRateUnit = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getAreaUnit()).divideBy(modelUnitSystem.getTimeUnit());
 					Expression rsRateUnitFactor = getUnitFactor(probRateUnit.divideBy(modelUnitSystem.getFluxReactionUnit())).simplifyJSCL();
-					if(fluxFunc.getForwardRate() != null && !fluxFunc.getForwardRate().isZero()) 
+					if(fluxFunc.forwardRate() != null && !fluxFunc.forwardRate().isZero())
 					{
 											
-						Expression rate = fluxFunc.getForwardRate();
+						Expression rate = fluxFunc.forwardRate();
 						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-						if(fluxFunc.getReactants().size() != 1)
+						if(fluxFunc.reactants().size() != 1)
 						{
 							throw new MappingException("Flux " + reactionStep.getName() + " should have only one reactant." );
 						}
-						SpeciesContext scReactant = fluxFunc.getReactants().get(0).getSpeciesContext();
+						SpeciesContext scReactant = fluxFunc.reactants().get(0).getSpeciesContext();
 						
 						Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(scReactant),getNameScope());
 
@@ -785,7 +731,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,geometryClass)));
 						// actions
 						Action action = null;
-						SpeciesContext sc = fluxFunc.getReactants().get(0).getSpeciesContext();
+						SpeciesContext sc = fluxFunc.reactants().get(0).getSpeciesContext();
 						
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
@@ -793,7 +739,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 							jp.addAction(action);
 						}	
 						
-						sc = fluxFunc.getProducts().get(0).getSpeciesContext();
+						sc = fluxFunc.products().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(1));
@@ -803,18 +749,18 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						subDomain.addJumpProcess(jp);
 					}
 					//create jump process for reverse flux if it exists.
-					if(fluxFunc.getReverseRate() != null && !fluxFunc.getReverseRate().isZero()) 
+					if(fluxFunc.reverseRate() != null && !fluxFunc.reverseRate().isZero())
 					{
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX;
 											
-						Expression rate = fluxFunc.getReverseRate();
+						Expression rate = fluxFunc.reverseRate();
 						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-						if(fluxFunc.getProducts().size() != 1)
+						if(fluxFunc.products().size() != 1)
 						{
 							throw new MappingException("Flux " + reactionStep.getName() + " should have only one product." );
 						}
-						SpeciesContext scProduct = fluxFunc.getProducts().get(0).getSpeciesContext();
+						SpeciesContext scProduct = fluxFunc.products().get(0).getSpeciesContext();
 						
 						Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(scProduct),getNameScope());
 
@@ -832,14 +778,14 @@ private Expression getProbabilityRate(ReactionStep reactionStep, Expression rate
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,geometryClass)));
 						// actions
 						Action action = null;
-						SpeciesContext sc = fluxFunc.getReactants().get(0).getSpeciesContext();
+						SpeciesContext sc = fluxFunc.reactants().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(1));
 							jp.addAction(action);
 						}
 							
-						sc = fluxFunc.getProducts().get(0).getSpeciesContext();
+						sc = fluxFunc.products().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(-1));
