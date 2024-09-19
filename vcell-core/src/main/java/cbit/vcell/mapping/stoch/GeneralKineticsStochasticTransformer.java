@@ -10,8 +10,10 @@
 
 package cbit.vcell.mapping.stoch;
 
-import cbit.vcell.model.*;
-import cbit.vcell.parser.DivideByZeroException;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import org.apache.logging.log4j.LogManager;
@@ -19,14 +21,16 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 
+import static cbit.vcell.mapping.stoch.StochasticTransformer.StochasticTransformException;
+
 class GeneralKineticsStochasticTransformer {
 	private final static Logger lg = LogManager.getLogger(GeneralKineticsStochasticTransformer.class);
 
 
-	static StochasticFunction solveGeneralKineticsStochasticFunction(ReactionStep rs) throws ExpressionException, ModelException, DivideByZeroException{
+	static StochasticFunction solveGeneralKineticsStochasticFunction(ReactionStep rs) throws StochasticTransformException {
 		if(rs.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL || rs.getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY)
 		{
-			throw new ModelException("Kinetics of reaction " + rs.getName() + " has membrane current. It can not be automatically transformed to a stochastic reaction.");
+			throw new StochasticTransformException(rs, StochasticTransformer.StochasticTransformErrorType.ELECTRICAL_CURRENT_NOT_SUPPORTED);
 		}
 
 		ArrayList<ReactionParticipant> reactants = new ArrayList<ReactionParticipant>();
@@ -40,9 +44,13 @@ class GeneralKineticsStochasticTransformer {
 		}
 
 		Expression netRate = rs.getKinetics().getAuthoritativeParameter().getExpression();
-		Expression forwardRate = Expression.max(new Expression(0.0), netRate);
-		Expression reverseRate = Expression.max(new Expression(0.0), Expression.negate(netRate));
-		return new StochasticFunction(false, forwardRate, reverseRate, reactants, products);
+		try {
+			Expression forwardRate = Expression.max(new Expression(0.0), netRate);
+			Expression reverseRate = Expression.max(new Expression(0.0), Expression.negate(netRate));
+			return new StochasticFunction(false, forwardRate, reverseRate, reactants, products);
+		} catch (ExpressionException e) {
+			throw new StochasticTransformException(rs, e);
+		}
 	}
 	
 }

@@ -10,25 +10,21 @@
 
 package cbit.vcell.mapping.stoch;
 
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.model.*;
+import cbit.vcell.model.common.VCellErrorMessages;
+import cbit.vcell.parser.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.model.common.VCellErrorMessages;
-import cbit.vcell.parser.DivideByZeroException;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionUtils;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.RationalExpUtils;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashSet;
+
+import static cbit.vcell.mapping.stoch.StochasticTransformer.StochasticTransformException;
 
 class MassActionStochasticTransformer {
 	private final static Logger lg = LogManager.getLogger(MassActionStochasticTransformer.class);
@@ -41,15 +37,15 @@ class MassActionStochasticTransformer {
 	}
 
 
-	static StochasticFunction solveMassAction(Parameter optionalForwardRateParameter, Parameter optionalReverseRateParameter, Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException, DivideByZeroException{
+	static StochasticFunction solveMassAction(Parameter optionalForwardRateParameter, Parameter optionalReverseRateParameter, Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException {
 		//get reactants, products, overlaps, non-overlap reactants and non-overlap products
 		ArrayList<ReactionParticipant> reactants = new ArrayList<ReactionParticipant>();
 		ArrayList<ReactionParticipant> products = new ArrayList<ReactionParticipant>();
 		ReactionParticipant[] rp = rs.getReactionParticipants();
-		//should use this one to compare functional equavalent since this duplicatedExp has all params substituted.
+		//should use this one to compare functional equivalent since this duplicatedExp has all params substituted.
 		Expression duplicatedExp = StochasticTransformer.substituteParameters(orgExp, false);
 		if (duplicatedExp.infix().length()>200){
-			throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "aborting solving for mass action coefficients, expression too long"));
+			throw new StochasticTransformException(rs, StochasticTransformer.StochasticTransformErrorType.ABANDONED_TRANSFORMATION_TOO_COMPLEX);
 		}
 		//separate the reactants and products, fluxes, catalysts
 		String rxnName = rs.getName();
@@ -57,7 +53,7 @@ class MassActionStochasticTransformer {
 		//reaction with membrane current can not be transformed to mass action
 		if(rs.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL || rs.getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY)
 		{
-			throw new ModelException("Kinetics of reaction " + rxnName + " has membrane current. It can not be automatically transformed to Mass Action kinetics.");
+			throw new StochasticTransformException(rs, StochasticTransformer.StochasticTransformErrorType.ELECTRICAL_CURRENT_NOT_SUPPORTED);
 		}
 		
 		for(int i=0; i<rp.length; i++)

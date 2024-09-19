@@ -9,6 +9,24 @@ import org.apache.logging.log4j.Logger;
 
 public class StochasticTransformer {
 
+    public enum StochasticTransformErrorType {
+        LUMPED_KINETICS_NOT_YET_SUPPORTED_FOR_STOCHASTIC_SIMULATION,
+        ELECTRICAL_CURRENT_NOT_SUPPORTED,
+        ABANDONED_TRANSFORMATION_TOO_COMPLEX,
+        RUNTIME_ERROR
+    }
+    public static class StochasticTransformException extends ModelException {
+        public final StochasticTransformErrorType errorType;
+        public StochasticTransformException(ReactionStep reactionStep, StochasticTransformErrorType errorType) {
+            super(errorType.name());
+            this.errorType = errorType;
+        }
+        public StochasticTransformException(ReactionStep reactionStep, Exception exception) {
+            super("failed to transform reaction step "+reactionStep.getName()+": "+exception.getMessage(), exception);
+            this.errorType = StochasticTransformErrorType.RUNTIME_ERROR;
+        }
+    }
+
     private final static Logger lg = LogManager.getLogger(StochasticTransformer.class);
 
     public static Expression substituteParameters(Expression exp, boolean substituteConst) throws ExpressionException
@@ -56,7 +74,10 @@ public class StochasticTransformer {
         return result;
     }
 
-    public static StochasticFunction transformToStochastic(ReactionStep reactionStep) throws ExpressionException {
+    public static StochasticFunction transformToStochastic(ReactionStep reactionStep) throws StochasticTransformException {
+        if (reactionStep.getKinetics() instanceof LumpedKinetics lk) {
+            throw new StochasticTransformException(reactionStep, StochasticTransformErrorType.LUMPED_KINETICS_NOT_YET_SUPPORTED_FOR_STOCHASTIC_SIMULATION);
+        }
         Expression reactionRate = new Expression(reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate), reactionStep.getNameScope());
         Parameter ma_kf = null;
         Parameter ma_kr = null;
@@ -73,9 +94,12 @@ public class StochasticTransformer {
             lg.info("Failed to solve mass action kinetics for reaction step: " + reactionStep.getName() + ", " + e.getMessage());
             try {
                 return GeneralKineticsStochasticTransformer.solveGeneralKineticsStochasticFunction(reactionStep);
-            } catch (ModelException ex) {
-                lg.info("Failed to solve stochastic kinetics for reaction step: " + reactionStep.getName() + ", " + e.getMessage());
-                throw new RuntimeException(ex);
+            } catch (StochasticTransformException e1) {
+                lg.info("Failed to solve general kinetics for reaction step: " + reactionStep.getName() + ", " + e.getMessage());
+                throw e1;
+            } catch (Exception ex) {
+                lg.error("Failed to solve stochastic kinetics for reaction step: " + reactionStep.getName() + ", " + e.getMessage(), ex);
+                throw new StochasticTransformException(reactionStep, ex);
             }
         }
     }
