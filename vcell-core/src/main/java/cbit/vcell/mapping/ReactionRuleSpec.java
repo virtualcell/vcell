@@ -450,11 +450,15 @@ public TransitionCondition getTransitionCondition(Map<String, Object> analysisRe
 		return null;
 	} else if(mtpReactantList.size() == 2 && mtpProductList.size() == 2) {		// we look for transition with "Bound" condition, means 2 molecules
 		MolecularTypePattern mtpTransitionReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");	// the transitioning molecule
-		int totalExistsBonds = 0;
 		int totalExplicitStates = 0;
 		int numExplicitStates[] = { 0, 0};
-		int numExistsBonds[] = { 0, 0 };
+		int numSpecifiedBonds[] = { 0, 0 };
+		MolecularComponentPattern[] mcpExplicitStates = new MolecularComponentPattern[2];	// the site with the explicit state
+		MolecularComponentPattern[] mcpSpecifiedBonds = new MolecularComponentPattern[2];	// the site with the specified bond
+
 		for(int i=0; i < mtpReactantList.size(); i++) {
+			// the transitioning site must have explicit bond in both reactant and product (which obviously must point to the condition molecule)
+			// there must be only one transitioning state, the one in the transitioning molecule
 			MolecularTypePattern mtpReactant = mtpReactantList.get(i);
 			List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
 			if(mcpList == null || mcpList.isEmpty()) {
@@ -466,48 +470,33 @@ public TransitionCondition getTransitionCondition(Map<String, Object> analysisRe
 					return null;	// all sites must have at least one state
 				}
 				BondType bondTypeReactant = mcpReactant.getBondType();
-				if(BondType.Exists == bondTypeReactant) {
-					if(mtpTransitionReactant == mtpReactant) {
-						// the transition site must be in one molecule, the condition bound site must be in the other
-						return null;
-					}
-					numExistsBonds[i]++;	// the condition binding site has bond type "Exists"
-					totalExistsBonds++;
+				if(BondType.Specified == bondTypeReactant) {	// we must have exactly one Specified bond, all the others must be Possible
+					numSpecifiedBonds[i]++;	// the condition binding site has bond type "Exists"
+					mcpSpecifiedBonds[i] = mcpReactant;
 				} else if(BondType.Possible != bondTypeReactant) {
 					return null;		// all other bonds in the reactant must be of type "Possible"
-					// we know that the 2 molecules are bound somehow, because they are in the same species
-					// but we don't care between which sites the bond is
 				}
-				if(cspReactant.isAny()) {
-					continue;
-				} else {
-					// the site with explicit state must be the same that has bond type exists
-					if(BondType.Exists != bondTypeReactant && mtpTransitionReactant != mtpReactant) {
-						return null;
-					}
+
+				if(!cspReactant.isAny()) {	// we also need to reack explicit states
+					numExplicitStates[i]++;
+					totalExplicitStates++;
+					mcpExplicitStates[i] = mcpReactant;
 				}
-				numExplicitStates[i]++;
-				totalExplicitStates++;
 			}
 		}
-		
-		if(totalExistsBonds != 1) {
-			return null;		// the condition bound site is the only one with BondType "exists"
-		}
-		if(totalExplicitStates < 1 || totalExplicitStates > 2) {
-			// transitioning site must be in explicit state
-			// the condition binding site may be explicit or any
-			// all the other sites must be in "Any" state
+
+		// the explicit state if exists, must only be on the bound site
+		if(mcpExplicitStates[0] != null && mcpExplicitStates[0] != mcpSpecifiedBonds[0]) {
 			return null;
 		}
-		if(numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
-			// above we made sure that the transition molecule and the condition molecule are not the same
-			return TransitionCondition.BOUND;	// must have exactly one explicit state in each molecule 
-		} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1 && numExistsBonds[0] == 1) {
-			// this else-if and the next: the only explicit site is the one transitioning
-			// the conditional site type may also be in the "any" state but must have bond type "Exists"
+		if(mcpExplicitStates[1] != null && mcpExplicitStates[1] != mcpSpecifiedBonds[1]) {
+			return null;
+		}
+
+		// the only situations that correctly describe condition bound transition reaction
+		if(numSpecifiedBonds[0] == 1 && numSpecifiedBonds[1] == 1 && numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
 			return TransitionCondition.BOUND;
-		} else if(numExplicitStates[0] == 1 && numExplicitStates[1] == 0 && numExistsBonds[1] == 1) {
+		} else if(numSpecifiedBonds[0] == 1 && numSpecifiedBonds[1] == 1 && totalExplicitStates == 1) {
 			return TransitionCondition.BOUND;
 		}
 	}
