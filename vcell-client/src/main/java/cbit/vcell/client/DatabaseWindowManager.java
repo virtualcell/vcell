@@ -53,37 +53,38 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.*;
 
 
 public class DatabaseWindowManager extends TopLevelWindowManager {
-    private static Logger lg = LogManager.getLogger(DatabaseWindowManager.class);
+    private static final Logger lg = LogManager.getLogger(DatabaseWindowManager.class);
 
     class DoubleClickListener implements java.awt.event.ActionListener {
         private JDialog theJDialog = null;
         private boolean bWasDoubleClicked = false;
 
         DoubleClickListener(JDialog dialog) {
-            theJDialog = dialog;
+            this.theJDialog = dialog;
         }
 
         public void actionPerformed(java.awt.event.ActionEvent e) {
             if (e.getActionCommand().equals(BM_MM_GM_DOUBLE_CLICK_ACTION)) {
-                bWasDoubleClicked = true;
-                theJDialog.dispose();
+                this.bWasDoubleClicked = true;
+                this.theJDialog.dispose();
             }
         }
 
         boolean wasDoubleClicked() {
-            return bWasDoubleClicked;
+            return this.bWasDoubleClicked;
         }
     }
 
-    private BioModelDbTreePanel bioModelDbTreePanel = new BioModelDbTreePanel();
-    private ACLEditor aclEditor = new ACLEditor();
-    private GeometryTreePanel geometryTreePanel = new GeometryTreePanel();
-    private MathModelDbTreePanel MathModelDbTreePanel = new MathModelDbTreePanel();
+    private final BioModelDbTreePanel bioModelDbTreePanel = new BioModelDbTreePanel();
+    private final ACLEditor aclEditor = new ACLEditor();
+    private final GeometryTreePanel geometryTreePanel = new GeometryTreePanel();
+    private final MathModelDbTreePanel MathModelDbTreePanel = new MathModelDbTreePanel();
 
     public static final String BM_MM_GM_DOUBLE_CLICK_ACTION = "bm_mm_gm_dca";
 
@@ -92,23 +93,23 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 
     public DatabaseWindowManager(DatabaseWindowPanel databaseWindowPanel, RequestManager requestManager) {
         super(requestManager);
-        setDatabaseWindowPanel(databaseWindowPanel);
-        getBioModelDbTreePanel().setPopupMenuDisabled(true);
-        getMathModelDbTreePanel().setPopupMenuDisabled(true);
-        getGeometryTreePanel().setPopupMenuDisabled(true);
+        this.setDatabaseWindowPanel(databaseWindowPanel);
+        this.getBioModelDbTreePanel().setPopupMenuDisabled(true);
+        this.getMathModelDbTreePanel().setPopupMenuDisabled(true);
+        this.getGeometryTreePanel().setPopupMenuDisabled(true);
 
-        getBioModelDbTreePanel().setDocumentManager(requestManager.getDocumentManager());
-        getMathModelDbTreePanel().setDocumentManager(requestManager.getDocumentManager());
-        getGeometryTreePanel().setDocumentManager(requestManager.getDocumentManager());
+        this.getBioModelDbTreePanel().setDocumentManager(requestManager.getDocumentManager());
+        this.getMathModelDbTreePanel().setDocumentManager(requestManager.getDocumentManager());
+        this.getGeometryTreePanel().setDocumentManager(requestManager.getDocumentManager());
     }
 
     public void accessPermissions() {
-        VersionInfo selectedVersionInfo = getPanelSelection() == null ? null : getPanelSelection();
-        accessPermissions(getComponent(), selectedVersionInfo, false);
+        VersionInfo selectedVersionInfo = this.getPanelSelection() == null ? null : this.getPanelSelection();
+        this.accessPermissions(this.getComponent(), selectedVersionInfo, false);
     }
 
     public void copyName() {
-        VersionInfo selectedVersionInfo = getPanelSelection() == null ? null : getPanelSelection();
+        VersionInfo selectedVersionInfo = this.getPanelSelection() == null ? null : this.getPanelSelection();
         if (selectedVersionInfo != null) {
             Version version = selectedVersionInfo.getVersion();
             String name = version.getName();
@@ -125,18 +126,18 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      */
     public void accessPermissions(final Component requester, final VersionInfo selectedVersionInfo, boolean bGrantSupportPermissions) {
         final GroupAccess groupAccess = selectedVersionInfo.getVersion().getGroupAccess();
-        final DocumentManager docManager = getRequestManager().getDocumentManager();
+        final DocumentManager docManager = this.getRequestManager().getDocumentManager();
 
         AsynchClientTask task1 = new AsynchClientTask("show dialog", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                getAclEditor().clearACLList();
-                getAclEditor().setACLState(ACLState.fromGroupAccess(groupAccess));
+                DatabaseWindowManager.this.getAclEditor().clearACLList();
+                DatabaseWindowManager.this.getAclEditor().setACLState(ACLState.fromGroupAccess(groupAccess));
                 if (bGrantSupportPermissions) {
-                    getAclEditor().grantVCellSupportPermissions();
+                    DatabaseWindowManager.this.getAclEditor().grantVCellSupportPermissions();
                 }
-                Object choice = showAccessPermissionDialog(getAclEditor(), requester);
+                Object choice = DatabaseWindowManager.this.showAccessPermissionDialog(DatabaseWindowManager.this.getAclEditor(), requester);
                 if (choice != null) {
                     hashTable.put("choice", choice);
                 }
@@ -148,7 +149,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 Object choice = hashTable.get("choice");
                 if (choice == null || !choice.equals("OK")) return;
-                ACLState aclState = getAclEditor().getACLState();
+                ACLState aclState = DatabaseWindowManager.this.getAclEditor().getACLState();
                 if (aclState == null) return;
                 if (aclState.getAclType() == ACLState.ACLType.PRIVATE) {
                     VersionInfo vInfo;
@@ -240,7 +241,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                         } else {
                             DialogUtils.showErrorDialog(requester, errorNames.toString());
                         }
-                        accessPermissions(requester, selectedVersionInfo, false);
+                        DatabaseWindowManager.this.accessPermissions(requester, selectedVersionInfo, false);
                     }
                 }
             } // func end
@@ -256,7 +257,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      */
     public void archive() {
 
-        getRequestManager().curateDocument(getPanelSelection(), CurateSpec.ARCHIVE, this);
+        this.getRequestManager().curateDocument(this.getPanelSelection(), CurateSpec.ARCHIVE, this);
     }
 
 //public void compareAnotherEdition1() {
@@ -264,11 +265,11 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
     public void batchOmexPublished() {
 
         Map<KeyValue, BioModelInfo> publishedModelMap = new LinkedHashMap<>();
-        BioModelDbTreePanel bmdbtp = getBioModelDbTreePanel();
+        BioModelDbTreePanel bmdbtp = this.getBioModelDbTreePanel();
         BioModelInfo[] bmInfos = bmdbtp.getDocumentManager().getBioModelInfos();
         for (BioModelInfo bmi : bmInfos) {
             if (bmi instanceof VCDocumentInfo) {
-                VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) bmi;
+                VCDocumentInfo versionVCDocumentInfo = bmi;
                 if (versionVCDocumentInfo.getPublicationInfos() != null &&
                         versionVCDocumentInfo.getPublicationInfos().length > 0) {
                     publishedModelMap.put(bmi.getModelKey(), bmi);
@@ -298,17 +299,17 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         //
         // get selected DocumentInfo info from original Tree.
         //
-        if (getPanelSelection() == null) {
+        if (this.getPanelSelection() == null) {
             PopupGenerator.showErrorDialog(this, "Error Comparing documents : No first document selected");
             return;
         }
-        VCDocumentInfo thisDocumentInfo = getPanelSelection();
+        VCDocumentInfo thisDocumentInfo = this.getPanelSelection();
         //
         // Get the previous version of the documentInfo
         //
         VCDocumentInfo[] documentVersionsList = null;
         try {
-            documentVersionsList = getDocumentVersionDates(thisDocumentInfo);
+            documentVersionsList = this.getDocumentVersionDates(thisDocumentInfo);
         } catch (DataAccessException e) {
             PopupGenerator.showErrorDialog(this, "Error accessing second document!");
         }
@@ -321,7 +322,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         //
         // Obtaining the Dates of the versions as a String, to be displayed as a list
         //
-        String versionDatesList[] = new String[documentVersionsList.length];
+        String[] versionDatesList = new String[documentVersionsList.length];
         for (int i = 0; i < documentVersionsList.length; i++) {
             versionDatesList[i] = documentVersionsList[i].getVersion().getDate().toString();
         }
@@ -358,7 +359,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             return;
         }
         // Now that we have both the document versions to be compared, do the comparison and display the result
-        compareWithOther(anotherDocumentInfo, thisDocumentInfo);
+        this.compareWithOther(anotherDocumentInfo, thisDocumentInfo);
     }
 
     /**
@@ -368,16 +369,16 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         //
         // get selected DocumentInfo info from original Tree.
         //
-        if (getPanelSelection() == null) {
+        if (this.getPanelSelection() == null) {
             PopupGenerator.showErrorDialog(this, "Error Comparing documents : First document not selected");
             return;
         }
-        VCDocumentInfo thisDocumentInfo = getPanelSelection();
+        VCDocumentInfo thisDocumentInfo = this.getPanelSelection();
 
         // Choose the other documentInfo. Bring up the appropriate dbTreePanel depending on the type of thisDocumentInfo
         VCDocumentInfo otherDocumentInfo = null;
         try {
-            otherDocumentInfo = selectDocument(thisDocumentInfo.getVCDocumentType(), this);
+            otherDocumentInfo = this.selectDocument(thisDocumentInfo.getVCDocumentType(), this);
         } catch (Exception e) {
             if (!(e instanceof UserCancelException)) {
                 e.printStackTrace();
@@ -398,7 +399,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             return;
         }
         // Now that we have both the document versions to be compared, do the comparison and display the result
-        compareWithOther(otherDocumentInfo, thisDocumentInfo);
+        this.compareWithOther(otherDocumentInfo, thisDocumentInfo);
     }
 
 
@@ -409,18 +410,18 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         //
         // get selected DocumentInfo info from original Tree.
         //
-        if (getPanelSelection() == null) {
+        if (this.getPanelSelection() == null) {
             PopupGenerator.showErrorDialog(this, "Error Comparing documents : No first document selected");
             return;
         }
-        VCDocumentInfo thisDocumentInfo = getPanelSelection();
+        VCDocumentInfo thisDocumentInfo = this.getPanelSelection();
 
         //
         // Get the latest version of the documentInfo
         //
         VCDocumentInfo[] documentVersionsList = null;
         try {
-            documentVersionsList = getDocumentVersionDates(thisDocumentInfo);
+            documentVersionsList = this.getDocumentVersionDates(thisDocumentInfo);
         } catch (DataAccessException e) {
             PopupGenerator.showErrorDialog(this, "Error accessing second document!");
         }
@@ -455,7 +456,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         //
         // Now that we have both the document versions to be compared, do the comparison and display the result
         //
-        compareWithOther(latestDocumentInfo, thisDocumentInfo);
+        this.compareWithOther(latestDocumentInfo, thisDocumentInfo);
     }
 
 
@@ -466,17 +467,17 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         //
         // get selected DocumentInfo info from original Tree.
         //
-        if (getPanelSelection() == null) {
+        if (this.getPanelSelection() == null) {
             PopupGenerator.showErrorDialog(this, "Error Comparing documents : No first document selected");
             return;
         }
-        VCDocumentInfo thisDocumentInfo = getPanelSelection();
+        VCDocumentInfo thisDocumentInfo = this.getPanelSelection();
         //
         // Get the previous version of the documentInfo
         //
         VCDocumentInfo[] documentVersionsList = null;
         try {
-            documentVersionsList = getDocumentVersionDates(thisDocumentInfo);
+            documentVersionsList = this.getDocumentVersionDates(thisDocumentInfo);
         } catch (DataAccessException e) {
             PopupGenerator.showErrorDialog(this, "Error accessing second document!");
         }
@@ -518,21 +519,21 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         }
 
         // Now that we have both the document versions to be compared, do the comparison and display the result
-        compareWithOther(previousDocumentInfo, thisDocumentInfo);
+        this.compareWithOther(previousDocumentInfo, thisDocumentInfo);
     }
 
 
     //Processes the model comparison,
     private void compareWithOther(final VCDocumentInfo docInfo1, final VCDocumentInfo docInfo2) {
 
-        final MDIManager mdiManager = new ClientMDIManager(getRequestManager());
-        mdiManager.blockWindow(getManagerID());
+        final MDIManager mdiManager = new ClientMDIManager(this.getRequestManager());
+        mdiManager.blockWindow(this.getManagerID());
         String taskName = "Comparing " + docInfo1.getVersion().getName() + " with " + docInfo2.getVersion().getName();
         AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                XmlTreeDiff xmlTreeDiff = getRequestManager().compareWithOther(docInfo1, docInfo2);
+                XmlTreeDiff xmlTreeDiff = DatabaseWindowManager.this.getRequestManager().compareWithOther(docInfo1, docInfo2);
                 hashTable.put("xmlTreeDiff", xmlTreeDiff);
             }
         };
@@ -545,14 +546,14 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                         XmlTreeDiff xmlTreeDiff = (XmlTreeDiff) hashTable.get("xmlTreeDiff");
                         String baselineDesc = docInfo1.getVersion().getName() + ", " + docInfo1.getVersion().getDate();
                         String modifiedDesc = docInfo2.getVersion().getName() + ", " + docInfo2.getVersion().getDate();
-                        getRequestManager().showComparisonResults(DatabaseWindowManager.this, xmlTreeDiff, baselineDesc, modifiedDesc);
+                        DatabaseWindowManager.this.getRequestManager().showComparisonResults(DatabaseWindowManager.this, xmlTreeDiff, baselineDesc, modifiedDesc);
                     }
                 } finally {
-                    mdiManager.unBlockWindow(getManagerID());
+                    mdiManager.unBlockWindow(DatabaseWindowManager.this.getManagerID());
                 }
             }
         };
-        ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{task1, task2}, false);
+        ClientTaskDispatcher.dispatch(this.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{task1, task2}, false);
     }
 
     /**
@@ -560,12 +561,12 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * Creation date: (6/1/2004 9:49:06 PM)
      */
     public void deleteSelected() {
-        getRequestManager().deleteDocument(getPanelSelection(), this);
+        this.getRequestManager().deleteDocument(this.getPanelSelection(), this);
     }
 
     public void exportDocument() {
-        if (getPanelSelection() != null) {
-            getRequestManager().exportDocument(this, null);
+        if (this.getPanelSelection() != null) {
+            this.getRequestManager().exportDocument(this, null);
         } else {
             PopupGenerator.showInfoDialog(this, "no model selected");
         }
@@ -579,7 +580,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         AsynchClientTask findModelsTask = new AsynchClientTask("Finding Models...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                VCDocumentInfo selectedDocument = getPanelSelection();
+                VCDocumentInfo selectedDocument = DatabaseWindowManager.this.getPanelSelection();
 
                 if (!(selectedDocument instanceof GeometryInfo)) {
                     PopupGenerator.showErrorDialog(DatabaseWindowManager.this, "DatabaseWindowManager.findModelsUsingSelectedGeometry expected a GeometryInfo\nbut got type=" + selectedDocument.getClass().getName() + " instead");
@@ -588,7 +589,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 
                 ReferenceQuerySpec rqs = new ReferenceQuerySpec(VersionableType.Geometry, selectedDocument.getVersion().getVersionKey());
 //			try{
-                ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
+                ReferenceQueryResult rqr = DatabaseWindowManager.this.getRequestManager().getDocumentManager().findReferences(rqs);
                 //cbit.vcell.modeldb.VersionableTypeVersion[] children = (rqr.getVersionableFamily().bChildren()?rqr.getVersionableFamily().getUniqueChildren():null);
                 VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants() ? rqr.getVersionableFamily().getUniqueDependants() : null);
                 //System.out.println("\n");
@@ -649,25 +650,25 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 
                 if (choices.size() > 0) {
                     Object[] listObj = choices.keySet().toArray();
-                    Object o = DialogUtils.showListDialog(getComponent(), listObj, "Models Referencing Geometry (Select To Open) " + selectedDocument.getVersion().getName() + " " + selectedDocument.getVersion().getDate());
+                    Object o = DialogUtils.showListDialog(DatabaseWindowManager.this.getComponent(), listObj, "Models Referencing Geometry (Select To Open) " + selectedDocument.getVersion().getName() + " " + selectedDocument.getVersion().getDate());
                     if (o != null) {
                         VersionableTypeVersion v = (VersionableTypeVersion) choices.get(o);
                         //System.out.println(v);
                         if (v.getVType().equals(VersionableType.BioModelMetaData)) {
-                            BioModelInfo bmi = getRequestManager().getDocumentManager().getBioModelInfo(v.getVersion().getVersionKey());
-                            getRequestManager().openDocument(bmi, DatabaseWindowManager.this, true);
+                            BioModelInfo bmi = DatabaseWindowManager.this.getRequestManager().getDocumentManager().getBioModelInfo(v.getVersion().getVersionKey());
+                            DatabaseWindowManager.this.getRequestManager().openDocument(bmi, DatabaseWindowManager.this, true);
                         } else if (v.getVType().equals(VersionableType.MathModelMetaData)) {
-                            MathModelInfo mmi = getRequestManager().getDocumentManager().getMathModelInfo(v.getVersion().getVersionKey());
-                            getRequestManager().openDocument(mmi, DatabaseWindowManager.this, true);
+                            MathModelInfo mmi = DatabaseWindowManager.this.getRequestManager().getDocumentManager().getMathModelInfo(v.getVersion().getVersionKey());
+                            DatabaseWindowManager.this.getRequestManager().openDocument(mmi, DatabaseWindowManager.this, true);
                         }
                     }
                 } else {
                     if (dependants == null) {
-                        DialogUtils.showInfoDialog(getComponent(),
+                        DialogUtils.showInfoDialog(DatabaseWindowManager.this.getComponent(),
                                 "No Model references found.\n" +
                                         (rqr.getVersionableFamily().getTarget().getVersion().getFlag().isArchived() ? "Info: Not Deletable (key=" + rqr.getVersionableFamily().getTarget().getVersion().getVersionKey() + ") because legacy ARCHIVE set" : ""));
                     } else {
-                        DialogUtils.showInfoDialog(getComponent(),
+                        DialogUtils.showInfoDialog(DatabaseWindowManager.this.getComponent(),
                                 "No current Model references found.\n" +
                                         "Geometry has internal database references from\n" +
                                         "previously linked Model(s).\n" +
@@ -680,7 +681,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 //			}
             }
         };
-        ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{findModelsTask}, false);
+        ClientTaskDispatcher.dispatch(this.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{findModelsTask}, false);
     }
 
 
@@ -691,7 +692,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * @return cbit.vcell.desktop.BioModelDbTreePanel
      */
     private ACLEditor getAclEditor() {
-        return aclEditor;
+        return this.aclEditor;
     }
 
 
@@ -702,7 +703,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * @return cbit.vcell.desktop.BioModelDbTreePanel
      */
     public BioModelDbTreePanel getBioModelDbTreePanel() {
-        return bioModelDbTreePanel;
+        return this.bioModelDbTreePanel;
     }
 
 
@@ -713,7 +714,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * @return java.lang.String
      */
     public java.awt.Component getComponent() {
-        return getDatabaseWindowPanel();
+        return this.getDatabaseWindowPanel();
     }
 
 
@@ -724,7 +725,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * @return cbit.vcell.client.desktop.DatabaseWindowPanel
      */
     public DatabaseWindowPanel getDatabaseWindowPanel() {
-        return databaseWindowPanel;
+        return this.databaseWindowPanel;
     }
 
 
@@ -740,13 +741,13 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             return new VCDocumentInfo[0];
         }
 
-        VCDocumentInfo vcDocumentInfos[] = null;
+        VCDocumentInfo[] vcDocumentInfos = null;
         if (thisDocumentInfo instanceof BioModelInfo) {
-            vcDocumentInfos = getRequestManager().getDocumentManager().getBioModelInfos();
+            vcDocumentInfos = this.getRequestManager().getDocumentManager().getBioModelInfos();
         } else if (thisDocumentInfo instanceof MathModelInfo) {
-            vcDocumentInfos = getRequestManager().getDocumentManager().getMathModelInfos();
+            vcDocumentInfos = this.getRequestManager().getDocumentManager().getMathModelInfos();
         } else if (thisDocumentInfo instanceof GeometryInfo) {
-            vcDocumentInfos = getRequestManager().getDocumentManager().getGeometryInfos();
+            vcDocumentInfos = this.getRequestManager().getDocumentManager().getGeometryInfos();
         }
 
         //
@@ -766,7 +767,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             return new VCDocumentInfo[0];
         }
 
-        VCDocumentInfo vcDocumentInfosInBranch[] = new VCDocumentInfo[documentBranchList.size()];
+        VCDocumentInfo[] vcDocumentInfosInBranch = new VCDocumentInfo[documentBranchList.size()];
         documentBranchList.copyInto(vcDocumentInfosInBranch);
 
         //
@@ -774,7 +775,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         // versions for the biomodel
         //
 
-        VCDocumentInfo revisedDocInfosInBranch[] = new VCDocumentInfo[vcDocumentInfosInBranch.length - 1];
+        VCDocumentInfo[] revisedDocInfosInBranch = new VCDocumentInfo[vcDocumentInfosInBranch.length - 1];
         int j = 0;
 
         for (int i = 0; i < vcDocumentInfosInBranch.length; i++) {
@@ -795,7 +796,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * @return cbit.vcell.desktop.GeometryTreePanel
      */
     public GeometryTreePanel getGeometryTreePanel() {
-        return geometryTreePanel;
+        return this.geometryTreePanel;
     }
 
 
@@ -818,7 +819,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * @return cbit.vcell.desktop.MathModelDbTreePanel
      */
     public MathModelDbTreePanel getMathModelDbTreePanel() {
-        return MathModelDbTreePanel;
+        return this.MathModelDbTreePanel;
     }
 
 
@@ -829,7 +830,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * @return cbit.vcell.document.VCDocumentInfo
      */
     public VCDocumentInfo getPanelSelection() {
-        return getDatabaseWindowPanel().getSelectedDocumentInfo();
+        return this.getDatabaseWindowPanel().getSelectedDocumentInfo();
     }
 
 
@@ -842,10 +843,10 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 try {
-                    DocumentManager documentManager = getRequestManager().getDocumentManager();
-                    getBioModelDbTreePanel().setDocumentManager(documentManager);
-                    getMathModelDbTreePanel().setDocumentManager(documentManager);
-                    getGeometryTreePanel().setDocumentManager(documentManager);
+                    DocumentManager documentManager = DatabaseWindowManager.this.getRequestManager().getDocumentManager();
+                    DatabaseWindowManager.this.getBioModelDbTreePanel().setDocumentManager(documentManager);
+                    DatabaseWindowManager.this.getMathModelDbTreePanel().setDocumentManager(documentManager);
+                    DatabaseWindowManager.this.getGeometryTreePanel().setDocumentManager(documentManager);
 //				getDatabaseWindowPanel().setDocumentManager(documentManager);
 //				getImageBrowser().getImageDbTreePanel1().setDocumentManager(documentManager);
                 } catch (Throwable exc) {
@@ -862,21 +863,17 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * Creation date: (5/14/2004 5:35:55 PM)
      */
     public boolean isOwnerUserEqual() {
-        User currentUser = getRequestManager().getDocumentManager().getUser();
+        User currentUser = this.getRequestManager().getDocumentManager().getUser();
         User selectedDocOwner = null;
-        if (getPanelSelection() != null) {
-            selectedDocOwner = getPanelSelection().getVersion().getOwner();
+        if (this.getPanelSelection() != null) {
+            selectedDocOwner = this.getPanelSelection().getVersion().getOwner();
         }
 
         // Check if the current user is the owner of current selection in database panel.
         // If so, return true to enable the edit and access permissions menu items on Database window.
         // (these buttons should be disabled if user isn't owner of current selection on database window).
 
-        if (Compare.isEqual(currentUser, selectedDocOwner)) {
-            return true;
-        } else {
-            return false;
-        }
+        return Compare.isEqual(currentUser, selectedDocOwner);
     }
 
 
@@ -898,14 +895,14 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
     public void openLatest() {
 
         VCDocumentInfo latestDocumentInfo = null;
-        if (getPanelSelection() != null) {
-            VCDocumentInfo thisDocumentInfo = getPanelSelection();
+        if (this.getPanelSelection() != null) {
+            VCDocumentInfo thisDocumentInfo = this.getPanelSelection();
             //
             // Get the latest version of the documentInfo
             //
             VCDocumentInfo[] documentVersionsList = null;
             try {
-                documentVersionsList = getDocumentVersionDates(thisDocumentInfo);
+                documentVersionsList = this.getDocumentVersionDates(thisDocumentInfo);
             } catch (DataAccessException e) {
                 PopupGenerator.showErrorDialog(this, "Error accessing document!");
             }
@@ -932,7 +929,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             PopupGenerator.showErrorDialog(this, "Error Opening Latest Document : no document currently selected.");
             return;
         }
-        getRequestManager().openDocument(latestDocumentInfo, this, true);
+        this.getRequestManager().openDocument(latestDocumentInfo, this, true);
     }
 
     public void createNewGeometry() {
@@ -946,16 +943,16 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                 DocumentCreationInfo documentCreationInfo = new DocumentCreationInfo(VCDocumentType.GEOMETRY_DOC, -1);
                 documentCreationInfo.setPreCreatedDocument(newGeom);
                 AsynchClientTask[] newGeometryTaskArr =
-                        getRequestManager().newDocument(DatabaseWindowManager.this, documentCreationInfo);
+                        DatabaseWindowManager.this.getRequestManager().newDocument(DatabaseWindowManager.this, documentCreationInfo);
                 ClientTaskDispatcher.dispatch(DatabaseWindowManager.this.getComponent(), hashTable, newGeometryTaskArr);
             }
         };
 
-        createGeometry(null, new AsynchClientTask[]{editSelectTask}, TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE, "Create Geometry", null);
+        this.createGeometry(null, new AsynchClientTask[]{editSelectTask}, TopLevelWindowManager.DEFAULT_CREATEGEOM_SELECT_DIALOG_TITLE, "Create Geometry", null);
     }
 
     public void openSelected() {
-        openSelected(this, true);
+        this.openSelected(this, true);
     }
 
     /**
@@ -963,7 +960,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * Creation date: (6/1/2004 9:49:06 PM)
      */
     public void openSelected(TopLevelWindowManager requester, boolean bInNewWindow) {
-        getRequestManager().openDocument(getPanelSelection(), requester, bInNewWindow);
+        this.getRequestManager().openDocument(this.getPanelSelection(), requester, bInNewWindow);
     }
 
 
@@ -973,7 +970,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      */
     public void publish() {
 
-        getRequestManager().curateDocument(getPanelSelection(), CurateSpec.PUBLISH, this);
+        this.getRequestManager().curateDocument(this.getPanelSelection(), CurateSpec.PUBLISH, this);
     }
 
 
@@ -988,7 +985,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         }
 
         public Geometry getSelection() {
-            return selection;
+            return this.selection;
         }
 
         public void setSelection(Geometry selection) {
@@ -998,12 +995,12 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         private void showGeomForSelection(VCDocumentInfo vcDocInfo, String simOwnerName) throws Exception {
             AsynchProgressPopup pp = null;
             try {
-                pp = new AsynchProgressPopup(myLocalVCDocDBTreePanel, null, null, true, false, false, null);
+                pp = new AsynchProgressPopup(this.myLocalVCDocDBTreePanel, null, null, true, false, false, null);
                 pp.setMessage("Loading " + simOwnerName);
                 pp.startKeepOnTop();
                 SimulationOwner simulationOwner = (vcDocInfo instanceof BioModelInfo ?
-                        myLocalVCDocDBTreePanel.getDocumentManager().getBioModel(((BioModelInfo) vcDocInfo)).getSimulationContext(simOwnerName) :
-                        myLocalVCDocDBTreePanel.getDocumentManager().getMathModel(((MathModelInfo) vcDocInfo)));
+                        this.myLocalVCDocDBTreePanel.getDocumentManager().getBioModel(((BioModelInfo) vcDocInfo)).getSimulationContext(simOwnerName) :
+                        this.myLocalVCDocDBTreePanel.getDocumentManager().getMathModel(((MathModelInfo) vcDocInfo)));
 
                 pp.setMessage("Creating image " + simOwnerName);
                 VCImageUncompressed currentValue =
@@ -1020,9 +1017,9 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                         newPC[i] = new VCPixelClass(
                                 currentValue.getPixelClasses(i).getKey(),
                                 currentValue.getPixelClasses(i).getPixelClassName(),
-                                ((127 - 0) * (currentValue.getPixelClasses(i).getPixel() - 0)) / (newPC.length - 1) + 0);
+                                ((127) * (currentValue.getPixelClasses(i).getPixel())) / (newPC.length - 1));
                         for (int j = 0; j < currentValue.getPixels().length; j++) {
-                            if ((int) (currentValue.getPixels()[j] & 0x000000FF) == currentValue.getPixelClasses(i).getPixel()) {
+                            if ((currentValue.getPixels()[j] & 0x000000FF) == currentValue.getPixelClasses(i).getPixel()) {
                                 currentValue.getPixels()[j] = (byte) (newPC[i].getPixel() & 0x000000FF);
                             }
                         }
@@ -1039,24 +1036,23 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                         jsp.setPreferredSize(new Dimension(300, 400));
                         String SEL = "Select";
                         String select = DialogUtils.showOptionsDialog(
-                                myLocalVCDocDBTreePanel.getJTree1(), jsp, JOptionPane.QUESTION_MESSAGE, new String[]{"Back", SEL}, "Back", null,
+                                SelectGeomHover.this.myLocalVCDocDBTreePanel.getJTree1(), jsp, JOptionPane.QUESTION_MESSAGE, new String[]{"Back", SEL}, "Back", null,
                                 "View Geometry (x=" + currentValue.getNumX() + " y=" + currentValue.getNumY() + " z=" + currentValue.getNumZ() + ")");
                         if (select != null && select.equals(SEL)) {
                             //Save geom selection, Click 'Open' button
-                            setSelection(simulationOwner.getMathDescription().getGeometry());
-                            Container myWindow = GeneralGuiUtils.findTypeParentOfComponent(myLocalVCDocDBTreePanel, Window.class);
+                            SelectGeomHover.this.setSelection(simulationOwner.getMathDescription().getGeometry());
+                            Container myWindow = GeneralGuiUtils.findTypeParentOfComponent(SelectGeomHover.this.myLocalVCDocDBTreePanel, Window.class);
                             ArrayList<Component> comps = new ArrayList<Component>();
                             GeneralGuiUtils.findComponent(myWindow, JButton.class, comps);
                             for (int i = 0; i < comps.size(); i++) {
                                 if (((JButton) comps.get(i)).getText().equals("Open")) {
-                                    ((JButton) comps.get(i)).setEnabled(true);
+                                    comps.get(i).setEnabled(true);
                                     ((JButton) comps.get(i)).doClick();
                                     return;
                                 }
                             }
                         } else {
                             //keep trying to select
-                            return;
                         }
                     }
                 });
@@ -1068,29 +1064,29 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         private VCDocument getModelInfoWithProgress(VCDocumentInfo vcDocInfo) throws DataAccessException {
             AsynchProgressPopup pp = null;
             try {
-                pp = new AsynchProgressPopup(myLocalVCDocDBTreePanel, null, null, true, false, false, null);
+                pp = new AsynchProgressPopup(this.myLocalVCDocDBTreePanel, null, null, true, false, false, null);
                 pp.setMessage("Loading " + vcDocInfo.getVersion().getName());
                 pp.startKeepOnTop();
                 return (vcDocInfo instanceof BioModelInfo ?
-                        myLocalVCDocDBTreePanel.getDocumentManager().getBioModel(((BioModelInfo) vcDocInfo)) :
-                        myLocalVCDocDBTreePanel.getDocumentManager().getMathModel(((MathModelInfo) vcDocInfo)));
+                        this.myLocalVCDocDBTreePanel.getDocumentManager().getBioModel(((BioModelInfo) vcDocInfo)) :
+                        this.myLocalVCDocDBTreePanel.getDocumentManager().getMathModel(((MathModelInfo) vcDocInfo)));
             } finally {
                 pp.stop();
             }
         }
 
         private boolean processPopupMenu(Object lastModelChildInfo) {
-            if (jpop != null && jpop.isShowing()) {
-                if (lastModelChildInfoHolder[0] == lastModelChildInfo/*mathModelInfo.getMathModelChildSummary()*/) {
+            if (this.jpop != null && this.jpop.isShowing()) {
+                if (this.lastModelChildInfoHolder[0] == lastModelChildInfo/*mathModelInfo.getMathModelChildSummary()*/) {
                     return false;
                 }
             }
-            lastModelChildInfoHolder[0] = lastModelChildInfo;
-            if (jpop == null) {
-                jpop = new JPopupMenu();
-                jpop.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+            this.lastModelChildInfoHolder[0] = lastModelChildInfo;
+            if (this.jpop == null) {
+                this.jpop = new JPopupMenu();
+                this.jpop.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
             } else {
-                jpop.removeAll();
+                this.jpop.removeAll();
             }
             return true;
         }
@@ -1098,28 +1094,26 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         @Override
         public void mouseMoved(MouseEvent e) {
             super.mouseMoved(e);
-            TreePath pathForLocation = myLocalVCDocDBTreePanel.getJTree1().getPathForLocation(e.getX(), e.getY());
+            TreePath pathForLocation = this.myLocalVCDocDBTreePanel.getJTree1().getPathForLocation(e.getX(), e.getY());
             if (pathForLocation != null &&
                     ((pathForLocation.getLastPathComponent() instanceof BioModelNode && ((BioModelNode) pathForLocation.getLastPathComponent()).getUserObject() instanceof VCDocumentInfoNode) ||
                             pathForLocation.getLastPathComponent() instanceof PublicationInfoNode)) {
-                if (jpop != null && jpop.isShowing()) {
-                    jpop.setVisible(false);
+                if (this.jpop != null && this.jpop.isShowing()) {
+                    this.jpop.setVisible(false);
                 }
-                myLocalVCDocDBTreePanel.getJTree1().expandPath(pathForLocation);
-            } else if (pathForLocation != null && pathForLocation.getLastPathComponent() instanceof BioModelNode) {
-                BioModelNode lastPathComponent = (BioModelNode) pathForLocation.getLastPathComponent();
-                if (lastPathComponent.getUserObject() instanceof MathModelInfo) {
-                    MathModelInfo mathModelInfo = (MathModelInfo) lastPathComponent.getUserObject();
-//				if(jpop != null && jpop.isShowing()) {
+                this.myLocalVCDocDBTreePanel.getJTree1().expandPath(pathForLocation);
+            } else if (pathForLocation != null && pathForLocation.getLastPathComponent() instanceof BioModelNode lastPathComponent) {
+                if (lastPathComponent.getUserObject() instanceof MathModelInfo mathModelInfo) {
+                    //				if(jpop != null && jpop.isShowing()) {
 //					if(lastModelChildInfoHolder[0] == mathModelInfo.getMathModelChildSummary()) {
 //						return;
 //					}
 //				}
 //				lastModelChildInfoHolder[0] = mathModelInfo.getMathModelChildSummary();
-                    if (!processPopupMenu(mathModelInfo.getMathModelChildSummary())) {
+                    if (!this.processPopupMenu(mathModelInfo.getMathModelChildSummary())) {
                         return;
                     }
-                    JMenuItem menuItem = new JMenuItem("Geom(" + mathModelInfo.getMathModelChildSummary().getGeometryDimension() + "):" + mathModelInfo.getMathModelChildSummary().getGeometryName() + "");
+                    JMenuItem menuItem = new JMenuItem("Geom(" + mathModelInfo.getMathModelChildSummary().getGeometryDimension() + "):" + mathModelInfo.getMathModelChildSummary().getGeometryName());
                     menuItem.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -1128,7 +1122,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                                 public void run() {
                                     try {
                                         //MathModel mathModel = (MathModel) getModelInfoWithProgress(mathModelInfo);
-                                        showGeomForSelection(mathModelInfo, mathModelInfo.getVersion().getName());
+                                        SelectGeomHover.this.showGeomForSelection(mathModelInfo, mathModelInfo.getVersion().getName());
                                     } catch (Exception e1) {
                                         e1.printStackTrace();
                                     }
@@ -1142,13 +1136,12 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 //				}else {
 //					jpop.removeAll();
 //				}
-                    jpop.add(menuItem);
-                    jpop.show(myLocalVCDocDBTreePanel.getJTree1(), e.getX(), e.getY());
-                } else if (lastPathComponent.getUserObject() instanceof BioModelInfo) {
-                    BioModelInfo bioModelInfo = (BioModelInfo) lastPathComponent.getUserObject();
+                    this.jpop.add(menuItem);
+                    this.jpop.show(this.myLocalVCDocDBTreePanel.getJTree1(), e.getX(), e.getY());
+                } else if (lastPathComponent.getUserObject() instanceof BioModelInfo bioModelInfo) {
                     BioModelChildSummary bioModelChildSummary = bioModelInfo.getBioModelChildSummary();
                     if (bioModelChildSummary != null && bioModelChildSummary.getSimulationContextNames() != null && bioModelChildSummary.getSimulationContextNames().length > 0) {
-                        if (!processPopupMenu(bioModelChildSummary)) {
+                        if (!this.processPopupMenu(bioModelChildSummary)) {
                             return;
                         }
 
@@ -1166,7 +1159,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 //					}
                         for (int i = 0; i < bioModelChildSummary.getSimulationContextNames().length; i++) {
                             if (bioModelChildSummary.getGeometryDimensions()[i] > 0) {
-                                JMenuItem menuItem = new JMenuItem("App(" + bioModelChildSummary.getGeometryDimensions()[i] + "):" + bioModelChildSummary.getSimulationContextNames()[i] + "");
+                                JMenuItem menuItem = new JMenuItem("App(" + bioModelChildSummary.getGeometryDimensions()[i] + "):" + bioModelChildSummary.getSimulationContextNames()[i]);
                                 menuItem.addActionListener(new ActionListener() {
                                     @Override
                                     public void actionPerformed(ActionEvent e) {
@@ -1174,12 +1167,12 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                                             @Override
                                             public void run() {
                                                 String substring = menuItem.getText().substring(7);
-                                                substring = new String(substring.getBytes(java.nio.charset.Charset.forName("ISO-8859-1")));
+                                                substring = new String(substring.getBytes(StandardCharsets.ISO_8859_1));
 //											System.out.println(substring+" "+bioModelInfo.getVersion().getName()+" "+menuItem.getText());
                                                 try {
                                                     //BioModel bioModel = (BioModel) getModelInfoWithProgress(bioModelInfo);
                                                     //SimulationContext simulationContext = bioModel.getSimulationContext(substring);
-                                                    showGeomForSelection(bioModelInfo, substring);
+                                                    SelectGeomHover.this.showGeomForSelection(bioModelInfo, substring);
 //												ModelGeometryOPResults modelGeometryOPResults = (ModelGeometryOPResults) DatabaseWindowManager.this.getRequestManager().getDocumentManager()
 //														.getSessionManager().getUserMetaDbServer().doTestSuiteOP(
 //																new ModelGeometryOP(bioModelInfo, substring));
@@ -1205,26 +1198,24 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
                                         }).start();
                                     }
                                 });
-                                jpop.add(menuItem);
+                                this.jpop.add(menuItem);
                             }
                         }
-                        jpop.show(myLocalVCDocDBTreePanel.getJTree1(), e.getX(), e.getY());
+                        this.jpop.show(this.myLocalVCDocDBTreePanel.getJTree1(), e.getX(), e.getY());
                     }
                 } else {
-                    if (jpop != null && jpop.isShowing()) {
-                        jpop.setVisible(false);
+                    if (this.jpop != null && this.jpop.isShowing()) {
+                        this.jpop.setVisible(false);
                     }
                 }
             } else {
-                if (jpop != null && jpop.isShowing()) {
-                    jpop.setVisible(false);
+                if (this.jpop != null && this.jpop.isShowing()) {
+                    this.jpop.setVisible(false);
                 }
             }
         }
 
     }
-
-    ;
 
     //private static void showGeomForSelection(VCDocumentDbTreePanel myLocalVCDocDBTreePanel,SimulationOwner simulationOwner,SelectGeomHover selectGeomHover)
 //		throws GeometryException, ImageException, ExpressionException,
@@ -1291,12 +1282,12 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         String title = null;
         switch (documentType) {
             case BIOMODEL_DOC:
-                documentManager = getBioModelDbTreePanel().getDocumentManager();
+                documentManager = this.getBioModelDbTreePanel().getDocumentManager();
                 myDBTreePanel = new BioModelDbTreePanel();
                 title = "Select BioModel:Geometry";
                 break;
             case MATHMODEL_DOC:
-                documentManager = getMathModelDbTreePanel().getDocumentManager();
+                documentManager = this.getMathModelDbTreePanel().getDocumentManager();
                 myDBTreePanel = new MathModelDbTreePanel();
                 title = "Select MathModel:Geometry";
                 break;
@@ -1378,17 +1369,17 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         // otherwise use dialog return value
         switch (documentType) {
             case BIOMODEL_DOC: {
-                return (BioModelInfo) DialogUtils.getDBTreePanelSelection(requester.getComponent(), getBioModelDbTreePanel(), "Open", "Select BioModel");
+                return (BioModelInfo) DialogUtils.getDBTreePanelSelection(requester.getComponent(), this.getBioModelDbTreePanel(), "Open", "Select BioModel");
             }
             case MATHMODEL_DOC: {
-                return (MathModelInfo) DialogUtils.getDBTreePanelSelection(requester.getComponent(), getMathModelDbTreePanel(), "Open", "Select MathModel");
+                return (MathModelInfo) DialogUtils.getDBTreePanelSelection(requester.getComponent(), this.getMathModelDbTreePanel(), "Open", "Select MathModel");
             }
             case GEOMETRY_DOC: {
-                return (GeometryInfo) DialogUtils.getDBTreePanelSelection(requester.getComponent(), getGeometryTreePanel(), "Open", "Select Geometry");
+                return (GeometryInfo) DialogUtils.getDBTreePanelSelection(requester.getComponent(), this.getGeometryTreePanel(), "Open", "Select Geometry");
             }
             case EXTERNALFILE_DOC: {
                 // Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
-                File modelFile = showFileChooserDialog(requester, FileFilters.FILE_FILTER_EXTERNALDOC);
+                File modelFile = this.showFileChooserDialog(requester, FileFilters.FILE_FILTER_EXTERNALDOC);
                 return new ExternalDocInfo(modelFile, true);
             }
             default: {
@@ -1404,7 +1395,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * @param newDatabaseWindowPanel cbit.vcell.client.desktop.DatabaseWindowPanel
      */
     private void setDatabaseWindowPanel(DatabaseWindowPanel newDatabaseWindowPanel) {
-        databaseWindowPanel = newDatabaseWindowPanel;
+        this.databaseWindowPanel = newDatabaseWindowPanel;
     }
 
 
@@ -1412,7 +1403,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * Comment
      */
     public void setLatestOnly(boolean latestOnly) {
-        getDatabaseWindowPanel().setLatestOnly(latestOnly);
+        this.getDatabaseWindowPanel().setLatestOnly(latestOnly);
     }
 
 
@@ -1439,7 +1430,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      */
     private File showFileChooserDialog(TopLevelWindowManager requester, FileFilter fileFilter) throws Exception {
 
-        return showFileChooserDialog(requester.getComponent(), fileFilter, getUserPreferences(), JFileChooser.FILES_ONLY);
+        return showFileChooserDialog(requester.getComponent(), fileFilter, this.getUserPreferences(), JFileChooser.FILES_ONLY);
     }
 
 
@@ -1458,7 +1449,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         // It is false if we are trying to choose an image file
         // This is used to set the appropriate File filters.
 
-        File defaultPath = (File) (currentUserPreferences != null ? currentUserPreferences.getCurrentDialogPath() : new File("."));
+        File defaultPath = currentUserPreferences != null ? currentUserPreferences.getCurrentDialogPath() : new File(".");
         VCFileChooser fileChooser = new VCFileChooser(defaultPath);
         fileChooser.setFileSelectionMode(fileSelectMode);
 
@@ -1494,15 +1485,15 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
         JComponent tree = null;
         switch (documentType) {
             case BIOMODEL_DOC: {
-                tree = getBioModelDbTreePanel();
+                tree = this.getBioModelDbTreePanel();
                 break;
             }
             case MATHMODEL_DOC: {
-                tree = getMathModelDbTreePanel();
+                tree = this.getMathModelDbTreePanel();
                 break;
             }
             case GEOMETRY_DOC: {
-                tree = getGeometryTreePanel();
+                tree = this.getGeometryTreePanel();
                 break;
             }
             default: {
@@ -1536,6 +1527,6 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
     }
 
     public void reconnect() {
-        getRequestManager().reconnect(this);
+        this.getRequestManager().reconnect(this);
     }
 }

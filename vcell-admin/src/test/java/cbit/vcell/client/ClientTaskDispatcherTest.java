@@ -16,57 +16,57 @@ import static cbit.vcell.client.task.AsynchClientTask.*;
 @Disabled
 @Tag("Fast")
 public class ClientTaskDispatcherTest {
-	private Hashtable<String,Object> ht  = new Hashtable<>(); 
-	private  Component cmpt = new Label() ;
+    private final Hashtable<String, Object> ht = new Hashtable<>();
+    private final Component cmpt = new Label();
 
-	public ClientTaskDispatcherTest() {
-		// TODO Auto-generated constructor stub
-	}
-	
-	@Test
-	public void simple( ) {
-		test(TASKTYPE_NONSWING_BLOCKING,TASKTYPE_NONSWING_BLOCKING);
-	}
-	
-	@Test
-	public void sbLast( ) {
-		test(TASKTYPE_NONSWING_BLOCKING,TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_NONBLOCKING);
-		test(TASKTYPE_NONSWING_BLOCKING,TASKTYPE_SWING_BLOCKING,TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_NONBLOCKING);
-	}
-	
-	@Test
-	public void sbNotLast( ) {
-		Assertions.assertThrows(RuntimeException.class, () -> {
-			test(TASKTYPE_NONSWING_BLOCKING,TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_NONBLOCKING, TASKTYPE_NONSWING_BLOCKING);
-		});
-	}
-	
-	private AsynchClientTask[] create(int ... types)  {
-		AsynchClientTask[] rval = new AsynchClientTask[types.length];
-		int idx = 0;
-		for (int t :types) {
-			rval[idx] = makeTask(idx++,t);
-		}
-		return rval;
-	}
-	
-	private void test(int ...types) {
-		try {
-			ht.clear();
-			AsynchClientTask[] act = create(types);
-			ClientTaskDispatcher.dispatch(cmpt,ht,act,false,false,false,null,true); 
-			Thread.sleep(1000);
-		} catch(InterruptedException ie) {}
-	}
+    public ClientTaskDispatcherTest() {
+        // TODO Auto-generated constructor stub
+    }
 
-	private AsynchClientTask makeTask(int serial, int taskType) {
-		return new AsynchClientTaskFunction( h -> mock(serial), "task " + serial, taskType);
-	}
-	
-	private void mock(int value) {
-		System.out.println("mock task " + value);
-	}
-	
-	
+    @Test
+    public void simple() {
+        this.test(TASKTYPE_NONSWING_BLOCKING, TASKTYPE_NONSWING_BLOCKING);
+    }
+
+    @Test
+    public void sbLast() {
+        this.test(TASKTYPE_NONSWING_BLOCKING, TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_NONBLOCKING);
+        this.test(TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_BLOCKING, TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_NONBLOCKING);
+    }
+
+    @Test
+    public void sbNotLast() {
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            this.test(TASKTYPE_NONSWING_BLOCKING, TASKTYPE_NONSWING_BLOCKING, TASKTYPE_SWING_NONBLOCKING, TASKTYPE_NONSWING_BLOCKING);
+        });
+    }
+
+    private AsynchClientTask[] create(int... types) {
+        AsynchClientTask[] rval = new AsynchClientTask[types.length];
+        int idx = 0;
+        for (int t : types) {
+            rval[idx] = this.makeTask(idx++, t);
+        }
+        return rval;
+    }
+
+    private void test(int... types) {
+        try {
+            this.ht.clear();
+            AsynchClientTask[] act = this.create(types);
+            ClientTaskDispatcher.dispatch(this.cmpt, this.ht, act, false, false, false, null, true);
+            Thread.sleep(1000);
+        } catch (InterruptedException ie) {
+        }
+    }
+
+    private AsynchClientTask makeTask(int serial, int taskType) {
+        return new AsynchClientTaskFunction(h -> this.mock(serial), "task " + serial, taskType);
+    }
+
+    private void mock(int value) {
+        System.out.println("mock task " + value);
+    }
+
 
 }

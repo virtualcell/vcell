@@ -50,88 +50,108 @@ import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
+ *
  * @author: Ion Moraru
  */
 public class ExportDocument extends ExportTask {
-	
-	public ExportDocument() {
-		super("Exporting document", TASKTYPE_NONSWING_BLOCKING);
-	}
-/**
- * Insert the method's description here.
- * Creation date: (7/26/2004 12:29:53 PM)
- */
-private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc,OutputFunctionContext outputFunctionContext) throws ExpressionException, MathException {
-	Simulation sim = new Simulation(mathDesc, null);
-	MatlabOdeFileCoder coder = new MatlabOdeFileCoder(sim);
-	java.io.StringWriter sw = new java.io.StringWriter();
-	java.io.PrintWriter pw = new java.io.PrintWriter(sw);
-	String functionName = exportFile.getName();
-	if (functionName.endsWith(".m")){
-		functionName = functionName.substring(0,functionName.length()-2);
-	}
-	if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())){
-		coder.write_V6_MFile(pw,functionName,outputFunctionContext);
-	}
-	pw.flush();
-	pw.close();
-	return sw.getBuffer().toString();
-}
+
+    public ExportDocument() {
+        super("Exporting document", TASKTYPE_NONSWING_BLOCKING);
+    }
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (7/26/2004 12:29:53 PM)
+     */
+    private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc, OutputFunctionContext outputFunctionContext) throws ExpressionException, MathException {
+        Simulation sim = new Simulation(mathDesc, null);
+        MatlabOdeFileCoder coder = new MatlabOdeFileCoder(sim);
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+        String functionName = exportFile.getName();
+        if (functionName.endsWith(".m")) {
+            functionName = functionName.substring(0, functionName.length() - 2);
+        }
+        if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())) {
+            coder.write_V6_MFile(pw, functionName, outputFunctionContext);
+        }
+        pw.flush();
+        pw.close();
+        return sw.getBuffer().toString();
+    }
 
 
-//Windows doesn't release filelock until java stream object is garbage collected
-public static class FileCloseHelper{
-	private File file;
-	private Object closeFlush;
-	public FileCloseHelper(File file) {
-		this.file = file;
-	}
-	public FileOutputStream getFileOutputStream() throws Exception{
-		closeFlush = (closeFlush!=null?closeFlush:new FileOutputStream(file));
-		return (FileOutputStream)closeFlush;
-	}
-	public FileWriter getFileWriter() throws Exception{
-		closeFlush = (closeFlush!=null?closeFlush:new FileWriter(file));
-		return (FileWriter)closeFlush;
-	}
-	public RandomAccessFile getRandomAccessFile(String mode) throws Exception{
-		closeFlush = (closeFlush!=null?closeFlush:new RandomAccessFile(file,mode));
-		return (RandomAccessFile)closeFlush;
-	}
-	public PrintWriter getPrintWriter() throws Exception{
-		closeFlush = (closeFlush!=null?closeFlush:new PrintWriter(file));
-		return (PrintWriter)closeFlush;
-	}
-	public void close(){
-        try{if(closeFlush instanceof Flushable){((Flushable)closeFlush).flush();}}catch(Exception e){e.printStackTrace();}
-        try{if(closeFlush instanceof Closeable){((Closeable)closeFlush).close();}}catch(Exception e){e.printStackTrace();}
-        closeFlush = null;
-        System.gc();
-	}
-}
+    //Windows doesn't release filelock until java stream object is garbage collected
+    public static class FileCloseHelper {
+        private final File file;
+        private Object closeFlush;
 
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @param hashTable java.util.Hashtable
- * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
- */
-public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	VCDocument documentToExport = (VCDocument)hashTable.get("documentToExport");
-	File exportFile = fetch(hashTable,EXPORT_FILE,File.class, true);
-	ExtensionFilter fileFilter = fetch(hashTable,FILE_FILTER,ExtensionFilter.class, true);
-	
-	DocumentManager documentManager = fetch(hashTable,DocumentManager.IDENT,DocumentManager.class,true);
-	String resultString = null;
-	FileCloseHelper closeThis = null;
-	try{
-		if (documentToExport instanceof BioModel) {
-			if(!(fileFilter instanceof SelectorExtensionFilter)){
-				throw new Exception("Expecting fileFilter type "+SelectorExtensionFilter.class.getName()+" but got "+fileFilter.getClass().getName());
-			}
-			BioModel bioModel = (BioModel)documentToExport;
-			SimulationContext chosenSimContext = fetch(hashTable,SIM_CONTEXT,SimulationContext.class, false);
-			((SelectorExtensionFilter)fileFilter).writeBioModel(documentManager, bioModel, exportFile, chosenSimContext); 
+        public FileCloseHelper(File file) {
+            this.file = file;
+        }
+
+        public FileOutputStream getFileOutputStream() throws Exception {
+            this.closeFlush = (this.closeFlush != null ? this.closeFlush : new FileOutputStream(this.file));
+            return (FileOutputStream) this.closeFlush;
+        }
+
+        public FileWriter getFileWriter() throws Exception {
+            this.closeFlush = (this.closeFlush != null ? this.closeFlush : new FileWriter(this.file));
+            return (FileWriter) this.closeFlush;
+        }
+
+        public RandomAccessFile getRandomAccessFile(String mode) throws Exception {
+            this.closeFlush = (this.closeFlush != null ? this.closeFlush : new RandomAccessFile(this.file, mode));
+            return (RandomAccessFile) this.closeFlush;
+        }
+
+        public PrintWriter getPrintWriter() throws Exception {
+            this.closeFlush = (this.closeFlush != null ? this.closeFlush : new PrintWriter(this.file));
+            return (PrintWriter) this.closeFlush;
+        }
+
+        public void close() {
+            try {
+                if (this.closeFlush instanceof Flushable) {
+                    ((Flushable) this.closeFlush).flush();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                if (this.closeFlush instanceof Closeable) {
+                    ((Closeable) this.closeFlush).close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            this.closeFlush = null;
+            System.gc();
+        }
+    }
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (5/31/2004 6:04:14 PM)
+     *
+     * @param hashTable    java.util.Hashtable
+     * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
+     */
+    public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
+        VCDocument documentToExport = (VCDocument) hashTable.get("documentToExport");
+        File exportFile = fetch(hashTable, EXPORT_FILE, File.class, true);
+        ExtensionFilter fileFilter = fetch(hashTable, FILE_FILTER, ExtensionFilter.class, true);
+
+        DocumentManager documentManager = fetch(hashTable, DocumentManager.IDENT, DocumentManager.class, true);
+        String resultString = null;
+        FileCloseHelper closeThis = null;
+        try {
+            if (documentToExport instanceof BioModel bioModel) {
+                if (!(fileFilter instanceof SelectorExtensionFilter)) {
+                    throw new Exception("Expecting fileFilter type " + SelectorExtensionFilter.class.getName() + " but got " + fileFilter.getClass().getName());
+                }
+                SimulationContext chosenSimContext = fetch(hashTable, SIM_CONTEXT, SimulationContext.class, false);
+                ((SelectorExtensionFilter) fileFilter).writeBioModel(documentManager, bioModel, exportFile, chosenSimContext);
 	/*		DELETE this after finishing validation testing
 			
 			// check format requested
@@ -318,116 +338,113 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					return;
 				}
 			}*/
-		} else if (documentToExport instanceof MathModel) {
-			MathModel mathModel = (MathModel)documentToExport;
-			// check format requested
-			if (fileFilter.equals(FileFilters.FILE_FILTER_MATLABV6)){
-				//check if it's ODE
-				if(mathModel.getMathDescription() != null && 
-				  (!mathModel.getMathDescription().isSpatial() && !mathModel.getMathDescription().isNonSpatialStoch())){
-					MathDescription mathDesc = mathModel.getMathDescription();
-					resultString = exportMatlab(exportFile, fileFilter, mathDesc,mathModel.getOutputFunctionContext());
-				}else{
-					throw new Exception("Matlab export failed: NOT an non-spatial deterministic model.");
-				}
-			} else if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {            
-				FileOutputStream fos = new FileOutputStream(exportFile);
-				documentManager.generatePDF(mathModel, fos);
-				fos.close();
-				return;                                                       //will take care of writing to the file as well.
-			}else if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
-				resultString = XmlHelper.mathModelToXML(mathModel);
-			} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
-				resultString = XmlHelper.exportCellML(mathModel, null);
+            } else if (documentToExport instanceof MathModel mathModel) {
+                // check format requested
+                if (fileFilter.equals(FileFilters.FILE_FILTER_MATLABV6)) {
+                    //check if it's ODE
+                    if (mathModel.getMathDescription() != null &&
+                            (!mathModel.getMathDescription().isSpatial() && !mathModel.getMathDescription().isNonSpatialStoch())) {
+                        MathDescription mathDesc = mathModel.getMathDescription();
+                        resultString = this.exportMatlab(exportFile, fileFilter, mathDesc, mathModel.getOutputFunctionContext());
+                    } else {
+                        throw new Exception("Matlab export failed: NOT an non-spatial deterministic model.");
+                    }
+                } else if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {
+                    FileOutputStream fos = new FileOutputStream(exportFile);
+                    documentManager.generatePDF(mathModel, fos);
+                    fos.close();
+                    return;                                                       //will take care of writing to the file as well.
+                } else if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
+                    resultString = XmlHelper.mathModelToXML(mathModel);
+                } else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
+                    resultString = XmlHelper.exportCellML(mathModel, null);
 //			} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_23)) {
 //				resultString = XmlHelper.exportSBML(mathModel, 2, 3, 0, false, null, null);
 //			} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_24)) {
 //				resultString = XmlHelper.exportSBML(mathModel, 2, 4, 0, false, null, null);
-			} 
-			//Export a simulation to Smoldyn input file, if there are parameter scans
-			//in simulation, we'll export multiple Smoldyn input files.
-			else if (fileFilter.equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT)) 
-			{ 
-				Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
-				if (selectedSim != null) {
-					int scanCount = selectedSim.getScanCount();
-					//-----
-					String baseExportFileName = (scanCount==1?null:exportFile.getPath().substring(0, exportFile.getPath().indexOf(".")));
-					for(int i=0; i<scanCount; i++){
-						SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null),0);
-						// Need to export each parameter scan into a separate file
-						File localExportFile = (scanCount==1?exportFile:new File(baseExportFileName + "_" + i + SMOLDYN_INPUT_FILE_EXTENSION));
-						FileCloseHelper localCloseThis = new FileCloseHelper(localExportFile);
-						try{
-							SmoldynFileWriter smf = new SmoldynFileWriter(localCloseThis.getPrintWriter(), true, null, simTask, false);
-							smf.write();
-						}finally{
-							if(localCloseThis != null){
-								localCloseThis.close();
-							}
-						}
-					}
-				}
-				return;
-			}
-		} else if (documentToExport instanceof Geometry){
-			Geometry geom = (Geometry)documentToExport;
-			if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {
-				documentManager.generatePDF(geom, (closeThis = new FileCloseHelper(exportFile)).getFileOutputStream());
-			}else if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
-				resultString = XmlHelper.geometryToXML(geom);
-			}else if (fileFilter.equals(FileFilters.FILE_FILTER_AVS)) {
-				cbit.vcell.export.AVS_UCD_Exporter.writeUCDGeometryOnly(geom.getGeometrySurfaceDescription(),(closeThis = new FileCloseHelper(exportFile)).getFileWriter());
-			}else if (fileFilter.equals(FileFilters.FILE_FILTER_STL)) {
-				//make sure filename end with .stl
-				File stlFile = exportFile;
-				if(!exportFile.getName().toLowerCase().endsWith(".stl")){
-					stlFile = new File(exportFile.getParentFile(),exportFile.getName()+".stl");
-				}
-				cbit.vcell.geometry.surface.StlExporter.writeBinaryStl(geom.getGeometrySurfaceDescription(),(closeThis = new FileCloseHelper(stlFile)).getRandomAccessFile("rw"));
-			}else if (fileFilter.equals(FileFilters.FILE_FILTER_PLY)) {
-				writeStanfordPolygon(geom.getGeometrySurfaceDescription(), (closeThis = new FileCloseHelper(exportFile)).getFileWriter());
-			}
-		}
-		if(resultString != null){
-			(closeThis = new FileCloseHelper(exportFile)).getFileWriter().write(resultString);
-		}
-	}finally{
-		if(closeThis != null){
-			closeThis.close();
-		}
-	}
-}
+                }
+                //Export a simulation to Smoldyn input file, if there are parameter scans
+                //in simulation, we'll export multiple Smoldyn input files.
+                else if (fileFilter.equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT)) {
+                    Simulation selectedSim = (Simulation) hashTable.get("selectedSimulation");
+                    if (selectedSim != null) {
+                        int scanCount = selectedSim.getScanCount();
+                        //-----
+                        String baseExportFileName = (scanCount == 1 ? null : exportFile.getPath().substring(0, exportFile.getPath().indexOf(".")));
+                        for (int i = 0; i < scanCount; i++) {
+                            SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null), 0);
+                            // Need to export each parameter scan into a separate file
+                            File localExportFile = (scanCount == 1 ? exportFile : new File(baseExportFileName + "_" + i + SMOLDYN_INPUT_FILE_EXTENSION));
+                            FileCloseHelper localCloseThis = new FileCloseHelper(localExportFile);
+                            try {
+                                SmoldynFileWriter smf = new SmoldynFileWriter(localCloseThis.getPrintWriter(), true, null, simTask, false);
+                                smf.write();
+                            } finally {
+                                if (localCloseThis != null) {
+                                    localCloseThis.close();
+                                }
+                            }
+                        }
+                    }
+                    return;
+                }
+            } else if (documentToExport instanceof Geometry geom) {
+                if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {
+                    documentManager.generatePDF(geom, (closeThis = new FileCloseHelper(exportFile)).getFileOutputStream());
+                } else if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
+                    resultString = XmlHelper.geometryToXML(geom);
+                } else if (fileFilter.equals(FileFilters.FILE_FILTER_AVS)) {
+                    cbit.vcell.export.AVS_UCD_Exporter.writeUCDGeometryOnly(geom.getGeometrySurfaceDescription(), (closeThis = new FileCloseHelper(exportFile)).getFileWriter());
+                } else if (fileFilter.equals(FileFilters.FILE_FILTER_STL)) {
+                    //make sure filename end with .stl
+                    File stlFile = exportFile;
+                    if (!exportFile.getName().toLowerCase().endsWith(".stl")) {
+                        stlFile = new File(exportFile.getParentFile(), exportFile.getName() + ".stl");
+                    }
+                    cbit.vcell.geometry.surface.StlExporter.writeBinaryStl(geom.getGeometrySurfaceDescription(), (closeThis = new FileCloseHelper(stlFile)).getRandomAccessFile("rw"));
+                } else if (fileFilter.equals(FileFilters.FILE_FILTER_PLY)) {
+                    writeStanfordPolygon(geom.getGeometrySurfaceDescription(), (closeThis = new FileCloseHelper(exportFile)).getFileWriter());
+                }
+            }
+            if (resultString != null) {
+                (closeThis = new FileCloseHelper(exportFile)).getFileWriter().write(resultString);
+            }
+        } finally {
+            if (closeThis != null) {
+                closeThis.close();
+            }
+        }
+    }
 
-	public static void writeStanfordPolygon(GeometrySurfaceDescription geometrySurfaceDescription,Writer writer) throws IOException{
-		int faceCount = geometrySurfaceDescription.getSurfaceCollection().getTotalPolygonCount();
-		int vertCount = geometrySurfaceDescription.getSurfaceCollection().getNodes().length;
-		writer.write("ply\n");
-		writer.write("format ascii 1.0\n");
-		writer.write("comment "+geometrySurfaceDescription.getGeometry().getName()+"\n");
-		writer.write("element vertex "+vertCount+"\n");
-		writer.write("property float x\n");
-		writer.write("property float y\n");
-		writer.write("property float z\n");
-		writer.write("element face "+faceCount+"\n");
-		writer.write("property list uchar int vertex_index\n");
-		writer.write("end_header\n");
-		//write verts x y z
-		for (int i = 0; i < vertCount; i++) {
-			Node vertex = geometrySurfaceDescription.getSurfaceCollection().getNodes()[i];
-			writer.write((float)vertex.getX()+" "+(float)vertex.getY()+" "+(float)vertex.getZ()+"\n");
-		}
-		//write faces as a set of connected vertex indexes
-		for (int i = 0; i < geometrySurfaceDescription.getSurfaceCollection().getSurfaceCount(); i++) {
-			for (int j = 0; j < geometrySurfaceDescription.getSurfaceCollection().getSurfaces(i).getPolygonCount(); j++) {
-				Quadrilateral quad = (Quadrilateral)geometrySurfaceDescription.getSurfaceCollection().getSurfaces(i).getPolygons(j);
-				writer.write(quad.getNodeCount()+"");
-				for (int k = 0; k < quad.getNodeCount(); k++) {
-					writer.write(" ");
-					writer.write(quad.getNodes(k).getGlobalIndex()+"");
-				}
-				writer.write("\n");
-			}
-		}
-	}
+    public static void writeStanfordPolygon(GeometrySurfaceDescription geometrySurfaceDescription, Writer writer) throws IOException {
+        int faceCount = geometrySurfaceDescription.getSurfaceCollection().getTotalPolygonCount();
+        int vertCount = geometrySurfaceDescription.getSurfaceCollection().getNodes().length;
+        writer.write("ply\n");
+        writer.write("format ascii 1.0\n");
+        writer.write("comment " + geometrySurfaceDescription.getGeometry().getName() + "\n");
+        writer.write("element vertex " + vertCount + "\n");
+        writer.write("property float x\n");
+        writer.write("property float y\n");
+        writer.write("property float z\n");
+        writer.write("element face " + faceCount + "\n");
+        writer.write("property list uchar int vertex_index\n");
+        writer.write("end_header\n");
+        //write verts x y z
+        for (int i = 0; i < vertCount; i++) {
+            Node vertex = geometrySurfaceDescription.getSurfaceCollection().getNodes()[i];
+            writer.write((float) vertex.getX() + " " + (float) vertex.getY() + " " + (float) vertex.getZ() + "\n");
+        }
+        //write faces as a set of connected vertex indexes
+        for (int i = 0; i < geometrySurfaceDescription.getSurfaceCollection().getSurfaceCount(); i++) {
+            for (int j = 0; j < geometrySurfaceDescription.getSurfaceCollection().getSurfaces(i).getPolygonCount(); j++) {
+                Quadrilateral quad = (Quadrilateral) geometrySurfaceDescription.getSurfaceCollection().getSurfaces(i).getPolygons(j);
+                writer.write(quad.getNodeCount() + "");
+                for (int k = 0; k < quad.getNodeCount(); k++) {
+                    writer.write(" ");
+                    writer.write(quad.getNodes(k).getGlobalIndex() + "");
+                }
+                writer.write("\n");
+            }
+        }
+    }
 }

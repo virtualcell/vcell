@@ -87,9 +87,9 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
     private JCheckBox randomizeInitCondnCheckBox = null;    //added in Feb, 2013. Enable randomization of initial concentration or amount
     private JSortTable table = null;
     private SpeciesContextSpecsTableModel tableModel = null;
-    private SmallShapeManager shapeManager = new SmallShapeManager(false, false, false, false);
+    private final SmallShapeManager shapeManager = new SmallShapeManager(false, false, false, false);
 
-    private IvjEventHandler ivjEventHandler = new IvjEventHandler();
+    private final IvjEventHandler ivjEventHandler = new IvjEventHandler();
     private javax.swing.JMenuItem ivjJMenuItemPaste = null;
     private javax.swing.JMenuItem ivjJMenuItemCopy = null;
     private javax.swing.JMenuItem ivjJMenuItemCopyAll = null;
@@ -104,71 +104,64 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 
         @Override
         protected void constructPopupMenu() {
-            if (popupMenu == null) {
+            if (this.popupMenu == null) {
                 super.constructPopupMenu();
                 int pos = 0;
-                popupMenu.insert(getJMenuItemCopy(), pos++);
-                popupMenu.insert(getJMenuItemCopyAll(), pos++);
-                popupMenu.insert(getJMenuItemPaste(), pos++);
-                popupMenu.insert(getJMenuItemPasteAll(), pos++);
+                this.popupMenu.insert(InitialConditionsPanel.this.getJMenuItemCopy(), pos++);
+                this.popupMenu.insert(InitialConditionsPanel.this.getJMenuItemCopyAll(), pos++);
+                this.popupMenu.insert(InitialConditionsPanel.this.getJMenuItemPaste(), pos++);
+                this.popupMenu.insert(InitialConditionsPanel.this.getJMenuItemPasteAll(), pos++);
                 //DocumentEditorSubPanel.addFieldDataMenuItem(getOwnerTable(), popupMenu, pos++); // Disabled while we fix OverlayEditorPanelJAI (7/16/2024)
-                popupMenu.insert(new JSeparator(), pos++);
+                this.popupMenu.insert(new JSeparator(), pos++);
             }
             Object obj = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
             boolean bPastable = obj instanceof VCellTransferable.ResolvedValuesSelection;
-            boolean bSomethingSelected = getScrollPaneTable().getSelectedRows() != null && getScrollPaneTable().getSelectedRows().length > 0;
-            getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
-            getJMenuItemPasteAll().setEnabled(bPastable);
-            getJMenuItemCopy().setEnabled(bSomethingSelected);
+            boolean bSomethingSelected = InitialConditionsPanel.this.getScrollPaneTable().getSelectedRows() != null && InitialConditionsPanel.this.getScrollPaneTable().getSelectedRows().length > 0;
+            InitialConditionsPanel.this.getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
+            InitialConditionsPanel.this.getJMenuItemPasteAll().setEnabled(bPastable);
+            InitialConditionsPanel.this.getJMenuItemCopy().setEnabled(bSomethingSelected);
         }
     }
 
     private class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
         public void actionPerformed(java.awt.event.ActionEvent e) {
             if (e.getSource() == InitialConditionsPanel.this.getJMenuItemPaste())
-                jMenuItemPaste_ActionPerformed(e);
+                InitialConditionsPanel.this.jMenuItemPaste_ActionPerformed(e);
             else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCopy())
-                jMenuItemCopy_ActionPerformed(e);
+                InitialConditionsPanel.this.jMenuItemCopy_ActionPerformed(e);
             else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemCopyAll())
-                jMenuItemCopy_ActionPerformed(e);
+                InitialConditionsPanel.this.jMenuItemCopy_ActionPerformed(e);
             else if (e.getSource() == InitialConditionsPanel.this.getJMenuItemPasteAll())
-                jMenuItemPaste_ActionPerformed(e);
-            else if (e.getSource() == getAmountRadioButton()) {
-                amountRadioButton_actionPerformed();
-            } else if (e.getSource() == getConcentrationRadioButton()) {
-                concentrationRadioButton_actionPerformed();
-            } else if (e.getSource() == getRandomizeInitCondnCheckbox()) {
+                InitialConditionsPanel.this.jMenuItemPaste_ActionPerformed(e);
+            else if (e.getSource() == InitialConditionsPanel.this.getAmountRadioButton()) {
+                InitialConditionsPanel.this.amountRadioButton_actionPerformed();
+            } else if (e.getSource() == InitialConditionsPanel.this.getConcentrationRadioButton()) {
+                InitialConditionsPanel.this.concentrationRadioButton_actionPerformed();
+            } else if (e.getSource() == InitialConditionsPanel.this.getRandomizeInitCondnCheckbox()) {
                 // only need to set simContext.isRandomizeInitCondn?
-                getSimulationContext().setRandomizeInitConditions(getRandomizeInitCondnCheckbox().isSelected());
+                InitialConditionsPanel.this.getSimulationContext().setRandomizeInitConditions(InitialConditionsPanel.this.getRandomizeInitCondnCheckbox().isSelected());
             }
         }
-
-        ;
 
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
-            if (evt.getSource() == getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_USE_CONCENTRATION)) {
-                updateTopScrollPanel();
+            if (evt.getSource() == InitialConditionsPanel.this.getSimulationContext() && evt.getPropertyName().equals(SimulationContext.PROPERTY_NAME_USE_CONCENTRATION)) {
+                InitialConditionsPanel.this.updateTopScrollPanel();
             }
         }
-
-        ;
 
         public void valueChanged(javax.swing.event.ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
             }
-            if (e.getSource() == getScrollPaneTable().getSelectionModel())
-                setSelectedObjectsFromTable(getScrollPaneTable(), tableModel);
+            if (e.getSource() == InitialConditionsPanel.this.getScrollPaneTable().getSelectionModel())
+                InitialConditionsPanel.this.setSelectedObjectsFromTable(InitialConditionsPanel.this.getScrollPaneTable(), InitialConditionsPanel.this.tableModel);
         }
 
-        ;
     }
-
-    ;
 
     public InitialConditionsPanel() {
         super();
-        initialize();
+        this.initialize();
     }
 
     @Override
@@ -177,7 +170,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
     }
 
     public void setSearchText(String searchText) {
-        tableModel.setSearchText(searchText);
+        this.tableModel.setSearchText(searchText);
     }
 
     /**
@@ -187,16 +180,16 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
      */
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
     private javax.swing.JMenuItem getJMenuItemCopy() {
-        if (ivjJMenuItemCopy == null) {
+        if (this.ivjJMenuItemCopy == null) {
             try {
-                ivjJMenuItemCopy = new javax.swing.JMenuItem();
-                ivjJMenuItemCopy.setName("JMenuItemCopy");
-                ivjJMenuItemCopy.setText("Copy");
+                this.ivjJMenuItemCopy = new javax.swing.JMenuItem();
+                this.ivjJMenuItemCopy.setName("JMenuItemCopy");
+                this.ivjJMenuItemCopy.setText("Copy");
             } catch (java.lang.Throwable ivjExc) {
-                handleException(ivjExc);
+                this.handleException(ivjExc);
             }
         }
-        return ivjJMenuItemCopy;
+        return this.ivjJMenuItemCopy;
     }
 
     /**
@@ -206,20 +199,20 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
      */
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
     private javax.swing.JMenuItem getJMenuItemCopyAll() {
-        if (ivjJMenuItemCopyAll == null) {
+        if (this.ivjJMenuItemCopyAll == null) {
             try {
-                ivjJMenuItemCopyAll = new javax.swing.JMenuItem();
-                ivjJMenuItemCopyAll.setName("JMenuItemCopyAll");
-                ivjJMenuItemCopyAll.setText("Copy All");
+                this.ivjJMenuItemCopyAll = new javax.swing.JMenuItem();
+                this.ivjJMenuItemCopyAll.setName("JMenuItemCopyAll");
+                this.ivjJMenuItemCopyAll.setText("Copy All");
                 // user code begin {1}
                 // user code end
             } catch (java.lang.Throwable ivjExc) {
                 // user code begin {2}
                 // user code end
-                handleException(ivjExc);
+                this.handleException(ivjExc);
             }
         }
-        return ivjJMenuItemCopyAll;
+        return this.ivjJMenuItemCopyAll;
     }
 
 
@@ -230,20 +223,20 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
      */
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
     private javax.swing.JMenuItem getJMenuItemPaste() {
-        if (ivjJMenuItemPaste == null) {
+        if (this.ivjJMenuItemPaste == null) {
             try {
-                ivjJMenuItemPaste = new javax.swing.JMenuItem();
-                ivjJMenuItemPaste.setName("JMenuItemPaste");
-                ivjJMenuItemPaste.setText("Paste");
+                this.ivjJMenuItemPaste = new javax.swing.JMenuItem();
+                this.ivjJMenuItemPaste.setName("JMenuItemPaste");
+                this.ivjJMenuItemPaste.setText("Paste");
                 // user code begin {1}
                 // user code end
             } catch (java.lang.Throwable ivjExc) {
                 // user code begin {2}
                 // user code end
-                handleException(ivjExc);
+                this.handleException(ivjExc);
             }
         }
-        return ivjJMenuItemPaste;
+        return this.ivjJMenuItemPaste;
     }
 
 
@@ -254,34 +247,34 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
      */
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
     private javax.swing.JMenuItem getJMenuItemPasteAll() {
-        if (ivjJMenuItemPasteAll == null) {
+        if (this.ivjJMenuItemPasteAll == null) {
             try {
-                ivjJMenuItemPasteAll = new javax.swing.JMenuItem();
-                ivjJMenuItemPasteAll.setName("JMenuItemPasteAll");
-                ivjJMenuItemPasteAll.setText("Paste All");
+                this.ivjJMenuItemPasteAll = new javax.swing.JMenuItem();
+                this.ivjJMenuItemPasteAll.setName("JMenuItemPasteAll");
+                this.ivjJMenuItemPasteAll.setText("Paste All");
                 // user code begin {1}
                 // user code end
             } catch (java.lang.Throwable ivjExc) {
                 // user code begin {2}
                 // user code end
-                handleException(ivjExc);
+                this.handleException(ivjExc);
             }
         }
-        return ivjJMenuItemPasteAll;
+        return this.ivjJMenuItemPasteAll;
     }
 
     //added in july 2008, to accommodate two radio buttons with flow layout.
     private JPanel getRadioButtonAndCheckboxPanel() {
-        if (radioButtonandCheckboxPanel == null) {
+        if (this.radioButtonandCheckboxPanel == null) {
             JLabel label = new JLabel("Initial Condition: ");
-            radioButtonandCheckboxPanel = new JPanel(new FlowLayout());
-            radioButtonandCheckboxPanel.add(label);
-            getButtonGroup();
-            radioButtonandCheckboxPanel.add(getConcentrationRadioButton());
-            radioButtonandCheckboxPanel.add(getAmountRadioButton());
-            radioButtonandCheckboxPanel.add(getRandomizeInitCondnCheckbox());
+            this.radioButtonandCheckboxPanel = new JPanel(new FlowLayout());
+            this.radioButtonandCheckboxPanel.add(label);
+            this.getButtonGroup();
+            this.radioButtonandCheckboxPanel.add(this.getConcentrationRadioButton());
+            this.radioButtonandCheckboxPanel.add(this.getAmountRadioButton());
+            this.radioButtonandCheckboxPanel.add(this.getRandomizeInitCondnCheckbox());
         }
-        return radioButtonandCheckboxPanel;
+        return this.radioButtonandCheckboxPanel;
     }
 
     public void concentrationRadioButton_actionPerformed() {
@@ -289,14 +282,14 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
+                boolean bUsingConcentration = InitialConditionsPanel.this.getSimulationContext().isUsingConcentration();
                 if (!bUsingConcentration)//was using amount, then it's going to change.
                 {
-                    if (getSimulationContext().getGeometry().getDimension() == 0 && !getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()) {
+                    if (InitialConditionsPanel.this.getSimulationContext().getGeometry().getDimension() == 0 && !InitialConditionsPanel.this.getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()) {
                         throw new Exception("\nStructure sizes are required to convert number of particles to concentration.\nPlease go to StructureMapping tab to set valid sizes.");
                     }
                     //set to use concentration
-                    getSimulationContext().setUsingConcentration(true, true);
+                    InitialConditionsPanel.this.getSimulationContext().setUsingConcentration(true, true);
                     // force propertyChange(by setting old value to null), inform other listeners that simulation contect has changed.
                     //firePropertyChange("simulationContext", null, getSimulationContext());
                 }
@@ -307,8 +300,8 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
-                    getSimulationContext().setUsingConcentration(false, true);
-                    updateTopScrollPanel();
+                    InitialConditionsPanel.this.getSimulationContext().setUsingConcentration(false, true);
+                    InitialConditionsPanel.this.updateTopScrollPanel();
                 }
             }
         };
@@ -319,10 +312,10 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 //for deterministic method the selection should be disabled (use concentration only). 
 //for stochastic it should be enabled.
     private JRadioButton getConcentrationRadioButton() {
-        if (conRadioButton == null) {
-            conRadioButton = new JRadioButton("Concentration", true);
+        if (this.conRadioButton == null) {
+            this.conRadioButton = new JRadioButton("Concentration", true);
         }
-        return conRadioButton;
+        return this.conRadioButton;
     }
 
     private void amountRadioButton_actionPerformed() {
@@ -330,14 +323,14 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                boolean bUseConcentration = getSimulationContext().isUsingConcentration();
+                boolean bUseConcentration = InitialConditionsPanel.this.getSimulationContext().isUsingConcentration();
                 if (bUseConcentration)//was using concentration, then it's going to change.
                 {
-                    if (getSimulationContext().getGeometry().getDimension() == 0 && !getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()) {
+                    if (InitialConditionsPanel.this.getSimulationContext().getGeometry().getDimension() == 0 && !InitialConditionsPanel.this.getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()) {
                         throw new Exception("\nStructure sizes are required to convert concentration to number of paticles.\nPlease go to StructureMapping tab to set valid sizes.");
                     }
                     //set to use number of particles
-                    getSimulationContext().setUsingConcentration(false, true);
+                    InitialConditionsPanel.this.getSimulationContext().setUsingConcentration(false, true);
                     // force propertyChange(by setting old value to null), inform other listeners that simulation context has changed.
                     //firePropertyChange("simulationContext", null, getSimulationContext());
                 }
@@ -348,8 +341,8 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) != null) {
-                    getSimulationContext().setUsingConcentration(true, true);
-                    updateTopScrollPanel();
+                    InitialConditionsPanel.this.getSimulationContext().setUsingConcentration(true, true);
+                    InitialConditionsPanel.this.updateTopScrollPanel();
                 }
             }
         };
@@ -357,60 +350,59 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
     }
 
     private JRadioButton getAmountRadioButton() {
-        if (amtRadioButton == null) {
-            amtRadioButton = new JRadioButton("Number of Particles");
+        if (this.amtRadioButton == null) {
+            this.amtRadioButton = new JRadioButton("Number of Particles");
         }
-        return amtRadioButton;
+        return this.amtRadioButton;
     }
 
     private JCheckBox getRandomizeInitCondnCheckbox() {
-        if (randomizeInitCondnCheckBox == null) {
-            randomizeInitCondnCheckBox = new JCheckBox("Randomize Initial Condition");
-            ;
+        if (this.randomizeInitCondnCheckBox == null) {
+            this.randomizeInitCondnCheckBox = new JCheckBox("Randomize Initial Condition");
         }
-        return randomizeInitCondnCheckBox;
+        return this.randomizeInitCondnCheckBox;
     }
 
 
     private ButtonGroup getButtonGroup() {
-        if (radioGroup == null) {
-            radioGroup = new ButtonGroup();
-            radioGroup.add(getConcentrationRadioButton());
-            radioGroup.add(getAmountRadioButton());
+        if (this.radioGroup == null) {
+            this.radioGroup = new ButtonGroup();
+            this.radioGroup.add(this.getConcentrationRadioButton());
+            this.radioGroup.add(this.getAmountRadioButton());
         }
-        return radioGroup;
+        return this.radioGroup;
     }
 
     private void updateTopScrollPanel() {
-        switch (getSimulationContext().getApplicationType()) {
+        switch (this.getSimulationContext().getApplicationType()) {
             case NETWORK_STOCHASTIC: {
-                getRadioButtonAndCheckboxPanel().setVisible(true);
-                boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
-                getConcentrationRadioButton().setSelected(bUsingConcentration);
-                getAmountRadioButton().setSelected(!bUsingConcentration);
+                this.getRadioButtonAndCheckboxPanel().setVisible(true);
+                boolean bUsingConcentration = this.getSimulationContext().isUsingConcentration();
+                this.getConcentrationRadioButton().setSelected(bUsingConcentration);
+                this.getAmountRadioButton().setSelected(!bUsingConcentration);
                 // ' make randomizeInitialCondition' checkBox visible only if application is non-spatial stochastic
-                getRandomizeInitCondnCheckbox().setVisible(getSimulationContext().getGeometry().getDimension() == 0);
-                getRandomizeInitCondnCheckbox().setSelected(getSimulationContext().isRandomizeInitCondition());
+                this.getRandomizeInitCondnCheckbox().setVisible(this.getSimulationContext().getGeometry().getDimension() == 0);
+                this.getRandomizeInitCondnCheckbox().setSelected(this.getSimulationContext().isRandomizeInitCondition());
                 break;
             }
             case RULE_BASED_STOCHASTIC, SPRINGSALAD: {
-                getRadioButtonAndCheckboxPanel().setVisible(true);
-                boolean bUsingConcentration = getSimulationContext().isUsingConcentration();
-                getConcentrationRadioButton().setSelected(bUsingConcentration);
-                getAmountRadioButton().setSelected(!bUsingConcentration);
+                this.getRadioButtonAndCheckboxPanel().setVisible(true);
+                boolean bUsingConcentration = this.getSimulationContext().isUsingConcentration();
+                this.getConcentrationRadioButton().setSelected(bUsingConcentration);
+                this.getAmountRadioButton().setSelected(!bUsingConcentration);
                 // ' make randomizeInitialCondition' checkBox invisible for now
-                getRandomizeInitCondnCheckbox().setVisible(false);
+                this.getRandomizeInitCondnCheckbox().setVisible(false);
                 break;
             }
             default: {
-                getRadioButtonAndCheckboxPanel().setVisible(false);
+                this.getRadioButtonAndCheckboxPanel().setVisible(false);
                 break;
             }
         }
     }
 
     public SpeciesContextSpec[] getInitConditionVars() {
-        SpeciesContextSpec[] speciesContextSpecs = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
+        SpeciesContextSpec[] speciesContextSpecs = this.getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 //	for(int i=0;i<speciesContextSpecs.length;i++) {
 //		System.out.println(i+" "+speciesContextSpecs[i]+" "+speciesContextSpecs[i].getInitialConditionParameter());
 //	}
@@ -418,7 +410,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
         //Object[] initSpecies = new Object[tableModel.getRowCount()];
     }
 
-    public void setGeneratedFieldData(String speciesContextName, String newValue) throws ExpressionBindingException, ExpressionException {
+    public void setGeneratedFieldData(String speciesContextName, String newValue) throws ExpressionException {
         //this.getSimulationContext().getReactionContext().getSpeciesContextSpec(speciesContext);
         SpeciesContextSpec[] speciesContextSpecs = this.getInitConditionVars();
         for (int i = 0; i < speciesContextSpecs.length; i++) {
@@ -436,19 +428,19 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
      * @return javax.swing.JTable
      */
     private JSortTable getScrollPaneTable() {
-        if (table == null) {
+        if (this.table == null) {
             try {
-                table = new JSortTable();
-                table.setName("spceciesContextSpecsTable");
-                tableModel = new SpeciesContextSpecsTableModel(table);
-                table.setModel(tableModel);
-                table.setScrollTableActionManager(new InternalScrollTableActionManager(table));
-                table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+                this.table = new JSortTable();
+                this.table.setName("spceciesContextSpecsTable");
+                this.tableModel = new SpeciesContextSpecsTableModel(this.table);
+                this.table.setModel(this.tableModel);
+                this.table.setScrollTableActionManager(new InternalScrollTableActionManager(this.table));
+                this.table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
             } catch (java.lang.Throwable ivjExc) {
-                handleException(ivjExc);
+                this.handleException(ivjExc);
             }
         }
-        return table;
+        return this.table;
     }
 
     /**
@@ -458,7 +450,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
      * @see #setSimulationContext
      */
     public SimulationContext getSimulationContext() {
-        return fieldSimulationContext;
+        return this.fieldSimulationContext;
     }
 
     /**
@@ -482,40 +474,40 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
         try {
             // user code begin {1}
             // user code end
-            setName("InitialConditionsPanel");
-            setLayout(new BorderLayout());
-            add(getRadioButtonAndCheckboxPanel(), BorderLayout.NORTH);
-            add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
+            this.setName("InitialConditionsPanel");
+            this.setLayout(new BorderLayout());
+            this.add(this.getRadioButtonAndCheckboxPanel(), BorderLayout.NORTH);
+            this.add(this.getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
 
-            getScrollPaneTable().getSelectionModel().addListSelectionListener(ivjEventHandler);
-            getJMenuItemPaste().addActionListener(ivjEventHandler);
-            getJMenuItemCopy().addActionListener(ivjEventHandler);
-            getJMenuItemCopyAll().addActionListener(ivjEventHandler);
-            getJMenuItemPasteAll().addActionListener(ivjEventHandler);
-            getAmountRadioButton().addActionListener(ivjEventHandler);
-            getConcentrationRadioButton().addActionListener(ivjEventHandler);
-            getRandomizeInitCondnCheckbox().addActionListener(ivjEventHandler);
+            this.getScrollPaneTable().getSelectionModel().addListSelectionListener(this.ivjEventHandler);
+            this.getJMenuItemPaste().addActionListener(this.ivjEventHandler);
+            this.getJMenuItemCopy().addActionListener(this.ivjEventHandler);
+            this.getJMenuItemCopyAll().addActionListener(this.ivjEventHandler);
+            this.getJMenuItemPasteAll().addActionListener(this.ivjEventHandler);
+            this.getAmountRadioButton().addActionListener(this.ivjEventHandler);
+            this.getConcentrationRadioButton().addActionListener(this.ivjEventHandler);
+            this.getRandomizeInitCondnCheckbox().addActionListener(this.ivjEventHandler);
 
             DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                    setIcon(null);
-                    defaultToolTipText = null;
+                    this.setIcon(null);
+                    this.defaultToolTipText = null;
 
                     if (value instanceof Species) {
-                        setText(((Species) value).getCommonName());
-                        defaultToolTipText = getText();
-                        setToolTipText(defaultToolTipText);
+                        this.setText(((Species) value).getCommonName());
+                        this.defaultToolTipText = this.getText();
+                        this.setToolTipText(this.defaultToolTipText);
                     } else if (value instanceof SpeciesContext) {
-                        setText(((SpeciesContext) value).getName());
-                        defaultToolTipText = getText();
-                        setToolTipText(defaultToolTipText);
+                        this.setText(((SpeciesContext) value).getName());
+                        this.defaultToolTipText = this.getText();
+                        this.setToolTipText(this.defaultToolTipText);
                     } else if (value instanceof Structure) {
-                        setText(((Structure) value).getName());
-                        defaultToolTipText = getText();
-                        setToolTipText(defaultToolTipText);
+                        this.setText(((Structure) value).getName());
+                        this.defaultToolTipText = this.getText();
+                        this.setToolTipText(this.defaultToolTipText);
                     } else if (value instanceof ScopedExpression) {
-                        SpeciesContextSpec scSpec = tableModel.getValueAt(row);
+                        SpeciesContextSpec scSpec = InitialConditionsPanel.this.tableModel.getValueAt(row);
                         VCUnitDefinition unit = null;
                         if (table.getColumnName(column).equals(SpeciesContextSpecsTableModel.ColumnType.COLUMN_INITIAL.label)) {
                             SpeciesContextSpecParameter initialConditionParameter = scSpec.getInitialConditionParameter();
@@ -525,21 +517,21 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                             unit = diffusionParameter.getUnitDefinition();
                         }
                         if (unit != null) {
-                            setHorizontalTextPosition(JLabel.LEFT);
-                            setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
+                            this.setHorizontalTextPosition(JLabel.LEFT);
+                            this.setIcon(new TextIcon("[" + unit.getSymbolUnicode() + "]", DefaultScrollTableCellRenderer.uneditableForeground));
                         }
                         int rgb = 0x00ffffff & DefaultScrollTableCellRenderer.uneditableForeground.getRGB();
-                        defaultToolTipText = "<html>" + StringEscapeUtils.escapeHtml4(getText()) + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
-                        setToolTipText(defaultToolTipText);
+                        this.defaultToolTipText = "<html>" + StringEscapeUtils.escapeHtml4(this.getText()) + " <font color=#" + Integer.toHexString(rgb) + "> [" + unit.getSymbolUnicode() + "] </font></html>";
+                        this.setToolTipText(this.defaultToolTipText);
                         if (unit != null) {
-                            setText(defaultToolTipText);
+                            this.setText(this.defaultToolTipText);
                         }
                     }
 
                     TableModel tableModel = table.getModel();
                     if (tableModel instanceof SortTableModel) {
-                        DefaultScrollTableCellRenderer.issueRenderer(this, defaultToolTipText, table, row, column, (SortTableModel) tableModel);
-                        setHorizontalTextPosition(JLabel.TRAILING);
+                        DefaultScrollTableCellRenderer.issueRenderer(this, this.defaultToolTipText, table, row, column, (SortTableModel) tableModel);
+                        this.setHorizontalTextPosition(JLabel.TRAILING);
                     }
                     return this;
                 }
@@ -553,30 +545,29 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                     super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (table.getModel() instanceof VCellSortTableModel<?>) {
                         Object selectedObject = null;
-                        if (table.getModel() == tableModel) {
-                            selectedObject = tableModel.getValueAt(row);
+                        if (table.getModel() == InitialConditionsPanel.this.tableModel) {
+                            selectedObject = InitialConditionsPanel.this.tableModel.getValueAt(row);
                         }
                         if (selectedObject != null) {
-                            if (selectedObject instanceof SpeciesContextSpec) {
-                                SpeciesContextSpec scs = (SpeciesContextSpec) selectedObject;
+                            if (selectedObject instanceof SpeciesContextSpec scs) {
                                 SpeciesContext sc = scs.getSpeciesContext();
                                 SpeciesPattern sp = sc.getSpeciesPattern();        // sp may be null for "plain" species contexts
                                 Graphics panelContext = table.getGraphics();
-                                spss = new SpeciesPatternSmallShape(4, 2, sp, shapeManager, panelContext, sc, isSelected, issueManager);
+                                this.spss = new SpeciesPatternSmallShape(4, 2, sp, InitialConditionsPanel.this.shapeManager, panelContext, sc, isSelected, InitialConditionsPanel.this.issueManager);
                             }
                         } else {
-                            spss = null;
+                            this.spss = null;
                         }
                     }
-                    setText("");
+                    this.setText("");
                     return this;
                 }
 
                 @Override
                 public void paintComponent(Graphics g) {
                     super.paintComponent(g);
-                    if (spss != null) {
-                        spss.paintSelf(g);
+                    if (this.spss != null) {
+                        this.spss.paintSelf(g);
                     }
                 }
             };
@@ -592,20 +583,20 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                     if (table.getModel() instanceof SpeciesContextSpecsTableModel) {
                         Icon icon = VCellIcons.issueGoodIcon;
                         Object selectedObject = null;
-                        if (table.getModel() == tableModel) {
-                            selectedObject = tableModel.getValueAt(row);
+                        if (table.getModel() == InitialConditionsPanel.this.tableModel) {
+                            selectedObject = InitialConditionsPanel.this.tableModel.getValueAt(row);
                         }
                         if (selectedObject != null) {
                             if (isSelected) {
-                                setBackground(lightBlueBackground);
+                                this.setBackground(this.lightBlueBackground);
                             }
-                            if (selectedObject instanceof SpeciesContextSpec) {
-                                SpeciesContextSpec scs = (SpeciesContextSpec) selectedObject;
+                            if (selectedObject instanceof SpeciesContextSpec scs) {
                                 SpeciesContext sc = scs.getSpeciesContext();
 
                                 boolean foundRuleMatch = false;
-                                if (fieldSimulationContext.getRateRules() != null && fieldSimulationContext.getRateRules().length > 0) {
-                                    for (RateRule rr : fieldSimulationContext.getRateRules()) {
+                                if (InitialConditionsPanel.this.fieldSimulationContext.getRateRules() != null) {
+                                    fieldSimulationContext.getRateRules();
+                                    for (RateRule rr : InitialConditionsPanel.this.fieldSimulationContext.getRateRules()) {
                                         if (rr.getRateRuleVar() == null) {
                                             continue;
                                         }
@@ -616,8 +607,9 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                                         }
                                     }
                                 }
-                                if (!foundRuleMatch && fieldSimulationContext.getAssignmentRules() != null && fieldSimulationContext.getAssignmentRules().length > 0) {
-                                    for (AssignmentRule rr : fieldSimulationContext.getAssignmentRules()) {
+                                if (!foundRuleMatch && InitialConditionsPanel.this.fieldSimulationContext.getAssignmentRules() != null) {
+                                    fieldSimulationContext.getAssignmentRules();
+                                    for (AssignmentRule rr : InitialConditionsPanel.this.fieldSimulationContext.getAssignmentRules()) {
                                         if (rr.getAssignmentRuleVar() == null) {
                                             continue;
                                         }
@@ -629,19 +621,19 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                                 }
                             }
                         }
-                        setIcon(icon);
+                        this.setIcon(icon);
                     }
                     return this;
                 }
             };
 
-            getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
-            getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
-            getScrollPaneTable().setDefaultRenderer(SpeciesPattern.class, rbmSpeciesShapeDepictionCellRenderer);    // depiction icons
-            getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
-            getScrollPaneTable().setDefaultRenderer(ScopedExpression.class, renderer);
-            getScrollPaneTable().setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
-            getScrollPaneTable().setDefaultRenderer(SpeciesContextSpecsTableModel.RulesProvenance.class, rulesTableCellRenderer);    // rules icons
+            this.getScrollPaneTable().setDefaultRenderer(SpeciesContext.class, renderer);
+            this.getScrollPaneTable().setDefaultRenderer(Structure.class, renderer);
+            this.getScrollPaneTable().setDefaultRenderer(SpeciesPattern.class, rbmSpeciesShapeDepictionCellRenderer);    // depiction icons
+            this.getScrollPaneTable().setDefaultRenderer(Species.class, renderer);
+            this.getScrollPaneTable().setDefaultRenderer(ScopedExpression.class, renderer);
+            this.getScrollPaneTable().setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
+            this.getScrollPaneTable().setDefaultRenderer(SpeciesContextSpecsTableModel.RulesProvenance.class, rulesTableCellRenderer);    // rules icons
 
             // TODO: find out why the code below is not working properly
 //		int ordinal = SpeciesContextSpecsTableModel.ColumnType.COLUMN_RULES.ordinal();
@@ -653,14 +645,14 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 //		getScrollPaneTable().getColumnModel().getColumn(index).setMaxWidth(rulesWidth);
 
         } catch (java.lang.Throwable ivjExc) {
-            handleException(ivjExc);
+            this.handleException(ivjExc);
         }
     }
 
     @Override
     public void setIssueManager(IssueManager issueManager) {
         super.setIssueManager(issueManager);
-        tableModel.setIssueManager(issueManager);
+        this.tableModel.setIssueManager(issueManager);
     }
 
     /**
@@ -668,36 +660,36 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
      */
     private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 
-        if (actionEvent.getSource() == getJMenuItemCopy() || actionEvent.getSource() == getJMenuItemCopyAll()) {
+        if (actionEvent.getSource() == this.getJMenuItemCopy() || actionEvent.getSource() == this.getJMenuItemCopyAll()) {
 
             try {
                 //
                 //Copy Symbols and Values Init Conditions
                 //
                 int[] rows = null;
-                if (actionEvent.getSource() == getJMenuItemCopyAll()) {
-                    rows = new int[getScrollPaneTable().getRowCount()];
+                if (actionEvent.getSource() == this.getJMenuItemCopyAll()) {
+                    rows = new int[this.getScrollPaneTable().getRowCount()];
                     for (int i = 0; i < rows.length; i += 1) {
                         rows[i] = i;
                     }
                 } else {
-                    rows = getScrollPaneTable().getSelectedRows();
+                    rows = this.getScrollPaneTable().getSelectedRows();
                 }
 
                 MathSymbolMapping msm = null;
                 try {
-                    msm = getSimulationContext().createNewMathMapping().getMathSymbolMapping();
+                    msm = this.getSimulationContext().createNewMathMapping().getMathSymbolMapping();
                 } catch (Exception e) {
                     e.printStackTrace(System.out);
                     DialogUtils.showWarningDialog(this, "current math not valid, some paste operations will be limited\n\nreason: " + e.getMessage());
                 }
                 StringBuffer sb = new StringBuffer();
-                sb.append("initial Conditions Parameters for (BioModel)" + getSimulationContext().getBioModel().getName() + " (App)" + getSimulationContext().getName() + "\n");
+                sb.append("initial Conditions Parameters for (BioModel)" + this.getSimulationContext().getBioModel().getName() + " (App)" + this.getSimulationContext().getName() + "\n");
                 java.util.Vector<SymbolTableEntry> primarySymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
                 java.util.Vector<SymbolTableEntry> alternateSymbolTableEntriesV = new java.util.Vector<SymbolTableEntry>();
                 java.util.Vector<Expression> resolvedValuesV = new java.util.Vector<Expression>();
                 for (int i = 0; i < rows.length; i += 1) {
-                    SpeciesContextSpec scs = tableModel.getValueAt(rows[i]);
+                    SpeciesContextSpec scs = this.tableModel.getValueAt(rows[i]);
                     if (scs.isConstant()) {
                         primarySymbolTableEntriesV.add(scs.getInitialConditionParameter());//need to change
                         if (msm != null) {
@@ -710,7 +702,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                     } else {
                         for (int j = 0; j < scs.getParameters().length; j += 1) {
                             SpeciesContextSpec.SpeciesContextSpecParameter scsp = (SpeciesContextSpec.SpeciesContextSpecParameter) scs.getParameters()[j];
-                            if (VCellCopyPasteHelper.isSCSRoleForDimension(scsp.getRole(), getSimulationContext().getGeometry().getDimension())) {
+                            if (VCellCopyPasteHelper.isSCSRoleForDimension(scsp.getRole(), this.getSimulationContext().getGeometry().getDimension())) {
                                 Expression scspExpression = scsp.getExpression();
                                 sb.append(scs.getSpeciesContext().getName() + "\t" + scsp.getName() + "\t" + (scspExpression != null ? scspExpression.infix() : "") + "\n");
                                 if (scspExpression != null) {// "Default" boundary conditions can't be copied
@@ -757,14 +749,14 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
 
-                if (actionEvent.getSource() == getJMenuItemPaste() || actionEvent.getSource() == getJMenuItemPasteAll()) {
+                if (actionEvent.getSource() == InitialConditionsPanel.this.getJMenuItemPaste() || actionEvent.getSource() == InitialConditionsPanel.this.getJMenuItemPasteAll()) {
                     Object pasteThis = VCellTransferable.getFromClipboard(VCellTransferable.OBJECT_FLAVOR);
 
                     MathSymbolMapping msm = null;
                     Exception mathMappingException = null;
                     try {
                         MathMapping mm = null;
-                        mm = getSimulationContext().createNewMathMapping();
+                        mm = InitialConditionsPanel.this.getSimulationContext().createNewMathMapping();
                         msm = mm.getMathSymbolMapping();
                     } catch (Exception e) {
                         mathMappingException = e;
@@ -772,13 +764,13 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                     }
 
                     int[] rows = null;
-                    if (actionEvent.getSource() == getJMenuItemPasteAll()) {
-                        rows = new int[getScrollPaneTable().getRowCount()];
+                    if (actionEvent.getSource() == InitialConditionsPanel.this.getJMenuItemPasteAll()) {
+                        rows = new int[InitialConditionsPanel.this.getScrollPaneTable().getRowCount()];
                         for (int i = 0; i < rows.length; i += 1) {
                             rows[i] = i;
                         }
                     } else {
-                        rows = getScrollPaneTable().getSelectedRows();
+                        rows = InitialConditionsPanel.this.getScrollPaneTable().getSelectedRows();
                     }
 
 
@@ -787,10 +779,9 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                     //
                     StringBuffer errors = null;
                     for (int i = 0; i < rows.length; i += 1) {
-                        SpeciesContextSpec scs = tableModel.getValueAt(rows[i]);
+                        SpeciesContextSpec scs = InitialConditionsPanel.this.tableModel.getValueAt(rows[i]);
                         try {
-                            if (pasteThis instanceof VCellTransferable.ResolvedValuesSelection) {
-                                VCellTransferable.ResolvedValuesSelection rvs = (VCellTransferable.ResolvedValuesSelection) pasteThis;
+                            if (pasteThis instanceof VCellTransferable.ResolvedValuesSelection rvs) {
                                 for (int j = 0; j < rvs.getPrimarySymbolTableEntries().length; j += 1) {
                                     SpeciesContextSpec.SpeciesContextSpecParameter pasteDestination = null;
                                     SpeciesContextSpec.SpeciesContextSpecParameter clipboardBiologicalParameter = null;
@@ -844,7 +835,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
                                             if (scsp.getRole() == clipboardBiologicalParameter.getRole() &&
                                                     scs.getSpeciesContext().compareEqual(
                                                             ((SpeciesContextSpec) clipboardBiologicalParameter.getNameScope().getScopedSymbolTable()).getSpeciesContext())) {
-                                                pasteDestination = (SpeciesContextSpec.SpeciesContextSpecParameter) scsp;
+                                                pasteDestination = scsp;
                                             }
                                         }
                                     }
@@ -904,20 +895,20 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
 
 
     public void setSimulationContext(SimulationContext newValue) {
-        SimulationContext oldValue = fieldSimulationContext;
+        SimulationContext oldValue = this.fieldSimulationContext;
         if (oldValue != null) {
-            oldValue.removePropertyChangeListener(ivjEventHandler);
+            oldValue.removePropertyChangeListener(this.ivjEventHandler);
         }
-        fieldSimulationContext = newValue;
+        this.fieldSimulationContext = newValue;
         if (newValue != null) {
-            newValue.addPropertyChangeListener(ivjEventHandler);
+            newValue.addPropertyChangeListener(this.ivjEventHandler);
         }
-        tableModel.setSimulationContext(fieldSimulationContext);
-        updateTopScrollPanel();
+        this.tableModel.setSimulationContext(this.fieldSimulationContext);
+        this.updateTopScrollPanel();
     }
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
-        setTableSelections(selectedObjects, getScrollPaneTable(), tableModel);
+        setTableSelections(selectedObjects, this.getScrollPaneTable(), this.tableModel);
     }
 }

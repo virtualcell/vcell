@@ -23,19 +23,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ReactionCartoonRule extends ReactionCartoon {
-	private final static Logger lg = LogManager.getLogger(ReactionCartoonRule.class);
+    private final static Logger lg = LogManager.getLogger(ReactionCartoonRule.class);
 
-	private Set<ReactionRuleShortSignature> reactionRuleShortSignatures = new HashSet<>();
+    private final Set<ReactionRuleShortSignature> reactionRuleShortSignatures = new HashSet<>();
 
-	@Override
-	protected GroupingCriteria getRuleParticipantGroupingCriteria() {
-		return GroupingCriteria.rule;
-	}
+    @Override
+    protected GroupingCriteria getRuleParticipantGroupingCriteria() {
+        return GroupingCriteria.rule;
+    }
 
-	// for the RULE_PARTICIPANT_SIGNATURE_NODE nodes we initialize the node's speciesPattern field 
-	// from the matching signature
-	@Override
-	public void rebindAll(Diagram diagram) {
+    // for the RULE_PARTICIPANT_SIGNATURE_NODE nodes we initialize the node's speciesPattern field
+    // from the matching signature
+    @Override
+    public void rebindAll(Diagram diagram) {
 //		String nodeStructure = diagram.getStructure().getName();
 //		List<NodeReference> nodeList = diagram.getNodeRuleList();
 //		for (int i = 0; i < nodeList.size(); i++) {
@@ -60,160 +60,160 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //				System.out.println("ReactionCartoonRule, rebindAll(), wrong NodeReference type RULE_PARTICIPANT_SIGNATURE_FULL_NODE");
 //			}
 //		}
-	}
-	
-	
-	public void applyDefaults(Diagram diagram) {
-		List<NodeReference> nodeList = diagram.getNodeRuleList();
-		List<NodeReference> orphansList = new ArrayList<NodeReference> ();
+    }
 
-		for (int i = 0; i < nodeList.size(); i++) {
-			NodeReference node = nodeList.get(i);
-			Object obj = null;
-			Structure struct = diagram.getStructure();
-			boolean found = false;
-			switch (node.nodeType) {
-			case NodeReference.SIMPLE_REACTION_NODE:
-				obj = getModel().getReactionStep(node.name);
-				if (!(obj instanceof SimpleReaction)) {
-					System.out
-							.println("ReactionCartoon.applyDefaults(), diagram reaction "
-									+ node.name
-									+ " type mismatch in model, using location anyway");
-				}
-				break;
-			case NodeReference.FLUX_REACTION_NODE:
-				obj = getModel().getReactionStep(node.name);
-				if (!(obj instanceof FluxReaction)) {
-					System.out
-							.println("ReactionCartoon.applyDefaults(), diagram flux "
-									+ node.name
-									+ " type mismatch in model, using location anyway");
-				}
-				break;
-			case NodeReference.SPECIES_CONTEXT_NODE:
-				obj = getModel().getSpeciesContext(node.name);
-				break;
-			case NodeReference.REACTION_RULE_NODE:		// TODO: aici
-				obj = getModel().getRbmModelContainer().getReactionRule(node.name);
-				break;
-			case NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE:		// obj is a RuleParticipantSignature
-				System.out.println("ReactionCartoonRule, RULE_PARTICIPANT_SIGNATURE_FULL_NODE detected");
-				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
-					if (signature instanceof RuleParticipantLongSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), GroupingCriteria.full)){
-						obj = signature;
-						found = true;
-						break;
-					}
-				}
-				if(!found) {
-					orphansList.add(node);
-				}
-				break;
-			case NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE:
-				for(RuleParticipantSignature signature : ruleParticipantSignatures) {
-					if (signature instanceof RuleParticipantShortSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), GroupingCriteria.full)){
-						obj = signature;
-						found = true;
-						break;
-					}
-				}
-				if(!found) {
-					orphansList.add(node);
-				}
-				break;
-			}		// -- switch
-			Shape shape = getShapeFromModelObject(obj);
-			if (shape != null) {
-				Point relPosOld = shape.getRelPos();
-				Point relPosNew = node.location;
-				// In old models, the same node can appear in multiple diagrams.
-				// Now, we have only one diagram, so if a node has multiple positions,
-				// some would overwrite others.
-				// This attempts to prevent overwriting a position with a worse one.
+
+    public void applyDefaults(Diagram diagram) {
+        List<NodeReference> nodeList = diagram.getNodeRuleList();
+        List<NodeReference> orphansList = new ArrayList<NodeReference>();
+
+        for (int i = 0; i < nodeList.size(); i++) {
+            NodeReference node = nodeList.get(i);
+            Object obj = null;
+            Structure struct = diagram.getStructure();
+            boolean found = false;
+            switch (node.nodeType) {
+                case NodeReference.SIMPLE_REACTION_NODE:
+                    obj = this.getModel().getReactionStep(node.name);
+                    if (!(obj instanceof SimpleReaction)) {
+                        System.out
+                                .println("ReactionCartoon.applyDefaults(), diagram reaction "
+                                        + node.name
+                                        + " type mismatch in model, using location anyway");
+                    }
+                    break;
+                case NodeReference.FLUX_REACTION_NODE:
+                    obj = this.getModel().getReactionStep(node.name);
+                    if (!(obj instanceof FluxReaction)) {
+                        System.out
+                                .println("ReactionCartoon.applyDefaults(), diagram flux "
+                                        + node.name
+                                        + " type mismatch in model, using location anyway");
+                    }
+                    break;
+                case NodeReference.SPECIES_CONTEXT_NODE:
+                    obj = this.getModel().getSpeciesContext(node.name);
+                    break;
+                case NodeReference.REACTION_RULE_NODE:        // TODO: aici
+                    obj = this.getModel().getRbmModelContainer().getReactionRule(node.name);
+                    break;
+                case NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE:        // obj is a RuleParticipantSignature
+                    System.out.println("ReactionCartoonRule, RULE_PARTICIPANT_SIGNATURE_FULL_NODE detected");
+                    for (RuleParticipantSignature signature : this.ruleParticipantSignatures) {
+                        if (signature instanceof RuleParticipantLongSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), GroupingCriteria.full)) {
+                            obj = signature;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        orphansList.add(node);
+                    }
+                    break;
+                case NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE:
+                    for (RuleParticipantSignature signature : this.ruleParticipantSignatures) {
+                        if (signature instanceof RuleParticipantShortSignature && signature.getStructure() == struct && signature.compareByCriteria(node.getName(), GroupingCriteria.full)) {
+                            obj = signature;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        orphansList.add(node);
+                    }
+                    break;
+            }        // -- switch
+            Shape shape = this.getShapeFromModelObject(obj);
+            if (shape != null) {
+                Point relPosOld = shape.getRelPos();
+                Point relPosNew = node.location;
+                // In old models, the same node can appear in multiple diagrams.
+                // Now, we have only one diagram, so if a node has multiple positions,
+                // some would overwrite others.
+                // This attempts to prevent overwriting a position with a worse one.
 //				if(relPosOld.x + relPosOld.y < relPosNew.x + relPosNew.y) {
-					shape.setRelPos(relPosNew);					
+                shape.setRelPos(relPosNew);
 //				}
-			}
-		}
-		if(!orphansList.isEmpty()) {
-			diagram.removeNodeReferences(NodeReference.Mode.rule, orphansList);
-		}
-	}
+            }
+        }
+        if (!orphansList.isEmpty()) {
+            diagram.removeNodeReferences(NodeReference.Mode.rule, orphansList);
+        }
+    }
 
-	public void setPositionsFromReactionCartoon(Diagram diagram) {
-		List<NodeReference> nodeList = new ArrayList<NodeReference>();
-		NodeReference.Mode mode = NodeReference.Mode.rule;
-		for(Shape shape : getShapes()) {
-			if (shape instanceof FluxReactionShape) {
-				nodeList.add(new NodeReference(mode,
-						NodeReference.FLUX_REACTION_NODE, ((FluxReaction) shape.getModelObject()).getName(), 
-						shape.getSpaceManager().getRelPos()));
-			} else if (shape instanceof SimpleReactionShape) {
-				nodeList.add(new NodeReference(mode,
-						NodeReference.SIMPLE_REACTION_NODE,
-						((ReactionStep) shape.getModelObject()).getName(),
-						shape.getSpaceManager().getRelPos()));
+    public void setPositionsFromReactionCartoon(Diagram diagram) {
+        List<NodeReference> nodeList = new ArrayList<NodeReference>();
+        NodeReference.Mode mode = NodeReference.Mode.rule;
+        for (Shape shape : this.getShapes()) {
+            if (shape instanceof FluxReactionShape) {
+                nodeList.add(new NodeReference(mode,
+                        NodeReference.FLUX_REACTION_NODE, ((FluxReaction) shape.getModelObject()).getName(),
+                        shape.getSpaceManager().getRelPos()));
+            } else if (shape instanceof SimpleReactionShape) {
+                nodeList.add(new NodeReference(mode,
+                        NodeReference.SIMPLE_REACTION_NODE,
+                        ((ReactionStep) shape.getModelObject()).getName(),
+                        shape.getSpaceManager().getRelPos()));
 //			} else if (shape instanceof ReactionRuleDiagramShape) {
 //				nodeList.add(new NodeReference(mode,
 //						NodeReference.REACTION_RULE_NODE,
 //						((ReactionRule) shape.getModelObject()).getName(),
 //						shape.getSpaceManager().getRelPos()));
-			} else if (shape instanceof ReactionRuleShortDiagramShape) {	// can only be short
-				
-				ReactionRuleShortSignature signature = (ReactionRuleShortSignature)shape.getModelObject();
-				String name = signature.getDisplayName();	// the display name is the number of rules in the signature's list of rules
-				NodeReference nr = new NodeReference(mode, NodeReference.REACTION_RULE_NODE, name, shape.getSpaceManager().getRelPos());
-				nodeList.add(nr);
+            } else if (shape instanceof ReactionRuleShortDiagramShape) {    // can only be short
 
-			} else if (shape instanceof SpeciesContextShape) {
-				nodeList.add(new NodeReference(mode,
-						NodeReference.SPECIES_CONTEXT_NODE,
-						((SpeciesContext) shape.getModelObject()).getName(),
-						shape.getSpaceManager().getRelPos()));
-			} else if (shape instanceof RuleParticipantSignatureFullDiagramShape) {
-				System.out.println("ReactionCartoonRule, Invalid shape type 'RuleParticipantSignatureFullDiagramShape'");
-				RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
-				if (ruleParticipantSignature.getStructure() == diagram.getStructure()) {
-					String spAsString = ruleParticipantSignature.getFirstSpeciesPatternAsString();
-					NodeReference nr = new NodeReference(mode, NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE, spAsString, shape.getSpaceManager().getRelPos());
-					nr.speciesPattern = ruleParticipantSignature.getSpeciesPattern();
-					nodeList.add(nr);
-				}
-			} else if (shape instanceof RuleParticipantSignatureShortDiagramShape) {
-				RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
-				if (ruleParticipantSignature.getStructure() == diagram.getStructure()) {
-					String spAsString = ruleParticipantSignature.getFirstSpeciesPatternAsString();
-					NodeReference nr = new NodeReference(mode, NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE, spAsString, shape.getSpaceManager().getRelPos());
-					nr.speciesPattern = ruleParticipantSignature.getSpeciesPattern();
-					nodeList.add(nr);
-				}
-			}
-		}
-		diagram.setNodeReferences(mode, nodeList);	// add all to nodeRuleList
-	}
-	
-	@Override
-	protected void refreshAll(boolean reallocateShapes) {
-		try {
-			if (getModel() == null || getStructureSuite() == null) {
-				return;
-			}
-			System.out.println("ReactionCartoonRule, RefreshAll()");
-			for(Structure structure : structureSuite.getStructures()) {
-				Diagram diagram = getModel().getDiagram(structure);
-				if (diagram != null) {
-					// Maintain consistency between rule participant nodes, signatures and 
-					// species pattern when a molecule is being modified.
-					rebindAll(diagram);
-				}				
-			}
-			Set<Shape> unwantedShapes = new HashSet<Shape>();
-			Set<RuleParticipantSignature> unwantedSignatures = new HashSet<RuleParticipantSignature>();
-			Set<ReactionRuleShortSignature> unwantedRuleSignatures = new HashSet<ReactionRuleShortSignature>();
-			unwantedShapes.addAll(getShapes());
-			unwantedSignatures.addAll(ruleParticipantSignatures);
-			unwantedRuleSignatures.addAll(reactionRuleShortSignatures);
+                ReactionRuleShortSignature signature = (ReactionRuleShortSignature) shape.getModelObject();
+                String name = signature.getDisplayName();    // the display name is the number of rules in the signature's list of rules
+                NodeReference nr = new NodeReference(mode, NodeReference.REACTION_RULE_NODE, name, shape.getSpaceManager().getRelPos());
+                nodeList.add(nr);
+
+            } else if (shape instanceof SpeciesContextShape) {
+                nodeList.add(new NodeReference(mode,
+                        NodeReference.SPECIES_CONTEXT_NODE,
+                        ((SpeciesContext) shape.getModelObject()).getName(),
+                        shape.getSpaceManager().getRelPos()));
+            } else if (shape instanceof RuleParticipantSignatureFullDiagramShape) {
+                System.out.println("ReactionCartoonRule, Invalid shape type 'RuleParticipantSignatureFullDiagramShape'");
+                RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
+                if (ruleParticipantSignature.getStructure() == diagram.getStructure()) {
+                    String spAsString = ruleParticipantSignature.getFirstSpeciesPatternAsString();
+                    NodeReference nr = new NodeReference(mode, NodeReference.RULE_PARTICIPANT_SIGNATURE_FULL_NODE, spAsString, shape.getSpaceManager().getRelPos());
+                    nr.speciesPattern = ruleParticipantSignature.getSpeciesPattern();
+                    nodeList.add(nr);
+                }
+            } else if (shape instanceof RuleParticipantSignatureShortDiagramShape) {
+                RuleParticipantSignature ruleParticipantSignature = (RuleParticipantSignature) shape.getModelObject();
+                if (ruleParticipantSignature.getStructure() == diagram.getStructure()) {
+                    String spAsString = ruleParticipantSignature.getFirstSpeciesPatternAsString();
+                    NodeReference nr = new NodeReference(mode, NodeReference.RULE_PARTICIPANT_SIGNATURE_SHORT_NODE, spAsString, shape.getSpaceManager().getRelPos());
+                    nr.speciesPattern = ruleParticipantSignature.getSpeciesPattern();
+                    nodeList.add(nr);
+                }
+            }
+        }
+        diagram.setNodeReferences(mode, nodeList);    // add all to nodeRuleList
+    }
+
+    @Override
+    protected void refreshAll(boolean reallocateShapes) {
+        try {
+            if (this.getModel() == null || this.getStructureSuite() == null) {
+                return;
+            }
+            System.out.println("ReactionCartoonRule, RefreshAll()");
+            for (Structure structure : this.structureSuite.getStructures()) {
+                Diagram diagram = this.getModel().getDiagram(structure);
+                if (diagram != null) {
+                    // Maintain consistency between rule participant nodes, signatures and
+                    // species pattern when a molecule is being modified.
+                    this.rebindAll(diagram);
+                }
+            }
+            Set<Shape> unwantedShapes = new HashSet<Shape>();
+            Set<RuleParticipantSignature> unwantedSignatures = new HashSet<RuleParticipantSignature>();
+            Set<ReactionRuleShortSignature> unwantedRuleSignatures = new HashSet<ReactionRuleShortSignature>();
+            unwantedShapes.addAll(this.getShapes());
+            unwantedSignatures.addAll(this.ruleParticipantSignatures);
+            unwantedRuleSignatures.addAll(this.reactionRuleShortSignatures);
 //			ContainerContainerShape containerShape = (ContainerContainerShape) getShapeFromModelObject(getModel());
 //			List<ReactionContainerShape> reactionContainerShapeList = new ArrayList<ReactionContainerShape>();
 //			List<Structure> structureList = new ArrayList<Structure>(getStructureSuite().getStructures());
@@ -424,8 +424,8 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //					}
 //				}
 //			}
-			ruleParticipantSignatures.removeAll(unwantedSignatures);
-			reactionRuleShortSignatures.removeAll(unwantedRuleSignatures);
+            this.ruleParticipantSignatures.removeAll(unwantedSignatures);
+            this.reactionRuleShortSignatures.removeAll(unwantedRuleSignatures);
 //			
 //			//TODO: uncomment the following block to track the instances of participants and signatures during transitions
 ////			String msg1 = transitioning ? "transitioning to " : "staying ";
@@ -518,7 +518,9 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //					}
 //				}
 //			}
-			for(Shape unwantedShape : unwantedShapes) { removeShape(unwantedShape); }
+            for (Shape unwantedShape : unwantedShapes) {
+                this.removeShape(unwantedShape);
+            }
 //			// update diagrams
 //			for(Structure structure : structureSuite.getStructures()) {
 //				Diagram diagram = getModel().getDiagram(structure);
@@ -527,8 +529,8 @@ public class ReactionCartoonRule extends ReactionCartoon {
 //				}				
 //			}
 //			fireGraphChanged(new GraphEvent(this));
-		} catch (Exception e) {
-			lg.error(e.getMessage(), e);
-		}
-	}
+        } catch (Exception e) {
+            lg.error(e.getMessage(), e);
+        }
+    }
 }

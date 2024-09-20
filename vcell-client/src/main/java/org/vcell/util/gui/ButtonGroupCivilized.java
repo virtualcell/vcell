@@ -14,67 +14,73 @@ import java.util.Enumeration;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/13/00 2:23:46 PM)
- * @author: 
+ *
+ * @author:
  */
 @SuppressWarnings("serial")
 public class ButtonGroupCivilized extends PropertyChangeButtonGroup {
-	/**
- * ButtonGroupCivilized constructor comment.
- */
-public ButtonGroupCivilized() {
-	super();
-}
-/**
- * Adds the button to the group.
- * Sets button setSelected to true
- */ 
-@Override
-public void add(AbstractButton b) {
-	if (b.isSelected()) b.setSelected(false);
-	super.add(b);
-	b.setSelected(true);
-}
-/**
- * This method was created in VisualAge.
- * @param actionCommand java.lang.String
- */
-public void setSelection(String actionCommand) {
-	//
-	// if selected button does not have this action command, select the first button we find with appropriate action command
-	//
-	String currSelectedString = null;
-	if (getSelection() != null) {
-		currSelectedString = getSelection().getActionCommand();
-	}
-	if (currSelectedString != null) {
-		if (currSelectedString.equals(actionCommand)) {
-			return;
-		}
-	}
-	ButtonModel buttonModel = null;
-	Enumeration<AbstractButton> buttons = getElements();
-	while (buttons.hasMoreElements()) {
-		buttonModel = ((AbstractButton)buttons.nextElement()).getModel();
-		if (buttonModel.getActionCommand().equals(actionCommand)) {
-			setSelection(buttonModel);
-			return;
-		}
-	}
-	//
-	// if we get this far and there actually were some buttons in the group...
-	//
-	if (buttonModel != null) {
-		System.out.println("ERROR: button with actionCommand " + actionCommand + " not found");
-	}
-}
-	/**
-	 * Sets the selected value for the button.
-	 */
-	public void setSelection(ButtonModel m) {
-		m.setSelected(true);
-		setSelected(m, true);
-	}
+    /**
+     * ButtonGroupCivilized constructor comment.
+     */
+    public ButtonGroupCivilized() {
+        super();
+    }
+
+    /**
+     * Adds the button to the group.
+     * Sets button setSelected to true
+     */
+    @Override
+    public void add(AbstractButton b) {
+        if (b.isSelected()) b.setSelected(false);
+        super.add(b);
+        b.setSelected(true);
+    }
+
+    /**
+     * This method was created in VisualAge.
+     *
+     * @param actionCommand java.lang.String
+     */
+    public void setSelection(String actionCommand) {
+        //
+        // if selected button does not have this action command, select the first button we find with appropriate action command
+        //
+        String currSelectedString = null;
+        if (this.getSelection() != null) {
+            currSelectedString = this.getSelection().getActionCommand();
+        }
+        if (currSelectedString != null) {
+            if (currSelectedString.equals(actionCommand)) {
+                return;
+            }
+        }
+        ButtonModel buttonModel = null;
+        Enumeration<AbstractButton> buttons = this.getElements();
+        while (buttons.hasMoreElements()) {
+            buttonModel = buttons.nextElement().getModel();
+            if (buttonModel.getActionCommand().equals(actionCommand)) {
+                this.setSelection(buttonModel);
+                return;
+            }
+        }
+        //
+        // if we get this far and there actually were some buttons in the group...
+        //
+        if (buttonModel != null) {
+            System.out.println("ERROR: button with actionCommand " + actionCommand + " not found");
+        }
+    }
+
+    /**
+     * Sets the selected value for the button.
+     */
+    public void setSelection(ButtonModel m) {
+        m.setSelected(true);
+        this.setSelected(m, true);
+    }
 }

@@ -26,7 +26,7 @@ import org.vcell.util.CastingUtils;
  * utility methods for package
  */
 public interface LWNamespace {
-    public static class LGHolder {
+    class LGHolder {
         private final static Logger LG = LogManager.getLogger(LWNamespace.class);
     }
 
@@ -35,7 +35,7 @@ public interface LWNamespace {
      *
      * @param frame not null
      */
-    public static void unIconify(Frame frame) {
+    static void unIconify(Frame frame) {
         int st = frame.getState();
         if (st == Frame.ICONIFIED) {
             frame.setState(Frame.NORMAL);
@@ -48,7 +48,7 @@ public interface LWNamespace {
      * @param w handle to arrange for, not null
      * @return last Window positioned
      */
-    public static Window positionChildren(LWHandle w) {
+    static Window positionChildren(LWHandle w) {
         w.unIconify();
         Window lastW = w.getWindow();
         lastW.toFront();
@@ -66,7 +66,7 @@ public interface LWNamespace {
      *
      * @param to child to stop at (not null)
      */
-    public static void positionTopDownTo(LWHandle to) {
+    static void positionTopDownTo(LWHandle to) {
         LWHandle starting = to;
         LWHandle p = starting.getlwParent();
         while (p != null) {
@@ -83,7 +83,7 @@ public interface LWNamespace {
      * @param to   handle to stop at
      * @return last Window positioned
      */
-    public static Window positionChildrenTo(LWHandle from, LWHandle to) {
+    static Window positionChildrenTo(LWHandle from, LWHandle to) {
         from.unIconify();
         Window lastW = from.getWindow();
         lastW.toFront();
@@ -103,7 +103,7 @@ public interface LWNamespace {
      * @param reference  window to position relative to not null
      * @param positioned window to position not null
      */
-    public static void stagger(Container reference, Window positioned) {
+    static void stagger(Container reference, Window positioned) {
         Insets insets = reference.getInsets();
         int x = reference.getX() + insets.top;
         int y = reference.getY() + insets.top;
@@ -116,7 +116,7 @@ public interface LWNamespace {
      * @param swingParent could be null
      * @return or null
      */
-    public static <T> T findOwnerOfType(Class<? extends T> clzz, Component swingParent) {
+    static <T> T findOwnerOfType(Class<? extends T> clzz, Component swingParent) {
         final Logger lg = LGHolder.LG;
         T t = CastingUtils.downcast(clzz, swingParent);
         if (t != null) {
@@ -140,7 +140,7 @@ public interface LWNamespace {
      * @param swingParent could be null
      * @return logical owner or null
      */
-    public static LWContainerHandle findLWOwner(Component swingParent) {
+    static LWContainerHandle findLWOwner(Component swingParent) {
         return findOwnerOfType(LWContainerHandle.class, swingParent);
     }
 
@@ -148,7 +148,7 @@ public interface LWNamespace {
      * @param awtModality not null
      * @return {@link LWModality} that best matches awt modality
      */
-    public static LWModality bestModalityMatch(ModalityType awtModality) {
+    static LWModality bestModalityMatch(ModalityType awtModality) {
         Objects.requireNonNull(awtModality);
         switch (awtModality) {
             case MODELESS:
@@ -166,7 +166,7 @@ public interface LWNamespace {
      * @param dialog not null
      * @return {@link LWModality} that best matches current dialog swing modality
      */
-    public static LWModality getEquivalentModality(Dialog dialog) {
+    static LWModality getEquivalentModality(Dialog dialog) {
         Objects.requireNonNull(dialog);
         final Logger lg = LGHolder.LG;
         ModalityType awtModality = dialog.getModalityType();
@@ -190,7 +190,7 @@ public interface LWNamespace {
      *
      * @return new menu bar
      */
-    public static JMenuBar createRightSideIconMenuBar() {
+    static JMenuBar createRightSideIconMenuBar() {
         JMenuBar mb = new JMenuBar();
         mb.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         mb.add(LWTopFrame.createWindowMenu(false));
@@ -202,7 +202,7 @@ public interface LWNamespace {
      *
      * @return
      */
-    public static Dimension getScreenSize() {
+    static Dimension getScreenSize() {
         //http://stackoverflow.com/questions/3680221/how-can-i-get-the-monitor-size-in-java
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         int width = gd.getDisplayMode().getWidth();

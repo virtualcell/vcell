@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.graph.gui;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -57,171 +58,168 @@ import cbit.vcell.model.Model;
 
 @SuppressWarnings("serial")
 public class ReactionCartoonEditorPanel extends JPanel implements ActionListener {
-	public static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(10,0);
-	public static final Dimension NARROW_SEPARATOR_SIZE = new Dimension(2,0);
-	public static final Dimension WIDE_SEPARATOR_SIZE = new Dimension(15,0);
-	public static final String PROPERTY_NAME_FLOATING = "Floating";
-	public static final Dimension TOOL_BAR_BUTTON_SIZE = new Dimension(28, 28);
-	private GraphPane graphPane = null;
-	private JToolBar toolBar = null;
-	private JToolBarToggleButton speciesButton = null;
-	private JToolBarToggleButton fluxReactionButton = null;
-	private JToolBarToggleButton lineDirectedButton = null;
-//	private JToolBarToggleButton lineCatalystButton = null;
-	private JToolBarToggleButton selectButton = null;
-	protected List<JToolBarToggleButton> modeButtons = null;
-	protected List<JToolBarToggleButton> viewButtons = null;
-	private ButtonGroup modeButtonGroup = new ButtonGroup();
-	private ButtonGroup viewButtonGroup = new ButtonGroup();
-	
-	protected List<JToolBarToggleButton> sizeOptionsButtons = null;
-	private ButtonGroup sizeOptionsButtonGroup = new ButtonGroup();
-	
-	private JScrollPane scrollPane = null;
-	protected ViewPortStabilizer viewPortStabilizer = null;
-	private JButton annealLayoutButton = null;
-	private JButton circleLayoutButton = null;
-	private JButton levellerLayoutButton = null;
-	private JButton randomLayoutButton = null;
-	private JButton relaxerLayoutButton = null;
-	private JButton zoomInButton = null;
-	private JButton zoomOutButton = null;
-	private JButton glgLayoutJButton = null;
-	private JButton shrinkCanvasButton = null;
-	private JButton expandCanvasButton = null;
-	private final ReactionCartoonFull reactionCartoonFull = new ReactionCartoonFull();
-	private final ReactionCartoonMolecule reactionCartoonMolecule = new ReactionCartoonMolecule();
-	private final ReactionCartoonRule reactionCartoonRule = new ReactionCartoonRule();
-	private ReactionCartoon currentReactionCartoon = reactionCartoonFull;	// for simplicity we initialize with the full cartoon
-	
-	private final ReactionCartoonTool reactionCartoonTool = new ReactionCartoonTool();
+    public static final Dimension TOOL_BAR_SEPARATOR_SIZE = new Dimension(10, 0);
+    public static final Dimension NARROW_SEPARATOR_SIZE = new Dimension(2, 0);
+    public static final Dimension WIDE_SEPARATOR_SIZE = new Dimension(15, 0);
+    public static final String PROPERTY_NAME_FLOATING = "Floating";
+    public static final Dimension TOOL_BAR_BUTTON_SIZE = new Dimension(28, 28);
+    private GraphPane graphPane = null;
+    private JToolBar toolBar = null;
+    private JToolBarToggleButton speciesButton = null;
+    private JToolBarToggleButton fluxReactionButton = null;
+    private JToolBarToggleButton lineDirectedButton = null;
+    //	private JToolBarToggleButton lineCatalystButton = null;
+    private JToolBarToggleButton selectButton = null;
+    protected List<JToolBarToggleButton> modeButtons = null;
+    protected List<JToolBarToggleButton> viewButtons = null;
+    private final ButtonGroup modeButtonGroup = new ButtonGroup();
+    private final ButtonGroup viewButtonGroup = new ButtonGroup();
 
-	private boolean bFloatingRequested = false;
-	private JButton floatRequestButton = null;
-	
-	public final static String IMAGE_PATH = "/images/layout/";
-	private final static Icon randomLayoutIcon = loadIcon(IMAGE_PATH + "random.gif");
-	private final static Icon circleLayoutIcon = loadIcon(IMAGE_PATH + "circular.gif");
-	private final static Icon annealedLayoutIcon = loadIcon(IMAGE_PATH + "annealed.gif");
-	private final static Icon levelledLayoutIcon = loadIcon(IMAGE_PATH + "levelled.gif");
-	private final static Icon relaxedLayoutIcon = loadIcon(IMAGE_PATH + "relaxed.gif");
-	private final static Icon glgLayoutIcon = loadIcon(IMAGE_PATH + "glg3.gif");
-	private final static Icon shrinkLayoutIcon = loadIcon(IMAGE_PATH + "shrink.gif");
-	private final static Icon expandLayoutIcon = loadIcon(IMAGE_PATH + "expand.gif");
+    protected List<JToolBarToggleButton> sizeOptionsButtons = null;
+    private final ButtonGroup sizeOptionsButtonGroup = new ButtonGroup();
 
-	
-	public ReactionCartoonEditorPanel() {
-		super();
-		initialize();
-	}
+    private JScrollPane scrollPane = null;
+    protected ViewPortStabilizer viewPortStabilizer = null;
+    private JButton annealLayoutButton = null;
+    private JButton circleLayoutButton = null;
+    private JButton levellerLayoutButton = null;
+    private JButton randomLayoutButton = null;
+    private JButton relaxerLayoutButton = null;
+    private JButton zoomInButton = null;
+    private JButton zoomOutButton = null;
+    private JButton glgLayoutJButton = null;
+    private JButton shrinkCanvasButton = null;
+    private JButton expandCanvasButton = null;
+    private final ReactionCartoonFull reactionCartoonFull = new ReactionCartoonFull();
+    private final ReactionCartoonMolecule reactionCartoonMolecule = new ReactionCartoonMolecule();
+    private final ReactionCartoonRule reactionCartoonRule = new ReactionCartoonRule();
+    private ReactionCartoon currentReactionCartoon = this.reactionCartoonFull;    // for simplicity we initialize with the full cartoon
 
-	private static Icon loadIcon(String fileName) {
-		return new ImageIcon(ReactionCartoonEditorPanel.class.getResource(fileName));
-	}
-	
-	public void actionPerformed(ActionEvent event) {
-		try {
-			Object source = event.getSource();
-			if (getModeButtons().contains(source)) {
-				getReactionCartoonTool().setModeString(event.getActionCommand());
-			} else if (getViewButtons().contains(source)) {
-				String command = event.getActionCommand();
-				setViewMode(command);
-			} else if (getSizeOptionsButtons().contains(source)) {
-				String command = event.getActionCommand();
-				setSizeMode(command);
-			} else if(source == getHighlightCatalystsButton()) {
-				currentReactionCartoon.setHighlightCatalystMode(getHighlightCatalystsButton().isSelected() ? true : false);
-				currentReactionCartoon.refreshAll();
-			}
-			else if (source == getRandomLayoutButton())
-				getReactionCartoonTool().layout(RandomLayouter.LAYOUT_NAME);
-			else if (source == getAnnealLayoutButton())
-				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.ANNEALER);
-			else if (source == getCircleLayoutButton())
-				getReactionCartoonTool().layout(SimpleElipticalLayouter.LAYOUT_NAME);
-			else if (source == getRelaxerLayoutButton())
-				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.RELAXER);
-			else if (source == getLevellerLayoutButton())
-				getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.LEVELLER);
-			else if (source == getZoomInButton()) {			
-				viewPortStabilizer.saveViewPortPosition();
-				reactionCartoonFull.getResizeManager().zoomIn();	// we zoom all cartoons simultaneously
-				reactionCartoonMolecule.getResizeManager().zoomIn();
+    private final ReactionCartoonTool reactionCartoonTool = new ReactionCartoonTool();
+
+    private boolean bFloatingRequested = false;
+    private JButton floatRequestButton = null;
+
+    public final static String IMAGE_PATH = "/images/layout/";
+    private final static Icon randomLayoutIcon = loadIcon(IMAGE_PATH + "random.gif");
+    private final static Icon circleLayoutIcon = loadIcon(IMAGE_PATH + "circular.gif");
+    private final static Icon annealedLayoutIcon = loadIcon(IMAGE_PATH + "annealed.gif");
+    private final static Icon levelledLayoutIcon = loadIcon(IMAGE_PATH + "levelled.gif");
+    private final static Icon relaxedLayoutIcon = loadIcon(IMAGE_PATH + "relaxed.gif");
+    private final static Icon glgLayoutIcon = loadIcon(IMAGE_PATH + "glg3.gif");
+    private final static Icon shrinkLayoutIcon = loadIcon(IMAGE_PATH + "shrink.gif");
+    private final static Icon expandLayoutIcon = loadIcon(IMAGE_PATH + "expand.gif");
+
+
+    public ReactionCartoonEditorPanel() {
+        super();
+        this.initialize();
+    }
+
+    private static Icon loadIcon(String fileName) {
+        return new ImageIcon(ReactionCartoonEditorPanel.class.getResource(fileName));
+    }
+
+    public void actionPerformed(ActionEvent event) {
+        try {
+            Object source = event.getSource();
+            if (this.getModeButtons().contains(source)) {
+                this.getReactionCartoonTool().setModeString(event.getActionCommand());
+            } else if (this.getViewButtons().contains(source)) {
+                String command = event.getActionCommand();
+                this.setViewMode(command);
+            } else if (this.getSizeOptionsButtons().contains(source)) {
+                String command = event.getActionCommand();
+                this.setSizeMode(command);
+            } else if (source == this.getHighlightCatalystsButton()) {
+                this.currentReactionCartoon.setHighlightCatalystMode(this.getHighlightCatalystsButton().isSelected());
+                this.currentReactionCartoon.refreshAll();
+            } else if (source == this.getRandomLayoutButton())
+                this.getReactionCartoonTool().layout(RandomLayouter.LAYOUT_NAME);
+            else if (source == this.getAnnealLayoutButton())
+                this.getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.ANNEALER);
+            else if (source == this.getCircleLayoutButton())
+                this.getReactionCartoonTool().layout(SimpleElipticalLayouter.LAYOUT_NAME);
+            else if (source == this.getRelaxerLayoutButton())
+                this.getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.RELAXER);
+            else if (source == this.getLevellerLayoutButton())
+                this.getReactionCartoonTool().layout(GraphLayoutManager.OldLayouts.LEVELLER);
+            else if (source == this.getZoomInButton()) {
+                this.viewPortStabilizer.saveViewPortPosition();
+                this.reactionCartoonFull.getResizeManager().zoomIn();    // we zoom all cartoons simultaneously
+                this.reactionCartoonMolecule.getResizeManager().zoomIn();
 //				reactionCartoonRule.getResizeManager().zoomIn();
 //				reactionCartoon.getResizeManager().zoomIn();		// we zoom only the current cartoon
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						viewPortStabilizer.restoreViewPortPosition();						
-					}
-				});
-			}
-			else if (source == getZoomOutButton()) {
-				viewPortStabilizer.saveViewPortPosition();
-				reactionCartoonFull.getResizeManager().zoomOut();				
-				reactionCartoonMolecule.getResizeManager().zoomOut();				
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        ReactionCartoonEditorPanel.this.viewPortStabilizer.restoreViewPortPosition();
+                    }
+                });
+            } else if (source == this.getZoomOutButton()) {
+                this.viewPortStabilizer.saveViewPortPosition();
+                this.reactionCartoonFull.getResizeManager().zoomOut();
+                this.reactionCartoonMolecule.getResizeManager().zoomOut();
 //				reactionCartoonRule.getResizeManager().zoomOut();				
 //				reactionCartoon.getResizeManager().zoomOut();				
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						viewPortStabilizer.restoreViewPortPosition();						
-					}
-				});
-			}
-			else if (source == getGlgLayoutJButton())
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        ReactionCartoonEditorPanel.this.viewPortStabilizer.restoreViewPortPosition();
+                    }
+                });
+            } else if (source == this.getGlgLayoutJButton())
 //				System.out.println("GLG Layout has been removed");
-				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
-			else if (source == getShrinkCanvasButton())
-				getReactionCartoonTool().layout(ShrinkCanvasLayouter.LAYOUT_NAME);
-			else if (source == getExpandCanvasButton())
-				getReactionCartoonTool().layout(ExpandCanvasLayouter.LAYOUT_NAME);
-			else if (source == getFloatRequestButton()) 
-				setFloatingRequested(!bFloatingRequested);
-		} catch (Throwable throwable) {
-			handleException(throwable);
-		}
-	}
+                this.getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME);
+            else if (source == this.getShrinkCanvasButton())
+                this.getReactionCartoonTool().layout(ShrinkCanvasLayouter.LAYOUT_NAME);
+            else if (source == this.getExpandCanvasButton())
+                this.getReactionCartoonTool().layout(ExpandCanvasLayouter.LAYOUT_NAME);
+            else if (source == this.getFloatRequestButton())
+                this.setFloatingRequested(!this.bFloatingRequested);
+        } catch (Throwable throwable) {
+            this.handleException(throwable);
+        }
+    }
 
-	@Deprecated
-	public void cleanupOnClose() {
-		reactionCartoonFull.cleanupAll();
-		reactionCartoonMolecule.cleanupAll();
-		reactionCartoonRule.cleanupAll();
-	}
-	
-	private JButton getAnnealLayoutButton() {
-		if (annealLayoutButton == null) {
-			try {
-				annealLayoutButton = createToolBarButton();
-				annealLayoutButton.setName("AnnealLayoutButton");
-				annealLayoutButton.setToolTipText("Annealing Layout");
-				annealLayoutButton.setIcon(annealedLayoutIcon);
-				annealLayoutButton.setActionCommand("AnnealLayout");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return annealLayoutButton;
-	}
+    @Deprecated
+    public void cleanupOnClose() {
+        this.reactionCartoonFull.cleanupAll();
+        this.reactionCartoonMolecule.cleanupAll();
+        this.reactionCartoonRule.cleanupAll();
+    }
 
-	private JButton getCircleLayoutButton() {
-		if (circleLayoutButton == null) {
-			try {
-				circleLayoutButton = createToolBarButton();
-				circleLayoutButton.setName("CircleLayoutButton");
-				circleLayoutButton.setToolTipText("Circular Layout");
-				circleLayoutButton.setIcon(circleLayoutIcon);
-				circleLayoutButton.setActionCommand("CircleLayout");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return circleLayoutButton;
-	}
+    private JButton getAnnealLayoutButton() {
+        if (this.annealLayoutButton == null) {
+            try {
+                this.annealLayoutButton = this.createToolBarButton();
+                this.annealLayoutButton.setName("AnnealLayoutButton");
+                this.annealLayoutButton.setToolTipText("Annealing Layout");
+                this.annealLayoutButton.setIcon(annealedLayoutIcon);
+                this.annealLayoutButton.setActionCommand("AnnealLayout");
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.annealLayoutButton;
+    }
 
-	public DocumentManager getDocumentManager() {
-		return getReactionCartoonTool().getDocumentManager();
-	}
+    private JButton getCircleLayoutButton() {
+        if (this.circleLayoutButton == null) {
+            try {
+                this.circleLayoutButton = this.createToolBarButton();
+                this.circleLayoutButton.setName("CircleLayoutButton");
+                this.circleLayoutButton.setToolTipText("Circular Layout");
+                this.circleLayoutButton.setIcon(circleLayoutIcon);
+                this.circleLayoutButton.setActionCommand("CircleLayout");
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.circleLayoutButton;
+    }
+
+    public DocumentManager getDocumentManager() {
+        return this.getReactionCartoonTool().getDocumentManager();
+    }
 
 //	private JToolBarToggleButton getFluxButton() {
 //		if (fluxButton == null) {
@@ -243,151 +241,151 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 //		return fluxButton;
 //	}
 
-	private JButton getGlgLayoutJButton() {
-		if (glgLayoutJButton == null) {
-			try {
-				glgLayoutJButton = createToolBarButton();
-				glgLayoutJButton.setName("GlgLayoutJButton");
-				glgLayoutJButton.setToolTipText("Layout GLG");
-				glgLayoutJButton.setIcon(glgLayoutIcon);
-				glgLayoutJButton.setEnabled(true);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return glgLayoutJButton;
-	}
+    private JButton getGlgLayoutJButton() {
+        if (this.glgLayoutJButton == null) {
+            try {
+                this.glgLayoutJButton = this.createToolBarButton();
+                this.glgLayoutJButton.setName("GlgLayoutJButton");
+                this.glgLayoutJButton.setToolTipText("Layout GLG");
+                this.glgLayoutJButton.setIcon(glgLayoutIcon);
+                this.glgLayoutJButton.setEnabled(true);
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.glgLayoutJButton;
+    }
 
-	private JButton getShrinkCanvasButton() {
-		if (shrinkCanvasButton == null) {
-			try {
-				shrinkCanvasButton = createToolBarButton();
-				shrinkCanvasButton.setName("ShrinkCanvasButton");
-				ResizeCanvasShapeIcon.setCanvasNormalMod(shrinkCanvasButton, ResizeCanvasShapeIcon.Sign.shrink);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return shrinkCanvasButton;
-	}
+    private JButton getShrinkCanvasButton() {
+        if (this.shrinkCanvasButton == null) {
+            try {
+                this.shrinkCanvasButton = this.createToolBarButton();
+                this.shrinkCanvasButton.setName("ShrinkCanvasButton");
+                ResizeCanvasShapeIcon.setCanvasNormalMod(this.shrinkCanvasButton, ResizeCanvasShapeIcon.Sign.shrink);
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.shrinkCanvasButton;
+    }
 
-	private JButton getExpandCanvasButton() {
-		if (expandCanvasButton == null) {
-			try {
-				expandCanvasButton = createToolBarButton();
-				expandCanvasButton.setName("ExpandCanvasButton");
-				ResizeCanvasShapeIcon.setCanvasNormalMod(expandCanvasButton, ResizeCanvasShapeIcon.Sign.expand);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return expandCanvasButton;
-	}
+    private JButton getExpandCanvasButton() {
+        if (this.expandCanvasButton == null) {
+            try {
+                this.expandCanvasButton = this.createToolBarButton();
+                this.expandCanvasButton.setName("ExpandCanvasButton");
+                ResizeCanvasShapeIcon.setCanvasNormalMod(this.expandCanvasButton, ResizeCanvasShapeIcon.Sign.expand);
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.expandCanvasButton;
+    }
 
-	private GraphPane getGraphPane() {
-		if (graphPane == null) {
-			try {
-				graphPane = new GraphPane();
-				graphPane.setName("GraphPane");
-				graphPane.setBounds(0, 0, 372, 364);
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return graphPane;
-	}
+    private GraphPane getGraphPane() {
+        if (this.graphPane == null) {
+            try {
+                this.graphPane = new GraphPane();
+                this.graphPane.setName("GraphPane");
+                this.graphPane.setBounds(0, 0, 372, 364);
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.graphPane;
+    }
 
-	private JScrollPane getJScrollPane() {
-		if (scrollPane == null) {
-			try {
-				scrollPane = new JScrollPane();
-				scrollPane.setName("JScrollPane1");
-				scrollPane.setPreferredSize(new Dimension(22, 396));
-				scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-				scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+    private JScrollPane getJScrollPane() {
+        if (this.scrollPane == null) {
+            try {
+                this.scrollPane = new JScrollPane();
+                this.scrollPane.setName("JScrollPane1");
+                this.scrollPane.setPreferredSize(new Dimension(22, 396));
+                this.scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+                this.scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 //				scrollPane.setMinimumSize(new Dimension(22, 396));
-				getJScrollPane().setViewportView(getGraphPane());
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return scrollPane;
-	}
+                this.getJScrollPane().setViewportView(this.getGraphPane());
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.scrollPane;
+    }
 
-	private JToolBar getJToolBar() {
-		if (toolBar == null) {
-			try {
-				toolBar = new JToolBar();
-				toolBar.setName("toolBar");
-				toolBar.setFloatable(false);
-				toolBar.setOrientation(SwingConstants.HORIZONTAL);
-				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
-				toolBar.add(getSelectButton(), getSelectButton().getName());
-				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
-				toolBar.add(getStructureButton(), getStructureButton().getName());
-				toolBar.add(getSpeciesButton(), getSpeciesButton().getName());
-				toolBar.add(getLineDirectedButton(), getLineDirectedButton().getName());
+    private JToolBar getJToolBar() {
+        if (this.toolBar == null) {
+            try {
+                this.toolBar = new JToolBar();
+                this.toolBar.setName("toolBar");
+                this.toolBar.setFloatable(false);
+                this.toolBar.setOrientation(SwingConstants.HORIZONTAL);
+                this.toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
+                this.toolBar.add(this.getSelectButton(), this.getSelectButton().getName());
+                this.toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
+                this.toolBar.add(this.getStructureButton(), this.getStructureButton().getName());
+                this.toolBar.add(this.getSpeciesButton(), this.getSpeciesButton().getName());
+                this.toolBar.add(this.getLineDirectedButton(), this.getLineDirectedButton().getName());
 //				toolBar.add(getLineCatalystButton(), getLineCatalystButton().getName());
-				toolBar.add(getFluxReactionButton(), getFluxReactionButton().getName());
-				//toolBar.add(getStepButton(), getStepButton().getName());
-				//toolBar.add(getFluxButton(), getFluxButton().getName());
-				//toolBar.add(getLineButton(), getLineButton().getName());
-				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
-				toolBar.add(getZoomInButton(), getZoomInButton().getName());
-				toolBar.add(getZoomOutButton(), getZoomOutButton().getName());
-				toolBar.add(getExpandCanvasButton(), getExpandCanvasButton().getName());
-				toolBar.add(getShrinkCanvasButton(), getShrinkCanvasButton().getName());
-				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
-				toolBar.add(getRandomLayoutButton(), getRandomLayoutButton().getName());
+                this.toolBar.add(this.getFluxReactionButton(), this.getFluxReactionButton().getName());
+                //toolBar.add(getStepButton(), getStepButton().getName());
+                //toolBar.add(getFluxButton(), getFluxButton().getName());
+                //toolBar.add(getLineButton(), getLineButton().getName());
+                this.toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
+                this.toolBar.add(this.getZoomInButton(), this.getZoomInButton().getName());
+                this.toolBar.add(this.getZoomOutButton(), this.getZoomOutButton().getName());
+                this.toolBar.add(this.getExpandCanvasButton(), this.getExpandCanvasButton().getName());
+                this.toolBar.add(this.getShrinkCanvasButton(), this.getShrinkCanvasButton().getName());
+                this.toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
+                this.toolBar.add(this.getRandomLayoutButton(), this.getRandomLayoutButton().getName());
 //				toolBar.add(getEdgeTugLayoutButton(), getEdgeTugLayoutButton().getName());
-				toolBar.add(getCircleLayoutButton(), getCircleLayoutButton().getName());
-				toolBar.add(getAnnealLayoutButton(), getAnnealLayoutButton().getName());
-				toolBar.add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
-				toolBar.add(getRelaxerLayoutButton(), getRelaxerLayoutButton().getName());
-				toolBar.add(getGlgLayoutJButton(), getGlgLayoutJButton().getName());
-				toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
-				toolBar.add(getUngroupButton(), getUngroupButton().getName());
-				toolBar.add(getGroupMoleculeButton(), getGroupMoleculeButton().getName());
+                this.toolBar.add(this.getCircleLayoutButton(), this.getCircleLayoutButton().getName());
+                this.toolBar.add(this.getAnnealLayoutButton(), this.getAnnealLayoutButton().getName());
+                this.toolBar.add(this.getLevellerLayoutButton(), this.getLevellerLayoutButton().getName());
+                this.toolBar.add(this.getRelaxerLayoutButton(), this.getRelaxerLayoutButton().getName());
+                this.toolBar.add(this.getGlgLayoutJButton(), this.getGlgLayoutJButton().getName());
+                this.toolBar.addSeparator(TOOL_BAR_SEPARATOR_SIZE);
+                this.toolBar.add(this.getUngroupButton(), this.getUngroupButton().getName());
+                this.toolBar.add(this.getGroupMoleculeButton(), this.getGroupMoleculeButton().getName());
 //				toolBar.add(getGroupRuleButton(), getGroupRuleButton().getName());
-				
-				toolBar.addSeparator(WIDE_SEPARATOR_SIZE);
-				toolBar.add(getHighlightCatalystsButton(), getHighlightCatalystsButton().getName());
-				toolBar.addSeparator(NARROW_SEPARATOR_SIZE);
-				toolBar.add(getEqualSizeButton(), getEqualSizeButton().getName());
-				toolBar.add(getSizeByWeightButton(), getSizeByWeightButton().getName());
-				toolBar.add(getSizeByLengthButton(), getSizeByLengthButton().getName());
 
-				toolBar.add(Box.createHorizontalGlue());
-				toolBar.add(getFloatRequestButton());
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return toolBar;
-	}
+                this.toolBar.addSeparator(WIDE_SEPARATOR_SIZE);
+                this.toolBar.add(this.getHighlightCatalystsButton(), this.getHighlightCatalystsButton().getName());
+                this.toolBar.addSeparator(NARROW_SEPARATOR_SIZE);
+                this.toolBar.add(this.getEqualSizeButton(), this.getEqualSizeButton().getName());
+                this.toolBar.add(this.getSizeByWeightButton(), this.getSizeByWeightButton().getName());
+                this.toolBar.add(this.getSizeByLengthButton(), this.getSizeByLengthButton().getName());
 
-	private JButton createToolBarButton() {
-		JButton button = new JButton();
-		setToolBarButtonSizes(button);
-		button.setMargin(new Insets(2, 2, 2, 2));
+                this.toolBar.add(Box.createHorizontalGlue());
+                this.toolBar.add(this.getFloatRequestButton());
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.toolBar;
+    }
 
-		return button;
-	}
-	
-	private JButton getLevellerLayoutButton() {
-		if (levellerLayoutButton == null) {
-			try {
-				levellerLayoutButton = createToolBarButton();
-				levellerLayoutButton.setName("LevellerLayoutButton");
-				levellerLayoutButton.setToolTipText("Leveller Layout");
-				levellerLayoutButton.setIcon(levelledLayoutIcon);
-				levellerLayoutButton.setActionCommand("LevellerLayout");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return levellerLayoutButton;
-	}
+    private JButton createToolBarButton() {
+        JButton button = new JButton();
+        setToolBarButtonSizes(button);
+        button.setMargin(new Insets(2, 2, 2, 2));
+
+        return button;
+    }
+
+    private JButton getLevellerLayoutButton() {
+        if (this.levellerLayoutButton == null) {
+            try {
+                this.levellerLayoutButton = this.createToolBarButton();
+                this.levellerLayoutButton.setName("LevellerLayoutButton");
+                this.levellerLayoutButton.setToolTipText("Leveller Layout");
+                this.levellerLayoutButton.setIcon(levelledLayoutIcon);
+                this.levellerLayoutButton.setActionCommand("LevellerLayout");
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.levellerLayoutButton;
+    }
 
 //	private JToolBarToggleButton getLineButton() {
 //		if (lineButton == null) {
@@ -408,21 +406,22 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 //		return lineButton;
 //	}
 
-	private JToolBarToggleButton getLineDirectedButton() {
-		if (lineDirectedButton == null) {
-			try {
+    private JToolBarToggleButton getLineDirectedButton() {
+        if (this.lineDirectedButton == null) {
+            try {
 //				JToolBarToggleButton button = new JToolBarToggleButton();
 //				ReactionToolShapeIcon.setPlainReactionToolMod(button);
 //				button.setActionCommand(Mode.LINEDIRECTED.getActionCommand());
 //				lineDirectedButton = button;
-				lineDirectedButton = createModeButton("LineButton", "RX Connection Tool", Mode.LINEDIRECTED, loadIcon("/images/lineDirected.gif"));
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return lineDirectedButton;
-	}
-//	private JToolBarToggleButton getLineCatalystButton() {
+                this.lineDirectedButton = this.createModeButton("LineButton", "RX Connection Tool", Mode.LINEDIRECTED, loadIcon("/images/lineDirected.gif"));
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.lineDirectedButton;
+    }
+
+    //	private JToolBarToggleButton getLineCatalystButton() {
 //		if (lineCatalystButton == null) {
 //			try {
 ////				JToolBarToggleButton button = new JToolBarToggleButton();
@@ -436,147 +435,164 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 //		}
 //		return lineCatalystButton;
 //	}
-	private JToolBarToggleButton getFluxReactionButton() {
-		if (fluxReactionButton == null) {
-			try {
+    private JToolBarToggleButton getFluxReactionButton() {
+        if (this.fluxReactionButton == null) {
+            try {
 //				JToolBarToggleButton button = new JToolBarToggleButton();
 //				ReactionToolShapeIcon.setFluxTransportToolMod(button);
 //				button.setActionCommand(Mode.FLUX.getActionCommand());
 //				fluxReactionButton = button;
-				fluxReactionButton = createModeButton("FluxReactionButton", "FluxReaction Tool", Mode.FLUX, loadIcon("/images/fluxItem.gif"));
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return fluxReactionButton;
-	}
+                this.fluxReactionButton = this.createModeButton("FluxReactionButton", "FluxReaction Tool", Mode.FLUX, loadIcon("/images/fluxItem.gif"));
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.fluxReactionButton;
+    }
 
-	public Model getModel() {
-		return currentReactionCartoon.getModel();
-	}
+    public Model getModel() {
+        return this.currentReactionCartoon.getModel();
+    }
 
-	private JButton getRandomLayoutButton() {
-		if (randomLayoutButton == null) {
-			try {
-				randomLayoutButton = createToolBarButton();
-				randomLayoutButton.setName("RandomLayoutButton");
-				randomLayoutButton.setToolTipText("Random Layout");
-				randomLayoutButton.setIcon(randomLayoutIcon);
-				randomLayoutButton.setActionCommand("RandomLayout");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return randomLayoutButton;
-	}
+    private JButton getRandomLayoutButton() {
+        if (this.randomLayoutButton == null) {
+            try {
+                this.randomLayoutButton = this.createToolBarButton();
+                this.randomLayoutButton.setName("RandomLayoutButton");
+                this.randomLayoutButton.setToolTipText("Random Layout");
+                this.randomLayoutButton.setIcon(randomLayoutIcon);
+                this.randomLayoutButton.setActionCommand("RandomLayout");
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.randomLayoutButton;
+    }
 
-	public ReactionCartoon getReactionCartoonFull() { return reactionCartoonFull; }
-	public ReactionCartoon getReactionCartoonMolecule() { return reactionCartoonMolecule; }
-	public ReactionCartoon getReactionCartoonRule() { return reactionCartoonRule; }
-	public ReactionCartoon getReactionCartoon() { return currentReactionCartoon; }
-	private ReactionCartoonTool getReactionCartoonTool() { return reactionCartoonTool; }
+    public ReactionCartoon getReactionCartoonFull() {
+        return this.reactionCartoonFull;
+    }
 
-	private JButton getRelaxerLayoutButton() {
-		if (relaxerLayoutButton == null) {
-			try {
-				relaxerLayoutButton = createToolBarButton();
-				relaxerLayoutButton.setName("RelaxerLayoutButton");
-				relaxerLayoutButton.setToolTipText("Relaxer Layou");
-				relaxerLayoutButton.setIcon(relaxedLayoutIcon);
-				relaxerLayoutButton.setActionCommand("RelaxerLayout");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return relaxerLayoutButton;
-	}
+    public ReactionCartoon getReactionCartoonMolecule() {
+        return this.reactionCartoonMolecule;
+    }
 
-	private JToolBarToggleButton getSelectButton() {
-		if (selectButton == null) {
-			try {
-				selectButton = createModeButton("SelectButton", "Select Tool", 
-						Mode.SELECT, loadIcon("/images/select.gif"));
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return selectButton;
-	}
-	
-	protected List<JToolBarToggleButton> getModeButtons() {
-		if(modeButtons == null) {
-			modeButtons = new ArrayList<JToolBarToggleButton>();
-			modeButtons.add(getSelectButton());
-			modeButtons.add(getSpeciesButton());
-			modeButtons.add(getFluxReactionButton());
-			//modeButtons.add(getStepButton());
-			//modeButtons.add(getFluxButton());
-			//modeButtons.add(getLineButton());
-			modeButtons.add(getLineDirectedButton());
+    public ReactionCartoon getReactionCartoonRule() {
+        return this.reactionCartoonRule;
+    }
+
+    public ReactionCartoon getReactionCartoon() {
+        return this.currentReactionCartoon;
+    }
+
+    private ReactionCartoonTool getReactionCartoonTool() {
+        return this.reactionCartoonTool;
+    }
+
+    private JButton getRelaxerLayoutButton() {
+        if (this.relaxerLayoutButton == null) {
+            try {
+                this.relaxerLayoutButton = this.createToolBarButton();
+                this.relaxerLayoutButton.setName("RelaxerLayoutButton");
+                this.relaxerLayoutButton.setToolTipText("Relaxer Layou");
+                this.relaxerLayoutButton.setIcon(relaxedLayoutIcon);
+                this.relaxerLayoutButton.setActionCommand("RelaxerLayout");
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.relaxerLayoutButton;
+    }
+
+    private JToolBarToggleButton getSelectButton() {
+        if (this.selectButton == null) {
+            try {
+                this.selectButton = this.createModeButton("SelectButton", "Select Tool",
+                        Mode.SELECT, loadIcon("/images/select.gif"));
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.selectButton;
+    }
+
+    protected List<JToolBarToggleButton> getModeButtons() {
+        if (this.modeButtons == null) {
+            this.modeButtons = new ArrayList<JToolBarToggleButton>();
+            this.modeButtons.add(this.getSelectButton());
+            this.modeButtons.add(this.getSpeciesButton());
+            this.modeButtons.add(this.getFluxReactionButton());
+            //modeButtons.add(getStepButton());
+            //modeButtons.add(getFluxButton());
+            //modeButtons.add(getLineButton());
+            this.modeButtons.add(this.getLineDirectedButton());
 //			modeButtons.add(getLineCatalystButton());
-			modeButtons.add(getStructureButton());
-		}
-		return modeButtons;
-	}
-	protected List<JToolBarToggleButton> getViewButtons() {
-		if(viewButtons == null) {
-			viewButtons = new ArrayList<JToolBarToggleButton>();
-			viewButtons.add(getUngroupButton());
-			viewButtons.add(getGroupMoleculeButton());
+            this.modeButtons.add(this.getStructureButton());
+        }
+        return this.modeButtons;
+    }
+
+    protected List<JToolBarToggleButton> getViewButtons() {
+        if (this.viewButtons == null) {
+            this.viewButtons = new ArrayList<JToolBarToggleButton>();
+            this.viewButtons.add(this.getUngroupButton());
+            this.viewButtons.add(this.getGroupMoleculeButton());
 //			viewButtons.add(getGroupRuleButton());
-		}
-		return viewButtons;
-	}
-	protected List<JToolBarToggleButton> getSizeOptionsButtons() {
-		if(sizeOptionsButtons == null) {
-			sizeOptionsButtons = new ArrayList<JToolBarToggleButton>();
-			sizeOptionsButtons.add(getEqualSizeButton());
-			sizeOptionsButtons.add(getSizeByWeightButton());
-			sizeOptionsButtons.add(getSizeByLengthButton());
-		}
-		return sizeOptionsButtons;
-	}
-	
-	private JToolBarToggleButton createModeButton(String name, String toolTip, Mode mode, Icon icon) {
-		JToolBarToggleButton button = new JToolBarToggleButton();
-		button.setName(name);
-		button.setToolTipText(toolTip);
-		button.setActionCommand(mode.getActionCommand());
-		button.setIcon(icon);
-		setToolBarButtonSizes(button);
-		return button;
-	}
+        }
+        return this.viewButtons;
+    }
 
-	private JToolBarToggleButton getSpeciesButton() {
-		if (speciesButton == null) {
-			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				SpeciesToolShapeIcon.setSpeciesToolMod(button);
-				button.setActionCommand(Mode.SPECIES.getActionCommand());
-				speciesButton = button;
+    protected List<JToolBarToggleButton> getSizeOptionsButtons() {
+        if (this.sizeOptionsButtons == null) {
+            this.sizeOptionsButtons = new ArrayList<JToolBarToggleButton>();
+            this.sizeOptionsButtons.add(this.getEqualSizeButton());
+            this.sizeOptionsButtons.add(this.getSizeByWeightButton());
+            this.sizeOptionsButtons.add(this.getSizeByLengthButton());
+        }
+        return this.sizeOptionsButtons;
+    }
+
+    private JToolBarToggleButton createModeButton(String name, String toolTip, Mode mode, Icon icon) {
+        JToolBarToggleButton button = new JToolBarToggleButton();
+        button.setName(name);
+        button.setToolTipText(toolTip);
+        button.setActionCommand(mode.getActionCommand());
+        button.setIcon(icon);
+        setToolBarButtonSizes(button);
+        return button;
+    }
+
+    private JToolBarToggleButton getSpeciesButton() {
+        if (this.speciesButton == null) {
+            try {
+                JToolBarToggleButton button = new JToolBarToggleButton();
+                SpeciesToolShapeIcon.setSpeciesToolMod(button);
+                button.setActionCommand(Mode.SPECIES.getActionCommand());
+                this.speciesButton = button;
 //				speciesButton = createModeButton("SpeciesButton", "Species Tool", Mode.SPECIES, loadIcon("/images/species.gif"));
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return speciesButton;
-	}
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.speciesButton;
+    }
 
-	private JToolBarToggleButton structureButton;
-	private JToolBarToggleButton getStructureButton() {
-		if (structureButton == null) {
-			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				StructureToolShapeIcon.setStructureToolMod(button);
-				button.setActionCommand(Mode.STRUCTURE.getActionCommand());
-				structureButton = button;
+    private JToolBarToggleButton structureButton;
+
+    private JToolBarToggleButton getStructureButton() {
+        if (this.structureButton == null) {
+            try {
+                JToolBarToggleButton button = new JToolBarToggleButton();
+                StructureToolShapeIcon.setStructureToolMod(button);
+                button.setActionCommand(Mode.STRUCTURE.getActionCommand());
+                this.structureButton = button;
 //				structureButton = createModeButton("StructureButton", "Structure Tool", Mode.STRUCTURE, loadIcon("/images/feature.gif"));
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return structureButton;
-	}
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.structureButton;
+    }
 
 //	private JToolBarToggleButton getStepButton() {
 //		if (stepButton == null) {
@@ -597,211 +613,221 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 //		return stepButton;
 //	}
 
-	private JButton getZoomInButton() {
-		if (zoomInButton == null) {
-			try {
-				zoomInButton = createToolBarButton();
-				zoomInButton.setName("ZoomInButton");
-				ZoomShapeIcon.setZoomToolbarMod(zoomInButton, ZoomShapeIcon.Sign.plus);
-				zoomInButton.setActionCommand("ZoomIn");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return zoomInButton;
-	}
-	private JButton getZoomOutButton() {
-		if (zoomOutButton == null) {
-			try {
-				zoomOutButton = createToolBarButton();
-				zoomOutButton.setName("ZoomOutButton");
-				ZoomShapeIcon.setZoomToolbarMod(zoomOutButton, ZoomShapeIcon.Sign.minus);
-				zoomOutButton.setActionCommand("ZoomOut");
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return zoomOutButton;
-	}
-	
-	private JButton getFloatRequestButton() {
-		if (floatRequestButton == null) {
-			try {
-				floatRequestButton = createToolBarButton();
-				floatRequestButton.setText("\u21b1");
-				floatRequestButton.setName("FloatingButton");
-				floatRequestButton.setFont(floatRequestButton.getFont().deriveFont(Font.BOLD));
-				floatRequestButton.setToolTipText("\u21b1 Float");
-			} catch (Throwable ivjExc) {
-				handleException(ivjExc);
-			}
-		}
-		return floatRequestButton;
-	}
+    private JButton getZoomInButton() {
+        if (this.zoomInButton == null) {
+            try {
+                this.zoomInButton = this.createToolBarButton();
+                this.zoomInButton.setName("ZoomInButton");
+                ZoomShapeIcon.setZoomToolbarMod(this.zoomInButton, ZoomShapeIcon.Sign.plus);
+                this.zoomInButton.setActionCommand("ZoomIn");
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.zoomInButton;
+    }
+
+    private JButton getZoomOutButton() {
+        if (this.zoomOutButton == null) {
+            try {
+                this.zoomOutButton = this.createToolBarButton();
+                this.zoomOutButton.setName("ZoomOutButton");
+                ZoomShapeIcon.setZoomToolbarMod(this.zoomOutButton, ZoomShapeIcon.Sign.minus);
+                this.zoomOutButton.setActionCommand("ZoomOut");
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.zoomOutButton;
+    }
+
+    private JButton getFloatRequestButton() {
+        if (this.floatRequestButton == null) {
+            try {
+                this.floatRequestButton = this.createToolBarButton();
+                this.floatRequestButton.setText("\u21b1");
+                this.floatRequestButton.setName("FloatingButton");
+                this.floatRequestButton.setFont(this.floatRequestButton.getFont().deriveFont(Font.BOLD));
+                this.floatRequestButton.setToolTipText("\u21b1 Float");
+            } catch (Throwable ivjExc) {
+                this.handleException(ivjExc);
+            }
+        }
+        return this.floatRequestButton;
+    }
 // ------------------------------------------------------------------------------------
 
-	private JToolBarToggleButton highlightCatalystsButton = null;
-	private JToolBarToggleButton getHighlightCatalystsButton() {
-		if (highlightCatalystsButton == null) {
-			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				HighlightCatalystShapeIcon.setStructureToolMod(button);
-				button.setActionCommand(Mode.HIGHLIGHTCATALYST.getActionCommand());
-				highlightCatalystsButton = button;
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return highlightCatalystsButton;
-	}
-	private JToolBarToggleButton equalSizeButton = null;
-	private JToolBarToggleButton getEqualSizeButton() {
-		if (equalSizeButton == null) {
-			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				SpeciesSizeShapeIcon.setSpeciesSizeShapeMod(button, SpeciesSizeShapeIcon.Kind.equal);
-				button.setActionCommand(Mode.EQUALSIZE.getActionCommand());
-				equalSizeButton = button;
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return equalSizeButton;
-	}
-	private JToolBarToggleButton sizeByWeightButton = null;
-	private JToolBarToggleButton getSizeByWeightButton() {
-		if (sizeByWeightButton == null) {
-			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				SpeciesSizeShapeIcon.setSpeciesSizeShapeMod(button, SpeciesSizeShapeIcon.Kind.weight);
-				button.setActionCommand(Mode.SIZEBYWEIGHT.getActionCommand());
-				sizeByWeightButton = button;
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return sizeByWeightButton;
-	}
-	private JToolBarToggleButton sizeByLengthButton = null;
-	private JToolBarToggleButton getSizeByLengthButton() {
-		if (sizeByLengthButton == null) {
-			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				SpeciesSizeShapeIcon.setSpeciesSizeShapeMod(button, SpeciesSizeShapeIcon.Kind.length);
-				button.setActionCommand(Mode.SIZEBYLENGTH.getActionCommand());
-				sizeByLengthButton = button;
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return sizeByLengthButton;
-	}
+    private JToolBarToggleButton highlightCatalystsButton = null;
+
+    private JToolBarToggleButton getHighlightCatalystsButton() {
+        if (this.highlightCatalystsButton == null) {
+            try {
+                JToolBarToggleButton button = new JToolBarToggleButton();
+                HighlightCatalystShapeIcon.setStructureToolMod(button);
+                button.setActionCommand(Mode.HIGHLIGHTCATALYST.getActionCommand());
+                this.highlightCatalystsButton = button;
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.highlightCatalystsButton;
+    }
+
+    private JToolBarToggleButton equalSizeButton = null;
+
+    private JToolBarToggleButton getEqualSizeButton() {
+        if (this.equalSizeButton == null) {
+            try {
+                JToolBarToggleButton button = new JToolBarToggleButton();
+                SpeciesSizeShapeIcon.setSpeciesSizeShapeMod(button, SpeciesSizeShapeIcon.Kind.equal);
+                button.setActionCommand(Mode.EQUALSIZE.getActionCommand());
+                this.equalSizeButton = button;
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.equalSizeButton;
+    }
+
+    private JToolBarToggleButton sizeByWeightButton = null;
+
+    private JToolBarToggleButton getSizeByWeightButton() {
+        if (this.sizeByWeightButton == null) {
+            try {
+                JToolBarToggleButton button = new JToolBarToggleButton();
+                SpeciesSizeShapeIcon.setSpeciesSizeShapeMod(button, SpeciesSizeShapeIcon.Kind.weight);
+                button.setActionCommand(Mode.SIZEBYWEIGHT.getActionCommand());
+                this.sizeByWeightButton = button;
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.sizeByWeightButton;
+    }
+
+    private JToolBarToggleButton sizeByLengthButton = null;
+
+    private JToolBarToggleButton getSizeByLengthButton() {
+        if (this.sizeByLengthButton == null) {
+            try {
+                JToolBarToggleButton button = new JToolBarToggleButton();
+                SpeciesSizeShapeIcon.setSpeciesSizeShapeMod(button, SpeciesSizeShapeIcon.Kind.length);
+                button.setActionCommand(Mode.SIZEBYLENGTH.getActionCommand());
+                this.sizeByLengthButton = button;
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.sizeByLengthButton;
+    }
 
 
-	// TODO centralize exception handling
-	private void handleException(Throwable exception) {
-		System.out.println("--------- UNCAUGHT EXCEPTION --------- in CartoonPanel");
-		exception.printStackTrace(System.out);
-	}
+    // TODO centralize exception handling
+    private void handleException(Throwable exception) {
+        System.out.println("--------- UNCAUGHT EXCEPTION --------- in CartoonPanel");
+        exception.printStackTrace(System.out);
+    }
 
-	private void initConnections() throws Exception {
-		for(JToolBarToggleButton modeButton : getModeButtons()) {
-			modeButton.addActionListener(this);
-		}
-		for(JToolBarToggleButton viewButton : getViewButtons()) {
-			viewButton.addActionListener(this);
-		}
-		ButtonModel selection = modeButtonGroup.getSelection();
-		if(selection != null) {
-			getReactionCartoonTool().setModeString(selection.getActionCommand());
-		} else {
-			getReactionCartoonTool().setMode(Mode.SELECT);
-		}
-		getRandomLayoutButton().addActionListener(this);
-		getAnnealLayoutButton().addActionListener(this);
-		getCircleLayoutButton().addActionListener(this);
-		getRelaxerLayoutButton().addActionListener(this);
-		getLevellerLayoutButton().addActionListener(this);
-		getZoomInButton().addActionListener(this);
-		getZoomOutButton().addActionListener(this);
-		getGlgLayoutJButton().addActionListener(this);
-		getShrinkCanvasButton().addActionListener(this);
-		getExpandCanvasButton().addActionListener(this);
-		getFloatRequestButton().addActionListener(this);
-		
-		getHighlightCatalystsButton().addActionListener(this);
-		for(JToolBarToggleButton sizeButton : getSizeOptionsButtons()) {
-			sizeButton.addActionListener(this);
-		}
+    private void initConnections() throws Exception {
+        for (JToolBarToggleButton modeButton : this.getModeButtons()) {
+            modeButton.addActionListener(this);
+        }
+        for (JToolBarToggleButton viewButton : this.getViewButtons()) {
+            viewButton.addActionListener(this);
+        }
+        ButtonModel selection = this.modeButtonGroup.getSelection();
+        if (selection != null) {
+            this.getReactionCartoonTool().setModeString(selection.getActionCommand());
+        } else {
+            this.getReactionCartoonTool().setMode(Mode.SELECT);
+        }
+        this.getRandomLayoutButton().addActionListener(this);
+        this.getAnnealLayoutButton().addActionListener(this);
+        this.getCircleLayoutButton().addActionListener(this);
+        this.getRelaxerLayoutButton().addActionListener(this);
+        this.getLevellerLayoutButton().addActionListener(this);
+        this.getZoomInButton().addActionListener(this);
+        this.getZoomOutButton().addActionListener(this);
+        this.getGlgLayoutJButton().addActionListener(this);
+        this.getShrinkCanvasButton().addActionListener(this);
+        this.getExpandCanvasButton().addActionListener(this);
+        this.getFloatRequestButton().addActionListener(this);
 
-	}
+        this.getHighlightCatalystsButton().addActionListener(this);
+        for (JToolBarToggleButton sizeButton : this.getSizeOptionsButtons()) {
+            sizeButton.addActionListener(this);
+        }
 
-	private void initialize() {
-		try {
-			setName("CartoonPanel");
-			setPreferredSize(new Dimension(54, 425));
-			setLayout(new BorderLayout());
-			setSize(472, 422);
+    }
+
+    private void initialize() {
+        try {
+            this.setName("CartoonPanel");
+            this.setPreferredSize(new Dimension(54, 425));
+            this.setLayout(new BorderLayout());
+            this.setSize(472, 422);
 //			setMinimumSize(new Dimension(54, 425));
-			add(getJScrollPane(), BorderLayout.CENTER);
-			viewPortStabilizer = new ViewPortStabilizer(getJScrollPane());			
-			
-			add(getJToolBar(), BorderLayout.NORTH);
-			initConnections();
-			//getModeButtonGroup().add(getStepButton());
-			//getModeButtonGroup().add(getFluxButton());
-			//getModeButtonGroup().add(getLineButton());
-			modeButtonGroup.add(getLineDirectedButton());
+            this.add(this.getJScrollPane(), BorderLayout.CENTER);
+            this.viewPortStabilizer = new ViewPortStabilizer(this.getJScrollPane());
+
+            this.add(this.getJToolBar(), BorderLayout.NORTH);
+            this.initConnections();
+            //getModeButtonGroup().add(getStepButton());
+            //getModeButtonGroup().add(getFluxButton());
+            //getModeButtonGroup().add(getLineButton());
+            this.modeButtonGroup.add(this.getLineDirectedButton());
 //			modeButtonGroup.add(getLineCatalystButton());
-			modeButtonGroup.add(getSelectButton());
-			modeButtonGroup.add(getSpeciesButton());
-			modeButtonGroup.add(getFluxReactionButton());
-			modeButtonGroup.add(getStructureButton());
-			viewButtonGroup.add(getUngroupButton());
-			viewButtonGroup.add(getGroupMoleculeButton());
-			sizeOptionsButtonGroup.add(getEqualSizeButton());
-			sizeOptionsButtonGroup.add(getSizeByWeightButton());
-			sizeOptionsButtonGroup.add(getSizeByLengthButton());
-			
+            this.modeButtonGroup.add(this.getSelectButton());
+            this.modeButtonGroup.add(this.getSpeciesButton());
+            this.modeButtonGroup.add(this.getFluxReactionButton());
+            this.modeButtonGroup.add(this.getStructureButton());
+            this.viewButtonGroup.add(this.getUngroupButton());
+            this.viewButtonGroup.add(this.getGroupMoleculeButton());
+            this.sizeOptionsButtonGroup.add(this.getEqualSizeButton());
+            this.sizeOptionsButtonGroup.add(this.getSizeByWeightButton());
+            this.sizeOptionsButtonGroup.add(this.getSizeByLengthButton());
+
 //			viewButtonGroup.add(getGroupRuleButton());
-			getReactionCartoonTool().setReactionCartoon(currentReactionCartoon);
-			getReactionCartoonTool().setGraphPane(getGraphPane());
-			getReactionCartoonTool().setButtonGroup(modeButtonGroup);
-			getReactionCartoonTool().setButtonGroup(viewButtonGroup);
+            this.getReactionCartoonTool().setReactionCartoon(this.currentReactionCartoon);
+            this.getReactionCartoonTool().setGraphPane(this.getGraphPane());
+            this.getReactionCartoonTool().setButtonGroup(this.modeButtonGroup);
+            this.getReactionCartoonTool().setButtonGroup(this.viewButtonGroup);
 //			getGraphPane().setGraphModel(reactionCartoonFull);
 //			getGraphPane().setGraphModel(reactionCartoonMolecule);
 //			getGraphPane().setGraphModel(reactionCartoonRule);
-			getGraphPane().setGraphModel(currentReactionCartoon);
-			refreshButtons();
-			ButtonModel m = getEqualSizeButton().getModel();
-			sizeOptionsButtonGroup.setSelected(m, true);
+            this.getGraphPane().setGraphModel(this.currentReactionCartoon);
+            this.refreshButtons();
+            ButtonModel m = this.getEqualSizeButton().getModel();
+            this.sizeOptionsButtonGroup.setSelected(m, true);
 //			setViewMode(Mode.GROUP.getActionCommand());
-		} catch (Throwable throwable) {
-			handleException(throwable);
-		}
-	}
-	
-	public static void setToolBarButtonSizes(AbstractButton button) {
-		button.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
-		button.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
-		button.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
-	}
-	
-	private JToolBarToggleButton groupMoleculeButton;
-	private JToolBarToggleButton getGroupMoleculeButton() {
-		if (groupMoleculeButton == null) {
-			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				GroupMoleculeToolShape.setMod(button);
-				button.setActionCommand(Mode.GROUPMOLECULE.getActionCommand());
-				groupMoleculeButton = button;
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return groupMoleculeButton;
-	}
-//	private JToolBarToggleButton groupRuleButton;
+        } catch (Throwable throwable) {
+            this.handleException(throwable);
+        }
+    }
+
+    public static void setToolBarButtonSizes(AbstractButton button) {
+        button.setPreferredSize(TOOL_BAR_BUTTON_SIZE);
+        button.setMinimumSize(TOOL_BAR_BUTTON_SIZE);
+        button.setMaximumSize(TOOL_BAR_BUTTON_SIZE);
+    }
+
+    private JToolBarToggleButton groupMoleculeButton;
+
+    private JToolBarToggleButton getGroupMoleculeButton() {
+        if (this.groupMoleculeButton == null) {
+            try {
+                JToolBarToggleButton button = new JToolBarToggleButton();
+                GroupMoleculeToolShape.setMod(button);
+                button.setActionCommand(Mode.GROUPMOLECULE.getActionCommand());
+                this.groupMoleculeButton = button;
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.groupMoleculeButton;
+    }
+
+    //	private JToolBarToggleButton groupRuleButton;
 //	private JToolBarToggleButton getGroupRuleButton() {
 //		if (groupRuleButton == null) {
 //			try {
@@ -815,135 +841,142 @@ public class ReactionCartoonEditorPanel extends JPanel implements ActionListener
 //		}
 //		return groupRuleButton;
 //	}
-	private JToolBarToggleButton ungroupButton;
-	private JToolBarToggleButton getUngroupButton() {
-		if (ungroupButton == null) {
-			try {
-				JToolBarToggleButton button = new JToolBarToggleButton();
-				UngroupToolShapeIcon.setMod(button);
-				button.setActionCommand(Mode.UNGROUP.getActionCommand());
-				ungroupButton = button;
-			} catch (Throwable throwable) {
-				handleException(throwable);
-			}
-		}
-		return ungroupButton;
-	}
-	private void setViewMode(String command) {
-		System.out.println("ReactionCartoonEditorPanel, setViewMode");
-		if(command.equalsIgnoreCase(Mode.GROUPMOLECULE.getActionCommand())) {	// group participants by signature
-			currentReactionCartoon = reactionCartoonMolecule;
-			getReactionCartoonTool().setReactionCartoon(currentReactionCartoon);
-			getGraphPane().setGraphModel(currentReactionCartoon);
-			currentReactionCartoon.refreshAll();
-			currentReactionCartoon.setSelectedObjects(new Object[] {});
-		} else if(command.equalsIgnoreCase(Mode.GROUPRULE.getActionCommand())) {	// group rules with similar participant signatures
-			currentReactionCartoon = reactionCartoonRule;
-			getReactionCartoonTool().setReactionCartoon(currentReactionCartoon);
-			getGraphPane().setGraphModel(currentReactionCartoon);
-			currentReactionCartoon.refreshAll();
-			currentReactionCartoon.setSelectedObjects(new Object[] {});
-		} else if(command.equalsIgnoreCase(Mode.UNGROUP.getActionCommand())) {	// show participants individually
-			currentReactionCartoon = reactionCartoonFull;
-			getReactionCartoonTool().setReactionCartoon(currentReactionCartoon);
-			getGraphPane().setGraphModel(currentReactionCartoon);
-			currentReactionCartoon.refreshAll();
-			currentReactionCartoon.setSelectedObjects(new Object[] {});
-		}
-	}
-	
-	private void setSizeMode(String command) {
-		System.out.println("ReactionCartoonEditorPanel, setSizeMode");
-		if(command.equalsIgnoreCase(Mode.EQUALSIZE.getActionCommand())) {
-			currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.normal);
-		} else if(command.equalsIgnoreCase(Mode.SIZEBYWEIGHT.getActionCommand())) {
-			currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.weight);
-		} else if(command.equalsIgnoreCase(Mode.SIZEBYLENGTH.getActionCommand())) {
-			currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.length);
-		}
-		currentReactionCartoon.refreshAll();
-	}
+    private JToolBarToggleButton ungroupButton;
 
-	public static void main(String[] args) {
-		try {
-			Frame frame = new Frame();
-			ReactionCartoonEditorPanel aReactionCartoonEditorPanel;
-			aReactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
-			frame.add("Center", aReactionCartoonEditorPanel);
-			frame.setSize(aReactionCartoonEditorPanel.getSize());
-			frame.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowClosing(WindowEvent event) {
-					System.exit(0);
-				};
-			});
-			frame.setVisible(true);
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred in main() of java.awt.Panel");
-			exception.printStackTrace(System.out);
-		}
-	}
+    private JToolBarToggleButton getUngroupButton() {
+        if (this.ungroupButton == null) {
+            try {
+                JToolBarToggleButton button = new JToolBarToggleButton();
+                UngroupToolShapeIcon.setMod(button);
+                button.setActionCommand(Mode.UNGROUP.getActionCommand());
+                this.ungroupButton = button;
+            } catch (Throwable throwable) {
+                this.handleException(throwable);
+            }
+        }
+        return this.ungroupButton;
+    }
 
-	public void setDocumentManager(DocumentManager documentManager) {
-		getReactionCartoonTool().setDocumentManager(documentManager);
-	}
+    private void setViewMode(String command) {
+        System.out.println("ReactionCartoonEditorPanel, setViewMode");
+        if (command.equalsIgnoreCase(Mode.GROUPMOLECULE.getActionCommand())) {    // group participants by signature
+            this.currentReactionCartoon = this.reactionCartoonMolecule;
+            this.getReactionCartoonTool().setReactionCartoon(this.currentReactionCartoon);
+            this.getGraphPane().setGraphModel(this.currentReactionCartoon);
+            this.currentReactionCartoon.refreshAll();
+            this.currentReactionCartoon.setSelectedObjects(new Object[]{});
+        } else if (command.equalsIgnoreCase(Mode.GROUPRULE.getActionCommand())) {    // group rules with similar participant signatures
+            this.currentReactionCartoon = this.reactionCartoonRule;
+            this.getReactionCartoonTool().setReactionCartoon(this.currentReactionCartoon);
+            this.getGraphPane().setGraphModel(this.currentReactionCartoon);
+            this.currentReactionCartoon.refreshAll();
+            this.currentReactionCartoon.setSelectedObjects(new Object[]{});
+        } else if (command.equalsIgnoreCase(Mode.UNGROUP.getActionCommand())) {    // show participants individually
+            this.currentReactionCartoon = this.reactionCartoonFull;
+            this.getReactionCartoonTool().setReactionCartoon(this.currentReactionCartoon);
+            this.getGraphPane().setGraphModel(this.currentReactionCartoon);
+            this.currentReactionCartoon.refreshAll();
+            this.currentReactionCartoon.setSelectedObjects(new Object[]{});
+        }
+    }
 
-	public void setModel(Model model) {
-		reactionCartoonFull.setModel(model);
-		reactionCartoonMolecule.setModel(model);
-		reactionCartoonRule.setModel(model);
-		refreshButtons();
-		if(getModel() != null) {
-			if(!getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
-				getGroupMoleculeButton().setSelected(true);	// select by default the grouped by molecule button
-				setViewMode("groupmolecule");				// show by default the groupmolecule view
-			} else {
-				getUngroupButton().setSelected(true);		// select by default the ungrouped by molecule button
-				setViewMode("ungroup");						// show by default the ungrouped view
-			}
-		}
-	}
-	public void selectedObjectsChanged() {
-		refreshButtons();
-	}
-	private void refreshButtons() {
-		if(getModel() != null) {
-			if(!getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
-				getGroupMoleculeButton().setVisible(true);
+    private void setSizeMode(String command) {
+        System.out.println("ReactionCartoonEditorPanel, setSizeMode");
+        if (command.equalsIgnoreCase(Mode.EQUALSIZE.getActionCommand())) {
+            this.currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.normal);
+        } else if (command.equalsIgnoreCase(Mode.SIZEBYWEIGHT.getActionCommand())) {
+            this.currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.weight);
+        } else if (command.equalsIgnoreCase(Mode.SIZEBYLENGTH.getActionCommand())) {
+            this.currentReactionCartoon.setSizeMode(ReactionCartoon.SpeciesSizeOptions.length);
+        }
+        this.currentReactionCartoon.refreshAll();
+    }
+
+    public static void main(String[] args) {
+        try {
+            Frame frame = new Frame();
+            ReactionCartoonEditorPanel aReactionCartoonEditorPanel;
+            aReactionCartoonEditorPanel = new ReactionCartoonEditorPanel();
+            frame.add("Center", aReactionCartoonEditorPanel);
+            frame.setSize(aReactionCartoonEditorPanel.getSize());
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent event) {
+                    System.exit(0);
+                }
+
+            });
+            frame.setVisible(true);
+        } catch (Throwable exception) {
+            System.err.println("Exception occurred in main() of java.awt.Panel");
+            exception.printStackTrace(System.out);
+        }
+    }
+
+    public void setDocumentManager(DocumentManager documentManager) {
+        this.getReactionCartoonTool().setDocumentManager(documentManager);
+    }
+
+    public void setModel(Model model) {
+        this.reactionCartoonFull.setModel(model);
+        this.reactionCartoonMolecule.setModel(model);
+        this.reactionCartoonRule.setModel(model);
+        this.refreshButtons();
+        if (this.getModel() != null) {
+            if (!this.getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
+                this.getGroupMoleculeButton().setSelected(true);    // select by default the grouped by molecule button
+                this.setViewMode("groupmolecule");                // show by default the groupmolecule view
+            } else {
+                this.getUngroupButton().setSelected(true);        // select by default the ungrouped by molecule button
+                this.setViewMode("ungroup");                        // show by default the ungrouped view
+            }
+        }
+    }
+
+    public void selectedObjectsChanged() {
+        this.refreshButtons();
+    }
+
+    private void refreshButtons() {
+        if (this.getModel() != null) {
+            if (!this.getModel().getRbmModelContainer().getReactionRuleList().isEmpty()) {
+                this.getGroupMoleculeButton().setVisible(true);
 //				getGroupRuleButton().setVisible(true);
-				getUngroupButton().setVisible(true);
-			} else {
-				getGroupMoleculeButton().setVisible(false);
+                this.getUngroupButton().setVisible(true);
+            } else {
+                this.getGroupMoleculeButton().setVisible(false);
 //				getGroupRuleButton().setVisible(false);
-				getUngroupButton().setVisible(false);
-			}
-		} else {
-			getGroupMoleculeButton().setVisible(false);
+                this.getUngroupButton().setVisible(false);
+            }
+        } else {
+            this.getGroupMoleculeButton().setVisible(false);
 //			getGroupRuleButton().setVisible(false);
-			getUngroupButton().setVisible(false);
-		}
-	}
+            this.getUngroupButton().setVisible(false);
+        }
+    }
 
-	public void setStructureSuite(StructureSuite structureSuite) {
-		reactionCartoonFull.setStructureSuite(structureSuite);
-		reactionCartoonMolecule.setStructureSuite(structureSuite);
-		reactionCartoonRule.setStructureSuite(structureSuite);
-	}
-	public void specialLayout(){
-		//if(getModel() != null && getModel().getDiagrams() != null && getModel().getDiagrams().length == 1 && getModel().getDiagrams()[0].getNodeList().size() == 0){
-			try{
-				getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME, false);
-			}catch(Exception e){
-				System.out.println("Error:  "+this.getClass().getName()+" setStructureSuite(...)->reactioncartoontool.layout(...)");
-				e.printStackTrace();
-			}
-		//}
-	}
-	public final void setFloatingRequested(boolean newValue) {
-		boolean oldValue = bFloatingRequested;
-		this.bFloatingRequested = newValue;
-		floatRequestButton.setVisible(!bFloatingRequested);
-		firePropertyChange(PROPERTY_NAME_FLOATING, oldValue, newValue);
-	}
+    public void setStructureSuite(StructureSuite structureSuite) {
+        this.reactionCartoonFull.setStructureSuite(structureSuite);
+        this.reactionCartoonMolecule.setStructureSuite(structureSuite);
+        this.reactionCartoonRule.setStructureSuite(structureSuite);
+    }
+
+    public void specialLayout() {
+        //if(getModel() != null && getModel().getDiagrams() != null && getModel().getDiagrams().length == 1 && getModel().getDiagrams()[0].getNodeList().size() == 0){
+        try {
+            this.getReactionCartoonTool().layout(GenericLogicGraphLayouter.LAYOUT_NAME, false);
+        } catch (Exception e) {
+            System.out.println("Error:  " + this.getClass().getName() + " setStructureSuite(...)->reactioncartoontool.layout(...)");
+            e.printStackTrace();
+        }
+        //}
+    }
+
+    public final void setFloatingRequested(boolean newValue) {
+        boolean oldValue = this.bFloatingRequested;
+        this.bFloatingRequested = newValue;
+        this.floatRequestButton.setVisible(!this.bFloatingRequested);
+        this.firePropertyChange(PROPERTY_NAME_FLOATING, oldValue, newValue);
+    }
 
 }

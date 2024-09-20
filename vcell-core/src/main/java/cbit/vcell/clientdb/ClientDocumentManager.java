@@ -102,580 +102,581 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
 
-public class ClientDocumentManager implements DocumentManager{
-	private static final Logger lg = LogManager.getLogger(ClientDocumentManager.class);
-	//
-	//
-	private SessionManager sessionManager = null;
+public class ClientDocumentManager implements DocumentManager {
+    private static final Logger lg = LogManager.getLogger(ClientDocumentManager.class);
+    //
+    //
+    private SessionManager sessionManager = null;
 
-	//
-	// cacheTable holds xml for (BioModel, MathModel, Simulation, Geometry, VCImage)
-	//
-	private Hashtable<KeyValue, String> xmlHash = new Hashtable<KeyValue, String>();
-	//
-	// hashTables holds all info objects (including BioModelMetaData WITH info objects)
-	//
+    //
+    // cacheTable holds xml for (BioModel, MathModel, Simulation, Geometry, VCImage)
+    //
+    private final Hashtable<KeyValue, String> xmlHash = new Hashtable<KeyValue, String>();
+    //
+    // hashTables holds all info objects (including BioModelMetaData WITH info objects)
+    //
 //	private boolean bMathModelInfosDirty = true;
 //	private boolean bImageInfosDirty = true;
 //	private boolean bBioModelInfosDirty = true;
 //	private boolean bGeometryInfosDirty = true;
-	
-	private Hashtable<KeyValue, GeometryInfo> geoInfoHash = new Hashtable<KeyValue, GeometryInfo>();
-	private Hashtable<KeyValue, VCImageInfo> imgInfoHash = new Hashtable<KeyValue, VCImageInfo>();
-	private Hashtable<KeyValue, MathModelInfo> mathModelInfoHash = new Hashtable<KeyValue, MathModelInfo>();
-	private Hashtable<KeyValue, BioModelInfo> bioModelInfoHash = new Hashtable<KeyValue, BioModelInfo>();
-	private HashMap<KeyValue, SimulationStatus> simulationStatusHash = new HashMap<KeyValue, SimulationStatus>();
-	
-	private Preference preferences[] = null;
-	
-	protected transient DatabaseListener aDatabaseListener = null;
-	private transient HashSet<FieldDataDBEventListener> fieldDataDBEventListenerH = null;
-	
-	private class XMLHolder<T extends VCDocument> {
-		private String xmlString;
-		private T document;
-		
-		public XMLHolder(String xmlString){
-			this(xmlString, null);
-		}
-		
-		public XMLHolder(String xmlString, T document){
-			if (xmlString == null){
-				throw new IllegalArgumentException("xmlString cannot be null");
-			}
-			this.xmlString = xmlString;
-			this.document = document;
-		}
-		
-		public final String getXmlString() {
-			return xmlString;
-		}
-		public final T getDocument() {
-			return document;
-		}
-	}
+
+    private final Hashtable<KeyValue, GeometryInfo> geoInfoHash = new Hashtable<KeyValue, GeometryInfo>();
+    private final Hashtable<KeyValue, VCImageInfo> imgInfoHash = new Hashtable<KeyValue, VCImageInfo>();
+    private final Hashtable<KeyValue, MathModelInfo> mathModelInfoHash = new Hashtable<KeyValue, MathModelInfo>();
+    private final Hashtable<KeyValue, BioModelInfo> bioModelInfoHash = new Hashtable<KeyValue, BioModelInfo>();
+    private final HashMap<KeyValue, SimulationStatus> simulationStatusHash = new HashMap<KeyValue, SimulationStatus>();
+
+    private Preference[] preferences = null;
+
+    protected transient DatabaseListener aDatabaseListener = null;
+    private transient HashSet<FieldDataDBEventListener> fieldDataDBEventListenerH = null;
+
+    private class XMLHolder<T extends VCDocument> {
+        private final String xmlString;
+        private final T document;
+
+        public XMLHolder(String xmlString) {
+            this(xmlString, null);
+        }
+
+        public XMLHolder(String xmlString, T document) {
+            if (xmlString == null) {
+                throw new IllegalArgumentException("xmlString cannot be null");
+            }
+            this.xmlString = xmlString;
+            this.document = document;
+        }
+
+        public final String getXmlString() {
+            return this.xmlString;
+        }
+
+        public final T getDocument() {
+            return this.document;
+        }
+    }
 
 
-	
-/**
- * ClientDocumentManager constructor comment.
- */
-public ClientDocumentManager(SessionManager argSessionManager, long cacheSize) {
-	this.sessionManager = argSessionManager;
+    /**
+     * ClientDocumentManager constructor comment.
+     */
+    public ClientDocumentManager(SessionManager argSessionManager, long cacheSize) {
+        this.sessionManager = argSessionManager;
 //	this.xmlCacheTable = new DBCacheTable(0,cacheSize);
-}
+    }
 
 
-/**
- * 
- * @param newListener cbit.vcell.clientdb.DatabaseListener
- */
-public void addDatabaseListener(DatabaseListener newListener) {
-	aDatabaseListener = DatabaseEventMulticaster.add(aDatabaseListener, newListener);
-	return;
-}
+    /**
+     * @param newListener cbit.vcell.clientdb.DatabaseListener
+     */
+    public void addDatabaseListener(DatabaseListener newListener) {
+        this.aDatabaseListener = DatabaseEventMulticaster.add(this.aDatabaseListener, newListener);
+    }
 
-public void addFieldDataDBListener(FieldDataDBEventListener newFieldDataDBEventListener) {
-	if(fieldDataDBEventListenerH == null){
-		fieldDataDBEventListenerH = new HashSet<FieldDataDBEventListener>();
-	}
-	fieldDataDBEventListenerH.add(newFieldDataDBEventListener);
-}
+    public void addFieldDataDBListener(FieldDataDBEventListener newFieldDataDBEventListener) {
+        if (this.fieldDataDBEventListenerH == null) {
+            this.fieldDataDBEventListenerH = new HashSet<FieldDataDBEventListener>();
+        }
+        this.fieldDataDBEventListenerH.add(newFieldDataDBEventListener);
+    }
 
-public VCImageInfo addUserToGroup(VCImageInfo imageInfo, String userToAdd) throws DataAccessException {
+    public VCImageInfo addUserToGroup(VCImageInfo imageInfo, String userToAdd) throws DataAccessException {
 
-	try {
-		//
-		// publish from database
-		//
-		VCImageInfo newImageInfo = (VCImageInfo)addUserToGroup0(imageInfo,VersionableType.VCImage,imgInfoHash,userToAdd);
-		//
-		// delete Image from cache
-		//
-		xmlHash.remove(imageInfo.getVersion().getVersionKey());
+        try {
+            //
+            // publish from database
+            //
+            VCImageInfo newImageInfo = this.addUserToGroup0(imageInfo, VersionableType.VCImage, this.imgInfoHash, userToAdd);
+            //
+            // delete Image from cache
+            //
+            this.xmlHash.remove(imageInfo.getVersion().getVersionKey());
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, imageInfo, newImageInfo));
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, imageInfo, newImageInfo));
 
-		return newImageInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+            return newImageInfo;
 
-public BioModelInfo addUserToGroup(BioModelInfo bioModelInfo, String userToAdd) throws DataAccessException {
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
-	try {
-		//
-		// publish from database
-		//
-		BioModelInfo newBioModelInfo = (BioModelInfo)addUserToGroup0(bioModelInfo,VersionableType.BioModelMetaData,bioModelInfoHash,userToAdd);
-		//
-		// delete BioModelMetaData from cache
-		//
-		xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
+    public BioModelInfo addUserToGroup(BioModelInfo bioModelInfo, String userToAdd) throws DataAccessException {
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, bioModelInfo, newBioModelInfo));
+        try {
+            //
+            // publish from database
+            //
+            BioModelInfo newBioModelInfo = this.addUserToGroup0(bioModelInfo, VersionableType.BioModelMetaData, this.bioModelInfoHash, userToAdd);
+            //
+            // delete BioModelMetaData from cache
+            //
+            this.xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
 
-		return newBioModelInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, bioModelInfo, newBioModelInfo));
 
-public GeometryInfo addUserToGroup(GeometryInfo geometryInfo, String userToAdd) throws DataAccessException {
+            return newBioModelInfo;
 
-	try {
-		//
-		// publish from database
-		//
-		GeometryInfo newGeometryInfo = (GeometryInfo)addUserToGroup0(geometryInfo,VersionableType.Geometry,geoInfoHash,userToAdd);
-		////
-		//// delete Geometry from cache
-		////
-		//xmlHash.remove(geometryInfo.getVersion().getVersionKey());
-		////
-		//// delete any MathModelMetaData's that use this GeometryInfo from cache
-		////
-		//MathModelInfo referencedMathModelInfos[] = getMathModelReferences(geometryInfo);
-		//for (int i = 0; i < referencedMathModelInfos.length; i++){
-			//xmlHash.remove(referencedMathModelInfos[i].getVersion().getVersionKey());
-		//}
-		////
-		//// delete any BioModelMetaData's that use this GeometryInfo from cache
-		////
-		//BioModelInfo referencedBioModelInfos[] = getBioModelReferences(geometryInfo);
-		//for (int i = 0; i < referencedBioModelInfos.length; i++){
-			//xmlHash.remove(referencedBioModelInfos[i].getVersion().getVersionKey());
-		//}
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, geometryInfo, newGeometryInfo));
+    public GeometryInfo addUserToGroup(GeometryInfo geometryInfo, String userToAdd) throws DataAccessException {
 
-		return newGeometryInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+        try {
+            //
+            // publish from database
+            //
+            GeometryInfo newGeometryInfo = this.addUserToGroup0(geometryInfo, VersionableType.Geometry, this.geoInfoHash, userToAdd);
+            ////
+            //// delete Geometry from cache
+            ////
+            //xmlHash.remove(geometryInfo.getVersion().getVersionKey());
+            ////
+            //// delete any MathModelMetaData's that use this GeometryInfo from cache
+            ////
+            //MathModelInfo referencedMathModelInfos[] = getMathModelReferences(geometryInfo);
+            //for (int i = 0; i < referencedMathModelInfos.length; i++){
+            //xmlHash.remove(referencedMathModelInfos[i].getVersion().getVersionKey());
+            //}
+            ////
+            //// delete any BioModelMetaData's that use this GeometryInfo from cache
+            ////
+            //BioModelInfo referencedBioModelInfos[] = getBioModelReferences(geometryInfo);
+            //for (int i = 0; i < referencedBioModelInfos.length; i++){
+            //xmlHash.remove(referencedBioModelInfos[i].getVersion().getVersionKey());
+            //}
 
-public MathModelInfo addUserToGroup(MathModelInfo mathModelInfo, String userToAdd) throws DataAccessException {
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, geometryInfo, newGeometryInfo));
 
-	try {
-		//
-		// publish from database
-		//
-		MathModelInfo newMathModelInfo = (MathModelInfo)addUserToGroup0(mathModelInfo,VersionableType.MathModelMetaData,mathModelInfoHash, userToAdd);
-		//
-		// delete MathModelMetaData from cache
-		//
-		xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
+            return newGeometryInfo;
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, mathModelInfo, newMathModelInfo));
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
-		return newMathModelInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+    public MathModelInfo addUserToGroup(MathModelInfo mathModelInfo, String userToAdd) throws DataAccessException {
 
-private <T extends VersionInfo> T addUserToGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteProxyException, DataAccessException {
+        try {
+            //
+            // publish from database
+            //
+            MathModelInfo newMathModelInfo = this.addUserToGroup0(mathModelInfo, VersionableType.MathModelMetaData, this.mathModelInfoHash, userToAdd);
+            //
+            // delete MathModelMetaData from cache
+            //
+            this.xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
 
-	//
-	// unpublish from database
-	//
-	UserMetaDbServer dbServer = sessionManager.getUserMetaDbServer();
-	@SuppressWarnings("unchecked")
-	T newVersionInfo = (T) dbServer.groupAddUser(vType,versionInfo.getVersion().getVersionKey(),userToAdd,false);
-	
-	//
-	// replace versionInfo in hashTable
-	//
-	vInfoHash.remove(versionInfo.getVersion().getVersionKey());
-	vInfoHash.put(newVersionInfo.getVersion().getVersionKey(),newVersionInfo);
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, mathModelInfo, newMathModelInfo));
 
-	//
-	// refresh versionInfos of child Geometries and Images (refresh all for now)
-	//
-	//
-	// Removed because of deep cloning of children
-	//
-	//if (vType.equals(VersionableType.MathModelMetaData) || vType.equals(VersionableType.BioModelMetaData)){
-	//	reloadInfos(VersionableType.Geometry,geoInfoHash);
-	//	reloadInfos(VersionableType.VCImage,imgInfoHash);
-	//}
+            return newMathModelInfo;
 
-	return newVersionInfo;
-}
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
-private void cacheSimulations(Simulation[] sims) throws DataAccessException{
-	System.out.println("ClientDocumentManager.cacheSimulations() has been disabled until needed");
-	//try{
-		//for(int i=0;i<sims.length;i+= 1){
-			//xmlHash.put(sims[i].getVersion().getVersionKey(),cbit.vcell.xml.XmlHelper.simToXML(sims[i]));
-		//}
-	//}catch(Exception e){
-		//lg.error(e);
-		//throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
-	//}
-}
+    private <T extends VersionInfo> T addUserToGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue, T> vInfoHash, String userToAdd) throws RemoteProxyException, DataAccessException {
 
-public void curate(CurateSpec curateSpec) throws DataAccessException{
-	
-	try{
-		VCDocumentInfo newVCDocumentInfo = getSessionManager().getUserMetaDbServer().curate(curateSpec);
-		
-		xmlHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
-		
-		if(curateSpec.getVCDocumentInfo() instanceof MathModelInfo){
-			mathModelInfoHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
-			mathModelInfoHash.put(newVCDocumentInfo.getVersion().getVersionKey(), (MathModelInfo)newVCDocumentInfo);
-		}else if(curateSpec.getVCDocumentInfo() instanceof BioModelInfo){
-			bioModelInfoHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
-			bioModelInfoHash.put(newVCDocumentInfo.getVersion().getVersionKey(), (BioModelInfo)newVCDocumentInfo);
-		}
+        //
+        // unpublish from database
+        //
+        UserMetaDbServer dbServer = this.sessionManager.getUserMetaDbServer();
+        @SuppressWarnings("unchecked")
+        T newVersionInfo = (T) dbServer.groupAddUser(vType, versionInfo.getVersion().getVersionKey(), userToAdd, false);
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, curateSpec.getVCDocumentInfo(), newVCDocumentInfo));
-		
-	}catch(Exception e){
-		throw new DataAccessException(e.getClass().getName()+" "+e.getMessage(), e);
-	}
+        //
+        // replace versionInfo in hashTable
+        //
+        vInfoHash.remove(versionInfo.getVersion().getVersionKey());
+        vInfoHash.put(newVersionInfo.getVersion().getVersionKey(), newVersionInfo);
 
-}
+        //
+        // refresh versionInfos of child Geometries and Images (refresh all for now)
+        //
+        //
+        // Removed because of deep cloning of children
+        //
+        //if (vType.equals(VersionableType.MathModelMetaData) || vType.equals(VersionableType.BioModelMetaData)){
+        //	reloadInfos(VersionableType.Geometry,geoInfoHash);
+        //	reloadInfos(VersionableType.VCImage,imgInfoHash);
+        //}
+
+        return newVersionInfo;
+    }
+
+    private void cacheSimulations(Simulation[] sims) throws DataAccessException {
+        System.out.println("ClientDocumentManager.cacheSimulations() has been disabled until needed");
+        //try{
+        //for(int i=0;i<sims.length;i+= 1){
+        //xmlHash.put(sims[i].getVersion().getVersionKey(),cbit.vcell.xml.XmlHelper.simToXML(sims[i]));
+        //}
+        //}catch(Exception e){
+        //lg.error(e);
+        //throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
+        //}
+    }
+
+    public void curate(CurateSpec curateSpec) throws DataAccessException {
+
+        try {
+            VCDocumentInfo newVCDocumentInfo = this.getSessionManager().getUserMetaDbServer().curate(curateSpec);
+
+            this.xmlHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
+
+            if (curateSpec.getVCDocumentInfo() instanceof MathModelInfo) {
+                this.mathModelInfoHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
+                this.mathModelInfoHash.put(newVCDocumentInfo.getVersion().getVersionKey(), (MathModelInfo) newVCDocumentInfo);
+            } else if (curateSpec.getVCDocumentInfo() instanceof BioModelInfo) {
+                this.bioModelInfoHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
+                this.bioModelInfoHash.put(newVCDocumentInfo.getVersion().getVersionKey(), (BioModelInfo) newVCDocumentInfo);
+            }
+
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, curateSpec.getVCDocumentInfo(), newVCDocumentInfo));
+
+        } catch (Exception e) {
+            throw new DataAccessException(e.getClass().getName() + " " + e.getMessage(), e);
+        }
+
+    }
 
 
-public void delete(VCImageInfo vcImageInfo) throws DataAccessException {
+    public void delete(VCImageInfo vcImageInfo) throws DataAccessException {
 
-	try {
-		//
-		// delete from database
-		//
-		sessionManager.getUserMetaDbServer().deleteVCImage(vcImageInfo.getVersion().getVersionKey());
-		//
-		// delete VCImage from cache and VCImageInfo from imgInfo list
-		//
-		xmlHash.remove(vcImageInfo.getVersion().getVersionKey());
-		imgInfoHash.remove(vcImageInfo.getVersion().getVersionKey());
-		
-		fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, vcImageInfo, null));
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
+        try {
+            //
+            // delete from database
+            //
+            this.sessionManager.getUserMetaDbServer().deleteVCImage(vcImageInfo.getVersion().getVersionKey());
+            //
+            // delete VCImage from cache and VCImageInfo from imgInfo list
+            //
+            this.xmlHash.remove(vcImageInfo.getVersion().getVersionKey());
+            this.imgInfoHash.remove(vcImageInfo.getVersion().getVersionKey());
 
+            this.fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, vcImageInfo, null));
 
-public void delete(BioModelInfo bioModelInfo) throws DataAccessException {
-	
-	try {
-		//BioModelMetaData bioModelMetaData = getBioModelMetaData(bioModelInfo);
-		//
-		// delete from database
-		//
-		sessionManager.getUserMetaDbServer().deleteBioModel(bioModelInfo.getVersion().getVersionKey());
-		//
-		// delete BioModel from cache and BioModelInfo from bioModelInfo list
-		//
-		xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
-		bioModelInfoHash.remove(bioModelInfo.getVersion().getVersionKey());
-
-		fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, bioModelInfo, null));
-
-		////
-		//// go through list of Simulations in the BioModelMetaData and remove unreferenced Simulations
-		////
-		//Enumeration enumSim = bioModelMetaData.getSimulationInfos();
-		//while (enumSim.hasMoreElements()){
-			//SimulationInfo simInfo = (SimulationInfo)enumSim.nextElement();
-			//if (isSimulationReferenced(simInfo)==false){
-				//simInfoHash.remove(simInfo.getVersion().getVersionKey());
-				//resultSetInfoHash.remove(simInfo.getVersion().getVersionKey());
-				//fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, simInfo, null));
-			//}
-		//}
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	} 
-
-}
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
 
-public void delete(GeometryInfo geometryInfo) throws DataAccessException {
+    public void delete(BioModelInfo bioModelInfo) throws DataAccessException {
 
-	try {
-		//
-		// delete from database
-		//
-		sessionManager.getUserMetaDbServer().deleteGeometry(geometryInfo.getVersion().getVersionKey());
-		//
-		// delete Geometry from cache and GeometryInfo from geometryInfo list
-		//
-		xmlHash.remove(geometryInfo.getVersion().getVersionKey());
-		geoInfoHash.remove(geometryInfo.getVersion().getVersionKey());
+        try {
+            //BioModelMetaData bioModelMetaData = getBioModelMetaData(bioModelInfo);
+            //
+            // delete from database
+            //
+            this.sessionManager.getUserMetaDbServer().deleteBioModel(bioModelInfo.getVersion().getVersionKey());
+            //
+            // delete BioModel from cache and BioModelInfo from bioModelInfo list
+            //
+            this.xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
+            this.bioModelInfoHash.remove(bioModelInfo.getVersion().getVersionKey());
 
-		fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, geometryInfo, null));
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
+            this.fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, bioModelInfo, null));
+
+            ////
+            //// go through list of Simulations in the BioModelMetaData and remove unreferenced Simulations
+            ////
+            //Enumeration enumSim = bioModelMetaData.getSimulationInfos();
+            //while (enumSim.hasMoreElements()){
+            //SimulationInfo simInfo = (SimulationInfo)enumSim.nextElement();
+            //if (isSimulationReferenced(simInfo)==false){
+            //simInfoHash.remove(simInfo.getVersion().getVersionKey());
+            //resultSetInfoHash.remove(simInfo.getVersion().getVersionKey());
+            //fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, simInfo, null));
+            //}
+            //}
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+
+    }
 
 
-public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
+    public void delete(GeometryInfo geometryInfo) throws DataAccessException {
 
-	try {
+        try {
+            //
+            // delete from database
+            //
+            this.sessionManager.getUserMetaDbServer().deleteGeometry(geometryInfo.getVersion().getVersionKey());
+            //
+            // delete Geometry from cache and GeometryInfo from geometryInfo list
+            //
+            this.xmlHash.remove(geometryInfo.getVersion().getVersionKey());
+            this.geoInfoHash.remove(geometryInfo.getVersion().getVersionKey());
+
+            this.fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, geometryInfo, null));
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+
+    public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
+
+        try {
 //		MathModelMetaData mathModelMetaData = getMathModelMetaData(mathModelInfo);
-		
-		//
-		// delete from database
-		//
-		sessionManager.getUserMetaDbServer().deleteMathModel(mathModelInfo.getVersion().getVersionKey());
-		//
-		// delete MathModel from cache and MathModelInfo from mathModelInfo list
-		//
-		xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
-		mathModelInfoHash.remove(mathModelInfo.getVersion().getVersionKey());
 
-		fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, mathModelInfo, null));
-		
-		////
-		//// go through list of Simulations in the MathModelMetaData and remove unreferenced Simulations
-		////
-		//Enumeration enumSim = mathModelMetaData.getSimulationInfos();
-		//while (enumSim.hasMoreElements()){
-			//SimulationInfo simInfo = (SimulationInfo)enumSim.nextElement();
-			//if (isSimulationReferenced(simInfo)==false){
-				//simInfoHash.remove(simInfo.getVersion().getVersionKey());
-				//resultSetInfoHash.remove(simInfo.getVersion().getVersionKey());
-				//fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, simInfo, null));
-			//}
-		//}
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+            //
+            // delete from database
+            //
+            this.sessionManager.getUserMetaDbServer().deleteMathModel(mathModelInfo.getVersion().getVersionKey());
+            //
+            // delete MathModel from cache and MathModelInfo from mathModelInfo list
+            //
+            this.xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
+            this.mathModelInfoHash.remove(mathModelInfo.getVersion().getVersionKey());
 
-public ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, String fieldDataBaseName) throws DataAccessException {
-	FieldDataDBOperationResults fieldDataResults = fieldDataDBOperation(FieldDataDBOperationSpec.createGetExtDataIDsSpec(getUser()));
-	ExternalDataIdentifier[] existingExternalIDs = fieldDataResults.extDataIDArr;
-	// find available field data name (starting from init).
-	for (ExternalDataIdentifier externalID : existingExternalIDs){
-		if (externalID.getName().equals(fieldDataBaseName)){
-			fieldDataBaseName = TokenMangler.getNextEnumeratedToken(fieldDataBaseName);
-		}
-	}
-   	FieldDataDBOperationSpec newExtDataIDSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(getUser(),fieldDataBaseName, "");
-	ExternalDataIdentifier eid = fieldDataDBOperation(newExtDataIDSpec).extDataID; 
-	fdos.specEDI = eid;
-	fdos.annotation = "";
-	try {
-		// Add to Server Disk
-		FieldDataFileOperationResults fdor = fieldDataFileOperation(fdos);
-		lg.debug(fdor);
-	} catch (DataAccessException e) {
-		try{
-			// try to cleanup new ExtDataID
-			fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdos.specEDI));
-		}catch(Exception e2){
-			// ignore
-		}
-		fdos.specEDI = null;
-		throw e;
-	}
-	return eid;
-}
+            this.fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, mathModelInfo, null));
 
-public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
+            ////
+            //// go through list of Simulations in the MathModelMetaData and remove unreferenced Simulations
+            ////
+            //Enumeration enumSim = mathModelMetaData.getSimulationInfos();
+            //while (enumSim.hasMoreElements()){
+            //SimulationInfo simInfo = (SimulationInfo)enumSim.nextElement();
+            //if (isSimulationReferenced(simInfo)==false){
+            //simInfoHash.remove(simInfo.getVersion().getVersionKey());
+            //resultSetInfoHash.remove(simInfo.getVersion().getVersionKey());
+            //fireDatabaseDelete(new DatabaseEvent(this, DatabaseEvent.DELETE, simInfo, null));
+            //}
+            //}
 
-	try{
-		return sessionManager.getUserMetaDbServer().fieldDataDBOperation(fieldDataDBOperationSpec);	
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
+    public ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, String fieldDataBaseName) throws DataAccessException {
+        FieldDataDBOperationResults fieldDataResults = this.fieldDataDBOperation(FieldDataDBOperationSpec.createGetExtDataIDsSpec(this.getUser()));
+        ExternalDataIdentifier[] existingExternalIDs = fieldDataResults.extDataIDArr;
+        // find available field data name (starting from init).
+        for (ExternalDataIdentifier externalID : existingExternalIDs) {
+            if (externalID.getName().equals(fieldDataBaseName)) {
+                fieldDataBaseName = TokenMangler.getNextEnumeratedToken(fieldDataBaseName);
+            }
+        }
+        FieldDataDBOperationSpec newExtDataIDSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(this.getUser(), fieldDataBaseName, "");
+        ExternalDataIdentifier eid = this.fieldDataDBOperation(newExtDataIDSpec).extDataID;
+        fdos.specEDI = eid;
+        fdos.annotation = "";
+        try {
+            // Add to Server Disk
+            FieldDataFileOperationResults fdor = this.fieldDataFileOperation(fdos);
+            lg.debug(fdor);
+        } catch (DataAccessException e) {
+            try {
+                // try to cleanup new ExtDataID
+                this.fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdos.specEDI));
+            } catch (Exception e2) {
+                // ignore
+            }
+            fdos.specEDI = null;
+            throw e;
+        }
+        return eid;
+    }
 
-	return sessionManager.fieldDataFileOperation(fieldDataFileOperationSpec);	
-}
+    public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
 
+        try {
+            return this.sessionManager.getUserMetaDbServer().fieldDataDBOperation(fieldDataDBOperationSpec);
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
-public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException {
-	if(!getUser().isTestAccount()){
-		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
-	}
-	try {
-		TestSuiteOPResults tsopr = getSessionManager().getUserMetaDbServer().doTestSuiteOP(tsop);
-		//fireDatabaseRefresh(new DatabaseEvent(this, DatabaseEvent.REFRESH, null, null));
-		return tsopr;
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
+    public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
+
+        return this.sessionManager.fieldDataFileOperation(fieldDataFileOperationSpec);
+    }
 
 
-public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException {
-
-	try{
-		return getSessionManager().getUserMetaDbServer().findReferences(rqs);
-	}catch(Exception e){
-		throw new DataAccessException(e.getClass().getName()+" "+e.getMessage(), e);
-	}
-}
-
-
-protected void fireDatabaseDelete(DatabaseEvent event) {
-	if (aDatabaseListener == null) {
-		return;
-	};
-	if (javax.swing.SwingUtilities.isEventDispatchThread()){
-		aDatabaseListener.databaseDelete(event);
-	}else{
-		final DatabaseEvent evt = event;
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				aDatabaseListener.databaseDelete(evt);
-			}
-		});
-	}
-}
+    public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException {
+        if (!this.getUser().isTestAccount()) {
+            throw new PermissionException("User=" + this.getUser().getName() + " not allowed TestSuiteInfo");
+        }
+        try {
+            TestSuiteOPResults tsopr = this.getSessionManager().getUserMetaDbServer().doTestSuiteOP(tsop);
+            //fireDatabaseRefresh(new DatabaseEvent(this, DatabaseEvent.REFRESH, null, null));
+            return tsopr;
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
 
 
-/**
- * Method to support listener events.
- * @param event cbit.vcell.clientdb.DatabaseEvent
- */
-protected void fireDatabaseInsert(DatabaseEvent event) {
-	if (aDatabaseListener == null) {
-		return;
-	};
-	if (javax.swing.SwingUtilities.isEventDispatchThread()){
-		aDatabaseListener.databaseInsert(event);
-	}else{
-		final DatabaseEvent evt = event;
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				aDatabaseListener.databaseInsert(evt);
-			}
-		});
-	}
-}
+    public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException {
+
+        try {
+            return this.getSessionManager().getUserMetaDbServer().findReferences(rqs);
+        } catch (Exception e) {
+            throw new DataAccessException(e.getClass().getName() + " " + e.getMessage(), e);
+        }
+    }
 
 
-/**
- * Method to support listener events.
- * @param event cbit.vcell.clientdb.DatabaseEvent
- */
-protected void fireDatabaseRefresh(DatabaseEvent event) {
-	if (aDatabaseListener == null) {
-		return;
-	};
-	if (javax.swing.SwingUtilities.isEventDispatchThread()){
-		aDatabaseListener.databaseRefresh(event);
-	}else{
-		final DatabaseEvent evt = event;
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				aDatabaseListener.databaseRefresh(evt);
-			}
-		});
-	}
-}
+    protected void fireDatabaseDelete(DatabaseEvent event) {
+        if (this.aDatabaseListener == null) {
+            return;
+        }
+        if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+            this.aDatabaseListener.databaseDelete(event);
+        } else {
+            final DatabaseEvent evt = event;
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ClientDocumentManager.this.aDatabaseListener.databaseDelete(evt);
+                }
+            });
+        }
+    }
 
 
-/**
- * Method to support listener events.
- * @param event cbit.vcell.clientdb.DatabaseEvent
- */
-protected void fireDatabaseUpdate(DatabaseEvent event) {
-	if (aDatabaseListener == null) {
-		return;
-	};
-	if (javax.swing.SwingUtilities.isEventDispatchThread()){
-		aDatabaseListener.databaseUpdate(event);
-	}else{
-		final DatabaseEvent evt = event;
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				aDatabaseListener.databaseUpdate(evt);
-			}
-		});
-	}
-}
+    /**
+     * Method to support listener events.
+     *
+     * @param event cbit.vcell.clientdb.DatabaseEvent
+     */
+    protected void fireDatabaseInsert(DatabaseEvent event) {
+        if (this.aDatabaseListener == null) {
+            return;
+        }
+        if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+            this.aDatabaseListener.databaseInsert(event);
+        } else {
+            final DatabaseEvent evt = event;
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ClientDocumentManager.this.aDatabaseListener.databaseInsert(evt);
+                }
+            });
+        }
+    }
 
 
-protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
-	if (fieldDataDBEventListenerH == null) {
-		return;
-	};
-	javax.swing.SwingUtilities.invokeLater(new Runnable() {
-		public void run() {
-			Iterator<FieldDataDBEventListener> fieldDataDBListenersIter =
-				fieldDataDBEventListenerH.iterator();
-			while(fieldDataDBListenersIter.hasNext()){
-				fieldDataDBListenersIter.next().fieldDataDBEvent(fieldDataDBEvent);
-			}
-		}
-	});
+    /**
+     * Method to support listener events.
+     *
+     * @param event cbit.vcell.clientdb.DatabaseEvent
+     */
+    protected void fireDatabaseRefresh(DatabaseEvent event) {
+        if (this.aDatabaseListener == null) {
+            return;
+        }
+        if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+            this.aDatabaseListener.databaseRefresh(event);
+        } else {
+            final DatabaseEvent evt = event;
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ClientDocumentManager.this.aDatabaseListener.databaseRefresh(evt);
+                }
+            });
+        }
+    }
+
+
+    /**
+     * Method to support listener events.
+     *
+     * @param event cbit.vcell.clientdb.DatabaseEvent
+     */
+    protected void fireDatabaseUpdate(DatabaseEvent event) {
+        if (this.aDatabaseListener == null) {
+            return;
+        }
+        if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+            this.aDatabaseListener.databaseUpdate(event);
+        } else {
+            final DatabaseEvent evt = event;
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ClientDocumentManager.this.aDatabaseListener.databaseUpdate(evt);
+                }
+            });
+        }
+    }
+
+
+    protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
+        if (this.fieldDataDBEventListenerH == null) {
+            return;
+        }
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                Iterator<FieldDataDBEventListener> fieldDataDBListenersIter =
+                        ClientDocumentManager.this.fieldDataDBEventListenerH.iterator();
+                while (fieldDataDBListenersIter.hasNext()) {
+                    fieldDataDBListenersIter.next().fieldDataDBEvent(fieldDataDBEvent);
+                }
+            }
+        });
 //	}
-}
+    }
 
 
-	public void generatePDF(BioModel biomodel, java.io.FileOutputStream fos) throws Exception {
+    public void generatePDF(BioModel biomodel, java.io.FileOutputStream fos) throws Exception {
 
-		java.awt.print.PageFormat pageFormat = java.awt.print.PrinterJob.getPrinterJob().defaultPage();
-		pageFormat.setOrientation(java.awt.print.PageFormat.PORTRAIT);
-		generatePDF(biomodel, fos, pageFormat);
-	}
-
-
-	public void generatePDF(BioModel biomodel, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception {
-
-		ITextWriter pdfWriter = ITextWriter.getInstance(ITextWriter.PDF_WRITER);
-		pdfWriter.writeBioModel(biomodel, fos, pageFormat);
-	}
+        java.awt.print.PageFormat pageFormat = java.awt.print.PrinterJob.getPrinterJob().defaultPage();
+        pageFormat.setOrientation(java.awt.print.PageFormat.PORTRAIT);
+        this.generatePDF(biomodel, fos, pageFormat);
+    }
 
 
-	public void generatePDF(Geometry geom, java.io.FileOutputStream fos) throws Exception {
+    public void generatePDF(BioModel biomodel, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception {
 
-		java.awt.print.PageFormat pageFormat = java.awt.print.PrinterJob.getPrinterJob().defaultPage();
-		pageFormat.setOrientation(java.awt.print.PageFormat.PORTRAIT);
-		generatePDF(geom, fos, pageFormat);
-	}
-
-
-	public void generatePDF(Geometry geom, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception {
-
-		ITextWriter pdfWriter = ITextWriter.getInstance(ITextWriter.PDF_WRITER);
-		pdfWriter.writeGeometry(geom, fos, pageFormat);
-	}
+        ITextWriter pdfWriter = ITextWriter.getInstance(ITextWriter.PDF_WRITER);
+        pdfWriter.writeBioModel(biomodel, fos, pageFormat);
+    }
 
 
-	public void generatePDF(MathModel mathmodel, java.io.FileOutputStream fos) throws Exception {
+    public void generatePDF(Geometry geom, java.io.FileOutputStream fos) throws Exception {
 
-		java.awt.print.PageFormat pageFormat = java.awt.print.PrinterJob.getPrinterJob().defaultPage();
-		pageFormat.setOrientation(java.awt.print.PageFormat.PORTRAIT);
-		generatePDF(mathmodel, fos, pageFormat);
-	}
+        java.awt.print.PageFormat pageFormat = java.awt.print.PrinterJob.getPrinterJob().defaultPage();
+        pageFormat.setOrientation(java.awt.print.PageFormat.PORTRAIT);
+        this.generatePDF(geom, fos, pageFormat);
+    }
 
 
-	public void generatePDF(MathModel mathmodel, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception {
+    public void generatePDF(Geometry geom, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception {
 
-		ITextWriter pdfWriter = ITextWriter.getInstance(ITextWriter.PDF_WRITER);
-		pdfWriter.writeMathModel(mathmodel, fos, pageFormat);
-	}
+        ITextWriter pdfWriter = ITextWriter.getInstance(ITextWriter.PDF_WRITER);
+        pdfWriter.writeGeometry(geom, fos, pageFormat);
+    }
+
+
+    public void generatePDF(MathModel mathmodel, java.io.FileOutputStream fos) throws Exception {
+
+        java.awt.print.PageFormat pageFormat = java.awt.print.PrinterJob.getPrinterJob().defaultPage();
+        pageFormat.setOrientation(java.awt.print.PageFormat.PORTRAIT);
+        this.generatePDF(mathmodel, fos, pageFormat);
+    }
+
+
+    public void generatePDF(MathModel mathmodel, java.io.FileOutputStream fos, java.awt.print.PageFormat pageFormat) throws Exception {
+
+        ITextWriter pdfWriter = ITextWriter.getInstance(ITextWriter.PDF_WRITER);
+        pdfWriter.writeMathModel(mathmodel, fos, pageFormat);
+    }
 
 
 //	public void generateReactionsImage(FileOutputStream fos,ReactionCartoonTool reactionCartoonToolIN/*tif,png,jpg,... javax.imageio.spi.ImageReaderSpi#getFormatNames*/) throws Exception {
@@ -692,8 +693,8 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 //	}
 
 
-	public void generateStructureImage(Model model, String resolution, java.io.FileOutputStream fos) throws Exception {
-		
+    public void generateStructureImage(Model model, String resolution, java.io.FileOutputStream fos) throws Exception {
+
 //		java.io.ByteArrayOutputStream bos = ITextWriter.generateStructureImage(model, resolution);
 //		try {
 //			bos.flush();
@@ -706,2070 +707,2079 @@ protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
 //			lg.error(e);
 //			throw e;
 //		}
-	}
+    }
 
 
-	public BioModel getBioModel(KeyValue bioModelKey) throws DataAccessException {
+    public BioModel getBioModel(KeyValue bioModelKey) throws DataAccessException {
 
-		XMLHolder<BioModel> bioModelXML = getBioModelXML(bioModelKey);
+        XMLHolder<BioModel> bioModelXML = this.getBioModelXML(bioModelKey);
 
-		BioModel bioModel = getBioModelFromDatabaseXML(bioModelXML);
-		// if the positive & negative features for the membranes are not already set, set them using struct topology.
-		bioModel.getModel().getElectricalTopology().populateFromStructureTopology();
-		//
-		// preload SimulationJobStatus for all simulations if any missing from hash.
-		// 
-		Simulation simulations[] = bioModel.getSimulations();
-		KeyValue simKeys[] = new KeyValue[simulations.length];
-		for (int i = 0; i < simulations.length; i++){
-			VCSimulationIdentifier vcSimulationIdentifier = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-			simKeys[i] = vcSimulationIdentifier.getSimulationKey();
-		}
-		preloadSimulationStatus(simKeys);
-		
-		return bioModel;
-	}
+        BioModel bioModel = this.getBioModelFromDatabaseXML(bioModelXML);
+        // if the positive & negative features for the membranes are not already set, set them using struct topology.
+        bioModel.getModel().getElectricalTopology().populateFromStructureTopology();
+        //
+        // preload SimulationJobStatus for all simulations if any missing from hash.
+        //
+        Simulation[] simulations = bioModel.getSimulations();
+        KeyValue[] simKeys = new KeyValue[simulations.length];
+        for (int i = 0; i < simulations.length; i++) {
+            VCSimulationIdentifier vcSimulationIdentifier = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+            simKeys[i] = vcSimulationIdentifier.getSimulationKey();
+        }
+        this.preloadSimulationStatus(simKeys);
+
+        return bioModel;
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 4:02:44 PM)
- * @return cbit.vcell.biomodel.BioModel
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
-public BioModel getBioModel(BioModelInfo bioModelInfo) throws DataAccessException {
+    /**
+     * Insert the method's description here.
+     * Creation date: (11/14/00 4:02:44 PM)
+     *
+     * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
+     * @return cbit.vcell.biomodel.BioModel
+     */
+    public BioModel getBioModel(BioModelInfo bioModelInfo) throws DataAccessException {
 
-	return getBioModel(bioModelInfo.getVersion().getVersionKey());
-}
+        return this.getBioModel(bioModelInfo.getVersion().getVersionKey());
+    }
 
-private BioModel getBioModelFromDatabaseXML(XMLHolder<BioModel> bioModelXMLHolder) throws DataAccessException{
+    private BioModel getBioModelFromDatabaseXML(XMLHolder<BioModel> bioModelXMLHolder) throws DataAccessException {
 
-	try{
-		BioModel bm = bioModelXMLHolder.getDocument();
-		if (bm==null){
-			bm = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLHolder.getXmlString()));
-		}
-		cacheSimulations(bm.getSimulations());
-		// XmlHelper.XMLToBioModel() already calls BioModel.refreshDependencies()
-		//bm.refreshDependencies(); 
-		return bm;
-	}catch(XmlParseException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
+        try {
+            BioModel bm = bioModelXMLHolder.getDocument();
+            if (bm == null) {
+                bm = XmlHelper.XMLToBioModel(new XMLSource(bioModelXMLHolder.getXmlString()));
+            }
+            this.cacheSimulations(bm.getSimulations());
+            // XmlHelper.XMLToBioModel() already calls BioModel.refreshDependencies()
+            //bm.refreshDependencies();
+            return bm;
+        } catch (XmlParseException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
 
-public synchronized BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException {
-	if (key==null){
-System.out.println("<<<NULL>>>> ClientDocumentManager.getBioModelInfo("+key+")");
-		return null;
-	}
-	//
-	// first look in local cache for the Info object
-	//
-	BioModelInfo bioModelInfo = (BioModelInfo)bioModelInfoHash.get(key);
-	if (bioModelInfo!=null){
-		return bioModelInfo;
-	}
+    public synchronized BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException {
+        if (key == null) {
+            System.out.println("<<<NULL>>>> ClientDocumentManager.getBioModelInfo(" + key + ")");
+            return null;
+        }
+        //
+        // first look in local cache for the Info object
+        //
+        BioModelInfo bioModelInfo = this.bioModelInfoHash.get(key);
+        if (bioModelInfo != null) {
+            return bioModelInfo;
+        }
 
-	//
-	// else refresh cache
-	//
-	reloadBioModelInfos();
+        //
+        // else refresh cache
+        //
+        this.reloadBioModelInfos();
 //	bBioModelInfosDirty = false;
 
-	//
-	// now look in cache again (should be in there unless it was deleted from database).
-	//
-	bioModelInfo = (BioModelInfo)bioModelInfoHash.get(key);
-	if (bioModelInfo!=null){
-		return bioModelInfo;
-	}
+        //
+        // now look in cache again (should be in there unless it was deleted from database).
+        //
+        bioModelInfo = this.bioModelInfoHash.get(key);
+        if (bioModelInfo != null) {
+            return bioModelInfo;
+        }
 
-	System.out.println("BioModelInfo("+key+") not found");
-	return null;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 5:33:21 PM)
- * @return cbit.vcell.biomodel.BioModelInfo[]
- */
-public BioModelInfo[] getBioModelInfos() {
-	ArrayList<BioModelInfo> arrayList = new ArrayList<BioModelInfo>(bioModelInfoHash.values());
-	Collections.sort(arrayList,new VersionInfoComparator());
-	return (BioModelInfo[])arrayList.toArray(new BioModelInfo[bioModelInfoHash.size()]);
-}
+        System.out.println("BioModelInfo(" + key + ") not found");
+        return null;
+    }
 
 
-private XMLHolder<BioModel> getBioModelXML(KeyValue vKey) throws DataAccessException {
+    /**
+     * Insert the method's description here.
+     * Creation date: (11/14/00 5:33:21 PM)
+     *
+     * @return cbit.vcell.biomodel.BioModelInfo[]
+     */
+    public BioModelInfo[] getBioModelInfos() {
+        ArrayList<BioModelInfo> arrayList = new ArrayList<BioModelInfo>(this.bioModelInfoHash.values());
+        Collections.sort(arrayList, new VersionInfoComparator());
+        return arrayList.toArray(new BioModelInfo[this.bioModelInfoHash.size()]);
+    }
 
-	try{
-		String xmlString = (String)xmlHash.get(vKey);
-		if (xmlString==null){
-			BigString xmlBS = sessionManager.getUserMetaDbServer().getBioModelXML(vKey);
-			xmlString = (xmlBS != null?xmlBS.toString():null);
-			if(xmlString != null){
-				BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(xmlString));
-				String newXmlString = XmlHelper.bioModelToXML(bioModel);
-				xmlHash.put(vKey,newXmlString);
-				return new XMLHolder<BioModel>(newXmlString,bioModel);
-			}else{
-				throw new RuntimeException("unexpected: UserMetaDbServer.getBioModelXML() returned null");
-			}
-		}else{
-			return new XMLHolder<BioModel>(xmlString);
-		}
-	}catch (ObjectNotFoundException e){
-		throw new DataAccessException("BioModel (id=" + vKey + ") does not exist. It either " +
-			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
-	}catch(Exception e){
-		lg.error(e.getMessage(), e);
-		throw FailToLoadDocumentExc.createException(e, vKey, this);
-	}
-}
 
-public static class FailToLoadDocumentExc extends DataAccessException {
-//	private VCellSoftwareVersion documentSoftwareVersion;
+    private XMLHolder<BioModel> getBioModelXML(KeyValue vKey) throws DataAccessException {
+
+        try {
+            String xmlString = this.xmlHash.get(vKey);
+            if (xmlString == null) {
+                BigString xmlBS = this.sessionManager.getUserMetaDbServer().getBioModelXML(vKey);
+                xmlString = (xmlBS != null ? xmlBS.toString() : null);
+                if (xmlString != null) {
+                    BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(xmlString));
+                    String newXmlString = XmlHelper.bioModelToXML(bioModel);
+                    this.xmlHash.put(vKey, newXmlString);
+                    return new XMLHolder<BioModel>(newXmlString, bioModel);
+                } else {
+                    throw new RuntimeException("unexpected: UserMetaDbServer.getBioModelXML() returned null");
+                }
+            } else {
+                return new XMLHolder<BioModel>(xmlString);
+            }
+        } catch (ObjectNotFoundException e) {
+            throw new DataAccessException("BioModel (id=" + vKey + ") does not exist. It either " +
+                    "has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
+        } catch (Exception e) {
+            lg.error(e.getMessage(), e);
+            throw FailToLoadDocumentExc.createException(e, vKey, this);
+        }
+    }
+
+    public static class FailToLoadDocumentExc extends DataAccessException {
+        //	private VCellSoftwareVersion documentSoftwareVersion;
 //	private VCellSoftwareVersion runningSoftwareVersion;
-	public FailToLoadDocumentExc(Throwable cause,VCellSoftwareVersion runningSoftwareVersion,VCellSoftwareVersion documentSoftwareVersion){
-		super(VCellErrorMessages.FAIL_LOAD_MESSAGE+"\n"+getVersionsString(runningSoftwareVersion,documentSoftwareVersion),cause);
+        public FailToLoadDocumentExc(Throwable cause, VCellSoftwareVersion runningSoftwareVersion, VCellSoftwareVersion documentSoftwareVersion) {
+            super(VCellErrorMessages.FAIL_LOAD_MESSAGE + "\n" + getVersionsString(runningSoftwareVersion, documentSoftwareVersion), cause);
 //		this.runningSoftwareVersion = runningSoftwareVersion;
 //		this.documentSoftwareVersion = documentSoftwareVersion;
-	}
-	public static FailToLoadDocumentExc createException(Throwable cause,KeyValue documentKey,ClientDocumentManager clientDocumentManager){
-		VCellSoftwareVersion documentSoftwareVersion = null;
-		try{
-			VCDocumentInfo docInfo = clientDocumentManager.getBioModelInfo(documentKey);
-			documentSoftwareVersion = docInfo.getSoftwareVersion();
-		}catch(Exception e){
-			lg.error(e.getMessage(), e);
-		}
-		return new FailToLoadDocumentExc(cause,VCellSoftwareVersion.fromSystemProperty(),documentSoftwareVersion);
-	}
-	public static String getVersionsString(VCellSoftwareVersion runningSoftwareVersion,VCellSoftwareVersion documentSoftwareVersion){
-		return "(run="+(runningSoftwareVersion==null?"unknown":runningSoftwareVersion.getSoftwareVersionString())+", doc="+(documentSoftwareVersion==null?"unknown":documentSoftwareVersion.getSoftwareVersionString())+")";
-	}
+        }
+
+        public static FailToLoadDocumentExc createException(Throwable cause, KeyValue documentKey, ClientDocumentManager clientDocumentManager) {
+            VCellSoftwareVersion documentSoftwareVersion = null;
+            try {
+                VCDocumentInfo docInfo = clientDocumentManager.getBioModelInfo(documentKey);
+                documentSoftwareVersion = docInfo.getSoftwareVersion();
+            } catch (Exception e) {
+                lg.error(e.getMessage(), e);
+            }
+            return new FailToLoadDocumentExc(cause, VCellSoftwareVersion.fromSystemProperty(), documentSoftwareVersion);
+        }
+
+        public static String getVersionsString(VCellSoftwareVersion runningSoftwareVersion, VCellSoftwareVersion documentSoftwareVersion) {
+            return "(run=" + (runningSoftwareVersion == null ? "unknown" : runningSoftwareVersion.getSoftwareVersionString()) + ", doc=" + (documentSoftwareVersion == null ? "unknown" : documentSoftwareVersion.getSoftwareVersionString()) + ")";
+        }
 //	public VCellSoftwareVersion getRunningSoftwareVersion(){
 //		return runningSoftwareVersion;
 //	}
 //	public VCellSoftwareVersion getDocumentSoftwareVersion(){
 //		return documentSoftwareVersion;
 //	}
-}
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/8/2003 4:55:39 PM)
- */
-public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessException {
-	try {
-		return sessionManager.getUserMetaDbServer().getBoundSpecies(dbfs);
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
+    /**
+     * Insert the method's description here.
+     * Creation date: (4/8/2003 4:55:39 PM)
+     */
+    public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessException {
+        try {
+            return this.sessionManager.getUserMetaDbServer().getBoundSpecies(dbfs);
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/8/2003 4:55:39 PM)
- */
-public DBFormalSpecies[] getDatabaseSpecies(String likeString, boolean isBound, FormalSpeciesType speciesType, int restrictSearch, int rowLimit, boolean bOnlyUser)	throws DataAccessException {
+    /**
+     * Insert the method's description here.
+     * Creation date: (4/8/2003 4:55:39 PM)
+     */
+    public DBFormalSpecies[] getDatabaseSpecies(String likeString, boolean isBound, FormalSpeciesType speciesType, int restrictSearch, int rowLimit, boolean bOnlyUser) throws DataAccessException {
 
-	try {
-		return sessionManager.getUserMetaDbServer().getDatabaseSpecies(likeString,isBound,speciesType,restrictSearch,rowLimit,bOnlyUser);
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
-
-
-public ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
-	try {
-		return sessionManager.getUserMetaDbServer().getDictionaryReactions(reactionQuerySpec);
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
+        try {
+            return this.sessionManager.getUserMetaDbServer().getDatabaseSpecies(likeString, isBound, speciesType, restrictSearch, rowLimit, bOnlyUser);
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
 
 
-public Geometry getGeometry(KeyValue geometryKey) throws DataAccessException {
-
-	String geometryXML = getGeometryXML(geometryKey);
-	
-	Geometry geometry = getGeometryFromDatabaseXML(geometryXML);
-	
-	return geometry;
-}
-
-public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessException {
-
-	Geometry geometry = null;
-	try {
-		XMLSource geomSource = new XMLSource(getGeometryXML(geometryInfo.getVersion().getVersionKey()));
-		geometry = XmlHelper.XMLToGeometry(geomSource);
-	}catch (XmlParseException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-	
-	try {
-		if (geometry.getDimension()>0 && geometry.getGeometrySurfaceDescription().getGeometricRegions()==null){
-			geometry.getGeometrySurfaceDescription().updateAll();
-		}
-	}catch (Exception e){
-		lg.error(e.getMessage(), e);
-		//throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage());
-	}
-	
-	return geometry;
-}
-
-private Geometry getGeometryFromDatabaseXML(String geometryXML) throws DataAccessException{
-
-	try{
-		Geometry geometry = XmlHelper.XMLToGeometry(new XMLSource(geometryXML));
-		geometry.refreshDependencies();
-
-		try {
-			if (geometry.getDimension()>0){
-				geometry.getGeometrySurfaceDescription().updateAll();
-			}
-		}catch (Exception e){
-			throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage(), e);
-		}
-
-		return geometry;
-	}catch(XmlParseException e){
-		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage(), e);
-	}
-}
+    public ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
+        try {
+            return this.sessionManager.getUserMetaDbServer().getDictionaryReactions(reactionQuerySpec);
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
 
 
-public synchronized GeometryInfo getGeometryInfo(KeyValue key) throws DataAccessException {
-	if (key==null){
-System.out.println("<<<NULL>>>> ClientDocumentManager.getGeometryInfo("+key+")");
-		return null;
-	}
-	//
-	// first look in local cache for the Info object
-	//
-	GeometryInfo geometryInfo = (GeometryInfo)geoInfoHash.get(key);
-	if (geometryInfo!=null){
+    public Geometry getGeometry(KeyValue geometryKey) throws DataAccessException {
+
+        String geometryXML = this.getGeometryXML(geometryKey);
+
+        Geometry geometry = this.getGeometryFromDatabaseXML(geometryXML);
+
+        return geometry;
+    }
+
+    public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessException {
+
+        Geometry geometry = null;
+        try {
+            XMLSource geomSource = new XMLSource(this.getGeometryXML(geometryInfo.getVersion().getVersionKey()));
+            geometry = XmlHelper.XMLToGeometry(geomSource);
+        } catch (XmlParseException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+
+        try {
+            if (geometry.getDimension() > 0 && geometry.getGeometrySurfaceDescription().getGeometricRegions() == null) {
+                geometry.getGeometrySurfaceDescription().updateAll();
+            }
+        } catch (Exception e) {
+            lg.error(e.getMessage(), e);
+            //throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage());
+        }
+
+        return geometry;
+    }
+
+    private Geometry getGeometryFromDatabaseXML(String geometryXML) throws DataAccessException {
+
+        try {
+            Geometry geometry = XmlHelper.XMLToGeometry(new XMLSource(geometryXML));
+            geometry.refreshDependencies();
+
+            try {
+                if (geometry.getDimension() > 0) {
+                    geometry.getGeometrySurfaceDescription().updateAll();
+                }
+            } catch (Exception e) {
+                throw new DataAccessException("Geometric surface generation error:\n" + e.getMessage(), e);
+            }
+
+            return geometry;
+        } catch (XmlParseException e) {
+            throw new DataAccessException(e.getClass().getName() + ": " + e.getMessage(), e);
+        }
+    }
+
+
+    public synchronized GeometryInfo getGeometryInfo(KeyValue key) throws DataAccessException {
+        if (key == null) {
+            System.out.println("<<<NULL>>>> ClientDocumentManager.getGeometryInfo(" + key + ")");
+            return null;
+        }
+        //
+        // first look in local cache for the Info object
+        //
+        GeometryInfo geometryInfo = this.geoInfoHash.get(key);
+        if (geometryInfo != null) {
 //System.out.println("<<<IN CACHE>>> ClientDocumentManager.getGeometryInfo("+key+")");
-		return geometryInfo;
-	}
-	
-	//
-	// else get new list of info objects from database and stick in cache
-	//
-	reloadGeometryInfos();
+            return geometryInfo;
+        }
+
+        //
+        // else get new list of info objects from database and stick in cache
+        //
+        this.reloadGeometryInfos();
 //	bGeometryInfosDirty = false;
 
-	//
-	// now look in cache again (should be in there unless it was deleted from database).
-	//
-	geometryInfo = (GeometryInfo)geoInfoHash.get(key);
-	if (geometryInfo!=null){
-		return geometryInfo;
-	}else{
-		throw new ObjectNotFoundException("GeometryInfo("+key+") not found");
-	}
-}
+        //
+        // now look in cache again (should be in there unless it was deleted from database).
+        //
+        geometryInfo = this.geoInfoHash.get(key);
+        if (geometryInfo != null) {
+            return geometryInfo;
+        } else {
+            throw new ObjectNotFoundException("GeometryInfo(" + key + ") not found");
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 5:33:21 PM)
- * @return cbit.vcell.biomodel.BioModelInfo[]
- */
-public GeometryInfo[] getGeometryInfos() {
-	ArrayList<GeometryInfo> arrayList = new ArrayList<GeometryInfo>(geoInfoHash.values());
-	Collections.sort(arrayList,new VersionInfoComparator());
-	return (GeometryInfo[])arrayList.toArray(new GeometryInfo[geoInfoHash.size()]);
-}
+    /**
+     * Insert the method's description here.
+     * Creation date: (11/14/00 5:33:21 PM)
+     *
+     * @return cbit.vcell.biomodel.BioModelInfo[]
+     */
+    public GeometryInfo[] getGeometryInfos() {
+        ArrayList<GeometryInfo> arrayList = new ArrayList<GeometryInfo>(this.geoInfoHash.values());
+        Collections.sort(arrayList, new VersionInfoComparator());
+        return arrayList.toArray(new GeometryInfo[this.geoInfoHash.size()]);
+    }
 
-private String getGeometryXML(KeyValue vKey) throws DataAccessException {
+    private String getGeometryXML(KeyValue vKey) throws DataAccessException {
 
-	try{
-		String xmlString = (String)xmlHash.get(vKey);
-		if (xmlString==null){
-			xmlString = sessionManager.getUserMetaDbServer().getGeometryXML(vKey).toString();
-			if(xmlString != null){
-				xmlHash.put(vKey,xmlString);
-				return xmlString;
-			}else{
-				throw new RuntimeException("unexpected: UserMetaDbServer.getGeometryXML() returned null");
-			}
-		}else{
-			return xmlString;
-		}
-	}catch (ObjectNotFoundException e){
-		throw new DataAccessException("Geometry (id=" + vKey + ") does not exist. It either " +
-			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
-	}catch(Exception e){
-		lg.error(e.getMessage(), e);
-		throw FailToLoadDocumentExc.createException(e, vKey, this);
-	}
-}
+        try {
+            String xmlString = this.xmlHash.get(vKey);
+            if (xmlString == null) {
+                xmlString = this.sessionManager.getUserMetaDbServer().getGeometryXML(vKey).toString();
+                if (xmlString != null) {
+                    this.xmlHash.put(vKey, xmlString);
+                    return xmlString;
+                } else {
+                    throw new RuntimeException("unexpected: UserMetaDbServer.getGeometryXML() returned null");
+                }
+            } else {
+                return xmlString;
+            }
+        } catch (ObjectNotFoundException e) {
+            throw new DataAccessException("Geometry (id=" + vKey + ") does not exist. It either " +
+                    "has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
+        } catch (Exception e) {
+            lg.error(e.getMessage(), e);
+            throw FailToLoadDocumentExc.createException(e, vKey, this);
+        }
+    }
 
-public VCImage getImage(VCImageInfo vcImageInfo) throws DataAccessException {
-	
-	VCImage vcImage = null;
-	try {
-		vcImage = XmlHelper.XMLToImage(getImageXML(vcImageInfo.getVersion().getVersionKey()));
-	}catch (XmlParseException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-	
-	return vcImage;
-}
+    public VCImage getImage(VCImageInfo vcImageInfo) throws DataAccessException {
 
-public VCImageInfo[] getImageInfos() throws DataAccessException {
-	ArrayList<VCImageInfo> arrayList = new ArrayList<VCImageInfo>(imgInfoHash.values());
-	Collections.sort(arrayList,new VersionInfoComparator());
-	return (VCImageInfo[])arrayList.toArray(new VCImageInfo[imgInfoHash.size()]);
-}
+        VCImage vcImage = null;
+        try {
+            vcImage = XmlHelper.XMLToImage(this.getImageXML(vcImageInfo.getVersion().getVersionKey()));
+        } catch (XmlParseException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
 
-private String getImageXML(KeyValue vKey) throws DataAccessException {
+        return vcImage;
+    }
 
-	try{
-		String xmlString = (String)xmlHash.get(vKey);
-		if (xmlString==null){
-			xmlString = sessionManager.getUserMetaDbServer().getVCImageXML(vKey).toString();
-			if(xmlString != null){
-				xmlHash.put(vKey,xmlString);
-				return xmlString;
-			}else{
-				throw new RuntimeException("unexpected: UserMetaDbServer.getVCImageXML() returned null");
-			}
-		}else{
-			return xmlString;
-		}
-	}catch (ObjectNotFoundException e){
-		return null;
-	}catch(Exception e){
-		lg.error(e.getMessage(), e);
-		throw FailToLoadDocumentExc.createException(e, vKey, this);
-	}
-}
+    public VCImageInfo[] getImageInfos() throws DataAccessException {
+        ArrayList<VCImageInfo> arrayList = new ArrayList<VCImageInfo>(this.imgInfoHash.values());
+        Collections.sort(arrayList, new VersionInfoComparator());
+        return arrayList.toArray(new VCImageInfo[this.imgInfoHash.size()]);
+    }
 
-public MathModel getMathModel(KeyValue mathModelKey) throws DataAccessException {
+    private String getImageXML(KeyValue vKey) throws DataAccessException {
 
-	XMLHolder<MathModel> mathModelXML = getMathModelXML(mathModelKey);
-	MathModel mathModel = getMathModelFromDatabaseXML(mathModelXML);
+        try {
+            String xmlString = this.xmlHash.get(vKey);
+            if (xmlString == null) {
+                xmlString = this.sessionManager.getUserMetaDbServer().getVCImageXML(vKey).toString();
+                if (xmlString != null) {
+                    this.xmlHash.put(vKey, xmlString);
+                    return xmlString;
+                } else {
+                    throw new RuntimeException("unexpected: UserMetaDbServer.getVCImageXML() returned null");
+                }
+            } else {
+                return xmlString;
+            }
+        } catch (ObjectNotFoundException e) {
+            return null;
+        } catch (Exception e) {
+            lg.error(e.getMessage(), e);
+            throw FailToLoadDocumentExc.createException(e, vKey, this);
+        }
+    }
 
-	//
-	// preload SimulationJobStatus for all simulations if any missing from hash.
-	//
-	Simulation simulations[] = mathModel.getSimulations();
-	KeyValue simKeys[] = new KeyValue[simulations.length];
-	for (int i = 0; i < simulations.length; i++){
-		VCSimulationIdentifier vcSimulationIdentifier = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-		simKeys[i] = vcSimulationIdentifier.getSimulationKey();
-	}
-	preloadSimulationStatus(simKeys);
-	return mathModel;
-}
+    public MathModel getMathModel(KeyValue mathModelKey) throws DataAccessException {
 
-public MathModel getMathModel(MathModelInfo mathModelInfo) throws DataAccessException {
-	
-	return getMathModel(mathModelInfo.getVersion().getVersionKey());
-}
+        XMLHolder<MathModel> mathModelXML = this.getMathModelXML(mathModelKey);
+        MathModel mathModel = this.getMathModelFromDatabaseXML(mathModelXML);
+
+        //
+        // preload SimulationJobStatus for all simulations if any missing from hash.
+        //
+        Simulation[] simulations = mathModel.getSimulations();
+        KeyValue[] simKeys = new KeyValue[simulations.length];
+        for (int i = 0; i < simulations.length; i++) {
+            VCSimulationIdentifier vcSimulationIdentifier = simulations[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+            simKeys[i] = vcSimulationIdentifier.getSimulationKey();
+        }
+        this.preloadSimulationStatus(simKeys);
+        return mathModel;
+    }
+
+    public MathModel getMathModel(MathModelInfo mathModelInfo) throws DataAccessException {
+
+        return this.getMathModel(mathModelInfo.getVersion().getVersionKey());
+    }
 
 
-private MathModel getMathModelFromDatabaseXML(XMLHolder<MathModel> mathModelXML) throws DataAccessException{
+    private MathModel getMathModelFromDatabaseXML(XMLHolder<MathModel> mathModelXML) throws DataAccessException {
 
-	try{
-		MathModel mm = mathModelXML.getDocument();
-		if (mm==null){
-			mm = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.getXmlString()));
-		}
-		cacheSimulations(mm.getSimulations());
-		mm.refreshDependencies();
+        try {
+            MathModel mm = mathModelXML.getDocument();
+            if (mm == null) {
+                mm = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.getXmlString()));
+            }
+            this.cacheSimulations(mm.getSimulations());
+            mm.refreshDependencies();
 
-		try {
-			if (mm.getMathDescription().getGeometry().getDimension()>0 && mm.getMathDescription().getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null){
-				mm.getMathDescription().getGeometry().getGeometrySurfaceDescription().updateAll();
-			}
-		}catch (Exception e){
-			throw new DataAccessException("Geometric surface generation error:\n"+e.getMessage(), e);
-		}
+            try {
+                if (mm.getMathDescription().getGeometry().getDimension() > 0 && mm.getMathDescription().getGeometry().getGeometrySurfaceDescription().getGeometricRegions() == null) {
+                    mm.getMathDescription().getGeometry().getGeometrySurfaceDescription().updateAll();
+                }
+            } catch (Exception e) {
+                throw new DataAccessException("Geometric surface generation error:\n" + e.getMessage(), e);
+            }
 
-		return mm;
-	}catch(XmlParseException e){
-		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage(), e);
-	}
-}
+            return mm;
+        } catch (XmlParseException e) {
+            throw new DataAccessException(e.getClass().getName() + ": " + e.getMessage(), e);
+        }
+    }
 
-public synchronized MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException {
-	if (key==null){
-System.out.println("<<<NULL>>>> ClientDocumentManager.getMathModelInfo("+key+")");
-		return null;
-	}
-	//
-	// first look in local cache for the Info object
-	//
-	//
-	// first look in local cache for the Info object
-	//
-	MathModelInfo mathModelInfo = (MathModelInfo)mathModelInfoHash.get(key);
-	if (mathModelInfo!=null){
+    public synchronized MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException {
+        if (key == null) {
+            System.out.println("<<<NULL>>>> ClientDocumentManager.getMathModelInfo(" + key + ")");
+            return null;
+        }
+        //
+        // first look in local cache for the Info object
+        //
+        //
+        // first look in local cache for the Info object
+        //
+        MathModelInfo mathModelInfo = this.mathModelInfoHash.get(key);
+        if (mathModelInfo != null) {
 //System.out.println("<<<IN CACHE>>> ClientDocumentManager.getMathModelInfo("+key+")");
-		return mathModelInfo;
-	}
+            return mathModelInfo;
+        }
 
-	//
-	// else refresh cache
-	//
-	reloadMathModelInfos();
+        //
+        // else refresh cache
+        //
+        this.reloadMathModelInfos();
 //	bMathModelInfosDirty = false;
 
-	//
-	// now look in cache again (should be in there unless it was deleted from database).
-	//
-	mathModelInfo = (MathModelInfo)mathModelInfoHash.get(key);
-	if (mathModelInfo!=null){
-		return mathModelInfo;
-	}
-
-	System.out.println("MathModelInfo("+key+") not found");
-	return null;
-}
-
-public MathModelInfo[] getMathModelInfos() {
-	ArrayList<MathModelInfo> arrayList = new ArrayList<MathModelInfo>(mathModelInfoHash.values());
-	Collections.sort(arrayList,new VersionInfoComparator());
-	return (MathModelInfo[])arrayList.toArray(new MathModelInfo[mathModelInfoHash.size()]);
-}
-
-private XMLHolder<MathModel> getMathModelXML(KeyValue vKey) throws DataAccessException {
-
-	try{
-		String xmlString = (String)xmlHash.get(vKey);
-		if (xmlString==null){
-			xmlString = sessionManager.getUserMetaDbServer().getMathModelXML(vKey).toString();
-			if(xmlString != null){
-				MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(xmlString));
-				String newXmlString = XmlHelper.mathModelToXML(mathModel);
-				xmlHash.put(vKey,newXmlString);
-				return new XMLHolder<MathModel>(newXmlString,mathModel);
-			}else{
-				throw new RuntimeException("unexpected: UserMetaDbServer.getMathModelXML() returned null");
-			}
-		}else{
-			return new XMLHolder<MathModel>(xmlString);
-		}
-	}catch (ObjectNotFoundException e){
-		throw new DataAccessException("MathModel (id=" + vKey + ") does not exist. It either " +
-			"has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
-	}catch(Exception e){
-		lg.error(e.getMessage(), e);
-		throw FailToLoadDocumentExc.createException(e, vKey, this);
-	}
-}
-
-public Preference[] getPreferences() throws DataAccessException{
-
-	System.out.println("ClientDocumentManager.getPreferences()");
-	if (preferences!=null){
-		return preferences;
-	}else{
-		try{
-			preferences = sessionManager.getUserMetaDbServer().getPreferences();
-			return preferences;
-		}catch (RemoteProxyException e){
-			handleRemoteProxyException(e);
-			throw new DataAccessException(e.getMessage());
-		}
-	}
-}
-
-public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessException {
-	try {
-		String str = sessionManager.getUserMetaDbServer().getReactionStepAsModel(reactionStepKey);
-		Element element = XmlUtil.stringToXML(str, null).getRootElement();
-		Model reactionModel = new XmlReader(true).getModel(element);
-		if(reactionModel != null){
-			try{
-				reactionModel = (Model)BeanUtils.cloneSerializable(reactionModel);
-				reactionModel.refreshDependencies();
-			}catch(Exception e){
-				throw new DataAccessException(e.getMessage(), e);
-			}
-		}
-		return reactionModel;
-		
-	}catch (Exception e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
-
-
-public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException {
-	if (simulationStatusHash.containsKey(vcSimulationIdentifier.getSimulationKey())){
-		return (SimulationStatus)simulationStatusHash.get(vcSimulationIdentifier.getSimulationKey());
-	}else{
-		SimulationStatus simulationStatus = null;
-		try {
-			simulationStatus = sessionManager.getSimulationController().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-		}catch (RemoteProxyException e){
-			handleRemoteProxyException(e);
-			try {
-				simulationStatus = sessionManager.getSimulationController().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
-			}catch (RemoteProxyException e2){
-				handleRemoteProxyException(e2);
-				throw new DataAccessException("SimulationStatus inquiry for '"+vcSimulationIdentifier+"' failed\n"+e2.getMessage());
-			}
-		}
-		simulationStatusHash.put(vcSimulationIdentifier.getSimulationKey(),simulationStatus);
-		return simulationStatus;
-	}
-}
-
-	public SessionManager getSessionManager() {
-
-		return sessionManager;
-	}
-
-public Simulation getSimulation(SimulationInfo simulationInfo) throws DataAccessException {
-	
-	Simulation simulation = null;
-	try {
-		simulation = XmlHelper.XMLToSim(getSimulationXML(simulationInfo.getVersion().getVersionKey()));
-	}catch (XmlParseException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-	
-	return simulation;
-}
-
-private String getSimulationXML(KeyValue vKey) throws DataAccessException {
-
-	try{
-		String xmlString = (String)xmlHash.get(vKey);
-		if (xmlString==null){
-			xmlString = sessionManager.getUserMetaDbServer().getSimulationXML(vKey).toString();
-			if(xmlString != null){
-				xmlHash.put(vKey,xmlString);
-				return xmlString;
-			}else{
-				throw new RuntimeException("unexpected: UserMetaDbServer.getSimulationXML() returned null");
-			}
-		}else{
-			return xmlString;
-		}
-	}catch (ObjectNotFoundException e){
-		return null;
-	}catch(Exception e){
-		throw new DataAccessException("Error getting XML document from server: "+e.getMessage(), e);
-		//return null;
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2004 11:27:37 AM)
- */
-public TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessException {
-	if(!getUser().isTestAccount()){
-		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
-	}
-	try {
-		return getSessionManager().getUserMetaDbServer().getTestSuite(getThisTS);
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2004 11:27:37 AM)
- */
-public TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException {
-	
-	if(!getUser().isTestAccount()){
-		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
-	}
-	try {
-		return getSessionManager().getUserMetaDbServer().getTestSuiteInfos();
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/19/01 10:54:29 AM)
- */
-public User getUser() {
-	return sessionManager.getUser();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/15/2003 3:33:10 PM)
- */
-public ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
-	try {
-		return sessionManager.getUserMetaDbServer().getUserReactionDescriptions(reactionQuerySpec);
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/15/2003 3:33:10 PM)
- */
-public ReactionStepInfo[] getUserReactionStepInfos(KeyValue[] reactionStepKeys) throws DataAccessException {
-	try {
-		return sessionManager.getUserMetaDbServer().getReactionStepInfos(reactionStepKeys);
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 5:24:29 PM)
- * @param e RemoteProxyException
- */
-private void handleRemoteProxyException(RemoteProxyException e) {
-	lg.error("Handling RemoteProxyException", e);
-}
-
-
-private void clear() {
-	xmlHash.clear();
-	geoInfoHash.clear();
-	imgInfoHash.clear();
-	mathModelInfoHash.clear();
-	bioModelInfoHash.clear();
-	simulationStatusHash.clear();	
-	preferences = null;
-
-}
-/**
- * Insert the method's description here.
- * Creation date: (9/25/2003 7:45:19 AM)
- * @return cbit.vcell.modeldb.VCInfoContainer
- */
-public synchronized void initAllDatabaseInfos() throws DataAccessException {
-	clear();
-	
-	VCInfoContainer vcInfoContainer = null;
-	try{
-		System.out.println("ClientDocumentManager.initAllDatabaseInfos()");
-		long time1 = System.currentTimeMillis();
-		//
-		// gets BioModelMetaDatas, MathModelMetaDatas, all VersionInfos, and ResultSetInfos
-		//
-		vcInfoContainer = sessionManager.getUserMetaDbServer().getVCInfoContainer();
-
-		PerformanceMonitorEvent pme = new PerformanceMonitorEvent(this,getUser(),
-			new PerformanceData("ClientDocumentManager.initAllDatabaseInfos()",
-			    MessageEvent.LOGON_STAT,
-			    new PerformanceDataEntry[] {
-				    new PerformanceDataEntry("remote call duration", Double.toString(((double)System.currentTimeMillis()-time1)/1000.0))
-				    }
-		    )
-    	);
-
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException("RemoteProxyException: "+e.getMessage());
-	}
-	
-	//
-	// BioModelInfos
-	//
-	{
-	bioModelInfoHash.clear();
-	BioModelInfo bioModelInfos[] = vcInfoContainer.getBioModelInfos();
-	if (bioModelInfos!=null){
-		for (int i=0;i<bioModelInfos.length;i++){
-			bioModelInfoHash.put(bioModelInfos[i].getVersion().getVersionKey(),bioModelInfos[i]);
-		}
-	}
-	}
-	//
-	// Geometries
-	//
-	{
-	geoInfoHash.clear();
-	GeometryInfo geometryInfos[] = vcInfoContainer.getGeometryInfos();
-	if (geometryInfos!=null){
-		for (int i=0;i<geometryInfos.length;i++){
-			geoInfoHash.put(geometryInfos[i].getVersion().getVersionKey(),geometryInfos[i]);
-		}
-	}
-	}
-	//
-	// MathModelInfos
-	//
-	{
-	mathModelInfoHash.clear();
-	MathModelInfo mathModelInfos[] = vcInfoContainer.getMathModelInfos();
-	if (mathModelInfos!=null){
-		for (int i=0;i<mathModelInfos.length;i++){
-			mathModelInfoHash.put(mathModelInfos[i].getVersion().getVersionKey(),mathModelInfos[i]);
-		}
-	}
-	}
-	//
-	// VCImageInfos
-	//
-	{
-	imgInfoHash.clear();
-	VCImageInfo vcImageInfos[] = vcInfoContainer.getVCImageInfos();
-	if (vcImageInfos!=null){
-		for (int i=0;i<vcImageInfos.length;i++){
-			imgInfoHash.put(vcImageInfos[i].getVersion().getVersionKey(),vcImageInfos[i]);
-		}
-	}
-	}
-
-	fireDatabaseRefresh(new DatabaseEvent(this, DatabaseEvent.REFRESH, null, null));
-		
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/01 4:58:40 PM)
- */
-public boolean isChanged(VCImage vcImage, String vcImageXML) throws DataAccessException {
-	//
-	// get versionable from database or from cache (should be in cache)
-	//
-	if(isChangedVersion(vcImage.getVersion())){
-		return true;
-	}
-	
-	String savedImageXML = null;
-
-	try {
-		savedImageXML = getImageXML(vcImage.getVersion().getVersionKey());
-	}catch (Exception e){
-		lg.error(e.getMessage(), e);
-		//
-		// loaded version has been deleted
-		//
-		return true;
-	}
-
-	//
-	// if never saved, then it has changed (from null to something)
-	//
-	if (savedImageXML == null){
-		return true;
-	}
-
-	//
-	// if comparison fails, then it changed
-	//
-	try {
-		if (vcImageXML==null){
-			vcImageXML = XmlHelper.imageToXML(vcImage);
-		}
-		if (!VCMLComparator.compareEquals(savedImageXML,vcImageXML, false)){
-			return true;
-		}
-	}catch (XmlParseException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-
-
-	return false;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/28/00 12:08:30 AM)
- */
-public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAccessException {
-
-	if(bioModel.getVersion() == null){ 
-		// if owner is not the user, if no changes were made, isChanged=false
-		//
-		// never been saved before (has changed with respect to database)
-		//
-		return true;
-		
-	}else{
-		//
-		// check for name change
-		//
-		if (!bioModel.getVersion().getName().equals(bioModel.getName())){
-			return true;
-		}
-
-		//
-		// compare saved and this bioModel
-		//
-		XMLHolder<BioModel> savedBioModelXML = getBioModelXML(bioModel.getVersion().getVersionKey());
-		if (savedBioModelXML == null){
-			// must have been deleted
-			return true;
-		}
-		try {
-			if (bioModelXML==null){
-				bioModelXML = XmlHelper.bioModelToXML(bioModel);
-			}
-			// compare everything except vcmetadata
-			if (!VCMLComparator.compareEquals(savedBioModelXML.getXmlString(),bioModelXML, true)){
-				return true;
-			}
-			//
-			// compare vcmetadata
-			//
-			BioModel savedBioModel = savedBioModelXML.getDocument();
-			if (savedBioModel==null){
-				savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(savedBioModelXML.getXmlString()));
-			}
-			if (!savedBioModel.getVCMetaData().compareEquals(bioModel.getVCMetaData())) {
-				return true;
-			}
-			return false;			
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
-	}
-
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/21/2004 6:56:58 AM)
- * @return boolean
- * @param vcDocument cbit.vcell.document.VCDocument
- */
-public boolean isChanged(VCDocument vcDocument) throws DataAccessException {
-	if (vcDocument instanceof BioModel) {
-		return isChanged((BioModel)vcDocument,null);
-	} else if (vcDocument instanceof MathModel) {
-		return isChanged((MathModel)vcDocument,null);
-	} else if (vcDocument instanceof Geometry) {
-		return isChanged((Geometry)vcDocument,null);
-	} else if (vcDocument instanceof VCImage) {
-		return isChanged((VCImage)vcDocument,null);
-	} else {
-		throw new RuntimeException("Unknown VCDocument class: " + vcDocument.getClass());
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/28/00 12:08:30 AM)
- */
-public boolean isChanged(Geometry geometry, String geometryXML) throws DataAccessException {
-	//
-	// get versionable from database or from cache (should be in cache)
-	//
-	if(isChangedVersion(geometry.getVersion())){
-		return true;
-	}
-	
-	String savedGeometryXML = null;
-
-	try {
-		savedGeometryXML = getImageXML(geometry.getVersion().getVersionKey());
-	}catch (Exception e){
-		lg.error(e.getMessage(), e);
-		//
-		// loaded version has been deleted
-		//
-		return true;
-	}
-
-	//
-	// if never saved, then it has changed (from null to something)
-	//
-	if (savedGeometryXML == null){
-		return true;
-	}
-
-	//
-	// if comparison fails, then it changed
-	//
-	try{
-		if (geometryXML==null){
-			geometryXML = XmlHelper.geometryToXML(geometry);
-		}
-		if (!VCMLComparator.compareEquals(savedGeometryXML,geometryXML, false)){
-			return true;
-		}
-	}catch (XmlParseException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-
-	return false;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/28/00 12:08:30 AM)
- */
-public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAccessException {
-
-	if(mathModel.getVersion() == null){
-		//
-		// never been saved before (has changed with respect to database)
-		//
-		return true;
-		
-	}else{
-		//
-		// check for name change
-		//
-		if (!mathModel.getVersion().getName().equals(mathModel.getName())){
-			return true;
-		}
-		//
-		// check for annotation change
-		//
-		if (!mathModel.getVersion().getAnnot().equals(mathModel.getDescription())){
-			return true;
-		}
-		
-		//
-		// check for same number of simulations as saved version
-		//
-		MathModelInfo savedMathModelInfo = getMathModelInfo(mathModel.getVersion().getVersionKey());
-		if (savedMathModelInfo==null){
-			//
-			// if savedMathModelInfo is null, then the record was deleted
-			// while it was loaded in client (changed is true)
-			//
-			System.out.println("MathModel("+mathModel.getVersion().getVersionKey()+") must have been deleted, therefore isChanged() is true");
-			return true;
-		}
-		//MathModelMetaData savedMathModelMetaData = getMathModelMetaData(savedMathModelInfo);
-			
-		//if (savedMathModelMetaData.getNumSimulations() != mathModel.getNumSimulations()){
-			//return true;
-		//}
-		//
-		// compare saved and this bioModel
-		//
-		XMLHolder<MathModel> savedMathModelXML = getMathModelXML(mathModel.getVersion().getVersionKey());
-		if (savedMathModelXML == null){
-			// must have been deleted
-			return true;
-		}
-		try {
-			if (mathModelXML==null){
-				mathModelXML = XmlHelper.mathModelToXML(mathModel);
-			}
-			return !VCMLComparator.compareEquals(savedMathModelXML.getXmlString(),mathModelXML, true);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/5/01 4:58:40 PM)
- */
-public boolean isChanged(Simulation sim) throws DataAccessException{
-	
-	// Assumes all Simulations from Loaded (MM.BM) are cached inside ClientDocumentManager
-
-	if(isChangedVersion(sim.getVersion())){
-		return true;
-	}
-
-	KeyValue simKey = sim.getVersion().getVersionKey();
-	if(simKey == null){
-		throw new RuntimeException(this.getClass().getName()+".isChanged(Simulation): Sim Version not null, Simulation key is null");
-	}
-	
-	String loadedSimXML = (String)xmlHash.get(simKey);
-	if(loadedSimXML == null){
-		throw new RuntimeException("Expecting simulation key="+simKey+" to be in ClientDocumentManager cache");
-	}
-
-	try{
-		return !VCMLComparator.compareEquals(XmlHelper.simToXML(sim),loadedSimXML, false);
-	}catch (XmlParseException e){
-		throw new DataAccessException(e.getMessage(), e);
-	}
-	
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/22/2004 5:57:00 PM)
- * @return boolean
- * @param v cbit.sql.Version
- */
-private boolean isChangedVersion(Version v) {
-
-	if (v == null || !v.getOwner().equals(sessionManager.getUser())){
-		return true;
-	}
-	return false;
-}
-
-
-public void preloadSimulationStatus(VCSimulationIdentifier[] simIDs) {
-	KeyValue simKeys[] = new KeyValue[simIDs.length];
-	for (int i = 0; i < simIDs.length; i++){
-		simKeys[i] = simIDs[i].getSimulationKey();
-	}
-	preloadSimulationStatus(simKeys);
-}
-/**
- * Insert the method's description here.
- * Creation date: (9/1/2004 12:33:16 PM)
- * @param simKeys cbit.sql.KeyValue[]
- */
-private void preloadSimulationStatus(KeyValue[] simKeys) {
-	boolean bNeedRefreshStatus = false;
-	for (int i = 0; i < simKeys.length; i++){
-		if (!simulationStatusHash.containsKey(simKeys[i])){
-			bNeedRefreshStatus = true;
-		}
-	}
-	if (bNeedRefreshStatus){
-		try {
-			SimulationStatus[] simulationStatusArray = null;
-			try {
-				simulationStatusArray = sessionManager.getSimulationController().getSimulationStatus(simKeys);
-			}catch (RemoteProxyException e){
-				handleRemoteProxyException(e);
-				try {
-					simulationStatusArray = sessionManager.getSimulationController().getSimulationStatus(simKeys);
-				}catch (RemoteProxyException e2){
-					handleRemoteProxyException(e2);
-				}
-			}
-			for (int i = 0; i < simKeys.length; i++){
-				SimulationStatus simulationStatus = null;
-				for (int j = 0; simulationStatusArray!=null && j < simulationStatusArray.length; j++){
-					// these are server-supplied statuses, jobStatus array is not null
-					if (simulationStatusArray[j] != null && simulationStatusArray[j].getVCSimulationIdentifier().getSimulationKey().equals(simKeys[i])){
-						simulationStatus = simulationStatusArray[j];
-					}
-				}
-				simulationStatusHash.put(simKeys[i],simulationStatus);
-			}
-		}catch (DataAccessException e){
-			lg.error(e);
-		}
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 5:33:21 PM)
- * @return cbit.vcell.biomodel.BioModelInfo[]
- */
-private void reloadBioModelInfos() throws DataAccessException {
-	try {
-		System.out.println("ClientDocumentManager.reloadBioModelInfos()");
-		BioModelInfo bioModelInfos[] = sessionManager.getUserMetaDbServer().getBioModelInfos(true);
-		if (bioModelInfos!=null){
-			bioModelInfoHash.clear();
-			for (int i=0;i<bioModelInfos.length;i++){
-				bioModelInfoHash.put(bioModelInfos[i].getVersion().getVersionKey(),bioModelInfos[i]);
-			}
-		}
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException("RemoteProxyException: "+e.getMessage());
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 5:33:21 PM)
- * @return cbit.vcell.biomodel.BioModelInfo[]
- */
-private void reloadGeometryInfos() throws DataAccessException {
-	try {
-		System.out.println("ClientDocumentManager.reloadGeometryInfos()");
-		GeometryInfo geometryInfos[] = sessionManager.getUserMetaDbServer().getGeometryInfos(true);
-		if (geometryInfos!=null){
-			geoInfoHash.clear();
-			for (int i=0;i<geometryInfos.length;i++){
-				geoInfoHash.put(geometryInfos[i].getVersion().getVersionKey(),geometryInfos[i]);
-			}
-		}
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException("RemoteProxyException: "+e.getMessage());
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (11/14/00 5:33:21 PM)
- * @return cbit.vcell.biomodel.BioModelInfo[]
- */
-private void reloadMathModelInfos() throws DataAccessException {
-	try {
-		System.out.println("ClientDocumentManager.reloadMathModelInfos()");
-		MathModelInfo mathModelInfos[] = sessionManager.getUserMetaDbServer().getMathModelInfos(true);
-		if (mathModelInfos!=null){
-			mathModelInfoHash.clear();
-			for (int i=0;i<mathModelInfos.length;i++){
-				mathModelInfoHash.put(mathModelInfos[i].getVersion().getVersionKey(),mathModelInfos[i]);
-			}
-		}
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException("RemoteProxyException: "+e.getMessage());
-	}
-}
-
-/**
- * 
- * @param newListener cbit.vcell.clientdb.DatabaseListener
- */
-public void removeDatabaseListener(DatabaseListener newListener) {
-	aDatabaseListener = DatabaseEventMulticaster.remove(aDatabaseListener, newListener);
-	return;
-}
-
-public void removeFieldDataDBListener(EventListener oldFieldDataDBListener) {
-	fieldDataDBEventListenerH.remove(oldFieldDataDBListener);
-}
-
-public VCImageInfo removeUserFromGroup(VCImageInfo imageInfo, String userToRemove) throws DataAccessException {
-
-	try {
-		//
-		// publish from database
-		//
-		VCImageInfo newImageInfo = (VCImageInfo)removeUserFromGroup0(imageInfo,VersionableType.VCImage,imgInfoHash,userToRemove);
-		//
-		// delete Image from cache
-		//
-		xmlHash.remove(imageInfo.getVersion().getVersionKey());
-
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, imageInfo, newImageInfo));
-
-		return newImageInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
-
-public BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo, String userToRemove) throws DataAccessException {
-
-	try {
-		//
-		// publish from database
-		//
-		BioModelInfo newBioModelInfo = (BioModelInfo)removeUserFromGroup0(bioModelInfo,VersionableType.BioModelMetaData,bioModelInfoHash,userToRemove);
-		//
-		// delete BioModelMetaData from cache
-		//
-		xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
-
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, bioModelInfo, newBioModelInfo));
-
-		return newBioModelInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
-
-public GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo, String userToRemove) throws DataAccessException {
-
-	try {
-		//
-		// publish from database
-		//
-		GeometryInfo newGeometryInfo = (GeometryInfo)removeUserFromGroup0(geometryInfo,VersionableType.Geometry,geoInfoHash,userToRemove);
-		////
-		//// delete Geometry from cache
-		////
-		//xmlHash.remove(geometryInfo.getVersion().getVersionKey());
-		////
-		//// delete any MathModelMetaData's that use this GeometryInfo from cache
-		////
-		//MathModelInfo referencedMathModelInfos[] = getMathModelReferences(geometryInfo);
-		//for (int i = 0; i < referencedMathModelInfos.length; i++){
-			//xmlHash.remove(referencedMathModelInfos[i].getVersion().getVersionKey());
-		//}
-		////
-		//// delete any BioModelMetaData's that use this GeometryInfo from cache
-		////
-		//BioModelInfo referencedBioModelInfos[] = getBioModelReferences(geometryInfo);
-		//for (int i = 0; i < referencedBioModelInfos.length; i++){
-			//xmlHash.remove(referencedBioModelInfos[i].getVersion().getVersionKey());
-		//}
-
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, geometryInfo, newGeometryInfo));
-
-		return newGeometryInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
-
-public MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo, String userToRemove) throws DataAccessException {
-
-	try {
-		//
-		// publish from database
-		//
-		MathModelInfo newMathModelInfo = (MathModelInfo)removeUserFromGroup0(mathModelInfo,VersionableType.MathModelMetaData,mathModelInfoHash, userToRemove);
-		//
-		// delete MathModelMetaData from cache
-		//
-		xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
-
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, mathModelInfo, newMathModelInfo));
-
-		return newMathModelInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
-
-private <T extends VersionInfo> T removeUserFromGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash, String userToAdd) throws RemoteProxyException, DataAccessException {
-
-	//
-	// unpublish from database
-	//
-	UserMetaDbServer dbServer = sessionManager.getUserMetaDbServer();
-	@SuppressWarnings("unchecked")
-	T newVersionInfo = (T) dbServer.groupRemoveUser(vType,versionInfo.getVersion().getVersionKey(),userToAdd,false);
-	
-	//
-	// replace versionInfo in hashTable
-	//
-	vInfoHash.remove(versionInfo.getVersion().getVersionKey());
-	vInfoHash.put(newVersionInfo.getVersion().getVersionKey(),newVersionInfo);
-
-	//
-	// refresh versionInfos of child Geometries and Images (refresh all for now)
-	//
-	//
-	// Removed because of deep cloning of children
-	//
-	//if (vType.equals(VersionableType.MathModelMetaData) || vType.equals(VersionableType.BioModelMetaData)){
-	//	reloadInfos(VersionableType.Geometry,geoInfoHash);
-	//	reloadInfos(VersionableType.VCImage,imgInfoHash);
-	//}
-
-	return newVersionInfo;
-}
-
-public void replacePreferences(Preference[] argPreferences) throws DataAccessException{
-
-	if (argPreferences==null){
-		throw new IllegalArgumentException("preferences were null");
-	}
-	System.out.println("ClientDocumentManager.replacePreferences()");
-	if (!Compare.isEqual(argPreferences,getPreferences())){		
-		try{
-			sessionManager.getUserMetaDbServer().replacePreferences(argPreferences);
-			preferences = argPreferences;
-		}catch (RemoteProxyException e){
-			handleRemoteProxyException(e);
-			throw new DataAccessException(e.getMessage());
-		}
-	}
-}
-
-public VCImage save(VCImage vcImage) throws DataAccessException {
-	try {
-		String vcImageXML = null;
-		try {
-			vcImageXML = XmlHelper.imageToXML(vcImage);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
-
-		String savedVCImageXML = sessionManager.getUserMetaDbServer().saveVCImage(new BigString(vcImageXML)).toString();
-
-		VCImage savedVCImage = null;
-		try {
-			savedVCImage = XmlHelper.XMLToImage(savedVCImageXML);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
-		savedVCImage.refreshDependencies();
-		
-		KeyValue savedKey = savedVCImage.getVersion().getVersionKey();
-
-		if (xmlHash.get(savedKey)==null){
-			xmlHash.put(savedKey, savedVCImageXML);
-		}
-
-		try {
-			ISize size = new ISize(savedVCImage.getNumX(),savedVCImage.getNumY(),savedVCImage.getNumZ());
-			GIFImage browseData = BrowseImage.makeBrowseGIFImage(savedVCImage);
-			VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(),size,savedVCImage.getExtent(),browseData,VCellSoftwareVersion.fromSystemProperty());
-			imgInfoHash.put(savedKey,savedVCImageInfo);
-			
-			fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
-		}catch (Exception e){
-			lg.error(e.getMessage(), e);
-		}
-		
-		return savedVCImage;
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
-	}	
-}
-
-// the version time is assumed to be EDT (or whatever locale the user is at) but it really is UTC
+        //
+        // now look in cache again (should be in there unless it was deleted from database).
+        //
+        mathModelInfo = this.mathModelInfoHash.get(key);
+        if (mathModelInfo != null) {
+            return mathModelInfo;
+        }
+
+        System.out.println("MathModelInfo(" + key + ") not found");
+        return null;
+    }
+
+    public MathModelInfo[] getMathModelInfos() {
+        ArrayList<MathModelInfo> arrayList = new ArrayList<MathModelInfo>(this.mathModelInfoHash.values());
+        Collections.sort(arrayList, new VersionInfoComparator());
+        return arrayList.toArray(new MathModelInfo[this.mathModelInfoHash.size()]);
+    }
+
+    private XMLHolder<MathModel> getMathModelXML(KeyValue vKey) throws DataAccessException {
+
+        try {
+            String xmlString = this.xmlHash.get(vKey);
+            if (xmlString == null) {
+                xmlString = this.sessionManager.getUserMetaDbServer().getMathModelXML(vKey).toString();
+                if (xmlString != null) {
+                    MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(xmlString));
+                    String newXmlString = XmlHelper.mathModelToXML(mathModel);
+                    this.xmlHash.put(vKey, newXmlString);
+                    return new XMLHolder<MathModel>(newXmlString, mathModel);
+                } else {
+                    throw new RuntimeException("unexpected: UserMetaDbServer.getMathModelXML() returned null");
+                }
+            } else {
+                return new XMLHolder<MathModel>(xmlString);
+            }
+        } catch (ObjectNotFoundException e) {
+            throw new DataAccessException("MathModel (id=" + vKey + ") does not exist. It either " +
+                    "has been deleted or its reference is outdated. Please use menu 'Server->Reconnect' to update document references.");
+        } catch (Exception e) {
+            lg.error(e.getMessage(), e);
+            throw FailToLoadDocumentExc.createException(e, vKey, this);
+        }
+    }
+
+    public Preference[] getPreferences() throws DataAccessException {
+
+        System.out.println("ClientDocumentManager.getPreferences()");
+        if (this.preferences != null) {
+            return this.preferences;
+        } else {
+            try {
+                this.preferences = this.sessionManager.getUserMetaDbServer().getPreferences();
+                return this.preferences;
+            } catch (RemoteProxyException e) {
+                this.handleRemoteProxyException(e);
+                throw new DataAccessException(e.getMessage());
+            }
+        }
+    }
+
+    public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessException {
+        try {
+            String str = this.sessionManager.getUserMetaDbServer().getReactionStepAsModel(reactionStepKey);
+            Element element = XmlUtil.stringToXML(str, null).getRootElement();
+            Model reactionModel = new XmlReader(true).getModel(element);
+            if (reactionModel != null) {
+                try {
+                    reactionModel = (Model) BeanUtils.cloneSerializable(reactionModel);
+                    reactionModel.refreshDependencies();
+                } catch (Exception e) {
+                    throw new DataAccessException(e.getMessage(), e);
+                }
+            }
+            return reactionModel;
+
+        } catch (Exception e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
+
+
+    public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimulationIdentifier) throws DataAccessException {
+        if (this.simulationStatusHash.containsKey(vcSimulationIdentifier.getSimulationKey())) {
+            return this.simulationStatusHash.get(vcSimulationIdentifier.getSimulationKey());
+        } else {
+            SimulationStatus simulationStatus = null;
+            try {
+                simulationStatus = this.sessionManager.getSimulationController().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+            } catch (RemoteProxyException e) {
+                this.handleRemoteProxyException(e);
+                try {
+                    simulationStatus = this.sessionManager.getSimulationController().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
+                } catch (RemoteProxyException e2) {
+                    this.handleRemoteProxyException(e2);
+                    throw new DataAccessException("SimulationStatus inquiry for '" + vcSimulationIdentifier + "' failed\n" + e2.getMessage());
+                }
+            }
+            this.simulationStatusHash.put(vcSimulationIdentifier.getSimulationKey(), simulationStatus);
+            return simulationStatus;
+        }
+    }
+
+    public SessionManager getSessionManager() {
+
+        return this.sessionManager;
+    }
+
+    public Simulation getSimulation(SimulationInfo simulationInfo) throws DataAccessException {
+
+        Simulation simulation = null;
+        try {
+            simulation = XmlHelper.XMLToSim(this.getSimulationXML(simulationInfo.getVersion().getVersionKey()));
+        } catch (XmlParseException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+
+        return simulation;
+    }
+
+    private String getSimulationXML(KeyValue vKey) throws DataAccessException {
+
+        try {
+            String xmlString = this.xmlHash.get(vKey);
+            if (xmlString == null) {
+                xmlString = this.sessionManager.getUserMetaDbServer().getSimulationXML(vKey).toString();
+                if (xmlString != null) {
+                    this.xmlHash.put(vKey, xmlString);
+                    return xmlString;
+                } else {
+                    throw new RuntimeException("unexpected: UserMetaDbServer.getSimulationXML() returned null");
+                }
+            } else {
+                return xmlString;
+            }
+        } catch (ObjectNotFoundException e) {
+            return null;
+        } catch (Exception e) {
+            throw new DataAccessException("Error getting XML document from server: " + e.getMessage(), e);
+            //return null;
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (10/17/2004 11:27:37 AM)
+     */
+    public TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessException {
+        if (!this.getUser().isTestAccount()) {
+            throw new PermissionException("User=" + this.getUser().getName() + " not allowed TestSuiteInfo");
+        }
+        try {
+            return this.getSessionManager().getUserMetaDbServer().getTestSuite(getThisTS);
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (10/17/2004 11:27:37 AM)
+     */
+    public TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException {
+
+        if (!this.getUser().isTestAccount()) {
+            throw new PermissionException("User=" + this.getUser().getName() + " not allowed TestSuiteInfo");
+        }
+        try {
+            return this.getSessionManager().getUserMetaDbServer().getTestSuiteInfos();
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (1/19/01 10:54:29 AM)
+     */
+    public User getUser() {
+        return this.sessionManager.getUser();
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/15/2003 3:33:10 PM)
+     */
+    public ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
+        try {
+            return this.sessionManager.getUserMetaDbServer().getUserReactionDescriptions(reactionQuerySpec);
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/15/2003 3:33:10 PM)
+     */
+    public ReactionStepInfo[] getUserReactionStepInfos(KeyValue[] reactionStepKeys) throws DataAccessException {
+        try {
+            return this.sessionManager.getUserMetaDbServer().getReactionStepInfos(reactionStepKeys);
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (11/14/00 5:24:29 PM)
+     *
+     * @param e RemoteProxyException
+     */
+    private void handleRemoteProxyException(RemoteProxyException e) {
+        lg.error("Handling RemoteProxyException", e);
+    }
+
+
+    private void clear() {
+        this.xmlHash.clear();
+        this.geoInfoHash.clear();
+        this.imgInfoHash.clear();
+        this.mathModelInfoHash.clear();
+        this.bioModelInfoHash.clear();
+        this.simulationStatusHash.clear();
+        this.preferences = null;
+
+    }
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/25/2003 7:45:19 AM)
+     *
+     * @return cbit.vcell.modeldb.VCInfoContainer
+     */
+    public synchronized void initAllDatabaseInfos() throws DataAccessException {
+        this.clear();
+
+        VCInfoContainer vcInfoContainer = null;
+        try {
+            System.out.println("ClientDocumentManager.initAllDatabaseInfos()");
+            long time1 = System.currentTimeMillis();
+            //
+            // gets BioModelMetaDatas, MathModelMetaDatas, all VersionInfos, and ResultSetInfos
+            //
+            vcInfoContainer = this.sessionManager.getUserMetaDbServer().getVCInfoContainer();
+
+            PerformanceMonitorEvent pme = new PerformanceMonitorEvent(this, this.getUser(),
+                    new PerformanceData("ClientDocumentManager.initAllDatabaseInfos()",
+                            MessageEvent.LOGON_STAT,
+                            new PerformanceDataEntry[]{
+                                    new PerformanceDataEntry("remote call duration", Double.toString(((double) System.currentTimeMillis() - time1) / 1000.0))
+                            }
+                    )
+            );
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException("RemoteProxyException: " + e.getMessage());
+        }
+
+        //
+        // BioModelInfos
+        //
+        {
+            this.bioModelInfoHash.clear();
+            BioModelInfo[] bioModelInfos = vcInfoContainer.getBioModelInfos();
+            if (bioModelInfos != null) {
+                for (int i = 0; i < bioModelInfos.length; i++) {
+                    this.bioModelInfoHash.put(bioModelInfos[i].getVersion().getVersionKey(), bioModelInfos[i]);
+                }
+            }
+        }
+        //
+        // Geometries
+        //
+        {
+            this.geoInfoHash.clear();
+            GeometryInfo[] geometryInfos = vcInfoContainer.getGeometryInfos();
+            if (geometryInfos != null) {
+                for (int i = 0; i < geometryInfos.length; i++) {
+                    this.geoInfoHash.put(geometryInfos[i].getVersion().getVersionKey(), geometryInfos[i]);
+                }
+            }
+        }
+        //
+        // MathModelInfos
+        //
+        {
+            this.mathModelInfoHash.clear();
+            MathModelInfo[] mathModelInfos = vcInfoContainer.getMathModelInfos();
+            if (mathModelInfos != null) {
+                for (int i = 0; i < mathModelInfos.length; i++) {
+                    this.mathModelInfoHash.put(mathModelInfos[i].getVersion().getVersionKey(), mathModelInfos[i]);
+                }
+            }
+        }
+        //
+        // VCImageInfos
+        //
+        {
+            this.imgInfoHash.clear();
+            VCImageInfo[] vcImageInfos = vcInfoContainer.getVCImageInfos();
+            if (vcImageInfos != null) {
+                for (int i = 0; i < vcImageInfos.length; i++) {
+                    this.imgInfoHash.put(vcImageInfos[i].getVersion().getVersionKey(), vcImageInfos[i]);
+                }
+            }
+        }
+
+        this.fireDatabaseRefresh(new DatabaseEvent(this, DatabaseEvent.REFRESH, null, null));
+
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (2/5/01 4:58:40 PM)
+     */
+    public boolean isChanged(VCImage vcImage, String vcImageXML) throws DataAccessException {
+        //
+        // get versionable from database or from cache (should be in cache)
+        //
+        if (this.isChangedVersion(vcImage.getVersion())) {
+            return true;
+        }
+
+        String savedImageXML = null;
+
+        try {
+            savedImageXML = this.getImageXML(vcImage.getVersion().getVersionKey());
+        } catch (Exception e) {
+            lg.error(e.getMessage(), e);
+            //
+            // loaded version has been deleted
+            //
+            return true;
+        }
+
+        //
+        // if never saved, then it has changed (from null to something)
+        //
+        if (savedImageXML == null) {
+            return true;
+        }
+
+        //
+        // if comparison fails, then it changed
+        //
+        try {
+            if (vcImageXML == null) {
+                vcImageXML = XmlHelper.imageToXML(vcImage);
+            }
+            if (!VCMLComparator.compareEquals(savedImageXML, vcImageXML, false)) {
+                return true;
+            }
+        } catch (XmlParseException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+
+
+        return false;
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (10/28/00 12:08:30 AM)
+     */
+    public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAccessException {
+
+        if (bioModel.getVersion() == null) {
+            // if owner is not the user, if no changes were made, isChanged=false
+            //
+            // never been saved before (has changed with respect to database)
+            //
+            return true;
+
+        } else {
+            //
+            // check for name change
+            //
+            if (!bioModel.getVersion().getName().equals(bioModel.getName())) {
+                return true;
+            }
+
+            //
+            // compare saved and this bioModel
+            //
+            XMLHolder<BioModel> savedBioModelXML = this.getBioModelXML(bioModel.getVersion().getVersionKey());
+            if (savedBioModelXML == null) {
+                // must have been deleted
+                return true;
+            }
+            try {
+                if (bioModelXML == null) {
+                    bioModelXML = XmlHelper.bioModelToXML(bioModel);
+                }
+                // compare everything except vcmetadata
+                if (!VCMLComparator.compareEquals(savedBioModelXML.getXmlString(), bioModelXML, true)) {
+                    return true;
+                }
+                //
+                // compare vcmetadata
+                //
+                BioModel savedBioModel = savedBioModelXML.getDocument();
+                if (savedBioModel == null) {
+                    savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(savedBioModelXML.getXmlString()));
+                }
+                return !savedBioModel.getVCMetaData().compareEquals(bioModel.getVCMetaData());
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
+        }
+
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (5/21/2004 6:56:58 AM)
+     *
+     * @param vcDocument cbit.vcell.document.VCDocument
+     * @return boolean
+     */
+    public boolean isChanged(VCDocument vcDocument) throws DataAccessException {
+        if (vcDocument instanceof BioModel) {
+            return this.isChanged((BioModel) vcDocument, null);
+        } else if (vcDocument instanceof MathModel) {
+            return this.isChanged((MathModel) vcDocument, null);
+        } else if (vcDocument instanceof Geometry) {
+            return this.isChanged((Geometry) vcDocument, null);
+        } else if (vcDocument instanceof VCImage) {
+            return this.isChanged((VCImage) vcDocument, null);
+        } else {
+            throw new RuntimeException("Unknown VCDocument class: " + vcDocument.getClass());
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (10/28/00 12:08:30 AM)
+     */
+    public boolean isChanged(Geometry geometry, String geometryXML) throws DataAccessException {
+        //
+        // get versionable from database or from cache (should be in cache)
+        //
+        if (this.isChangedVersion(geometry.getVersion())) {
+            return true;
+        }
+
+        String savedGeometryXML = null;
+
+        try {
+            savedGeometryXML = this.getImageXML(geometry.getVersion().getVersionKey());
+        } catch (Exception e) {
+            lg.error(e.getMessage(), e);
+            //
+            // loaded version has been deleted
+            //
+            return true;
+        }
+
+        //
+        // if never saved, then it has changed (from null to something)
+        //
+        if (savedGeometryXML == null) {
+            return true;
+        }
+
+        //
+        // if comparison fails, then it changed
+        //
+        try {
+            if (geometryXML == null) {
+                geometryXML = XmlHelper.geometryToXML(geometry);
+            }
+            if (!VCMLComparator.compareEquals(savedGeometryXML, geometryXML, false)) {
+                return true;
+            }
+        } catch (XmlParseException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (10/28/00 12:08:30 AM)
+     */
+    public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAccessException {
+
+        if (mathModel.getVersion() == null) {
+            //
+            // never been saved before (has changed with respect to database)
+            //
+            return true;
+
+        } else {
+            //
+            // check for name change
+            //
+            if (!mathModel.getVersion().getName().equals(mathModel.getName())) {
+                return true;
+            }
+            //
+            // check for annotation change
+            //
+            if (!mathModel.getVersion().getAnnot().equals(mathModel.getDescription())) {
+                return true;
+            }
+
+            //
+            // check for same number of simulations as saved version
+            //
+            MathModelInfo savedMathModelInfo = this.getMathModelInfo(mathModel.getVersion().getVersionKey());
+            if (savedMathModelInfo == null) {
+                //
+                // if savedMathModelInfo is null, then the record was deleted
+                // while it was loaded in client (changed is true)
+                //
+                System.out.println("MathModel(" + mathModel.getVersion().getVersionKey() + ") must have been deleted, therefore isChanged() is true");
+                return true;
+            }
+            //MathModelMetaData savedMathModelMetaData = getMathModelMetaData(savedMathModelInfo);
+
+            //if (savedMathModelMetaData.getNumSimulations() != mathModel.getNumSimulations()){
+            //return true;
+            //}
+            //
+            // compare saved and this bioModel
+            //
+            XMLHolder<MathModel> savedMathModelXML = this.getMathModelXML(mathModel.getVersion().getVersionKey());
+            if (savedMathModelXML == null) {
+                // must have been deleted
+                return true;
+            }
+            try {
+                if (mathModelXML == null) {
+                    mathModelXML = XmlHelper.mathModelToXML(mathModel);
+                }
+                return !VCMLComparator.compareEquals(savedMathModelXML.getXmlString(), mathModelXML, true);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (2/5/01 4:58:40 PM)
+     */
+    public boolean isChanged(Simulation sim) throws DataAccessException {
+
+        // Assumes all Simulations from Loaded (MM.BM) are cached inside ClientDocumentManager
+
+        if (this.isChangedVersion(sim.getVersion())) {
+            return true;
+        }
+
+        KeyValue simKey = sim.getVersion().getVersionKey();
+        if (simKey == null) {
+            throw new RuntimeException(this.getClass().getName() + ".isChanged(Simulation): Sim Version not null, Simulation key is null");
+        }
+
+        String loadedSimXML = this.xmlHash.get(simKey);
+        if (loadedSimXML == null) {
+            throw new RuntimeException("Expecting simulation key=" + simKey + " to be in ClientDocumentManager cache");
+        }
+
+        try {
+            return !VCMLComparator.compareEquals(XmlHelper.simToXML(sim), loadedSimXML, false);
+        } catch (XmlParseException e) {
+            throw new DataAccessException(e.getMessage(), e);
+        }
+
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/22/2004 5:57:00 PM)
+     *
+     * @param v cbit.sql.Version
+     * @return boolean
+     */
+    private boolean isChangedVersion(Version v) {
+
+        return v == null || !v.getOwner().equals(this.sessionManager.getUser());
+    }
+
+
+    public void preloadSimulationStatus(VCSimulationIdentifier[] simIDs) {
+        KeyValue[] simKeys = new KeyValue[simIDs.length];
+        for (int i = 0; i < simIDs.length; i++) {
+            simKeys[i] = simIDs[i].getSimulationKey();
+        }
+        this.preloadSimulationStatus(simKeys);
+    }
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (9/1/2004 12:33:16 PM)
+     *
+     * @param simKeys cbit.sql.KeyValue[]
+     */
+    private void preloadSimulationStatus(KeyValue[] simKeys) {
+        boolean bNeedRefreshStatus = false;
+        for (int i = 0; i < simKeys.length; i++) {
+            if (!this.simulationStatusHash.containsKey(simKeys[i])) {
+                bNeedRefreshStatus = true;
+                break;
+            }
+        }
+        if (bNeedRefreshStatus) {
+            try {
+                SimulationStatus[] simulationStatusArray = null;
+                try {
+                    simulationStatusArray = this.sessionManager.getSimulationController().getSimulationStatus(simKeys);
+                } catch (RemoteProxyException e) {
+                    this.handleRemoteProxyException(e);
+                    try {
+                        simulationStatusArray = this.sessionManager.getSimulationController().getSimulationStatus(simKeys);
+                    } catch (RemoteProxyException e2) {
+                        this.handleRemoteProxyException(e2);
+                    }
+                }
+                for (int i = 0; i < simKeys.length; i++) {
+                    SimulationStatus simulationStatus = null;
+                    for (int j = 0; simulationStatusArray != null && j < simulationStatusArray.length; j++) {
+                        // these are server-supplied statuses, jobStatus array is not null
+                        if (simulationStatusArray[j] != null && simulationStatusArray[j].getVCSimulationIdentifier().getSimulationKey().equals(simKeys[i])) {
+                            simulationStatus = simulationStatusArray[j];
+                        }
+                    }
+                    this.simulationStatusHash.put(simKeys[i], simulationStatus);
+                }
+            } catch (DataAccessException e) {
+                lg.error(e);
+            }
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (11/14/00 5:33:21 PM)
+     *
+     * @return cbit.vcell.biomodel.BioModelInfo[]
+     */
+    private void reloadBioModelInfos() throws DataAccessException {
+        try {
+            System.out.println("ClientDocumentManager.reloadBioModelInfos()");
+            BioModelInfo[] bioModelInfos = this.sessionManager.getUserMetaDbServer().getBioModelInfos(true);
+            if (bioModelInfos != null) {
+                this.bioModelInfoHash.clear();
+                for (int i = 0; i < bioModelInfos.length; i++) {
+                    this.bioModelInfoHash.put(bioModelInfos[i].getVersion().getVersionKey(), bioModelInfos[i]);
+                }
+            }
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException("RemoteProxyException: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (11/14/00 5:33:21 PM)
+     *
+     * @return cbit.vcell.biomodel.BioModelInfo[]
+     */
+    private void reloadGeometryInfos() throws DataAccessException {
+        try {
+            System.out.println("ClientDocumentManager.reloadGeometryInfos()");
+            GeometryInfo[] geometryInfos = this.sessionManager.getUserMetaDbServer().getGeometryInfos(true);
+            if (geometryInfos != null) {
+                this.geoInfoHash.clear();
+                for (int i = 0; i < geometryInfos.length; i++) {
+                    this.geoInfoHash.put(geometryInfos[i].getVersion().getVersionKey(), geometryInfos[i]);
+                }
+            }
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException("RemoteProxyException: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (11/14/00 5:33:21 PM)
+     *
+     * @return cbit.vcell.biomodel.BioModelInfo[]
+     */
+    private void reloadMathModelInfos() throws DataAccessException {
+        try {
+            System.out.println("ClientDocumentManager.reloadMathModelInfos()");
+            MathModelInfo[] mathModelInfos = this.sessionManager.getUserMetaDbServer().getMathModelInfos(true);
+            if (mathModelInfos != null) {
+                this.mathModelInfoHash.clear();
+                for (int i = 0; i < mathModelInfos.length; i++) {
+                    this.mathModelInfoHash.put(mathModelInfos[i].getVersion().getVersionKey(), mathModelInfos[i]);
+                }
+            }
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException("RemoteProxyException: " + e.getMessage());
+        }
+    }
+
+    /**
+     * @param newListener cbit.vcell.clientdb.DatabaseListener
+     */
+    public void removeDatabaseListener(DatabaseListener newListener) {
+        this.aDatabaseListener = DatabaseEventMulticaster.remove(this.aDatabaseListener, newListener);
+    }
+
+    public void removeFieldDataDBListener(EventListener oldFieldDataDBListener) {
+        this.fieldDataDBEventListenerH.remove(oldFieldDataDBListener);
+    }
+
+    public VCImageInfo removeUserFromGroup(VCImageInfo imageInfo, String userToRemove) throws DataAccessException {
+
+        try {
+            //
+            // publish from database
+            //
+            VCImageInfo newImageInfo = this.removeUserFromGroup0(imageInfo, VersionableType.VCImage, this.imgInfoHash, userToRemove);
+            //
+            // delete Image from cache
+            //
+            this.xmlHash.remove(imageInfo.getVersion().getVersionKey());
+
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, imageInfo, newImageInfo));
+
+            return newImageInfo;
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo, String userToRemove) throws DataAccessException {
+
+        try {
+            //
+            // publish from database
+            //
+            BioModelInfo newBioModelInfo = this.removeUserFromGroup0(bioModelInfo, VersionableType.BioModelMetaData, this.bioModelInfoHash, userToRemove);
+            //
+            // delete BioModelMetaData from cache
+            //
+            this.xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
+
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, bioModelInfo, newBioModelInfo));
+
+            return newBioModelInfo;
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo, String userToRemove) throws DataAccessException {
+
+        try {
+            //
+            // publish from database
+            //
+            GeometryInfo newGeometryInfo = this.removeUserFromGroup0(geometryInfo, VersionableType.Geometry, this.geoInfoHash, userToRemove);
+            ////
+            //// delete Geometry from cache
+            ////
+            //xmlHash.remove(geometryInfo.getVersion().getVersionKey());
+            ////
+            //// delete any MathModelMetaData's that use this GeometryInfo from cache
+            ////
+            //MathModelInfo referencedMathModelInfos[] = getMathModelReferences(geometryInfo);
+            //for (int i = 0; i < referencedMathModelInfos.length; i++){
+            //xmlHash.remove(referencedMathModelInfos[i].getVersion().getVersionKey());
+            //}
+            ////
+            //// delete any BioModelMetaData's that use this GeometryInfo from cache
+            ////
+            //BioModelInfo referencedBioModelInfos[] = getBioModelReferences(geometryInfo);
+            //for (int i = 0; i < referencedBioModelInfos.length; i++){
+            //xmlHash.remove(referencedBioModelInfos[i].getVersion().getVersionKey());
+            //}
+
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, geometryInfo, newGeometryInfo));
+
+            return newGeometryInfo;
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo, String userToRemove) throws DataAccessException {
+
+        try {
+            //
+            // publish from database
+            //
+            MathModelInfo newMathModelInfo = this.removeUserFromGroup0(mathModelInfo, VersionableType.MathModelMetaData, this.mathModelInfoHash, userToRemove);
+            //
+            // delete MathModelMetaData from cache
+            //
+            this.xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
+
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, mathModelInfo, newMathModelInfo));
+
+            return newMathModelInfo;
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    private <T extends VersionInfo> T removeUserFromGroup0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue, T> vInfoHash, String userToAdd) throws RemoteProxyException, DataAccessException {
+
+        //
+        // unpublish from database
+        //
+        UserMetaDbServer dbServer = this.sessionManager.getUserMetaDbServer();
+        @SuppressWarnings("unchecked")
+        T newVersionInfo = (T) dbServer.groupRemoveUser(vType, versionInfo.getVersion().getVersionKey(), userToAdd, false);
+
+        //
+        // replace versionInfo in hashTable
+        //
+        vInfoHash.remove(versionInfo.getVersion().getVersionKey());
+        vInfoHash.put(newVersionInfo.getVersion().getVersionKey(), newVersionInfo);
+
+        //
+        // refresh versionInfos of child Geometries and Images (refresh all for now)
+        //
+        //
+        // Removed because of deep cloning of children
+        //
+        //if (vType.equals(VersionableType.MathModelMetaData) || vType.equals(VersionableType.BioModelMetaData)){
+        //	reloadInfos(VersionableType.Geometry,geoInfoHash);
+        //	reloadInfos(VersionableType.VCImage,imgInfoHash);
+        //}
+
+        return newVersionInfo;
+    }
+
+    public void replacePreferences(Preference[] argPreferences) throws DataAccessException {
+
+        if (argPreferences == null) {
+            throw new IllegalArgumentException("preferences were null");
+        }
+        System.out.println("ClientDocumentManager.replacePreferences()");
+        if (!Compare.isEqual(argPreferences, this.getPreferences())) {
+            try {
+                this.sessionManager.getUserMetaDbServer().replacePreferences(argPreferences);
+                this.preferences = argPreferences;
+            } catch (RemoteProxyException e) {
+                this.handleRemoteProxyException(e);
+                throw new DataAccessException(e.getMessage());
+            }
+        }
+    }
+
+    public VCImage save(VCImage vcImage) throws DataAccessException {
+        try {
+            String vcImageXML = null;
+            try {
+                vcImageXML = XmlHelper.imageToXML(vcImage);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
+
+            String savedVCImageXML = this.sessionManager.getUserMetaDbServer().saveVCImage(new BigString(vcImageXML)).toString();
+
+            VCImage savedVCImage = null;
+            try {
+                savedVCImage = XmlHelper.XMLToImage(savedVCImageXML);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
+            savedVCImage.refreshDependencies();
+
+            KeyValue savedKey = savedVCImage.getVersion().getVersionKey();
+
+            if (this.xmlHash.get(savedKey) == null) {
+                this.xmlHash.put(savedKey, savedVCImageXML);
+            }
+
+            try {
+                ISize size = new ISize(savedVCImage.getNumX(), savedVCImage.getNumY(), savedVCImage.getNumZ());
+                GIFImage browseData = BrowseImage.makeBrowseGIFImage(savedVCImage);
+                VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(), size, savedVCImage.getExtent(), browseData, VCellSoftwareVersion.fromSystemProperty());
+                this.imgInfoHash.put(savedKey, savedVCImageInfo);
+
+                this.fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
+            } catch (Exception e) {
+                lg.error(e.getMessage(), e);
+            }
+
+            return savedVCImage;
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
+        }
+    }
+
+    // the version time is assumed to be EDT (or whatever locale the user is at) but it really is UTC
 // hence, the apparent time we display in the biomodel nodes is 4 hours in advance
 // we use the converter below to get the current date; used only for display purposes (in the BioModelInfo)
-private static Version convertVersionToLocalTime(Version utcVersion) {
-	Date date = null;
-	if (utcVersion.getDate() != null) {
-		DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");  
-		String strDate = dateFormat.format(utcVersion.getDate());
-		strDate = strDate + " UTC";
-		dateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss zzz");
-		try {
-			date = dateFormat.parse(strDate);
-		} catch (ParseException e) {
-			date = null;
-		}
-	} else {
-		date = null;
-	}
-	Version localVersion = new Version(	utcVersion.getVersionKey(), utcVersion.getName(), utcVersion.getOwner(),
-			utcVersion.getGroupAccess(), utcVersion.getBranchPointRefKey(),
-			utcVersion.getBranchID(), date, utcVersion.getFlag(), utcVersion.getAnnot() );
-	return localVersion;
-}
-/**
- * Insert the method's description here.
- * Creation date: (10/28/00 12:08:30 AM)
- */
-public BioModel save(BioModel bioModel, String independentSims[]) throws DataAccessException {
-	
-	try {
-		String bioModelXML = null;
-		try {
-			bioModel.getVCMetaData().cleanupMetadata();
-			bioModelXML = XmlHelper.bioModelToXML(bioModel);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
-		
-		String savedBioModelXML = sessionManager.getUserMetaDbServer().saveBioModel(new BigString(bioModelXML),independentSims).toString();
+    private static Version convertVersionToLocalTime(Version utcVersion) {
+        Date date = null;
+        if (utcVersion.getDate() != null) {
+            DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss");
+            String strDate = dateFormat.format(utcVersion.getDate());
+            strDate = strDate + " UTC";
+            dateFormat = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss zzz");
+            try {
+                date = dateFormat.parse(strDate);
+            } catch (ParseException e) {
+                date = null;
+            }
+        } else {
+            date = null;
+        }
+        Version localVersion = new Version(utcVersion.getVersionKey(), utcVersion.getName(), utcVersion.getOwner(),
+                utcVersion.getGroupAccess(), utcVersion.getBranchPointRefKey(),
+                utcVersion.getBranchID(), date, utcVersion.getFlag(), utcVersion.getAnnot());
+        return localVersion;
+    }
 
-		BioModel savedBioModel = getBioModelFromDatabaseXML(new XMLHolder<BioModel>(savedBioModelXML));
-		
-		KeyValue savedKey = savedBioModel.getVersion().getVersionKey();
-		if (xmlHash.get(savedKey)==null){
-			xmlHash.put(savedKey, savedBioModelXML);
-		}
+    /**
+     * Insert the method's description here.
+     * Creation date: (10/28/00 12:08:30 AM)
+     */
+    public BioModel save(BioModel bioModel, String[] independentSims) throws DataAccessException {
 
-		Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
-		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
-		bioModelInfoHash.put(savedKey,savedBioModelInfo);
-		
-		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
-		for (int i = 0; i < scArr.length; i++) {
-			updateGeometryRelatedHashes(scArr[i].getGeometry());
-		}
-		
-		// copy some transient info from the old model to the new one
-		for (SimulationContext newsc : scArr) {
-			SimulationContext oldsc = bioModel.getSimulationContext(newsc.getName());
-			newsc.getTaskCallbackProcessor().initialize((oldsc.getTaskCallbackProcessor()));
-			newsc.setMostRecentlyCreatedOutputSpec(oldsc.getMostRecentlyCreatedOutputSpec());
-			newsc.setMd5hash(oldsc.getMd5hash());
-		}
+        try {
+            String bioModelXML = null;
+            try {
+                bioModel.getVCMetaData().cleanupMetadata();
+                bioModelXML = XmlHelper.bioModelToXML(bioModel);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
 
-		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
+            String savedBioModelXML = this.sessionManager.getUserMetaDbServer().saveBioModel(new BigString(bioModelXML), independentSims).toString();
 
-		return savedBioModel;
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
-	}	
-}
+            BioModel savedBioModel = this.getBioModelFromDatabaseXML(new XMLHolder<BioModel>(savedBioModelXML));
+
+            KeyValue savedKey = savedBioModel.getVersion().getVersionKey();
+            if (this.xmlHash.get(savedKey) == null) {
+                this.xmlHash.put(savedKey, savedBioModelXML);
+            }
+
+            Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
+            BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion, savedBioModel.getModel().getKey(), savedBioModel.createBioModelChildSummary(), VCellSoftwareVersion.fromSystemProperty());
+            this.bioModelInfoHash.put(savedKey, savedBioModelInfo);
+
+            SimulationContext[] scArr = savedBioModel.getSimulationContexts();
+            for (int i = 0; i < scArr.length; i++) {
+                this.updateGeometryRelatedHashes(scArr[i].getGeometry());
+            }
+
+            // copy some transient info from the old model to the new one
+            for (SimulationContext newsc : scArr) {
+                SimulationContext oldsc = bioModel.getSimulationContext(newsc.getName());
+                newsc.getTaskCallbackProcessor().initialize((oldsc.getTaskCallbackProcessor()));
+                newsc.setMostRecentlyCreatedOutputSpec(oldsc.getMostRecentlyCreatedOutputSpec());
+                newsc.setMd5hash(oldsc.getMd5hash());
+            }
+
+            this.fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
+
+            return savedBioModel;
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/28/00 12:08:30 AM)
- */
-public Geometry save(Geometry geometry) throws DataAccessException {
-	try {
-		String geometryXML = null;
-		try {
-			geometryXML = XmlHelper.geometryToXML(geometry);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
+    /**
+     * Insert the method's description here.
+     * Creation date: (10/28/00 12:08:30 AM)
+     */
+    public Geometry save(Geometry geometry) throws DataAccessException {
+        try {
+            String geometryXML = null;
+            try {
+                geometryXML = XmlHelper.geometryToXML(geometry);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
 
-		String savedGeometryXML = sessionManager.getUserMetaDbServer().saveGeometry(new BigString(geometryXML)).toString();
+            String savedGeometryXML = this.sessionManager.getUserMetaDbServer().saveGeometry(new BigString(geometryXML)).toString();
 
-		Geometry savedGeometry = getGeometryFromDatabaseXML(savedGeometryXML);
-		
-		KeyValue savedKey = savedGeometry.getVersion().getVersionKey();
+            Geometry savedGeometry = this.getGeometryFromDatabaseXML(savedGeometryXML);
 
-		if (xmlHash.get(savedKey)==null){
-			xmlHash.put(savedKey, savedGeometryXML);
-		}
+            KeyValue savedKey = savedGeometry.getVersion().getVersionKey();
 
-		updateGeometryRelatedHashes(savedGeometry);
+            if (this.xmlHash.get(savedKey) == null) {
+                this.xmlHash.put(savedKey, savedGeometryXML);
+            }
+
+            this.updateGeometryRelatedHashes(savedGeometry);
 //		KeyValue imageRef = (savedGeometry.getGeometrySpec().getImage()!=null)?(savedGeometry.getGeometrySpec().getImage().getKey()):(null);
 //		GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef);
 //		geoInfoHash.put(savedKey,savedGeometryInfo);
-		
+
 //		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedKey)/*savedGeometryInfo*/));
 
-		return savedGeometry;
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
-	}	
-}
+            return savedGeometry;
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (10/28/00 12:08:30 AM)
- */
-public MathModel save(MathModel mathModel, String independentSims[]) throws DataAccessException {
-	
-	try {
-		String mathModelXML = null;
-		try {
-			mathModelXML = XmlHelper.mathModelToXML(mathModel);
-			if (lg.isInfoEnabled()) {
-				lg.info(XmlUtil.beautify(mathModelXML));
-			}
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
-			
-		String savedMathModelXML = sessionManager.getUserMetaDbServer().saveMathModel(new BigString(mathModelXML),independentSims).toString();
+    /**
+     * Insert the method's description here.
+     * Creation date: (10/28/00 12:08:30 AM)
+     */
+    public MathModel save(MathModel mathModel, String[] independentSims) throws DataAccessException {
 
-		MathModel savedMathModel = getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));
-		if (lg.isInfoEnabled()) {
-			lg.info(XmlUtil.beautify(savedMathModelXML));
-		}
-		
-		KeyValue savedKey = savedMathModel.getVersion().getVersionKey();
+        try {
+            String mathModelXML = null;
+            try {
+                mathModelXML = XmlHelper.mathModelToXML(mathModel);
+                if (lg.isInfoEnabled()) {
+                    lg.info(XmlUtil.beautify(mathModelXML));
+                }
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
 
-		if (xmlHash.get(savedKey)==null){
-			xmlHash.put(savedKey, savedMathModelXML);
-		}
+            String savedMathModelXML = this.sessionManager.getUserMetaDbServer().saveMathModel(new BigString(mathModelXML), independentSims).toString();
 
-		Version localTimeVersion = convertVersionToLocalTime(savedMathModel.getVersion());
-		MathModelInfo savedMathModelInfo = new MathModelInfo(localTimeVersion,savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
-		mathModelInfoHash.put(savedKey,savedMathModelInfo);
-		updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
-		
-		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
+            MathModel savedMathModel = this.getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));
+            if (lg.isInfoEnabled()) {
+                lg.info(XmlUtil.beautify(savedMathModelXML));
+            }
 
-		return savedMathModel;
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
-	}	
-}
+            KeyValue savedKey = savedMathModel.getVersion().getVersionKey();
 
+            if (this.xmlHash.get(savedKey) == null) {
+                this.xmlHash.put(savedKey, savedMathModelXML);
+            }
 
-/**
- * Insert the method's description here.
- * Creation date: (2/5/01 4:58:40 PM)
- */
-public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataAccessException {
-	try {		
-		String vcImageXML = null;
-		try {
-			vcImageXML = XmlHelper.imageToXML(vcImage);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
+            Version localTimeVersion = convertVersionToLocalTime(savedMathModel.getVersion());
+            MathModelInfo savedMathModelInfo = new MathModelInfo(localTimeVersion, savedMathModel.getMathDescription().getKey(), savedMathModel.createMathModelChildSummary(), VCellSoftwareVersion.fromSystemProperty());
+            this.mathModelInfoHash.put(savedKey, savedMathModelInfo);
+            this.updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
 
-		String savedVCImageXML = sessionManager.getUserMetaDbServer().saveVCImageAs(new BigString(vcImageXML), newName).toString();
+            this.fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
 
-		VCImage savedVCImage = null;
-		try {
-			savedVCImage = XmlHelper.XMLToImage(savedVCImageXML);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
-		savedVCImage.refreshDependencies();
-		
-		KeyValue savedKey = savedVCImage.getVersion().getVersionKey();
-
-		if (xmlHash.get(savedKey)==null){
-			xmlHash.put(savedKey, savedVCImageXML);
-		}
-
-		try {
-			ISize size = new ISize(savedVCImage.getNumX(),savedVCImage.getNumY(),savedVCImage.getNumZ());
-			GIFImage browseData = BrowseImage.makeBrowseGIFImage(savedVCImage);
-			VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(),size,savedVCImage.getExtent(),browseData,VCellSoftwareVersion.fromSystemProperty());
-			imgInfoHash.put(savedKey,savedVCImageInfo);
-			
-			fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
-		}catch (Exception e){
-			lg.error(e.getMessage(), e);
-		}
-		
-		return savedVCImage;
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
-	}	
-}
+            return savedMathModel;
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/19/01 11:27:52 AM)
- */
-public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String independentSims[]) throws DataAccessException {
-	
-	try {
+    /**
+     * Insert the method's description here.
+     * Creation date: (2/5/01 4:58:40 PM)
+     */
+    public VCImage saveAsNew(VCImage vcImage, java.lang.String newName) throws DataAccessException {
+        try {
+            String vcImageXML = null;
+            try {
+                vcImageXML = XmlHelper.imageToXML(vcImage);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
 
-		String bioModelXML = null;
-		try {
-			bioModel.getVCMetaData().cleanupMetadata();
-			bioModelXML = XmlHelper.bioModelToXML(bioModel);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
+            String savedVCImageXML = this.sessionManager.getUserMetaDbServer().saveVCImageAs(new BigString(vcImageXML), newName).toString();
 
-		String savedBioModelXML = sessionManager.getUserMetaDbServer().saveBioModelAs(new BigString(bioModelXML), newName, independentSims).toString();
+            VCImage savedVCImage = null;
+            try {
+                savedVCImage = XmlHelper.XMLToImage(savedVCImageXML);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
+            savedVCImage.refreshDependencies();
 
-		BioModel savedBioModel = getBioModelFromDatabaseXML(new XMLHolder<BioModel>(savedBioModelXML));		
-		
-		KeyValue savedKey = savedBioModel.getVersion().getVersionKey();
+            KeyValue savedKey = savedVCImage.getVersion().getVersionKey();
 
-		if (xmlHash.get(savedKey)==null){
-			xmlHash.put(savedKey, savedBioModelXML);
-		}
+            if (this.xmlHash.get(savedKey) == null) {
+                this.xmlHash.put(savedKey, savedVCImageXML);
+            }
 
-		Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
-		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
-		bioModelInfoHash.put(savedKey,savedBioModelInfo);
+            try {
+                ISize size = new ISize(savedVCImage.getNumX(), savedVCImage.getNumY(), savedVCImage.getNumZ());
+                GIFImage browseData = BrowseImage.makeBrowseGIFImage(savedVCImage);
+                VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(), size, savedVCImage.getExtent(), browseData, VCellSoftwareVersion.fromSystemProperty());
+                this.imgInfoHash.put(savedKey, savedVCImageInfo);
 
-		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
-		for (int i = 0; i < scArr.length; i++) {
-			updateGeometryRelatedHashes(scArr[i].getGeometry());
-		}
+                this.fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedVCImageInfo));
+            } catch (Exception e) {
+                lg.error(e.getMessage(), e);
+            }
 
-		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
-
-		return savedBioModel;
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
-	}	
-}
+            return savedVCImage;
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/19/01 11:27:52 AM)
- */
-public Geometry saveAsNew(Geometry geometry, java.lang.String newName) throws DataAccessException {
-	try {
-		String geometryXML = null;
-		try {
-			geometryXML = XmlHelper.geometryToXML(geometry);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
+    /**
+     * Insert the method's description here.
+     * Creation date: (1/19/01 11:27:52 AM)
+     */
+    public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String[] independentSims) throws DataAccessException {
 
-		if (isChanged(geometry,geometryXML)==false){
-			System.out.println("<<<<<WARNING>>>>>>>ClientDocumentManger.save(Geometry), called on unchanged geometry");
-			return geometry;
-		}
-		
-		String savedGeometryXML = sessionManager.getUserMetaDbServer().saveGeometryAs(new BigString(geometryXML), newName).toString();
+        try {
 
-		Geometry savedGeometry = getGeometryFromDatabaseXML(savedGeometryXML);
-		
-		KeyValue savedKey = savedGeometry.getVersion().getVersionKey();
+            String bioModelXML = null;
+            try {
+                bioModel.getVCMetaData().cleanupMetadata();
+                bioModelXML = XmlHelper.bioModelToXML(bioModel);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
 
-		if (xmlHash.get(savedKey)==null){
-			xmlHash.put(savedKey, savedGeometryXML);
-		}
+            String savedBioModelXML = this.sessionManager.getUserMetaDbServer().saveBioModelAs(new BigString(bioModelXML), newName, independentSims).toString();
 
-		updateGeometryRelatedHashes(savedGeometry);
+            BioModel savedBioModel = this.getBioModelFromDatabaseXML(new XMLHolder<BioModel>(savedBioModelXML));
+
+            KeyValue savedKey = savedBioModel.getVersion().getVersionKey();
+
+            if (this.xmlHash.get(savedKey) == null) {
+                this.xmlHash.put(savedKey, savedBioModelXML);
+            }
+
+            Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
+            BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion, savedBioModel.getModel().getKey(), savedBioModel.createBioModelChildSummary(), VCellSoftwareVersion.fromSystemProperty());
+            this.bioModelInfoHash.put(savedKey, savedBioModelInfo);
+
+            SimulationContext[] scArr = savedBioModel.getSimulationContexts();
+            for (int i = 0; i < scArr.length; i++) {
+                this.updateGeometryRelatedHashes(scArr[i].getGeometry());
+            }
+
+            this.fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
+
+            return savedBioModel;
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
+        }
+    }
+
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (1/19/01 11:27:52 AM)
+     */
+    public Geometry saveAsNew(Geometry geometry, java.lang.String newName) throws DataAccessException {
+        try {
+            String geometryXML = null;
+            try {
+                geometryXML = XmlHelper.geometryToXML(geometry);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
+
+            if (!isChanged(geometry, geometryXML)) {
+                System.out.println("<<<<<WARNING>>>>>>>ClientDocumentManger.save(Geometry), called on unchanged geometry");
+                return geometry;
+            }
+
+            String savedGeometryXML = this.sessionManager.getUserMetaDbServer().saveGeometryAs(new BigString(geometryXML), newName).toString();
+
+            Geometry savedGeometry = this.getGeometryFromDatabaseXML(savedGeometryXML);
+
+            KeyValue savedKey = savedGeometry.getVersion().getVersionKey();
+
+            if (this.xmlHash.get(savedKey) == null) {
+                this.xmlHash.put(savedKey, savedGeometryXML);
+            }
+
+            this.updateGeometryRelatedHashes(savedGeometry);
 //		KeyValue imageRef = (savedGeometry.getGeometrySpec().getImage()!=null)?(savedGeometry.getGeometrySpec().getImage().getKey()):(null);
 //		GeometryInfo savedGeometryInfo = new GeometryInfo(savedGeometry.getVersion(),savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef);
 //		geoInfoHash.put(savedKey,savedGeometryInfo);
-		
+
 //		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedKey)/*savedGeometryInfo*/));
 
-		return savedGeometry;
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
-	}	
-}
+            return savedGeometry;
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (1/19/01 11:27:52 AM)
- */
-public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String independentSims[]) throws DataAccessException {
-	try {
-		
-		String mathModelXML = null;
-		try {
-			mathModelXML = XmlHelper.mathModelToXML(mathModel);
-		}catch (XmlParseException e){
-			throw new DataAccessException(e.getMessage(), e);
-		}
+    /**
+     * Insert the method's description here.
+     * Creation date: (1/19/01 11:27:52 AM)
+     */
+    public MathModel saveAsNew(MathModel mathModel, java.lang.String newName, String[] independentSims) throws DataAccessException {
+        try {
+
+            String mathModelXML = null;
+            try {
+                mathModelXML = XmlHelper.mathModelToXML(mathModel);
+            } catch (XmlParseException e) {
+                throw new DataAccessException(e.getMessage(), e);
+            }
 //		System.out.println(mathModelXML);
-		String savedMathModelXML = sessionManager.getUserMetaDbServer().saveMathModelAs(new BigString(mathModelXML), newName, independentSims).toString();
+            String savedMathModelXML = this.sessionManager.getUserMetaDbServer().saveMathModelAs(new BigString(mathModelXML), newName, independentSims).toString();
 
-		MathModel savedMathModel = getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));
-		
-		KeyValue savedKey = savedMathModel.getVersion().getVersionKey();
+            MathModel savedMathModel = this.getMathModelFromDatabaseXML(new XMLHolder<MathModel>(savedMathModelXML));
 
-		if (xmlHash.get(savedKey)==null){
-			xmlHash.put(savedKey, savedMathModelXML);
-		}
+            KeyValue savedKey = savedMathModel.getVersion().getVersionKey();
 
-		Version localTimeVersion = convertVersionToLocalTime(savedMathModel.getVersion());
-		MathModelInfo savedMathModelInfo = new MathModelInfo(localTimeVersion,savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
-		mathModelInfoHash.put(savedKey,savedMathModelInfo);
-		
-		updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
-		
-		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
+            if (this.xmlHash.get(savedKey) == null) {
+                this.xmlHash.put(savedKey, savedMathModelXML);
+            }
 
-		return savedMathModel;
-	}catch (RemoteProxyException e){
-		throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
-	}	
-}
+            Version localTimeVersion = convertVersionToLocalTime(savedMathModel.getVersion());
+            MathModelInfo savedMathModelInfo = new MathModelInfo(localTimeVersion, savedMathModel.getMathDescription().getKey(), savedMathModel.createMathModelChildSummary(), VCellSoftwareVersion.fromSystemProperty());
+            this.mathModelInfoHash.put(savedKey, savedMathModelInfo);
 
-public VCImageInfo setGroupPrivate(VCImageInfo imageInfo) throws DataAccessException {
+            this.updateGeometryRelatedHashes(savedMathModel.getMathDescription().getGeometry());
 
-	try {
-		//
-		// unpublish from database
-		//
-		VCImageInfo newImageInfo = (VCImageInfo)setGroupPrivate0(imageInfo,VersionableType.VCImage,imgInfoHash);
-		//
-		// delete Image from cache
-		//
-		xmlHash.remove(imageInfo.getVersion().getVersionKey());
+            this.fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, imageInfo, newImageInfo));
+            return savedMathModel;
+        } catch (RemoteProxyException e) {
+            throw new DataAccessException(VCellErrorMessages.FAIL_SAVE_MESSAGE + "\n\n" + e.getMessage(), e);
+        }
+    }
 
-		return newImageInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+    public VCImageInfo setGroupPrivate(VCImageInfo imageInfo) throws DataAccessException {
 
+        try {
+            //
+            // unpublish from database
+            //
+            VCImageInfo newImageInfo = this.setGroupPrivate0(imageInfo, VersionableType.VCImage, this.imgInfoHash);
+            //
+            // delete Image from cache
+            //
+            this.xmlHash.remove(imageInfo.getVersion().getVersionKey());
 
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
-public BioModelInfo setGroupPrivate(BioModelInfo bioModelInfo) throws DataAccessException {
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, imageInfo, newImageInfo));
 
-	try {
-		//
-		// unpublish from database
-		//
-		BioModelInfo newBioModelInfo = (BioModelInfo)setGroupPrivate0(bioModelInfo,VersionableType.BioModelMetaData,bioModelInfoHash);
-		//
-		// delete BioModelMetaData from cache
-		//
-		xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
+            return newImageInfo;
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, bioModelInfo, newBioModelInfo));
-
-		return newBioModelInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
-
-public GeometryInfo setGroupPrivate(GeometryInfo geometryInfo) throws DataAccessException {
-
-	try {
-		//
-		// unpublish from database
-		//
-		GeometryInfo newGeometryInfo = (GeometryInfo)setGroupPrivate0(geometryInfo,VersionableType.Geometry,geoInfoHash);
-		////
-		//// delete Geometry from cache
-		////
-		//xmlHash.remove(geometryInfo.getVersion().getVersionKey());
-		////
-		//// delete any MathModelMetaData's that use this GeometryInfo from cache
-		////
-		//MathModelInfo referencedMathModelInfos[] = getMathModelReferences(geometryInfo);
-		//for (int i = 0; i < referencedMathModelInfos.length; i++){
-			//xmlHash.remove(referencedMathModelInfos[i].getVersion().getVersionKey());
-		//}
-		////
-		//// delete any BioModelMetaData's that use this GeometryInfo from cache
-		////
-		//BioModelInfo referencedBioModelInfos[] = getBioModelReferences(geometryInfo);
-		//for (int i = 0; i < referencedBioModelInfos.length; i++){
-			//xmlHash.remove(referencedBioModelInfos[i].getVersion().getVersionKey());
-		//}
-
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, geometryInfo, newGeometryInfo));
-
-		return newGeometryInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
-
-public MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws DataAccessException {
-
-	try {
-		//
-		// unpublish from database
-		//
-		MathModelInfo newMathModelInfo = (MathModelInfo)setGroupPrivate0(mathModelInfo,VersionableType.MathModelMetaData,mathModelInfoHash);
-		//
-		// delete MathModelMetaData from cache
-		//
-		xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
-
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, mathModelInfo, newMathModelInfo));
-
-		return newMathModelInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
-
-private <T extends VersionInfo> T setGroupPrivate0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteProxyException, DataAccessException {
-
-	//
-	// unpublish from database
-	//
-	UserMetaDbServer dbServer = sessionManager.getUserMetaDbServer();
-	@SuppressWarnings("unchecked")
-	T newVersionInfo = (T) dbServer.groupSetPrivate(vType,versionInfo.getVersion().getVersionKey());
-	
-	//
-	// replace versionInfo in hashTable
-	//
-	vInfoHash.remove(versionInfo.getVersion().getVersionKey());
-	vInfoHash.put(newVersionInfo.getVersion().getVersionKey(),newVersionInfo);
-
-	//
-	// refresh versionInfos of child Geometries and Images (refresh all for now)
-	//
-	//
-	// Removed because of deep cloning of children
-	//
-	//if (vType.equals(VersionableType.MathModelMetaData) || vType.equals(VersionableType.BioModelMetaData)){
-	//	reloadInfos(VersionableType.Geometry,geoInfoHash);
-	//	reloadInfos(VersionableType.VCImage,imgInfoHash);
-	//}
-
-	return newVersionInfo;
-}
-
-public VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws DataAccessException {
-
-	try {
-		//
-		// publish from database
-		//
-		VCImageInfo newImageInfo = (VCImageInfo)setGroupPublic0(imageInfo,VersionableType.VCImage,imgInfoHash);
-		//
-		// delete Image from cache
-		//
-		xmlHash.remove(imageInfo.getVersion().getVersionKey());
-
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, imageInfo, newImageInfo));
-
-		return newImageInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (11/28/00 5:43:44 PM)
- * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- */
-public BioModelInfo setGroupPublic(BioModelInfo bioModelInfo) throws DataAccessException {
+    /**
+     * Insert the method's description here.
+     * Creation date: (11/28/00 5:43:44 PM)
+     *
+     * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
+     */
+    public BioModelInfo setGroupPrivate(BioModelInfo bioModelInfo) throws DataAccessException {
 
-	try {
-		//
-		// publish from database
-		//
-		BioModelInfo newBioModelInfo = (BioModelInfo)setGroupPublic0(bioModelInfo,VersionableType.BioModelMetaData,bioModelInfoHash);
-		//
-		// delete BioModelMetaData from cache
-		//
-		xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
+        try {
+            //
+            // unpublish from database
+            //
+            BioModelInfo newBioModelInfo = this.setGroupPrivate0(bioModelInfo, VersionableType.BioModelMetaData, this.bioModelInfoHash);
+            //
+            // delete BioModelMetaData from cache
+            //
+            this.xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, bioModelInfo, newBioModelInfo));
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, bioModelInfo, newBioModelInfo));
 
-		return newBioModelInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+            return newBioModelInfo;
 
-public GeometryInfo setGroupPublic(GeometryInfo geometryInfo) throws DataAccessException {
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
-	try {
-		//
-		// publish from database
-		//
-		GeometryInfo newGeometryInfo = (GeometryInfo)setGroupPublic0(geometryInfo,VersionableType.Geometry,geoInfoHash);
-		////
-		//// delete Geometry from cache
-		////
-		//xmlHash.remove(geometryInfo.getVersion().getVersionKey());
-		////
-		//// delete any MathModelMetaData's that use this GeometryInfo from cache
-		////
-		//MathModelInfo referencedMathModelInfos[] = getMathModelReferences(geometryInfo);
-		//for (int i = 0; i < referencedMathModelInfos.length; i++){
-			//xmlHash.remove(referencedMathModelInfos[i].getVersion().getVersionKey());
-		//}
-		////
-		//// delete any BioModelMetaData's that use this GeometryInfo from cache
-		////
-		//BioModelInfo referencedBioModelInfos[] = getBioModelReferences(geometryInfo);
-		//for (int i = 0; i < referencedBioModelInfos.length; i++){
-			//xmlHash.remove(referencedBioModelInfos[i].getVersion().getVersionKey());
-		//}
+    public GeometryInfo setGroupPrivate(GeometryInfo geometryInfo) throws DataAccessException {
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, geometryInfo, newGeometryInfo));
+        try {
+            //
+            // unpublish from database
+            //
+            GeometryInfo newGeometryInfo = this.setGroupPrivate0(geometryInfo, VersionableType.Geometry, this.geoInfoHash);
+            ////
+            //// delete Geometry from cache
+            ////
+            //xmlHash.remove(geometryInfo.getVersion().getVersionKey());
+            ////
+            //// delete any MathModelMetaData's that use this GeometryInfo from cache
+            ////
+            //MathModelInfo referencedMathModelInfos[] = getMathModelReferences(geometryInfo);
+            //for (int i = 0; i < referencedMathModelInfos.length; i++){
+            //xmlHash.remove(referencedMathModelInfos[i].getVersion().getVersionKey());
+            //}
+            ////
+            //// delete any BioModelMetaData's that use this GeometryInfo from cache
+            ////
+            //BioModelInfo referencedBioModelInfos[] = getBioModelReferences(geometryInfo);
+            //for (int i = 0; i < referencedBioModelInfos.length; i++){
+            //xmlHash.remove(referencedBioModelInfos[i].getVersion().getVersionKey());
+            //}
 
-		return newGeometryInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, geometryInfo, newGeometryInfo));
 
-public MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws DataAccessException {
+            return newGeometryInfo;
 
-	try {
-		//
-		// publish from database
-		//
-		MathModelInfo newMathModelInfo = (MathModelInfo)setGroupPublic0(mathModelInfo,VersionableType.MathModelMetaData,mathModelInfoHash);
-		//
-		// delete MathModelMetaData from cache
-		//
-		xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
-		fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, mathModelInfo, newMathModelInfo));
+    public MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws DataAccessException {
 
-		return newMathModelInfo;
-		
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}	
-}
+        try {
+            //
+            // unpublish from database
+            //
+            MathModelInfo newMathModelInfo = this.setGroupPrivate0(mathModelInfo, VersionableType.MathModelMetaData, this.mathModelInfoHash);
+            //
+            // delete MathModelMetaData from cache
+            //
+            this.xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
 
-private <T extends VersionInfo> T setGroupPublic0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue,T> vInfoHash) throws RemoteProxyException, DataAccessException {
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, mathModelInfo, newMathModelInfo));
 
-	//
-	// publish from database
-	//
-	UserMetaDbServer dbServer = sessionManager.getUserMetaDbServer();
-	@SuppressWarnings("unchecked")
-	T newVersionInfo = (T) dbServer.groupSetPublic(vType,versionInfo.getVersion().getVersionKey());
-	
-	//
-	// replace versionInfo in hashtable
-	//
-	vInfoHash.remove(versionInfo.getVersion().getVersionKey());
-	vInfoHash.put(newVersionInfo.getVersion().getVersionKey(),newVersionInfo);
+            return newMathModelInfo;
 
-	//
-	// refresh versionInfos of child Geometries and Images (refresh all for now)
-	//
-	//
-	// Removed because of deep cloning of children
-	//
-	//if (vType.equals(VersionableType.MathModelMetaData) || vType.equals(VersionableType.BioModelMetaData)){
-	//	reloadInfos(VersionableType.Geometry,geoInfoHash);
-	//	reloadInfos(VersionableType.VCImage,imgInfoHash);
-	//}
-	
-	return newVersionInfo;
-}
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    private <T extends VersionInfo> T setGroupPrivate0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue, T> vInfoHash) throws RemoteProxyException, DataAccessException {
+
+        //
+        // unpublish from database
+        //
+        UserMetaDbServer dbServer = this.sessionManager.getUserMetaDbServer();
+        @SuppressWarnings("unchecked")
+        T newVersionInfo = (T) dbServer.groupSetPrivate(vType, versionInfo.getVersion().getVersionKey());
+
+        //
+        // replace versionInfo in hashTable
+        //
+        vInfoHash.remove(versionInfo.getVersion().getVersionKey());
+        vInfoHash.put(newVersionInfo.getVersion().getVersionKey(), newVersionInfo);
+
+        //
+        // refresh versionInfos of child Geometries and Images (refresh all for now)
+        //
+        //
+        // Removed because of deep cloning of children
+        //
+        //if (vType.equals(VersionableType.MathModelMetaData) || vType.equals(VersionableType.BioModelMetaData)){
+        //	reloadInfos(VersionableType.Geometry,geoInfoHash);
+        //	reloadInfos(VersionableType.VCImage,imgInfoHash);
+        //}
+
+        return newVersionInfo;
+    }
+
+    public VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws DataAccessException {
+
+        try {
+            //
+            // publish from database
+            //
+            VCImageInfo newImageInfo = this.setGroupPublic0(imageInfo, VersionableType.VCImage, this.imgInfoHash);
+            //
+            // delete Image from cache
+            //
+            this.xmlHash.remove(imageInfo.getVersion().getVersionKey());
+
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, imageInfo, newImageInfo));
+
+            return newImageInfo;
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
 
 
-public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersion originalOwner)
-		throws DataAccessException,MathException,ExpressionException{
+    /**
+     * Insert the method's description here.
+     * Creation date: (11/28/00 5:43:44 PM)
+     *
+     * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
+     */
+    public BioModelInfo setGroupPublic(BioModelInfo bioModelInfo) throws DataAccessException {
 
-	Vector<ExternalDataIdentifier> errorCleanupExtDataIDV = new Vector<ExternalDataIdentifier>();
-	try{
-		if(originalOwner == null || originalOwner.getVersion().getOwner().compareEqual(getUser())){
-			//Substitution for FieldFunc not needed for new doc or if we own doc
-			return;
-		}
-		//Get Objects from Document that might need to have FieldFuncs replaced
-		Vector<Object> fieldFunctionContainer_mathDesc_or_simContextV = new Vector<Object>();
-		if(vcDocument instanceof MathModel){
-			fieldFunctionContainer_mathDesc_or_simContextV.add(((MathModel)vcDocument).getMathDescription());
-		}else if(vcDocument instanceof BioModel){
-			SimulationContext[] simContextArr = ((BioModel)vcDocument).getSimulationContexts();
-			for(int i=0;i<simContextArr.length;i+= 1){
-				fieldFunctionContainer_mathDesc_or_simContextV.add(simContextArr[i]);
-			}
-		}
-		//Get original Field names
-		Vector<String> origFieldFuncNamesV = new Vector<String>();
-		for(int i=0;i<fieldFunctionContainer_mathDesc_or_simContextV.size();i+= 1){
-			Object fieldFunctionContainer = fieldFunctionContainer_mathDesc_or_simContextV.elementAt(i);
-			FieldFunctionArguments[] fieldFuncArgsArr = null;
-			if (fieldFunctionContainer instanceof MathDescription){
-				fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments((MathDescription)fieldFunctionContainer);
-			}else if (fieldFunctionContainer instanceof SimulationContext){
-				fieldFuncArgsArr = ((SimulationContext)fieldFunctionContainer).getFieldFunctionArguments();
-			}
-			for(int j=0;j<fieldFuncArgsArr.length;j+= 1){
-				if(!origFieldFuncNamesV.contains(fieldFuncArgsArr[j].getFieldName())){
-					origFieldFuncNamesV.add(fieldFuncArgsArr[j].getFieldName());
-				}
-			}
-		}
-		if(origFieldFuncNamesV.size() == 0){//No FieldFunctions to substitute
-			return;
-		}
-		
-		FieldDataDBOperationResults copyNamesFieldDataOpResults = fieldDataDBOperation(
-				FieldDataDBOperationSpec.createCopyNoConflictExtDataIDsSpec(
-				getUser(),
-				origFieldFuncNamesV.toArray(new String[0]),
-				originalOwner)
-		);
-		
-		errorCleanupExtDataIDV.addAll(copyNamesFieldDataOpResults.oldNameNewIDHash.values());
-		
-		//Copy Field Data on Data Server FileSystem
-		for(String fieldname : origFieldFuncNamesV){
-			KeyValue sourceSimDataKey = copyNamesFieldDataOpResults.oldNameOldExtDataIDKeyHash.get(fieldname);
-			if(sourceSimDataKey == null){
-				throw new DataAccessException("Couldn't find original data key for FieldFunc "+fieldname);
-			}
-			ExternalDataIdentifier newExtDataID = copyNamesFieldDataOpResults.oldNameNewIDHash.get(fieldname);
-			getSessionManager().fieldDataFileOperation(
-					FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(
-					newExtDataID, 
-					sourceSimDataKey, 
-					originalOwner.getVersion().getOwner(), 
-					FieldDataFileOperationSpec.JOBINDEX_DEFAULT,
-					getUser())
-			);
-		}
-		//Finally substitute new Field names
-		for(int i=0;i<fieldFunctionContainer_mathDesc_or_simContextV.size();i+= 1){
-			Object fieldFunctionContainer = fieldFunctionContainer_mathDesc_or_simContextV.elementAt(i);
-			if (fieldFunctionContainer instanceof MathDescription){
-				MathDescription mathDesc = (MathDescription)fieldFunctionContainer;
-				FieldUtilities.substituteFieldFuncNames(mathDesc, copyNamesFieldDataOpResults.oldNameNewIDHash);
-			}else if (fieldFunctionContainer instanceof SimulationContext){
-				SimulationContext simContext = (SimulationContext)fieldFunctionContainer;
-				simContext.substituteFieldFuncNames(copyNamesFieldDataOpResults.oldNameNewIDHash);
-			}
-		}
-		fireFieldDataDB(new FieldDataDBEvent(this));
-	}catch(Exception e){
-		lg.error(e.getMessage(), e);
-		//Cleanup
-		for(int i=0;i<errorCleanupExtDataIDV.size();i+= 1){
-			try{
-				fieldDataDBOperation(
-						FieldDataDBOperationSpec.createDeleteExtDataIDSpec(
-								errorCleanupExtDataIDV.elementAt(i))
-						);
-			}catch(Exception e2){
-				//ignore, we tried to cleanup
-			}
-			try {
-				fieldDataFileOperation(
-						FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
-								errorCleanupExtDataIDV.elementAt(i))
-						);
-			} catch (Exception e1) {
-				//ignore, we tried to cleanup
-			}
-				
-		}
-		throw new RuntimeException("Error copying Field Data \n"+e.getMessage());
-	}
-}
+        try {
+            //
+            // publish from database
+            //
+            BioModelInfo newBioModelInfo = this.setGroupPublic0(bioModelInfo, VersionableType.BioModelMetaData, this.bioModelInfoHash);
+            //
+            // delete BioModelMetaData from cache
+            //
+            this.xmlHash.remove(bioModelInfo.getVersion().getVersionKey());
 
-/**
- * Insert the method's description here.
- * Creation date: (10/14/2005 1:40:39 AM)
- * @param jobEvent cbit.rmi.event.SimulationJobStatusEvent
- * @exception org.vcell.util.DataAccessException The exception description.
- */
-public void updateServerSimulationStatusFromJobEvent(SimulationJobStatusEvent jobEvent) throws DataAccessException {
-	simulationStatusHash.put(jobEvent.getVCSimulationIdentifier().getSimulationKey(), SimulationStatus.updateFromJobEvent(getServerSimulationStatus(jobEvent.getVCSimulationIdentifier()), jobEvent));
-}
-private void updateGeometryRelatedHashes(Geometry savedGeometry){
-	if(savedGeometry == null || (savedGeometry.getVersion() != null && geoInfoHash.get(savedGeometry.getVersion().getVersionKey()) != null)){
-		return;
-	}
-	KeyValue imageRef = (savedGeometry.getGeometrySpec().getImage()!=null)?(savedGeometry.getGeometrySpec().getImage().getKey()):(null);
-	if(imageRef != null && imgInfoHash.get(imageRef) == null){
-		VCImage savedVCImage = savedGeometry.getGeometrySpec().getImage();
-		ISize size = new ISize(savedVCImage.getNumX(),savedVCImage.getNumY(),savedVCImage.getNumZ());
-		VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(), size, savedVCImage.getExtent(), null,VCellSoftwareVersion.fromSystemProperty());
-		imgInfoHash.put(savedVCImage.getVersion().getVersionKey(),savedVCImageInfo);
-	}
-	Version localTimeVersion = convertVersionToLocalTime(savedGeometry.getVersion());
-	GeometryInfo savedGeometryInfo = new GeometryInfo(localTimeVersion,savedGeometry.getDimension(),savedGeometry.getExtent(),savedGeometry.getOrigin(),imageRef,VCellSoftwareVersion.fromSystemProperty());
-	geoInfoHash.put(savedGeometry.getVersion().getVersionKey(),savedGeometryInfo);
-	
-	fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, geoInfoHash.get(savedGeometry.getVersion().getVersionKey())));
-}
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, bioModelInfo, newBioModelInfo));
+
+            return newBioModelInfo;
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public GeometryInfo setGroupPublic(GeometryInfo geometryInfo) throws DataAccessException {
+
+        try {
+            //
+            // publish from database
+            //
+            GeometryInfo newGeometryInfo = this.setGroupPublic0(geometryInfo, VersionableType.Geometry, this.geoInfoHash);
+            ////
+            //// delete Geometry from cache
+            ////
+            //xmlHash.remove(geometryInfo.getVersion().getVersionKey());
+            ////
+            //// delete any MathModelMetaData's that use this GeometryInfo from cache
+            ////
+            //MathModelInfo referencedMathModelInfos[] = getMathModelReferences(geometryInfo);
+            //for (int i = 0; i < referencedMathModelInfos.length; i++){
+            //xmlHash.remove(referencedMathModelInfos[i].getVersion().getVersionKey());
+            //}
+            ////
+            //// delete any BioModelMetaData's that use this GeometryInfo from cache
+            ////
+            //BioModelInfo referencedBioModelInfos[] = getBioModelReferences(geometryInfo);
+            //for (int i = 0; i < referencedBioModelInfos.length; i++){
+            //xmlHash.remove(referencedBioModelInfos[i].getVersion().getVersionKey());
+            //}
+
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, geometryInfo, newGeometryInfo));
+
+            return newGeometryInfo;
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    public MathModelInfo setGroupPublic(MathModelInfo mathModelInfo) throws DataAccessException {
+
+        try {
+            //
+            // publish from database
+            //
+            MathModelInfo newMathModelInfo = this.setGroupPublic0(mathModelInfo, VersionableType.MathModelMetaData, this.mathModelInfoHash);
+            //
+            // delete MathModelMetaData from cache
+            //
+            this.xmlHash.remove(mathModelInfo.getVersion().getVersionKey());
+
+            this.fireDatabaseUpdate(new DatabaseEvent(this, DatabaseEvent.UPDATE, mathModelInfo, newMathModelInfo));
+
+            return newMathModelInfo;
+
+        } catch (RemoteProxyException e) {
+            this.handleRemoteProxyException(e);
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    private <T extends VersionInfo> T setGroupPublic0(VersionInfo versionInfo, VersionableType vType, Hashtable<KeyValue, T> vInfoHash) throws RemoteProxyException, DataAccessException {
+
+        //
+        // publish from database
+        //
+        UserMetaDbServer dbServer = this.sessionManager.getUserMetaDbServer();
+        @SuppressWarnings("unchecked")
+        T newVersionInfo = (T) dbServer.groupSetPublic(vType, versionInfo.getVersion().getVersionKey());
+
+        //
+        // replace versionInfo in hashtable
+        //
+        vInfoHash.remove(versionInfo.getVersion().getVersionKey());
+        vInfoHash.put(newVersionInfo.getVersion().getVersionKey(), newVersionInfo);
+
+        //
+        // refresh versionInfos of child Geometries and Images (refresh all for now)
+        //
+        //
+        // Removed because of deep cloning of children
+        //
+        //if (vType.equals(VersionableType.MathModelMetaData) || vType.equals(VersionableType.BioModelMetaData)){
+        //	reloadInfos(VersionableType.Geometry,geoInfoHash);
+        //	reloadInfos(VersionableType.VCImage,imgInfoHash);
+        //}
+
+        return newVersionInfo;
+    }
+
+
+    public void substituteFieldFuncNames(VCDocument vcDocument, VersionableTypeVersion originalOwner)
+            throws DataAccessException, MathException, ExpressionException {
+
+        Vector<ExternalDataIdentifier> errorCleanupExtDataIDV = new Vector<ExternalDataIdentifier>();
+        try {
+            if (originalOwner == null || originalOwner.getVersion().getOwner().compareEqual(this.getUser())) {
+                //Substitution for FieldFunc not needed for new doc or if we own doc
+                return;
+            }
+            //Get Objects from Document that might need to have FieldFuncs replaced
+            Vector<Object> fieldFunctionContainer_mathDesc_or_simContextV = new Vector<Object>();
+            if (vcDocument instanceof MathModel) {
+                fieldFunctionContainer_mathDesc_or_simContextV.add(((MathModel) vcDocument).getMathDescription());
+            } else if (vcDocument instanceof BioModel) {
+                SimulationContext[] simContextArr = ((BioModel) vcDocument).getSimulationContexts();
+                Collections.addAll(fieldFunctionContainer_mathDesc_or_simContextV, simContextArr);
+            }
+            //Get original Field names
+            Vector<String> origFieldFuncNamesV = new Vector<String>();
+            for (int i = 0; i < fieldFunctionContainer_mathDesc_or_simContextV.size(); i += 1) {
+                Object fieldFunctionContainer = fieldFunctionContainer_mathDesc_or_simContextV.elementAt(i);
+                FieldFunctionArguments[] fieldFuncArgsArr = null;
+                if (fieldFunctionContainer instanceof MathDescription) {
+                    fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments((MathDescription) fieldFunctionContainer);
+                } else if (fieldFunctionContainer instanceof SimulationContext) {
+                    fieldFuncArgsArr = ((SimulationContext) fieldFunctionContainer).getFieldFunctionArguments();
+                }
+                for (int j = 0; j < fieldFuncArgsArr.length; j += 1) {
+                    if (!origFieldFuncNamesV.contains(fieldFuncArgsArr[j].getFieldName())) {
+                        origFieldFuncNamesV.add(fieldFuncArgsArr[j].getFieldName());
+                    }
+                }
+            }
+            if (origFieldFuncNamesV.size() == 0) {//No FieldFunctions to substitute
+                return;
+            }
+
+            FieldDataDBOperationResults copyNamesFieldDataOpResults = this.fieldDataDBOperation(
+                    FieldDataDBOperationSpec.createCopyNoConflictExtDataIDsSpec(
+                            this.getUser(),
+                            origFieldFuncNamesV.toArray(new String[0]),
+                            originalOwner)
+            );
+
+            errorCleanupExtDataIDV.addAll(copyNamesFieldDataOpResults.oldNameNewIDHash.values());
+
+            //Copy Field Data on Data Server FileSystem
+            for (String fieldname : origFieldFuncNamesV) {
+                KeyValue sourceSimDataKey = copyNamesFieldDataOpResults.oldNameOldExtDataIDKeyHash.get(fieldname);
+                if (sourceSimDataKey == null) {
+                    throw new DataAccessException("Couldn't find original data key for FieldFunc " + fieldname);
+                }
+                ExternalDataIdentifier newExtDataID = copyNamesFieldDataOpResults.oldNameNewIDHash.get(fieldname);
+                this.getSessionManager().fieldDataFileOperation(
+                        FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(
+                                newExtDataID,
+                                sourceSimDataKey,
+                                originalOwner.getVersion().getOwner(),
+                                FieldDataFileOperationSpec.JOBINDEX_DEFAULT,
+                                this.getUser())
+                );
+            }
+            //Finally substitute new Field names
+            for (int i = 0; i < fieldFunctionContainer_mathDesc_or_simContextV.size(); i += 1) {
+                Object fieldFunctionContainer = fieldFunctionContainer_mathDesc_or_simContextV.elementAt(i);
+                if (fieldFunctionContainer instanceof MathDescription mathDesc) {
+                    FieldUtilities.substituteFieldFuncNames(mathDesc, copyNamesFieldDataOpResults.oldNameNewIDHash);
+                } else if (fieldFunctionContainer instanceof SimulationContext simContext) {
+                    simContext.substituteFieldFuncNames(copyNamesFieldDataOpResults.oldNameNewIDHash);
+                }
+            }
+            this.fireFieldDataDB(new FieldDataDBEvent(this));
+        } catch (Exception e) {
+            lg.error(e.getMessage(), e);
+            //Cleanup
+            for (int i = 0; i < errorCleanupExtDataIDV.size(); i += 1) {
+                try {
+                    this.fieldDataDBOperation(
+                            FieldDataDBOperationSpec.createDeleteExtDataIDSpec(
+                                    errorCleanupExtDataIDV.elementAt(i))
+                    );
+                } catch (Exception e2) {
+                    //ignore, we tried to cleanup
+                }
+                try {
+                    this.fieldDataFileOperation(
+                            FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
+                                    errorCleanupExtDataIDV.elementAt(i))
+                    );
+                } catch (Exception e1) {
+                    //ignore, we tried to cleanup
+                }
+
+            }
+            throw new RuntimeException("Error copying Field Data \n" + e.getMessage());
+        }
+    }
+
+    /**
+     * Insert the method's description here.
+     * Creation date: (10/14/2005 1:40:39 AM)
+     *
+     * @param jobEvent cbit.rmi.event.SimulationJobStatusEvent
+     * @throws org.vcell.util.DataAccessException The exception description.
+     */
+    public void updateServerSimulationStatusFromJobEvent(SimulationJobStatusEvent jobEvent) throws DataAccessException {
+        this.simulationStatusHash.put(jobEvent.getVCSimulationIdentifier().getSimulationKey(), SimulationStatus.updateFromJobEvent(this.getServerSimulationStatus(jobEvent.getVCSimulationIdentifier()), jobEvent));
+    }
+
+    private void updateGeometryRelatedHashes(Geometry savedGeometry) {
+        if (savedGeometry == null || (savedGeometry.getVersion() != null && this.geoInfoHash.get(savedGeometry.getVersion().getVersionKey()) != null)) {
+            return;
+        }
+        KeyValue imageRef = (savedGeometry.getGeometrySpec().getImage() != null) ? (savedGeometry.getGeometrySpec().getImage().getKey()) : (null);
+        if (imageRef != null && this.imgInfoHash.get(imageRef) == null) {
+            VCImage savedVCImage = savedGeometry.getGeometrySpec().getImage();
+            ISize size = new ISize(savedVCImage.getNumX(), savedVCImage.getNumY(), savedVCImage.getNumZ());
+            VCImageInfo savedVCImageInfo = new VCImageInfo(savedVCImage.getVersion(), size, savedVCImage.getExtent(), null, VCellSoftwareVersion.fromSystemProperty());
+            this.imgInfoHash.put(savedVCImage.getVersion().getVersionKey(), savedVCImageInfo);
+        }
+        Version localTimeVersion = convertVersionToLocalTime(savedGeometry.getVersion());
+        GeometryInfo savedGeometryInfo = new GeometryInfo(localTimeVersion, savedGeometry.getDimension(), savedGeometry.getExtent(), savedGeometry.getOrigin(), imageRef, VCellSoftwareVersion.fromSystemProperty());
+        this.geoInfoHash.put(savedGeometry.getVersion().getVersionKey(), savedGeometryInfo);
+
+        this.fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, this.geoInfoHash.get(savedGeometry.getVersion().getVersionKey())));
+    }
 
 }

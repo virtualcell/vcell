@@ -14,37 +14,40 @@ import java.nio.file.Path;
 import java.util.HashMap;
 
 public final class Auth0ConnectionUtils {
-    private static String showLoginPopUpIndexString = "showLoginPopUp";
+    private static final String showLoginPopUpIndexString = "showLoginPopUp";
 
     private final VCellApiClient vcellApiClient;
-    public Auth0ConnectionUtils(VCellApiClient vcellApiClient) {this.vcellApiClient = vcellApiClient;}
+
+    public Auth0ConnectionUtils(VCellApiClient vcellApiClient) {
+        this.vcellApiClient = vcellApiClient;
+    }
 
     public boolean isVCellIdentityMapped() throws ApiException {
-        return vcellApiClient.isVCellIdentityMapped();
+        return this.vcellApiClient.isVCellIdentityMapped();
     }
 
     public void auth0SignIn(boolean isGuest) throws ApiException {
-        try{
+        try {
             boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
             boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
             boolean ignoreSSLCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
-            if (!isGuest) vcellApiClient.authenticate(ignoreSSLCertProblems);
-            else vcellApiClient.createDefaultQuarkusClient(ignoreSSLCertProblems);
-        } catch (ApiException | URISyntaxException | IOException | ParseException e){
+            if (!isGuest) this.vcellApiClient.authenticate(ignoreSSLCertProblems);
+            else this.vcellApiClient.createDefaultQuarkusClient(ignoreSSLCertProblems);
+        } catch (ApiException | URISyntaxException | IOException | ParseException e) {
             throw new RuntimeException(e);
         }
     }
 
     public String getAuth0MappedUser() throws ApiException {
         try {
-            return vcellApiClient.getVCellUserNameFromAuth0Mapping();
+            return this.vcellApiClient.getVCellUserNameFromAuth0Mapping();
         } catch (ApiException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void logOut(){
-        vcellApiClient.logOut();
+    public void logOut() {
+        this.vcellApiClient.logOut();
     }
 
     private static Path getAppPropertiesPath() throws IOException {

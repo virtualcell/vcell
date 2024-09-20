@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client;
+
 import java.awt.Component;
 import java.util.Hashtable;
 
@@ -39,238 +40,232 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.xml.merge.XmlTreeDiff;
 
 public abstract class DocumentWindowManager extends TopLevelWindowManager implements java.awt.event.ActionListener, DataViewerManager {
-	
-	/**
-	 * identifying string, for hashtable passing, et. al
-	 */
-	public final static String IDENT = "DocumentWindowManager";
-	public static final String SELECT_GEOM_POPUP = "SelectGeomPopup";
 
-	private JPanel jPanel = null;
-	private String documentID = null;
-	
-	public static class GeometrySelectionInfo{
-		private VCDocumentInfo vcDocumentInfo;
-		private VCDocument.DocumentCreationInfo selectedGeometryDocument;
-		private boolean bFromCurrentGeom = false;
-		
-		public GeometrySelectionInfo(VCDocumentInfo vcDocumentInfo){
-			if(!vcDocumentInfo.getVersionType().equals(VersionableType.BioModelMetaData) && 
-				!vcDocumentInfo.getVersionType().equals(VersionableType.MathModelMetaData) &&
-				!vcDocumentInfo.getVersionType().equals(VersionableType.Geometry)){
-				throw new IllegalArgumentException("GeometrySelectionInfo(VCDocumentInfo vcDocumentInfo) must be of VersionableType BioModelMetaData,MathModelMetaData or Geometry");				
-			}
-			this.vcDocumentInfo = vcDocumentInfo;
-		}
-		public GeometrySelectionInfo(VCDocument.DocumentCreationInfo selectedGeometryDocument){
-			if(selectedGeometryDocument.getDocumentType() != VCDocumentType.GEOMETRY_DOC){
-				throw new IllegalArgumentException("GeometrySelectionInfo(VCDocument.DocumentCreationInfo selectedGeometryDocument) must be of type VCDocument.GEOMETRY_DOC");
-			}
-			this.selectedGeometryDocument = selectedGeometryDocument;
-		}
-		public GeometrySelectionInfo(){
-			this.bFromCurrentGeom = true;
-		}
-		public VCDocumentInfo getVCDocumentInfo(){
-			return vcDocumentInfo;
-		}
-		public VCDocument.DocumentCreationInfo getDocumentCreationInfo(){
-			return selectedGeometryDocument;
-		}
-		public boolean bFromCurrentGeom(){
-			return bFromCurrentGeom;
-		}
-	}
-	
+    /**
+     * identifying string, for hashtable passing, et. al
+     */
+    public final static String IDENT = "DocumentWindowManager";
+    public static final String SELECT_GEOM_POPUP = "SelectGeomPopup";
 
-public DocumentWindowManager(JPanel panel, RequestManager requestManager, VCDocument vcDocument) {
-	super(requestManager);
-	setJPanel(panel);
-	// figure out unique documentID
-	setDocumentID(vcDocument);
-}
+    private JPanel jPanel = null;
+    private String documentID = null;
+
+    public static class GeometrySelectionInfo {
+        private VCDocumentInfo vcDocumentInfo;
+        private VCDocument.DocumentCreationInfo selectedGeometryDocument;
+        private boolean bFromCurrentGeom = false;
+
+        public GeometrySelectionInfo(VCDocumentInfo vcDocumentInfo) {
+            if (!vcDocumentInfo.getVersionType().equals(VersionableType.BioModelMetaData) &&
+                    !vcDocumentInfo.getVersionType().equals(VersionableType.MathModelMetaData) &&
+                    !vcDocumentInfo.getVersionType().equals(VersionableType.Geometry)) {
+                throw new IllegalArgumentException("GeometrySelectionInfo(VCDocumentInfo vcDocumentInfo) must be of VersionableType BioModelMetaData,MathModelMetaData or Geometry");
+            }
+            this.vcDocumentInfo = vcDocumentInfo;
+        }
+
+        public GeometrySelectionInfo(VCDocument.DocumentCreationInfo selectedGeometryDocument) {
+            if (selectedGeometryDocument.getDocumentType() != VCDocumentType.GEOMETRY_DOC) {
+                throw new IllegalArgumentException("GeometrySelectionInfo(VCDocument.DocumentCreationInfo selectedGeometryDocument) must be of type VCDocument.GEOMETRY_DOC");
+            }
+            this.selectedGeometryDocument = selectedGeometryDocument;
+        }
+
+        public GeometrySelectionInfo() {
+            this.bFromCurrentGeom = true;
+        }
+
+        public VCDocumentInfo getVCDocumentInfo() {
+            return this.vcDocumentInfo;
+        }
+
+        public VCDocument.DocumentCreationInfo getDocumentCreationInfo() {
+            return this.selectedGeometryDocument;
+        }
+
+        public boolean bFromCurrentGeom() {
+            return this.bFromCurrentGeom;
+        }
+    }
 
 
-public abstract void addResultsFrame(SimulationWindow simWindow);
+    public DocumentWindowManager(JPanel panel, RequestManager requestManager, VCDocument vcDocument) {
+        super(requestManager);
+        this.setJPanel(panel);
+        // figure out unique documentID
+        this.setDocumentID(vcDocument);
+    }
 
 
-
-public void compareWithSaved() {
-
-	if (getVCDocument().getVersion() == null) { 
-		// shouldn't happen (menu should not be available), but check anyway...
-		PopupGenerator.showErrorDialog(this, "There is no saved version of this document");
-		return;
-	}
-	final MDIManager mdiManager = new ClientMDIManager(getRequestManager());        
-	mdiManager.blockWindow(getManagerID()); 
-	
-	String taskName = "Comparing with saved"; 
-	AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			XmlTreeDiff xmlTreeDiff = getRequestManager().compareWithSaved(getVCDocument());
-			hashTable.put("xmlTreeDiff", xmlTreeDiff);
-		}			
-	};
-	AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
-
-		@Override
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			try {
-				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
-					XmlTreeDiff xmlTreeDiff = (XmlTreeDiff)hashTable.get("xmlTreeDiff");
-					String baselineDesc = getVCDocument()+ ", " + (getVCDocument().getVersion() == null ? "not saved" : getVCDocument().getVersion().getDate());
-					String modifiedDesc = "Opened document instance";
-					getRequestManager().showComparisonResults(DocumentWindowManager.this, xmlTreeDiff, baselineDesc, modifiedDesc);
-				}
-			} finally {
-				mdiManager.unBlockWindow(getManagerID());
-			}
-		}
-	};
-	ClientTaskDispatcher.dispatch(getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[] {task1, task2}, false);
-}
+    public abstract void addResultsFrame(SimulationWindow simWindow);
 
 
-private String createTempID() {
-	return "TempID" + System.currentTimeMillis();
-}
+    public void compareWithSaved() {
+
+        if (this.getVCDocument().getVersion() == null) {
+            // shouldn't happen (menu should not be available), but check anyway...
+            PopupGenerator.showErrorDialog(this, "There is no saved version of this document");
+            return;
+        }
+        final MDIManager mdiManager = new ClientMDIManager(this.getRequestManager());
+        mdiManager.blockWindow(this.getManagerID());
+
+        String taskName = "Comparing with saved";
+        AsynchClientTask task1 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+                XmlTreeDiff xmlTreeDiff = DocumentWindowManager.this.getRequestManager().compareWithSaved(DocumentWindowManager.this.getVCDocument());
+                hashTable.put("xmlTreeDiff", xmlTreeDiff);
+            }
+        };
+        AsynchClientTask task2 = new AsynchClientTask(taskName, AsynchClientTask.TASKTYPE_SWING_BLOCKING, false, false) {
+
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+                try {
+                    if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
+                        XmlTreeDiff xmlTreeDiff = (XmlTreeDiff) hashTable.get("xmlTreeDiff");
+                        String baselineDesc = DocumentWindowManager.this.getVCDocument() + ", " + (DocumentWindowManager.this.getVCDocument().getVersion() == null ? "not saved" : DocumentWindowManager.this.getVCDocument().getVersion().getDate());
+                        String modifiedDesc = "Opened document instance";
+                        DocumentWindowManager.this.getRequestManager().showComparisonResults(DocumentWindowManager.this, xmlTreeDiff, baselineDesc, modifiedDesc);
+                    }
+                } finally {
+                    mdiManager.unBlockWindow(DocumentWindowManager.this.getManagerID());
+                }
+            }
+        };
+        ClientTaskDispatcher.dispatch(this.getComponent(), new Hashtable<String, Object>(), new AsynchClientTask[]{task1, task2}, false);
+    }
 
 
-
-public void dataJobMessage(DataJobEvent event){
-
-	// just pass them along...
-	fireDataJobMessage(event);
-}
+    private String createTempID() {
+        return "TempID" + System.currentTimeMillis();
+    }
 
 
-public void exportMessage(ExportEvent exportEvent) {
-	//
-	// may not come from a simulation, but we'll create a VCSimulationIdentifer to match with the window just in case
-	// if it is not a match, no harm.
-	//
-	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(exportEvent.getDataKey(),exportEvent.getUser());
-	if (haveSimulationWindow(vcSimID) == null) {// && exportEvent.getEventTypeID() != ExportEvent.EXPORT_COMPLETE) {
-		return;
-	}
-	// just pass them along...
-	fireExportMessage(exportEvent);
-}
+    public void dataJobMessage(DataJobEvent event) {
+
+        // just pass them along...
+        this.fireDataJobMessage(event);
+    }
 
 
-public JComponent getComponent() {
-	return jPanel;
-}
+    public void exportMessage(ExportEvent exportEvent) {
+        //
+        // may not come from a simulation, but we'll create a VCSimulationIdentifer to match with the window just in case
+        // if it is not a match, no harm.
+        //
+        VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(exportEvent.getDataKey(), exportEvent.getUser());
+        if (this.haveSimulationWindow(vcSimID) == null) {// && exportEvent.getEventTypeID() != ExportEvent.EXPORT_COMPLETE) {
+            return;
+        }
+        // just pass them along...
+        this.fireExportMessage(exportEvent);
+    }
 
 
-public String getManagerID() {
-	return documentID;
-}
+    public JComponent getComponent() {
+        return this.jPanel;
+    }
 
 
+    public String getManagerID() {
+        return this.documentID;
+    }
 
 
-public User getUser() {
-	return getRequestManager().getDocumentManager().getUser();
-}
+    public User getUser() {
+        return this.getRequestManager().getDocumentManager().getUser();
+    }
 
 
-public abstract VCDocument getVCDocument();
+    public abstract VCDocument getVCDocument();
 
 
-abstract SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier);
+    abstract SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier);
 
-public void openDocument(VCDocumentType documentType) {
-	getRequestManager().openDocument(documentType, this);
-}
+    public void openDocument(VCDocumentType documentType) {
+        this.getRequestManager().openDocument(documentType, this);
+    }
 
-public void importPathway(PathwayImportOption pathwayImportOption) {
-	getRequestManager().openPathway(this, pathwayImportOption);
-}
-
-
-public void reconnect() {
-	getRequestManager().reconnect(this);
-}
+    public void importPathway(PathwayImportOption pathwayImportOption) {
+        this.getRequestManager().openPathway(this, pathwayImportOption);
+    }
 
 
-
-public abstract void resetDocument(VCDocument newDocument);
-
-
-
-public void revertToSaved() {
-	if (getVCDocument().getVersion() == null) {
-		// shouldn't happen (menu should not be available), but check anyway...
-		PopupGenerator.showErrorDialog(this, "There is no saved version of this document");
-		return;
-	}
-	String confirm = PopupGenerator.showWarningDialog(this, getRequestManager().getUserPreferences(), UserMessage.warn_RevertToSaved,null);
-	if (confirm.equals(UserMessage.OPTION_CANCEL)){
-		//user canceled
-		return;
-	}
-	getRequestManager().revertToSaved(this);
-}
+    public void reconnect() {
+        this.getRequestManager().reconnect(this);
+    }
 
 
-
-public void saveDocument(boolean replace) {
-	getRequestManager().saveDocument(this, replace);
-}
+    public abstract void resetDocument(VCDocument newDocument);
 
 
-
-public void saveDocumentAsNew() {
-	getRequestManager().saveDocumentAsNew(this);
-}
-
-
-protected void setDocumentID(VCDocument vcDocument) {
-	String oldID = getManagerID();
-	if (vcDocument.getVersion() != null) {
-		setDocumentID(vcDocument.getVersion().getVersionKey().toString());
-	} else {
-		// if vcDocument has no Version it was never saved, it was created in this session
-		// we generate a temporary ID (until first save occurs, if ever)
-		setDocumentID(createTempID());
-	}
-	getRequestManager().managerIDchanged(oldID, getManagerID());
-}
+    public void revertToSaved() {
+        if (this.getVCDocument().getVersion() == null) {
+            // shouldn't happen (menu should not be available), but check anyway...
+            PopupGenerator.showErrorDialog(this, "There is no saved version of this document");
+            return;
+        }
+        String confirm = PopupGenerator.showWarningDialog(this, this.getRequestManager().getUserPreferences(), UserMessage.warn_RevertToSaved, null);
+        if (confirm.equals(UserMessage.OPTION_CANCEL)) {
+            //user canceled
+            return;
+        }
+        this.getRequestManager().revertToSaved(this);
+    }
 
 
-private void setDocumentID(java.lang.String newDocumentID) {
-	documentID = newDocumentID;
-}
+    public void saveDocument(boolean replace) {
+        this.getRequestManager().saveDocument(this, replace);
+    }
 
 
-
-private void setJPanel(javax.swing.JPanel newJPanel) {
-	jPanel = newJPanel;
-}
-
+    public void saveDocumentAsNew() {
+        this.getRequestManager().saveDocumentAsNew(this);
+    }
 
 
-public void showFieldDataWindow() {
-	getRequestManager().showFieldDataWindow(null);
-}
+    protected void setDocumentID(VCDocument vcDocument) {
+        String oldID = this.getManagerID();
+        if (vcDocument.getVersion() != null) {
+            this.setDocumentID(vcDocument.getVersion().getVersionKey().toString());
+        } else {
+            // if vcDocument has no Version it was never saved, it was created in this session
+            // we generate a temporary ID (until first save occurs, if ever)
+            this.setDocumentID(this.createTempID());
+        }
+        this.getRequestManager().managerIDchanged(oldID, this.getManagerID());
+    }
 
 
-public void showTestingFrameworkWindow() {
-	getRequestManager().showTestingFrameworkWindow();
-}
+    private void setDocumentID(java.lang.String newDocumentID) {
+        this.documentID = newDocumentID;
+    }
 
 
+    private void setJPanel(javax.swing.JPanel newJPanel) {
+        this.jPanel = newJPanel;
+    }
 
-public void startExport(Component requester,OutputContext outputContext,ExportSpecs exportSpecs) {
-	getRequestManager().startExport(outputContext,requester, exportSpecs);
-}
 
-public abstract void updateConnectionStatus(ConnectionStatus connStatus);
+    public void showFieldDataWindow() {
+        this.getRequestManager().showFieldDataWindow(null);
+    }
 
-public abstract DocumentEditor getDocumentEditor( );
+
+    public void showTestingFrameworkWindow() {
+        this.getRequestManager().showTestingFrameworkWindow();
+    }
+
+
+    public void startExport(Component requester, OutputContext outputContext, ExportSpecs exportSpecs) {
+        this.getRequestManager().startExport(outputContext, requester, exportSpecs);
+    }
+
+    public abstract void updateConnectionStatus(ConnectionStatus connStatus);
+
+    public abstract DocumentEditor getDocumentEditor();
 }
 

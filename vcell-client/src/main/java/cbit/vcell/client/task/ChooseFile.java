@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.client.task;
+
 import static cbit.vcell.simdata.SimDataConstants.SMOLDYN_INPUT_FILE_EXTENSION;
 
 import java.awt.Component;
@@ -52,160 +53,165 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.Simulation;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
+ *
  * @author: Ion Moraru
  */
 public class ChooseFile extends ExportTask {
-	public static final String FORCE_FILE_FILTER = "FORCE_FILE_FILTER";
-	/**
-	 * extension user typed info file chooser
-	 */
-	private String extensionUserProvided = null;
+    public static final String FORCE_FILE_FILTER = "FORCE_FILE_FILTER";
+    /**
+     * extension user typed info file chooser
+     */
+    private String extensionUserProvided = null;
 
-	public ChooseFile() {
-		super("Selecting export file destination", TASKTYPE_SWING_BLOCKING);
-	}
+    public ChooseFile() {
+        super("Selecting export file destination", TASKTYPE_SWING_BLOCKING);
+    }
 
-	/**
-	 * removes extension, if any and stores in {@link #extensionUserProvided}
-	 * @param userProvided could be null
-	 * @return userProvided with extension removed if present
-	 */
-	private String recordAndRemoveExtension(String userProvided) {
-		extensionUserProvided = FilenameUtils.getExtension(userProvided);
-		return FilenameUtils.removeExtension(userProvided);
-	}
+    /**
+     * removes extension, if any and stores in {@link #extensionUserProvided}
+     *
+     * @param userProvided could be null
+     * @return userProvided with extension removed if present
+     */
+    private String recordAndRemoveExtension(String userProvided) {
+        this.extensionUserProvided = FilenameUtils.getExtension(userProvided);
+        return FilenameUtils.removeExtension(userProvided);
+    }
 
-	//reset the user preference for the default path, if needed.
-	private void resetPreferredFilePath(File selectedFile, UserPreferences userPreferences) {
+    //reset the user preference for the default path, if needed.
+    private void resetPreferredFilePath(File selectedFile, UserPreferences userPreferences) {
 
-		File oldPath = userPreferences.getCurrentDialogPath();
-		File newPath = selectedFile.getParentFile();
-		if (!newPath.equals(oldPath)) {
-			userPreferences.setCurrentDialogPath(newPath);
-		}
-		System.out.println("New preferred file path: " + newPath.getAbsolutePath() + ", Old preferred file path: " + oldPath.getAbsolutePath());
-	}
+        File oldPath = userPreferences.getCurrentDialogPath();
+        File newPath = selectedFile.getParentFile();
+        if (!newPath.equals(oldPath)) {
+            userPreferences.setCurrentDialogPath(newPath);
+        }
+        System.out.println("New preferred file path: " + newPath.getAbsolutePath() + ", Old preferred file path: " + oldPath.getAbsolutePath());
+    }
 
-	/**
-	 * warn user if file asks
-	 * @param selectedFile may be null
-	 * @param parent should not be null
-	 * @param userPreferences
-	 */
-	private void checkForOverwrites(File selectedFile, Component parent, UserPreferences userPreferences) {
-		if (selectedFile != null && selectedFile.exists()) {
-			String answer = PopupGenerator.showWarningDialog(parent, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
-			if (answer.equals(UserMessage.OPTION_CANCEL)){
-				throw UserCancelException.CANCEL_FILE_SELECTION;
-			}
-		}
-	}
+    /**
+     * warn user if file asks
+     *
+     * @param selectedFile    may be null
+     * @param parent          should not be null
+     * @param userPreferences
+     */
+    private void checkForOverwrites(File selectedFile, Component parent, UserPreferences userPreferences) {
+        if (selectedFile != null && selectedFile.exists()) {
+            String answer = PopupGenerator.showWarningDialog(parent, userPreferences, UserMessage.warn_OverwriteFile, selectedFile.getAbsolutePath());
+            if (answer.equals(UserMessage.OPTION_CANCEL)) {
+                throw UserCancelException.CANCEL_FILE_SELECTION;
+            }
+        }
+    }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @param hashTable java.util.Hashtable
- * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
- */
-public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	VCDocument documentToExport = fetch(hashTable,DocumentToExport.EXPORT_DOCUMENT,VCDocument.class, true) ;
-	File exportFile = null;
-	if (documentToExport instanceof BioModel) {
-		exportFile = showBioModelXMLFileChooser(hashTable);
-	} else if (documentToExport instanceof MathModel) {
-		exportFile = showMathModelXMLFileChooser(hashTable);
-	} else if (documentToExport instanceof Geometry) {
-		exportFile = showGeometryModelXMLFileChooser(hashTable);
-	} else {
-		throw new Exception("Unsupported document type for XML export: " + documentToExport.getClass());
-	}
-	//check to see if we've changed extension from what user entered
-	if (extensionUserProvided  != null && !extensionUserProvided.isEmpty()) {
-		String fp = exportFile.getAbsolutePath();
-		String currentExt = FilenameUtils.getExtension( fp );
-		if (!extensionUserProvided.equals(currentExt)) {
-			hashTable.put(RENAME_KEY, fp);
-		}
-	}
+    /**
+     * Insert the method's description here.
+     * Creation date: (5/31/2004 6:04:14 PM)
+     *
+     * @param hashTable    java.util.Hashtable
+     * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
+     */
+    public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
+        VCDocument documentToExport = fetch(hashTable, DocumentToExport.EXPORT_DOCUMENT, VCDocument.class, true);
+        File exportFile = null;
+        if (documentToExport instanceof BioModel) {
+            exportFile = this.showBioModelXMLFileChooser(hashTable);
+        } else if (documentToExport instanceof MathModel) {
+            exportFile = this.showMathModelXMLFileChooser(hashTable);
+        } else if (documentToExport instanceof Geometry) {
+            exportFile = this.showGeometryModelXMLFileChooser(hashTable);
+        } else {
+            throw new Exception("Unsupported document type for XML export: " + documentToExport.getClass());
+        }
+        //check to see if we've changed extension from what user entered
+        if (this.extensionUserProvided != null && !this.extensionUserProvided.isEmpty()) {
+            String fp = exportFile.getAbsolutePath();
+            String currentExt = FilenameUtils.getExtension(fp);
+            if (!this.extensionUserProvided.equals(currentExt)) {
+                hashTable.put(RENAME_KEY, fp);
+            }
+        }
 
-	hashTable.put(EXPORT_FILE, exportFile);
-}
+        hashTable.put(EXPORT_FILE, exportFile);
+    }
 
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- */
-private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	BioModel bioModel = (BioModel)hashTable.get("documentToExport");
-	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
-	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
-	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
-	SelectorExtensionFilter forceFileFilter = null;
-	{
-		Object obj = hashTable.get(FORCE_FILE_FILTER);
-		if (obj != null) {
-			VCAssert.ofType(obj, SelectorExtensionFilter.class);
-			forceFileFilter = (SelectorExtensionFilter) obj;
-			VCAssert.assertTrue(forceFileFilter.supports(Selector.FULL_MODEL), "only " + Selector.FULL_MODEL + " filters supported for force file filter");
-		}
-	}
-	if (topLevelWindowManager == null) {
-		throw new RuntimeException("toplLevelWindowManager required");
-	}
-	File defaultPath = userPreferences.getCurrentDialogPath();
+    /**
+     * Insert the method's description here.
+     * Creation date: (5/31/2004 6:04:14 PM)
+     */
+    private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) throws java.lang.Exception {
+        BioModel bioModel = (BioModel) hashTable.get("documentToExport");
+        JFrame currentWindow = (JFrame) hashTable.get("currentWindow");
+        UserPreferences userPreferences = (UserPreferences) hashTable.get("userPreferences");
+        TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager) hashTable.get("topLevelWindowManager");
+        SelectorExtensionFilter forceFileFilter = null;
+        {
+            Object obj = hashTable.get(FORCE_FILE_FILTER);
+            if (obj != null) {
+                VCAssert.ofType(obj, SelectorExtensionFilter.class);
+                forceFileFilter = (SelectorExtensionFilter) obj;
+                VCAssert.assertTrue(forceFileFilter.supports(Selector.FULL_MODEL), "only " + Selector.FULL_MODEL + " filters supported for force file filter");
+            }
+        }
+        if (topLevelWindowManager == null) {
+            throw new RuntimeException("toplLevelWindowManager required");
+        }
+        File defaultPath = userPreferences.getCurrentDialogPath();
 //	JFileChooser fileChooser = new JFileChooser(defaultPath);
-	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
-	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-	fileChooser.setMultiSelectionEnabled(false);
-	final SimulationContext simContexts[] = bioModel.getSimulationContexts();
-	boolean spatialDeterministicSim = false;
-	boolean nonspatialDeterministicSim = false;
-	boolean stochasticSim = false;
-	@SuppressWarnings("unused")
-	boolean bnglSim = false; //add logic to set this
-	for (SimulationContext sc : simContexts) {
-		if (sc.getApplicationType() == Application.NETWORK_STOCHASTIC) {
-			stochasticSim = true;
-		} else {
-			if (sc.getGeometry().getDimension( ) > 0) {
-				spatialDeterministicSim = true;
-			} else {
-				nonspatialDeterministicSim = true;
-			}
-		}
-	}
-	FileFilter defaultFileFilter;
-	if(forceFileFilter == null) {
-		List<FileFilter> dlist = FileFilters.supports(SelectorExtensionFilter.Selector.DEFAULT);
-		VCAssert.assertTrue(dlist.size( ) == 1, "Exactly one filter must be designated default");
-		defaultFileFilter = dlist.get(0);
-		Set<FileFilter> filters = new TreeSet<>(); //use a set to avoid duplicated entries; TreeSet show listing is alphabetical
-		filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.FULL_MODEL));
-		if (spatialDeterministicSim) {
-			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.SPATIAL));
-		}
-		if (nonspatialDeterministicSim) {
-			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.DETERMINISTIC,SelectorExtensionFilter.Selector.NONSPATIAL));
-		}
-		if (stochasticSim) {
-			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.STOCHASTIC));
-		}
+        VCFileChooser fileChooser = new VCFileChooser(defaultPath);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setMultiSelectionEnabled(false);
+        final SimulationContext[] simContexts = bioModel.getSimulationContexts();
+        boolean spatialDeterministicSim = false;
+        boolean nonspatialDeterministicSim = false;
+        boolean stochasticSim = false;
+        @SuppressWarnings("unused")
+        boolean bnglSim = false; //add logic to set this
+        for (SimulationContext sc : simContexts) {
+            if (sc.getApplicationType() == Application.NETWORK_STOCHASTIC) {
+                stochasticSim = true;
+            } else {
+                if (sc.getGeometry().getDimension() > 0) {
+                    spatialDeterministicSim = true;
+                } else {
+                    nonspatialDeterministicSim = true;
+                }
+            }
+        }
+        FileFilter defaultFileFilter;
+        if (forceFileFilter == null) {
+            List<FileFilter> dlist = FileFilters.supports(SelectorExtensionFilter.Selector.DEFAULT);
+            VCAssert.assertTrue(dlist.size() == 1, "Exactly one filter must be designated default");
+            defaultFileFilter = dlist.get(0);
+            Set<FileFilter> filters = new TreeSet<>(); //use a set to avoid duplicated entries; TreeSet show listing is alphabetical
+            filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.FULL_MODEL));
+            if (spatialDeterministicSim) {
+                filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.DETERMINISTIC, SelectorExtensionFilter.Selector.SPATIAL));
+            }
+            if (nonspatialDeterministicSim) {
+                filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.DETERMINISTIC, SelectorExtensionFilter.Selector.NONSPATIAL));
+            }
+            if (stochasticSim) {
+                filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.STOCHASTIC));
+            }
 		/*add BNGL selector here
 		if (bnglSim) {
 			filters.addAll(FileFilters.supports(SelectorExtensionFilter.Selector.BNGL));
 		}
 		*/
 
-		fileChooser.addChoosableFileFilter(defaultFileFilter);
-		for (FileFilter f : filters) {
-			if(f == defaultFileFilter) {
-				continue;
-			}
-			fileChooser.addChoosableFileFilter(f);
-		}
+            fileChooser.addChoosableFileFilter(defaultFileFilter);
+            for (FileFilter f : filters) {
+                if (f == defaultFileFilter) {
+                    continue;
+                }
+                fileChooser.addChoosableFileFilter(f);
+            }
 
 		/*
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_12);
@@ -222,87 +228,87 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
 		*/
-		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
-		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_OMEX);
-		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SPRINGSALAD);
+            fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SEDML);
+            fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_OMEX);
+            fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SPRINGSALAD);
 
-	} else {
-		defaultFileFilter = forceFileFilter;
-	}
-	// remove all selectors
-	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-	// Set the default file filter...
-	fileChooser.setFileFilter(defaultFileFilter);
-    fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(bioModel.getName())));
+        } else {
+            defaultFileFilter = forceFileFilter;
+        }
+        // remove all selectors
+        fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+        // Set the default file filter...
+        fileChooser.setFileFilter(defaultFileFilter);
+        fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(bioModel.getName())));
 
-	fileChooser.setDialogTitle("Export Virtual Cell BioModel As...");
-	if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
-		// user didn't choose save
-		throw UserCancelException.CANCEL_FILE_SELECTION;
-	}
-	File selectedFile = fileChooser.getSelectedFile();
-	FileFilter gfileFilter = fileChooser.getFileFilter();
-	VCAssert.ofType(gfileFilter, SelectorExtensionFilter.class);
-	//only ExtensionFilters should have been added;
-	SelectorExtensionFilter fileFilter =  (SelectorExtensionFilter) gfileFilter;
-	if (selectedFile == null) {
-		// no file selected (no name given)
-		throw UserCancelException.CANCEL_FILE_SELECTION;
-	}
-	final File fileUserSpecified = selectedFile.getCanonicalFile();
-	///
-	String selectedFileName = recordAndRemoveExtension( selectedFile.getPath() );
-	if(extensionUserProvided != null && !extensionUserProvided.isEmpty() && !extensionUserProvided.startsWith(".")) {
-		extensionUserProvided = "." + extensionUserProvided;
-	}
-	if (fileFilter.isValidExtension(extensionUserProvided)) {
-		selectedFileName += extensionUserProvided;
-	} else {
-		selectedFileName += fileFilter.getPrimaryExtension();
-	}
-	selectedFile = new File(selectedFileName);
+        fileChooser.setDialogTitle("Export Virtual Cell BioModel As...");
+        if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
+            // user didn't choose save
+            throw UserCancelException.CANCEL_FILE_SELECTION;
+        }
+        File selectedFile = fileChooser.getSelectedFile();
+        FileFilter gfileFilter = fileChooser.getFileFilter();
+        VCAssert.ofType(gfileFilter, SelectorExtensionFilter.class);
+        //only ExtensionFilters should have been added;
+        SelectorExtensionFilter fileFilter = (SelectorExtensionFilter) gfileFilter;
+        if (selectedFile == null) {
+            // no file selected (no name given)
+            throw UserCancelException.CANCEL_FILE_SELECTION;
+        }
+        final File fileUserSpecified = selectedFile.getCanonicalFile();
+        ///
+        String selectedFileName = this.recordAndRemoveExtension(selectedFile.getPath());
+        if (this.extensionUserProvided != null && !this.extensionUserProvided.isEmpty() && !this.extensionUserProvided.startsWith(".")) {
+            this.extensionUserProvided = "." + this.extensionUserProvided;
+        }
+        if (fileFilter.isValidExtension(this.extensionUserProvided)) {
+            selectedFileName += this.extensionUserProvided;
+        } else {
+            selectedFileName += fileFilter.getPrimaryExtension();
+        }
+        selectedFile = new File(selectedFileName);
 
-	checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
-	// put the filter in the hash so the export task knows what to do...
-	hashTable.put(FILE_FILTER, fileFilter);
-	if(fileFilter instanceof SpringSaLaDExtensionFilter && bioModel.getSimulationContexts().length > 0) {
-		if (fileFilter.requiresMoreChoices()) {
-			SimulationContext sc = bioModel.getSimulationContexts()[0];
-			ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable,topLevelWindowManager,currentWindow,sc,selectedFile,selectedFileName);
-			fileFilter.askUser(ctx);
-		}
-		resetPreferredFilePath(selectedFile, userPreferences);
-		return selectedFile;
-	}
-	if (fileFilter.supports(SelectorExtensionFilter.Selector.FULL_MODEL)) {
-		// nothing more to do in this case
-		if (fileFilter.requiresMoreChoices()) {
-			ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable,topLevelWindowManager,currentWindow,null,selectedFile,selectedFileName);
-			fileFilter.askUser(ctx);
-		}
-		resetPreferredFilePath(selectedFile, userPreferences);
-		return selectedFile;
-	}
+        this.checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
+        // put the filter in the hash so the export task knows what to do...
+        hashTable.put(FILE_FILTER, fileFilter);
+        if (fileFilter instanceof SpringSaLaDExtensionFilter && bioModel.getSimulationContexts().length > 0) {
+            if (fileFilter.requiresMoreChoices()) {
+                SimulationContext sc = bioModel.getSimulationContexts()[0];
+                ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable, topLevelWindowManager, currentWindow, sc, selectedFile, selectedFileName);
+                fileFilter.askUser(ctx);
+            }
+            this.resetPreferredFilePath(selectedFile, userPreferences);
+            return selectedFile;
+        }
+        if (fileFilter.supports(SelectorExtensionFilter.Selector.FULL_MODEL)) {
+            // nothing more to do in this case
+            if (fileFilter.requiresMoreChoices()) {
+                ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable, topLevelWindowManager, currentWindow, null, selectedFile, selectedFileName);
+                fileFilter.askUser(ctx);
+            }
+            this.resetPreferredFilePath(selectedFile, userPreferences);
+            return selectedFile;
+        }
 
-	//ArrayList<String> applicableAppNameList = new ArrayList<String>();
-	ArrayList<SimulationContext> applicableSimContexts = new ArrayList<>();
-	for (SimulationContext sc : simContexts) {
-		if (sc.getGeometry().getDimension() == 0 ) {
-			if (!fileFilter.supports(SelectorExtensionFilter.Selector.NONSPATIAL)) {
-				continue;
-			}
-		} else if (!fileFilter.supports(SelectorExtensionFilter.Selector.SPATIAL)) {
-			continue;
-		}
-		if (sc.getApplicationType() == Application.NETWORK_STOCHASTIC) {
-			if (!fileFilter.supports(SelectorExtensionFilter.Selector.STOCHASTIC)) {
-				continue;
-			}
-		} else if (!fileFilter.supports(SelectorExtensionFilter.Selector.DETERMINISTIC)) {
-			continue;
-		}
-		applicableSimContexts.add(sc);
-	}
+        //ArrayList<String> applicableAppNameList = new ArrayList<String>();
+        ArrayList<SimulationContext> applicableSimContexts = new ArrayList<>();
+        for (SimulationContext sc : simContexts) {
+            if (sc.getGeometry().getDimension() == 0) {
+                if (!fileFilter.supports(SelectorExtensionFilter.Selector.NONSPATIAL)) {
+                    continue;
+                }
+            } else if (!fileFilter.supports(SelectorExtensionFilter.Selector.SPATIAL)) {
+                continue;
+            }
+            if (sc.getApplicationType() == Application.NETWORK_STOCHASTIC) {
+                if (!fileFilter.supports(SelectorExtensionFilter.Selector.STOCHASTIC)) {
+                    continue;
+                }
+            } else if (!fileFilter.supports(SelectorExtensionFilter.Selector.DETERMINISTIC)) {
+                continue;
+            }
+            applicableSimContexts.add(sc);
+        }
 	/*
 		{} else {
 			// all apps
@@ -311,34 +317,34 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 			}
 		}
 	 */
-	
-	final String exportDesc = fileFilter.getShortDescription();
-	List<SimulationContext> all = new ArrayList<>(Arrays.asList(simContexts));
-	all.removeAll(applicableSimContexts);
-	if (!all.isEmpty()) {
-		SimContextAdapter[] removed = adapt(all);
-		StringBuilder sb = new StringBuilder( );
-		sb.append("The following applications are not supported by ");
-		sb.append(exportDesc);
-		sb.append(" and are not available for exporting: \n\n");
-//		sb.append(StringUtils.join(removed,", "));
-		for(SimulationContext sc : all) {
-//			sb.append("   " + sc.getName() + " ( " + sc.getApplicationType() + " ).\n");
-			int dim = sc.getGeometry().getDimension();
-			sb.append("   " + sc.getName() + " ( " + sc.getMathType() + ", " + (dim == 0 ? "Non-Spatial" : "Spatial") + " ).\n");
-		}
-		sb.append("\n");
-		sb.append("Press Ok to continue or Cancel to abort.\n");
-		String reply = DialogUtils.showOKCancelWarningDialog(currentWindow, "Verify Export" ,sb.toString());
-		if (!SimpleUserMessage.OPTION_OK.equals(reply)) {
-			throw UserCancelException.CANCEL_GENERIC;
-		}
-	}
 
-	SimulationContext chosenSimContext = null;
-	if (applicableSimContexts.size() == 1){
-		chosenSimContext = applicableSimContexts.get(0);
-	}
+        final String exportDesc = fileFilter.getShortDescription();
+        List<SimulationContext> all = new ArrayList<>(Arrays.asList(simContexts));
+        all.removeAll(applicableSimContexts);
+        if (!all.isEmpty()) {
+            SimContextAdapter[] removed = this.adapt(all);
+            StringBuilder sb = new StringBuilder();
+            sb.append("The following applications are not supported by ");
+            sb.append(exportDesc);
+            sb.append(" and are not available for exporting: \n\n");
+//		sb.append(StringUtils.join(removed,", "));
+            for (SimulationContext sc : all) {
+//			sb.append("   " + sc.getName() + " ( " + sc.getApplicationType() + " ).\n");
+                int dim = sc.getGeometry().getDimension();
+                sb.append("   " + sc.getName() + " ( " + sc.getMathType() + ", " + (dim == 0 ? "Non-Spatial" : "Spatial") + " ).\n");
+            }
+            sb.append("\n");
+            sb.append("Press Ok to continue or Cancel to abort.\n");
+            String reply = DialogUtils.showOKCancelWarningDialog(currentWindow, "Verify Export", sb.toString());
+            if (!SimpleUserMessage.OPTION_OK.equals(reply)) {
+                throw UserCancelException.CANCEL_GENERIC;
+            }
+        }
+
+        SimulationContext chosenSimContext = null;
+        if (applicableSimContexts.size() == 1) {
+            chosenSimContext = applicableSimContexts.get(0);
+        }
 	/*
 		else if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_PDF.getDescription()) &&
 				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_12.getDescription()) &&
@@ -366,83 +372,81 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 
 			//String[] applicationNames = (String[])org.vcell.util.BeanUtils.getArray(applicableAppNameList,String.class);
 		}	 */
-	else {
-		//String[] applicationNames = applicableAppNameList.toArray(new String[applicableAppNameList.size()]);
-		SimContextAdapter scarray[] = adapt(applicableSimContexts) ;
-		String message = "Multiple Applications are compatible with " + exportDesc + "\nPlease select one.\n";
-		Object choice = DialogUtils.showListDialog(topLevelWindowManager.getComponent(), scarray, "Application selection", null, message);
-		if (choice == null) {
-			throw UserCancelException.CANCEL_FILE_SELECTION;
-		}
-		VCAssert.ofType(choice, SimContextAdapter.class);
-		SimContextAdapter sca = (SimContextAdapter) choice;
-		chosenSimContext =  sca.simCtx;
-	}
-	hashTable.put(SIM_CONTEXT, chosenSimContext);
-	//boolean isSbml = fileFilter.supports(SelectorExtensionFilter.Selector.SBML);
-	if (fileFilter.requiresMoreChoices()) {
-		ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable,topLevelWindowManager,currentWindow,chosenSimContext,selectedFile,selectedFileName);
-		fileFilter.askUser(ctx);
-	}
-	{
-		boolean showConfirm = false;
-		if(fileFilter instanceof SbmlExtensionFilter) {
-			SbmlExtensionFilter sbmlef = (SbmlExtensionFilter)fileFilter;
-			if(sbmlef.isExportingOverrides()) {
-				showConfirm = true;
-			}
-		}
-		if(applicableSimContexts.size() > 1) {
-			showConfirm = true;
-		}
+        else {
+            //String[] applicationNames = applicableAppNameList.toArray(new String[applicableAppNameList.size()]);
+            SimContextAdapter[] scarray = this.adapt(applicableSimContexts);
+            String message = "Multiple Applications are compatible with " + exportDesc + "\nPlease select one.\n";
+            Object choice = DialogUtils.showListDialog(topLevelWindowManager.getComponent(), scarray, "Application selection", null, message);
+            if (choice == null) {
+                throw UserCancelException.CANCEL_FILE_SELECTION;
+            }
+            VCAssert.ofType(choice, SimContextAdapter.class);
+            SimContextAdapter sca = (SimContextAdapter) choice;
+            chosenSimContext = sca.simCtx;
+        }
+        hashTable.put(SIM_CONTEXT, chosenSimContext);
+        //boolean isSbml = fileFilter.supports(SelectorExtensionFilter.Selector.SBML);
+        if (fileFilter.requiresMoreChoices()) {
+            ExtensionFilter.ChooseContext ctx = new ExtensionFilter.ChooseContext(hashTable, topLevelWindowManager, currentWindow, chosenSimContext, selectedFile, selectedFileName);
+            fileFilter.askUser(ctx);
+        }
+        {
+            boolean showConfirm = false;
+            if (fileFilter instanceof SbmlExtensionFilter sbmlef) {
+                if (sbmlef.isExportingOverrides()) {
+                    showConfirm = true;
+                }
+            }
+            if (applicableSimContexts.size() > 1) {
+                showConfirm = true;
+            }
 
 //		final boolean someContextsFiltered = simContexts.length > applicableSimContexts.size();
 //		showConfirm = someContextsFiltered;
-		if (!showConfirm) {
-			final File fileAfterProcessing = selectedFile.getCanonicalFile();
-			if (!fileAfterProcessing.equals(fileUserSpecified)) {
-				final String nameUserSpecified = fileUserSpecified.getCanonicalPath();
-				final String nameAfterProcessing = fileAfterProcessing.getCanonicalPath();
-				if (FilenameUtils.indexOfExtension(nameUserSpecified) > 0) { //have extension on user path
-					showConfirm = true;
-				} else { //don't prompt if user left extension off
-					String nameAfterNoExtension = FilenameUtils.getFullPath(nameAfterProcessing) + FilenameUtils.getBaseName(nameAfterProcessing);
-					if (!nameAfterNoExtension.equals(nameUserSpecified)) {
-						showConfirm = true;
-					}
-				}
-			}
-		}
-		if (showConfirm) {
+            if (!showConfirm) {
+                final File fileAfterProcessing = selectedFile.getCanonicalFile();
+                if (!fileAfterProcessing.equals(fileUserSpecified)) {
+                    final String nameUserSpecified = fileUserSpecified.getCanonicalPath();
+                    final String nameAfterProcessing = fileAfterProcessing.getCanonicalPath();
+                    if (FilenameUtils.indexOfExtension(nameUserSpecified) > 0) { //have extension on user path
+                        showConfirm = true;
+                    } else { //don't prompt if user left extension off
+                        String nameAfterNoExtension = FilenameUtils.getFullPath(nameAfterProcessing) + FilenameUtils.getBaseName(nameAfterProcessing);
+                        if (!nameAfterNoExtension.equals(nameUserSpecified)) {
+                            showConfirm = true;
+                        }
+                    }
+                }
+            }
+            if (showConfirm) {
 //			final String exportDesc = fileFilter.getShortDescription();
-			StringBuilder sb = new StringBuilder( );
-			SimContextAdapter[] included = adapt(applicableSimContexts);
-			if(fileFilter instanceof SbmlExtensionFilter) {
-				SbmlExtensionFilter sbmlef = (SbmlExtensionFilter)fileFilter;
-				if(sbmlef.isExportingOverrides()) {
-					String overrideSimName = sbmlef.getSimulationOverrideName();
-					sb.append("Export model from application '" + chosenSimContext.getName() + "', simulation '" + overrideSimName + "' (with overrides) ");
-				} else {
-					sb.append("Export model from application '" + chosenSimContext.getName() + "' (default values) ");
-				}
-			} else {
-				sb.append("Export model with simulations ");
-				sb.append(StringUtils.join(included,", "));
-			}
-			sb.append(" to file of type ");
-			sb.append(exportDesc);
-			sb.append(' ');
-			sb.append(selectedFile.getCanonicalPath());
-			sb.append('?');
-			String reply = DialogUtils.showOKCancelWarningDialog(currentWindow, "Verify Export" ,sb.toString());
-			if (!SimpleUserMessage.OPTION_OK.equals(reply)) {
-				throw UserCancelException.CANCEL_GENERIC;
-			}
-		}
-	}
-	resetPreferredFilePath(selectedFile, userPreferences);
-	return selectedFile;
-}
+                StringBuilder sb = new StringBuilder();
+                SimContextAdapter[] included = this.adapt(applicableSimContexts);
+                if (fileFilter instanceof SbmlExtensionFilter sbmlef) {
+                    if (sbmlef.isExportingOverrides()) {
+                        String overrideSimName = sbmlef.getSimulationOverrideName();
+                        sb.append("Export model from application '" + chosenSimContext.getName() + "', simulation '" + overrideSimName + "' (with overrides) ");
+                    } else {
+                        sb.append("Export model from application '" + chosenSimContext.getName() + "' (default values) ");
+                    }
+                } else {
+                    sb.append("Export model with simulations ");
+                    sb.append(StringUtils.join(included, ", "));
+                }
+                sb.append(" to file of type ");
+                sb.append(exportDesc);
+                sb.append(' ');
+                sb.append(selectedFile.getCanonicalPath());
+                sb.append('?');
+                String reply = DialogUtils.showOKCancelWarningDialog(currentWindow, "Verify Export", sb.toString());
+                if (!SimpleUserMessage.OPTION_OK.equals(reply)) {
+                    throw UserCancelException.CANCEL_GENERIC;
+                }
+            }
+        }
+        this.resetPreferredFilePath(selectedFile, userPreferences);
+        return selectedFile;
+    }
 //	// Check structure sized and select a simulation to export to SBML
 //	if (isSbml) {
 //		// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
@@ -560,194 +564,194 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 //	}
 
 
+    /**
+     * Export to Geometry
+     * Creation date: (5/31/2004 6:04:14 PM)
+     *
+     * @param hashTable    java.util.Hashtable
+     * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
+     */
+    private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 
-
-/**
- * Export to Geometry
- * Creation date: (5/31/2004 6:04:14 PM)
- * @param hashTable java.util.Hashtable
- * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
- */
-private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-
-	Geometry geom = (Geometry)hashTable.get("documentToExport");
-	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
-	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
-	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
-	Component comp = (Component)hashTable.get("component");
-	comp = (comp==null?(currentWindow==null?(topLevelWindowManager==null?null:topLevelWindowManager.getComponent()):currentWindow):comp);
-	File defaultPath = userPreferences.getCurrentDialogPath();
-	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
-	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-	fileChooser.setMultiSelectionEnabled(false);
+        Geometry geom = (Geometry) hashTable.get("documentToExport");
+        JFrame currentWindow = (JFrame) hashTable.get("currentWindow");
+        UserPreferences userPreferences = (UserPreferences) hashTable.get("userPreferences");
+        TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager) hashTable.get("topLevelWindowManager");
+        Component comp = (Component) hashTable.get("component");
+        comp = (comp == null ? (currentWindow == null ? (topLevelWindowManager == null ? null : topLevelWindowManager.getComponent()) : currentWindow) : comp);
+        File defaultPath = userPreferences.getCurrentDialogPath();
+        VCFileChooser fileChooser = new VCFileChooser(defaultPath);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setMultiSelectionEnabled(false);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
-	if (geom.getDimension()>0){
-		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_AVS);
-		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_STL);
-		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PLY);
-	}
+        fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
+        if (geom.getDimension() > 0) {
+            fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_AVS);
+            fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_STL);
+            fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PLY);
+        }
 
-	// remove all selector
-	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+        // remove all selector
+        fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 
-	// set the default file filter...
-	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
+        // set the default file filter...
+        fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
 
-    fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(geom.getName())));
+        fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(geom.getName())));
 
-	fileChooser.setDialogTitle("Export Virtual Cell Geometry As...");
-	if (fileChooser.showSaveDialog(comp) != JFileChooser.APPROVE_OPTION) {
-		// user didn't choose save
-		throw UserCancelException.CANCEL_FILE_SELECTION;
-	} else {
-		File selectedFile = fileChooser.getSelectedFile();
-		javax.swing.filechooser.FileFilter fileFilter = fileChooser.getFileFilter();
-		if (selectedFile == null) {
-			// no file selected (no name given)
-			throw UserCancelException.CANCEL_FILE_SELECTION;
-		} else {
-			///
-			String selectedFileName = recordAndRemoveExtension( selectedFile.getPath() );
-			String n = selectedFile.getPath().toLowerCase();
-			if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
-				selectedFile = new File(selectedFileName + ".vcml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
-				selectedFile = new File(selectedFileName + ".pdf");
-			}
+        fileChooser.setDialogTitle("Export Virtual Cell Geometry As...");
+        if (fileChooser.showSaveDialog(comp) != JFileChooser.APPROVE_OPTION) {
+            // user didn't choose save
+            throw UserCancelException.CANCEL_FILE_SELECTION;
+        } else {
+            File selectedFile = fileChooser.getSelectedFile();
+            javax.swing.filechooser.FileFilter fileFilter = fileChooser.getFileFilter();
+            if (selectedFile == null) {
+                // no file selected (no name given)
+                throw UserCancelException.CANCEL_FILE_SELECTION;
+            } else {
+                ///
+                String selectedFileName = this.recordAndRemoveExtension(selectedFile.getPath());
+                String n = selectedFile.getPath().toLowerCase();
+                if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
+                    selectedFile = new File(selectedFileName + ".vcml");
+                } else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
+                    selectedFile = new File(selectedFileName + ".pdf");
+                }
 
-			if (fileFilter==null) {
-				throw new Exception("No file save type was selected.");
-			}
-			checkForOverwrites(selectedFile, comp, userPreferences);
+                if (fileFilter == null) {
+                    throw new Exception("No file save type was selected.");
+                }
+                this.checkForOverwrites(selectedFile, comp, userPreferences);
 
-			// put the filter in the hash so the export task knows what to do...
-			hashTable.put("fileFilter", fileFilter);
-			resetPreferredFilePath(selectedFile, userPreferences);
+                // put the filter in the hash so the export task knows what to do...
+                hashTable.put("fileFilter", fileFilter);
+                this.resetPreferredFilePath(selectedFile, userPreferences);
 
-			return selectedFile;
-		}
-	}
-}
+                return selectedFile;
+            }
+        }
+    }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (5/31/2004 6:04:14 PM)
- * @param hashTable java.util.Hashtable
- * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
- */
-private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) throws java.lang.Exception {
-	// for mathmodels:
-	MathModel mathModel = (MathModel)hashTable.get("documentToExport");
-	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
-	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
-	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
-	if (topLevelWindowManager == null) {
-		throw new RuntimeException("toplLevelWindowManager required");
-	}
-	File defaultPath = userPreferences.getCurrentDialogPath();
-	VCFileChooser fileChooser = new VCFileChooser(defaultPath);
-	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-	fileChooser.setMultiSelectionEnabled(false);
-	// fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);		// Can export Mathmodel to L2V1 ??
+    /**
+     * Insert the method's description here.
+     * Creation date: (5/31/2004 6:04:14 PM)
+     *
+     * @param hashTable    java.util.Hashtable
+     * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
+     */
+    private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) throws java.lang.Exception {
+        // for mathmodels:
+        MathModel mathModel = (MathModel) hashTable.get("documentToExport");
+        JFrame currentWindow = (JFrame) hashTable.get("currentWindow");
+        UserPreferences userPreferences = (UserPreferences) hashTable.get("userPreferences");
+        TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager) hashTable.get("topLevelWindowManager");
+        if (topLevelWindowManager == null) {
+            throw new RuntimeException("toplLevelWindowManager required");
+        }
+        File defaultPath = userPreferences.getCurrentDialogPath();
+        VCFileChooser fileChooser = new VCFileChooser(defaultPath);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setMultiSelectionEnabled(false);
+        // fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);		// Can export Mathmodel to L2V1 ??
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_24);
 //	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
-	// remove all selector
-	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-	// set the default file filter...
-	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
-    fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(mathModel.getName())));
+        fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
+        fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
+        fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SMOLDYN_INPUT);
+        // remove all selector
+        fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
+        // set the default file filter...
+        fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
+        fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(mathModel.getName())));
 
-	fileChooser.setDialogTitle("Export Virtual Cell MathModel As...");
-	if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
-		// user didn't choose save
-		throw UserCancelException.CANCEL_FILE_SELECTION;
-	} else {
-		File selectedFile = fileChooser.getSelectedFile();
-		javax.swing.filechooser.FileFilter fileFilter = fileChooser.getFileFilter();
-		if (selectedFile == null) {
-			// no file selected (no name given)
-			throw UserCancelException.CANCEL_FILE_SELECTION;
-		} else {
-			///
-			String selectedFileName = recordAndRemoveExtension( selectedFile.getPath() );
-			String n = selectedFile.getPath().toLowerCase();
-			if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFileName + ".xml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
-				selectedFile = new File(selectedFileName + ".vcml");
+        fileChooser.setDialogTitle("Export Virtual Cell MathModel As...");
+        if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
+            // user didn't choose save
+            throw UserCancelException.CANCEL_FILE_SELECTION;
+        } else {
+            File selectedFile = fileChooser.getSelectedFile();
+            javax.swing.filechooser.FileFilter fileFilter = fileChooser.getFileFilter();
+            if (selectedFile == null) {
+                // no file selected (no name given)
+                throw UserCancelException.CANCEL_FILE_SELECTION;
+            } else {
+                ///
+                String selectedFileName = this.recordAndRemoveExtension(selectedFile.getPath());
+                String n = selectedFile.getPath().toLowerCase();
+                if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
+                    selectedFile = new File(selectedFileName + ".xml");
+                } else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
+                    selectedFile = new File(selectedFileName + ".vcml");
 //			} else if ((fileFilter == FileFilters.FILE_FILTER_SBML_23 || (fileFilter == FileFilters.FILE_FILTER_SBML_24)) && !n.endsWith(".xml")) {
 //				selectedFile = new File(selectedFileName + ".xml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {
-				selectedFile = new File(selectedFileName + ".m");
-			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
-				selectedFile = new File(selectedFileName + ".pdf");
-			} else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(SMOLDYN_INPUT_FILE_EXTENSION) ||(n.endsWith(".txt")))) {
-				selectedFile = new File(selectedFileName + SMOLDYN_INPUT_FILE_EXTENSION);
-			}
-			checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
-			// put the filter in the hash so the export task knows what to do...
-			hashTable.put("fileFilter", fileFilter);
-			//only non-spatial math models can be exported to CellML.
-			if (fileFilter == FileFilters.FILE_FILTER_CELLML &&
-				mathModel.getMathDescription().getGeometry().getDimension() != 0) {
-				throw new Exception("No non-spatial applications, can only export to this format the math from a non-spatial application");
-			}
-			// Select a spatial stochastic simulation to export
-			else if(fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT.getDescription())){
-				Simulation[] sims = mathModel.getSimulations();
-				if(sims == null || sims.length == 0){
-					DialogUtils.showWarningDialog(topLevelWindowManager.getComponent(), "MathModel '"+mathModel.getName()+"' has no simulations to export");
-					throw UserCancelException.CANCEL_GENERIC;
-				}
-				String[][] rowData = new String[sims.length][2];
-				for(int i=0; i< sims.length; i++){
-					rowData[i][0] = sims[i].getName();
-					rowData[i][1] = sims[i].getSolverTaskDescription().getSolverDescription().getDisplayLabel();
-				}
-				int[] selectedRow = PopupGenerator.showComponentOKCancelTableList(topLevelWindowManager.getComponent(), "Select a simulation to export", new String[] {"Simulation Name","Solver"}, rowData, ListSelectionModel.SINGLE_SELECTION);
-				if(selectedRow == null) {
-					throw UserCancelException.CANCEL_GENERIC;
-				}
-				String chosenSimulationName = rowData[selectedRow[0]][0];
-				Simulation chosenSimulation = mathModel.getSimulation(chosenSimulationName);
-				if(chosenSimulation != null) {
-					hashTable.put("selectedSimulation", chosenSimulation);
-				}else{
-					throw new Exception("Couldn't match selection '"+chosenSimulationName+"' with simulation");
-				}
-			}
-			resetPreferredFilePath(selectedFile, userPreferences);
-			return selectedFile;
-		}
-	}
-}
+                } else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {
+                    selectedFile = new File(selectedFileName + ".m");
+                } else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
+                    selectedFile = new File(selectedFileName + ".pdf");
+                } else if (fileFilter == FileFilters.FILE_FILTER_SMOLDYN_INPUT && !(n.endsWith(SMOLDYN_INPUT_FILE_EXTENSION) || (n.endsWith(".txt")))) {
+                    selectedFile = new File(selectedFileName + SMOLDYN_INPUT_FILE_EXTENSION);
+                }
+                this.checkForOverwrites(selectedFile, topLevelWindowManager.getComponent(), userPreferences);
+                // put the filter in the hash so the export task knows what to do...
+                hashTable.put("fileFilter", fileFilter);
+                //only non-spatial math models can be exported to CellML.
+                if (fileFilter == FileFilters.FILE_FILTER_CELLML &&
+                        mathModel.getMathDescription().getGeometry().getDimension() != 0) {
+                    throw new Exception("No non-spatial applications, can only export to this format the math from a non-spatial application");
+                }
+                // Select a spatial stochastic simulation to export
+                else if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SMOLDYN_INPUT.getDescription())) {
+                    Simulation[] sims = mathModel.getSimulations();
+                    if (sims == null || sims.length == 0) {
+                        DialogUtils.showWarningDialog(topLevelWindowManager.getComponent(), "MathModel '" + mathModel.getName() + "' has no simulations to export");
+                        throw UserCancelException.CANCEL_GENERIC;
+                    }
+                    String[][] rowData = new String[sims.length][2];
+                    for (int i = 0; i < sims.length; i++) {
+                        rowData[i][0] = sims[i].getName();
+                        rowData[i][1] = sims[i].getSolverTaskDescription().getSolverDescription().getDisplayLabel();
+                    }
+                    int[] selectedRow = PopupGenerator.showComponentOKCancelTableList(topLevelWindowManager.getComponent(), "Select a simulation to export", new String[]{"Simulation Name", "Solver"}, rowData, ListSelectionModel.SINGLE_SELECTION);
+                    if (selectedRow == null) {
+                        throw UserCancelException.CANCEL_GENERIC;
+                    }
+                    String chosenSimulationName = rowData[selectedRow[0]][0];
+                    Simulation chosenSimulation = mathModel.getSimulation(chosenSimulationName);
+                    if (chosenSimulation != null) {
+                        hashTable.put("selectedSimulation", chosenSimulation);
+                    } else {
+                        throw new Exception("Couldn't match selection '" + chosenSimulationName + "' with simulation");
+                    }
+                }
+                this.resetPreferredFilePath(selectedFile, userPreferences);
+                return selectedFile;
+            }
+        }
+    }
 
-private static class SimContextAdapter {
-	final SimulationContext simCtx;
+    private static class SimContextAdapter {
+        final SimulationContext simCtx;
 
-	SimContextAdapter(SimulationContext simCtx) {
-		Objects.requireNonNull(simCtx);
-		this.simCtx = simCtx;
-	}
+        SimContextAdapter(SimulationContext simCtx) {
+            Objects.requireNonNull(simCtx);
+            this.simCtx = simCtx;
+        }
 
-	@Override
-	public String toString() {
-		return simCtx.getName();
-	}
-}
+        @Override
+        public String toString() {
+            return this.simCtx.getName();
+        }
+    }
 
-private SimContextAdapter[] adapt(List<SimulationContext> scList)  {
-	final int s = scList.size();
-	SimContextAdapter scarray[] = new SimContextAdapter[s];
-	for (int i = 0; i < s; i++) {
-		scarray[i] = new SimContextAdapter(scList.get(i));
-	}
-	return scarray;
-}
+    private SimContextAdapter[] adapt(List<SimulationContext> scList) {
+        final int s = scList.size();
+        SimContextAdapter[] scarray = new SimContextAdapter[s];
+        for (int i = 0; i < s; i++) {
+            scarray[i] = new SimContextAdapter(scList.get(i));
+        }
+        return scarray;
+    }
 }
