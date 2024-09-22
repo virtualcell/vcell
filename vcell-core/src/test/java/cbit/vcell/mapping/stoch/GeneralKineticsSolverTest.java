@@ -1,8 +1,11 @@
 package cbit.vcell.mapping.stoch;
 
+import cbit.image.ImageException;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mapping.MathGenCompareTest;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.mapping.*;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -14,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.sbml.VcmlTestSuiteFiles;
 
+import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +26,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements.AllowTruncatedStandardTimeout;
 import static cbit.vcell.mapping.stoch.StochasticTransformer.StochasticTransformException;
 
 @Tag("Fast")
@@ -155,7 +160,7 @@ public class GeneralKineticsSolverTest {
 
     @ParameterizedTest
     @MethodSource("testCases")
-    public void testMassActionSolver(String filename) throws XmlParseException, StochasticTransformer.StochasticTransformException {
+    public void testMassActionSolver(String filename) throws XmlParseException, StochasticTransformer.StochasticTransformException, PropertyVetoException, ImageException, GeometryException, IllegalMappingException, ExpressionException, MappingException {
         System.out.println(filename);
         InputStream testFileInputStream = VcmlTestSuiteFiles.getVcmlTestCase(filename);
         String vcmlStr = new BufferedReader(new InputStreamReader(testFileInputStream))
@@ -164,6 +169,7 @@ public class GeneralKineticsSolverTest {
 
         boolean hasElectricalCurrent = false;
         boolean hasLumpedReaction = false;
+        boolean processedAllReactions = true;
 		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
             try {
                 StochasticFunction results = StochasticTransformer.transformToStochastic(reactionStep);
@@ -171,6 +177,7 @@ public class GeneralKineticsSolverTest {
                     throw new IllegalStateException("unable to transform stochastic kinetics for reaction "+reactionStep.getName());
                 }
             } catch (StochasticTransformException e) {
+                processedAllReactions = false;
                 switch (e.errorType) {
                     case LUMPED_KINETICS_NOT_YET_SUPPORTED_FOR_STOCHASTIC_SIMULATION:
                         hasLumpedReaction = true;
@@ -194,6 +201,28 @@ public class GeneralKineticsSolverTest {
         }
         if (!hasLumpedReaction && lumpedReactionModelSet().contains(filename)) {
             throw new IllegalStateException("model declared to have lumped reactions - but not found, remove " + filename + " from lumpedReactionModelSet");
+        }
+        if (processedAllReactions) {
+            // create a nonspatial stochastic virtual cell application and generate MathDescription
+            // categorize any resulting errors
+            SimulationContext stochasticApp = bioModel.addNewSimulationContext("new_test_stochastic_application", SimulationContext.Application.NETWORK_STOCHASTIC);
+            // count the number of reaction specs which are not excluded
+            int enabledReactionCount = 0;
+            for (ReactionSpec reactionStep : stochasticApp.getReactionContext().getReactionSpecs()) {
+                if (!reactionStep.isExcluded()) {
+                    enabledReactionCount++;
+                }
+            }
+            if (enabledReactionCount > 0) {
+                // avoid failures by generating mathDescriptions if we expect no JumpProcesses
+                // (some day we should support MathDescriptions with no dynamics)
+                SimulationContext.MathMappingCallback callback = new SimulationContext.MathMappingCallback() {
+                    @Override public void setMessage(String message) { System.out.println(message); }
+                    @Override public void setProgressFraction(float fractionDone) {}
+                    @Override public boolean isInterrupted() { return false; }
+                };
+                stochasticApp.refreshMathDescription(callback, AllowTruncatedStandardTimeout);
+            }
         }
     }
 }
