@@ -20,6 +20,7 @@ import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecProxyParameter;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
 import cbit.vcell.mapping.spatial.SpatialObject.SpatialQuantity;
+import cbit.vcell.mapping.stoch.MassActionStochasticFunction;
 import cbit.vcell.mapping.stoch.StochasticFunction;
 import cbit.vcell.mapping.stoch.StochasticTransformer;
 import cbit.vcell.math.*;
@@ -717,14 +718,18 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 			Expression reverseRate = null;
 			
 			// Using the MassActionFunction to write out the math description 
-			StochasticFunction maFunc = null;
+			MassActionStochasticFunction maFunc = null;
 
 			if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction) ||
 			   kinetics.getKineticsDescription().equals(KineticsDescription.General) || 
 			   kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability))
 			{
-				maFunc = StochasticTransformer.transformToStochastic(reactionStep);
-				if (!maFunc.isMassAction() || (maFunc.forwardRate() == null && maFunc.reverseRate() == null))
+				StochasticFunction stochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
+				if (stochasticFunction instanceof MassActionStochasticFunction)
+				{
+					maFunc = (MassActionStochasticFunction)stochasticFunction;
+				}
+				if ((maFunc.forwardRate() == null && maFunc.reverseRate() == null))
 				{
 					throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
 				}

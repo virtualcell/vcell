@@ -10,6 +10,7 @@
 
 package cbit.vcell.mapping.stoch;
 
+import cbit.vcell.math.MathException;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
@@ -23,6 +24,7 @@ import org.vcell.util.*;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import static cbit.vcell.mapping.stoch.StochasticTransformer.StochasticTransformException;
 
@@ -34,6 +36,22 @@ class MassActionStochasticTransformer {
 	
 	MassActionStochasticTransformer()
 	{
+	}
+
+	static StochasticFunction solveMicroMacroMassAction(SimpleReaction reactionStep) {
+		List<ReactionParticipant> reactants = new ArrayList<>(reactionStep.getReactants());
+		List<ReactionParticipant> products = new ArrayList<>(reactionStep.getProducts());
+		if (reactionStep.getKinetics() instanceof Macroscopic_IRRKinetics macroscopicIrrKinetics){
+			Expression forwardRate = new Expression(macroscopicIrrKinetics.getKOnParameter(),reactionStep.getNameScope());
+			Expression reverseRate = null;
+			return new MassActionStochasticFunction(forwardRate, reverseRate, reactants, products);
+		} else if (reactionStep.getKinetics() instanceof Microscopic_IRRKinetics microscopicIrrKinetics){
+			Expression forwardRate = new Expression(microscopicIrrKinetics.getKOnParameter(),reactionStep.getNameScope());
+			Expression reverseRate = null;
+			return new MassActionStochasticFunction(forwardRate, reverseRate, reactants, products);
+		} else {
+			throw new IllegalArgumentException("KineticsDescription is not Macroscopic_irreversible or Microscopic_irreversible");
+		}
 	}
 
 
@@ -348,7 +366,7 @@ class MassActionStochasticTransformer {
 					}
 				}
 			}
-            return new StochasticFunction(true, forwardExp, reverseExp, reactants, products);
+            return new MassActionStochasticFunction(forwardExp, reverseExp, reactants, products);
 		}
 	}
 	

@@ -45,9 +45,14 @@ class GeneralKineticsStochasticTransformer {
 
 		Expression netRate = rs.getKinetics().getAuthoritativeParameter().getExpression();
 		try {
-			Expression forwardRate = Expression.max(new Expression(0.0), netRate);
-			Expression reverseRate = Expression.max(new Expression(0.0), Expression.negate(netRate));
-			return new StochasticFunction(false, forwardRate, reverseRate, reactants, products);
+			Expression forwardNetRate = Expression.max(new Expression(0.0), netRate);
+
+			if (rs.isReversible()) {
+				Expression reverseNetRate = Expression.max(new Expression(0.0), Expression.negate(netRate));
+				return new GeneralKineticsStochasticFunction(forwardNetRate, reverseNetRate, reactants, products);
+			} else {
+				return new GeneralKineticsStochasticFunction(forwardNetRate, null, reactants, products);
+			}
 		} catch (ExpressionException e) {
 			throw new StochasticTransformException(rs, e);
 		}

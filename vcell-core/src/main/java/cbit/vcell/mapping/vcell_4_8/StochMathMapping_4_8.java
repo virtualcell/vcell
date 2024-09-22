@@ -12,6 +12,7 @@ package cbit.vcell.mapping.vcell_4_8;
 
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.stoch.MassActionStochasticFunction;
 import cbit.vcell.mapping.stoch.StochasticFunction;
 import cbit.vcell.mapping.stoch.StochasticTransformer;
 import cbit.vcell.math.*;
@@ -27,6 +28,7 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.units.qual.Mass;
 import org.vcell.util.TokenMangler;
 
 import java.beans.PropertyVetoException;
@@ -665,20 +667,17 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				}
 				else if (kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
-					StochasticFunction maFunc = StochasticTransformer.transformToStochastic(reactionStep);
-					if (!maFunc.isMassAction() || (maFunc.forwardRate() == null && maFunc.reverseRate() == null))
-					{
-						throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
-					}
-					else
-					{
-						if(maFunc.forwardRate() != null)
-						{
-							forwardRate = maFunc.forwardRate();
-						}
-						if(maFunc.reverseRate() != null)
-						{
-							reverseRate = maFunc.reverseRate();
+					StochasticFunction stochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
+					if (stochasticFunction instanceof MassActionStochasticFunction maFunc) {
+						if (maFunc.forwardRate() == null && maFunc.reverseRate() == null) {
+							throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
+						} else {
+							if (maFunc.forwardRate() != null) {
+								forwardRate = maFunc.forwardRate();
+							}
+							if (maFunc.reverseRate() != null) {
+								reverseRate = maFunc.reverseRate();
+							}
 						}
 					}
 				}
@@ -816,9 +815,13 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				if(kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
 					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
-					StochasticFunction fluxFunc = StochasticTransformer.transformToStochastic(reactionStep);
+					MassActionStochasticFunction fluxFunc = null;
+					StochasticFunction stochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
+					if (stochasticFunction instanceof MassActionStochasticFunction) {
+						fluxFunc = (MassActionStochasticFunction)stochasticFunction;
+					}
 					//create jump process for forward flux if it exists.
-					if (fluxFunc.isMassAction() && fluxFunc.forwardRate() != null && !fluxFunc.forwardRate().isZero())
+					if (fluxFunc.forwardRate() != null && !fluxFunc.forwardRate().isZero())
 					{
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
@@ -872,7 +875,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							
 						subDomain.addJumpProcess(jp);
 					}
-					if (fluxFunc.isMassAction() && fluxFunc.reverseRate() != null && !fluxFunc.reverseRate().isZero())
+					if (fluxFunc.reverseRate() != null && !fluxFunc.reverseRate().isZero())
 					{
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
