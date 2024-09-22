@@ -516,7 +516,7 @@ private Expression getProbabilityRate(ReactionStep reactionStep, MassActionStoch
 				StochasticFunction stochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
 
 				// forward jump process
-				{
+				if (stochasticFunction.hasForwardRate()){
 					// get jump process name
 					String jpName = TokenMangler.mangleToSName(reactionStep.getName());
 					final Expression probabilityExpression;
@@ -640,14 +640,15 @@ private Expression getProbabilityRate(ReactionStep reactionStep, MassActionStoch
 						if (fluxStochasticFunction instanceof MassActionStochasticFunction massActionFluxStochasticFunction) {
 							Expression forwardEffectivePermeability = massActionFluxStochasticFunction.forwardRate();
 							//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-							if (fluxStochasticFunction.reactants().size() != 1) {
-								throw new MappingException("Flux " + reactionStep.getName() + " should have only one reactant.");
+							if (fluxStochasticFunction.reactants().isEmpty()) {
+								throw new MappingException("Flux " + reactionStep.getName() + " should have at least one reactant after stochastic transformation.");
 							}
-							SpeciesContext scReactant = fluxStochasticFunction.reactants().get(0).getSpeciesContext();
-
-							Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(scReactant), getNameScope());
-
-							probExp = Expression.mult(rsRateUnitFactor, forwardEffectivePermeability, rsStructureSize, scConcExpr);
+							Expression productOfReactantConcentrations = new Expression(1);
+							for (ReactionParticipant reactant : fluxStochasticFunction.reactants()) {
+								Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(reactant.getSpeciesContext()), getNameScope());
+								productOfReactantConcentrations = Expression.mult(productOfReactantConcentrations, scConcExpr);
+							}
+							probExp = Expression.mult(rsRateUnitFactor, forwardEffectivePermeability, rsStructureSize, productOfReactantConcentrations.flatten());
 						}else if (fluxStochasticFunction instanceof GeneralKineticsStochasticFunction generalKineticsStochasticFunction){
 							Expression forwardNetRate = generalKineticsStochasticFunction.forwardNetRate();
 							probExp = Expression.mult(rsRateUnitFactor, forwardNetRate, rsStructureSize);
@@ -698,14 +699,15 @@ private Expression getProbabilityRate(ReactionStep reactionStep, MassActionStoch
 						if (fluxStochasticFunction instanceof MassActionStochasticFunction massActionFluxStochasticFunction) {
 							Expression reverseEffectivePermeability = massActionFluxStochasticFunction.reverseRate();
 							//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-							if (fluxStochasticFunction.reactants().size() != 1) {
-								throw new MappingException("Flux " + reactionStep.getName() + " should have only one reactant.");
+							if (fluxStochasticFunction.products().isEmpty()) {
+								throw new MappingException("Flux " + reactionStep.getName() + " should have at least one product after stochastic transformation.");
 							}
-							SpeciesContext scProduct = fluxStochasticFunction.products().get(0).getSpeciesContext();
-
-							Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(scProduct), getNameScope());
-
-							probExp = Expression.mult(rsRateUnitFactor, reverseEffectivePermeability, rsStructureSize, scConcExpr);
+							Expression productOfProductConcentrations = new Expression(1);
+							for (ReactionParticipant product : fluxStochasticFunction.reactants()) {
+								Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(product.getSpeciesContext()), getNameScope());
+								productOfProductConcentrations = Expression.mult(productOfProductConcentrations, scConcExpr);
+							}
+							probExp = Expression.mult(rsRateUnitFactor, reverseEffectivePermeability, rsStructureSize, productOfProductConcentrations.flatten());
 						}else if (fluxStochasticFunction instanceof GeneralKineticsStochasticFunction generalKineticsStochasticFunction){
 							Expression reverseNetRate = generalKineticsStochasticFunction.forwardNetRate();
 							probExp = Expression.mult(rsRateUnitFactor, reverseNetRate, rsStructureSize);
