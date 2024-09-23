@@ -55,86 +55,97 @@ public class StochMathMapping extends AbstractStochMathMapping {
 		super(simContext, callback, networkGenerationRequirements);
 	}
 
-/**
- * Get probability expression for the specific elementary reaction.
- * Input: ReactionStep, the reaction. isForwardDirection, if the elementary reaction is forward from the reactionstep.
- * Output: Expression. the probability expression.
- * Creation date: (9/14/2006 3:22:58 PM)
- * @throws ExpressionException 
- */
-private Expression getProbabilityRate(ReactionStep reactionStep, MassActionStochasticFunction massActionStochasticFunction, boolean isForwardDirection)
-		throws MappingException, ExpressionException
-{
-	//the structure where reaction happens
-	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
-	Model model = getSimulationContext().getModel();
+	private Expression getProbabilityRate(ReactionStep reactionStep, MassActionStochasticFunction massActionStochasticFunction, boolean isForwardDirection)
+			throws MappingException, ExpressionException
+	{
+		//the structure where reaction happens
+		Model model = getSimulationContext().getModel();
 
-	Expression reactionStructureSize = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-
-	VCUnitDefinition reactionSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactionStep.getStructure());
-	VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
-	Expression reactionSubstanceUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
-	Expression factorExpr = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
-
-	List<ReactionParticipant> reacPart;
-	if(isForwardDirection) {
-		reacPart = massActionStochasticFunction.reactants();
-		lg.debug("forward reaction rate (coefficient?) is "+massActionStochasticFunction.forwardRate().infix());
-	} else {
-		reacPart = massActionStochasticFunction.products();
-		lg.debug("reverse reaction rate (coefficient?) is "+massActionStochasticFunction.reverseRate().infix());
-	}
-
-	Expression rxnProbabilityExpr = null;
-	for (int i=0; i<reacPart.size(); i++) {
-		VCUnitDefinition speciesSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reacPart.get(i).getStructure());
-		Expression speciesUnitFactor = getUnitFactor(speciesSubstanceUnit.divideBy(stochasticSubstanceUnit));
-
-		int stoichiometry = 0;
-		stoichiometry = reacPart.get(i).getStoichiometry();
-		//******the following part is to form the s*(s-1)(s-2)..(s-stoi+1).portion of the probability rate.
-		Expression speciesStructureSize = new Expression(reacPart.get(i).getStructure().getStructureSize(), getNameScope());
-		Expression speciesFactor = Expression.div(speciesUnitFactor, speciesStructureSize).simplifyJSCL();
-		//s*(s-1)(s-2)..(s-stoi+1)
-		SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart.get(i).getSpeciesContext());
-		Expression spCount_exp = new Expression(spCountParam, getNameScope());
-		Expression speciesFactorial = new Expression(spCount_exp);//species from uM to No. of Particles, form s*(s-1)*(s-2)
-		for(int j = 1; j < stoichiometry; j++) {
-			speciesFactorial = Expression.mult(speciesFactorial, Expression.add(spCount_exp, new Expression(-j)));
+		// translate entire reaction rate to probability rate
+		final Expression rateFactor;
+		{
+			VCUnitDefinition reactionSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactionStep.getStructure());
+			VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
+			final Expression reactionSubstanceUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
+			if (reactionStep.getKinetics() instanceof DistributedKinetics) {
+				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
+				Expression reactionStructureSize = new Expression(sm.getStructure().getStructureSize(), getNameScope());
+				rateFactor = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
+			} else if (reactionStep.getKinetics() instanceof LumpedKinetics) {
+				rateFactor = new Expression(1.0);
+			} else {
+				throw new ExpressionException("Unknown kinetics type: " + reactionStep.getKinetics().getClass().getName());
+			}
 		}
-		//update total factor with species factor
-		if(stoichiometry == 1) {
-			factorExpr = Expression.mult(factorExpr, speciesFactor);
-		} else if (stoichiometry > 1) {
-			// rxnProbExpr * (structSize^stoichiometry)
-			factorExpr = Expression.mult(factorExpr, Expression.power(speciesFactor, new Expression(stoichiometry)));
-		}
-		if (rxnProbabilityExpr == null) {
-			rxnProbabilityExpr = new Expression(speciesFactorial);
-		} else {//for more than one reactant
-			rxnProbabilityExpr = Expression.mult(rxnProbabilityExpr, speciesFactorial);
-		}
-	}
 
-	final Expression rateConstantExpr = isForwardDirection ? massActionStochasticFunction.forwardRate() : massActionStochasticFunction.reverseRate();
-	// Now construct the probability expression.
-	Expression probExp = null;
-	if(rateConstantExpr == null) {
-		throw new MappingException("Can not find reaction rate constant in reaction: "+ reactionStep.getName());
-	} else if(rxnProbabilityExpr == null) {
-		probExp = new Expression(rateConstantExpr);
-	} else if((rateConstantExpr != null) && (rxnProbabilityExpr != null)) {
-		probExp = Expression.mult(rateConstantExpr, rxnProbabilityExpr);
+
+		Expression productOfSpeciesCounts = null;
+		Expression productOfSpeciesFactors = null;
+		List<ReactionParticipant> reacPartList = (isForwardDirection) ? massActionStochasticFunction.reactants() : massActionStochasticFunction.products();
+		for (ReactionParticipant reactPart : reacPartList) {
+			// Instead of 's^stoich', we'll choose molecules from s without replacement 's*(s-1)(s-2)..(s-stoi+1)'
+			// e.g. for stoichiometry 2, we have s*(s-1)
+			SpeciesCountParameter spCountParam = getSpeciesCountParameter(reactPart.getSpeciesContext());
+			Expression speciesCount = new Expression(spCountParam, getNameScope());
+			Expression speciesCountTerm = new Expression(speciesCount);//species from uM to No. of Particles, form s*(s-1)*(s-2)
+			int stoichiometry = reactPart.getStoichiometry();
+			for(int j = 1; j < stoichiometry; j++) {
+				speciesCountTerm = Expression.mult(speciesCountTerm, Expression.add(speciesCount, new Expression(-j)));
+			}
+
+			// accumulate products of species counts (keep these like terms together)
+			if (productOfSpeciesCounts == null) {
+				productOfSpeciesCounts = new Expression(speciesCountTerm);
+			} else {//for more than one reactant
+				productOfSpeciesCounts = Expression.mult(productOfSpeciesCounts, speciesCountTerm);
+			}
+
+			// accumulate products of species factors (translates product of counts to product of concentrations)
+			// and keep these terms together for later simplification and cancellation with rate factor
+			// so, a(a-1)b * speciesFactor is equivalent to [a]^2[b].
+			Expression speciesStructureSize = new Expression(reactPart.getStructure().getStructureSize(), getNameScope());
+			VCUnitDefinition speciesSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactPart.getStructure());
+			VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
+			Expression speciesUnitFactor = getUnitFactor(speciesSubstanceUnit.divideBy(stochasticSubstanceUnit));
+			Expression speciesFactor = Expression.div(speciesUnitFactor, speciesStructureSize).simplifyJSCL();
+			if(stoichiometry == 1) {
+				if (productOfSpeciesFactors == null) {
+					productOfSpeciesFactors = new Expression(speciesFactor);
+				} else {
+					productOfSpeciesFactors = Expression.mult(productOfSpeciesFactors, speciesFactor);
+				}
+			} else if (stoichiometry > 1) {
+				if (productOfSpeciesFactors == null) {
+					productOfSpeciesFactors = Expression.power(speciesFactor, new Expression(stoichiometry));
+				} else {
+					productOfSpeciesFactors = Expression.mult(productOfSpeciesFactors, Expression.power(speciesFactor, new Expression(stoichiometry)));
+				}
+			} else {
+				throw new ExpressionException("Stoichiometry must be greater than 0");
+			}
+		}
+
+		// Now construct the probability rate expression: rateCoefficient * speciesCounts * speciesFactors * rateFactor.
+		final Expression probExp;
+		if (productOfSpeciesCounts == null) {
+			// zero order reaction (not really mass action) .. but still must multiply coefficient by rate factor to get probability rate units.
+			Expression massActionRateCoefficient = isForwardDirection ? massActionStochasticFunction.forwardRate() : massActionStochasticFunction.reverseRate();
+			probExp = Expression.mult(massActionRateCoefficient, rateFactor);
+		} else {
+			// 1st or higher order mass action reaction, with coefficient, species counts and conversion factors yield probability rate
+
+			// merge the species factors and the rate factor and try to cancel terms
+			RationalExp factorsRatExp = RationalExpUtils.getRationalExp(Expression.mult(productOfSpeciesFactors, rateFactor));
+			Expression factorsExp = new Expression(factorsRatExp.infixString());
+			factorsExp.bindExpression(this);
+			factorsExp = factorsExp.flattenSafe();
+
+			// proper mass action, multiply the rate coefficient with the probability expression
+			Expression massActionRateCoefficient = isForwardDirection ? massActionStochasticFunction.forwardRate() : massActionStochasticFunction.reverseRate();
+			probExp = Expression.mult(massActionRateCoefficient, productOfSpeciesCounts, factorsExp);
+		}
+		return probExp;
 	}
-	//simplify the factor
-	RationalExp factorRatExp = RationalExpUtils.getRationalExp(factorExpr);
-	factorExpr = new Expression(factorRatExp.infixString());
-	factorExpr.bindExpression(this);
-	//get probability rate with converting factor
-	probExp = Expression.mult(probExp, factorExpr);
-	probExp = probExp.flattenSafe();
-	return probExp;
-}
 
 	private Expression getProbabilityRate(ReactionStep reactionStep, GeneralKineticsStochasticFunction generalKineticsStochasticFunction, boolean isForwardDirection)
 			throws ExpressionException
@@ -143,13 +154,20 @@ private Expression getProbabilityRate(ReactionStep reactionStep, MassActionStoch
 		StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
 		Model model = getSimulationContext().getModel();
 
-		Expression reactionStructureSize = new Expression(sm.getStructure().getStructureSize(), getNameScope());
 
 		VCUnitDefinition reactionSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactionStep.getStructure());
 		VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
 		Expression reactionSubstanceUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
-		Expression factorExpr = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
 
+		final Expression factorExp;
+		if (reactionStep.getKinetics() instanceof DistributedKinetics) {
+			Expression reactionStructureSize = new Expression(sm.getStructure().getStructureSize(), getNameScope());
+			factorExp = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
+		} else if (reactionStep.getKinetics() instanceof LumpedKinetics) {
+			factorExp = new Expression(reactionSubstanceUnitFactor);
+		} else {
+			throw new ExpressionException("Unknown kinetics type: " + reactionStep.getKinetics().getClass().getName());
+		}
 		Expression netRateExpr = isForwardDirection ? generalKineticsStochasticFunction.forwardNetRate() : generalKineticsStochasticFunction.reverseNetRate();
 
 		// collect symbolTableEntries for speciesContexts within netRateExpr and replace with concentration parameter
@@ -165,11 +183,11 @@ private Expression getProbabilityRate(ReactionStep reactionStep, MassActionStoch
 		}
 
 		//simplify the factor
-		RationalExp factorRatExp = RationalExpUtils.getRationalExp(factorExpr);
-		factorExpr = new Expression(factorRatExp.infixString());
-		factorExpr.bindExpression(this);
+		RationalExp factorRatExp = RationalExpUtils.getRationalExp(factorExp);
+		Expression simplifiedFactorExp = new Expression(factorRatExp.infixString());
+		simplifiedFactorExp.bindExpression(this);
 		//get probability rate with converting factor
-		Expression probExp = Expression.mult(netRateExpr, factorExpr);
+		Expression probExp = Expression.mult(netRateExpr, simplifiedFactorExp);
 		probExp = probExp.flatten();
 		return probExp;
 	}

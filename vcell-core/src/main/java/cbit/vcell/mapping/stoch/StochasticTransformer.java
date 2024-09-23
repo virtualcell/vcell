@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 public class StochasticTransformer {
 
     public enum StochasticTransformErrorType {
-        LUMPED_KINETICS_NOT_YET_SUPPORTED_FOR_STOCHASTIC_SIMULATION,
+//        LUMPED_KINETICS_NOT_YET_SUPPORTED_FOR_STOCHASTIC_SIMULATION,
         ELECTRICAL_CURRENT_NOT_SUPPORTED,
         ABANDONED_TRANSFORMATION_TOO_COMPLEX,
         RUNTIME_ERROR
@@ -75,10 +75,9 @@ public class StochasticTransformer {
     }
 
     public static StochasticFunction transformToStochastic(ReactionStep reactionStep) throws StochasticTransformException {
-        if (reactionStep.getKinetics() instanceof LumpedKinetics lk) {
-            throw new StochasticTransformException(reactionStep, StochasticTransformErrorType.LUMPED_KINETICS_NOT_YET_SUPPORTED_FOR_STOCHASTIC_SIMULATION);
-        }
-        Expression reactionRate = new Expression(reactionStep.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate), reactionStep.getNameScope());
+//        if (reactionStep.getKinetics() instanceof LumpedKinetics lk) {
+//            throw new StochasticTransformException(reactionStep, StochasticTransformErrorType.LUMPED_KINETICS_NOT_YET_SUPPORTED_FOR_STOCHASTIC_SIMULATION);
+//        }
         Parameter ma_kf = null;
         Parameter ma_kr = null;
         if (reactionStep.getKinetics() instanceof MassActionKinetics ma){
@@ -89,6 +88,14 @@ public class StochasticTransformer {
             ma_kr = gpk.getPermeabilityParameter();
         }
         try {
+            final Expression reactionRate;
+            if (reactionStep.getKinetics() instanceof DistributedKinetics distributedKinetics) {
+                reactionRate = new Expression(distributedKinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate), reactionStep.getNameScope());
+            }else if (reactionStep.getKinetics() instanceof LumpedKinetics lumpedKinetics) {
+                reactionRate = new Expression(lumpedKinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate), reactionStep.getNameScope());
+            } else {
+                throw new IllegalArgumentException("Unsupported kinetics type: " + reactionStep.getKinetics().getClass().getName());
+            }
             return MassActionStochasticTransformer.solveMassAction(ma_kf, ma_kr, reactionRate, reactionStep);
         } catch (Exception e) {
             lg.info("Failed to solve mass action kinetics for reaction step: " + reactionStep.getName() + ", " + e.getMessage());

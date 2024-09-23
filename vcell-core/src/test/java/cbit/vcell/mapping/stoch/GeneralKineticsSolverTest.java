@@ -52,13 +52,17 @@ public class GeneralKineticsSolverTest {
     public static Set<String> electricalCurrentModelSet() {
         return new HashSet<>(Arrays.asList(
                 "biomodel_100596964.vcml",
+                "biomodel_100961371.vcml",
                 "biomodel_113655498.vcml",
                 "biomodel_116929912.vcml",
                 "biomodel_116929971.vcml",
                 "biomodel_116930032.vcml",
+                "biomodel_145545992.vcml",
                 "biomodel_16763273.vcml",
                 "biomodel_16804037.vcml",
                 "biomodel_17098642.vcml",
+                "biomodel_189512756.vcml",
+                "biomodel_189513183.vcml",
                 "biomodel_20253928.vcml",
                 "biomodel_211839191.vcml",
                 "biomodel_22403233.vcml",
@@ -84,54 +88,58 @@ public class GeneralKineticsSolverTest {
                 "biomodel_60227051.vcml",
                 "biomodel_63307133.vcml",
                 "biomodel_66265579.vcml",
+                "biomodel_77305266.vcml",
                 "biomodel_7803961.vcml",
                 "biomodel_7803976.vcml",
+                "biomodel_81284732.vcml",
                 "biomodel_82250339.vcml",
+                "biomodel_98174143.vcml",
                 "biomodel_98147638.vcml",
-                "biomodel_98150237.vcml"
+                "biomodel_98150237.vcml",
+                "biomodel_98296160.vcml"
         ));
     }
 
-    public static Set<String> lumpedReactionModelSet() {
-        return new HashSet<>(Arrays.asList(
-                "lumped_reaction_no_size_in_rate.vcml",
-                "lumped_reaction_proper_size_in_rate.vcml",
-                "lumped_reaction_local_size_in_rate.vcml",
-                "biomodel_100596964.vcml",
-                "biomodel_100961371.vcml",
-                "biomodel_145545992.vcml",
-                "biomodel_156134818.vcml",
-                "biomodel_189512756.vcml",
-                "biomodel_189513183.vcml",
-                "biomodel_211839191.vcml",
-                "biomodel_35789302.vcml",
-                "biomodel_77305266.vcml",
-                "biomodel_81284732.vcml",
-                "biomodel_82250339.vcml",
-                "biomodel_82799056.vcml",
-                "biomodel_82799247.vcml",
-                "biomodel_82799266.vcml",
-                "biomodel_92354366.vcml",
-                "biomodel_98174143.vcml",
-                "biomodel_98296160.vcml",
-                "biomodel_92383390.vcml",
-                "biomodel_92830796.vcml",
-                "biomodel_92839940.vcml",
-                "biomodel_92845118.vcml",
-                "biomodel_92847452.vcml",
-                "biomodel_92908902.vcml",
-                "biomodel_92932169.vcml",
-                "biomodel_92942045.vcml",
-                "biomodel_92944917.vcml",
-                "biomodel_92946371.vcml",
-                "biomodel_92951324.vcml",
-                "biomodel_92952350.vcml",
-                "biomodel_92955722.vcml",
-                "biomodel_92967115.vcml",
-                "biomodel_92968671.vcml",
-                "biomodel_92981603.vcml"
-         ));
-    }
+//    public static Set<String> lumpedReactionModelSet() {
+//        return new HashSet<>(Arrays.asList(
+//                "lumped_reaction_no_size_in_rate.vcml",
+//                "lumped_reaction_proper_size_in_rate.vcml",
+//                "lumped_reaction_local_size_in_rate.vcml",
+//                "biomodel_100596964.vcml",
+//                "biomodel_100961371.vcml",
+//                "biomodel_145545992.vcml",
+//                "biomodel_156134818.vcml",
+//                "biomodel_189512756.vcml",
+//                "biomodel_189513183.vcml",
+//                "biomodel_211839191.vcml",
+//                "biomodel_35789302.vcml",
+//                "biomodel_77305266.vcml",
+//                "biomodel_81284732.vcml",
+//                "biomodel_82250339.vcml",
+//                "biomodel_82799056.vcml",
+//                "biomodel_82799247.vcml",
+//                "biomodel_82799266.vcml",
+//                "biomodel_92354366.vcml",
+//                "biomodel_98174143.vcml",
+//                "biomodel_98296160.vcml",
+//                "biomodel_92383390.vcml",
+//                "biomodel_92830796.vcml",
+//                "biomodel_92839940.vcml",
+//                "biomodel_92845118.vcml",
+//                "biomodel_92847452.vcml",
+//                "biomodel_92908902.vcml",
+//                "biomodel_92932169.vcml",
+//                "biomodel_92942045.vcml",
+//                "biomodel_92944917.vcml",
+//                "biomodel_92946371.vcml",
+//                "biomodel_92951324.vcml",
+//                "biomodel_92952350.vcml",
+//                "biomodel_92955722.vcml",
+//                "biomodel_92967115.vcml",
+//                "biomodel_92968671.vcml",
+//                "biomodel_92981603.vcml"
+//         ));
+//    }
 
     public static Set<String> slowFileSet() {
         Set<String> slowModels = new HashSet<>();
@@ -168,7 +176,7 @@ public class GeneralKineticsSolverTest {
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlStr));
 
         boolean hasElectricalCurrent = false;
-        boolean hasLumpedReaction = false;
+//        boolean hasLumpedReaction = false;
         boolean processedAllReactions = true;
 		for (ReactionStep reactionStep : bioModel.getModel().getReactionSteps()) {
             try {
@@ -179,9 +187,9 @@ public class GeneralKineticsSolverTest {
             } catch (StochasticTransformException e) {
                 processedAllReactions = false;
                 switch (e.errorType) {
-                    case LUMPED_KINETICS_NOT_YET_SUPPORTED_FOR_STOCHASTIC_SIMULATION:
-                        hasLumpedReaction = true;
-                        break;
+//                    case LUMPED_KINETICS_NOT_YET_SUPPORTED_FOR_STOCHASTIC_SIMULATION:
+//                        hasLumpedReaction = true;
+//                        break;
                     case ELECTRICAL_CURRENT_NOT_SUPPORTED:
                         hasElectricalCurrent = true;
                         break;
@@ -190,18 +198,18 @@ public class GeneralKineticsSolverTest {
                 }
             }
 		}
-        if (hasLumpedReaction && !lumpedReactionModelSet().contains(filename)) {
-            throw new IllegalStateException("found undeclared Lumped Kinetics, Add model "+filename+" to lumpedReactionModelSet");
-        }
+//        if (hasLumpedReaction && !lumpedReactionModelSet().contains(filename)) {
+//            throw new IllegalStateException("found undeclared Lumped Kinetics, Add model "+filename+" to lumpedReactionModelSet");
+//        }
         if (hasElectricalCurrent && !electricalCurrentModelSet().contains(filename)) {
             throw new IllegalStateException("found undeclared Electrical Current, Add model " + filename + " to electricalCurrentModelSet");
         }
         if (!hasElectricalCurrent && electricalCurrentModelSet().contains(filename)) {
             throw new IllegalStateException("model declared to have electric current - but not found, remove " + filename + " from electricalCurrentModelSet");
         }
-        if (!hasLumpedReaction && lumpedReactionModelSet().contains(filename)) {
-            throw new IllegalStateException("model declared to have lumped reactions - but not found, remove " + filename + " from lumpedReactionModelSet");
-        }
+//        if (!hasLumpedReaction && lumpedReactionModelSet().contains(filename)) {
+//            throw new IllegalStateException("model declared to have lumped reactions - but not found, remove " + filename + " from lumpedReactionModelSet");
+//        }
         if (processedAllReactions) {
             // create a nonspatial stochastic virtual cell application and generate MathDescription
             // categorize any resulting errors
