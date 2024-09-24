@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout Our Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: '${{ github.ref }}'
 
@@ -27,7 +27,7 @@ jobs:
           path: ~/github.ref
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.python-version }}
 
@@ -80,7 +80,7 @@ jobs:
           poetry run python -m pytest
 
       - name: Setup Java for Build
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -137,7 +137,7 @@ jobs:
         
         # Get files from BMDB
       - name: Checkout Input Files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: virtualcell/vcdb
 
@@ -210,7 +210,7 @@ jobs:
 
         # Get files from BMDB
       - name: Checkout Input Files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: sys-bio/temp-biomodels
 
