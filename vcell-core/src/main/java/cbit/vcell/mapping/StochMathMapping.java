@@ -58,26 +58,10 @@ public class StochMathMapping extends AbstractStochMathMapping {
 	private Expression getProbabilityRate(ReactionStep reactionStep, MassActionStochasticFunction massActionStochasticFunction, boolean isForwardDirection)
 			throws MappingException, ExpressionException
 	{
-		//the structure where reaction happens
 		Model model = getSimulationContext().getModel();
 
 		// translate entire reaction rate to probability rate
-		final Expression rateFactor;
-		{
-			VCUnitDefinition reactionSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactionStep.getStructure());
-			VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
-			final Expression reactionSubstanceUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
-			if (reactionStep.getKinetics() instanceof DistributedKinetics) {
-				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
-				Expression reactionStructureSize = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-				rateFactor = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
-			} else if (reactionStep.getKinetics() instanceof LumpedKinetics) {
-				rateFactor = new Expression(1.0);
-			} else {
-				throw new ExpressionException("Unknown kinetics type: " + reactionStep.getKinetics().getClass().getName());
-			}
-		}
-
+		final Expression rateFactor = getProbabilityRateFactor(reactionStep, model);
 
 		Expression productOfSpeciesCounts = null;
 		Expression productOfSpeciesFactors = null;
@@ -150,24 +134,10 @@ public class StochMathMapping extends AbstractStochMathMapping {
 	private Expression getProbabilityRate(ReactionStep reactionStep, GeneralKineticsStochasticFunction generalKineticsStochasticFunction, boolean isForwardDirection)
 			throws ExpressionException
 	{
-		//the structure where reaction happens
-		StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
 		Model model = getSimulationContext().getModel();
 
-
-		VCUnitDefinition reactionSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactionStep.getStructure());
-		VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
-		Expression reactionSubstanceUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
-
-		final Expression factorExp;
-		if (reactionStep.getKinetics() instanceof DistributedKinetics) {
-			Expression reactionStructureSize = new Expression(sm.getStructure().getStructureSize(), getNameScope());
-			factorExp = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
-		} else if (reactionStep.getKinetics() instanceof LumpedKinetics) {
-			factorExp = new Expression(reactionSubstanceUnitFactor);
-		} else {
-			throw new ExpressionException("Unknown kinetics type: " + reactionStep.getKinetics().getClass().getName());
-		}
+		// translate entire reaction rate to probability rate
+		final Expression rateFactor = getProbabilityRateFactor(reactionStep, model);
 		Expression netRateExpr = isForwardDirection ? generalKineticsStochasticFunction.forwardNetRate() : generalKineticsStochasticFunction.reverseNetRate();
 
 		// collect symbolTableEntries for speciesContexts within netRateExpr and replace with concentration parameter
@@ -183,13 +153,39 @@ public class StochMathMapping extends AbstractStochMathMapping {
 		}
 
 		//simplify the factor
-		RationalExp factorRatExp = RationalExpUtils.getRationalExp(factorExp);
+		RationalExp factorRatExp = RationalExpUtils.getRationalExp(rateFactor);
 		Expression simplifiedFactorExp = new Expression(factorRatExp.infixString());
 		simplifiedFactorExp.bindExpression(this);
 		//get probability rate with converting factor
 		Expression probExp = Expression.mult(netRateExpr, simplifiedFactorExp);
 		probExp = probExp.flattenSafe();
 		return probExp;
+	}
+
+	private Expression getProbabilityRateFactor(ReactionStep reactionStep, Model model) throws ExpressionException {
+		final Expression rateFactor;
+		{
+			VCUnitDefinition stochasticSubstanceUnit = model.getUnitSystem().getStochasticSubstanceUnit();
+			if (reactionStep.getKinetics() instanceof DistributedKinetics) {
+				final VCUnitDefinition reactionSubstanceUnit;
+				if (reactionStep instanceof SimpleReaction) {
+					reactionSubstanceUnit = model.getUnitSystem().getSubstanceUnit(reactionStep.getStructure());
+				} else if (reactionStep instanceof FluxReaction) {
+					reactionSubstanceUnit = model.getUnitSystem().getVolumeSubstanceUnit();
+				} else {
+					throw new IllegalArgumentException("Unknown reaction step type: " + reactionStep.getClass().getName());
+				}
+				final Expression reactionSubstanceUnitFactor = getUnitFactor(stochasticSubstanceUnit.divideBy(reactionSubstanceUnit));
+				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(reactionStep.getStructure());
+				Expression reactionStructureSize = new Expression(sm.getStructure().getStructureSize(), getNameScope());
+				rateFactor = Expression.mult(reactionSubstanceUnitFactor, reactionStructureSize).simplifyJSCL();
+			} else if (reactionStep.getKinetics() instanceof LumpedKinetics) {
+				rateFactor = new Expression(1.0);
+			} else {
+				throw new ExpressionException("Unknown kinetics type: " + reactionStep.getKinetics().getClass().getName());
+			}
+		}
+		return rateFactor;
 	}
 
 	/**
@@ -563,246 +559,120 @@ public class StochMathMapping extends AbstractStochMathMapping {
 	    	// probability parameter from modelUnitSystem
 			VCUnitDefinition probabilityParamUnit = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getTimeUnit());
 
-			// Different ways to deal with simple reactions and flux reactions
-			if(reactionStep instanceof SimpleReaction) // simple reactions
-			{
-				// check the reaction rate law to see if we need to decompose a reaction(reversible) into two jump processes.
-				// rate constants are important in calculating the probability rate.
-				// for Mass Action, we use KForward and KReverse, 
-				// for General Kinetics we parse reaction rate J to see if it is in Mass Action form.
-				StochasticFunction stochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
+			// check the reaction rate law to see if we need to decompose a reaction(reversible) into two jump processes.
+			// rate constants are important in calculating the probability rate.
+			// for Mass Action, we use KForward and KReverse,
+			// for General Kinetics we parse reaction rate J to see if it is in Mass Action form.
+			StochasticFunction stochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
 
-				// forward jump process
-				if (stochasticFunction.hasForwardRate()){
-					// get jump process name
-					String jpName = TokenMangler.mangleToSName(reactionStep.getName());
-					final Expression probabilityExpression;
-					if (stochasticFunction instanceof MassActionStochasticFunction massActionStochasticFunction) {
-						probabilityExpression = getProbabilityRate(reactionStep, massActionStochasticFunction, true);
-					} else if (stochasticFunction instanceof GeneralKineticsStochasticFunction generalKineticsStochasticFunction) {
-						probabilityExpression = getProbabilityRate(reactionStep, generalKineticsStochasticFunction, true);
-					} else {
-						throw new MappingException("Unsupported stochastic function type: " + stochasticFunction.getClass().getName());
-					}
-					
-					ProbabilityParameter probRateParm = null;
-					try{
-						probRateParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, probabilityExpression, PARAMETER_ROLE_P, probabilityParamUnit,reactionStep);
-					}catch(PropertyVetoException pve){
-						throw new MappingException(pve.getMessage(), pve);
-					}
-					//add probabilityRate function or constant
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRateParm,geometryClass),getIdentifierSubstitutions(probabilityExpression, probabilityParamUnit, geometryClass),geometryClass));
-										
-					JumpProcess forwardJumpProcess = new JumpProcess(jpName,new Expression(getMathSymbol(probRateParm,geometryClass)));
-					// actions
-					ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
-					for(int j=0; j<reacPart.length; j++)
-					{
-						Action action = null;
-						SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[j].getSpeciesContext());
-						if(reacPart[j] instanceof Reactant)
-						{ 
-							// check if the reactant is a constant. If the species is a constant, there will be no action taken on this species
-							if (!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
-							{
-								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(-stoi));
-								forwardJumpProcess.addAction(action);
-							}
-						}
-						else if(reacPart[j] instanceof Product)
-						{
-							// check if the product is a constant. If the product is a constant, there will be no action taken on this species
-							if (!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
-							{
-								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(stoi));
-								forwardJumpProcess.addAction(action);
-							}
-						}
-					}
-					// add jump process to compartment subDomain
-					subDomain.addJumpProcess(forwardJumpProcess);
+			// forward jump process
+			if (stochasticFunction.hasForwardRate()) {
+				// get jump process name
+				String jpName = TokenMangler.mangleToSName(reactionStep.getName());
+				final Expression probabilityExpression;
+				if (stochasticFunction instanceof MassActionStochasticFunction massActionStochasticFunction) {
+					probabilityExpression = getProbabilityRate(reactionStep, massActionStochasticFunction, true);
+				} else if (stochasticFunction instanceof GeneralKineticsStochasticFunction generalKineticsStochasticFunction) {
+					probabilityExpression = getProbabilityRate(reactionStep, generalKineticsStochasticFunction, true);
+				} else {
+					throw new MappingException("Unsupported stochastic function type: " + stochasticFunction.getClass().getName());
 				}
-				if (stochasticFunction.hasReverseRate()) // one more jump process for a reversible reaction
+
+				ProbabilityParameter probRateParm = null;
+				try{
+					probRateParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName, probabilityExpression, PARAMETER_ROLE_P, probabilityParamUnit, reactionStep);
+				}catch(PropertyVetoException pve){
+					throw new MappingException(pve.getMessage(), pve);
+				}
+				//add probabilityRate function or constant
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRateParm,geometryClass),getIdentifierSubstitutions(probabilityExpression, probabilityParamUnit, geometryClass),geometryClass));
+
+				JumpProcess forwardJumpProcess = new JumpProcess(jpName,new Expression(getMathSymbol(probRateParm,geometryClass)));
+				// actions
+				ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
+				for(int j=0; j<reacPart.length; j++)
 				{
-					// get jump process name
-					String jpName = TokenMangler.mangleToSName(reactionStep.getName())+PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX;
-
-
-					final Expression probabilityExpression;
-					if (stochasticFunction instanceof MassActionStochasticFunction massActionStochasticFunction) {
-						probabilityExpression = getProbabilityRate(reactionStep, massActionStochasticFunction, false);
-					} else if (stochasticFunction instanceof GeneralKineticsStochasticFunction generalKineticsStochasticFunction) {
-						probabilityExpression = getProbabilityRate(reactionStep, generalKineticsStochasticFunction, false);
-					} else {
-						throw new MappingException("Unsupported stochastic function type: " + stochasticFunction.getClass().getName());
-					}
-
-					ProbabilityParameter probRevParm = null;
-					try{
-						probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probabilityExpression,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionStep);
-					}catch(PropertyVetoException pve){
-						throw new MappingException(pve.getMessage(), pve);
-					}
-					//add probability to function or constant
-					varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,geometryClass),getIdentifierSubstitutions(probabilityExpression, probabilityParamUnit, geometryClass),geometryClass));
-									
-					JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,geometryClass)));
-					// actions
-					ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
-					for(int j=0; j<reacPart.length; j++)
+					Action action = null;
+					SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[j].getSpeciesContext());
+					if(reacPart[j] instanceof Reactant)
 					{
-						Action action = null;
-						SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[j].getSpeciesContext());
-						if(reacPart[j] instanceof Reactant)
-						{ 
-							// check if the reactant is a constant. If the species is a constant, there will be no action taken on this species
-							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
-							{
-								int stoi = ((Reactant)reacPart[j]).getStoichiometry();
-								action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(stoi));
-								jp.addAction(action);
-							}
-						}
-						else if(reacPart[j] instanceof Product)
+						// check if the reactant is a constant. If the species is a constant, there will be no action taken on this species
+						if (!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
 						{
-							// check if the product is a constant. If the product is a constant, there will be no action taken on this species
-							if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
-							{
-								int stoi = ((Product)reacPart[j]).getStoichiometry();
-								action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(-stoi));
-								jp.addAction(action);
-							}
+							int stoi = ((Reactant)reacPart[j]).getStoichiometry();
+							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(-stoi));
+							forwardJumpProcess.addAction(action);
 						}
 					}
-					// add jump process to compartment subDomain
-					subDomain.addJumpProcess(jp);	
-				} // end of if(isForwardRateNonZero), if(isReverseRateNonRate)
+					else if(reacPart[j] instanceof Product)
+					{
+						// check if the product is a constant. If the product is a constant, there will be no action taken on this species
+						if (!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
+						{
+							int stoi = ((Product)reacPart[j]).getStoichiometry();
+							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(stoi));
+							forwardJumpProcess.addAction(action);
+						}
+					}
+				}
+				// add jump process to compartment subDomain
+				subDomain.addJumpProcess(forwardJumpProcess);
 			}
-			else if(reactionStep instanceof FluxReaction)// flux reactions
+			if (stochasticFunction.hasReverseRate()) // one more jump process for a reversible reaction
 			{
-				//we could set jump processes for general flux rate in forms of p1*Sout + p2*Sin
-				if(kinetics.getKineticsDescription().equals(KineticsDescription.General) || kinetics.getKineticsDescription().equals(KineticsDescription.GeneralPermeability) )
+				// get jump process name
+				String jpName = TokenMangler.mangleToSName(reactionStep.getName())+PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX;
+
+
+				final Expression probabilityExpression;
+				if (stochasticFunction instanceof MassActionStochasticFunction massActionStochasticFunction) {
+					probabilityExpression = getProbabilityRate(reactionStep, massActionStochasticFunction, false);
+				} else if (stochasticFunction instanceof GeneralKineticsStochasticFunction generalKineticsStochasticFunction) {
+					probabilityExpression = getProbabilityRate(reactionStep, generalKineticsStochasticFunction, false);
+				} else {
+					throw new MappingException("Unsupported stochastic function type: " + stochasticFunction.getClass().getName());
+				}
+
+				ProbabilityParameter probRevParm = null;
+				try{
+					probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probabilityExpression,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionStep);
+				}catch(PropertyVetoException pve){
+					throw new MappingException(pve.getMessage(), pve);
+				}
+				//add probability to function or constant
+				varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,geometryClass),getIdentifierSubstitutions(probabilityExpression, probabilityParamUnit, geometryClass),geometryClass));
+
+				JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,geometryClass)));
+				// actions
+				ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
+				for(int j=0; j<reacPart.length; j++)
 				{
-					StochasticFunction fluxStochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
-					//create jump process for forward flux if it exists.
-					Expression rsStructureSize = new Expression(reactionStep.getStructure().getStructureSize(), getNameScope());
-					VCUnitDefinition probRateUnitPerArea = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getAreaUnit()).divideBy(modelUnitSystem.getTimeUnit());
-					Expression rsRateUnitFactor = getUnitFactor(probRateUnitPerArea.divideBy(modelUnitSystem.getFluxReactionUnit())).simplifyJSCL();
-					if (fluxStochasticFunction.hasForwardRate())
+					Action action = null;
+					SpeciesCountParameter spCountParam = getSpeciesCountParameter(reacPart[j].getSpeciesContext());
+					if(reacPart[j] instanceof Reactant)
 					{
-						final Expression probExp;
-						if (fluxStochasticFunction instanceof MassActionStochasticFunction massActionFluxStochasticFunction) {
-							Expression forwardEffectivePermeability = massActionFluxStochasticFunction.forwardRate();
-							//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-							if (fluxStochasticFunction.reactants().isEmpty()) {
-								throw new MappingException("Flux " + reactionStep.getName() + " should have at least one reactant after stochastic transformation.");
-							}
-							Expression productOfReactantConcentrations = new Expression(1);
-							for (ReactionParticipant reactant : fluxStochasticFunction.reactants()) {
-								Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(reactant.getSpeciesContext()), getNameScope());
-								productOfReactantConcentrations = Expression.mult(productOfReactantConcentrations, scConcExpr);
-							}
-							probExp = Expression.mult(rsRateUnitFactor, forwardEffectivePermeability, rsStructureSize, productOfReactantConcentrations.flatten());
-						}else if (fluxStochasticFunction instanceof GeneralKineticsStochasticFunction generalKineticsStochasticFunction){
-							Expression forwardNetRate = generalKineticsStochasticFunction.forwardNetRate();
-							probExp = Expression.mult(rsRateUnitFactor, forwardNetRate, rsStructureSize);
-						}else{
-							throw new MappingException("Unsupported stochastic function type: " + fluxStochasticFunction.getClass().getName());
-						}
-						//jump process name
-						String jpName = TokenMangler.mangleToSName(reactionStep.getName());
-						ProbabilityParameter probParm = null;
-						try{
-							probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P, probabilityParamUnit,reactionStep);
-						}catch(PropertyVetoException pve){
-							throw new MappingException(pve.getMessage(), pve);
-						}
-						//add probability to function or constant
-						String ms = getMathSymbol(probParm,geometryClass);
-						Expression is = getIdentifierSubstitutions(probExp, probabilityParamUnit, geometryClass);
-						Variable nfoc = newFunctionOrConstant(ms,is,geometryClass);
-						varHash.addVariable(nfoc);
-										
-						JumpProcess jp = new JumpProcess(jpName,new Expression(ms));
-						// actions
-						Action action = null;
-						SpeciesContext sc = fluxStochasticFunction.reactants().get(0).getSpeciesContext();
-						
-						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
-							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(-1));
-							jp.addAction(action);
-						}	
-						
-						sc = fluxStochasticFunction.products().get(0).getSpeciesContext();
-						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
-							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(1));
+						// check if the reactant is a constant. If the species is a constant, there will be no action taken on this species
+						if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
+						{
+							int stoi = ((Reactant)reacPart[j]).getStoichiometry();
+							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(stoi));
 							jp.addAction(action);
 						}
-							
-						subDomain.addJumpProcess(jp);
 					}
-					//create jump process for reverse flux if it exists.
-					if (fluxStochasticFunction.hasReverseRate())
+					else if(reacPart[j] instanceof Product)
 					{
-						final Expression probExp;
-						if (fluxStochasticFunction instanceof MassActionStochasticFunction massActionFluxStochasticFunction) {
-							Expression reverseEffectivePermeability = massActionFluxStochasticFunction.reverseRate();
-							//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-							if (fluxStochasticFunction.products().isEmpty()) {
-								throw new MappingException("Flux " + reactionStep.getName() + " should have at least one product after stochastic transformation.");
-							}
-							Expression productOfProductConcentrations = new Expression(1);
-							for (ReactionParticipant product : fluxStochasticFunction.products()) {
-								Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(product.getSpeciesContext()), getNameScope());
-								productOfProductConcentrations = Expression.mult(productOfProductConcentrations, scConcExpr);
-							}
-							probExp = Expression.mult(rsRateUnitFactor, reverseEffectivePermeability, rsStructureSize, productOfProductConcentrations.flatten());
-						}else if (fluxStochasticFunction instanceof GeneralKineticsStochasticFunction generalKineticsStochasticFunction){
-							Expression reverseNetRate = generalKineticsStochasticFunction.reverseNetRate();
-							probExp = Expression.mult(rsRateUnitFactor, reverseNetRate, rsStructureSize);
-						}else{
-							throw new MappingException("Unsupported stochastic function type: " + fluxStochasticFunction.getClass().getName());
-						}
-						//jump process name
-						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX;
-						ProbabilityParameter probRevParm = null;
-						try{
-							probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionStep);
-						}catch(PropertyVetoException pve){
-							throw new MappingException(pve.getMessage(), pve);
-						}
-						//add probability to function or constant
-						String ms = getMathSymbol(probRevParm, geometryClass);
-						Expression is = getIdentifierSubstitutions(probExp, probabilityParamUnit, geometryClass);
-						Variable nfoc = newFunctionOrConstant(ms, is, geometryClass);
-						varHash.addVariable(nfoc);
-										
-						JumpProcess jp = new JumpProcess(jpName,new Expression(ms));
-						// actions
-						Action action = null;
-						SpeciesContext sc = fluxStochasticFunction.reactants().get(0).getSpeciesContext();
-						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
-							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(1));
+						// check if the product is a constant. If the product is a constant, there will be no action taken on this species
+						if(!simContext.getReactionContext().getSpeciesContextSpec(reacPart[j].getSpeciesContext()).isConstant()) // not a constant
+						{
+							int stoi = ((Product)reacPart[j]).getStoichiometry();
+							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(-stoi));
 							jp.addAction(action);
 						}
-							
-						sc = fluxStochasticFunction.products().get(0).getSpeciesContext();
-						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
-							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
-							action = Action.createIncrementAction(varHash.getVariable(getMathSymbol(spCountParam, geometryClass)),new Expression(-1));
-							jp.addAction(action);
-						}
-						
-						subDomain.addJumpProcess(jp);
 					}
 				}
-			}//end of if (simplereaction)...else if(fluxreaction)
+				// add jump process to compartment subDomain
+				subDomain.addJumpProcess(jp);
+			} // end of if(isForwardRateNonZero), if(isReverseRateNonRate)
 		} // end of reaction step loop
 	}
 
