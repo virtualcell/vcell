@@ -144,7 +144,7 @@ public class StochMathMapping extends AbstractStochMathMapping {
 			Expression massActionRateCoefficient = isForwardDirection ? massActionStochasticFunction.forwardRate() : massActionStochasticFunction.reverseRate();
 			probExp = Expression.mult(massActionRateCoefficient, productOfSpeciesCounts, factorsExp);
 		}
-		return probExp;
+		return probExp.flattenSafe();
 	}
 
 	private Expression getProbabilityRate(ReactionStep reactionStep, GeneralKineticsStochasticFunction generalKineticsStochasticFunction, boolean isForwardDirection)
@@ -188,7 +188,7 @@ public class StochMathMapping extends AbstractStochMathMapping {
 		simplifiedFactorExp.bindExpression(this);
 		//get probability rate with converting factor
 		Expression probExp = Expression.mult(netRateExpr, simplifiedFactorExp);
-		probExp = probExp.flatten();
+		probExp = probExp.flattenSafe();
 		return probExp;
 	}
 

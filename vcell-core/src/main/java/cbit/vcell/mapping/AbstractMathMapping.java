@@ -62,6 +62,7 @@ import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
+import ucar.units_vcell.UnitException;
 
 public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFactorProvider, IssueSource, MathMapping {
 
@@ -1749,13 +1750,24 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
      */
     final ProbabilityParameter addProbabilityParameter(String name, Expression expression, int role,
                                                        VCUnitDefinition unitDefinition, ModelProcess argModelProcess) throws java.beans.PropertyVetoException,
-            ExpressionBindingException{
+            VCUnitException {
 
         GeometryClass geometryClass = null;
-        if(argModelProcess.getStructure() != null){
+        if (argModelProcess.getStructure() != null){
             geometryClass = simContext.getGeometryContext().getStructureMapping(argModelProcess.getStructure()).getGeometryClass();
         }
         ProbabilityParameter newParameter = new ProbabilityParameter(name, expression, role, unitDefinition, argModelProcess, geometryClass);
+        try {
+            VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(simContext.getModel().getUnitSystem());
+            VCUnitDefinition expUnit = unitEvaluator.getUnitDefinition(expression);
+            if (unitDefinition != null && !unitDefinition.equals(expUnit)){
+                logger.error("expected unit=" + unitDefinition.getSymbol() + ", found=" + expUnit.getSymbol());
+                throw new VCUnitException("expected unit=" + unitDefinition.getSymbol() + ", found=" + expUnit.getSymbol());
+            }
+        } catch (ExpressionException e){
+            logger.error("error evaluating units for expression '" + expression + ": " + e.getMessage(), e);
+            throw new VCUnitException("error evaluating units for expression '" + expression + ": " + e.getMessage());
+        }
         MathMappingParameter previousParameter = getMathMappingParameter(name);
         if(previousParameter != null){
             logger.info("MathMappingParameter addProbabilityParameter found duplicate parameter for name " + name);
