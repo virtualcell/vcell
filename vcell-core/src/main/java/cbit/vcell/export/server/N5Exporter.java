@@ -176,6 +176,9 @@ public class N5Exporter implements ExportConstants {
 			timeLoops += 1;
 		}
 		n5FSWriter.close();
+		exportSpecs.getHumanReadableExportData().numChannels = (int) dimensions[2];
+		exportSpecs.getHumanReadableExportData().zSlices = (int) dimensions[3];
+		exportSpecs.getHumanReadableExportData().tSlices = (int) dimensions[4];
 		ExportOutput exportOutput = new ExportOutput(true, "." + N5Specs.n5Suffix, vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
 		return exportOutput;
 	}

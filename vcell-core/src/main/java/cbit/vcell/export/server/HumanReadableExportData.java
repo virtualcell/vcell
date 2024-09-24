@@ -17,6 +17,9 @@ public class HumanReadableExportData implements Serializable {
     public String serverSavedFileName;
     public boolean nonSpatial;
     public HashMap<Integer, String> subVolume;
+    public int zSlices;
+    public int tSlices;
+    public int numChannels;
     public HumanReadableExportData(String simulationName, String applicationName, String biomodelName,
                                    ArrayList<String> differentParameterValues,
                                    String serverSavedFileName, String applicationType, boolean nonSpatial, HashMap<Integer, String> subVolume){
