@@ -1736,7 +1736,7 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
         try {
             VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(simContext.getModel().getUnitSystem());
             VCUnitDefinition expUnit = unitEvaluator.getUnitDefinition(expression);
-            if (unitDefinition != null && !unitDefinition.equals(expUnit)){
+            if (unitDefinition != null && !unitDefinition.isEquivalent(expUnit)){
                 logger.warn("expected unit=" + unitDefinition.getSymbol() + ", found=" + expUnit.getSymbol());
 //                throw new VCUnitException("expected unit=" + unitDefinition.getSymbol() + ", found=" + expUnit.getSymbol());
             }
