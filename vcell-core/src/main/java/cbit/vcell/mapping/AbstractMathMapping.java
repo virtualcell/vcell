@@ -1726,8 +1726,7 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
      * @return cbit.vcell.mapping.MathMappingParameter
      */
     final ProbabilityParameter addProbabilityParameter(String name, Expression expression, int role,
-                                                       VCUnitDefinition unitDefinition, ModelProcess argModelProcess) throws java.beans.PropertyVetoException,
-            VCUnitException {
+                                                       VCUnitDefinition unitDefinition, ModelProcess argModelProcess) throws java.beans.PropertyVetoException {
 
         GeometryClass geometryClass = null;
         if (argModelProcess.getStructure() != null){
@@ -1741,7 +1740,7 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
                 logger.warn("expected unit=" + unitDefinition.getSymbol() + ", found=" + expUnit.getSymbol());
 //                throw new VCUnitException("expected unit=" + unitDefinition.getSymbol() + ", found=" + expUnit.getSymbol());
             }
-        } catch (ExpressionException e){
+        } catch (VCUnitException | ExpressionException e){
             logger.warn("error evaluating units for expression '" + expression + ": " + e.getMessage(), e);
 //            throw new VCUnitException("error evaluating units for expression '" + expression + ": " + e.getMessage());
         }
