@@ -689,8 +689,8 @@ public class StochMathMapping extends AbstractStochMathMapping {
 					StochasticFunction fluxStochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
 					//create jump process for forward flux if it exists.
 					Expression rsStructureSize = new Expression(reactionStep.getStructure().getStructureSize(), getNameScope());
-					VCUnitDefinition probRateUnit = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getAreaUnit()).divideBy(modelUnitSystem.getTimeUnit());
-					Expression rsRateUnitFactor = getUnitFactor(probRateUnit.divideBy(modelUnitSystem.getFluxReactionUnit())).simplifyJSCL();
+					VCUnitDefinition probRateUnitPerArea = modelUnitSystem.getStochasticSubstanceUnit().divideBy(modelUnitSystem.getAreaUnit()).divideBy(modelUnitSystem.getTimeUnit());
+					Expression rsRateUnitFactor = getUnitFactor(probRateUnitPerArea.divideBy(modelUnitSystem.getFluxReactionUnit())).simplifyJSCL();
 					if (fluxStochasticFunction.hasForwardRate())
 					{
 						final Expression probExp;
@@ -713,7 +713,7 @@ public class StochMathMapping extends AbstractStochMathMapping {
 							throw new MappingException("Unsupported stochastic function type: " + fluxStochasticFunction.getClass().getName());
 						}
 						//jump process name
-						String jpName = TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
+						String jpName = TokenMangler.mangleToSName(reactionStep.getName());
 						ProbabilityParameter probParm = null;
 						try{
 							probParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P, probabilityParamUnit,reactionStep);
@@ -726,7 +726,7 @@ public class StochMathMapping extends AbstractStochMathMapping {
 						Variable nfoc = newFunctionOrConstant(ms,is,geometryClass);
 						varHash.addVariable(nfoc);
 										
-						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,geometryClass)));
+						JumpProcess jp = new JumpProcess(jpName,new Expression(ms));
 						// actions
 						Action action = null;
 						SpeciesContext sc = fluxStochasticFunction.reactants().get(0).getSpeciesContext();
@@ -749,9 +749,6 @@ public class StochMathMapping extends AbstractStochMathMapping {
 					//create jump process for reverse flux if it exists.
 					if (fluxStochasticFunction.hasReverseRate())
 					{
-						//jump process name
-						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX;
-											
 						final Expression probExp;
 						if (fluxStochasticFunction instanceof MassActionStochasticFunction massActionFluxStochasticFunction) {
 							Expression reverseEffectivePermeability = massActionFluxStochasticFunction.reverseRate();
@@ -760,18 +757,19 @@ public class StochMathMapping extends AbstractStochMathMapping {
 								throw new MappingException("Flux " + reactionStep.getName() + " should have at least one product after stochastic transformation.");
 							}
 							Expression productOfProductConcentrations = new Expression(1);
-							for (ReactionParticipant product : fluxStochasticFunction.reactants()) {
+							for (ReactionParticipant product : fluxStochasticFunction.products()) {
 								Expression scConcExpr = new Expression(getSpeciesConcentrationParameter(product.getSpeciesContext()), getNameScope());
 								productOfProductConcentrations = Expression.mult(productOfProductConcentrations, scConcExpr);
 							}
 							probExp = Expression.mult(rsRateUnitFactor, reverseEffectivePermeability, rsStructureSize, productOfProductConcentrations.flatten());
 						}else if (fluxStochasticFunction instanceof GeneralKineticsStochasticFunction generalKineticsStochasticFunction){
-							Expression reverseNetRate = generalKineticsStochasticFunction.forwardNetRate();
+							Expression reverseNetRate = generalKineticsStochasticFunction.reverseNetRate();
 							probExp = Expression.mult(rsRateUnitFactor, reverseNetRate, rsStructureSize);
 						}else{
 							throw new MappingException("Unsupported stochastic function type: " + fluxStochasticFunction.getClass().getName());
 						}
-
+						//jump process name
+						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+PARAMETER_PROBABILITY_RATE_REVERSE_SUFFIX;
 						ProbabilityParameter probRevParm = null;
 						try{
 							probRevParm = addProbabilityParameter(PARAMETER_PROBABILITYRATE_PREFIX+jpName,probExp,PARAMETER_ROLE_P_reverse, probabilityParamUnit,reactionStep);
@@ -779,9 +777,12 @@ public class StochMathMapping extends AbstractStochMathMapping {
 							throw new MappingException(pve.getMessage(), pve);
 						}
 						//add probability to function or constant
-						varHash.addVariable(newFunctionOrConstant(getMathSymbol(probRevParm,geometryClass),getIdentifierSubstitutions(probExp, probabilityParamUnit, geometryClass),geometryClass));
+						String ms = getMathSymbol(probRevParm, geometryClass);
+						Expression is = getIdentifierSubstitutions(probExp, probabilityParamUnit, geometryClass);
+						Variable nfoc = newFunctionOrConstant(ms, is, geometryClass);
+						varHash.addVariable(nfoc);
 										
-						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,geometryClass)));
+						JumpProcess jp = new JumpProcess(jpName,new Expression(ms));
 						// actions
 						Action action = null;
 						SpeciesContext sc = fluxStochasticFunction.reactants().get(0).getSpeciesContext();
