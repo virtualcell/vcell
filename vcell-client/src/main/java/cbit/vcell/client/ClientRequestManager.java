@@ -2704,7 +2704,10 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							humanReadableExportData.differentParameterValues,
 							humanReadableExportData.serverSavedFileName,
 							humanReadableExportData.applicationType,
-							humanReadableExportData.nonSpatial
+							humanReadableExportData.nonSpatial,
+							humanReadableExportData.zSlices,
+							humanReadableExportData.tSlices,
+							humanReadableExportData.numChannels
 					);
 
 					formatData.simulationDataMap.put(stringJobID, simulationExportDataRepresentation);

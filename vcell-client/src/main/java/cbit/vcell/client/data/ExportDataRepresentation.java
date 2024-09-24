@@ -38,11 +38,15 @@ public class ExportDataRepresentation {
         public String savedFileName;
         public String applicationType;
         public boolean nonSpatial;
+        public int zSlices;
+        public int tSlices;
+        public int numVariables;
 
         public SimulationExportDataRepresentation(String exportDate, String uri, String jobID, String dataID, String simulationName,
                                                   String applicationName, String biomodelName, String variables, String startAndEndTime,
                                                   ArrayList<String> differentParameterValues,
-                                                  String savedFileName, String applicationType, boolean nonSpatial){
+                                                  String savedFileName, String applicationType, boolean nonSpatial, int zSlices, int tSlices,
+                                                  int numVariables){
             this.exportDate = exportDate;
             this.uri = uri;
             this.jobID = jobID;
@@ -56,6 +60,9 @@ public class ExportDataRepresentation {
             this.savedFileName = savedFileName;
             this.applicationType = applicationType;
             this.nonSpatial = nonSpatial;
+            this.zSlices = zSlices;
+            this.tSlices = tSlices;
+            this.numVariables = numVariables;
         }
     }
 
