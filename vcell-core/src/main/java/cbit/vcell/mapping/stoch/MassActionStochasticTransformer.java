@@ -8,154 +8,70 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.model;
+package cbit.vcell.mapping.stoch;
+
+import cbit.vcell.math.MathException;
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.matrix.RationalExpMatrix;
+import cbit.vcell.model.*;
+import cbit.vcell.model.common.VCellErrorMessages;
+import cbit.vcell.parser.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.*;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.util.*;
+import static cbit.vcell.mapping.stoch.StochasticTransformer.StochasticTransformException;
 
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.model.common.VCellErrorMessages;
-import cbit.vcell.parser.DivideByZeroException;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionUtils;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.RationalExpUtils;
-import cbit.vcell.parser.SymbolTableEntry;
+class MassActionStochasticTransformer {
+	private final static Logger lg = LogManager.getLogger(MassActionStochasticTransformer.class);
 
-public class MassActionSolver {
-	private final static Logger lg = LogManager.getLogger(MassActionSolver.class);
-
-	public static final double Epsilon = 1e-6; // to be used for double calculation
+	private static final double Epsilon = 1e-6; // to be used for double calculation
 	private static final int[] primeIntNumbers = new int[]{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}; 
 	
-	public MassActionSolver()
+	MassActionStochasticTransformer()
 	{
 	}
-	public static class MassActionFunction 
-	{
-		private Expression fRate = null;
-		private Expression rRate = null;
-		private List<ReactionParticipant> reactants = null;
-		private List<ReactionParticipant> products = null;
-		
-		public MassActionFunction()
-		{}
-		public MassActionFunction(Expression forwardRate, Expression reverseRate)
-		{
-			this(forwardRate, reverseRate, null, null);
-		}
-		public MassActionFunction(Expression forwardRate, Expression reverseRate, List<ReactionParticipant> reactants, List<ReactionParticipant> products)
-		{
-			this.fRate = forwardRate;
-			this.rRate = reverseRate;
-			this.reactants = reactants;
-			this.products = products;
-		}
-		
-		public Expression getForwardRate() {
-			return fRate;
-		}
 
-		private void setForwardRate(Expression rate) {
-			fRate = rate;
+	static StochasticFunction solveMicroMacroMassAction(SimpleReaction reactionStep) {
+		List<ReactionParticipant> reactants = new ArrayList<>(reactionStep.getReactants());
+		List<ReactionParticipant> products = new ArrayList<>(reactionStep.getProducts());
+		if (reactionStep.getKinetics() instanceof Macroscopic_IRRKinetics macroscopicIrrKinetics){
+			Expression forwardRate = new Expression(macroscopicIrrKinetics.getKOnParameter(),reactionStep.getNameScope());
+			Expression reverseRate = null;
+			return new MassActionStochasticFunction(forwardRate, reverseRate, reactants, products);
+		} else if (reactionStep.getKinetics() instanceof Microscopic_IRRKinetics microscopicIrrKinetics){
+			Expression forwardRate = new Expression(microscopicIrrKinetics.getKOnParameter(),reactionStep.getNameScope());
+			Expression reverseRate = null;
+			return new MassActionStochasticFunction(forwardRate, reverseRate, reactants, products);
+		} else {
+			throw new IllegalArgumentException("KineticsDescription is not Macroscopic_irreversible or Microscopic_irreversible");
 		}
-
-		public Expression getReverseRate() {
-			return rRate;
-		}
-
-		private void setReverseRate(Expression rate) {
-			rRate = rate;
-		}
-		public List<ReactionParticipant> getReactants() {
-			return reactants;
-		}
-		public void setReactants(List<ReactionParticipant> reactants) {
-			this.reactants = reactants;
-		}
-		public List<ReactionParticipant> getProducts() {
-			return products;
-		}
-		public void setProducts(List<ReactionParticipant> products) {
-			this.products = products;
-		}
-//		public void show()
-//		{
-//			System.out.println("Forward rate is " + getForwardRate().infix());
-//			System.out.println("Reverse rate is " + getReverseRate().infix());
-//		}
-	}
-	
-	public static Expression substituteParameters(Expression exp, boolean substituteConst) throws ExpressionException 
-	{
-		Expression result = new Expression(exp);
-		boolean bSubstituted = true;
-		while (bSubstituted) {
-			bSubstituted = false;
-			String symbols[] = result.getSymbols();
-			for (int k = 0; symbols != null && k < symbols.length; k++) {
-				SymbolTableEntry ste = result.getSymbolBinding(symbols[k]);
-				if (ste instanceof ProxyParameter) {
-					ProxyParameter pp = (ProxyParameter)ste;
-					result.substituteInPlace(new Expression(pp,pp.getNameScope()), new Expression(pp.getTarget(),pp.getTarget().getNameScope()));
-					bSubstituted = true;
-				}else if (ste instanceof Parameter){
-					Parameter kp = (Parameter)ste;
-					try {
-						Expression expKP = kp.getExpression();
-						if (!expKP.flatten().isNumeric() || substituteConst) {
-							result.substituteInPlace(new Expression(symbols[k]), new Expression(kp.getExpression()));
-							bSubstituted = true;
-						}
-					} catch (ExpressionException e1) {
-						lg.error(e1);
-						throw new ExpressionException(e1.getMessage());
-					}
-				}else if (substituteConst && ste instanceof Model.ReservedSymbol){
-					Model.ReservedSymbol rs = (Model.ReservedSymbol)ste;
-					try {
-						if (rs.getExpression() != null) 
-						{
-							result.substituteInPlace(new Expression(symbols[k]), new Expression(rs.getExpression()));
-							bSubstituted = true;
-						}
-					} catch (ExpressionException e1) {
-						lg.error(e1);
-						throw new ExpressionException(e1.getMessage());
-					}
-				}
-					
-			}
-
-		}
-		return result;
 	}
 
-	
-	public static MassActionFunction solveMassAction(Parameter optionalForwardRateParameter, Parameter optionalReverseRateParameter, Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException, DivideByZeroException{
-		MassActionFunction maFunc = new MassActionFunction();
+
+	static StochasticFunction solveMassAction(Parameter optionalForwardRateParameter, Parameter optionalReverseRateParameter, Expression orgExp, ReactionStep rs ) throws ExpressionException, ModelException {
 		//get reactants, products, overlaps, non-overlap reactants and non-overlap products
 		ArrayList<ReactionParticipant> reactants = new ArrayList<ReactionParticipant>();
 		ArrayList<ReactionParticipant> products = new ArrayList<ReactionParticipant>();
 		ReactionParticipant[] rp = rs.getReactionParticipants();
-		//should use this one to compare functional equavalent since this duplicatedExp has all params substituted.
-		Expression duplicatedExp = substituteParameters(orgExp, false);
+		//should use this one to compare functional equivalent since this duplicatedExp has all params substituted.
+		Expression duplicatedExp = StochasticTransformer.substituteParameters(orgExp, false);
+		if (duplicatedExp.infix().length()>200){
+			throw new StochasticTransformException(rs, StochasticTransformer.StochasticTransformErrorType.ABANDONED_TRANSFORMATION_TOO_COMPLEX);
+		}
 		//separate the reactants and products, fluxes, catalysts
 		String rxnName = rs.getName();
 		
 		//reaction with membrane current can not be transformed to mass action
 		if(rs.getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL || rs.getPhysicsOptions() == ReactionStep.PHYSICS_ELECTRICAL_ONLY)
 		{
-			throw new ModelException("Kinetics of reaction " + rxnName + " has membrane current. It can not be automatically transformed to Mass Action kinetics.");
+			throw new StochasticTransformException(rs, StochasticTransformer.StochasticTransformErrorType.ELECTRICAL_CURRENT_NOT_SUPPORTED);
 		}
 		
 		for(int i=0; i<rp.length; i++)
@@ -320,20 +236,44 @@ public class MassActionSolver {
 		}else{
 			// both reactants and products
 			RationalExpMatrix matrix = new RationalExpMatrix(2,3);
-			matrix.set_elem(0, 0, RationalExpUtils.getRationalExp(R_1, true));
-			matrix.set_elem(0, 1, RationalExpUtils.getRationalExp(Expression.negate(P_1), true));
-			matrix.set_elem(0, 2, RationalExpUtils.getRationalExp(J_1, true));
-			matrix.set_elem(1, 0, RationalExpUtils.getRationalExp(R_2, true));
-			matrix.set_elem(1, 1, RationalExpUtils.getRationalExp(Expression.negate(P_2), true));
-			matrix.set_elem(1, 2, RationalExpUtils.getRationalExp(J_2, true));
+			RationalExp elem_0_0 = RationalExpUtils.getRationalExp(R_1, true);
+			RationalExp elem_0_1 = RationalExpUtils.getRationalExp(Expression.negate(P_1), true);
+			RationalExp elem_0_2 = RationalExpUtils.getRationalExp(J_1, true);
+			RationalExp elem_1_0 = RationalExpUtils.getRationalExp(R_2, true);
+			RationalExp elem_1_1 = RationalExpUtils.getRationalExp(Expression.negate(P_2), true);
+			RationalExp elem_1_2 = RationalExpUtils.getRationalExp(J_2, true);
+			final int MAX_TERMS = 10;
+			if (elem_0_0.totalNumTerms()>MAX_TERMS
+					|| elem_0_1.totalNumTerms()>MAX_TERMS
+					|| elem_0_2.totalNumTerms()>MAX_TERMS
+					|| elem_1_0.totalNumTerms()>MAX_TERMS
+					|| elem_1_1.totalNumTerms()>MAX_TERMS
+					|| elem_1_2.totalNumTerms()>MAX_TERMS){
+				throw new ModelException("aborting solution of mass action coefficients, expressions too long");
+			}
+			matrix.set_elem(0, 0, elem_0_0);
+			matrix.set_elem(0, 1, elem_0_1);
+			matrix.set_elem(0, 2, elem_0_2);
+			matrix.set_elem(1, 0, elem_1_0);
+			matrix.set_elem(1, 1, elem_1_1);
+			matrix.set_elem(1, 2, elem_1_2);
+
 			RationalExp[] solution = null;
 			RationalExp[] originalSolution = null;
 			try {
 				//matrix.show();
 				solution = matrix.solveLinearExpressions();
 				originalSolution = matrix.solveLinearExpressions();
-				solution[0] = solution[0].simplify(); //solution[0] is forward rate.
-				solution[1] = solution[1].simplify(); //solution[1] is reverse rate. 
+				try {
+					jscl.math.Expression.timeoutMS.set(System.currentTimeMillis() + 100);
+					if (solution[0].totalNumTerms()>MAX_TERMS || solution[1].totalNumTerms()>MAX_TERMS){
+						throw new ModelException("aborting solution of mass action coefficients, expressions too long");
+					}
+					solution[0] = solution[0].simplify(); //solution[0] is forward rate.
+					solution[1] = solution[1].simplify(); //solution[1] is reverse rate.
+				}finally{
+					jscl.math.Expression.timeoutMS.remove();
+				}
 			} catch(ArithmeticException e) {
 				if(e.getMessage() == null || !e.getMessage().startsWith(jscl.math.Expression.FailedToSimplify)) {
 					throw(e);	// if failed to simplify, continue with what we have, otherwise rethrow
@@ -378,7 +318,7 @@ public class MassActionSolver {
 			{
 				Expression forwardExpCopy = new Expression(forwardExp);
 				try{
-					substituteParameters(forwardExpCopy, true).evaluateConstant();
+					StochasticTransformer.substituteParameters(forwardExpCopy, true).evaluateConstant();
 				}catch(ExpressionException e)
 				{
 					throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in forward rate '" + forwardExp.infix() + "', " + e.getMessage()));
@@ -389,7 +329,7 @@ public class MassActionSolver {
 				if (optionalForwardRateParameter!=null){
 					Expression forwardRateParameterCopy = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
 					try{
-						substituteParameters(forwardRateParameterCopy, true).evaluateConstant();
+						StochasticTransformer.substituteParameters(forwardRateParameterCopy, true).evaluateConstant();
 						if (forwardExpCopy.compareEqual(forwardRateParameterCopy)){
 							forwardExp = new Expression(optionalForwardRateParameter,optionalForwardRateParameter.getNameScope());
 						}
@@ -404,7 +344,7 @@ public class MassActionSolver {
 			{
 				Expression reverseExpCopy = new Expression(reverseExp);
 				try{
-					substituteParameters(reverseExpCopy, true).evaluateConstant();
+					StochasticTransformer.substituteParameters(reverseExpCopy, true).evaluateConstant();
 				}catch(ExpressionException e)
 				{
 					throw new ModelException(VCellErrorMessages.getMassActionSolverMessage(rs.getName(), "Problem in reverse rate '" + reverseExp.infix() + "', " + e.getMessage()));
@@ -416,7 +356,7 @@ public class MassActionSolver {
 				if (optionalReverseRateParameter!=null){
 					Expression reverseRateParameterCopy = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
 					try{
-						substituteParameters(reverseRateParameterCopy, true).evaluateConstant();
+						StochasticTransformer.substituteParameters(reverseRateParameterCopy, true).evaluateConstant();
 						if (reverseExpCopy.compareEqual(reverseRateParameterCopy)){
 							reverseExp = new Expression(optionalReverseRateParameter,optionalReverseRateParameter.getNameScope());
 						}
@@ -426,14 +366,7 @@ public class MassActionSolver {
 					}
 				}
 			}
-			maFunc.setForwardRate(forwardExp);
-			maFunc.setReverseRate(reverseExp);
-			maFunc.setReactants(reactants);
-			maFunc.setProducts(products);
-//			System.out.println("forward rate = "+maFunc.getForwardRate().infix());
-//			System.out.println("reverse rate = "+maFunc.getReverseRate().infix());
-					
-			return maFunc;
+            return new MassActionStochasticFunction(forwardExp, reverseExp, reactants, products);
 		}
 	}
 	

@@ -4070,30 +4070,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			}
 		}
 
-		// Before running the simulation, check if all the sizes of structures are set
-		if (simulations != null && simulations.length > 0) {
-			VCDocument vcd = documentWindowManager.getVCDocument();
-			if (vcd instanceof BioModel) {
-				String stochChkMsg = null;
-				// we want to check when there is stochastic application if the rate laws set in
-				// model can be automatically transformed.
-				for (int i = 0; i < simulations.length; i++) {
-					if (simulations[i].getMathDescription().isNonSpatialStoch()
-							|| simulations[i].getMathDescription().isSpatialStoch()
-							|| simulations[i].getMathDescription().isSpatialHybrid()) {
-						if (stochChkMsg == null) {
-							stochChkMsg = ((BioModel) vcd).getModel().isValidForStochApp();
-						}
-						if (!(stochChkMsg.equals(""))) {
-							DialogUtils.showErrorDialog(documentWindowManager.getComponent(),
-									"Problem in simulation: " + simulations[i].getName() + ".\n" + stochChkMsg);
-							throw new RuntimeException(
-									"Problem in simulation: " + simulations[i].getName() + "\n" + stochChkMsg);
-						}
-					}
-				}
-			}
-		}
 		//
 		// when we run simulations, we want to force these exact editions to be run (not
 		// their older "equivalent" simulations).

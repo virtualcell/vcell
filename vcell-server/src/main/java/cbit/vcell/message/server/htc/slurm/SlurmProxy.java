@@ -753,7 +753,7 @@ public class SlurmProxy extends HtcProxy {
 		for (String envVar : environmentVars) {
 			singularityEnvironmentVars.append(" --env "+envVar);
 		}
-		lsb.write("   container_prefix=\"singularity run " +
+		lsb.write("   container_prefix=\"singularity run --containall " +
 				"--bind "+primaryDataDirExternal+":/simdata " +
 				((secondaryDataDirExternal.isPresent()) ? "--bind "+secondaryDataDirExternal.get()+":/simdata_secondary " : "") +
 				"--bind "+simDataDirArchiveExternal+":"+simDataDirArchiveInternal+" " +

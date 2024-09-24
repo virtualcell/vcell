@@ -415,14 +415,6 @@ private void copyApplication(final boolean bSpatial, final SimulationContext.App
 		PopupGenerator.showErrorDialog(this, "Please select an application.");
 		return;
 	}
-	if (appType == SimulationContext.Application.NETWORK_STOCHASTIC) {
-		//check validity if copy to stochastic application
-		String message = bioModel.getModel().isValidForStochApp();
-		if (!message.equals("")) {
-			PopupGenerator.showErrorDialog(this, message);
-			return;
-		}
-	}
 	AsynchClientTask[] copyTasks = ClientTaskManager.copyApplication(this, bioModel, simulationContext, bSpatial, appType);
 	AsynchClientTask[] allTasks = new AsynchClientTask[copyTasks.length + 1];
 	System.arraycopy(copyTasks, 0, allTasks, 0, copyTasks.length);

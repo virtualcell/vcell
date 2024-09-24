@@ -10,65 +10,30 @@
 
 package cbit.vcell.mapping.vcell_4_8;
 
-import java.beans.PropertyVetoException;
-import java.util.Enumeration;
-import java.util.Vector;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.util.TokenMangler;
-
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.mapping.ElectricalStimulus;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextMapping;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.math.Action;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.JumpProcess;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.StochVolVariable;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.VarIniCondition;
-import cbit.vcell.math.VarIniCount;
-import cbit.vcell.math.VariableHash;
+import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.stoch.MassActionStochasticFunction;
+import cbit.vcell.mapping.stoch.StochasticFunction;
+import cbit.vcell.mapping.stoch.StochasticTransformer;
+import cbit.vcell.math.*;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.LumpedKinetics;
-import cbit.vcell.model.MassActionSolver;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.Model.ReservedSymbolRole;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelUnitSystem;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.RationalExpUtils;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.units.qual.Mass;
+import org.vcell.util.TokenMangler;
+
+import java.beans.PropertyVetoException;
+import java.util.Enumeration;
+import java.util.Vector;
 /**
  * The StochMathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription()
  * for stochastic simulation. To get math description for deterministic simulation please reference @MathMapping.
@@ -350,11 +315,6 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 		//local structure mapping list
 		StructureMapping structureMappings[] = simContext.getGeometryContext().getStructureMappings();
 		//We have to check if all the reactions are able to tranform to stochastic jump processes before generating the math.
-		String stochChkMsg =simContext.getModel().isValidForStochApp();
-		if(!(stochChkMsg.equals("")))
-		{
-			throw new ModelException("Problem updating math description: "+ simContext.getName()+"\n"+stochChkMsg);
-		}
 		//All sizes must be set for new ODE models and ratios must be set for old ones.
 		simContext.checkValidity();
 		
@@ -707,21 +667,17 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				}
 				else if (kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
-					Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
-					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(null,null,rateExp, reactionStep);
-					if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
-					{
-						throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
-					}
-					else
-					{
-						if(maFunc.getForwardRate() != null)
-						{
-							forwardRate = maFunc.getForwardRate();
-						}
-						if(maFunc.getReverseRate() != null)
-						{
-							reverseRate = maFunc.getReverseRate();
+					StochasticFunction stochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
+					if (stochasticFunction instanceof MassActionStochasticFunction maFunc) {
+						if (maFunc.forwardRate() == null && maFunc.reverseRate() == null) {
+							throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
+						} else {
+							if (maFunc.forwardRate() != null) {
+								forwardRate = maFunc.forwardRate();
+							}
+							if (maFunc.reverseRate() != null) {
+								reverseRate = maFunc.reverseRate();
+							}
 						}
 					}
 				}
@@ -858,19 +814,22 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 				//we could set jump processes for general flux rate in forms of p1*Sout + p2*Sin
 				if(kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
-					Expression fluxRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
-					MassActionSolver.MassActionFunction fluxFunc = MassActionSolver.solveMassAction(null,null,fluxRate, (FluxReaction)reactionStep);
+					MassActionStochasticFunction fluxFunc = null;
+					StochasticFunction stochasticFunction = StochasticTransformer.transformToStochastic(reactionStep);
+					if (stochasticFunction instanceof MassActionStochasticFunction) {
+						fluxFunc = (MassActionStochasticFunction)stochasticFunction;
+					}
 					//create jump process for forward flux if it exists.
-					if(fluxFunc.getForwardRate() != null && !fluxFunc.getForwardRate().isZero()) 
+					if (fluxFunc.forwardRate() != null && !fluxFunc.forwardRate().isZero())
 					{
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName());//+"_reverse";
 											
 						//we do it here instead of fluxsolver, coz we need to use getMathSymbol0(), structuremapping...etc.
-						Expression rate = fluxFunc.getForwardRate();
+						Expression rate = fluxFunc.forwardRate();
 						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-						SpeciesContext scOut = fluxFunc.getReactants().get(0).getSpeciesContext();
+						SpeciesContext scOut = fluxFunc.reactants().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
 						if(scOut.getStructure() instanceof Feature) {
 							Expression exp1 = new Expression(model.getKMOLE().getExpression());
@@ -899,7 +858,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probParm,sm)));
 						// actions
 						Action action = null;
-						SpeciesContext sc = fluxFunc.getReactants().get(0).getSpeciesContext();
+						SpeciesContext sc = fluxFunc.reactants().get(0).getSpeciesContext();
 						
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
@@ -907,7 +866,7 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							jp.addAction(action);
 						}	
 						
-						sc = fluxFunc.getProducts().get(0).getSpeciesContext();
+						sc = fluxFunc.products().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(1));
@@ -916,14 +875,14 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 							
 						subDomain.addJumpProcess(jp);
 					}
-					if(fluxFunc.getReverseRate() != null && !fluxFunc.getReverseRate().isZero()) 
+					if (fluxFunc.reverseRate() != null && !fluxFunc.reverseRate().isZero())
 					{
 						//jump process name
 						String jpName = TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
 											
-						Expression rate = fluxFunc.getReverseRate();
+						Expression rate = fluxFunc.reverseRate();
 						//get species expression (depend on structure, if mem: Species/mem_Size, if vol: species*KMOLE/vol_size)
-						SpeciesContext scIn = fluxFunc.getProducts().get(0).getSpeciesContext();
+						SpeciesContext scIn = fluxFunc.products().get(0).getSpeciesContext();
 						Expression speciesFactor = null;
 						if(scIn.getStructure() instanceof Feature) {
 							Expression exp1 = new Expression(model.getKMOLE().getExpression());
@@ -952,14 +911,14 @@ private void refresh() throws MappingException, ExpressionException, MatrixExcep
 						JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol(probRevParm,sm)));
 						// actions
 						Action action = null;
-						SpeciesContext sc = fluxFunc.getReactants().get(0).getSpeciesContext();
+						SpeciesContext sc = fluxFunc.reactants().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(1));
 							jp.addAction(action);
 						}
 							
-						sc = fluxFunc.getProducts().get(0).getSpeciesContext();
+						sc = fluxFunc.products().get(0).getSpeciesContext();
 						if (!simContext.getReactionContext().getSpeciesContextSpec(sc).isConstant()) {
 							SpeciesCountParameter spCountParam = getSpeciesCountParameter(sc);
 							action = new Action(varHash.getVariable(getMathSymbol(spCountParam, sm)),"inc", new Expression(-1));

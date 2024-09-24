@@ -1,18 +1,6 @@
 package cbit.vcell.mapping;
 
-import java.beans.PropertyVetoException;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import cbit.vcell.biomodel.ModelUnitConverter;
-import cbit.vcell.math.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.util.*;
-import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext.ContextType;
-
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.GeometryClass;
@@ -26,42 +14,32 @@ import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.mapping.potential.MembraneElectricalDevice;
 import cbit.vcell.mapping.potential.PotentialMapping;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityComponent;
+import cbit.vcell.math.*;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.model.BioNameScope;
-import cbit.vcell.model.ExpressionContainer;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Membrane.MembraneVoltage;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelFunction;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.ModelProcess;
-import cbit.vcell.model.ModelQuantity;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
-import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression.FunctionFilter;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.FunctionInvocation;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.VCUnitEvaluator;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.*;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.IssueContext.ContextType;
+
+import java.beans.PropertyVetoException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFactorProvider, IssueSource, MathMapping {
 
@@ -1748,14 +1726,24 @@ public abstract class AbstractMathMapping implements ScopedSymbolTable, UnitFact
      * @return cbit.vcell.mapping.MathMappingParameter
      */
     final ProbabilityParameter addProbabilityParameter(String name, Expression expression, int role,
-                                                       VCUnitDefinition unitDefinition, ModelProcess argModelProcess) throws java.beans.PropertyVetoException,
-            ExpressionBindingException{
+                                                       VCUnitDefinition unitDefinition, ModelProcess argModelProcess) throws java.beans.PropertyVetoException {
 
         GeometryClass geometryClass = null;
-        if(argModelProcess.getStructure() != null){
+        if (argModelProcess.getStructure() != null){
             geometryClass = simContext.getGeometryContext().getStructureMapping(argModelProcess.getStructure()).getGeometryClass();
         }
         ProbabilityParameter newParameter = new ProbabilityParameter(name, expression, role, unitDefinition, argModelProcess, geometryClass);
+        try {
+            VCUnitEvaluator unitEvaluator = new VCUnitEvaluator(simContext.getModel().getUnitSystem());
+            VCUnitDefinition expUnit = unitEvaluator.getUnitDefinition(expression);
+            if (unitDefinition != null && !unitDefinition.isEquivalent(expUnit)){
+                logger.warn("expected unit=" + unitDefinition.getSymbol() + ", found=" + expUnit.getSymbol());
+//                throw new VCUnitException("expected unit=" + unitDefinition.getSymbol() + ", found=" + expUnit.getSymbol());
+            }
+        } catch (VCUnitException | ExpressionException e){
+            logger.warn("error evaluating units for expression '" + expression + ": " + e.getMessage(), e);
+//            throw new VCUnitException("error evaluating units for expression '" + expression + ": " + e.getMessage());
+        }
         MathMappingParameter previousParameter = getMathMappingParameter(name);
         if(previousParameter != null){
             logger.info("MathMappingParameter addProbabilityParameter found duplicate parameter for name " + name);
