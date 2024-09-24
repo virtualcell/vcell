@@ -2252,12 +2252,15 @@ private void updateChoiceVariableType(PDEDataContext pdeDataContext){
 		TreeSet<String> dataIdentifierTreeSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
 		DataIdentifier[] dataIDArr = pdeDataContext.getDataIdentifiers();
+		boolean onlyPostProcessingVariables = true;
 		for (int i = 0; i < dataIDArr.length; i++) {
 			VariableType variableType = dataIDArr[i].getVariableType();
 
 			String varListName = dataIDArr[i].getName();//"("+vmPrefix+")  "+dataIDArr[i].getName();
+			onlyPostProcessingVariables = onlyPostProcessingVariables && variableType.equals(VariableType.POSTPROCESSING);
 			boolean allowedVolumeExport = variableType.equals(VariableType.VOLUME) ||
-					(variableType.equals(VariableType.POSTPROCESSING) && !getSelectedFormat().equals(ExportFormat.N5));
+					(variableType.equals(VariableType.POSTPROCESSING) && !getSelectedFormat().equals(ExportFormat.N5)) ||
+					(onlyPostProcessingVariables);
 			if(getBothVarRadioButton().isSelected()){
 				dataIdentifierTreeSet.add(varListName);
 			}else if(getVolVarRadioButton().isSelected() && allowedVolumeExport){
