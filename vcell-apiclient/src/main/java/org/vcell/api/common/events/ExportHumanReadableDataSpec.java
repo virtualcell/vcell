@@ -12,10 +12,14 @@ public class ExportHumanReadableDataSpec {
     public String applicationType;
     public boolean nonSpatial;
     public HashMap<Integer, String> subVolume;
+    public int zSlices;
+    public int tSlices;
+    public int numChannels;
 
     public ExportHumanReadableDataSpec(String bioModelName, String applicationName, String simulationName,
                                        ArrayList<String> differentParameterValues,
-                                       String serverSavedFileName, String applicationType, boolean nonSpatial, HashMap<Integer, String> subVolume){
+                                       String serverSavedFileName, String applicationType, boolean nonSpatial, HashMap<Integer, String> subVolume,
+                                       int zSlices, int tSlices, int numChannels){
         this.bioModelName = bioModelName;
         this.applicationName = applicationName;
         this.simulationName = simulationName;
@@ -24,6 +28,9 @@ public class ExportHumanReadableDataSpec {
         this.applicationType = applicationType;
         this.nonSpatial = nonSpatial;
         this.subVolume = subVolume;
+        this.zSlices = zSlices;
+        this.tSlices = tSlices;
+        this.numChannels = numChannels;
     }
 
 
