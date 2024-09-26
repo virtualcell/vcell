@@ -450,11 +450,15 @@ public TransitionCondition getTransitionCondition(Map<String, Object> analysisRe
 		return null;
 	} else if(mtpReactantList.size() == 2 && mtpProductList.size() == 2) {		// we look for transition with "Bound" condition, means 2 molecules
 		MolecularTypePattern mtpTransitionReactant = (MolecularTypePattern)analysisResults.get(MtpReactantState + "1");	// the transitioning molecule
-		int totalExistsBonds = 0;
 		int totalExplicitStates = 0;
 		int numExplicitStates[] = { 0, 0};
-		int numExistsBonds[] = { 0, 0 };
+		int numSpecifiedBonds[] = { 0, 0 };
+		MolecularComponentPattern[] mcpExplicitStates = new MolecularComponentPattern[2];	// the site with the explicit state
+		MolecularComponentPattern[] mcpSpecifiedBonds = new MolecularComponentPattern[2];	// the site with the specified bond
+
 		for(int i=0; i < mtpReactantList.size(); i++) {
+			// the transitioning site must have explicit bond in both reactant and product (which obviously must point to the condition molecule)
+			// there must be only one transitioning state, the one in the transitioning molecule
 			MolecularTypePattern mtpReactant = mtpReactantList.get(i);
 			List<MolecularComponentPattern> mcpList = mtpReactant.getComponentPatternList();
 			if(mcpList == null || mcpList.isEmpty()) {
@@ -466,48 +470,33 @@ public TransitionCondition getTransitionCondition(Map<String, Object> analysisRe
 					return null;	// all sites must have at least one state
 				}
 				BondType bondTypeReactant = mcpReactant.getBondType();
-				if(BondType.Exists == bondTypeReactant) {
-					if(mtpTransitionReactant == mtpReactant) {
-						// the transition site must be in one molecule, the condition bound site must be in the other
-						return null;
-					}
-					numExistsBonds[i]++;	// the condition binding site has bond type "Exists"
-					totalExistsBonds++;
+				if(BondType.Specified == bondTypeReactant) {	// we must have exactly one Specified bond, all the others must be Possible
+					numSpecifiedBonds[i]++;	// the condition binding site has bond type "Exists"
+					mcpSpecifiedBonds[i] = mcpReactant;
 				} else if(BondType.Possible != bondTypeReactant) {
 					return null;		// all other bonds in the reactant must be of type "Possible"
-					// we know that the 2 molecules are bound somehow, because they are in the same species
-					// but we don't care between which sites the bond is
 				}
-				if(cspReactant.isAny()) {
-					continue;
-				} else {
-					// the site with explicit state must be the same that has bond type exists
-					if(BondType.Exists != bondTypeReactant && mtpTransitionReactant != mtpReactant) {
-						return null;
-					}
+
+				if(!cspReactant.isAny()) {	// we also need to reack explicit states
+					numExplicitStates[i]++;
+					totalExplicitStates++;
+					mcpExplicitStates[i] = mcpReactant;
 				}
-				numExplicitStates[i]++;
-				totalExplicitStates++;
 			}
 		}
-		
-		if(totalExistsBonds != 1) {
-			return null;		// the condition bound site is the only one with BondType "exists"
-		}
-		if(totalExplicitStates < 1 || totalExplicitStates > 2) {
-			// transitioning site must be in explicit state
-			// the condition binding site may be explicit or any
-			// all the other sites must be in "Any" state
+
+		// the explicit state if exists, must only be on the bound site
+		if(mcpExplicitStates[0] != null && mcpExplicitStates[0] != mcpSpecifiedBonds[0]) {
 			return null;
 		}
-		if(numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
-			// above we made sure that the transition molecule and the condition molecule are not the same
-			return TransitionCondition.BOUND;	// must have exactly one explicit state in each molecule 
-		} else if(numExplicitStates[0] == 0 && numExplicitStates[1] == 1 && numExistsBonds[0] == 1) {
-			// this else-if and the next: the only explicit site is the one transitioning
-			// the conditional site type may also be in the "any" state but must have bond type "Exists"
+		if(mcpExplicitStates[1] != null && mcpExplicitStates[1] != mcpSpecifiedBonds[1]) {
+			return null;
+		}
+
+		// the only situations that correctly describe condition bound transition reaction
+		if(numSpecifiedBonds[0] == 1 && numSpecifiedBonds[1] == 1 && numExplicitStates[0] == 1 && numExplicitStates[1] == 1) {
 			return TransitionCondition.BOUND;
-		} else if(numExplicitStates[0] == 1 && numExplicitStates[1] == 0 && numExistsBonds[1] == 1) {
+		} else if(numSpecifiedBonds[0] == 1 && numSpecifiedBonds[1] == 1 && totalExplicitStates == 1) {
 			return TransitionCondition.BOUND;
 		}
 	}
@@ -729,8 +718,8 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 		}
 		// now let's find the Site and the State of the binding condition molecule
 		for(MolecularComponentPattern mcpCandidate : mtpConditionReactant.getComponentPatternList()) {
-			if(BondType.Exists == mcpCandidate.getBondType()) {
-				mcpConditionReactant = mcpCandidate;	// found the bond condition site, it's the one with bond type "Exists"
+			if(BondType.Specified == mcpCandidate.getBondType()) {
+				mcpConditionReactant = mcpCandidate;	// found the bond condition site, it's the one with bond type "Specified"
 				if(!mcpConditionReactant.getComponentStatePattern().isAny()) {
 					stateConditionReactant = mcpConditionReactant.getComponentStatePattern().getComponentStateDefinition().getName();
 				}
@@ -891,6 +880,7 @@ private final static String SpringSaLaDMsgIncompatibleWithAny = "Reaction incomp
 private final static String SpringSaLaDMsgSubtypeMustBeIrreversible = "This reaction subtype must be irreversible. Make the reaction ireversible.";
 private final static String SpringSaLaDMsgTransmembraneBinding = "Transmembrane binding not supported";
 private final static String SpringSaLaDMsgSubtypeMustBeReversible = "This reaction subtype must be reversible. Make the reaction reversible and keep Kr at 0.";
+private final static String SpringSaLaDMsgBoundTransitionNeedsBinding = "No Binding reaction found that would make the binding condition of this Transition reaction possible";
 private static final String SpringSaLaDMsgNoComplexes = "SpringSaLaD does not accept explicit complexes in the list of reactants";
 
 public void gatherIssues(IssueContext issueContext, List<Issue> issueList, ReactionContext rc) {
@@ -919,7 +909,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 //		}
 //	}
 	if(rc.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
-		
+
+		if(isExcluded()) {
+			return;		// we don't care as long as it's excluded
+		}
 		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 		List<ProductPattern> ppList = reactionRule.getProductPatterns();
 		if(rpList == null || ppList == null) {
@@ -949,6 +942,8 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 			return;
 		}
+
+
 
 		// no reaction can be on the membrane
 		// dan 7/31/24 correction: a reaction involving a Membrane molecule can be on a membrane
@@ -1023,7 +1018,6 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 //		}
 
 		// ------------------------------------------------------------------------------------------------------------------------
-
 		Map<String, Object> analysisResults = new LinkedHashMap<> ();
 		analizeReaction(analysisResults);
 		Subtype subtype = getSubtype(analysisResults);
@@ -1072,9 +1066,65 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			String tip = GenericTip;
 			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
-		
-		// these reactions cannot be reversible
+
+		// only for conditional bound transition reactions: we need a binding reaction to create the conditional bond
 		switch(subtype) {
+		case TRANSITION:
+			TransitionCondition tc = getTransitionCondition(analysisResults);
+			if(tc != TransitionCondition.BOUND) {
+				break;	// we do this only for conditional bound transition reactions
+			}
+			// we need to find the molecule / site combination that needs to be bound
+			MolecularType mtTransition = ((MolecularTypePattern)analysisResults.get(MtpReactantState + "1")).getMolecularType();	// the transitioning molecule
+			MolecularComponent mcTransition = ((MolecularComponentPattern)analysisResults.get(McpReactantState + "1")).getMolecularComponent();
+			Bond bond = ((MolecularComponentPattern)analysisResults.get(McpReactantState + "1")).getBond();	// we know it's a bound transition, so it must have a bond for sure
+			MolecularType mtCondition = bond.molecularTypePattern.getMolecularType();
+			MolecularComponent mcCondition = bond.molecularComponentPattern.getMolecularComponent();
+
+			List <ReactionRule> rrList = rc.getModel().getRbmModelContainer().getReactionRuleList();
+			reactionRule.getReactantPattern(0).getSpeciesPattern();
+			// we go through all reaction rules, trying to find a binding reaction that would make this
+			// conditional bound transition reaction possible
+			boolean found = false;
+			for(ReactionRule rr : rrList) {
+				ReactionRuleSpec rrs = rc.getReactionRuleSpec(rr);
+				if(rrs.isExcluded()) {
+					continue;	// even if it's the right reaction, if it's excluded it won't do the job
+				}
+				Map<String, Object> ar = new LinkedHashMap<>();
+				rrs.analizeReaction(ar);
+				Subtype st = rrs.getSubtype(ar);
+				if (st != Subtype.BINDING) {
+					continue;
+				}
+				// the 2 reactants should match the pairs mtTransition / mcTransition and respectively mtCondition / mcCondition
+				MolecularType mt1 = ((MolecularTypePattern) ar.get(MtpReactantBond + "1")).getMolecularType();    // '1' - reactant. left side of the bond
+				MolecularType mt2 = ((MolecularTypePattern) ar.get(MtpReactantBond + "2")).getMolecularType();    // '2' - reactant, right side of the bond
+				MolecularComponent mc1 = ((MolecularComponentPattern) ar.get(McpReactantBond + "1")).getMolecularComponent();
+				MolecularComponent mc2 = ((MolecularComponentPattern) ar.get(McpReactantBond + "2")).getMolecularComponent();
+				if (mtTransition == mt1 && mcTransition == mc1 && mtCondition == mt2 && mcCondition == mc2) {
+					found = true;    // found the binding reaction we needed
+					break;            // exit the for loop
+				} else if (mtTransition == mt2 && mcTransition == mc2 && mtCondition == mt1 && mcCondition == mc1) {
+					found = true;
+					break;
+				}
+			}
+			if (found == false) {
+				// didn't find any binding reaction that would allow our conditional bound transition reaction to happen
+				String msg = SpringSaLaDMsgBoundTransitionNeedsBinding;
+				String tip = "Create a Binding reaction to make the binding condition of this Transition reaction possible.";
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+				return;
+			}
+			// TODO: to be very strict, we should also check if we have a seed species with the right site / state combination
+			//  needed for the transition reactant, or another transition (or creation?) reaction that would produce it
+			break;
+		default:
+			break;
+		}
+
+		switch(subtype) {	// these reactions cannot be reversible
 		case CREATION:
 		case DECAY:
 		case TRANSITION:

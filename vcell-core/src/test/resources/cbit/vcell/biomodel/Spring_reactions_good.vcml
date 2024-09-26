@@ -180,13 +180,17 @@
                   <MolecularTypePattern Index="1">
                     <MolecularType Name="Molecule1" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="+" />
+                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site2" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                   <MolecularTypePattern Index="2">
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
                     <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state0" BondType="?" />
+                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state0" BondType="1">
+                      <Bond MolecularTypePattern="Molecule1" ComponentPattern="Site1" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                 </SpeciesPattern>
               </ReactantPattern>
@@ -197,13 +201,17 @@
                   <MolecularTypePattern Index="1">
                     <MolecularType Name="Molecule1" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="+" />
+                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site2" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                   <MolecularTypePattern Index="2">
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
                     <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="?" />
+                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="1">
+                      <Bond MolecularTypePattern="Molecule1" ComponentPattern="Site1" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                 </SpeciesPattern>
               </ProductPattern>
@@ -332,14 +340,18 @@
                   <MolecularTypePattern ParticipantMatch="1" Index="1">
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="+" />
+                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site2" />
+                    </ComponentPattern>
                     <ComponentPattern MolecularComponent="Site2" Any="true" BondType="?" />
                   </MolecularTypePattern>
                   <MolecularTypePattern ParticipantMatch="2" Index="2">
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
                     <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state0" BondType="?" />
+                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state0" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site1" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                 </SpeciesPattern>
               </ReactantPattern>
@@ -350,14 +362,18 @@
                   <MolecularTypePattern ParticipantMatch="1" Index="1">
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="+" />
+                    <ComponentPattern MolecularComponent="Site1" ComponentStatePattern="state0" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site2" />
+                    </ComponentPattern>
                     <ComponentPattern MolecularComponent="Site2" Any="true" BondType="?" />
                   </MolecularTypePattern>
                   <MolecularTypePattern ParticipantMatch="2" Index="2">
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
                     <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="?" />
+                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site1" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                 </SpeciesPattern>
               </ProductPattern>
@@ -376,13 +392,17 @@
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
                     <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="+" />
+                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site2" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                   <MolecularTypePattern ParticipantMatch="2" Index="2">
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
                     <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state0" BondType="?" />
+                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state0" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site2" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                 </SpeciesPattern>
               </ReactantPattern>
@@ -394,13 +414,17 @@
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
                     <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="+" />
+                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site2" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                   <MolecularTypePattern ParticipantMatch="2" Index="2">
                     <MolecularType Name="Molecule0" />
                     <ComponentPattern MolecularComponent="Site0" Any="true" BondType="?" />
                     <ComponentPattern MolecularComponent="Site1" Any="true" BondType="?" />
-                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="?" />
+                    <ComponentPattern MolecularComponent="Site2" ComponentStatePattern="state1" BondType="1">
+                      <Bond MolecularTypePattern="Molecule0" ComponentPattern="Site2" />
+                    </ComponentPattern>
                   </MolecularTypePattern>
                 </SpeciesPattern>
               </ProductPattern>
@@ -417,27 +441,27 @@
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="binding" LocationX="355" LocationY="125" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="allosteric_bad" LocationX="44" LocationY="64" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule1(Site1~state0)" LocationX="376" LocationY="152" />
-        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site1~state0!+)%1.Molecule0(Site2~state0!?)%2" LocationX="84" LocationY="170" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site1~state0!1)%1.Molecule0(Site2~state0!1)%2" LocationX="84" LocationY="170" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site0,Site1,Site2~state1!?)" LocationX="217" LocationY="146" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="transition_none" LocationX="260" LocationY="146" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule1(Site0~state0,Site1~state0)" LocationX="337" LocationY="34" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="transition_free" LocationX="167" LocationY="222" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="decay" LocationX="385" LocationY="35" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state0)" LocationX="387" LocationY="113" />
-        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state1!+)%1.Molecule0(Site2~state1!?)%2" LocationX="207" LocationY="84" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state1!1)%1.Molecule0(Site2~state1!1)%2" LocationX="207" LocationY="84" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site0~state0!?,Site2~state0!?)" LocationX="274" LocationY="220" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="transition_bound_same_0" LocationX="143" LocationY="184" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state0!1).Molecule1(Site1~state0!1)" LocationX="308" LocationY="126" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state0!?)" LocationX="127" LocationY="220" />
-        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state0!?).Molecule1(Site1~state0!+)" LocationX="151" LocationY="125" />
-        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site1~state0!+)%1.Molecule0(Site2~state1!?)%2" LocationX="187" LocationY="182" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state0!1).Molecule1(Site1~state0!1)" LocationX="151" LocationY="125" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site1~state0!1)%1.Molecule0(Site2~state1!1)%2" LocationX="187" LocationY="182" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="transition_bound" LocationX="124" LocationY="139" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Source()" LocationX="262" LocationY="34" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site0~state0!?,Site2~state1!?)" LocationX="346" LocationY="220" />
-        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state1!?).Molecule1(Site1~state0!+)" LocationX="84" LocationY="119" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state1!1).Molecule1(Site1~state0!1)" LocationX="84" LocationY="119" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="transition_bound_same_1" LocationX="147" LocationY="91" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Sink()" LocationX="415" LocationY="34" />
-        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state0!?)%2.Molecule0(Site2~state1!+)%1" LocationX="85" LocationY="81" />
+        <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state0!1)%2.Molecule0(Site2~state1!1)%1" LocationX="85" LocationY="81" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="transition_bound_bad2" LocationX="36" LocationY="203" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="full" ReactionRuleRef2AttrTag="transition_none_bad" LocationX="220" LocationY="113" />
         <RuleParticipantFullShapeTag NodeReferenceModeAttrTag="full" RuleParticipantRefAttrTag="Molecule0(Site2~state1!?)" LocationX="198" LocationY="220" />
@@ -455,12 +479,12 @@
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="transition_free" LocationX="212" LocationY="125" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="decay" LocationX="412" LocationY="30" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="transition_bound_same_0" LocationX="133" LocationY="122" />
-        <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="Molecule0(Site1~state0!+)%1.Molecule0(Site2~state0!?)%2" LocationX="99" LocationY="164" />
+        <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="Molecule0(Site1~state0!1)%1.Molecule0(Site2~state0!1)%2" LocationX="99" LocationY="164" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="transition_bound" LocationX="273" LocationY="162" />
         <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="Sink()" LocationX="459" LocationY="34" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="transition_bound_same_1" LocationX="74" LocationY="191" />
         <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="Molecule1(Site0~state0,Site1~state0)" LocationX="392" LocationY="72" />
-        <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="Molecule0(Site2~state0!?).Molecule1(Site1~state0!+)" LocationX="327" LocationY="137" />
+        <RuleParticipantShortShapeTag NodeReferenceModeAttrTag="molecule" RuleParticipantRefAttrTag="Molecule0(Site2~state0!1).Molecule1(Site1~state0!1)" LocationX="327" LocationY="137" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="transition_bound_bad2" LocationX="309" LocationY="187" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="transition_none_bad" LocationX="246" LocationY="35" />
         <ReactionRuleShapeTag NodeReferenceModeAttrTag="molecule" ReactionRuleRef2AttrTag="creation" LocationX="406" LocationY="123" />
@@ -566,6 +590,19 @@
   &lt;/body&gt;&#xD;
 &lt;/html&gt;</freetext>
         </nonrdfAnnotation>
+        <nonrdfAnnotation vcid="ReactionRule(transition_bound)">
+          <freetext>&lt;html&gt;&#xD;
+  &lt;head&gt;&#xD;
+&#xD;
+  &lt;/head&gt;&#xD;
+  &lt;body&gt;&#xD;
+    &lt;p style="margin-top: 0"&gt;&#xD;
+      Transition bound reactions always show, by convention, 2 molecules. One &#xD;
+      depicts the binding condition, the other depicts the state transition&#xD;
+    &lt;/p&gt;&#xD;
+  &lt;/body&gt;&#xD;
+&lt;/html&gt;</freetext>
+        </nonrdfAnnotation>
         <nonrdfAnnotation vcid="ReactionRule(transition_bound_same_0)">
           <freetext>&lt;html&gt;&#xD;
   &lt;head&gt;&#xD;
@@ -580,19 +617,6 @@
     &lt;p style="margin-top: 0"&gt;&#xD;
       The reason is that it may result in a confusion with allosteric &#xD;
       representation&#xD;
-    &lt;/p&gt;&#xD;
-  &lt;/body&gt;&#xD;
-&lt;/html&gt;</freetext>
-        </nonrdfAnnotation>
-        <nonrdfAnnotation vcid="ReactionRule(transition_bound)">
-          <freetext>&lt;html&gt;&#xD;
-  &lt;head&gt;&#xD;
-&#xD;
-  &lt;/head&gt;&#xD;
-  &lt;body&gt;&#xD;
-    &lt;p style="margin-top: 0"&gt;&#xD;
-      Transition bound reactions always show, by convention, 2 molecules. One &#xD;
-      depicts the binding condition, the other depicts the state transition&#xD;
     &lt;/p&gt;&#xD;
   &lt;/body&gt;&#xD;
 &lt;/html&gt;</freetext>

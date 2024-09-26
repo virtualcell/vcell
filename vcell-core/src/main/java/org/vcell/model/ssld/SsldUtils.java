@@ -926,6 +926,12 @@ public class SsldUtils {
         Molecule ssldConditionalMolecule = ssldReaction.getConditionalMolecule();
         Molecule ssldTransitionMolecule = ssldReaction.getMolecule();
 
+        // these will be null unless we have a conditional bound transition reaction
+        MolecularTypePattern mtpConditionReactant;
+        MolecularComponentPattern mcpConditionReactant;
+        MolecularTypePattern mtpConditionProduct;
+        MolecularComponentPattern mcpConditionProduct;
+
         int transitionMoleculeIndexInSpeciesPattern;
         if(ssldConditionalMolecule != null) {
             if(!ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
@@ -940,30 +946,35 @@ public class SsldUtils {
             State ssldConditionalState = ssldReaction.getConditionalState();
 
             SpeciesPattern spReactant = m.getConditionReactantPattern(ssldConditionalMolecule).getSpeciesPattern();
-            MolecularTypePattern mtpConditionReactant = spReactant.getMolecularTypePatterns(ssldConditionalMolecule.getName()).get(0);
-            MolecularComponentPattern mcpConditionReactant = mtpConditionReactant.getMolecularComponentPattern(conditionalType.getName());
+            mtpConditionReactant = spReactant.getMolecularTypePatterns(ssldConditionalMolecule.getName()).get(0);
+            mcpConditionReactant = mtpConditionReactant.getMolecularComponentPattern(conditionalType.getName());
             if(ssldConditionalState != TransitionReaction.ANY_STATE) {
                 String ssldConditionalStateName = ssldConditionalState.getName();
                 ComponentStateDefinition csdConditionReactant = mcpConditionReactant.getMolecularComponent().getComponentStateDefinition(ssldConditionalStateName);
                 ComponentStatePattern cspConditionalReactant = new ComponentStatePattern(csdConditionReactant);
                 mcpConditionReactant.setComponentStatePattern(cspConditionalReactant);
             }
-            mcpConditionReactant.setBondType(MolecularComponentPattern.BondType.Exists);
-            mcpConditionReactant.setBond(null);
+            // we'll build the Bond right at the end, we don't know yet
+            // the other end of the bond (the molecule and site of the transition reactant)
 
             SpeciesPattern spProduct = m.getConditionProductPattern(ssldConditionalMolecule).getSpeciesPattern();
-            MolecularTypePattern mtpConditionProduct = spProduct.getMolecularTypePatterns(ssldConditionalMolecule.getName()).get(0);
-            MolecularComponentPattern mcpConditionProduct = mtpConditionProduct.getMolecularComponentPattern(conditionalType.getName());
+            mtpConditionProduct = spProduct.getMolecularTypePatterns(ssldConditionalMolecule.getName()).get(0);
+            mcpConditionProduct = mtpConditionProduct.getMolecularComponentPattern(conditionalType.getName());
             if(ssldConditionalState != TransitionReaction.ANY_STATE) {
                 String ssldConditionalStateName = ssldConditionalState.getName();
                 ComponentStateDefinition csdConditionProduct = mcpConditionProduct.getMolecularComponent().getComponentStateDefinition(ssldConditionalStateName);
                 ComponentStatePattern cspConditionalProduct = new ComponentStatePattern(csdConditionProduct);
                 mcpConditionProduct.setComponentStatePattern(cspConditionalProduct);
             }
-            mcpConditionProduct.setBondType(MolecularComponentPattern.BondType.Exists);
-            mcpConditionProduct.setBond(null);
+            // we'll build the Bond right at the end, we don't know yet
+            // the other end of the bond (the molecule and site of the transition product)
         } else {
             transitionMoleculeIndexInSpeciesPattern = 0;
+
+            mtpConditionReactant = null;
+            mcpConditionReactant = null;
+            mtpConditionProduct = null;
+            mcpConditionProduct = null;
         }
         SiteType ssldSiteType = ssldReaction.getType();
         State ssldInitialState = ssldReaction.getInitialState();
@@ -984,6 +995,14 @@ public class SsldUtils {
                 }
                 mcp.setBondType(MolecularComponentPattern.BondType.None);
             }
+        } else if(ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
+            // we know for sure that this is the only explicit bond in each of the 2 molecular type patterns of the reactant
+            int bondId = 1;     // correct would be:  sp.nextBondId();
+            mcpConditionReactant.setBondId(bondId);    // this also sets the BondType to Specified
+            mcpTransitionReactant.setBondId(bondId);
+            // very abusive way of bypassing the fact that the Bond constructor is private
+            mcpConditionReactant.setBond(SpeciesPattern.generateBond(mtpTransitionReactant, mcpTransitionReactant));
+            mcpTransitionReactant.setBond(SpeciesPattern.generateBond(mtpConditionReactant, mcpConditionReactant));
         }
 
         SpeciesPattern spProduct = m.getProductPatternOneFromMolecule(ssldTransitionMolecule).getSpeciesPattern();
@@ -1001,6 +1020,14 @@ public class SsldUtils {
                 }
                 mcp.setBondType(MolecularComponentPattern.BondType.None);
             }
+        } else if(ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
+            // we know for sure that this is the only explicit bond in each of the 2 molecular type patterns of the product
+            int bondId = 1;     // correct would be:  sp.nextBondId();
+            mcpConditionProduct.setBondId(bondId);    // this also sets the BondType to Specified
+            mcpTransitionProduct.setBondId(bondId);
+            // very abusive way of bypassing the fact that the Bond constructor is private
+            mcpConditionProduct.setBond(SpeciesPattern.generateBond(mtpTransitionProduct, mcpTransitionProduct));
+            mcpTransitionProduct.setBond(SpeciesPattern.generateBond(mtpConditionProduct, mcpConditionProduct));
         }
     }
 
