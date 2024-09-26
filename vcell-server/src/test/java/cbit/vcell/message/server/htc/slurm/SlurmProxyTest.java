@@ -59,10 +59,9 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.mongodbPortExternal, "30019");
 		setProperty(PropertyLoader.mongodbDatabase, "test");
 		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.6.0_build_28");
-		setProperty(PropertyLoader.vcellbatch_singularity_image, "/state/partition1/singularityImages/ghcr.io_virtualcell_vcell-batch_d6825f4.img");
 		setProperty(PropertyLoader.slurm_tmpdir, "/scratch/vcell");
-		setProperty(PropertyLoader.slurm_central_singularity_dir, "/share/apps/vcell3/singularityImages");
-		setProperty(PropertyLoader.slurm_local_singularity_dir, "/state/partition1/singularityImages");
+		setProperty(PropertyLoader.slurm_singularity_cachedir, "/share/apps/vcell3/singularity/cachdir");
+		setProperty(PropertyLoader.slurm_singularity_pullfolder, "/share/apps/vcell3/singularity/pullfolder");
 		setProperty(PropertyLoader.slurm_singularity_module_name, "singularity/vcell-3.10.0");
 		setProperty(PropertyLoader.simDataDirArchiveExternal, "/share/apps/vcell12/users");
 		setProperty(PropertyLoader.simDataDirArchiveInternal, "/share/apps/vcell12/users");
@@ -72,7 +71,14 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.simulationPreprocessor, "JavaPreprocessor64");
 
 		setProperty(PropertyLoader.primarySimDataDirInternalProperty, "/share/apps/vcell3/users");
-		setProperty(PropertyLoader.vcellopt_singularity_image, "/state/partition1/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img");
+		setProperty(PropertyLoader.htc_vcellopt_docker_name, "ghcr.io/virtualcell/vcell-opt:7.6.0.43");
+
+		setProperty(PropertyLoader.htc_vcellfvsolver_solver_list, "Smoldyn,SundialsPDE");
+		setProperty(PropertyLoader.htc_vcellfvsolver_docker_name, "ghcr.io/virtualcell/vcell-fvsolver:v0.9.4");
+		setProperty(PropertyLoader.htc_vcellsolvers_solver_list, "HybridMilstein,StochGibson,Smoldyn,MovingBoundary,SundialsPDE,CombinedSundials,NFSim");
+		setProperty(PropertyLoader.htc_vcellsolvers_docker_name, "ghcr.io/virtualcell/vcell-solvers:v0.8.1.2");
+		setProperty(PropertyLoader.htc_vcellbatch_solver_list, "RungeKuttaFehlberg,HybridMilstein,StochGibson,Langevin,AdamsMoulton,Smoldyn,MovingBoundary,SundialsPDE,CombinedSundials,NFSim");
+		setProperty(PropertyLoader.htc_vcellbatch_docker_name, "ghcr.io/virtualcell/vcell-batch:7.6.0.43");
     }
 
 	@AfterEach

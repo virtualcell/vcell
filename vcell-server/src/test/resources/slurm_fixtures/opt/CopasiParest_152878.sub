@@ -8,83 +8,28 @@
 #SBATCH --mem=256M
 #SBATCH --no-kill
 #SBATCH --no-requeue
-# VCell SlurmProxy memory limit source=Optimization Default
-#BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------
-set -x
-
+# VCell SlurmProxy memory limit source='Optimization Default'
 TMPDIR=/scratch/vcell
-echo "using TMPDIR=$TMPDIR"
 if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi
 echo `hostname`
-
 export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles
-
 source /usr/share/Modules/init/bash
-
 module load singularity/vcell-3.10.0
-
+export SINGULARITY_CACHEDIR=/share/apps/vcell3/singularity/cachdir
+export SINGULARITY_PULLFOLDER=/share/apps/vcell3/singularity/pullfolder
 echo "job running on host `hostname -f`"
-
 echo "id is `id`"
-
-echo "bash version is `bash --version`"
-date
-
 echo ENVIRONMENT
 env
 
-container_prefix=
-if command -v singularity >/dev/null 2>&1; then
-   #
-   # Copy of singularity image will be downloaded if not found in /state/partition1/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img
-   #
-   localSingularityImage=/state/partition1/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img
-   if [ ! -e "$localSingularityImage" ]; then
-       echo "local singularity image $localSingularityImage not found, trying to download to hpc from "/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img
-       mkdir -p /state/partition1/singularityImages
-       singularitytempfile=$(mktemp -up /share/apps/vcell3/singularityImages)
-		  flock -E 100 -n /tmp/vcellSingularityLock_Rel_Version_7.6.0_build_28.lock sh -c "cp /share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img ${singularitytempfile} ; mv -n ${singularitytempfile} /state/partition1/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img"
-		  theStatus=$?
-		  if [ $theStatus -eq 100 ]
-		  then
-		      echo "lock in use, waiting for lock owner to copy singularityImage"
-		      let c=0
-		      until [ -f $localSingularityImage ]
-		      do
-		  	    sleep 3
-		  	    let c=c+1
-		  		if [ $c -eq 20 ]
-		  		then
-		  			echo "Exceeded wait time for lock owner to copy singularityImage"
-		  			break
-		  		fi
-		      done
-		  else
-		      if [ $theStatus -eq 0 ]
-		      then
-		            echo copy succeeded
-		      else
-		            echo copy failed
-		      fi
-		  fi
-       rm -f ${singularitytempfile}
-       if [ ! -e "$localSingularityImage" ]; then
-           echo "Failed to copy $localSingularityImage to hpc from central"
-           exit 1
-       else
-           echo successful copy from /share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img to /state/partition1/singularityImages/ghcr.io_virtualcell_vcell-opt_d6825f4.img
-       fi
-   fi
-   container_prefix="singularity run --containall --bind /share/apps/vcell3/users/parest_data:/simdata --bind /share/apps/vcell12/users:/share/apps/vcell12/users --bind /share/apps/vcell3/htclogs:/htclogs  --bind /scratch/vcell:/solvertmp $localSingularityImage  --env datadir_external=/share/apps/vcell3/users "
-else
-    echo "Required singularity command not found (maybe 'module load singularity/vcell-3.10.0' command didn't work) "
-    exit 1
-fi
-echo "container_prefix is '${container_prefix}'"
-echo "3 date=`date`"
-#END---------SlurmProxy.generateScript():slurmInitSingularity----------
+container_bindings="--bind /share/apps/vcell3/users/parest_data:/simdata "
+container_bindings+="--bind /scratch/vcell:/solvertmp "
+container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
+container_env="--env datadir_external=/share/apps/vcell3/users "
+solver_docker_name=ghcr.io/virtualcell/vcell-opt:7.6.0.43
+solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${solver_docker_name}"
 
-   cmd_prefix="$container_prefix"
+cmd_prefix="$solver_container_prefix"
 echo "cmd_prefix is '${cmd_prefix}'"
 echo command = ${cmd_prefix}
 ${cmd_prefix} /simdata/CopasiParest_152878_optProblem.json /simdata/CopasiParest_152878_optRun.json /simdata/CopasiParest_152878_optReport.txt
