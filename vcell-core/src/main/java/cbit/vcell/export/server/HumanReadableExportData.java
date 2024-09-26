@@ -34,10 +34,15 @@ public class HumanReadableExportData implements Serializable {
     }
 
     public ExportHumanReadableDataSpec toJsonRep() {
-        return new ExportHumanReadableDataSpec(biomodelName, applicationName, simulationName, differentParameterValues, serverSavedFileName, applicationType, nonSpatial, subVolume);
+        return new ExportHumanReadableDataSpec(biomodelName, applicationName, simulationName, differentParameterValues, serverSavedFileName, applicationType, nonSpatial, subVolume,
+                zSlices, tSlices, numChannels);
     }
     public static HumanReadableExportData fromJsonRep(ExportHumanReadableDataSpec rep) {
-        return new HumanReadableExportData(rep.simulationName, rep.applicationName, rep.bioModelName, rep.differentParameterValues,
+        HumanReadableExportData hre = new HumanReadableExportData(rep.simulationName, rep.applicationName, rep.bioModelName, rep.differentParameterValues,
                 rep.serverSavedFileName, rep.applicationType, rep.nonSpatial, rep.subVolume);
+        hre.zSlices = rep.zSlices;
+        hre.tSlices = rep.tSlices;
+        hre.numChannels = rep.numChannels;
+        return hre;
     }
 }
