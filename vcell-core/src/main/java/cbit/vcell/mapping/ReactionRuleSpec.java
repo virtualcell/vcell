@@ -718,8 +718,8 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 		}
 		// now let's find the Site and the State of the binding condition molecule
 		for(MolecularComponentPattern mcpCandidate : mtpConditionReactant.getComponentPatternList()) {
-			if(BondType.Exists == mcpCandidate.getBondType()) {
-				mcpConditionReactant = mcpCandidate;	// found the bond condition site, it's the one with bond type "Exists"
+			if(BondType.Specified == mcpCandidate.getBondType()) {
+				mcpConditionReactant = mcpCandidate;	// found the bond condition site, it's the one with bond type "Specified"
 				if(!mcpConditionReactant.getComponentStatePattern().isAny()) {
 					stateConditionReactant = mcpConditionReactant.getComponentStatePattern().getComponentStateDefinition().getName();
 				}
@@ -909,7 +909,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 //		}
 //	}
 	if(rc.getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
-		
+
+		if(isExcluded()) {
+			return;		// we don't care as long as it's excluded
+		}
 		List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
 		List<ProductPattern> ppList = reactionRule.getProductPatterns();
 		if(rpList == null || ppList == null) {
@@ -1085,6 +1088,9 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			boolean found = false;
 			for(ReactionRule rr : rrList) {
 				ReactionRuleSpec rrs = rc.getReactionRuleSpec(rr);
+				if(rrs.isExcluded()) {
+					continue;	// even if it's the right reaction, if it's excluded it won't do the job
+				}
 				Map<String, Object> ar = new LinkedHashMap<>();
 				rrs.analizeReaction(ar);
 				Subtype st = rrs.getSubtype(ar);
@@ -1112,7 +1118,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				return;
 			}
 			// TODO: to be very strict, we should also check if we have a seed species with the right site / state combination
-			//  needed for the transition reactant, or another transition reaction that would produce it
+			//  needed for the transition reactant, or another transition (or creation?) reaction that would produce it
 			break;
 		default:
 			break;
