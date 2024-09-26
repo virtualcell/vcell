@@ -177,8 +177,11 @@ public class SpringSaLaDGoodReactionsTest {
 		simContext.gatherIssues(issueContext, issueList, true);		// bIgnoreMathDescription == true
 		int numErrors = checkIssuesBySeverity(issueList, Issue.Severity.ERROR);
 		int numWarnings = checkIssuesBySeverity(issueList, Issue.Severity.WARNING);
-        assertTrue((numErrors == 0 && numWarnings == 0) ? true : false, "expecting no Application error/warning issues");
-		
+		assertTrue((numErrors == 0) ? true : false, "expecting no Application error issues");
+		// 2 conditional bound transition reactions are syntactically correct, but there are
+		// no binding reactions to make them possible
+		assertTrue((numWarnings == 2) ? true : false, "expecting 2 Application warning issues");
+
 		// WARNING!! Debug configuration for this JUnit test required System property "vcell.installDir"
 		// ex: -Dvcell.installDir=C:\dan\jprojects\git\vcell
 		bioModel.updateAll(false);
