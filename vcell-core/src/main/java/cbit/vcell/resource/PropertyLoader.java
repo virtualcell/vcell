@@ -80,6 +80,15 @@ public class PropertyLoader {
 	public static final String htcPbsHome		 			= record("vcell.htc.pbs.home",ValueType.GEN);
 	public static final String htcSgeHome		 			= record("vcell.htc.sge.home",ValueType.GEN);
 	public static final String htcNodeList                   = record("vcell.htc.nodelist",ValueType.GEN);
+
+	public static final String htc_vcellfvsolver_docker_name = 	record("vcell.htc.vcellfvsolver.docker.name",ValueType.GEN);
+	public static final String htc_vcellfvsolver_solver_list =	record("vcell.htc.vcellfvsolver.solver.list",ValueType.GEN);
+	public static final String htc_vcellsolvers_docker_name = 	record("vcell.htc.vcellsolvers.docker.name",ValueType.GEN);
+	public static final String htc_vcellsolvers_solver_list = 	record("vcell.htc.vcellsolvers.solver.list",ValueType.GEN);
+	public static final String htc_vcellbatch_docker_name = 	record("vcell.htc.vcellbatch.docker.name",ValueType.GEN);
+	public static final String htc_vcellbatch_solver_list = 	record("vcell.htc.vcellbatch.solver.list",ValueType.GEN);
+	public static final String htc_vcellopt_docker_name = 		record("vcell.htc.vcellopt.docker.name",ValueType.GEN);
+
 	public static final String slurm_cmd_sbatch				= record("vcell.slurm.cmd.sbatch",ValueType.GEN);
 	public static final String slurm_cmd_scancel				= record("vcell.slurm.cmd.scancel",ValueType.GEN);
 	public static final String slurm_cmd_sacct				= record("vcell.slurm.cmd.sacct",ValueType.GEN);
@@ -93,8 +102,8 @@ public class PropertyLoader {
 	public static final String slurm_reservation_pu			= record("vcell.slurm.reservationpu",ValueType.GEN);
 	public static final String slurm_qos_pu					= record("vcell.slurm.qospu",ValueType.GEN);
 	public static final String slurm_tmpdir					= record("vcell.slurm.tmpdir",ValueType.GEN);
-	public static final String slurm_local_singularity_dir	= record("vcell.slurm.local.singularity.dir",ValueType.GEN);
-	public static final String slurm_central_singularity_dir= record("vcell.slurm.central.singularity.dir",ValueType.GEN);
+	public static final String slurm_singularity_cachedir	= record("vcell.slurm.singularity.cachedir",ValueType.GEN);
+	public static final String slurm_singularity_pullfolder= record("vcell.slurm.singularity.pullfolder",ValueType.GEN);
 	public static final String slurm_singularity_module_name= record("vcell.slurm.singularity.module.name",ValueType.GEN);
 	public static final String sgeModulePath				= record("vcell.htc.sge.module",ValueType.GEN);
 	public static final String pbsModulePath				= record("vcell.htc.pbs.module",ValueType.GEN);
@@ -237,10 +246,7 @@ public class PropertyLoader {
 	public static final String vcellSMTPPort = record("vcell.smtp.port",ValueType.GEN);
 	public static final String vcellSMTPEmailAddress = record("vcell.smtp.emailAddress",ValueType.GEN);
 
-	public static final String vcellbatch_docker_name = record("vcell.batch.docker.name",ValueType.GEN);
 	public static final String vcellsubmit_service_host = record("vcell.submit.service.host",ValueType.GEN);
-	public static final String vcellbatch_singularity_image = record("vcell.batch.singularity.image",ValueType.GEN);
-	public static final String vcellopt_singularity_image = record("vcell.opt.singularity.image",ValueType.GEN);
 	public static final String javaSimulationExecutable = record("vcell.javaSimulation.executable",ValueType.GEN);
 	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",ValueType.GEN);
 	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",ValueType.GEN);
