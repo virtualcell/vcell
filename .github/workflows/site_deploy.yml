@@ -182,20 +182,6 @@ jobs:
         ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
         cd docker/swarm
         scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/${VCELL_CONFIG_FILE_NAME} .
-    - name: install singularity
-      uses: eWaterCycle/setup-singularity@v6
-      with:
-        singularity-version: 3.7.1
-    - name: retrieve batch and opt singularity images
-      run: |
-        set -ux
-        cd docker/swarm
-        export BATCH_SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_BATCH_SINGULARITY_FILENAME | cut -d"=" -f2`
-        export OPT_SINGULARITY_FILENAME=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_OPT_SINGULARITY_FILENAME | cut -d"=" -f2`
-        cd ../build/singularity-vm
-        singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
-        singularity pull $BATCH_SINGULARITY_FILENAME oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
-        singularity pull $OPT_SINGULARITY_FILENAME   oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: setup java 17 with maven cache (for documentation build)
       uses: actions/setup-java@v4
       with:
@@ -207,16 +193,15 @@ jobs:
       run: |
         set -ux
         mvn clean install -DskipTests
-    - name: deploy installers and singularity to kubernetes site and web help to vcell.org
+    - name: deploy installers and web help to vcell.org
       run: |
         set -ux
         cd docker/swarm
         ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         if ${{ github.event.inputs.server_only != 'true' }}; then
-          # build and install the client installers, the singularity images, and the web help (kubernetes cluster deployments are separate)
+          # build and install the client installers, and the web help (kubernetes cluster deployments are separate)
           ./deploy-action-kubernetes.sh \
               --ssh-user ${{ secrets.CD_FULL_USER }} \
-              --install-singularity \
               --build-installers \
               --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
               --webhelp-local-dir ../../vcell-client/target/classes/vcellDoc \
@@ -227,13 +212,6 @@ jobs:
           ssh ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} \
             installer_deploy_dir=$VCELL_INSTALLER_REMOTE_DIR vcell_siteCamel=$VCELL_SITE_CAMEL vcell_version=$VCELL_VERSION vcell_build=$VCELL_BUILD \
             'bash -s' < link-installers.sh
-        else
-          # build and install only the singularity images (kubernetes cluster deployments are separate)
-          ./deploy-action-kubernetes.sh \
-              --ssh-user ${{ secrets.CD_FULL_USER }} \
-              --install-singularity  \
-              ${VCELL_MANAGER_NODE} \ 
-              ./${VCELL_CONFIG_FILE_NAME}
         fi
     - name: Capitalize first character of site name
       id: capitalize

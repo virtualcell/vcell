@@ -71,7 +71,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     htc_vcellbatch_docker_name="htc-vcellbatch-docker-name-not-set" \
     htc_vcellbatch_solver_list="htc-vcellbatch-solver-list-not-set" \
     htc_vcellopt_docker_name="htc-vcellopt-docker-name-not-set" \
-    opt_singularity_imagefile=/path/to/external/opt/singularity_opt.img \
     batchhost="batch-host-not-set" \
     batchuser="batch-user-not-set" \
     slurm_cmd_sbatch=sbatch \
