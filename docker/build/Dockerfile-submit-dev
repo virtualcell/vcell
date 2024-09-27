@@ -138,7 +138,7 @@ ENTRYPOINT java \
 	-Dvcell.slurm.singularity.cachedir="${slurm_singularity_cachedir}" \
 	-Dvcell.slurm.singularity.pullfolder="${slurm_singularity_pullfolder}" \
 	-Dvcell.slurm.singularity.module.name="${slurm_singularity_module_name}" \
-	-Dvcell.htc.vcellfvsolver.docker.name="${htc_vcellsolvers_docker_name}" \
+	-Dvcell.htc.vcellfvsolver.docker.name="${htc_vcellfvsolver_docker_name}" \
 	-Dvcell.htc.vcellfvsolver.solver.list="${htc_vcellfvsolver_solver_list}" \
 	-Dvcell.htc.vcellsolvers.docker.name="${htc_vcellsolvers_docker_name}" \
 	-Dvcell.htc.vcellsolvers.solver.list="${htc_vcellsolvers_solver_list}" \
