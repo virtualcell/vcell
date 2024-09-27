@@ -591,6 +591,10 @@ public class NetworkTransformer implements SimContextTransformer {
 					name = name.substring(0, name.indexOf(ReactionRule.InverseHalf));
 				}
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(name);
+				if(rr == null) {
+					// temp code, trying to catch a rare random bug, may be a race condition of some sort
+					System.out.println("ReactionRule " + name + " not found.");
+				}
 
 				Structure structure = rr.getStructure();
 				boolean bReversible = reverseBNGReaction != null;
