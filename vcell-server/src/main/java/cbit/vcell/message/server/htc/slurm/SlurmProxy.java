@@ -46,6 +46,12 @@ public class SlurmProxy extends HtcProxy {
 			return prefix;
 		}
 	}
+
+	private record SingularityBinding(String hostPath, String containerPath) {
+		public String getBinding() {
+			return "--bind "+hostPath+":"+containerPath;
+		}
+	}
 	
 	public SlurmProxy(CommandService commandService, String htcUser) {
 		super(commandService, htcUser);
@@ -478,17 +484,28 @@ public class SlurmProxy extends HtcProxy {
 				"serverid="+serverid
 		};
 
+		List<SingularityBinding> bindings = List.of(
+				new SingularityBinding(primaryDataDirExternal, "/simdata"),
+				new SingularityBinding(secondaryDataDirExternal, "/simdata_secondary"),
+				new SingularityBinding(simDataDirArchiveExternal, simDataDirArchiveInternal),
+				new SingularityBinding(htclogdir_external, "/htclogs"),
+				new SingularityBinding(slurm_tmpdir, "/solvertmp")
+		);
+
 		LineStringBuilder lsb = new LineStringBuilder();
 		LineStringBuilder singularityLSB = new LineStringBuilder();
-		slurmInitSingularity(singularityLSB, primaryDataDirExternal, Optional.of(secondaryDataDirExternal), htclogdir_external,
-				solverDockerName, Optional.of(batchDockerName),
+		slurmInitSingularity(singularityLSB,
+				solverDockerName, Optional.of(batchDockerName), bindings,
 				slurm_tmpdir, slurm_singularity_cachedir, slurm_singularity_pullfolder,
-				simDataDirArchiveExternal, simDataDirArchiveInternal,
 				slurm_singularity_module_name, environmentVars);
 
 		LineStringBuilder sendFailMsgLSB = new LineStringBuilder();
 		sendFailMsgScript(simTask, sendFailMsgLSB, jmshost_sim_external, jmsport_sim_external, jmsuser, jmspswd);
-		
+
+		for (SingularityBinding binding : bindings) {
+			commandSet.translatePaths(new File(binding.hostPath), new File(binding.containerPath));
+		}
+
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
 	//	lsb.write("run_in_container=\"singularity /path/to/data:/simdata /path/to/image/vcell-batch.img);
 		LineStringBuilder callExitLSB = new LineStringBuilder();
@@ -498,6 +515,7 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder preProcessLSB = new LineStringBuilder();
 		for (ExecutableCommand ec: commandSet.getExecCommands()) {
+			ExecutableCommand.Container commandSet2 = new ExecutableCommand.Container();
 			if(ec.getCommands().get(0).equals("JavaPreprocessor64")) {
 				execCommandScript(preProcessLSB, hasExitProcessor, ec, "${batch_container_prefix}");
 			}else {
@@ -526,7 +544,7 @@ public class SlurmProxy extends HtcProxy {
 		exitCmd.stripPathFromCommand();
 		lsb.write("callExitProcessor( ) {");
 		lsb.append('\t');
-		lsb.write("\"${batch_container_prefix} " + exitCmd.getJoinedCommands("$1")+"\"");
+		lsb.write("${batch_container_prefix} " + exitCmd.getJoinedCommands("$1").trim());
 		lsb.write("}");
 		lsb.newline();
 		lsb.newline();
@@ -563,7 +581,7 @@ public class SlurmProxy extends HtcProxy {
 	private void execCommandScript(LineStringBuilder lsb,final boolean hasExitProcessor, ExecutableCommand ec, String container_prefix) {
 		ec.stripPathFromCommand();
 		String cmd= ec.getJoinedCommands();
-		lsb.write("\"" + container_prefix + " " + cmd + "\"");
+		lsb.write(container_prefix + " " + cmd.trim());
 		lsb.write("stat=$?");
 		lsb.append("echo returned $stat");
 		lsb.newline();
@@ -578,11 +596,10 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 
-	private void slurmInitSingularity(LineStringBuilder lsb, String primaryDataDirExternal,
-				  Optional<String> secondaryDataDirExternal, String htclogdir_external,
-				  String solverDockerName, Optional<String> batchDockerName,
+	private void slurmInitSingularity(LineStringBuilder lsb,
+				  String solverDockerName, Optional<String> batchDockerName, List<SingularityBinding> bindings,
 				  String slurm_tmpdir, String slurm_singularity_cachedir, String slurm_singularity_pullfolder,
-				  String simDataDirArchiveExternal, String simDataDirArchiveInternal, String singularity_module_name, String[] environmentVars) {
+				  String singularity_module_name, String[] environmentVars) {
 		lsb.write("TMPDIR="+slurm_tmpdir);
 		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
 		
@@ -603,11 +620,14 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("env");
 		lsb.newline();
 
-		lsb.write("container_bindings=\"--bind "+primaryDataDirExternal+":/simdata \"");
-		lsb.write("container_bindings+=\"--bind "+slurm_tmpdir+":/solvertmp \"");
-		lsb.write("container_bindings+=\"--bind "+htclogdir_external+":/htclogs \"");
-		if (secondaryDataDirExternal.isPresent()) {
-			lsb.write("container_bindings+=\"--bind "+secondaryDataDirExternal.get()+":/simdata_secondary \"");
+		boolean bFirstBind=true;
+		for (SingularityBinding binding : bindings) {
+			if (bFirstBind) {
+				lsb.write("container_bindings=\"--bind " + binding.hostPath + ":" + binding.containerPath + " \"");
+				bFirstBind = false;
+			}else{
+				lsb.write("container_bindings+=\"--bind " + binding.hostPath + ":" + binding.containerPath + " \"");
+			}
 		}
 		boolean bFirstEnv=true;
 		for (String envVar : environmentVars) {
@@ -761,10 +781,16 @@ public class SlurmProxy extends HtcProxy {
 		if (!optDataDirExternal.exists() && !optDataDirExternal.mkdir()){
 			LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
 		}
-//			if (optDataDirExternal.setWritable(true,false))
-		slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), Optional.empty(), htclogdir_external, solverDockerName, batchDockerName,
-				slurm_tmpdir, slurm_singularity_cachedir, slurm_singularity_pullfolder,
-				simDataDirArchiveExternal, simDataDirArchiveInternal,
+
+		List<SingularityBinding> bindings = List.of(
+				new SingularityBinding(optDataDirExternal.getAbsolutePath(), "/simdata"),
+				new SingularityBinding(slurm_tmpdir, "/solvertmp"),
+				new SingularityBinding(htclogdir_external, "/htclogs"),
+				new SingularityBinding(simDataDirArchiveExternal, simDataDirArchiveInternal)
+		);
+
+		slurmInitSingularity(lsb, solverDockerName, batchDockerName,
+				bindings, slurm_tmpdir, slurm_singularity_cachedir, slurm_singularity_pullfolder,
 				slurm_singularity_module_name, environmentVars);
 
 		lsb.write("cmd_prefix=\"$solver_container_prefix\"");

@@ -25,9 +25,10 @@ echo ENVIRONMENT
 env
 
 container_bindings="--bind /share/apps/vcell3/users:/simdata "
-container_bindings+="--bind /scratch/vcell:/solvertmp "
-container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
 container_bindings+="--bind /share/apps/vcell7/users:/simdata_secondary "
+container_bindings+="--bind /share/apps/vcell12/users:/share/apps/vcell12/users "
+container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
+container_bindings+="--bind /scratch/vcell:/solvertmp "
 container_env="--env java_mem_Xmx=4096M "
 container_env+="--env jmshost_sim_internal=rke-wn-01.cam.uchc.edu "
 container_env+="--env jmsport_sim_internal=31618 "
@@ -61,11 +62,11 @@ sendFailureMsg() {
 
 
 callExitProcessor( ) {
-	"${batch_container_prefix} JavaPostprocessor64 274641196 schaff 17 0 0 $1 /share/apps/vcell3/htclogs/V_REL_274641196_0_0.slurm.sub "
+	${batch_container_prefix} JavaPostprocessor64 274641196 schaff 17 0 0 $1 /htclogs/V_REL_274641196_0_0.slurm.sub
 }
 
 
-"${batch_container_prefix} JavaPreprocessor64 /share/apps/vcell3/users/schaff/SimID_274641196_0__0.simtask.xml /share/apps/vcell3/users/schaff "
+${batch_container_prefix} JavaPreprocessor64 /simdata/schaff/SimID_274641196_0__0.simtask.xml /simdata/schaff
 stat=$?
 echo returned $stat
 if [ $stat -ne 0 ]; then
@@ -74,7 +75,7 @@ if [ $stat -ne 0 ]; then
 	exit $stat
 fi
 
-"${solver_container_prefix} MovingBoundary_x64 --config /share/apps/vcell3/users/schaff/SimID_274641196_0_mb.xml -tid 0 "
+${solver_container_prefix} MovingBoundary_x64 --config /simdata/schaff/SimID_274641196_0_mb.xml -tid 0
 stat=$?
 echo returned $stat
 if [ $stat -ne 0 ]; then

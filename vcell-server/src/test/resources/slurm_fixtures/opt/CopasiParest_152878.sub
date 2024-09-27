@@ -25,6 +25,7 @@ env
 container_bindings="--bind /share/apps/vcell3/users/parest_data:/simdata "
 container_bindings+="--bind /scratch/vcell:/solvertmp "
 container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
+container_bindings+="--bind /share/apps/vcell12/users:/share/apps/vcell12/users "
 container_env="--env datadir_external=/share/apps/vcell3/users "
 solver_docker_name=ghcr.io/virtualcell/vcell-opt:7.6.0.43
 solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${solver_docker_name}"
