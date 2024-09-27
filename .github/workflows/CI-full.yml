@@ -94,10 +94,6 @@ jobs:
         java-version: '17'
         cache: 'maven'
 
-    - name: Install Singularity # to make singularity image for cluster
-      uses: eWaterCycle/setup-singularity@v6
-      with:
-        singularity-version: 3.7.1
     - name: build and publish all images
       shell: bash
       run: |
@@ -105,23 +101,15 @@ jobs:
         sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
         ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
-        cd singularity-vm
-        singularity remote login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} oras://ghcr.io
-    - name: tag as latest and push to registry  # (jcs) are explicit singularity push commands redundant? (see ./build.sh)
+
+    - name: tag as latest and push to registry
       shell: bash
       run: |
         for CONTAINER in vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin;\
-        do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
-        docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ steps.version.outputs.tag }};\
-        docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
+           do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
+           docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ steps.version.outputs.tag }};\
+           docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
         done
-        cd docker/build/singularity-vm
-        singularity push -U $(ls *batch*img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${VCELL_TAG}
-        singularity push -U $(ls *batch*img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:${{ steps.version.outputs.tag }}
-        singularity push -U $(ls *batch*img) oras://${VCELL_REPO_NAMESPACE}/vcell-batch-singularity:latest
-        singularity push -U $(ls *opt*img) oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${VCELL_TAG}
-        singularity push -U $(ls *opt*img) oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:${{ steps.version.outputs.tag }}
-        singularity push -U $(ls *opt*img) oras://${VCELL_REPO_NAMESPACE}/vcell-opt-singularity:latest
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3

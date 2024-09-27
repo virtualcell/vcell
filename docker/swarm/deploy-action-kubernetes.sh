@@ -3,7 +3,7 @@
 set -ux
 
 show_help() {
-	echo "Deploys vcell client installers, webhelp and singularity images for a Kubernetes deploy"
+	echo "Deploys vcell client installers and webhelp for a Kubernetes deploy"
 	echo ""
 	echo "usage: deploy-action-kubernetes.sh [OPTIONS] REQUIRED-ARGUMENTS"
 	echo ""
@@ -30,14 +30,11 @@ show_help() {
 	echo "    --webhelp-deploy-dir /remote/path/to/web/VCell_Help"
 	echo "                          directory for deployed html webhelp published on web server"
 	echo ""
-	echo "    --install-singularity  optionally install batch and opt singularity images on each compute node in 'vcell' SLURM partition"
-	echo ""
 	echo ""
 	echo "example:"
 	echo ""
 	echo "deploy-action-kubernetes.sh \\"
 	echo "   --ssh-user vcell \\"
-	echo "   --install_singularity \\"
 	echo "   --build_installers --installer_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha \\"
 	echo "   --webhelp_local_dir ../../vcell-client/target/classes/vcellDoc \\"
 	echo "   --webhelp_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/VCell_Tutorials/VCell_Help \\"
@@ -55,7 +52,6 @@ installer_deploy_dir=
 webhelp_local_dir=
 webhelp_deploy_dir=
 build_installers=false
-install_singularity=false
 while :; do
 	case $1 in
 		-h|--help)
@@ -77,9 +73,6 @@ while :; do
 		--webhelp-deploy-dir)
 			shift
 			webhelp_deploy_dir=$1
-			;;
-		--install-singularity)
-			install_singularity=true
 			;;
 		--build-installers)
 			build_installers=true
@@ -106,50 +99,6 @@ local_config_file=$2
 vcell_siteCamel=$(grep VCELL_SITE_CAMEL "$local_config_file" | cut -d"=" -f2)
 vcell_version=$(grep VCELL_VERSION_NUMBER "$local_config_file" | cut -d"=" -f2)
 vcell_build=$(grep VCELL_BUILD_NUMBER "$local_config_file" | cut -d"=" -f2)
-batch_singularity_filename=$(grep VCELL_BATCH_SINGULARITY_FILENAME "$local_config_file" | cut -d"=" -f2)
-opt_singularity_filename=$(grep VCELL_OPT_SINGULARITY_FILENAME "$local_config_file" | cut -d"=" -f2)
-slurm_singularity_central_dir=$(grep VCELL_SLURM_CENTRAL_SINGULARITY_DIR "$local_config_file" | cut -d"=" -f2)
-
-
-#
-# install the singularity images on the cluster nodes
-#
-if [ "$install_singularity" == "true" ]; then
-
-	echo ""
-	pushd ../build/singularity-vm || (echo "pushd ../build/singularity-vm failed"; exit 1)
-	echo ""
-	echo "CURRENT DIRECTORY IS $PWD"
-
-	#
-	# get configuration from config file and load into current bash environment
-	#
-	echo ""
-
-	if [ ! -e "./${batch_singularity_filename}" ]; then
-		echo "failed to find local batch singularity image file $batch_singularity_filename in ./singularity-vm directory"
-		exit 1
-	fi
-
-	if ! scp "./${batch_singularity_filename}" "$ssh_user@$manager_node:${slurm_singularity_central_dir}"; then
-    echo "failed to copy batch singularity image to server"
-    exit 1
-  fi
-
-	if [ ! -e "./${opt_singularity_filename}" ]; then
-		echo "failed to find local opt singularity image file $opt_singularity_filename in ./singularity-vm directory"
-		exit 1
-	fi
-
-	if ! scp "./${opt_singularity_filename}" "$ssh_user@$manager_node:${slurm_singularity_central_dir}"; then
-	  echo "failed to copy opt singularity image to server"
-	  exit 1
-	fi
-
-	echo "popd"
-	popd || (echo "popd failed"; exit 1)
-fi
-
 
 #
 # if --build-installers, then generate client installers, placing then in ./generated_installers

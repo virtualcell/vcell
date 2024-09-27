@@ -6,7 +6,6 @@ ssh_user=$(whoami)
 ssh_key=
 skip_push=false
 skip_maven=false
-skip_singularity=false
 SUDO_CMD=sudo
 mvn_repo=$HOME/.m2
 
@@ -28,8 +27,6 @@ show_help() {
 	echo "                          (user must have passwordless sudo for docker commands on manager-node)"
 	echo ""
 	echo "    --ssh-key  keyfile    ssh key for passwordless ssh to node"
-	echo ""
-	echo "    --skip-singularity    skip build of Singularity image for vcell-batch and vcell-opt containers (stored in ./singularity/)"
 	echo ""
 	echo "    --skip-maven          skip vcell software build prior to building containers"
 	echo ""
@@ -71,9 +68,6 @@ while :; do
 			;;
 		--skip-sudo)
 			SUDO_CMD=
-			;;
-		--skip-singularity)
-			skip_singularity=true
 			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2
@@ -229,127 +223,6 @@ build_mongo() {
 	fi
 }
 
-build_batch_singularity() {
-  # turn on logging of commands
-  set -x
-	if [ "$skip_singularity" == "false" ]; then
-		if [ -x "$(command -v singularity)" ]; then
-			build_batch_singularity_direct
-			if [[ $? -ne 0 ]]; then echo "failed to build singularity image using singularity commands"; exit 1; fi
-		else 
-      echo "singularity not found, cannot build singularity image"
-      exit 1
-    fi
-	fi
-	# turn off logging of commands
-	set +x
-}
-
-build_batch_singularity_direct() {
-
-	echo ""
-	cmd="cd singularity-vm"
-	cd singularity-vm
-	echo ""
-	echo "CURRENT DIRECTORY IS $PWD"
-
-	#
-	# create temporary Singularity file which imports existing docker image from registry and adds a custom entrypoint
-	#
-	_vcell_batch_docker_name="${repo}/vcell-batch:${tag}"
-	_singularity_image_file="${_vcell_batch_docker_name//[\/:]/_}.img"
-	_singularity_file="Singularity_${_vcell_batch_docker_name//[\/:]/_}"
-
-cat <<EOF >$_singularity_file
-Bootstrap: docker
-From: $_vcell_batch_docker_name
-
-%runscript
-
-    exec /vcellscripts/entrypoint.sh "\$@"
-
-%labels
-
-AUTHOR jcschaff
-EOF
-
-	echo ""
-	echo "wrote Singularity file $_singularity_file"
-	cat $_singularity_file
-
-	#
-	# build the singularity image and place in singularity-vm directory
-	#
-	echo ""
-	remote_cmd1="sudo singularity build $_singularity_image_file $_singularity_file"
-	remote_cmd2="singularity build --fakeroot $_singularity_image_file $_singularity_file"
-	echo "$remote_cmd1"
-	($remote_cmd1)
-	if [[ $? -ne 0 ]]
-	then
-		echo "failed to build singularity image with sudo, will try fakeroot"
-		echo "$remote_cmd2"
-		($remote_cmd2)
-		if [[ $? -ne 0 ]]; then echo "failed to build singularity image with fakeroot"; exit 1; fi		
-	fi
-
-	echo ""
-	echo "created Singularity image for vcell-bash ./$_singularity_image_file locally (in ./singularity-vm folder), can be pushed to remote server during deploy"
-	echo ""
-	echo "cd .."
-	cd ..
-}
-
-
-build_opt_singularity() {
-	if [ "$skip_singularity" == "false" ]; then
-		if [ -x "$(command -v singularity)" ]; then
-			build_opt_singularity_direct
-			if [[ $? -ne 0 ]]; then echo "failed to build opt singularity image using singularity commands"; exit 1; fi
-		else
-      echo "singularity not found, cannot build opt singularity image"
-      exit 1
-    fi
-	fi
-}
-
-build_opt_singularity_direct() {
-
-	echo ""
-	cmd="cd singularity-vm"
-	cd singularity-vm
-	echo ""
-	echo "CURRENT DIRECTORY IS $PWD"
-
-	#
-	# create temporary Singularity file which imports existing docker image from registry and adds a custom entrypoint
-	#
-	_vcell_opt_docker_name="${repo}/vcell-opt:${tag}"
-	_singularity_image_file="${_vcell_opt_docker_name//[\/:]/_}.img"
-	_singularity_file="Singularity_${_vcell_opt_docker_name//[\/:]/_}"
-
-	#
-	# build the singularity image and place in singularity-vm directory
-	#
-	echo ""
-	remote_cmd1="sudo singularity build ${_singularity_image_file} docker://${_vcell_opt_docker_name}"
-	remote_cmd2="singularity build --fakeroot ${_singularity_image_file} docker://${_vcell_opt_docker_name}"
-	echo "$remote_cmd1"
-	($remote_cmd1)
-	if [[ $? -ne 0 ]]
-	then
-		echo "failed to build opt singularity image with sudo, will try fakeroot"
-		echo "$remote_cmd2"
-		($remote_cmd2)
-		if [[ $? -ne 0 ]]; then echo "failed to build opt singularity image with fakeroot"; exit 1; fi
-	fi
-
-	echo ""
-	echo "created Singularity image for vcell-opt ./$_singularity_image_file locally (in ./singularity-vm folder), can be pushed to remote server during deploy"
-	echo ""
-	echo "cd .."
-	cd ..
-}
 
 
 shift
@@ -362,11 +235,11 @@ fi
 
 case $target in
 	batch)
-		build_batch && build_batch_singularity
+		build_batch
 		exit $?
 		;;
 	opt)
-		build_opt && build_opt_singularity
+		build_opt
 		exit $?
 		;;
 	api)
@@ -414,8 +287,8 @@ case $target in
 		exit $?
 		;;
 	all)
-#		build_api && build_rest && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_batch_singularity && build_opt_singularity && build_admin
-		build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_batch_singularity && build_opt_singularity && build_admin
+#		build_api && build_rest && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_admin
+		build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_admin
 		exit $?
 		;;
 	appservices)

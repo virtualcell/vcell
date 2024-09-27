@@ -33,6 +33,25 @@ public class SlurmProxy extends HtcProxy {
 	private final static int SCANCEL_JOB_NOT_FOUND_RETURN_CODE = 1;
 	private final static String SCANCEL_UNKNOWN_JOB_RESPONSE = "does not exist";
 	protected final static String SLURM_SUBMISSION_FILE_EXT = ".slurm.sub";
+
+	private enum CommandContainer {
+		SOLVER("${solver_container_prefix} "),
+		BATCH("${batch_container_prefix} ");
+
+		private final String prefix;
+		CommandContainer(String prefix) {
+			this.prefix = prefix;
+		}
+		public String getPrefix() {
+			return prefix;
+		}
+	}
+
+	private record SingularityBinding(String hostPath, String containerPath) {
+		public String getBinding() {
+			return "--bind "+hostPath+":"+containerPath;
+		}
+	}
 	
 	public SlurmProxy(CommandService commandService, String htcUser) {
 		super(commandService, htcUser);
@@ -154,29 +173,6 @@ public class SlurmProxy extends HtcProxy {
 				}
 			}
 		}
-	}
-
-	
-	/**
-	 * adding MPICH command if necessary
-	 * @param ncpus if != 1, {MPI_HOME} command prepended
-	 * @param command command set
-	 * @return new String
-	 */
-	private final String buildExeCommand(int ncpus,String command) {
-		if (ncpus == 1) {
-			return command;
-		}
-		String MPI_HOME_EXTERNAL= PropertyLoader.getProperty(PropertyLoader.MPI_HOME_EXTERNAL,"");
-
-		final char SPACE = ' ';
-		StringBuilder sb = new StringBuilder( );
-		sb.append(MPI_HOME_EXTERNAL);
-		sb.append("/bin/mpiexec -np ");
-		sb.append(ncpus);
-		sb.append(SPACE);
-		sb.append(command);
-		return sb.toString().trim( );
 	}
 
 	@Override
@@ -420,8 +416,7 @@ public class SlurmProxy extends HtcProxy {
 		
 	}
 
-	SbatchSolverComponents generateScript(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
-		final boolean isParallel = ncpus > 1;
+	SbatchSolverComponents generateScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 
 		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
 		String vcellUserid = simTask.getUser().getName();
@@ -432,7 +427,6 @@ public class SlurmProxy extends HtcProxy {
 		LineStringBuilder slurmCommands = new LineStringBuilder();
 		slurmScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, slurmCommands);
 
-		LineStringBuilder lsb = new LineStringBuilder();
 		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 		String secondaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirExternalProperty);
 
@@ -448,17 +442,30 @@ public class SlurmProxy extends HtcProxy {
 		String mongodb_database = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
 		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
 		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_singularity_image);
-		String slurm_singularity_local_image_filepath = remote_singularity_image;
-//		String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
 		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
-		String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
-		String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
+		String slurm_singularity_cachedir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_cachedir);
+		String slurm_singularity_pullfolder = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_pullfolder);
 		String slurm_singularity_module_name = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
 		String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
 		String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
-		File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
-		
+
+		String solverName = simTask.getSimulation().getSolverTaskDescription().getSolverDescription().name();
+		List<String> vcellfvsolver_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_solver_list).split(","));
+		List<String> vcellsolvers_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_solver_list).split(","));
+		List<String> vcellbatch_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_solver_list).split(","));
+
+		final String solverDockerName;
+		final String batchDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_docker_name);
+		if (vcellfvsolver_solverList.contains(solverName)) {
+			solverDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_docker_name);
+		} else if (vcellsolvers_solverList.contains(solverName)) {
+			solverDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_docker_name);
+		} else if (vcellbatch_solverList.contains(solverName)) {
+			solverDockerName = batchDockerName;
+		} else {
+			throw new RuntimeException("solverName="+solverName+" not in vcellfvsolver_solverList="+vcellfvsolver_solverList+" or vcellsolvers_solverList="+vcellsolvers_solverList+" or vcellbatch_solverList="+vcellbatch_solverList);
+		}
+
 		String[] environmentVars = new String[] {
 				"java_mem_Xmx="+memoryMBAllowed.getMemLimit()+"M",
 				"jmshost_sim_internal="+jmshost_sim_external,
@@ -476,36 +483,29 @@ public class SlurmProxy extends HtcProxy {
 				"softwareVersion="+softwareVersion,
 				"serverid="+serverid
 		};
-		lsb.write("echo \"1 date=`date`\"");
+
+		List<SingularityBinding> bindings = List.of(
+				new SingularityBinding(primaryDataDirExternal, "/simdata"),
+				new SingularityBinding(secondaryDataDirExternal, "/simdata_secondary"),
+				new SingularityBinding(simDataDirArchiveExternal, simDataDirArchiveInternal),
+				new SingularityBinding(htclogdir_external, "/htclogs"),
+				new SingularityBinding(slurm_tmpdir, "/solvertmp")
+		);
+
+		LineStringBuilder lsb = new LineStringBuilder();
 		LineStringBuilder singularityLSB = new LineStringBuilder();
-		slurmInitSingularity(singularityLSB, primaryDataDirExternal, Optional.of(secondaryDataDirExternal), htclogdir_external, softwareVersion,
-				slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
-				slurm_local_singularity_dir, simDataDirArchiveExternal, simDataDirArchiveInternal, slurm_singularity_central_filepath,
+		slurmInitSingularity(singularityLSB,
+				solverDockerName, Optional.of(batchDockerName), bindings,
+				slurm_tmpdir, slurm_singularity_cachedir, slurm_singularity_pullfolder,
 				slurm_singularity_module_name, environmentVars);
 
 		LineStringBuilder sendFailMsgLSB = new LineStringBuilder();
 		sendFailMsgScript(simTask, sendFailMsgLSB, jmshost_sim_external, jmsport_sim_external, jmsuser, jmspswd);
-		
-		if (isParallel) {
-			lsb.write("#BEGIN---------SlurmProxy.generateScript():isParallel----------");
-			String MPI_HOME_EXTERNAL= PropertyLoader.getProperty(PropertyLoader.MPI_HOME_EXTERNAL,"");
 
-
-			// #SBATCH
-//			lsb.append("#$ -pe mpich ");
-//			lsb.append(ncpus);
-//			lsb.newline();
-			
-			lsb.append("#SBATCH -n " + ncpus);
-			lsb.newline();
-
-			lsb.append("#$ -v LD_LIBRARY_PATH=");
-			lsb.append(MPI_HOME_EXTERNAL+"/lib");
-			lsb.write(":"+primaryDataDirExternal);
-			lsb.write("#END---------SlurmProxy.generateScript():isParallel----------");
+		for (SingularityBinding binding : bindings) {
+			commandSet.translatePaths(new File(binding.hostPath), new File(binding.containerPath));
 		}
-		lsb.newline();
-	
+
 		final boolean hasExitProcessor = commandSet.hasExitCodeCommand();
 	//	lsb.write("run_in_container=\"singularity /path/to/data:/simdata /path/to/image/vcell-batch.img);
 		LineStringBuilder callExitLSB = new LineStringBuilder();
@@ -515,10 +515,11 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder preProcessLSB = new LineStringBuilder();
 		for (ExecutableCommand ec: commandSet.getExecCommands()) {
+			ExecutableCommand.Container commandSet2 = new ExecutableCommand.Container();
 			if(ec.getCommands().get(0).equals("JavaPreprocessor64")) {
-				execCommandScript(ncpus, isParallel, preProcessLSB, hasExitProcessor, ec);
+				execCommandScript(preProcessLSB, hasExitProcessor, ec, "${batch_container_prefix}");
 			}else {
-				execCommandScript(ncpus, isParallel, lsb, hasExitProcessor, ec);
+				execCommandScript(lsb, hasExitProcessor, ec, "${solver_container_prefix}");
 			}
 		}
 
@@ -538,37 +539,23 @@ public class SlurmProxy extends HtcProxy {
 
 
 	private void callExitScript(ExecutableCommand.Container commandSet, LineStringBuilder lsb) {
-		lsb.write("#BEGIN---------SlurmProxy.generateScript():hasExitProcessor----------");
+		lsb.newline();
 		ExecutableCommand exitCmd = commandSet.getExitCodeCommand();
 		exitCmd.stripPathFromCommand();
 		lsb.write("callExitProcessor( ) {");
-		lsb.append("\techo exitCommand = ");
-		lsb.write("${container_prefix}" + exitCmd.getJoinedCommands("$1"));
 		lsb.append('\t');
-		lsb.write("${container_prefix}" + exitCmd.getJoinedCommands());
+		lsb.write("${batch_container_prefix} " + exitCmd.getJoinedCommands("$1").trim());
 		lsb.write("}");
-		lsb.write("#END---------SlurmProxy.generateScript():hasExitProcessor----------");
-		lsb.write("echo");
+		lsb.newline();
+		lsb.newline();
 	}
 
 
 	private void sendFailMsgScript(SimulationTask simTask, LineStringBuilder lsb, String jmshost_sim_external,
 			String jmsport_sim_external, String jmsuser, String jmspswd) {
-		lsb.write("#BEGIN---------SlurmProxy.generateScript():sendFailureMsg----------");
+		lsb.newline();
 		lsb.write("sendFailureMsg() {");
-		lsb.write("  echo ${container_prefix} " +
-				" --msg-userid "+jmsuser+
-				" --msg-password "+jmspswd+
-				" --msg-host "+jmshost_sim_external+
-				" --msg-port "+jmsport_sim_external+
-				" --msg-job-host `hostname`"+
-				" --msg-job-userid "+simTask.getUserName()+
-				" --msg-job-simkey "+simTask.getSimKey()+
-				" --msg-job-jobindex "+simTask.getSimulationJob().getJobIndex() +
-				" --msg-job-taskid "+simTask.getTaskID() +
-				" --msg-job-errmsg \"$1\"" +
-				" SendErrorMsg");
-		lsb.write("  ${container_prefix} " +
+		lsb.write("  ${batch_container_prefix} " +
 				" --msg-userid "+jmsuser+
 				" --msg-password "+jmspswd+
 				" --msg-host "+jmshost_sim_external+
@@ -587,79 +574,17 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("    echo 'sent failure message'");
 		lsb.write("  fi");
 		lsb.write("}");
-		lsb.write("#END---------SlurmProxy.generateScript():sendFailureMsg----------");
+		lsb.newline();
 	}
 
 
-	private void execCommandScript(int ncpus, final boolean isParallel, LineStringBuilder lsb,final boolean hasExitProcessor, ExecutableCommand ec) {
-		lsb.write("echo");
-		lsb.write("#BEGIN---------SlurmProxy.generateScript():ExecutableCommand----------"+ec.getCommands().get(0));
+	private void execCommandScript(LineStringBuilder lsb,final boolean hasExitProcessor, ExecutableCommand ec, String container_prefix) {
 		ec.stripPathFromCommand();
-		//
-		// The first token in the command list is always the name of the executable.
-		// if an executable with that name exists in the nativesolvers directory, then use that instead.
-		//
 		String cmd= ec.getJoinedCommands();
-		String exeName= ec.getCommands().get(0);
-		File nativeSolverDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.nativeSolverDir_External));
-		File nativeExe = new File(nativeSolverDir,exeName);
-		lsb.write("echo \"testing existance of native exe '"+nativeExe.getAbsolutePath()+"' which overrides container invocations\"");
-		lsb.write("nativeExe="+nativeExe.getAbsolutePath());
-		lsb.write("if [ -e \"${nativeExe}\" ]; then");
-		lsb.write("   cmd_prefix=\""+nativeSolverDir.getAbsolutePath()+"/"+"\"");
-		lsb.write("else");
-		lsb.write("   cmd_prefix=\"$container_prefix\"");
-		lsb.write("fi");
-		lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
-		lsb.write("echo \"5 date=`date`\"");
-		if (ec.isParallel()) {
-			if (isParallel) {
-				cmd = buildExeCommand(ncpus, cmd);
-			}
-			else {
-				throw new UnsupportedOperationException("parallel command " + ec.getJoinedCommands() + " called in non-parallel submit");
-			}
-		}
-		lsb.append("echo command = ");
-		lsb.write("${cmd_prefix}" + cmd);
-
-//		lsb.write("(");
-		if (ec.getLdLibraryPath()!=null){
-			lsb.write("if [ -z ${LD_LIBRARY_PATH+x} ]; then");
-			lsb.write("    export LD_LIBRARY_PATH=" + ec.getLdLibraryPath().path);
-			lsb.write("else");
-			lsb.write("    export LD_LIBRARY_PATH=" + ec.getLdLibraryPath().path + ":$LD_LIBRARY_PATH");
-			lsb.write("fi");
-		}
-		// lsb.write("singdevlooperr=\"Failed to mount squashfs image in (read only)\"");
-		// lsb.write("let c=0");
-		// lsb.write("while [ true ]");
-		// lsb.write("    do");
-		// lsb.write("      cmdstdout=$("+"${cmd_prefix}" + cmd+" 2>&1)");
-		// lsb.write("      innerstate=$?");
-		// lsb.write("      if [[ $cmdstdout != *$singdevlooperr* ]]");
-		// lsb.write("      then");
-		// lsb.write("        exit $innerstate");
-		// lsb.write("      fi");
-		// lsb.write("      sleep 6");
-		// lsb.write("		 let c=c+1");
-		// lsb.write("		 if [ $c -eq 10 ]");
-		// lsb.write("		 then");
-		// lsb.write("		  	echo \"Exceeded retry for singularity mount squashfs error\"");
-		// lsb.write("		  	exit $innerstate");
-		// lsb.write("		 fi");
-		// lsb.write("		 echo retrying $c of 10...");
-		// lsb.write("    done");
-		lsb.write("      command=\"${cmd_prefix}" + cmd + "\""); 
-		lsb.write("      $command"); 
-//		lsb.write(")");	// This line needs to stay
-		
+		lsb.write(container_prefix + " " + cmd.trim());
 		lsb.write("stat=$?");
-
-		lsb.append("echo ");
-		lsb.append("${cmd_prefix}" + cmd);
-		lsb.write("returned $stat");
-
+		lsb.append("echo returned $stat");
+		lsb.newline();
 		lsb.write("if [ $stat -ne 0 ]; then");
 		if (hasExitProcessor) {
 			lsb.write("\tcallExitProcessor $stat");
@@ -667,111 +592,64 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("\techo returning $stat to Slurm");
 		lsb.write("\texit $stat");
 		lsb.write("fi");
-		lsb.write("#END---------SlurmProxy.generateScript():ExecutableCommand----------"+ec.getCommands().get(0));
+		lsb.newline();
 	}
 
 
-	private void slurmInitSingularity(LineStringBuilder lsb, String primaryDataDirExternal,
-			Optional<String> secondaryDataDirExternal, String htclogdir_external, String softwareVersion,
-			String slurm_singularity_local_image_filepath, String slurm_tmpdir,
-			String slurm_central_singularity_dir, String slurm_local_singularity_dir,
-			String simDataDirArchiveExternal, String simDataDirArchiveInternal,
-			File slurm_singularity_central_filepath, String singularity_module_name, String[] environmentVars) {
-		lsb.write("#BEGIN---------SlurmProxy.generateScript():slurmInitSingularity----------");
-		lsb.write("set -x");
-		lsb.newline();
+	private void slurmInitSingularity(LineStringBuilder lsb,
+				  String solverDockerName, Optional<String> batchDockerName, List<SingularityBinding> bindings,
+				  String slurm_tmpdir, String slurm_singularity_cachedir, String slurm_singularity_pullfolder,
+				  String singularity_module_name, String[] environmentVars) {
 		lsb.write("TMPDIR="+slurm_tmpdir);
-		lsb.write("echo \"using TMPDIR=$TMPDIR\"");
 		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
 		
 		//
 		// Initialize Singularity
 		//
-		lsb.write("echo `hostname`\n");
-		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles\n");
-		lsb.write("source /usr/share/Modules/init/bash\n");
-		lsb.write("module load "+singularity_module_name+"\n");
+		lsb.write("echo `hostname`");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
+		lsb.write("source /usr/share/Modules/init/bash");
+		lsb.write("module load "+singularity_module_name);
+		lsb.write("export SINGULARITY_CACHEDIR="+slurm_singularity_cachedir);
+		lsb.write("export SINGULARITY_PULLFOLDER="+slurm_singularity_pullfolder);
+//		lsb.write("TEMP_DIRNAME=$(mktemp --directory --tmpdir=/local)");
 		
 		lsb.write("echo \"job running on host `hostname -f`\"");
-		lsb.newline();
 		lsb.write("echo \"id is `id`\"");
-		lsb.newline();
-		lsb.write("echo \"bash version is `bash --version`\"");
-		lsb.write("date");
-		lsb.newline();
 		lsb.write("echo ENVIRONMENT");
 		lsb.write("env");
 		lsb.newline();
-		
-		lsb.write("container_prefix=");
-		lsb.write("if command -v singularity >/dev/null 2>&1; then");
-		lsb.write("   #");
-		lsb.write("   # Copy of singularity image will be downloaded if not found in "+slurm_singularity_local_image_filepath);
-		lsb.write("   #");
-		lsb.write("   localSingularityImage="+slurm_singularity_local_image_filepath);
-		lsb.write("   if [ ! -e \"$localSingularityImage\" ]; then");
-		lsb.write("       echo \"local singularity image $localSingularityImage not found, trying to download to hpc from \""+slurm_singularity_central_filepath.getAbsolutePath());
-		lsb.write("       mkdir -p "+slurm_local_singularity_dir);
-		lsb.write("       singularitytempfile=$(mktemp -up "+slurm_central_singularity_dir+")");
-		// Copy using locking so when new deployments occur and singularity has to be copied to compute host
-		// and multiple parameter scan land on same compute host at same time and all try to download the singularity image
-		// they won't interfere with each other
-		lsb.write("		  flock -E 100 -n /tmp/vcellSingularityLock_"+softwareVersion+".lock sh -c \"cp "+slurm_singularity_central_filepath.getAbsolutePath()+" ${singularitytempfile}"+" ; mv -n ${singularitytempfile} "+slurm_singularity_local_image_filepath+"\"");
-		lsb.write("		  theStatus=$?");
-		lsb.write("		  if [ $theStatus -eq 100 ]");
-		lsb.write("		  then");
-		lsb.write("		      echo \"lock in use, waiting for lock owner to copy singularityImage\"");
-		lsb.write("		      let c=0");
-		lsb.write("		      until [ -f $localSingularityImage ]");
-		lsb.write("		      do");
-		lsb.write("		  	    sleep 3");
-		lsb.write("		  	    let c=c+1");
-		lsb.write("		  		if [ $c -eq 20 ]");
-		lsb.write("		  		then");
-		lsb.write("		  			echo \"Exceeded wait time for lock owner to copy singularityImage\"");
-		lsb.write("		  			break");
-		lsb.write("		  		fi");
-		lsb.write("		      done");
-		lsb.write("		  else");
-		lsb.write("		      if [ $theStatus -eq 0 ]");
-		lsb.write("		      then");
-		lsb.write("		            echo copy succeeded");
-		lsb.write("		      else");
-		lsb.write("		            echo copy failed");
-		lsb.write("		      fi");
-		lsb.write("		  fi");
 
-		lsb.write("       rm -f ${singularitytempfile}");
-		lsb.write("       if [ ! -e \"$localSingularityImage\" ]; then");		
-		lsb.write("           echo \"Failed to copy $localSingularityImage to hpc from central\"");
-		lsb.write("           exit 1");
-		lsb.write("       else");
-		lsb.write("           echo successful copy from "+slurm_singularity_central_filepath.getAbsolutePath()+" to "+slurm_singularity_local_image_filepath);
-		lsb.write("       fi");
-		lsb.write("   fi");
-		StringBuffer singularityEnvironmentVars = new StringBuffer();
-		for (String envVar : environmentVars) {
-			singularityEnvironmentVars.append(" --env "+envVar);
+		boolean bFirstBind=true;
+		for (SingularityBinding binding : bindings) {
+			if (bFirstBind) {
+				lsb.write("container_bindings=\"--bind " + binding.hostPath + ":" + binding.containerPath + " \"");
+				bFirstBind = false;
+			}else{
+				lsb.write("container_bindings+=\"--bind " + binding.hostPath + ":" + binding.containerPath + " \"");
+			}
 		}
-		lsb.write("   container_prefix=\"singularity run --containall " +
-				"--bind "+primaryDataDirExternal+":/simdata " +
-				((secondaryDataDirExternal.isPresent()) ? "--bind "+secondaryDataDirExternal.get()+":/simdata_secondary " : "") +
-				"--bind "+simDataDirArchiveExternal+":"+simDataDirArchiveInternal+" " +
-				"--bind "+htclogdir_external+":/htclogs  " +
-				"--bind "+slurm_tmpdir+":/solvertmp " +
-				"$localSingularityImage "+singularityEnvironmentVars+" \"");
-		lsb.write("else");
-		lsb.write("    echo \"Required singularity command not found (maybe 'module load "+singularity_module_name+"' command didn't work) \"");
-		lsb.write("    exit 1");
-//		StringBuffer dockerEnvironmentVars = new StringBuffer();
-//		for (String envVar : environmentVars) {
-//			dockerEnvironmentVars.append(" -e "+envVar);
-//		}
-//		lsb.write("   container_prefix=\"docker run --rm -v "+primaryDataDirExternal+":/simdata -v "+htclogdir_external+":/htclogs -v "+slurm_tmpdir+":/solvertmp "+dockerEnvironmentVars+" "+docker_image+" \"");
-		lsb.write("fi");
-		lsb.write("echo \"container_prefix is '${container_prefix}'\"");
-		lsb.write("echo \"3 date=`date`\"");
-		lsb.write("#END---------SlurmProxy.generateScript():slurmInitSingularity----------");
+		boolean bFirstEnv=true;
+		for (String envVar : environmentVars) {
+			if (bFirstEnv) {
+				lsb.write("container_env=\"--env " + envVar + " \"");
+				bFirstEnv = false;
+			}else {
+				lsb.write("container_env+=\"--env " + envVar + " \"");
+			}
+		}
+		lsb.write("solver_docker_name="+solverDockerName);
+		lsb.write("solver_container_prefix=\"singularity run --containall " +
+				"${container_bindings} " +
+				"${container_env} " +
+				"docker://${solver_docker_name}\"");
+		if (batchDockerName.isPresent()) {
+			lsb.write("batch_docker_name="+batchDockerName.get());
+			lsb.write("batch_container_prefix=\"singularity run --containall " +
+				"${container_bindings} " +
+				"${container_env} " +
+				"docker://${batch_docker_name}\"");
+		}
 		lsb.newline();
 	}
 
@@ -805,8 +683,7 @@ public class SlurmProxy extends HtcProxy {
 		if (nodelist!=null && nodelist.trim().length()>0) {
 			lsb.write("#SBATCH --nodelist="+nodelist);
 		}
-//		lsb.write("echo \"1 date=`date`\"");
-		lsb.write("# VCell SlurmProxy memory limit source="+memoryMBAllowed.getMemLimitSource());
+		lsb.write("# VCell SlurmProxy memory limit source='"+memoryMBAllowed.getMemLimitSource()+"'");
 	}
 
 	@Override
@@ -820,7 +697,7 @@ public class SlurmProxy extends HtcProxy {
 			if (LG.isDebugEnabled()) {
 				LG.debug("generating local SLURM submit script for jobName="+jobName);
 			}
-			SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+			SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, memSizeMB, postProcessingCommands, simTask);
 
 			StringBuilder scriptContent = new StringBuilder();
 			scriptContent.append(sbatchSolverComponents.getSingularityCommands());
@@ -880,21 +757,17 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	String createOptJobScript(String jobName, File optProblemInputFile, File optProblemOutputFile, File optReportFile) throws IOException {
-		String primaryDataDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
-		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
-		String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
-		String serverid=PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
-		String softwareVersion=PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-		String remote_singularity_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellopt_singularity_image);
-		String slurm_singularity_local_image_filepath = remote_singularity_image;
-//			String docker_image = PropertyLoader.getRequiredProperty(PropertyLoader.vcellbatch_docker_name);
-		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
-		String slurm_central_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_central_singularity_dir);
-		String slurm_local_singularity_dir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_local_singularity_dir);
-		String slurm_singularity_module_name = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
-		String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
-		String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
-		File slurm_singularity_central_filepath = new File(slurm_central_singularity_dir,new File(slurm_singularity_local_image_filepath).getName());
+		final String primaryDataDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
+		final String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
+		final String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+		final String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
+		final String slurm_singularity_cachedir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_cachedir);
+		final String slurm_singularity_pullfolder = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_pullfolder);
+		final String slurm_singularity_module_name = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
+		final String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
+		final String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
+		final String solverDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellopt_docker_name);
+		final Optional<String> batchDockerName = Optional.empty();
 
 		MemLimitResults memoryMBAllowed = new MemLimitResults(256, "Optimization Default");
 		String[] environmentVars = new String[] {
@@ -908,13 +781,19 @@ public class SlurmProxy extends HtcProxy {
 		if (!optDataDirExternal.exists() && !optDataDirExternal.mkdir()){
 			LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
 		}
-//			if (optDataDirExternal.setWritable(true,false))
-		slurmInitSingularity(lsb, optDataDirExternal.getAbsolutePath(), Optional.empty(), htclogdir_external, softwareVersion,
-				slurm_singularity_local_image_filepath, slurm_tmpdir, slurm_central_singularity_dir,
-				slurm_local_singularity_dir, simDataDirArchiveExternal, simDataDirArchiveInternal,
-				slurm_singularity_central_filepath, slurm_singularity_module_name, environmentVars);
 
-		lsb.write("   cmd_prefix=\"$container_prefix\"");
+		List<SingularityBinding> bindings = List.of(
+				new SingularityBinding(optDataDirExternal.getAbsolutePath(), "/simdata"),
+				new SingularityBinding(slurm_tmpdir, "/solvertmp"),
+				new SingularityBinding(htclogdir_external, "/htclogs"),
+				new SingularityBinding(simDataDirArchiveExternal, simDataDirArchiveInternal)
+		);
+
+		slurmInitSingularity(lsb, solverDockerName, batchDockerName,
+				bindings, slurm_tmpdir, slurm_singularity_cachedir, slurm_singularity_pullfolder,
+				slurm_singularity_module_name, environmentVars);
+
+		lsb.write("cmd_prefix=\"$solver_container_prefix\"");
 		lsb.write("echo \"cmd_prefix is '${cmd_prefix}'\"");
 		lsb.append("echo command = ");
 		lsb.write("${cmd_prefix}" + "");
