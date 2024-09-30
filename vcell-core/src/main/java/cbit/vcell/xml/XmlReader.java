@@ -4351,6 +4351,16 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             }
         }
 
+        iterator = param.getChildren(XMLTags.LangevinParticleJumpProcessTag, vcNamespace).iterator();
+        while (iterator.hasNext()) {
+            Element tempelement = (Element) iterator.next();
+            try {
+                subDomain.addParticleJumpProcess(getParticleJumpProcess(tempelement, mathDesc));
+            } catch(MathException e){
+                throw new XmlParseException("A MathException was fired when adding a jump process to the MembraneSubDomain " + name, e);
+            }
+        }
+
         iterator = param.getChildren(XMLTags.ParticlePropertiesTag, vcNamespace).iterator();
         while (iterator.hasNext()) {
             Element tempelement = (Element) iterator.next();

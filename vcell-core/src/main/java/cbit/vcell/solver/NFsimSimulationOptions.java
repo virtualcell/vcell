@@ -237,19 +237,19 @@ public class NFsimSimulationOptions implements Serializable, Matchable, Vetoable
 				observableComputationOff = Boolean.parseBoolean(token);
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_moleculeDistance)) {
 				token = tokens.nextToken();
-				moleculeDistance = new Integer(token);
+				moleculeDistance = Integer.parseInt(token);
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_aggregateBookkeeping)) {
 				token = tokens.nextToken();
 				aggregateBookkeeping = Boolean.parseBoolean(token);
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_maxMoleculesPerType)) {
 				token = tokens.nextToken();
-				maxMoleculesPerType = new Integer(token);
+				maxMoleculesPerType = Integer.parseInt(token);
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_equilibrateTime)) {
 				token = tokens.nextToken();
-				equilibrateTime = new Integer(token);
+				equilibrateTime = Integer.parseInt(token);
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_randomSeed)) {
 				token = tokens.nextToken();
-				randomSeed = new Integer(token);
+				randomSeed = Integer.parseInt(token);
 			} else if(token.equalsIgnoreCase(VCML.NFSimSimulationOptions_preventIntraBonds)) {
 				token = tokens.nextToken();
 				preventIntraBonds = Boolean.parseBoolean(token);
