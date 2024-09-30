@@ -578,7 +578,10 @@ public class SsldUtils {
                 m.put(ssldType, mc);
                 mt.addMolecularComponent(mc);
             }
-            // TODO: if membrane molecule, anchor it to membrane
+            if(ssldMolecule.hasAnchorType()) {  // if membrane molecule, anchor it to membrane
+                mt.addAnchor(membr);
+                mt.setAnchorAll(false);
+            }
             m.put(ssldMolecule, mt);
             model.getRbmModelContainer().addMolecularType(mt, false);
         }
@@ -731,7 +734,7 @@ public class SsldUtils {
             Structure structure = model.getStructure(location);
 
             double ssldKf = ssldReaction.getRate();
-            Expression kf = new Expression(ssldKf);
+            Expression kf = new Expression(ssldKf);     // the unit is s-1
             ReactionRule reactionRule = new ReactionRule(model, ssldReaction.getName(), structure, reversible);
             RbmKineticLaw.RateLawType rateLawType = RbmKineticLaw.RateLawType.MassAction;
             reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
@@ -766,7 +769,7 @@ public class SsldUtils {
             Molecule ssldReactantTwo = ssldReaction.getMolecule(1);
             String locationOne = ssldReactantOne.getLocation();
             String locationTwo = ssldReactantTwo.getLocation();
-            Structure structure;
+            Structure structure;    // if one reactant is on the membrane, the reaction's structure is the membrane as well
             if(locationOne.contentEquals(SystemGeometry.MEMBRANE) || locationTwo.contentEquals(SystemGeometry.MEMBRANE)) {
                 // reaction is on the Membrane if at least one reactant is on the Membrane, the product stay on the membrane
                 // actually the membrane molecule must be anchored to the membrane
@@ -777,9 +780,9 @@ public class SsldUtils {
             }
 
             double ssldKf = ssldReaction.getkon();
-            Expression kf = new Expression(ssldKf);
+            Expression kf = new Expression(ssldKf);     // unit is s-1.uM-1
             double ssldKr = ssldReaction.getkoff();
-            Expression kr = new Expression(ssldKr);
+            Expression kr = new Expression(ssldKr);     // unit is s-1
             ReactionRule reactionRule = new ReactionRule(model, ssldReaction.getName(), structure, reversible);
             RbmKineticLaw.RateLawType rateLawType = RbmKineticLaw.RateLawType.MassAction;
             reactionRule.setKineticLaw(new RbmKineticLaw(reactionRule, rateLawType));
