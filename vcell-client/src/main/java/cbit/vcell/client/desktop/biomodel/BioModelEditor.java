@@ -1003,7 +1003,6 @@ private BioModelEditorApplicationsPanel getBioModelEditorApplicationsPanel() {
 /**
  * Sets the bioModel property (cbit.vcell.biomodel.BioModel) value.
  * @param bioModel The new value for the property.
- * @see #getBioModel
  */
 public void setBioModel(BioModel bioModel) {
 	if (this.bioModel == bioModel) {
@@ -1038,7 +1037,7 @@ public void setBioModel(BioModel bioModel) {
 /**
  * Insert the method's description here.
  * Creation date: (5/7/2004 5:40:13 PM)
- * @param newBioModelWindowManager cbit.vcell.client.desktop.BioModelWindowManager
+ * @param bioModelWindowManager cbit.vcell.client.desktop.BioModelWindowManager
  */
 public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager) {
 	if (this.bioModelWindowManager == bioModelWindowManager) {
