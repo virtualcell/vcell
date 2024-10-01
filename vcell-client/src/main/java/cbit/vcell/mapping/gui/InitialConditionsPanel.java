@@ -440,7 +440,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
             try {
                 table = new JSortTable();
                 table.setName("spceciesContextSpecsTable");
-                tableModel = new SpeciesContextSpecsTableModel(table);
+                tableModel = new SpeciesContextSpecsTableModel(table, this);
                 table.setModel(tableModel);
                 table.setScrollTableActionManager(new InternalScrollTableActionManager(table));
                 table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);

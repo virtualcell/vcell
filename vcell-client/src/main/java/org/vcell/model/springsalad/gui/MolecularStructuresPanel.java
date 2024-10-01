@@ -659,7 +659,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			try {
 				speciesContextSpecsTable = new EditorScrollTable();
 				speciesContextSpecsTable.setName("spceciesContextSpecsTable");
-				speciesContextSpecsTableModel = new SpeciesContextSpecsTableModel(speciesContextSpecsTable);
+				speciesContextSpecsTableModel = new SpeciesContextSpecsTableModel(speciesContextSpecsTable, this);
 				speciesContextSpecsTableModel.setEditable(false);
 				speciesContextSpecsTable.setModel(speciesContextSpecsTableModel);
 //				speciesContextSpecsTable.setScrollTableActionManager(new InternalScrollTableActionManager(speciesContextSpecsTable));

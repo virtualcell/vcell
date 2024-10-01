@@ -24,6 +24,7 @@ import java.util.Objects;
 import javax.swing.JComponent;
 import javax.swing.ListSelectionModel;
 
+import cbit.vcell.mapping.*;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
@@ -56,15 +57,9 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
-import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
-import cbit.vcell.mapping.ReactionRuleSpec;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.gui.DataSymbolsSpecPanel;
 import cbit.vcell.mapping.gui.ReactionRuleSpecPropertiesPanel;
 import cbit.vcell.mapping.gui.SpatialObjectPropertyPanel;
@@ -768,6 +763,8 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		} else if (singleSelection instanceof GeometryInfo) {
 			bShowInDatabaseProperties = true;
 			bottomComponent = geometryMetaDataPanel;
+		} else if (singleSelection instanceof LangevinSpeciesContextSpec) {
+			bottomComponent = getSpeciesContextSpecPanel();
 		} else if (singleSelection instanceof SpeciesContextSpec) {
 			bottomComponent = getSpeciesContextSpecPanel();
 		} else if (singleSelection instanceof ReactionSpec) {

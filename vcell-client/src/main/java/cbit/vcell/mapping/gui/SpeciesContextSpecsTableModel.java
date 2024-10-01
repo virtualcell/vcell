@@ -14,10 +14,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.TreeSet;
 
-import cbit.vcell.model.Membrane;
+import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.mapping.*;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.springsalad.gui.MolecularStructuresPanel;
 import org.vcell.util.Displayable;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -25,19 +26,12 @@ import org.vcell.util.gui.ScrollTable;
 import cbit.gui.ScopedExpression;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.mapping.AssignmentRule;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.RateRule;
-import cbit.vcell.mapping.ReactionContext;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.AutoCompleteSymbolFilter;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 /**
@@ -86,12 +80,14 @@ public class SpeciesContextSpecsTableModel extends VCellSortTableModel<SpeciesCo
 	private AutoCompleteSymbolFilter autoCompleteSymbolFilter = null;
 	
 	private boolean bEditable = true;	// this.isCellEditable() decides
+	private final DocumentEditorSubPanel owner;
 
 /**
  * ReactionSpecsTableModel constructor comment.
  */
-public SpeciesContextSpecsTableModel(ScrollTable table) {
+public SpeciesContextSpecsTableModel(ScrollTable table, DocumentEditorSubPanel owner) {
 	super(table);
+	this.owner = owner;
 	refreshColumns();
 }
 
@@ -282,6 +278,18 @@ public Object getValueAt(int row, int col) {
 		ex.printStackTrace(System.out);
 		return null;
 	}		
+}
+
+@Override
+public SpeciesContextSpec getValueAt(int row) {
+	if(owner instanceof MolecularStructuresPanel) {
+		SpeciesContextSpec scs = super.getValueAt(row);
+		if(scs != null) {
+			LangevinSpeciesContextSpec lscs = new LangevinSpeciesContextSpec(scs, scs.getSimulationContext());
+			return lscs;
+		}
+	}
+	return super.getValueAt(row);
 }
 
 /**
@@ -671,7 +679,7 @@ private void updateListenersReactionContext(ReactionContext reactionContext,bool
 
 
 public Comparator<SpeciesContextSpec> getComparator(final int col, final boolean ascending) {
-	return new Comparator<SpeciesContextSpec>() {	
+	return new Comparator<>() {
 		/**
 		 * Compares its two arguments for order.  Returns a negative integer,
 		 * zero, or a positive integer as the first argument is less than, equal
