@@ -53,12 +53,6 @@ public class ExportServiceImpl implements ExportConstants, ExportService {
 
 	private Hashtable<Long, User> jobRequestIDs = new Hashtable<Long, User>();
 	private Hashtable<ExportSpecs, JobRequest> completedExportRequests = new Hashtable<ExportSpecs, JobRequest>();
-	
-	private ASCIIExporter asciiExporter = new ASCIIExporter(this);
-	private IMGExporter imgExporter = new IMGExporter(this);
-	private RasterExporter rrExporter = new RasterExporter(this);
-
-	private N5Exporter n5Exporter = new N5Exporter(this);
 
 
 /**
@@ -268,6 +262,10 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
 		try{
 			ExportOutput[] exportOutputs = null;
+			RasterExporter rrExporter = new RasterExporter(this);
+			IMGExporter imgExporter = new IMGExporter(this);
+			ASCIIExporter asciiExporter = new ASCIIExporter(this);
+
 			switch (exportSpecs.getFormat()) {
 				case CSV:
 				case HDF5:
@@ -313,9 +311,9 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case N5:
-					n5Exporter.initalizeDataControllers(user, dataServerImpl,  (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier());
+					N5Exporter n5Exporter = new N5Exporter(this, user, dataServerImpl,  (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier());
 					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
-					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), exportOutput, exportSpecs, newExportJob);
+					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), exportOutput, exportSpecs, newExportJob, n5Exporter.getN5FilePathSuffix());
 				default:
 					throw new DataAccessException("Unknown export format requested");
 			}
@@ -475,11 +473,11 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 }
 
 
-private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob) throws DataFormatException, IOException{
+private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob, String pathSuffix) throws DataFormatException, IOException{
 	if (exportOutput.isValid()) {
 		completedExportRequests.put(exportSpecs, newExportJob);
 		String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
-		url += "/" + n5Exporter.getN5FilePathSuffix();
+		url += "/" + pathSuffix;
 		N5Specs n5Specs = (N5Specs) exportSpecs.getFormatSpecificSpecs();
 		url += "?dataSetName=" + newExportJob.getExportJobID();
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
