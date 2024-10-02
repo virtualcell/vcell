@@ -66,6 +66,9 @@ public class N5Exporter implements ExportConstants {
 
 	public N5Exporter(ExportServiceImpl exportServiceImpl, User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) {
 		this.exportServiceImpl = exportServiceImpl;
+		this.user = user;
+		this.dataServer = dataServer;
+		this.vcDataID = vcSimulationDataIdentifier;
 	}
 
 	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws Exception {
