@@ -164,7 +164,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				setSelectedObjectsFromTable(getSpeciesContextSpecsTable(), speciesContextSpecsTableModel);
 				int row = getSpeciesContextSpecsTable().getSelectedRow();
 				SpeciesContextSpec scsSelected = speciesContextSpecsTableModel.getValueAt(row);
-				setSpeciesContextSpec(scsSelected);
+				if(scsSelected instanceof LangevinSpeciesContextSpec) {
+					LangevinSpeciesContextSpec lscs = (LangevinSpeciesContextSpec)scsSelected;
+					SpeciesContextSpec theSpeciesContextStep = lscs.getTheSpeciesContextSpec();
+					setSpeciesContextSpec(theSpeciesContextStep);
+				} else {
+					setSpeciesContextSpec(scsSelected);
+				}
 			}
 			if (e.getSource() == getMolecularTypeSpecsTable().getSelectionModel()) {
 				int row = getMolecularTypeSpecsTable().getSelectedRow();

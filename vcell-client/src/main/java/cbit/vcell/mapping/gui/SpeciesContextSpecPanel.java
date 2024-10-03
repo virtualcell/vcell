@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
+import cbit.vcell.mapping.LangevinSpeciesContextSpec;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -307,7 +308,8 @@ public void setBioModel(BioModel newValue) {
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	SpeciesContextSpec speciesContextSpec = null;
-	if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof SpeciesContextSpec) {
+	if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof SpeciesContextSpec
+			&& !(selectedObjects[0] instanceof LangevinSpeciesContextSpec)) {
 		speciesContextSpec = (SpeciesContextSpec) selectedObjects[0];
 	}
 	setSpeciesContextSpec(speciesContextSpec);	

@@ -4,11 +4,15 @@ import cbit.vcell.model.SpeciesContext;
 
 public class LangevinSpeciesContextSpec extends SpeciesContextSpec {
 
+    private final SpeciesContextSpec theSpeciesContextSpec;
+
     public LangevinSpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationContext argSimulationContext) {
         super(speciesContextSpec, argSimulationContext);
+        this.theSpeciesContextSpec = speciesContextSpec;
     }
 
-    public LangevinSpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSimulationContext) {
-        super(speciesContext, argSimulationContext);
+    public SpeciesContextSpec getTheSpeciesContextSpec() {
+        return theSpeciesContextSpec;
     }
+
 }
