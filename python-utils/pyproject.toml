@@ -19,7 +19,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "~3.10"
 requests = "^2.31.0"
 pydantic = "^2.5.2"
 python-dotenv = "^1.0.0"
