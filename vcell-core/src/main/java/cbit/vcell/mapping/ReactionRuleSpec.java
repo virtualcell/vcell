@@ -638,6 +638,20 @@ private boolean isBindingReaction(Map<String, Object> analysisResults) {
 	if(ret == null) {
 		return false;
 	}
+	for(ReactionRuleParticipant rrp : reactionRule.getReactionRuleParticipants()) {
+		SpeciesPattern sp = rrp.getSpeciesPattern();
+		for(MolecularTypePattern mtp : sp.getMolecularTypePatterns()) {
+			for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+				BondType bt = mcp.getBondType();
+				ComponentStatePattern csp = mcp.getComponentStatePattern();
+				if(!csp.isAny() && BondType.Possible == bt) {
+					// all the sites not binding must be in Any state
+					return false;
+				}
+			}
+		}
+	}
+
 	int bindingTransitions = (int)ret;
 	if(bindingTransitions == 2) {
 		return true;	// one binding reaction produces 2 binding transitions
@@ -867,9 +881,9 @@ public SpeciesContext getDestroyedSpecies(SpeciesContextSpec[] speciesContextSpe
  */
 private final static String GenericTip = "Please edit the reaction so that it matches a SpringSaLaD subtype or disable it in this table";
 private final static String SpringSaLaDMsgAtLeastOne = "At least one reactant and one product are required.";
-private final static String SpringSaLaDMsgReactionsCannotBe = "SpringSaLaD reactions cannot be located on the Membrane.";
-private final static String SpringSaLaDMsgEachReactionMust = "SpringSaLaD requires that each reaction and all its participants must be in the same Structure";
-private final static String SpringSaLaDMsgAnchorCannotBePart = "The reserved site 'Anchor' cannot be part of a non-membrane reactant pattern.";
+private final static String SpringSaLaDMsgAnchorReactionMustMembrane = "SpringSaLaD reactions must be located on the Membrane if one reactant is on Membrane.";
+private final static String SpringSaLaDMsgEachReactionMust = "SpringSaLaD requires that each compartmental reaction and all its participants must be in the same compartment";
+private final static String SpringSaLaDMsgAnchorCannotBePart = "The reserved site 'Anchor' can only be part of a membrane reactant pattern.";
 private final static String SpringSaLaDMsgAnchorCannotBeTarget = "The reserved site 'Anchor' cannot be the target of any SpringSaLaD reaction.";
 private final static String SpringSaLaDMsgOnlyAcceptsOneProduct = "SpringSaLaD only accepts one Product.";
 private final static String SpringSaLaDMsgOnlyAcceptsTwo = "SpringSaLaD only accepts 2 Reactants for the binding reactions and 1 Reactant for the other subtypes.";
@@ -943,79 +957,86 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			return;
 		}
 
+		// if at least one reactant is on a membrane, the reaction must be on a membrane
+		for(ReactantPattern rp : rpList) {
+			if(SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
+				if(!(SpringStructureEnum.Membrane.columnName.equals(reactionRule.getStructure().getName()))) {
+					String msg = SpringSaLaDMsgAnchorReactionMustMembrane;
+					String tip = msg;
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+					return;
+				}
+			}
+		}
 
+		// all compartmental reactions must have all reactants, all products and the reaction located in the same compartment
+		Set<Structure> participantStructureSet = new LinkedHashSet<>();
+		for(ReactionRuleParticipant rrp : reactionRule.getReactionRuleParticipants()) {
+			if(SpringStructureEnum.Membrane.columnName.equals(rrp.getStructure().getName())) {
+				break;	// we deal with membrane participants reactions separately
+			}
+			participantStructureSet.add(rrp.getStructure());
+		}
+		if(participantStructureSet.size() > 1) {
+			String msg = SpringSaLaDMsgEachReactionMust;
+			String tip = msg;
+			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+			return;
+		} else if(participantStructureSet.size() == 1) {	// reaction must also be here
+			if(!participantStructureSet.contains(reactionRule.getStructure())) {
+				String msg = SpringSaLaDMsgEachReactionMust;
+				String tip = msg;
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				return;
+			}
+		}
 
-		// no reaction can be on the membrane
-		// dan 7/31/24 correction: a reaction involving a Membrane molecule can be on a membrane
-//		String reactionStructure = reactionRule.getStructure().getName();
-//		if(SpringStructureEnum.Membrane.columnName.equals(reactionStructure)) {
-//			String msg = SpringSaLaDMsgReactionsCannotBe;
-//			String tip = msg;
-//			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-//			return;
-//		}
-		
-		// the reaction and its participants must all be in the same Structure.
-		// TODO: this has to be refined, actually reactants bound to a membrane may have sites in the right compartment
-		// Also, some conditional transition or allosteric reaction may have their condition molecule located in a different 
-		// compartment (can they? TODO check with springsalad !!!)
-//		List<ReactionRuleParticipant> reactionRuleParticipants = reactionRule.getReactionRuleParticipants();
-//		for(ReactionRuleParticipant rrp : reactionRuleParticipants) {
-//			if(!reactionStructure.equals(rrp.getStructure().getName())) {
-//				String msg = SpringSaLaDMsgEachReactionMust;
-//				String tip = msg;
-//				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-//				return;
-//			}
-//		}
-		
 		// the reserved site 'Anchor' must be not present in any reactant pattern that is not situated on a membrane
 		// note that we do a similar check for seed species, but this is also needed 
 		// (we can have a bad reactant pattern even though the seed species may be missing)
-		// TODO:we'll change the Anchor paradigm but this check should still be present some way or another
-//		for(ReactantPattern rp : rpList) {
-//			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
-//				SpeciesPattern spReactant = rp.getSpeciesPattern();
-//				List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
-//				for(MolecularTypePattern mtpReactant : mtpReactantList) {
-//					List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
-//					for(MolecularComponentPattern mcpReactant : mcpReactantList) {
-//						MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
-//						if(SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
-//							String msg = SpringSaLaDMsgAnchorCannotBePart;
-//							String tip = msg;
-//							issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-//							return;
-//						}
-//					}
-//				}
-//			}
-//		}
+		for(ReactantPattern rp : rpList) {
+			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
+				SpeciesPattern spReactant = rp.getSpeciesPattern();
+				List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
+				for(MolecularTypePattern mtpReactant : mtpReactantList) {
+					List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
+					for(MolecularComponentPattern mcpReactant : mcpReactantList) {
+						MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
+						if(SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
+							String msg = SpringSaLaDMsgAnchorCannotBePart;
+							String tip = msg;
+							issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+							return;
+						}
+					}
+				}
+			}
+		}
 
 		// the reserved site 'Anchor' must not be part of any reaction
-		// TODO: deal with this once the Anchor is being refactored
-//		for(ReactantPattern rp : rpList) {
-//			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
-//				continue;	// we don't have anchors if it's not a membrane molecule
-//			}
-//			SpeciesPattern spReactant = rp.getSpeciesPattern();
-//			List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
-//			for(MolecularTypePattern mtpReactant : mtpReactantList) {
-//				List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
-//				for(MolecularComponentPattern mcpReactant : mcpReactantList) {
-//					MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
-//					if(!SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
-//						continue;
-//					}
-//					if(BondType.Possible != mcpReactant.getBondType() || !mcpReactant.getComponentStatePattern().isAny()) {
-//						String msg = SpringSaLaDMsgAnchorCannotBeTarget;
-//						String tip = msg;
-//						issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-//						return;
-//					}
-//				}
-//			}
-//		}
+		for(ReactantPattern rp : rpList) {
+			if(!SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
+				continue;	// we don't have anchors if it's not a membrane molecule
+			}
+			SpeciesPattern spReactant = rp.getSpeciesPattern();
+			List<MolecularTypePattern> mtpReactantList = spReactant.getMolecularTypePatterns();
+			for(MolecularTypePattern mtpReactant : mtpReactantList) {
+				List<MolecularComponentPattern> mcpReactantList = mtpReactant.getComponentPatternList();
+				for(MolecularComponentPattern mcpReactant : mcpReactantList) {
+					MolecularComponent mcReactant = mcpReactant.getMolecularComponent();
+					if(!SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
+						continue;
+					}
+					if(BondType.Possible != mcpReactant.getBondType() || !mcpReactant.getComponentStatePattern().isAny()) {
+						String msg = SpringSaLaDMsgAnchorCannotBeTarget;
+						String tip = msg;
+						issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+						return;
+					}
+				}
+			}
+		}
+
 
 		// ------------------------------------------------------------------------------------------------------------------------
 		Map<String, Object> analysisResults = new LinkedHashMap<> ();

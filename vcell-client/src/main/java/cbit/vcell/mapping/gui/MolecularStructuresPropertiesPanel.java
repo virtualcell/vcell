@@ -3,15 +3,20 @@ package cbit.vcell.mapping.gui;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.PointLocationInShapeContext;
+import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.graph.gui.SsldLargeShapePanel;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.mapping.LangevinSpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.RuleParticipantSignature;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.ExpressionException;
+import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 
 import javax.swing.*;
@@ -28,7 +33,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 
     private JScrollPane scrollPane;		    // shapePanel lives inside this
     private SpeciesPatternLargeShape spls;  // make the real thing
-    private SsldLargeShapePanel shapePanel = null;
+    private LargeShapePanel shapePanel = null;
 
 
     private JButton zoomLargerButton = null;
@@ -68,7 +73,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 
     private void initialize() {
         try {
-            shapePanel = new SsldLargeShapePanel() {        // glyph (shape) panel
+            shapePanel = new LargeShapePanel() {        // glyph (shape) panel
                 @Override
                 public void paintComponent(Graphics g) {
                     super.paintComponent(g);
@@ -76,8 +81,46 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                         spls.paintSelf(g);
                     }
                 }
-
-
+                @Override
+                public DisplayMode getDisplayMode() {
+                    return DisplayMode.other;
+                }
+                @Override
+                public ReactionCartoon.RuleAnalysisChanged hasStateChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+                    return ReactionCartoon.RuleAnalysisChanged.UNCHANGED;
+                }
+                @Override
+                public ReactionCartoon.RuleAnalysisChanged hasStateChanged(MolecularComponentPattern molecularComponentPattern) {
+                    return ReactionCartoon.RuleAnalysisChanged.UNCHANGED;
+                }
+                @Override
+                public ReactionCartoon.RuleAnalysisChanged hasBondChanged(String reactionRuleName, MolecularComponentPattern molecularComponentPattern) {
+                    return ReactionCartoon.RuleAnalysisChanged.UNCHANGED;
+                }
+                @Override
+                public ReactionCartoon.RuleAnalysisChanged hasBondChanged(MolecularComponentPattern molecularComponentPattern) {
+                    return ReactionCartoon.RuleAnalysisChanged.UNCHANGED;
+                }
+                @Override
+                public ReactionCartoon.RuleAnalysisChanged hasNoMatch(String reactionRuleName, MolecularTypePattern mtp) {
+                    return ReactionCartoon.RuleAnalysisChanged.UNCHANGED;
+                }
+                @Override
+                public ReactionCartoon.RuleAnalysisChanged hasNoMatch(MolecularTypePattern molecularTypePattern) {
+                    return ReactionCartoon.RuleAnalysisChanged.UNCHANGED;
+                }
+                @Override
+                public RuleParticipantSignature getSignature() {
+                    return null;
+                }
+                @Override
+                public GroupingCriteria getCriteria() {
+                    return null;
+                }
+                @Override
+                public boolean isViewSingleRow() {
+                    return true;
+                }
             };
             shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
                 public void mouseMoved(MouseEvent e) {
