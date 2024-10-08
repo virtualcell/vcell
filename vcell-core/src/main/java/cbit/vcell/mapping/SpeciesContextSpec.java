@@ -69,6 +69,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
     private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
     private static final String PROPERTY_NAME_FORCECONTINUOUS = "forceContinuous";
+    private static final int INITIAL_YZ_SITE_OFFSET = 4;
 
     public static final boolean TrackClusters = true;            // SpringSaLaD specific
     public static final boolean InitialLocationRandom = true;
@@ -754,24 +755,62 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             oldMcpSet.clear();
 
             // step 3.4: we add any new instance of authoritative mcp not there yet, and we initialize with default sas
-            int componentCount = 0;
-            for (MolecularComponent mc : componentList) {
+            boolean isMmembraneMolecule = false;
+            boolean hasAnchor = false;
+            int anchorIndex = 0;
+            if(getSpeciesContext().getStructure().getName().equals(Structure.SpringStructureEnum.Membrane.columnName)) {
+                isMmembraneMolecule = true;
+                // in a membrane molecule, we arrange Sites left to the anchor as located in Extracellular,
+                // the Anchor site is on the Membrane,
+                // the sites right to the anchor are to be initialized as located in Intracellular
+                for (int count = 0; count<componentList.size(); count++) {
+                    MolecularComponent mc = componentList.get(count);
+                    if(mc.getName().equals(SpeciesContextSpec.AnchorSiteString)) {
+                        hasAnchor = true;
+                        anchorIndex = count;
+                    }
+                }
+                if(isMmembraneMolecule != true || hasAnchor != true) {
+                    // useful just for debugging
+                    System.out.println("membrane molecule must have an anchor.");
+                }
+            }
+            for (int componentCount=0; componentCount < componentList.size(); componentCount++) {
+                MolecularComponent mc = componentList.get(componentCount);
                 MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
                 if (siteAttributesMap.containsKey(mcp)) {
                     continue;       // exists, already dealt with
                 }
-                SiteAttributesSpec sas = siteAttributesMap.get(mcp);
-                if (sas == null || sas.getMolecularComponentPattern() == null) {
-                    sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
-                    if(initialPass == true) {
-                        Coordinate coordinate = new Coordinate(0, 0, (componentCount+1)*4);
-                        sas.setCoordinate(coordinate);
-                        NamedColor nextColor = Colors.COLORARRAY[componentCount];
-                        sas.setColor(nextColor);
+                SiteAttributesSpec sas;     // we have no sas for this mcp in the siteAttributesMap, so we make one
+                if(hasAnchor) {
+                    if(componentCount < anchorIndex) {          // Extracellular
+                        Structure struct = getSimulationContext().getModel().getStructure(Structure.SpringStructureEnum.Extracellular.columnName);
+                        sas = new SiteAttributesSpec(this, mcp, struct);
+                    } else if(componentCount > anchorIndex) {   // Intracellular
+                        Structure struct = getSimulationContext().getModel().getStructure(Structure.SpringStructureEnum.Intracellular.columnName);
+                        sas = new SiteAttributesSpec(this, mcp, struct);
+                    } else {    // Anchor, the only site located on the Membrane
+                        Structure struct = getSimulationContext().getModel().getStructure(Structure.SpringStructureEnum.Membrane.columnName);
+                        sas = new SiteAttributesSpec(this, mcp, struct);
                     }
-                    siteAttributesMap.put(mcp, sas);
+                } else {
+                    sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
                 }
-                componentCount++;
+                if(initialPass == true) {
+                    Coordinate coordinate = new Coordinate(0, INITIAL_YZ_SITE_OFFSET, INITIAL_YZ_SITE_OFFSET + (componentCount * 4));
+                    sas.setCoordinate(coordinate);
+                    NamedColor nextColor;
+                    if(componentCount == anchorIndex) {
+                        nextColor = Colors.DARKGRAY;
+                    } else {
+                        nextColor = Colors.COLORARRAY[componentCount];
+                    }
+                    sas.setColor(nextColor);
+                } else {    // if this is a new site added to an existing molecule, the existing sites already have
+                    ;       // attributes (like coordinates, diffusion rates, colors) and links.
+                            // We cannot guess how the user will want to deal with the new site.
+                }
+                siteAttributesMap.put(mcp, sas);
             }
             // at this point the siteAttributesMap should be fully reconstructed
 
