@@ -262,13 +262,10 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
 		try{
 			ExportOutput[] exportOutputs = null;
-			RasterExporter rrExporter = new RasterExporter(this);
-			IMGExporter imgExporter = new IMGExporter(this);
-			ASCIIExporter asciiExporter = new ASCIIExporter(this);
-
 			switch (exportSpecs.getFormat()) {
 				case CSV:
 				case HDF5:
+					ASCIIExporter asciiExporter = new ASCIIExporter(this);
 					Collection<ExportOutput> asciiOut = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					exportOutputs = asciiOut.toArray(new ExportOutput[asciiOut.size()]);
 					if(((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).isHDF5()) {
@@ -287,6 +284,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				case GIF:
 				case FORMAT_JPEG:
 				case ANIMATED_GIF:
+					IMGExporter imgExporter = new IMGExporter(this);
 					exportOutputs = imgExporter.makeMediaData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,clientTaskStatusSupport,fileDataContainerManager);
 					boolean bOverrideZip = exportOutputs.length == 1;
 					if(bSaveAsZip && !bOverrideZip){
@@ -296,19 +294,24 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 					}
 				case NRRD:
 //				case IMAGEJ:
+					RasterExporter rrExporter = new RasterExporter(this);
 					NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, fileDataContainerManager);
 					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob, fileDataContainerManager);
 				case UCD:
-					exportOutputs = rrExporter.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
+					RasterExporter rrExporterUCD = new RasterExporter(this);
+					exportOutputs = rrExporterUCD.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case PLY:
-					exportOutputs = rrExporter.makePLYWithTexData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
+					RasterExporter rrExporterPLY = new RasterExporter(this);
+					exportOutputs = rrExporterPLY.makePLYWithTexData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case VTK_IMAGE:
-					exportOutputs = rrExporter.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
+					RasterExporter rrExporterVTK = new RasterExporter(this);
+					exportOutputs = rrExporterVTK.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case VTK_UNSTRUCT:
-					exportOutputs = rrExporter.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
+					RasterExporter rrExporterVTKU = new RasterExporter(this);
+					exportOutputs = rrExporterVTKU.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
 				case N5:
 					N5Exporter n5Exporter = new N5Exporter(this, user, dataServerImpl,  (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier());
