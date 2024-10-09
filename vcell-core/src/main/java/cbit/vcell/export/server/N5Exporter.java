@@ -147,7 +147,6 @@ public class N5Exporter implements ExportConstants {
 			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
 
-				System.out.print("Writing with VCid: " + vcDataID + ".");
 				double[] data = this.dataServer.getSimDataBlock(outputContext, user, this.vcDataID, variableNames[variableIndex], allTimes[timeIndex]).getData();
 				data = containsPostProcessed ? data : MeshToImage.convertMeshIntoImage(data, mesh).data();
 				for (int z=0; z < sizeZ; z++){

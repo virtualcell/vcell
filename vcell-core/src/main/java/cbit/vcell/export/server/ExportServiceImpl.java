@@ -400,7 +400,6 @@ private ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBase
 					}
 					ZipEntry zipEntry = new ZipEntry(filename);
 					zipOut.putNextEntry(zipEntry);
-					System.out.println("writing entry "+i);
 					exportOutputs[i].writeDataToOutputStream(zipOut,fileDataContainerManager);
 					//zipOut.write(exportOutputs[i].getData());
 				} else {
