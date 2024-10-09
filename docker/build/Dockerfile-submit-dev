@@ -170,4 +170,7 @@ ENTRYPOINT java \
 	-Dvcell.simdatadir.archive.external=${simdatadir_archive_external} \
 	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
 	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
+	-Dvcell.htc.memory.min.mb=${htcMinMemoryMB} \
+    -Dvcell.htc.memory.max.mb=${htcMaxMemoryMB} \
+    -Dvcell.htc.memory.pu.floor.mb=${htcPowerUserMemoryFloorMB} \
 	-cp "./lib/*" cbit.vcell.message.server.batch.sim.HtcSimulationWorker
