@@ -99,17 +99,20 @@ public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
 			return null;
 		}
 	}
-	// transition site is bond Possible and in explicit state
-	// all the other sites are unbound AND in "Any" state
-	// ==> TransitionCondition.NONE;	// condition is "None"
-	//
-	// transition site is bond Possible and in explicit state
-	// all the other sites are bond Possible AND in "Any" state
-	// ==> TransitionCondition.FREE;	// transition reaction condition is "Free"
 	public enum TransitionCondition {	// everywhere internally in vcell we use RBM bond type naming conventions
-		NONE("Unbound", "None"),		// MolecularComponentPattern.BondType.None		(-)
-		FREE("Any", "Free"),			// MolecularComponentPattern.BondType.Possible	(?)
-		BOUND("Bound", "Bound");		// MolecularComponentPattern.BondType.Exists	(+)
+		/*
+		public enum MolecularComponentPattern.BondType {
+			Specified(""), // numbers	// explicit (in springsalad this is TransitionCondition.BOUND)
+			Exists("+"),    // "+"		// bound (this one doesn't exist in springsalad)
+			Possible("?"),  // "?"		// any (in springsalad this is TransitionCondition.NONE)
+			None("-");  	   			// unbound (in springsalad this is TransitionCondition.FREE)
+			As you see, terminology is very confusing:
+			BondType.None means TransitionCondition.Free (no bond, in other words condition must be no bond),  while
+			BondType.Possible means TransitionCondition.None (bond can be anything, in other words no condition)
+		 */
+		NONE("Any", "None"),		// BondType.Possible	(?)	transitioning site bond can be anything (springsalad condition is NONE (no condition))
+		FREE("Unbound", "Free"),	// BondType.None		(-) transitioning site must be unbound, no bond (springsalad condition is FREE(condition is that there is no bond)
+		BOUND("Bound", "Bound");	// BondType.Exists		(+) transitioning site has explicit bond to site of another molecule
 		
 		final public String vcellName;
 		final public String lngvName;
@@ -414,16 +417,20 @@ public TransitionCondition getTransitionCondition(Map<String, Object> analysisRe
 		int numBondsPossible = 0;
 		int numBondsUnbound = 0;
 		MolecularTypePattern mtpReactant = mtpReactantList.get(0);
+		MolecularComponentPattern mcpTransitionReactant = (MolecularComponentPattern)analysisResults.get(McpReactantState + "1");
+		if(mcpTransitionReactant == null) {
+			return null;	// we must have a reactant that's transitioning
+		}
 		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
 			ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
 			BondType bondTypeReactant = mcpReactant.getBondType();
 			if(cspReactant == null) {
 				return null;	// all sites must have at least one state
 			}
-			if(!cspReactant.isAny() && BondType.Possible != bondTypeReactant) {
-				// this is the transition site, bond must be "Possible"
-				return null;
-			}
+//			if(!cspReactant.isAny() && BondType.Possible != bondTypeReactant) {
+//				// this is the transition site, bond must be "Possible"
+//				return null;
+//			}
 			if(!cspReactant.isAny()) {
 				;
 			} else {
@@ -437,15 +444,33 @@ public TransitionCondition getTransitionCondition(Map<String, Object> analysisRe
 				return null;	// all bonds must be either none or possible
 			}
 		}
+		/*
+		public enum MolecularComponentPattern.BondType {
+		Specified(""),	// numbers	// Explicit (in springsalad this is TransitionCondition.BOUND)
+		Exists("+"),	// "+"		// Bound to some other (unspecified) site (this one doesn't exist in springsalad)
+		Possible("?"),	// "?"		// Any bonding situation (in springsalad this is TransitionCondition.NONE)
+		None("-");		// "-"		// Unbound (in springsalad this is TransitionCondition.FREE)
+
+			As you see, terminology is very confusing:
+			BondType.None means TransitionCondition.FREE (no bond, in other words condition must be no bond),  while
+			BondType.Possible means TransitionCondition.NONE (bond can be anything, in other words no condition)
+
+		public enum TransitionCondition {	// everywhere internally in vcell we use RBM bond type naming conventions
+			NONE("Any", "None"),		// BondType.Possible	(?)	transitioning site bond can be anything (springsalad condition is NONE (no condition))
+			FREE("Unbound", "Free"),	// BondType.None		(-) transitioning site must be unbound, no bond (springsalad condition is FREE(condition is that there is no bond)
+			BOUND("Bound", "Bound");	// BondType.Exists		(+) transitioning site has explicit bond to site of another molecule
+		 */
 		int numSites = mtpReactant.getComponentPatternList().size();
-		if(numBondsUnbound > 0 && numBondsPossible == 1 && numBondsUnbound == numSites-1 && numAnyStates == numSites-1) {
+		if(numBondsUnbound == 1 && numBondsPossible == numSites-1 ) {
 			// transition site is bond Possible and in explicit state
 			// all the other sites are unbound AND in "Any" state
-			return TransitionCondition.NONE;	// condition is "None"
+			if(mcpTransitionReactant.getBondType() == BondType.None) {
+				return TransitionCondition.FREE;    // condition is "Free" (Unbound)
+			}
 		} else if(numBondsUnbound == 0 && numBondsPossible == numSites && numAnyStates == numSites-1) {
 			// transition site is bond Possible and in explicit state
 			// all the other sites are bond Possible AND in "Any" state
-			return TransitionCondition.FREE;	// transition reaction condition is "Free"
+			return TransitionCondition.NONE;	// transition reaction condition is "None" (bond can be anything, BondType is possible)
 		}
 		return null;
 	} else if(mtpReactantList.size() == 2 && mtpProductList.size() == 2) {		// we look for transition with "Bound" condition, means 2 molecules
