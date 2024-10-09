@@ -242,8 +242,6 @@ public abstract class HtcProxy {
 
 	public abstract String getSubmissionFileExtension();
 	public static class MemLimitResults {
-		private static final long FALLBACK_MEM_LIMIT_MB= Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcMinMemoryMB));		// MAX memory allowed if not set in limitFile, currently 4g
-		private static final long POWER_USER_MEMORY_FLOOR=Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcPowerUserMemoryFloorMB)); 	// MIN memory allowed if declared to be a power user, currently 50g
 		private long memLimit;
 		private String memLimitSource;
 		public MemLimitResults(long memLimit, String memLimitSource) {
@@ -258,15 +256,16 @@ public abstract class HtcProxy {
 			return memLimitSource;
 		}
 		private static MemLimitResults getJobRequestedMemoryLimit(SolverDescription solverDescription, double estimatedMemSizeMB, boolean isPowerUser) {
-			long batchJobMemoryLimit = FALLBACK_MEM_LIMIT_MB;
+			long batchJobMemoryLimit = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcMinMemoryMB)); // MAX memory allowed if not set in limitFile, currently 4g
 			String detailedMessage = "default memory limit";
 
 			if(estimatedMemSizeMB > batchJobMemoryLimit) {//Use estimated if bigger
 				batchJobMemoryLimit = (long)estimatedMemSizeMB;
 				detailedMessage = "used Estimated";
 			}
-			if (isPowerUser && batchJobMemoryLimit < POWER_USER_MEMORY_FLOOR){
-				batchJobMemoryLimit = POWER_USER_MEMORY_FLOOR;
+			long powerUserMemory = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcPowerUserMemoryFloorMB)); // MIN memory allowed if declared to be a power user, currently 50g
+			if (isPowerUser && batchJobMemoryLimit < powerUserMemory){
+				batchJobMemoryLimit = powerUserMemory;
 				detailedMessage = "poweruser's memory override";
 			}
 
