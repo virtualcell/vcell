@@ -79,7 +79,11 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.htc_vcellsolvers_docker_name, "ghcr.io/virtualcell/vcell-solvers:v0.8.1.2");
 		setProperty(PropertyLoader.htc_vcellbatch_solver_list, "RungeKuttaFehlberg,HybridMilstein,StochGibson,Langevin,AdamsMoulton,Smoldyn,MovingBoundary,SundialsPDE,CombinedSundials,NFSim");
 		setProperty(PropertyLoader.htc_vcellbatch_docker_name, "ghcr.io/virtualcell/vcell-batch:7.6.0.43");
-    }
+
+		setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "51200");
+		setProperty(PropertyLoader.htcMinMemoryMB, "4096");
+		setProperty(PropertyLoader.htcMaxMemoryMB, "81920");
+	}
 
 	@AfterEach
 	public void teardown() {

@@ -130,6 +130,8 @@ build_webapp() {
   if [[ $? -ne 0 ]]; then echo "failed to build prod"; exit 1; fi
   build_webapp_common island
   if [[ $? -ne 0 ]]; then echo "failed to build island"; exit 1; fi
+  build_webapp_common remote
+  if [[ $? -ne 0 ]]; then echo "failed to build remote"; exit 1; fi
 }
 
 build_batch() {

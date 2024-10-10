@@ -146,7 +146,11 @@ public class SolverPostprocessor  {
 	}
 	private static final String POST_PROCESSOR_PROPERTIES[] = {
 			PropertyLoader.primarySimDataDirInternalProperty,
-			PropertyLoader.secondarySimDataDirInternalProperty
+			PropertyLoader.secondarySimDataDirInternalProperty,
+			PropertyLoader.mongodbDatabase,
+			PropertyLoader.jmsSimHostInternal,
+			PropertyLoader.jmsSimPortInternal,
+			PropertyLoader.jmsBlobMessageUseMongo
 		};
 
 }

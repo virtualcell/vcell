@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" name="XMLConfigTest">
+    <ThresholdFilter level="trace"/>
+
+    <Appenders>
+        <Console name="console">
+            <PatternLayout pattern="%5p (%F:%L) - %m %x%X%n"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="org.vcell" level="warn" additivity="false">
+            <AppenderRef ref="console"/>
+        </Logger>
+
+        <Root level="warn">
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

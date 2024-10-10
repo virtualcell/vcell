@@ -68,7 +68,10 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	maxOdeJobsPerUser="max-ode-jobs-per-user-not-set" \
 	vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
     vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
-	maxPdeJobsPerUser="max-pde-jobs-per-user-not-set"
+	maxPdeJobsPerUser="max-pde-jobs-per-user-not-set" \
+	htcMinMemoryMB="htc-min-memory-not-set" \
+	htcMaxMemoryMB="htc-max-memory-not-set" \
+	htcPowerUserMemoryFloorMB="htc-power-user-memory-floor-not-set"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -119,4 +122,7 @@ ENTRYPOINT java \
 	-Dvcell.server.maxPdeJobsPerUser=${maxPdeJobsPerUser} \
 	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
 	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
-	-cp "./lib/*" cbit.vcell.message.server.dispatcher.SimulationDispatcher
+	-Dvcell.htc.memory.min.mb=${htcMinMemoryMB} \
+	-Dvcell.htc.memory.max.mb=${htcMaxMemoryMB} \
+	-Dvcell.htc.memory.pu.floor.mb=${htcPowerUserMemoryFloorMB} \
+	-cp "./lib/*" cbit.vcell.message.server.dispatcher.SimulationDispatcherMain
