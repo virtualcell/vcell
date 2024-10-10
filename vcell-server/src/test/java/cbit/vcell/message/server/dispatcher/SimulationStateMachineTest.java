@@ -191,6 +191,14 @@ public class SimulationStateMachineTest {
         jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched());
         Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isDispatched());
+
+        DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, MockSimulationDB.specialUser, SimulationJobStatus.SchedulerStatus.WAITING, simulationDB);
+        simulation = DispatcherTestUtils.createMockSimulation(900, 900, 900, MockSimulationDB.specialUser);
+        simulation.getSolverTaskDescription().setTimeoutDisabled(true);
+        stateMachine.onDispatch(simulation, getLatestJobSubmission(), simulationDB, testMessageSession);
+        jobStatus = getLatestJobSubmission();
+        Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched());
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isDispatched());
     }
 
     @Test

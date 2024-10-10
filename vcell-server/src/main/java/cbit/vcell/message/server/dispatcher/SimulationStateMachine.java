@@ -466,6 +466,10 @@ public class SimulationStateMachine {
         double htcMaxMemoryMB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcMaxMemoryMB));
         double requestedMemoryMB = Math.max(estimatedMemMB, htcMinMemoryMB);
 
+        if (isPowerUser){
+            htcMaxMemoryMB = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcPowerUserMemoryFloorMB));
+        }
+
         final SimulationJobStatus newSimJobStatus;
         if (requestedMemoryMB > htcMaxMemoryMB) {
             //

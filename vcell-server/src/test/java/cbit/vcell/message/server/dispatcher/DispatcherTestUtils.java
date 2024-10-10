@@ -13,11 +13,13 @@ import cbit.vcell.solver.MeshSpecification;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
+import org.joda.time.DateTime;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.document.*;
 
 import java.beans.PropertyVetoException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Date;
@@ -116,21 +118,28 @@ public class DispatcherTestUtils {
         PropertyLoader.setProperty(PropertyLoader.maxPdeJobsPerUser, previousPdeJobsPerUser);
     }
 
-    public static Simulation createMockSimulation(int iSizeX, int iSizeY, int iSizeZ) throws PropertyVetoException, MathException, ExpressionBindingException {
+    public static Simulation createMockSimulation(int iSizeX, int iSizeY, int iSizeZ, User user) throws PropertyVetoException, MathException, ExpressionBindingException {
         VolVariable volVariable = new VolVariable("t", new Variable.Domain(new CompartmentSubDomain("t", 1)));
         VolVariable volVariable2 = new VolVariable("b", new Variable.Domain(new CompartmentSubDomain("b", 2)));
         MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
         Geometry geometry = new Geometry("T", 3);
-        MathModel mathModel = new MathModel(new Version("Test", alice));
+        MathModel mathModel = new MathModel(new Version("Test", user));
         MathDescription mathDescription = new MathDescription("Test", mathSymbolMapping);
         mathDescription.setGeometry(new Geometry("T", 3));
-        Simulation simulation = new Simulation(SimulationVersion.createTempSimulationVersion(),
+        SimulationVersion simulationVersion = new SimulationVersion(new KeyValue("5"), "Test", user,
+                new GroupAccessNone(), null, new BigDecimal("2"), Date.from(Instant.now()), VersionFlag.fromInt(1),
+                "", new KeyValue("3"));
+        Simulation simulation = new Simulation(simulationVersion,
                 mathDescription, mathModel);
         MeshSpecification meshSpecification = new MeshSpecification(geometry);
         meshSpecification.setSamplingSize(new ISize(iSizeX, iSizeY, iSizeZ));
         simulation.setMeshSpecification(meshSpecification);
         mathDescription.setAllVariables(new Variable[]{volVariable, volVariable2});
         return simulation;
+    }
+
+    public static Simulation createMockSimulation(int iSizeX, int iSizeY, int iSizeZ) throws PropertyVetoException, MathException, ExpressionBindingException {
+        return createMockSimulation(iSizeX, iSizeY, iSizeZ, alice);
     }
 
     public static void insertOrUpdateStatus(KeyValue simKey, int jobIndex, int taskID, User user, SimulationJobStatus.SchedulerStatus status, SimulationDatabase simulationDB) throws SQLException, DataAccessException {
