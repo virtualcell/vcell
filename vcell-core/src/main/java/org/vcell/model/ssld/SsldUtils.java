@@ -991,14 +991,9 @@ public class SsldUtils {
         ComponentStatePattern cspTransitionReactant = new ComponentStatePattern(csdInitial);
         mcpTransitionReactant.setComponentStatePattern(cspTransitionReactant);
         // bond is already set to Any
-        if(ssldReaction.getCondition().equals(TransitionReaction.NO_CONDITION)) {
-            for(MolecularComponentPattern mcp : mtpTransitionReactant.getComponentPatternList()) {
-                if(mcp == mcpTransitionReactant) {
-                    continue;
-                }
-                mcp.setBondType(MolecularComponentPattern.BondType.None);
-            }
-        } else if(ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
+        if(ssldReaction.getCondition().equals(TransitionReaction.FREE_CONDITION)) {
+            mcpTransitionReactant.setBondType(MolecularComponentPattern.BondType.None);
+       } else if(ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
             // we know for sure that this is the only explicit bond in each of the 2 molecular type patterns of the reactant
             int bondId = 1;     // correct would be:  sp.nextBondId();
             mcpConditionReactant.setBondId(bondId);    // this also sets the BondType to Specified
@@ -1016,13 +1011,8 @@ public class SsldUtils {
         ComponentStatePattern cspTransitionProduct = new ComponentStatePattern(csdFinal);
         mcpTransitionProduct.setComponentStatePattern(cspTransitionProduct);
         System.out.println("  " + ssldReaction.getCondition());
-        if(ssldReaction.getCondition().equals(TransitionReaction.NO_CONDITION)) {
-            for(MolecularComponentPattern mcp : mtpTransitionProduct.getComponentPatternList()) {
-                if(mcp == mcpTransitionProduct) {
-                    continue;
-                }
-                mcp.setBondType(MolecularComponentPattern.BondType.None);
-            }
+        if(ssldReaction.getCondition().equals(TransitionReaction.FREE_CONDITION)) {
+            mcpTransitionProduct.setBondType(MolecularComponentPattern.BondType.None);
         } else if(ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
             // we know for sure that this is the only explicit bond in each of the 2 molecular type patterns of the product
             int bondId = 1;     // correct would be:  sp.nextBondId();

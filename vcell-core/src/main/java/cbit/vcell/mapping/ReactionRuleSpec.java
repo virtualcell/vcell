@@ -737,16 +737,11 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();		// we already know that this list is not empty
 	List<MolecularTypePattern> mtpReactantList = rpList.get(0).getSpeciesPattern().getMolecularTypePatterns();
 
-	TransitionCondition transitionCondition = TransitionCondition.FREE;		// molecules with just one site belong to free
+	TransitionCondition transitionCondition = TransitionCondition.NONE;		// no restriction
 	if(mtpReactantList.size() == 1) {	// transition reaction condition "None" or "Free"
-		for(MolecularComponentPattern mcpOtherReactant : mtpTransitionReactant.getComponentPatternList()) {
-			if(mcpOtherReactant != mcpTransitionReactant) {
-				if(BondType.None == mcpOtherReactant.getBondType()) {
-					// transition "None" has the bond types of all sites set to "None" (except the transitioning site which is "Possible")
-					transitionCondition = TransitionCondition.NONE;
-					break;
-				}
-			}
+		if(BondType.None == mcpTransitionReactant.getBondType()) {
+			// transition "FREE" has the bond types of all sites set to "Possible" (except the transitioning site which is Unbound)
+			transitionCondition = TransitionCondition.FREE;
 		}
 	} else if(mtpReactantList.size() == 2) {	// transition reaction condition "Bound"
 		transitionCondition = TransitionCondition.BOUND;
