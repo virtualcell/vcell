@@ -73,7 +73,9 @@ public class SimulationDispatcherMain {
 			PropertyLoader.maxJobsPerScan,
 			PropertyLoader.maxOdeJobsPerUser,
 			PropertyLoader.maxPdeJobsPerUser,
-			PropertyLoader.slurm_partition
+			PropertyLoader.slurm_partition,
+			PropertyLoader.htcPowerUserMemoryMaxMB,
+			PropertyLoader.htcMaxMemoryMB
 		};
 
 }

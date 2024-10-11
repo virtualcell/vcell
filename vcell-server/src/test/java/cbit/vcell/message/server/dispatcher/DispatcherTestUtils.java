@@ -29,6 +29,7 @@ public class DispatcherTestUtils {
     private static String previousHtcMax = "";
     private static String previousHtcMin = "";
     private static String previousHtcPowerFloor = "";
+    private static String previousHtcPowerMax = "";
     private static String previousMongoBlob = "";
     private static String previousJMSIntHostProperty = "";
     private static String previousJMSIntPortProperty = "";
@@ -63,6 +64,9 @@ public class DispatcherTestUtils {
 
         previousHtcPowerFloor = PropertyLoader.getProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "");
         PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "51200");
+
+        previousHtcPowerMax = PropertyLoader.getProperty(PropertyLoader.htcPowerUserMemoryMaxMB, "");
+        PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryMaxMB, "64000");
 
         previousMongoBlob = PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageUseMongo, "");
         PropertyLoader.setProperty(PropertyLoader.jmsBlobMessageUseMongo, "");
@@ -105,6 +109,7 @@ public class DispatcherTestUtils {
         PropertyLoader.setProperty(PropertyLoader.htcMaxMemoryMB, previousHtcMax);
         PropertyLoader.setProperty(PropertyLoader.htcMinMemoryMB, previousHtcMin);
         PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, previousHtcPowerFloor);
+        PropertyLoader.setProperty(PropertyLoader.htcPowerUserMemoryMaxMB, previousHtcPowerMax);
         PropertyLoader.setProperty(PropertyLoader.jmsBlobMessageUseMongo, previousMongoBlob);
         PropertyLoader.setProperty(PropertyLoader.jmsIntPortInternal, previousJMSIntPortProperty);
         PropertyLoader.setProperty(PropertyLoader.jmsIntHostInternal, previousJMSIntHostProperty);

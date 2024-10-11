@@ -71,7 +71,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	maxPdeJobsPerUser="max-pde-jobs-per-user-not-set" \
 	htcMinMemoryMB="htc-min-memory-not-set" \
 	htcMaxMemoryMB="htc-max-memory-not-set" \
-	htcPowerUserMemoryFloorMB="htc-power-user-memory-floor-not-set"
+	htcPowerUserMemoryFloorMB="htc-power-user-memory-floor-not-set" \
+    htcPowerUserMemoryMaxMB="htc-power-user-memory-max-not-set"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
     jmspswdfile=/run/secrets/jmspswd \
@@ -125,4 +126,5 @@ ENTRYPOINT java \
 	-Dvcell.htc.memory.min.mb=${htcMinMemoryMB} \
 	-Dvcell.htc.memory.max.mb=${htcMaxMemoryMB} \
 	-Dvcell.htc.memory.pu.floor.mb=${htcPowerUserMemoryFloorMB} \
+    -Dvcell.htc.memory.pu.max.mb=${htcPowerUserMemoryMaxMB} \
 	-cp "./lib/*" cbit.vcell.message.server.dispatcher.SimulationDispatcherMain

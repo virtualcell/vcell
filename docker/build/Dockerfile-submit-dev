@@ -91,7 +91,11 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
     vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
     simdatadir_archive_external="simdatadir_archive_external-not-set" \
-    simdatadir_archive_internal="simdatadir_archive_internal-not-set"
+    simdatadir_archive_internal="simdatadir_archive_internal-not-set" \
+    htcMinMemoryMB="htc-min-memory-not-set" \
+    htcMaxMemoryMB="htc-max-memory-not-set" \
+    htcPowerUserMemoryFloorMB="htc-power-user-memory-floor-not-set" \
+    htcPowerUserMemoryMaxMB="htc-power-user-memory-max-not-set"
 
 ENV jmspswdfile=/run/secrets/jmspswd \
 	jmsrestpswdfile=/run/secrets/jmsrestpswd \
@@ -173,4 +177,5 @@ ENTRYPOINT java \
 	-Dvcell.htc.memory.min.mb=${htcMinMemoryMB} \
     -Dvcell.htc.memory.max.mb=${htcMaxMemoryMB} \
     -Dvcell.htc.memory.pu.floor.mb=${htcPowerUserMemoryFloorMB} \
+    -Dvcell.htc.memory.pu.max.mb=${htcPowerUserMemoryMaxMB} \
 	-cp "./lib/*" cbit.vcell.message.server.batch.sim.HtcSimulationWorker

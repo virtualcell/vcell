@@ -14,7 +14,6 @@ import org.junit.jupiter.api.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCellServerID;
 
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
@@ -143,6 +142,8 @@ public class SimulationStateMachineTest {
 
 //
         Simulation memoryIntensiveSimulation = DispatcherTestUtils.createMockSimulation(900, 900, 900);
+        Simulation powerMemoryIntensiveSimulation = DispatcherTestUtils.createMockSimulation(9000, 9000, 5000, MockSimulationDB.powerUser);
+        powerMemoryIntensiveSimulation.getSolverTaskDescription().setTimeoutDisabled(true);
 
         DispatcherTestUtils.insertOrUpdateStatus(simulationDB);
         Assertions.assertThrows(RuntimeException.class,
@@ -152,6 +153,12 @@ public class SimulationStateMachineTest {
 
         DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, testUser, SimulationJobStatus.SchedulerStatus.WAITING, simulationDB);
         stateMachine.onDispatch(memoryIntensiveSimulation, getLatestJobSubmission(), simulationDB, testMessageSession);
+        jobStatus = getLatestJobSubmission();
+        Assertions.assertTrue(jobStatus.getSchedulerStatus().isFailed(), "Memory size too large");
+        Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "Failed because of memory size.");
+
+        DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, MockSimulationDB.powerUser, SimulationJobStatus.SchedulerStatus.WAITING, simulationDB);
+        stateMachine.onDispatch(powerMemoryIntensiveSimulation, getLatestJobSubmission(), simulationDB, testMessageSession);
         jobStatus = getLatestJobSubmission();
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isFailed(), "Memory size too large");
         Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isFailed(), "Failed because of memory size.");
@@ -192,8 +199,8 @@ public class SimulationStateMachineTest {
         Assertions.assertTrue(jobStatus.getSchedulerStatus().isDispatched());
         Assertions.assertTrue(getClientTopicMessage().getSchedulerStatus().isDispatched());
 
-        DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, MockSimulationDB.specialUser, SimulationJobStatus.SchedulerStatus.WAITING, simulationDB);
-        simulation = DispatcherTestUtils.createMockSimulation(900, 900, 900, MockSimulationDB.specialUser);
+        DispatcherTestUtils.insertOrUpdateStatus(simKey, jobIndex, taskID, MockSimulationDB.powerUser, SimulationJobStatus.SchedulerStatus.WAITING, simulationDB);
+        simulation = DispatcherTestUtils.createMockSimulation(900, 900, 900, MockSimulationDB.powerUser);
         simulation.getSolverTaskDescription().setTimeoutDisabled(true);
         stateMachine.onDispatch(simulation, getLatestJobSubmission(), simulationDB, testMessageSession);
         jobStatus = getLatestJobSubmission();

@@ -19,11 +19,11 @@ public class MockSimulationDB implements SimulationDatabase{
     private HashMap<String, ArrayList<SimulationJobStatus>> dbTable = new HashMap<>();
 
     public static User.SpecialUser specialAdmin = new User.SpecialUser("Tom", new KeyValue("999"), new User.SPECIAL_CLAIM[User.SPECIAL_CLAIM.admins.ordinal()]);
-    public static User.SpecialUser specialUser = new User.SpecialUser("Tim", new KeyValue("2"), new User.SPECIAL_CLAIM[]{User.SpecialUser.SPECIAL_CLAIM.powerUsers});
+    public static User.SpecialUser powerUser = new User.SpecialUser("Tim", new KeyValue("2"), new User.SPECIAL_CLAIM[]{User.SpecialUser.SPECIAL_CLAIM.powerUsers});
 
     private final HashMap<String, User> users = new HashMap<>(){
         {put(specialAdmin.getName(), specialAdmin); put(DispatcherTestUtils.alice.getName(), DispatcherTestUtils.alice);
-        put(specialUser.getName(), specialUser);}
+        put(powerUser.getName(), powerUser);}
     };
 
     private final HashMap<String, Simulation> simulations = new HashMap<>();
