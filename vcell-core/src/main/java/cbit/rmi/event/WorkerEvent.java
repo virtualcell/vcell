@@ -19,6 +19,8 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 
+import java.util.ArrayList;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/5/2004 12:35:20 PM)
@@ -35,6 +37,10 @@ public class WorkerEvent extends MessageEvent {
 	public static final int JOB_WORKER_ALIVE = 1004;
 	public static final int JOB_WORKER_EXIT_NORMAL = 1015;
 	public static final int JOB_WORKER_EXIT_ERROR = 1016;
+
+	public static final ArrayList<Integer> ALL_JOB_EVENTS = new ArrayList<>(){{add(JOB_ACCEPTED);
+	add(JOB_STARTING); add(JOB_DATA); add(JOB_PROGRESS); add(JOB_FAILURE); add(JOB_COMPLETED); add(JOB_WORKER_ALIVE);
+	add(JOB_WORKER_EXIT_NORMAL); add(JOB_WORKER_EXIT_ERROR);}};
 
 	private VCSimulationIdentifier vcSimulationIdentifier = null;
 	private int jobIndex = -1;
