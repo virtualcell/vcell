@@ -4,6 +4,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.ReactionCartoon;
+import cbit.vcell.graph.SpeciesContextSpecLargeShape;
 import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.graph.gui.SsldLargeShapePanel;
@@ -28,12 +29,12 @@ import java.awt.event.MouseMotionAdapter;
 public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 
     private BioModel bioModel = null;
-    private SpeciesContext speciesContext = null;
+    private SpeciesContextSpec speciesContextSpec = null;
     private EventHandler eventHandler = new EventHandler();
 
-    private JScrollPane scrollPane;		    // shapePanel lives inside this
-    private SpeciesPatternLargeShape spls;  // make the real thing
+    private JScrollPane scrollPane;		            // shapePanel lives inside this
     private LargeShapePanel shapePanel = null;
+    private SpeciesContextSpecLargeShape scsls;     // the real thing
 
 
     private JButton zoomLargerButton = null;
@@ -77,8 +78,8 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                 @Override
                 public void paintComponent(Graphics g) {
                     super.paintComponent(g);
-                    if (spls != null) {
-                        spls.paintSelf(g);
+                    if (scsls != null) {
+                        scsls.paintSelf(g);
                     }
                 }
                 @Override
@@ -125,9 +126,9 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
                 public void mouseMoved(MouseEvent e) {
                     Point overWhat = e.getPoint();
-                    PointLocationInShapeContext locationContext = new PointLocationInShapeContext(overWhat);
-                    spls.contains(locationContext);
-                    shapePanel.setToolTipText("View-Only panel");
+//                    PointLocationInShapeContext locationContext = new PointLocationInShapeContext(overWhat);
+//                    spls.contains(locationContext);
+//                    shapePanel.setToolTipText("View-Only panel");
                 }
             });
             shapePanel.setBackground(new Color(0xe0e0e0));
@@ -189,7 +190,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     }
 
     private void updateInterface() {
-        if(speciesContext == null) {
+        if(speciesContextSpec == null || speciesContextSpec.getSpeciesContext() == null) {
             return;
         }
         updateShape();
@@ -198,22 +199,23 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     public static final int xOffsetInitial = 20;
     public static final int yOffsetInitial = 10;
     private void updateShape() {
-        if(speciesContext == null) {
+        if(speciesContextSpec == null || speciesContextSpec.getSpeciesContext() == null) {
             return;
         }
-        SpeciesPattern sp = speciesContext.getSpeciesPattern();
-//        spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, shapePanel, speciesContext, issueManager);
+        SpeciesPattern sp = speciesContextSpec.getSpeciesContext().getSpeciesPattern();
+        System.out.println(sp.getNameShort());
+        scsls = new SpeciesContextSpecLargeShape(xOffsetInitial, yOffsetInitial, -1, speciesContextSpec, shapePanel, speciesContextSpec, issueManager);
 //
 //        Dimension preferredSize = new Dimension(spls.getRightEnd()+40, yOffsetInitial+80);
 //        shapePanel.setPreferredSize(preferredSize);
-//        shapePanel.repaint();
+        shapePanel.repaint();
     }
 
     public void setSpeciesContextSpec(SpeciesContextSpec scSpec) {
         if(scSpec == null) {
-            this.speciesContext = null;
+            this.speciesContextSpec = null;
         } else {
-            this.speciesContext = scSpec.getSpeciesContext();
+            this.speciesContextSpec = scSpec;
         }
 //        getSpeciesContextSpecParameterTableModel().setSpeciesContextSpec(scSpec);
         updateInterface();

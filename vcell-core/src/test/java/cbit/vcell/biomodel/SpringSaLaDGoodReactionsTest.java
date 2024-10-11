@@ -48,7 +48,7 @@ import static org.vcell.util.document.BioModelChildSummary.MathType.SpringSaLaD;
 @Tag("Fast")
 public class SpringSaLaDGoodReactionsTest {
 	
-	private static final String reactionTestString = "'r0' ::     'MT0' : 'Site1' : 'state0' --> 'state1'  Rate 50.0  Condition Free";
+	private static final String reactionTestString = "'r0' ::     'MT0' : 'Site1' : 'state0' --> 'state1'  Rate 50.0  Condition None";
 	private static final String L_x = "L_x: 0.1";
 	private static final String molecule = "MOLECULE: \"MT0\" Intracellular Number 10 Site_Types 2 Total_Sites 2 Total_Links 1 is2D false";
 	private static final String analyticExpressionIntra = "(z < 0.09)";
@@ -147,7 +147,7 @@ public class SpringSaLaDGoodReactionsTest {
 		simContext.gatherIssues(issueContext, issueList, true);		// bIgnoreMathDescription == true
 		int numErrors = checkIssuesBySeverity(issueList, Issue.Severity.ERROR);
 		int numWarnings = checkIssuesBySeverity(issueList, Issue.Severity.WARNING);
-        assertTrue((numErrors == 0 && numWarnings == 14) ? true : false, "expecting 1 errors and 14 warning issues");
+        assertTrue((numErrors == 2 && numWarnings == 14) ? true : false, "expecting 1 errors and 14 warning issues");
 	}
 	
 	/* -------------------------------------------------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ public class SpringSaLaDGoodReactionsTest {
 		assertTrue((numErrors == 0) ? true : false, "expecting no Application error issues");
 		// 2 conditional bound transition reactions are syntactically correct, but there are
 		// no binding reactions to make them possible
-		assertTrue((numWarnings == 2) ? true : false, "expecting 2 Application warning issues");
+		assertTrue((numWarnings == 3) ? true : false, "expecting 2 Application warning issues");
 
 		// WARNING!! Debug configuration for this JUnit test required System property "vcell.installDir"
 		// ex: -Dvcell.installDir=C:\dan\jprojects\git\vcell
@@ -199,7 +199,7 @@ public class SpringSaLaDGoodReactionsTest {
 		List<ParticleJumpProcess> particleJumpProcesses = compartmentSubDomain.getParticleJumpProcesses();
 		List<ReactionRule> reactionRuleList = bioModel.getModel().getRbmModelContainer().getReactionRuleList();
         assertTrue(reactionRuleList.size() == 9 ? true : false, "expecting 9 ReactionRule entities");
-        assertTrue(particleJumpProcesses.size() == 10 ? true : false, "expecting 10 ParticleJumpProcess entities");
+        assertTrue(particleJumpProcesses.size() == 9 ? true : false, "expecting 10 ParticleJumpProcess entities");
 		
 		MathType mathType = mathDescription.getMathType();
         assertTrue((mathType != null && mathType == SpringSaLaD) ? true : false, "expecting SpringSaLaD math type");

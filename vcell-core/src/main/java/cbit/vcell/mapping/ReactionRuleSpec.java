@@ -1161,6 +1161,10 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			// TODO: to be very strict, we should also check if we have a seed species with the right site / state combination
 			//  needed for the transition reactant, or another transition (or creation?) reaction that would produce it
 			break;
+		case ALLOSTERIC:
+			// We check elsewhere that Allosteric cannot have the Anchor as transitioning or allosteric site
+			// Nothing to do here
+			break;
 		default:
 			break;
 		}
