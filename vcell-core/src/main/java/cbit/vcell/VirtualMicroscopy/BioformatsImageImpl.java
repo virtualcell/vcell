@@ -175,21 +175,33 @@ public class BioformatsImageImpl implements ImageDatasetReader {
     @Override
     public ImageDataset readImageDataset(String imageID, ClientTaskStatusSupport status) throws Exception {
         var imageDataset = readImageDataset(imageID);
-        status.setProgress(100);
+        if (status != null){
+            status.setProgress(100);
+        }else{
+            logger.warn("ClientTaskStatusSupport var status is null");
+        }
         return imageDataset;
     }
 
     @Override
     public ImageDataset[] readImageDatasetChannels(String imageID, ClientTaskStatusSupport status, boolean bMergeChannels, Integer timeIndex, ISize resize) throws Exception {
         var imageDatasets = readImageDatasetChannels(imageID, bMergeChannels, timeIndex, resize);
-        status.setProgress(100);
+        if (status != null){
+            status.setProgress(100);
+        }else{
+            logger.warn("ClientTaskStatusSupport var status is null");
+        }
         return imageDatasets;
     }
 
     @Override
     public ImageDataset readImageDatasetFromMultiFiles(File[] files, ClientTaskStatusSupport status, boolean isTimeSeries, double timeInterval) throws Exception {
         var imageDataset = readImageDatasetFromMultiFiles(files, isTimeSeries, timeInterval);
-        status.setProgress(100);
+        if (status != null){
+            status.setProgress(100);
+        }else{
+            logger.warn("ClientTaskStatusSupport var status is null");
+        }
         return imageDataset;
     }
 
