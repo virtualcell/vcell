@@ -1,22 +1,21 @@
 package cbit.vcell.graph;
 
+import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.SpeciesContext;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
+import cbit.vcell.model.Structure;
+import org.vcell.model.rbm.*;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Displayable;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class SpeciesContextSpecLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 
+    private static final double nmToPixelRatio = 10;
 
     private int xPos = 0;
     private int yPos = 0;		// y position where we draw the shape
@@ -32,7 +31,11 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     private SpeciesPattern sp = null;
     private MolecularTypePattern mtp = null;
 
-    boolean isPlanarYZ = true;  // we only show entities that are 2D in the YZ plane
+    private boolean hasAnchor = false;
+    private MolecularComponentPattern mcpAnchor = null;
+    private boolean hasExtracellularSite = false;
+    private boolean hasMembraneSite = false;
+    private boolean hasIntracellularSite = false;
 
 
 
@@ -59,9 +62,28 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             }
             this.mtp = this.sp.getMolecularTypePatterns().get(0);
         }
+        Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
+        Set<MolecularInternalLinkSpec> ilSet = scs.getInternalLinkSet();
+        MolecularType mt = mtp.getMolecularType();
+        for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+            MolecularComponent mc = mcp.getMolecularComponent();
+            SiteAttributesSpec sas = sasMap.get(mcp);
+            Structure structure = sas.getLocation();
+            if(structure.getName().equals(Structure.SpringStructureEnum.Extracellular.columnName)) {
+                hasExtracellularSite = true;
+            } else if(structure.getName().equals(Structure.SpringStructureEnum.Intracellular.columnName)) {
+                hasIntracellularSite = true;
+            }
+            if(mc.getName().equals(SpeciesContextSpec.AnchorSiteString)) {
+                hasAnchor = true;
+                mcpAnchor = mcp;
+                hasMembraneSite = true;
+            }
+        }
+    }
 
-
-
+    private boolean isPlanarYZ() {    // we only show entities that are 2D in the YZ plane
+        return true;    // TODO: check
     }
 
 
@@ -86,7 +108,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     }
     public void paintSelf(Graphics g, boolean bPaintContour) {
 
-        if(!isPlanarYZ) {
+        if(isPlanarYZ() == false) {
             return;
         }
         Graphics2D g2 = (Graphics2D) g;
@@ -99,15 +121,22 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             paintDummy(g, xPos, yPos);
         }
 
-        Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.getSiteAttributesMap();
-        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
-            MolecularComponentPattern mcp = entry.getKey();
-            SiteAttributesSpec sas = entry.getValue();
+        Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
+        MolecularType mt = mtp.getMolecularType();
+        for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+//        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
+//            MolecularComponentPattern mcp = entry.getKey();
+//            SiteAttributesSpec sas = entry.getValue();
+            MolecularComponent mc = mcp.getMolecularComponent();
+            SiteAttributesSpec sas = sasMap.get(mcp);
             Coordinate coord = sas.getCoordinate();
             double radius = sas.getRadius();
             Color color = sas.getColor().getColor();
             g.setColor(color);
-            drawCenteredCircle((Graphics2D)g, 10*(int)coord.getZ(), 10*(int)coord.getY(), 10*(int)radius);
+            drawCenteredCircle((Graphics2D)g,
+                    (int)(nmToPixelRatio * coord.getZ()),   // transform nm to pixels
+                    (int)(nmToPixelRatio * coord.getY()),
+                    (int)(nmToPixelRatio * radius));
         }
         g.setColor(oldColor);
     }
