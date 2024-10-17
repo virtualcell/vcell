@@ -91,13 +91,13 @@ public class ExecutionJob {
             this.omexHandler.extractOmex();
             this.sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
         } catch (IOException e){
-            String error = e.getMessage() + ", error for OmexHandler with " + inputFilePath;
+            String error = "Error for OmexHandler with " + inputFilePath;
             this.cliRecorder.writeErrorList(bioModelBaseName);
             this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "IO error with OmexHandler");
             logger.error(error);
             throw new RuntimeException(error, e);
         } catch (Exception e) {
-            String error = e.getMessage() + ", error for archive " + inputFilePath;
+            String error = "Error for archive " + inputFilePath;
             logger.error(error);
             if (omexHandler!=null) omexHandler.deleteExtractedOmex();
             this.cliRecorder.writeErrorList(bioModelBaseName);

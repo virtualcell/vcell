@@ -14,8 +14,7 @@ import org.vcell.util.FileUtils;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -137,9 +136,24 @@ public class ExecuteImpl {
         if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
             RunUtils.removeAndMakeDirs(adjustedOutputDir);
 
-        PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+        File targetInputFile;
 
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+        if(inputFile.canWrite()){
+            targetInputFile = inputFile;
+        } else {
+            String namePrefix = inputFile.getName().substring(0, inputFile.getName().lastIndexOf('.'));
+            Path tempFile = Files.createTempFile(namePrefix, ".omex");
+            File writableCopy = Files.copy(inputFile.toPath(), tempFile, StandardCopyOption.REPLACE_EXISTING).toFile();
+            if (!writableCopy.canWrite()
+                    && !writableCopy.setWritable(true) // Main Attempt
+                    && !writableCopy.setWritable(true, true)) // Backup Attempt
+                throw new RuntimeException("Unable to create writable file");
+            targetInputFile = writableCopy;
+        }
+
+        PythonCalls.generateStatusYaml(targetInputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+
+        ExecuteImpl.singleExecOmex(targetInputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
                 bEncapsulateOutput, bSmallMeshOverride, bBioSimMode);
     }
 
