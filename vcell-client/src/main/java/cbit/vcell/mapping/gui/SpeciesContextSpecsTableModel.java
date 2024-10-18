@@ -226,8 +226,8 @@ private void refreshData() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int col) {
-	try {	
-		SpeciesContextSpec scSpec = getValueAt(row);
+	try {
+		SpeciesContextSpec scSpec = getValueAt(row);	// TODO: if it's LangevinSpeciesContextSpec use super.getValueAt(row)
 		ColumnType columnType = columns.get(col);
 		switch (columnType){
 			case COLUMN_SPECIESCONTEXT:{
@@ -300,6 +300,7 @@ public SpeciesContextSpec getValueAt(int row) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
+	// TODO: if it's LangevinSpeciesContextSpec use the super.getValueAt(row) !!!
 	SpeciesContextSpec speciesContextSpec = getValueAt(rowIndex);
 	ColumnType columnType = columns.get(columnIndex);
 	switch (columnType){
@@ -565,6 +566,7 @@ public void setSimulationContext(SimulationContext simulationContext) {
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+	// TODO: if it's LangevinSpeciesContextSpec use super.getValueAt(row)
 	SpeciesContextSpec scSpec = getValueAt(rowIndex);
 	ColumnType columnType = columns.get(columnIndex);
 	switch (columnType){

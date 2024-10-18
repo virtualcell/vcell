@@ -17,10 +17,10 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
     private static final double nmToPixelRatio = 10;
 
-    private int xPos = 0;
-    private int yPos = 0;		// y position where we draw the shape
-    private int nameOffset = 0;	// offset upwards from yPos where we may write some text, like the expression of the sp
-    private int height = -1;	// -1 means it doesn't matter or that we can compute it from the shape + "tallest" bond
+    private int xPos = 0;       // TODO: we may not need these since we compute aitomatically offset, to nicely center the molecule
+    private int yPos = 0;		// y position where we draw the shape (pixels from top and left of painting area)
+
+//    private int nameOffset = 0;	// offset upwards from yPos where we may write some text, like the expression of the sp
 
     final LargeShapeCanvas shapePanel;
 
@@ -37,9 +37,16 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     private boolean hasMembraneSite = false;
     private boolean hasIntracellularSite = false;
 
+    // we use these to compute some offset from top and left, so that the molecule will look nicely centered on screen
+    private double minX = 0;            // coodrdinate of the leftmost site
+    private MolecularComponentPattern leftmostSite = null;
+    private double minY = 0;            // coordinate of the topmost site
+    private MolecularComponentPattern topmostSite = null;   // if more sites qualify we just keep the first we find
 
 
-    public SpeciesContextSpecLargeShape(int xPos, int yPos, int height, SpeciesContextSpec scs,
+    public SpeciesContextSpecLargeShape(int xPos, int yPos,
+                                        int height,     // we may not need this
+                                        SpeciesContextSpec scs,
                 LargeShapeCanvas shapePanel, Displayable owner, IssueListProvider issueListProvider) {
         super(issueListProvider);
 
@@ -47,7 +54,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         this.scs = scs;
         this.xPos = xPos;
         this.yPos = yPos;
-        this.height = height;
+//        this.height = height;
         this.shapePanel = shapePanel;
 
         if(scs != null) {
@@ -65,6 +72,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
         Set<MolecularInternalLinkSpec> ilSet = scs.getInternalLinkSet();
         MolecularType mt = mtp.getMolecularType();
+        int counter = 0;    // site counter
         for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
             MolecularComponent mc = mcp.getMolecularComponent();
             SiteAttributesSpec sas = sasMap.get(mcp);
@@ -79,6 +87,25 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
                 mcpAnchor = mcp;
                 hasMembraneSite = true;
             }
+            Coordinate coordinate = sas.getCoordinate();
+            double x = coordinate.getZ();
+            double y = coordinate.getY();
+            if(counter == 0) {
+                minX = x;
+                minY = y;
+                leftmostSite = mcp;
+                topmostSite = mcp;
+            } else {
+                if(x < minX) {
+                    minX = x;
+                    leftmostSite = mcp;
+                }
+                if(y < minY) {
+                    minY = y;
+                    topmostSite = mcp;
+                }
+            }
+            counter++;
         }
     }
 
