@@ -2,6 +2,8 @@ package cbit.vcell.mapping;
 
 import cbit.vcell.model.SpeciesContext;
 
+
+@Deprecated
 public class LangevinSpeciesContextSpec extends SpeciesContextSpec {
 
     private final SpeciesContextSpec theSpeciesContextSpec;

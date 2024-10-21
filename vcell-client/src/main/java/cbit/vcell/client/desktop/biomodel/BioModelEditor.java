@@ -772,10 +772,20 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 		} else if (singleSelection instanceof GeometryInfo) {
 			bShowInDatabaseProperties = true;
 			bottomComponent = geometryMetaDataPanel;
-		} else if (singleSelection instanceof LangevinSpeciesContextSpec) {
-			bottomComponent = getMolecularStructuresPropertiesPanel();
 		} else if (singleSelection instanceof SpeciesContextSpec) {
-			bottomComponent = getSpeciesContextSpecPanel();
+			SpeciesContextSpec scs = (SpeciesContextSpec)singleSelection;
+			switch(scs.provenance) {
+				case LangevinSpecs:
+					bottomComponent = getMolecularStructuresPropertiesPanel();
+					break;
+				case LangevinInitialConditions:	// TODO: we'll have here a simplified SpeciesContextSpecPanel
+					bottomComponent = getSpeciesContextSpecPanel();
+					break;
+				case GeneralInitialConditions:
+				default:
+					bottomComponent = getSpeciesContextSpecPanel();
+					break;
+			}
 		} else if (singleSelection instanceof ReactionSpec) {
 			bottomComponent = getKineticsTypeTemplatePanel();
 		} else if (singleSelection instanceof ReactionRuleSpec) {		// 

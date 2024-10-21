@@ -28,7 +28,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
-import cbit.vcell.mapping.LangevinSpeciesContextSpec;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -270,6 +269,9 @@ private void updateShape() {
 	if(speciesContext == null) {
 		return;
 	}
+	if(shapePanel.getGraphics() == null) {
+		return;
+	}
 	SpeciesPattern sp = speciesContext.getSpeciesPattern();
 	spls = new SpeciesPatternLargeShape(xOffsetInitial, yOffsetInitial, -1, sp, shapePanel, speciesContext, issueManager);
 	
@@ -308,11 +310,15 @@ public void setBioModel(BioModel newValue) {
 @Override
 protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	SpeciesContextSpec speciesContextSpec = null;
-	if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof SpeciesContextSpec
-			&& !(selectedObjects[0] instanceof LangevinSpeciesContextSpec)) {
+	if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof SpeciesContextSpec) {
 		speciesContextSpec = (SpeciesContextSpec) selectedObjects[0];
+		// TODO: we'll need to be more specific here in the future, we also return for LangevinInitialConditions
+		if(speciesContextSpec.provenance == SpeciesContextSpec.Provenance.LangevinSpecs) {
+			setSpeciesContextSpec(null);
+		}
 	}
-	setSpeciesContextSpec(speciesContextSpec);	
+	// TODO: eventually we'll do this only for GeneralInitialConditions
+	setSpeciesContextSpec(speciesContextSpec);
 }
 
 private JButton getZoomLargerButton() {

@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 
 // we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
 // can choose absolute layout and place everything exactly as we see fit
@@ -135,6 +136,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		public void focusLost(FocusEvent e) {
 			Object source = e.getSource();
 			if (source == siteXField || source == siteYField || source == siteZField) {
+				// TODO: are these even needed? we already call changePosition() on actionPerformed()
 				changePosition((JTextField)source);
 			} else if(source == linkLengthField) {
 				// TODO: do NOT call here changeLinkLength(), it will modified the newly selected link instead the old one
@@ -161,25 +163,26 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				return;
 			}
 			if (e.getSource() == getSpeciesContextSpecsTable().getSelectionModel()) {
-				setSelectedObjectsFromTable(getSpeciesContextSpecsTable(), speciesContextSpecsTableModel);
+				System.out.println("valueChanged: speciesContextSpecsTableModel");
 				int row = getSpeciesContextSpecsTable().getSelectedRow();
 				SpeciesContextSpec scsSelected = speciesContextSpecsTableModel.getValueAt(row);
-				if(scsSelected instanceof LangevinSpeciesContextSpec) {
-					LangevinSpeciesContextSpec lscs = (LangevinSpeciesContextSpec)scsSelected;
-					SpeciesContextSpec theSpeciesContextStep = lscs.getTheSpeciesContextSpec();
-					setSpeciesContextSpec(theSpeciesContextStep);
-				} else {
-					setSpeciesContextSpec(scsSelected);
-				}
-			}
-			if (e.getSource() == getMolecularTypeSpecsTable().getSelectionModel()) {
+				setSpeciesContextSpec(scsSelected);
+
+				ArrayList<Object> selectedObjects = new ArrayList<Object>();
+				selectedObjects.add(scsSelected);
+				selectionManager.setSelectedObjects(selectedObjects.toArray());
+
+			} else if (e.getSource() == getMolecularTypeSpecsTable().getSelectionModel()) {
+				System.out.println("valueChanged: molecularTypeSpecsTableModel");
 				int row = getMolecularTypeSpecsTable().getSelectedRow();
 				MolecularComponentPattern mcmSelected = molecularTypeSpecsTableModel.getValueAt(row);
 				setMolecularComponentPattern(mcmSelected);
-			}
-			if(e.getSource() == siteLinksList) {
+
+			} else if(e.getSource() == siteLinksList) {
+				System.out.println("valueChanged: siteLinksList");
 				showLinkLength(siteLinksList.getSelectedValue());
 			}
+			// for siteXField, siteYField, siteZField we have actionPerformed()
 		}
 	}
 

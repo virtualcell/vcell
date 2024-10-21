@@ -9,7 +9,6 @@ import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.graph.gui.SsldLargeShapePanel;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
-import cbit.vcell.mapping.LangevinSpeciesContextSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.Model;
@@ -242,12 +241,13 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
         SpeciesContextSpec speciesContextSpec = null;
-        if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof LangevinSpeciesContextSpec) {
-            LangevinSpeciesContextSpec lscs = (LangevinSpeciesContextSpec)selectedObjects[0];
-            speciesContextSpec = lscs.getTheSpeciesContextSpec();
+        if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof SpeciesContextSpec) {
+           speciesContextSpec = (SpeciesContextSpec) selectedObjects[0];
+            if(speciesContextSpec.provenance != SpeciesContextSpec.Provenance.LangevinSpecs) {
+                return;
+            }
         }
         setSpeciesContextSpec(speciesContextSpec);
-
     }
 
     private JButton getZoomLargerButton() {

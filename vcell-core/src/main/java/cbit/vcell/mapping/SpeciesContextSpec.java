@@ -457,6 +457,23 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     // TODO: add getIs2DSQL() and readIs2DSQL(), similar to getSiteAttributesSQL(), readSiteAttributesSQL
     private boolean is2D = false;
 
+    // We implement Provenance as a means to use different PropertiesPanels when viewing SpeciesContextSpec properties
+    // we want the general SCS panel for non-springsalad applications, and 2 special panels for
+    // initial conditions - simplified initial conditions panel without the parameters table which make no sense for springsalad
+    // site specifications properties panel = for springsalad site attributes (will contain the viewer)
+    public transient Provenance provenance = Provenance.GeneralInitialConditions;
+    public enum Provenance {		// SpringSaLaD specific
+        GeneralInitialConditions,
+        LangevinInitialConditions,
+        LangevinSpecs;
+//
+//        final public String columnName;
+//        private SpringStructureEnum(String columnName) {
+//            this.columnName = columnName;
+//        }
+    }
+
+
     protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
     private SpeciesContextSpecParameter[] fieldParameters = null;
     private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];

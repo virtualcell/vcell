@@ -227,7 +227,7 @@ private void refreshData() {
  */
 public Object getValueAt(int row, int col) {
 	try {
-		SpeciesContextSpec scSpec = getValueAt(row);	// TODO: if it's LangevinSpeciesContextSpec use super.getValueAt(row)
+		SpeciesContextSpec scSpec = getValueAt(row);
 		ColumnType columnType = columns.get(col);
 		switch (columnType){
 			case COLUMN_SPECIESCONTEXT:{
@@ -282,14 +282,21 @@ public Object getValueAt(int row, int col) {
 
 @Override
 public SpeciesContextSpec getValueAt(int row) {
-	if(owner instanceof MolecularStructuresPanel) {
-		SpeciesContextSpec scs = super.getValueAt(row);
-		if(scs != null) {
-			LangevinSpeciesContextSpec lscs = new LangevinSpeciesContextSpec(scs, scs.getSimulationContext());
-			return lscs;
-		}
+	SpeciesContextSpec scs = super.getValueAt(row);
+	if(scs == null) {
+		return null;
 	}
-	return super.getValueAt(row);
+	SimulationContext sc = getSimulationContext();
+	if(getSimulationContext().getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+		if(owner instanceof MolecularStructuresPanel) {
+			scs.provenance = SpeciesContextSpec.Provenance.LangevinSpecs;
+		} else {
+			scs.provenance = SpeciesContextSpec.Provenance.LangevinInitialConditions;
+		}
+	} else {
+		scs.provenance = SpeciesContextSpec.Provenance.GeneralInitialConditions;
+	}
+	return scs;
 }
 
 /**
@@ -300,7 +307,6 @@ public SpeciesContextSpec getValueAt(int row) {
  * @param columnIndex int
  */
 public boolean isCellEditable(int rowIndex, int columnIndex) {
-	// TODO: if it's LangevinSpeciesContextSpec use the super.getValueAt(row) !!!
 	SpeciesContextSpec speciesContextSpec = getValueAt(rowIndex);
 	ColumnType columnType = columns.get(columnIndex);
 	switch (columnType){
@@ -566,7 +572,6 @@ public void setSimulationContext(SimulationContext simulationContext) {
 
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-	// TODO: if it's LangevinSpeciesContextSpec use super.getValueAt(row)
 	SpeciesContextSpec scSpec = getValueAt(rowIndex);
 	ColumnType columnType = columns.get(columnIndex);
 	switch (columnType){
