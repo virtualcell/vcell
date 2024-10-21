@@ -1,0 +1,520 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" metaid="cd1c13d5-5d04-4a19-8086-1437bc959084" version="4">
+  <model id="MODEL1501220000" metaid="arFramework3" name="Boehm2014 - isoform-specific dimerization of pSTAT5A and pSTAT5B">
+    <notes>
+      <body xmlns="http://www.w3.org/1999/xhtml">
+    <div class="dc:title">Boehm2014 - isoform-specific dimerization of pSTAT5A and pSTAT5B</div>
+<div class="dc:description">To study STAT5 activation, the authors build a dynamic model of pSTAT5 isoform dimerization. Combinatorial binding of pSTAT5A and pSTAT5B is analysed using model hypotheses and concurrent experiments. Model parameters are derived from the experiments on Ba/F3 cells. Results show that pSTAT5 heterodimerization hypothesis for STAT5 activation favours experimental results.
+<br/></div>
+<div class="dc:bibliographicCitation">
+  <p>This model is described in the article:</p>
+  <div class="bibo:title">
+    <a href="http://identifiers.org/pubmed/25333863" title="Access to this publication">
+    Identification of isoform-specific dynamics in phosphorylation-dependent STAT5 dimerization by quantitative mass spectrometry and mathematical modeling</a>
+  </div>
+  <div class="bibo:authorList">Boehm ME, Adlung L, Schilling M, Roth S, Klingmüller U, Lehmann WD</div>
+  <div class="bibo:Journal">J Proteome Res. 2014 Dec 5;13(12):5685-94</div>
+  <p>Abstract:</p>
+  <div class="bibo:abstract">
+    <p>
+    STAT5A and STAT5B are important transcription factors that dimerize and transduce activation signals of cytokine receptors directly to the nucleus. A typical cytokine that mediates STAT5 activation is erythropoietin (Epo). Differential functions of STAT5A and STAT5B have been reported. However, the extent to which phosphorylated STAT5A and STAT5B (pSTAT5A, pSTAT5B) form homo- or heterodimers is not understood, nor is how this might influence the signal transmission to the nucleus. To study this, we designed a concept to investigate the isoform-specific dimerization behavior of pSTAT5A and pSTAT5B that comprises isoform-specific immunoprecipitation (IP), measurement of the degree of phosphorylation, and isoform ratio determination between STAT5A and STAT5B. For the main analytical method, we employed quantitative label-free and -based mass spectrometry. For the cellular model system, we used Epo receptor (EpoR)-expressing BaF3 cells (BaF3-EpoR) stimulated with Epo. Three hypotheses of dimer formation between pSTAT5A and pSTAT5B were used to explain the analytical results by a static mathematical model: formation of (i) homodimers only, (ii) heterodimers only, and (iii) random formation of homo- and heterodimers. The best agreement between experimental data and model simulations was found for the last case. Dynamics of cytoplasmic STAT5 dimerization could be explained by distinct nuclear import rates and individual nuclear retention for homo- and heterodimers of phosphorylated STAT5.
+    </p>
+  </div>
+</div>
+<div class="dc:publisher">
+  <p>This model is hosted on 
+  <a href="http://www.ebi.ac.uk/biomodels/">BioModels Database</a>
+  and identified by: 
+  <a href="http://identifiers.org/biomodels.db/BIOMD0000000591">BIOMD0000000591</a>.</p>
+  <p>To cite BioModels Database, please use: 
+  <a href="http://identifiers.org/pubmed/26225232" title="Latest BioModels Database publication">BioModels:
+  Content, Features, Functionality, and Use.</a>.</p>
+</div>
+<div class="dc:license">
+  <p>To the extent possible under law, all copyright and related or
+  neighbouring rights to this encoded model have been dedicated to
+  the public domain worldwide. Please refer to 
+  <a href="http://creativecommons.org/publicdomain/zero/1.0/" title="Access to: CC0 1.0 Universal (CC0 1.0), Public Domain Dedication">CC0
+  Public Domain Dedication</a> for more information.</p>
+</div>
+</body>
+    </notes>
+    <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+        <rdf:Description rdf:about="#arFramework3">
+	<dc:creator>
+	<rdf:Bag>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Adlung</vCard:Family>
+	<vCard:Given>Lorenz</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>l.adlung@dkfz-heidelberg.de</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>German Cancer Research Center (DKFZ) and Heidelberg University</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Varusai</vCard:Family>
+	<vCard:Given>Thawfeek</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>tvarusai@ebi.ac.uk</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>EMBL-EBI</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	</rdf:Bag>
+	</dc:creator>
+	<dcterms:created rdf:parseType="Resource">
+	<dcterms:W3CDTF>2016-02-11T10:59:23Z</dcterms:W3CDTF>
+	</dcterms:created>
+	<dcterms:modified rdf:parseType="Resource">
+	<dcterms:W3CDTF>2016-02-25T13:20:10Z</dcterms:W3CDTF>
+	</dcterms:modified>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL1501220000"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/BIOMD0000000591"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/25333863"/>
+	</rdf:Bag>
+	</bqmodel:isDescribedBy>
+	<bqbiol:occursIn>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/bto/BTO:0001516"/>
+	</rdf:Bag>
+	</bqbiol:occursIn>
+	<bqbiol:hasTaxon>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/taxonomy/10090"/>
+	</rdf:Bag>
+	</bqbiol:hasTaxon>
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0038162"/>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0042522"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+      <listOfCompartments>
+      <compartment constant="true" id="cyt" metaid="_0a9851f7-5403-487a-8de2-97308ef96922" sboTerm="SBO:0000290" size="1.4" spatialDimensions="3">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+            <rdf:Description rdf:about="#_0a9851f7-5403-487a-8de2-97308ef96922">
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005737"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+      <compartment constant="true" id="nuc" metaid="_17ba26f5-ca17-4012-a9a0-0f831f5fc77e" sboTerm="SBO:0000290" size="0.45" spatialDimensions="3">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+            <rdf:Description rdf:about="#_17ba26f5-ca17-4012-a9a0-0f831f5fc77e">
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005634"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species boundaryCondition="false" compartment="cyt" constant="false" hasOnlySubstanceUnits="false" id="STAT5A" initialConcentration="1" metaid="_98c8d280-d69b-473f-85b4-5ccf4ca30d76" sboTerm="SBO:0000252">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_98c8d280-d69b-473f-85b4-5ccf4ca30d76">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42230"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="false" compartment="cyt" constant="false" hasOnlySubstanceUnits="false" id="STAT5B" initialConcentration="1" metaid="_0096b7a1-42b4-4cbc-a558-aba488d54572" sboTerm="SBO:0000252">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_0096b7a1-42b4-4cbc-a558-aba488d54572">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42232"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="false" compartment="cyt" constant="false" hasOnlySubstanceUnits="false" id="pApB" initialConcentration="0" metaid="_0f4a02ed-5d0b-4ea3-8d33-3f6fa8f0d302" sboTerm="SBO:0000609">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_0f4a02ed-5d0b-4ea3-8d33-3f6fa8f0d302">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42232"/>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42230"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="false" compartment="cyt" constant="false" hasOnlySubstanceUnits="false" id="pApA" initialConcentration="0" metaid="ffd82348-8dd5-4f11-a64b-643a8b76c21f" sboTerm="SBO:0000608">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#ffd82348-8dd5-4f11-a64b-643a8b76c21f">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42230"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="false" compartment="cyt" constant="false" hasOnlySubstanceUnits="false" id="pBpB" initialConcentration="0" metaid="_7c568865-c1a6-4edf-ae1c-9d53f4460302" sboTerm="SBO:0000608">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_7c568865-c1a6-4edf-ae1c-9d53f4460302">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42232"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="false" compartment="nuc" constant="false" hasOnlySubstanceUnits="false" id="nucpApA" initialConcentration="0" metaid="_5b076dd9-02f1-4239-afb0-b3ff826cf81b" sboTerm="SBO:0000608">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_5b076dd9-02f1-4239-afb0-b3ff826cf81b">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42230"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="false" compartment="nuc" constant="false" hasOnlySubstanceUnits="false" id="nucpApB" initialConcentration="0" metaid="_62cf83d1-bebe-4dac-8f64-dae5f1e08c67" sboTerm="SBO:0000609">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_62cf83d1-bebe-4dac-8f64-dae5f1e08c67">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42230"/>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42232"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="false" compartment="nuc" constant="false" hasOnlySubstanceUnits="false" id="nucpBpB" initialConcentration="0" metaid="e5fbd11b-d6bf-4e79-be1c-337be8dea684" sboTerm="SBO:0000608">
+        <annotation>
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#e5fbd11b-d6bf-4e79-be1c-337be8dea684">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P42232"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter constant="true" id="Epo_degradation_BaF3" metaid="_294c4b70-d5eb-4420-ac14-dac75a23ac27" value="0.0269765368088175"/>
+      <parameter constant="true" id="k_exp_hetero" metaid="cff87b4f-827c-4af6-92f3-666e5f09f006" value="1.00097114635938E-5"/>
+      <parameter constant="true" id="k_exp_homo" metaid="_5a094c53-5992-48d6-a7bb-db80f3713bb4" value="0.0061723799618614"/>
+      <parameter constant="true" id="k_imp_hetero" metaid="_4bfd48d3-c4c2-489a-8968-0762edf5eadc" value="0.0163701561812467"/>
+      <parameter constant="true" id="k_imp_homo" metaid="_10c00014-1d3b-4cc9-8baf-ff8672157153" value="9.68076817909446E4"/>
+      <parameter constant="true" id="k_phos" metaid="ca25bdb4-f1bd-46b1-b663-16f2da42eaaf" value="1.57676469913504E4"/>
+      <parameter constant="true" id="ratio" metaid="_1ff2a03a-24bc-493d-a8b6-333db88db3cd" value="0.693"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment metaid="_4e7d6668-1a40-4fab-8071-2f72255bccb6" symbol="STAT5A">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <times/>
+            <cn> 207.6 </cn>
+            <ci> ratio </ci>
+          </apply>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_919518df-15af-4b74-b97a-a7664922e4bb" symbol="STAT5B">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <minus/>
+            <cn> 207.6 </cn>
+            <apply>
+              <times/>
+              <cn> 207.6 </cn>
+              <ci> ratio </ci>
+            </apply>
+          </apply>
+        </math>
+            </initialAssignment>
+    </listOfInitialAssignments>
+    <listOfReactions>
+      <reaction id="reaction1" metaid="_4be183df-c038-476f-b9de-040c78425afb" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_5eb9c86a-9cca-4ba6-b426-38b4a001ed38" species="STAT5A" stoichiometry="2"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_9f58199b-685a-4230-84dc-a62b6255c4b4" species="pApA" stoichiometry="1"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="c7271051-4883-436b-b591-35978cc703a7" species="STAT5A"/>
+        </listOfModifiers>
+        <kineticLaw metaid="cfce3235-0739-40d7-bd54-4acd899e4d0e">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn type="e-notation">1.25 <sep/> -7 </cn>
+              <apply>
+                <power/>
+                <ci> STAT5A </ci>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <ci> k_phos </ci>
+              <apply>
+                <exp/>
+                <apply>
+                  <times/>
+                  <apply>
+                    <minus/>
+                    <ci> Epo_degradation_BaF3 </ci>
+                  </apply>
+                  <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction2" metaid="_453c49e4-e67f-4efe-ae4a-1f345059ef83" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="cf5c43fb-c35d-4a35-baf8-84b0a8164f76" species="STAT5A" stoichiometry="1"/>
+          <speciesReference metaid="_5c04deba-b5a7-4eb3-b925-41a4972274c5" species="STAT5B" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="fb59f084-b308-4a9a-afa4-992bc50d1468" species="pApB" stoichiometry="1"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_1836b608-abf8-4109-9911-186eb1feaeea" species="STAT5A"/>
+          <modifierSpeciesReference metaid="_1d4cb083-08d0-4b6f-81cd-5de26b07f506" species="STAT5B"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_433adf39-9235-410f-a77e-c8f9561cc64b">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn type="e-notation">1.25 <sep/> -7 </cn>
+              <ci> STAT5A </ci>
+              <ci> STAT5B </ci>
+              <ci> k_phos </ci>
+              <apply>
+                <exp/>
+                <apply>
+                  <times/>
+                  <apply>
+                    <minus/>
+                    <ci> Epo_degradation_BaF3 </ci>
+                  </apply>
+                  <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction3" metaid="e6eeab34-39b2-4cdc-a266-d419b3acf630" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_9a924aac-6249-4fb9-8faf-a282e5d82015" species="STAT5B" stoichiometry="2"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="a6a3ca21-f3a2-4aa5-a3d4-0f559144caf8" species="pBpB" stoichiometry="1"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="e2a94192-b319-478e-ba85-b10cb64bb482" species="STAT5B"/>
+        </listOfModifiers>
+        <kineticLaw metaid="c49f4650-8ad9-40c9-aa0f-f6e155e237dc">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <cn type="e-notation">1.25 <sep/> -7 </cn>
+              <apply>
+                <power/>
+                <ci> STAT5B </ci>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <ci> k_phos </ci>
+              <apply>
+                <exp/>
+                <apply>
+                  <times/>
+                  <apply>
+                    <minus/>
+                    <ci> Epo_degradation_BaF3 </ci>
+                  </apply>
+                  <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction4" metaid="_0df3661f-4e96-470e-8be6-7655e64d7ce6" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="e1c936e0-0260-420e-ab1b-f42be6bd7c9d" species="pApA" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_1a0c98f9-927f-4462-9a8b-1f0e541f915c" species="nucpApA" stoichiometry="1"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_877a02d6-60ac-41c8-a701-5f94c67ca311" species="pApA"/>
+        </listOfModifiers>
+        <kineticLaw metaid="bf76cf83-ac43-44d9-b528-616c5312ac13">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> k_imp_homo </ci>
+              <ci> pApA </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction5" metaid="_22ad5218-5e41-4bd5-ab5d-b812f244c3a5" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_63a23efb-2ef6-4ac7-9b44-bdbbed7b5948" species="pApB" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_7e712b53-ce27-4f7e-97c4-4b47f7b61a35" species="nucpApB" stoichiometry="1"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="a2305763-0334-4aba-8fe1-d91cac326c14" species="pApB"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_06572589-814c-4465-a1a1-b44e3a648e18">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> k_imp_hetero </ci>
+              <ci> pApB </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction6" metaid="_1e95c9d9-d258-4356-9bc5-979e9a09c27f" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_1ba0dd02-7132-4fec-95cc-02992a865f18" species="pBpB" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_5254e931-e3a2-47dd-991e-f255ee5ab620" species="nucpBpB" stoichiometry="1"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="e93380bf-8343-4bfc-909d-1590aca38693" species="pBpB"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_42dba5ac-f9a9-43a8-87a3-8ea1ca8000db">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> k_imp_homo </ci>
+              <ci> pBpB </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction7" metaid="b3464b2f-1c5e-44af-860f-b67ec99f2c22" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_1112106a-1f61-4ce1-9606-458b8a83fea8" species="nucpApA" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_208b6dbc-ebd7-421d-9c5c-ddccf4db3bca" species="STAT5A" stoichiometry="2"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_23d43055-637d-48f0-8693-a801232bde63" species="nucpApA"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_1308a552-e95b-4fc6-953d-af06ce396360">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> k_exp_homo </ci>
+              <ci> nucpApA </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction8" metaid="ef78a089-1f27-477d-b34e-2e09124ca025" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_5b1fadb6-3f8e-42f8-b90b-ef000e21c307" species="nucpApB" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="b2966a59-ac24-41c1-a6aa-97ff2ad4c685" species="STAT5A" stoichiometry="1"/>
+          <speciesReference metaid="dca36207-3ed4-43f9-b1a4-1fd632f831ed" species="STAT5B" stoichiometry="1"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_85457151-ef00-48e9-80aa-ed5caaf9e415" species="nucpApB"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_4d162a93-c794-4f91-bbcf-15909eb49cb8">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> k_exp_hetero </ci>
+              <ci> nucpApB </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction id="reaction9" metaid="a2dfe303-70aa-46d8-9d09-9a71765f991d" reversible="false">
+        <listOfReactants>
+          <speciesReference metaid="_4c182506-7e69-479d-80b2-c575ff8a4d36" species="nucpBpB" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="f2fbf49d-89cc-4a10-b50c-506c44e9b432" species="STAT5B" stoichiometry="2"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="ff6a91d9-4757-4ca5-8ce4-6b7ccc8a0206" species="nucpBpB"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_45223ca1-fbcf-4d85-bf64-bd182d7393e4">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> k_exp_homo </ci>
+              <ci> nucpBpB </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>
