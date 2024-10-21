@@ -553,6 +553,14 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             return null;
         }
 
+        @Override
+        public String getSymbolName(SymbolTableEntry symbolTableEntry){
+            if (symbolTableEntry instanceof StructureSize) {
+                return symbolTableEntry.getName();
+            }
+            return super.getSymbolName(symbolTableEntry);
+        }
+
         public ScopedSymbolTable getScopedSymbolTable(){
             return Model.this;
         }
