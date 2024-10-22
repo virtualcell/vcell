@@ -127,16 +127,16 @@ public class OmexHandler {
         }
 
         // Test corner cases
-        if (sedmlMap.get(MASTER).isEmpty()){
-            if (masterCount > 0)
-                throw new RuntimeException("No SED-MLs are intended to be executed (non SED-ML file is set to be master)");
-            if (sedmlMap.get(REGULAR).isEmpty())
-                throw new RuntimeException("There are no SED-MLs in the archive to execute");
+        if (!sedmlMap.get(MASTER).isEmpty()) return sedmlMap.get(MASTER).stream().map(ArchiveEntry::getFilePath).toList();
 
-            return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
-        }
-
-        return sedmlMap.get(MASTER).stream().map(ArchiveEntry::getFilePath).toList();
+        if (masterCount > 0)
+            logger.warn("No SED-MLs are intended to be executed (non SED-ML file is set to be master)");
+        else
+            logger.warn("No files in the OMEX archive are set with \"master\" flag.");
+        if (sedmlMap.get(REGULAR).isEmpty())
+            throw new UnsupportedOperationException("There are no SED-MLs in the archive to execute");
+        logger.warn("Regular SED-ML found; executing regular SED-MLs in lieu of master files");
+        return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
     }
 
     private boolean isSedmlFormat(ArchiveEntry entry) {

@@ -69,14 +69,14 @@ public class ExecutionJob {
     }
 
     /**
-     * Run the neexed steps to prepare an archive for execution.
+     * Run the needed steps to prepare an archive for execution.
      * 
      * Follow up call: `executeArchive()`
      * 
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues.
      */
-    public void preprocessArchive() throws PythonStreamException, IOException {
+    public void preprocessArchive() throws PythonStreamException, IOException, ExecutionException {
         // Start the clock
         this.startTime = System.currentTimeMillis();
 
@@ -90,20 +90,20 @@ public class ExecutionJob {
             this.omexHandler = new OmexHandler(inputFilePath, outputDir);
             this.omexHandler.extractOmex();
             this.sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
-        } catch (IOException e){
+        } catch (IOException e) { // IO Errors suggest a system error; package with a RuntimeException
             String error = e.getMessage() + ", error for OmexHandler with " + inputFilePath;
             this.cliRecorder.writeErrorList(bioModelBaseName);
             this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "IO error with OmexHandler");
             logger.error(error);
             throw new RuntimeException(error, e);
-        } catch (Exception e) {
+        } catch (Exception e) { // All other error suggest a processing or VCell specific error; package with an ExecutionException
             String error = e.getMessage() + ", error for archive " + inputFilePath;
             logger.error(error);
             if (omexHandler!=null) omexHandler.deleteExtractedOmex();
             this.cliRecorder.writeErrorList(bioModelBaseName);
             this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "unknown error with the archive file");
 
-            throw new RuntimeException(error, e);
+            throw new ExecutionException(error, e);
         } 
         
         // Update Status
