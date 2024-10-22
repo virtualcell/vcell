@@ -86,7 +86,6 @@ public class BMDB_SBMLImportTest {
 
 	public static Map<Integer, SBMLTestSuiteTest.FAULT> knownFaults() {
 		HashMap<Integer, SBMLTestSuiteTest.FAULT> faults = new HashMap();
-		faults.put(15, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  cannot use reserved symbol 'x' as a Reaction name
 		faults.put(24, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment_0000004 </ci><ci> rP </ci><apply><power/><apply><csymbol encoding="tex
 		faults.put(25, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><piecewise><piece><cn> 0 </cn><apply><lt/><apply><minus/><apply><csymbol encoding="text" definitionURL
 		faults.put(34, SBMLTestSuiteTest.FAULT.DELAY);  // cause:  UnsupportedConstruct: unsupported SBML element 'delay' in expression ' <math><apply><times/><ci> compartment_0000001 </ci><apply><csymbol encoding="text" definitionURL="http://www
