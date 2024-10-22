@@ -233,7 +233,6 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 
 		String exportBaseURL = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty);
 		String exportBaseDir = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirInternalProperty);
-		String exportN5Dir = PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir);
 
 		
 //		// see if we've done this before, and try to get it
