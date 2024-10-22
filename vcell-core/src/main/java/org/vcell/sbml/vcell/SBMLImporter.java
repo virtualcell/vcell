@@ -3189,15 +3189,20 @@ public class SBMLImporter {
                 }
                 Structure reactionStructure = getReactionStructure(sbmlModel, sbmlReaction, vcBioModel, lambdaFunctions, sbmlSymbolMapping, vcLogger);
                 final ReactionStep vcReaction;
+                String reactionStepName = sbmlReaction.getId();
+                // see if reactionStepName is in the reserved words of Model (e.g. x,y,z,t)
+                if(vcModel.getReservedSymbolByName(reactionStepName) != null){
+                    reactionStepName = TokenMangler.fixTokenStrict("RESERVED_"+reactionStepName);
+                }
                 if(bIsFluxReaction){
                     if(!(reactionStructure instanceof Membrane)){
                         throw new SBMLImportException("Flux reaction on " + reactionStructure.getClass().getSimpleName() + ", not a membrane.");
                     }
-                    vcReaction = new FluxReaction(vcModel, (Membrane) reactionStructure, null, sbmlReaction.getId(), bReversible);
+                    vcReaction = new FluxReaction(vcModel, (Membrane) reactionStructure, null, reactionStepName, bReversible);
                     sbmlSymbolMapping.putReactionMapping(sbmlReaction, vcReaction);
                     vcReaction.setModel(vcModel);
                 } else {
-                    vcReaction = new SimpleReaction(vcModel, reactionStructure, sbmlReaction.getId(), bReversible);
+                    vcReaction = new SimpleReaction(vcModel, reactionStructure, reactionStepName, bReversible);
                     sbmlSymbolMapping.putReactionMapping(sbmlReaction, vcReaction);
                 }
 
