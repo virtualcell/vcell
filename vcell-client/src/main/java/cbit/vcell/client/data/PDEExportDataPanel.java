@@ -1710,7 +1710,7 @@ private void setFormatChoices_0(/*boolean bMembrane*/){
 		cb.addItem(ExportFormat.FORMAT_JPEG);
 		cb.addItem(ExportFormat.NRRD);
 
-		if (!(getPdeDataContext().getVCDataIdentifier() instanceof LocalVCDataIdentifier)){
+		if (getPdeDataContext() != null && !(getPdeDataContext().getVCDataIdentifier() instanceof LocalVCDataIdentifier)){
 			cb.addItem(ExportFormat.N5);
 		}
 //		cb.addItem(ExportFormat.IMAGEJ);
