@@ -13,7 +13,7 @@ import picocli.CommandLine.Option;
 import java.io.File;
 import java.util.concurrent.Callable;
 
-@Command(name = "execute", description = "run .vcml or .omex files via Python API")
+@Command(name = "execute", description = "run .vcml or .omex files")
 public class ExecuteCommand implements Callable<Integer> {
 
     private final static Logger logger = org.apache.logging.log4j.LogManager.getLogger(ExecuteCommand.class);

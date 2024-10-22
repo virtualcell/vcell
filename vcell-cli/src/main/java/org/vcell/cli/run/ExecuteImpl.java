@@ -38,6 +38,7 @@ public class ExecuteImpl {
         // Build statuses
         for (File inputFile : inputFiles){
             String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
+            logger.debug("Performing initial processing of `" + bioModelBaseName + "` (source file: `" + inputFile.getName() +"`)");
             String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
             String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
             File adjustedOutputDir = new File(targetOutputDir);
