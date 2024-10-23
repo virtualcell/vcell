@@ -161,8 +161,8 @@ jobs:
         # Do the execution
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        #docker run --mount type=volume,src=$GITHUB_WORKSPACE/set_${{ matrix.sets }},dst=/root,volume-driver=local,volume-opt=o=iocharset=utf8 $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
-        run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root:iocharset=utf8 $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
+        run: docker run --mount type=bind,src=$GITHUB_WORKSPACE/set_${{ matrix.sets }},dst=/root,volume-driver=local,volume-opt=o=iocharset=utf8 $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
+        #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root:iocharset=utf8 $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
   
       - name: Check For Success
         run: |
