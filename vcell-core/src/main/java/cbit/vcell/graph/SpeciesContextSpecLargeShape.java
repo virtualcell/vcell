@@ -15,10 +15,15 @@ import java.util.List;
 
 public class SpeciesContextSpecLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 
-    private static final double nmToPixelRatio = 10;
+    private static final double nmToPixelRatio = 20;
+    private static final double DEFAULT_UPPER_CORNER = 4;       // default screen coordinates where we want to display the first site
+    private static final double DEFAULT_LEFT_CORNER = 10;       // in nm
 
-    private int xPos = 0;       // TODO: we may not need these since we compute aitomatically offset, to nicely center the molecule
-    private int yPos = 0;		// y position where we draw the shape (pixels from top and left of painting area)
+    // x, y positions where we want to begin drawing the shape (pixels from top and left of painting area)
+    private int xPos = 0;       // we use these and the sites coordinates to compute offset, to nicely center the molecule
+    private int yPos = 0;
+    private double x_offset;
+    private double y_offset;
 
 //    private int nameOffset = 0;	// offset upwards from yPos where we may write some text, like the expression of the sp
 
@@ -30,9 +35,13 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     private SpeciesContext sc = null;
     private SpeciesPattern sp = null;
     private MolecularTypePattern mtp = null;
+    private Structure structure = null;
 
     private boolean hasAnchor = false;
     private MolecularComponentPattern mcpAnchor = null;
+    private double membraneX = 0;
+    private double membraneY = 0;
+    private double membraneRadius = 0;
     private boolean hasExtracellularSite = false;
     private boolean hasMembraneSite = false;
     private boolean hasIntracellularSite = false;
@@ -60,15 +69,17 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         if(scs != null) {
             this.sc = scs.getSpeciesContext();
         }
-        if(this.sc != null) {
-            this.sp = this.sc.getSpeciesPattern();
+        if(sc != null) {
+            this.sp = sc.getSpeciesPattern();
+            this.structure = sc.getStructure();
         }
-        if(this.sp != null) {
-            if(this.sp.getMolecularTypePatterns().size() != 1) {
+        if(sp != null) {
+            if(sp.getMolecularTypePatterns().size() != 1) {
                 throw new RuntimeException("Number of Molecules must be exactly 1");
             }
-            this.mtp = this.sp.getMolecularTypePatterns().get(0);
+            this.mtp = sp.getMolecularTypePatterns().get(0);
         }
+
         Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
         Set<MolecularInternalLinkSpec> ilSet = scs.getInternalLinkSet();
         MolecularType mt = mtp.getMolecularType();
@@ -86,6 +97,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
                 hasAnchor = true;
                 mcpAnchor = mcp;
                 hasMembraneSite = true;
+                membraneX = sasMap.get(mcp).getZ();
+                membraneY = sasMap.get(mcp).getY();
+                membraneRadius = sasMap.get(mcp).getRadius();
             }
             Coordinate coordinate = sas.getCoordinate();
             double x = coordinate.getZ();
@@ -107,6 +121,10 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             }
             counter++;
         }
+        // now compute the offsets, we want the sites nicely centered on screen
+        // UPPER_CORNER, LEFT_CORNER
+        x_offset = DEFAULT_LEFT_CORNER - minX;
+        y_offset = DEFAULT_UPPER_CORNER - minY;
     }
 
     private boolean isPlanarYZ() {    // we only show entities that are 2D in the YZ plane
@@ -118,6 +136,52 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         return;     // implement later
     }
     private void paintCompartments(Graphics g) {
+        Graphics2D g2 = (Graphics2D)g;
+        Color colorOld = g2.getColor();
+        Paint paintOld = g2.getPaint();
+        Font fontOld = g2.getFont();
+
+        Font font;
+        int w;			// width of compartment shape, adjusted continuously based on zoom factor
+        String name = structure.getName();
+        int z = shapePanel.getZoomFactor();
+        if(z > -3) {
+            font = fontOld.deriveFont(Font.BOLD);
+            g.setFont(font);
+        } else {
+            font = fontOld;
+            g.setFont(font);
+        }
+
+        g.setColor(Color.black);
+        if(!hasMembraneSite) {
+            double x = minX+x_offset;
+            double y = 1;
+            g2.drawString(name, (int)(nmToPixelRatio * x), (int)(nmToPixelRatio * y));
+        } else {
+            double x = membraneX+x_offset-5;
+            double y = 1;
+            g2.drawString("Extracellular", (int)(nmToPixelRatio * x), (int)(nmToPixelRatio * y));
+
+            x = membraneX+x_offset;
+            y = 1;
+            g2.drawString("Membrane       Intracellular",
+                    (int)(nmToPixelRatio * (x-membraneRadius)),     // move it slightly to the left
+                    (int)(nmToPixelRatio * y));
+
+            g2.setColor(Color.gray);
+            g2.drawLine((int)(nmToPixelRatio * x),      // centered on the Anchor
+                    (int)(nmToPixelRatio * (y+1)),
+                    (int)(nmToPixelRatio * x),
+                    (int)(nmToPixelRatio * (y+6)));
+
+        }
+
+
+        g2.setFont(fontOld);
+        g2.setPaint(paintOld);
+        g2.setColor(colorOld);
+
         return;     // implement later
     }
     private void paintAxes(Graphics g) {
@@ -144,6 +208,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
         paintCompartments(g);
         paintAxes(g);
+
         if(mtp == null || mtp.getComponentPatternList().size() == 0) {		// paint empty dummy
             paintDummy(g, xPos, yPos);
         }
@@ -160,9 +225,12 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             double radius = sas.getRadius();
             Color color = sas.getColor().getColor();
             g.setColor(color);
+            double x = x_offset + coord.getZ();
+            double y = y_offset + coord.getY();
+            System.out.println("Painting site at " + x + ", " + y + " (nm)");
             drawCenteredCircle((Graphics2D)g,
-                    (int)(nmToPixelRatio * coord.getZ()),   // transform nm to pixels
-                    (int)(nmToPixelRatio * coord.getY()),
+                    (int)(nmToPixelRatio * x),   // transform nm to pixels
+                    (int)(nmToPixelRatio * y),
                     (int)(nmToPixelRatio * radius));
         }
         g.setColor(oldColor);

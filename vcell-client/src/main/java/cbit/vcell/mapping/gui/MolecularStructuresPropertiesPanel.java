@@ -43,11 +43,13 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     private class EventHandler implements ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent e) {
             if (e.getSource() == getZoomLargerButton()) {
+                System.out.println("Zoom to larger (Zoom In)");
                 boolean ret = shapePanel.zoomLarger();
                 getZoomLargerButton().setEnabled(ret);
                 getZoomSmallerButton().setEnabled(true);
                 updateShape();
             } else if (e.getSource() == getZoomSmallerButton()) {
+                System.out.println("Zoom to smaller (Zoom Out)");
                 boolean ret = shapePanel.zoomSmaller();
                 getZoomLargerButton().setEnabled(true);
                 getZoomSmallerButton().setEnabled(ret);
