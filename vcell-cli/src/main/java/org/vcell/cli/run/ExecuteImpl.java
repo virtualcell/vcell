@@ -36,26 +36,32 @@ public class ExecuteImpl {
         if (inputFiles == null) throw new RuntimeException("Error trying to retrieve files from input directory.");
 
         // Build statuses
-        for (File inputFile : inputFiles){
-            String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
-            logger.debug("Performing initial processing of `" + bioModelBaseName + "` (source file: `" + inputFile.getName() +"`)");
-            String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
-            String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
-            File adjustedOutputDir = new File(targetOutputDir);
-
-            logger.info("Preparing output directory...");
-            // we don't want to accidentally delete the input...
-            // if the output is a subset of the input file's housing directory, we shouldn't delete!!
-            if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
-                RunUtils.removeAndMakeDirs(adjustedOutputDir);
+        for (int i = 0; i < inputFiles.length; i++) {
             try {
+                File inputFile = inputFiles[i] = ExecuteImpl.checkAndCreateRepairedFileName(inputFiles[i], false);
+                String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
+                logger.debug("Performing initial processing of `" + bioModelBaseName + "` (source file: `" + inputFile.getName() +"`)");
+                String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
+                String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
+                File adjustedOutputDir = new File(targetOutputDir);
+
+                logger.info("Preparing output directory...");
+                // we don't want to accidentally delete the input...
+                // if the output is a subset of the input file's housing directory, we shouldn't delete!!
+                if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
+                    RunUtils.removeAndMakeDirs(adjustedOutputDir);
                 PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
             } catch (PythonStreamException e){
                 throw new RuntimeException("Python call did not process correctly:", e);
+            } catch (Exception e){
+                String msg = "Unable to process `" + inputFiles[i] + "`";
+                logger.error(msg, e);
+                inputFiles[i] = null;
             }
         }
         try {
             for (File inputFile : inputFiles) {
+                if (inputFile == null) continue;
                 String inputFileName = inputFile.getName();
                 System.out.println("\n\n");
                 logger.info("Processing " + inputFileName + "(" + inputFile + ")");
@@ -246,5 +252,31 @@ public class ExecuteImpl {
         
         logger.debug(String.format("Something failed in %s @ line %d", elem.getClassName(), elem.getLineNumber()));
         return true;
+    }
+
+    /**
+     * Checks if the file name is legal, and attempts to create a fixed version if not.
+     * An illegal file name can occur in a docker bind-mount, if the name encodings get mangled in the process.
+     *
+     * @param original the file to evaluate and create a fix for if broken
+     * @param overwriteOriginal if true, will replace the file with one with a different name.
+     *                          if false, then a copy of the file with a fixed name will be returned
+     *                          Note that this matters significantly in
+     */
+    private static File checkAndCreateRepairedFileName(File original, boolean overwriteOriginal) throws IOException {
+        StringBuilder newName = new StringBuilder();
+        boolean isIllegal = false;
+        for (char c : original.getName().toCharArray()){
+            if (Character.isDefined(c)) newName.append(c);
+            else isIllegal = true;
+        }
+        if (!isIllegal) return original; // No problems with archive
+        File newFile = new File(original.getParent() + File.separator + newName);
+        if (overwriteOriginal){
+            if (!original.renameTo(newFile)) throw new RuntimeException("Rename failed");
+        } else {
+            Files.copy(original.toPath(), newFile.toPath());
+        }
+        return newFile;
     }
 }
