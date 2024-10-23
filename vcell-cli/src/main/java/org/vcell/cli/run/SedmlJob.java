@@ -15,6 +15,7 @@ import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.cli.run.hdf5.Hdf5DataExtractor;
 import org.vcell.cli.trace.Span;
 import org.vcell.cli.trace.Tracer;
+import org.vcell.sedml.UnsupportedSedmlException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 
@@ -213,7 +214,7 @@ public class SedmlJob {
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues
      */
-    public boolean simulateSedml(HDF5ExecutionResults masterHdf5File) throws InterruptedException, PythonStreamException, IOException {
+    public boolean simulateSedml(HDF5ExecutionResults masterHdf5File) throws InterruptedException, PythonStreamException, IOException, UnsupportedSedmlException {
         /*  temp code to test plot name correctness
         String idNamePlotsMap = utils.generateIdNamePlotsMap(sedml, outDirForCurrentSedml);
         utils.execPlotOutputSedDoc(inputFile, idNamePlotsMap, this.resultsDirPath);
@@ -244,7 +245,7 @@ public class SedmlJob {
         return this.evaluateResults();
     }
 
-    private void runSimulations(SolverHandler solverHandler, ExternalDocInfo externalDocInfo) throws IOException {
+    private void runSimulations(SolverHandler solverHandler, ExternalDocInfo externalDocInfo) throws IOException, UnsupportedSedmlException {
         /*
          * - Run solvers and make reports; all failures/exceptions are being caught
          * - we send both the whole OMEX file and the extracted SEDML file path
@@ -271,6 +272,7 @@ public class SedmlJob {
             }
             this.logDocumentError = errorMessage.toString();        // probably the hash is empty
             logger.error(errorMessage.toString(), e);
+            if (e instanceof UnsupportedSedmlException use) throw use;
             // still possible to have some data in the hash, from some task that was successful - that would be partial success
         } finally {
             if (span != null) {

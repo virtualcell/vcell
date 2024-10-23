@@ -326,12 +326,7 @@ public class SolverHandler {
         List<TempSimulation> tempSims = null;
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
 		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
-        try {
-			bioModelList = this.sedmlImporter.getBioModels();
-        } catch (Exception e) {
-            logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
-            throw e;
-        }
+        bioModelList = this.sedmlImporter.getBioModels();
         if(bioModelList != null) {
 			countBioModels = bioModelList.size();
         }

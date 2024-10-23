@@ -117,7 +117,7 @@ public class SEDMLImporter {
 	/**
 	 * Get the list of biomodels from the sedml initialized at construction time.
 	 */
-	public List<BioModel> getBioModels() {
+	public List<BioModel> getBioModels() throws UnsupportedSedmlException {
 		List<BioModel> bioModelList = new LinkedList<>();
 		List<org.jlibsedml.Model> modelList;
 		List<org.jlibsedml.Simulation> simulationList;
@@ -146,36 +146,49 @@ public class SEDMLImporter {
 
 			// Creating one VCell Simulation for each SED-ML actual Task
 			// 		(RepeatedTasks get added either on top of or separately as parameter scan overrides)
-			for (AbstractTask selectedTask : abstractTaskList) {
+
+			// We need to parse out the tasks we can actually do, and organize by base or repeated tasks
+			List<Task> baseTaskList = new LinkedList<>();
+			List<RepeatedTask> repeatedTaskList = new LinkedList<>();
+
+			for (AbstractTask selectedTask : abstractTaskList){
+				if (selectedTask instanceof RepeatedTask rTask){
+					repeatedTaskList.add(rTask);
+					continue;
+				}
+				if (!(selectedTask instanceof Task task)){
+                    logger.error("Unsupported task `{}` encountered of type `{}`",
+							selectedTask, selectedTask.getClass().getName());
+					continue;
+				}
+
+				org.jlibsedml.Simulation sim = this.sedml.getSimulation(selectedTask.getSimulationReference());
+				if (sim instanceof UniformTimeCourse) baseTaskList.add(task);
+			}
+
+			if (baseTaskList.isEmpty())
+				throw new UnsupportedSedmlException("VCell did not find any UTC base tasks. There is nothing for VCell to simulate!!");
+
+			for (Task selectedTask : baseTaskList) {
 				org.jlibsedml.Simulation sedmlSimulation;	// this will become the vCell simulation
 				org.jlibsedml.Model sedmlModel;				// the "original" model referred to by the task
 				String sedmlOriginalModelLanguage;			// can be sbml or vcml
 				String sedmlOriginalModelName = "";		// this will be used in the BioModel name
 
-				if(selectedTask instanceof Task) {
-					sedmlModel = this.sedml.getModelWithId(selectedTask.getModelReference());
-					if (sedmlModel == null)
-						throw new RuntimeException("We somehow got a null sedml model!!");
-					sedmlSimulation = this.sedml.getSimulation(selectedTask.getSimulationReference());
-					sedmlOriginalModelLanguage = sedmlModel.getLanguage();
-					if (sedmlModel.getName() != null)
-						sedmlOriginalModelName = sedmlModel.getName();
+				if (selectedTask == null) throw new RuntimeException("Unexpected null Task encountered!");
+                sedmlModel = this.sedml.getModelWithId(selectedTask.getModelReference());
+                if (sedmlModel == null) throw new RuntimeException("Unexpected null sedml Model encountered!");
+                sedmlSimulation = this.sedml.getSimulation(selectedTask.getSimulationReference());
+                sedmlOriginalModelLanguage = sedmlModel.getLanguage();
+                if (sedmlModel.getName() != null) sedmlOriginalModelName = sedmlModel.getName();
 
-				} else if (selectedTask instanceof RepeatedTask) {
-					continue; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks 
-				} else {
-					throw new RuntimeException("Unsupported task " + selectedTask);
-				}
-				
-				if(!(sedmlSimulation instanceof UniformTimeCourse)) { // only UTC sims supported
-					logger.error("task '" + selectedTask.getName() + "' is being skipped, it references an unsupported simulation type: " + sedmlSimulation);
-					continue;
+                if(!(sedmlSimulation instanceof UniformTimeCourse utcSimulation)) { // only UTC sims supported
+					throw new RuntimeException("Unexpected non-UTC sim type encountered");
 				}
 
 				// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
-
 				// identify the vCell solvers that would match best the sedml solver kisao id
-				String kisaoID = sedmlSimulation.getAlgorithm().getKisaoID();
+				String kisaoID = utcSimulation.getAlgorithm().getKisaoID();
 				// try to find a match in the ontology tree
 				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, this.exactMatchOnly);
 				if (solverDescription != null) {
@@ -236,7 +249,7 @@ public class SEDMLImporter {
 					}
 					
 					SolverTaskDescription simTaskDesc = theSimulation.getSolverTaskDescription();
-					this.translateTimeBounds(simTaskDesc, sedmlSimulation);
+					this.translateTimeBounds(simTaskDesc, utcSimulation);
 					continue;
 				}
 				
@@ -288,7 +301,7 @@ public class SEDMLImporter {
 				/* NOTE: Before, we checked if the selected task was an instance of a task; we no longer need to check
 					that because we logically confirm that earlier on. If we ever get to this point and need an 'else':
 
-				 newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
+				 newSimulation.setName(SEDMLUtil.getName(utcSimulation)+"_"+SEDMLUtil.getName(selectedTask));
 				 */
 				
 				// we identify the type of sedml simulation (uniform time course, etc.)
@@ -297,8 +310,8 @@ public class SEDMLImporter {
 				simTaskDesc.setSolverDescription(solverDescription);
 
 
-				this.translateTimeBounds(simTaskDesc, sedmlSimulation);
-				this.translateAlgorithmParams(simTaskDesc, sedmlSimulation);
+				this.translateTimeBounds(simTaskDesc, utcSimulation);
+				this.translateAlgorithmParams(simTaskDesc, utcSimulation);
 				
 				newSimulation.setSolverTaskDescription(simTaskDesc);
 				newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
@@ -313,7 +326,7 @@ public class SEDMLImporter {
 			}
 
 			// now process repeated tasks, if any
-			this.addRepeatedTasks(abstractTaskList, vcSimulations);
+			this.addRepeatedTasks(repeatedTaskList, vcSimulations);
 
 			// we may have added simulations in addRepeatedTasks() {method above}, so let's make sure we add them.
 
@@ -360,6 +373,8 @@ public class SEDMLImporter {
 			// also has serious memory issues (runs out of memory even with bumping up to Xmx12G
 
 			return bioModelList;
+		} catch (UnsupportedSedmlException e){
+			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
 		}
@@ -461,7 +476,7 @@ public class SEDMLImporter {
 			return bioModels;
 		}
 		// merge succeeded, replace the list
-		return Arrays.asList(mergedBioModel);
+		return List.of(mergedBioModel);
 		// TODO more work here if we want to generalize
 	}
 
@@ -479,7 +494,7 @@ public class SEDMLImporter {
 				convertedSimcontext = null;
 			}
 			Variable vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, targetID);
-			if (!this.isMathVariableConstantValued(vcVar)) {
+			if (this.isMathVariableNotConstantValued(vcVar)) {
 				logger.error("target in change "+change+" could not be resolved to Constant, overrides not applied");
 				continue;
 			}
@@ -505,7 +520,7 @@ public class SEDMLImporter {
 					for (org.jlibsedml.Variable var : vars) {
 						String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(var.getTarget());
 						vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, sbmlID);
-						if (!isMathVariableConstantValued(vcVar)){
+						if (isMathVariableNotConstantValued(vcVar)){
 							throw new SEDMLImportException("could not evaluate var '"+vcVar.getName()+" as a constant");
 						}
 						exp.substituteInPlace(new Expression(var.getId()), new Expression(vcVar.getName()));
@@ -537,7 +552,7 @@ public class SEDMLImporter {
 			if (symbols != null) {
 				for (String sbString : symbols) {
 					Variable vcVar = this.resolveMathVariable(importedSC, convertedSC, sbString);
-					if (!isMathVariableConstantValued(vcVar)){
+					if (isMathVariableNotConstantValued(vcVar)){
 						throw new SEDMLImportException("cannot solve for constant valued scale factor, '"+vcVar+"' is not constant");
 					}
 					factor.substituteInPlace(new Expression(sbString), new Expression(vcVar.getName()));
@@ -551,7 +566,7 @@ public class SEDMLImporter {
 		return exp;
 	}
 
-	private boolean isMathVariableConstantValued(Variable var) {
+	private boolean isMathVariableNotConstantValued(Variable var) {
 		boolean varIsConstant = (var instanceof Constant);
 		if (var instanceof cbit.vcell.math.Function) {
 			try {
@@ -561,7 +576,7 @@ public class SEDMLImporter {
 				logger.warn("Substituted constant evaluation failed", e);
 			}
 		}
-		return varIsConstant;
+		return !varIsConstant;
 	}
 
 	private Variable resolveMathVariable(SimulationContext importedSimContext, SimulationContext convertedSimContext,
@@ -587,9 +602,8 @@ public class SEDMLImporter {
 			}
 		}
 		// if simcontext was converted to stochastic then species init constants use different names
-		if (convertedSimContext != null && biologicalSymbolTableEntry instanceof SpeciesContextSpecParameter) {
-			SpeciesContextSpecParameter speciesContextSpecParameter = (SpeciesContextSpecParameter)biologicalSymbolTableEntry;
-			if (speciesContextSpecParameter.getRole() == SpeciesContextSpec.ROLE_InitialConcentration
+		if (convertedSimContext != null && biologicalSymbolTableEntry instanceof SpeciesContextSpecParameter speciesContextSpecParameter) {
+            if (speciesContextSpecParameter.getRole() == SpeciesContextSpec.ROLE_InitialConcentration
 					|| speciesContextSpecParameter.getRole() == SpeciesContextSpec.ROLE_InitialCount) {
 				String spcName = speciesContextSpecParameter.getSpeciesContext().getName();
 				SpeciesContextSpec scs = null;
@@ -608,13 +622,12 @@ public class SEDMLImporter {
 		return var;
 	}
 
-	private void addRepeatedTasks(List<AbstractTask> listOfTasks, Map<String, Simulation> vcSimulations) throws ExpressionException, PropertyVetoException, SEDMLImportException {
-		for (AbstractTask abstractedRepeatedTask : listOfTasks) {
-			if (!(abstractedRepeatedTask instanceof RepeatedTask)) continue;
+	private void addRepeatedTasks(List<RepeatedTask> listOfTasks, Map<String, Simulation> vcSimulations) throws ExpressionException, PropertyVetoException, SEDMLImportException {
+		for (RepeatedTask repeatedTask : listOfTasks) {
+			if (repeatedTask == null) throw new RuntimeException("Repeated task is null");
 
-			RepeatedTask repeatedTask = (RepeatedTask)abstractedRepeatedTask;
-			if (!repeatedTask.getResetModel() || repeatedTask.getSubTasks().size() != 1) { // if removed, see RunUtils.prepareNonspatialHdf5()
-				logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(abstractedRepeatedTask)+" is being skipped");
+            if (!repeatedTask.getResetModel() || repeatedTask.getSubTasks().size() != 1) { // if removed, see RunUtils.prepareNonspatialHdf5()
+                logger.error("sequential RepeatedTask not yet supported, task {} is being skipped", SEDMLUtil.getName(repeatedTask));
 				continue;
 			}
 
@@ -642,28 +655,24 @@ public class SEDMLImporter {
 					String targetID = this.sbmlSupport
 							.getIdFromXPathIdentifer(change.getTargetXPath().getTargetAsString());
 					Variable constantValuedVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, targetID);
-					if (!isMathVariableConstantValued(constantValuedVar)){
+					if (isMathVariableNotConstantValued(constantValuedVar)){
 						throw new SEDMLImportException("expecting vcell var '"+constantValuedVar.getName()+"' " +
 								"mapped to SBML target '"+targetID+"' to be constant valued");
 					}
-					if (range instanceof UniformRange) {
-						UniformRange ur = (UniformRange)range;
-						scanSpec = ConstantArraySpec.createIntervalSpec(constantValuedVar.getName(),
+					if (range instanceof UniformRange ur) {
+                        scanSpec = ConstantArraySpec.createIntervalSpec(constantValuedVar.getName(),
 								""+Math.min(ur.getStart(), ur.getEnd()), ""+Math.max(ur.getStart(), ur.getEnd()),
 								ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
-					} else if (range instanceof VectorRange) {
-						VectorRange vr = (VectorRange)range;
-						String[] values = new String[vr.getNumElements()];
+					} else if (range instanceof VectorRange vr) {
+                        String[] values = new String[vr.getNumElements()];
 						for (int i = 0; i < values.length; i++) {
 							values[i] = Double.toString(vr.getElementAt(i));
 						}
 						scanSpec = ConstantArraySpec.createListSpec(constantValuedVar.getName(), values);
-					} else if (range instanceof FunctionalRange){
-						FunctionalRange fr = (FunctionalRange)range;
-						Range index = repeatedTask.getRange(fr.getRange());
-						if (index instanceof UniformRange) {
-							UniformRange ur = (UniformRange)index;
-							ASTNode frMath = fr.getMath();
+					} else if (range instanceof FunctionalRange fr){
+                        Range index = repeatedTask.getRange(fr.getRange());
+						if (index instanceof UniformRange ur) {
+                            ASTNode frMath = fr.getMath();
 							Expression frExpMin = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
 							Expression frExpMax = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
 
@@ -685,7 +694,7 @@ public class SEDMLImporter {
 							for (String varId : vars.keySet()) {
 								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
 								Variable vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, sbmlID);
-								if (!isMathVariableConstantValued(vcVar)){
+								if (isMathVariableNotConstantValued(vcVar)){
 									throw new SEDMLImportException("expecting vcell var '"+constantValuedVar.getName()+"' " +
 											"mapped to SBML target '"+sbmlID+"' to be constant valued");
 								}
@@ -699,9 +708,8 @@ public class SEDMLImporter {
 							String minValueExpStr = frExpMin.infix();
 							String maxValueExpStr = frExpMax.infix();
 							scanSpec = ConstantArraySpec.createIntervalSpec(constantValuedVar.getName(), minValueExpStr, maxValueExpStr, ur.getNumberOfPoints(), ur.getType().equals(UniformType.LOG));
-						} else if (index instanceof VectorRange) {
-							VectorRange vr = (VectorRange)index;
-							ASTNode frMath = fr.getMath();
+						} else if (index instanceof VectorRange vr) {
+                            ASTNode frMath = fr.getMath();
 							Expression expFact = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
 							// Substitute SED-ML parameters
 							Map<String, AbstractIdentifiableElement> params = fr.getParameters();
@@ -715,7 +723,7 @@ public class SEDMLImporter {
 							for (String varId : vars.keySet()) {
 								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
 								Variable vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, sbmlID);
-								if (!isMathVariableConstantValued(vcVar)){
+								if (isMathVariableNotConstantValued(vcVar)){
 									throw new SEDMLImportException("expecting vcell var '"+constantValuedVar.getName()+"' " +
 											"mapped to SBML target '"+sbmlID+"' to be constant valued");
 								}
@@ -734,12 +742,12 @@ public class SEDMLImporter {
 							scanSpec = ConstantArraySpec.createListSpec(constantValuedVar.getName(), values);
 						} else {
 							// we only support FunctionalRange with intervals and lists
-							logger.error("FunctionalRange does not reference UniformRange or VectorRange, task " + SEDMLUtil.getName(abstractedRepeatedTask)
+							logger.error("FunctionalRange does not reference UniformRange or VectorRange, task " + SEDMLUtil.getName(repeatedTask)
 							+ " is being skipped");
 							continue;
 						}
 					} else {
-						logger.error("unsupported Range class found, task " + SEDMLUtil.getName(abstractedRepeatedTask)
+						logger.error("unsupported Range class found, task " + SEDMLUtil.getName(repeatedTask)
 								+ " is being skipped");
 						continue;
 					}
@@ -763,14 +771,13 @@ public class SEDMLImporter {
 
 			 */
 
-			simulation.setImportedTaskID(abstractedRepeatedTask.getId());
+			simulation.setImportedTaskID(repeatedTask.getId());
 
 			//TODO: Need version info on new sim!!!
 			String targetId;
 			SimulationOwner simOwner = vcSimulations.get(baseTask.getId()).getSimulationOwner();
-			if (!(simOwner instanceof SimulationContext)) throw new RuntimeException("Unexpected sim owner");
-			SimulationContext simContext = (SimulationContext) simOwner;
-			// We need to determine if the 'base simulation' is needed for an output
+			if (!(simOwner instanceof SimulationContext simContext)) throw new RuntimeException("Unexpected sim owner");
+            // We need to determine if the 'base simulation' is needed for an output
 			// if we don't we should remove the entry in the map.
 			if (this.simulationIsNeededAsOutput(vcSimulations.get(baseTask.getId()))){
 				targetId = repeatedTask.getId();
@@ -897,7 +904,7 @@ public class SEDMLImporter {
 			String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString());
 			SimulationContext simulationContext = refBM.getSimulationContext(0);
 			Variable vcVar = this.resolveMathVariable(simulationContext, null, sbmlID);
-			if (!isMathVariableConstantValued(vcVar)) {
+			if (isMathVariableNotConstantValued(vcVar)) {
 				logger.warn("mapped changeAttribute for SBML ID "+sbmlID+" mapped to non-constant VCell variable '"+vcVar.getName()+"'");
 				return false;
 			}

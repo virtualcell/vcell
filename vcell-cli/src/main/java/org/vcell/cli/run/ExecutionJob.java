@@ -7,6 +7,7 @@ import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
+import org.vcell.sedml.UnsupportedSedmlException;
 import org.vcell.util.FileUtils;
 
 import java.io.File;
@@ -132,20 +133,27 @@ public class ExecutionJob {
                         this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
                 if (!job.preProcessDoc()){
                     SedmlStatistics stats = job.getDocStatistics(); // Must process document first
-                    logger.error("Statistics of failed SedML:\n" + stats.toString());
+                    logger.error("Statistics of failed SedML:\n{}", stats.toString());
                     this.anySedmlDocumentHasFailed = true;
                 }
                 SedmlStatistics stats = job.getDocStatistics();
-                boolean hasSucceeded = job.simulateSedml(masterHdf5File);
+                boolean hasSucceeded;
+                try {
+                    hasSucceeded = job.simulateSedml(masterHdf5File);
+                } catch (UnsupportedSedmlException e){
+                    hasSucceeded = false;
+                    logger.error("Unable to execute sed-ml: ", e);
+                }
+
                 this.anySedmlDocumentHasSucceeded |= hasSucceeded;
                 this.anySedmlDocumentHasFailed &= hasSucceeded;
                 if (hasSucceeded){
                     String formattedStats = stats.toFormattedString();
-                    logger.info("Processing of SedML succeeded.\n" + formattedStats);
+                    logger.info("Processing of SedML succeeded.\n{}", formattedStats);
                 }
-                else logger.error("Processing of SedML has failed.\n" + stats.toString());
+                else logger.error("Processing of SedML has failed.\n{}", stats.toString());
             }
-            BiosimulationsHdf5Writer.writeHdf5(masterHdf5File, new File(this.outputDir));
+            if (this.anySedmlDocumentHasSucceeded) BiosimulationsHdf5Writer.writeHdf5(masterHdf5File, new File(this.outputDir));
             
         } catch(PythonStreamException e){
             logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);
