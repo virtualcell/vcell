@@ -135,7 +135,6 @@
 		<jfreechart.version>1.5.0</jfreechart.version>
 		<jgrapht.version>1.3.0</jgrapht.version>
 		<jhdf.version>0.8.3</jhdf.version>
-		<jhdf5.cisd.version>19.04.1</jhdf5.cisd.version>
 		<jhdf5-2-10.version>2.9</jhdf5-2-10.version>
 		<jmatio.version>1.0</jmatio.version>
 		<joda-time.version>2.12.2</joda-time.version>
