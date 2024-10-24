@@ -59,6 +59,7 @@ import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
+import org.vcell.util.springsalad.GraphContinuity;
 
 @SuppressWarnings("serial")
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, SimulationContextEntity, IssueSource,
@@ -1298,12 +1299,33 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         return;
                     }
                 }
-                if(mcpList.size() > 1 && mcpList.size() > getInternalLinkSet().size() + 1){
-                    String msg = "Link chain within the molecule has at least one discontinuity.";
-                    String tip = "One or more links are missing";
-                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-                    return;
+                if(mcpList.size() > 1 && getInternalLinkSet().size() > 0) {
+                    GraphContinuity.Graph graph = new GraphContinuity.Graph(mcpList.size());
+                    Map<MolecularComponentPattern, Integer> mcpMap = new LinkedHashMap<> ();
+                    for(int i=0; i<mcpList.size(); i++) {
+                        MolecularComponentPattern mcp = mcpList.get(i);
+                        mcpMap.put(mcp, i);
+                    }
+                    for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
+                        Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+                        int one = mcpMap.get(link.one);
+                        int two = mcpMap.get(link.two);
+                        graph.addEdge(one, two);
+                    }
+                    if(!graph.isConnected(GraphContinuity.Algorithm.DFS)) {     // let's use DFS!
+                        String msg = "Link chain within the molecule has at least one discontinuity.";
+                        String tip = "One or more links are missing";
+                        issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                        return;
+                    }
                 }
+// old way, imprecise! use graph above
+//                if(mcpList.size() > 1 && mcpList.size() > getInternalLinkSet().size() + 1){
+//                    String msg = "Link chain within the molecule has at least one discontinuity.";
+//                    String tip = "One or more links are missing";
+//                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+//                    return;
+//                }
                 for(MolecularInternalLinkSpec candidate : getInternalLinkSet()){
                     for(MolecularInternalLinkSpec other : getInternalLinkSet()){
                         if(candidate == other){

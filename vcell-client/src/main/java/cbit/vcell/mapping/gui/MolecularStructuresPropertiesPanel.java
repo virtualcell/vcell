@@ -79,9 +79,12 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                 @Override
                 public void paintComponent(Graphics g) {
                     super.paintComponent(g);
-                    if (scsls != null) {
-                        scsls.paintSelf(g);
+                    if (speciesContextSpec == null || speciesContextSpec.getSpeciesContext() == null) {
+                        return;
                     }
+                    System.out.println(speciesContextSpec.getSpeciesContext().getName() + ": painting shape");
+                    scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec, issueManager);
+                    scsls.paintSelf(g);
                 }
                 @Override
                 public DisplayMode getDisplayMode() {
@@ -132,13 +135,14 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 //                    shapePanel.setToolTipText("View-Only panel");
                 }
             });
+            shapePanel.setPreferredSize(new Dimension(2000, 800));
             shapePanel.setBackground(new Color(0xe0e0e0));
             shapePanel.setZoomFactor(-2);
             shapePanel.setEditable(false);
 
             scrollPane = new JScrollPane(shapePanel);
-            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
             // -----------------------------------------------------------------------------------------
 
@@ -171,7 +175,6 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             gbc.insets = new Insets(4, 4, 4, 10);
             optionsPanel.add(new JLabel(""), gbc);
 
-
             // ------------------------------------------------------------------------------------------
             JPanel containerOfScrollPanel = new JPanel();
             containerOfScrollPanel.setLayout(new BorderLayout());
@@ -182,9 +185,6 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             add(containerOfScrollPanel, BorderLayout.CENTER);
             setBackground(Color.white);
             setName("MolecularStructuresPropertiesPanel");
-
-
-
         } catch (java.lang.Throwable ivjExc) {
             handleException(ivjExc);
         }
@@ -197,18 +197,15 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
         updateShape();
     }
 
-    public static final int xOffsetInitial = 20;
-    public static final int yOffsetInitial = 10;
     private void updateShape() {
         if(speciesContextSpec == null || speciesContextSpec.getSpeciesContext() == null) {
             return;
         }
-        SpeciesPattern sp = speciesContextSpec.getSpeciesContext().getSpeciesPattern();
-        System.out.println(sp.getNameShort());
-        scsls = new SpeciesContextSpecLargeShape(xOffsetInitial, yOffsetInitial, -1, speciesContextSpec, shapePanel, speciesContextSpec, issueManager);
-//
-//        Dimension preferredSize = new Dimension(spls.getRightEnd()+40, yOffsetInitial+80);
-//        shapePanel.setPreferredSize(preferredSize);
+        System.out.println(speciesContextSpec.getSpeciesContext().getName() + ": painting shape");
+        scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec, issueManager);
+
+//        shapePanel.setPreferredSize(scsls.getMaxSize());
+
         shapePanel.repaint();
     }
 
