@@ -34,4 +34,18 @@ public class NamedColor implements Serializable {
 		return name;
 	}
 
+	public Color darker(double factor) {
+		return new Color(Math.max((int)(color.getRed()*factor), 0),
+				Math.max((int)(color.getGreen()*factor), 0),
+				Math.max((int)(color.getBlue() *factor), 0),
+				color.getAlpha());
+	}
+
+	public static Color darker(Color color, double factor) {
+		return new Color(Math.max((int)(color.getRed()*factor), 0),
+				Math.max((int)(color.getGreen()*factor), 0),
+				Math.max((int)(color.getBlue() *factor), 0),
+				color.getAlpha());
+	}
+
 }
