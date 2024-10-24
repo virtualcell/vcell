@@ -167,7 +167,7 @@ public class SEDMLImporter {
 			}
 
 			if (baseTaskList.isEmpty())
-				throw new UnsupportedSedmlException("VCell did not find any UTC base tasks. There is nothing for VCell to simulate!!");
+				throw new UnsupportedSedmlException("VCell did not find any base tasks of type `UniformTimeCourse`. There is nothing for VCell to simulate!!");
 
 			for (Task selectedTask : baseTaskList) {
 				org.jlibsedml.Simulation sedmlSimulation;	// this will become the vCell simulation
