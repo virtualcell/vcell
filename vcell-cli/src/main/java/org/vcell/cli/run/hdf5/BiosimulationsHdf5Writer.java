@@ -88,28 +88,6 @@ public class BiosimulationsHdf5Writer {
                         putAttribute(dataset, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
                         putAttribute(dataset, "sedmlDataSetIds", data.datasetMetadata.sedmlDataSetIds);
                         putAttribute(dataset, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
-                        putAttribute(dataset, "sedmlDataSetNames_fake00", Arrays.asList( new String[]{ "hello", "hello", "hello" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake01", Arrays.asList( new String[]{ "hello", "hell", "hello" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake02", Arrays.asList( new String[]{ "hello", "", "hello" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake03", Arrays.asList( new String[]{ "hello", null, "hello" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake04", Arrays.asList( new String[]{ null, null, "hello" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake05", Arrays.asList( new String[]{ null, null, null, "hello" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake06", Arrays.asList( new String[]{ null, null, null, "Time" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake07", Arrays.asList( new String[]{ null, null, null, null, "hello" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake08", Arrays.asList( new String[]{ "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake09", Arrays.asList( new String[]{ null, "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake10", Arrays.asList( new String[]{ null, null, "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake11", Arrays.asList( new String[]{ null, null, null, "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake12", Arrays.asList( new String[]{ null, null, null, "1234567", "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake13", Arrays.asList( new String[]{ "a", null, null, "1234567", "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake14", Arrays.asList( new String[]{ "ab", null, null, "1234567", "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake15", Arrays.asList( new String[]{ null, "a", null, "1234567", "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake16", Arrays.asList( new String[]{ null, "ab", null, "1234567", "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake17", Arrays.asList( new String[]{ "", "a", "", "1234567", "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake18", Arrays.asList( new String[]{ "", "ab", "", "1234567", "1234567" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake19", Arrays.asList( new String[]{ "", "ab", "", "1234567", "1234567", "", "", "", "" }));
-                        putAttribute(dataset, "sedmlDataSetNames_fake20", Arrays.asList( new String[]{ "", "ab", "", "1234567", "1234567", null, "", "", "" }));
-
                         putAttribute(dataset, "sedmlDataSetLabels", data.datasetMetadata.sedmlDataSetLabels);
                         putAttribute(dataset, "sedmlDataSetShapes", data.datasetMetadata.sedmlDataSetShapes);
                         if (data.dataSource.scanParameterValues != null && data.dataSource.scanParameterValues.length > 0) {
