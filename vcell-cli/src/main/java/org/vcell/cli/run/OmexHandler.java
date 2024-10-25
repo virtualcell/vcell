@@ -128,11 +128,12 @@ public class OmexHandler {
 
         // Test corner cases
         if (sedmlMap.get(MASTER).isEmpty()){
-            if (masterCount > 0)
-                throw new RuntimeException("No SED-MLs are intended to be executed (non SED-ML file is set to be master)");
-            if (sedmlMap.get(REGULAR).isEmpty())
+            if (sedmlMap.get(REGULAR).isEmpty()) {
                 throw new RuntimeException("There are no SED-MLs in the archive to execute");
-
+            }
+            if (masterCount > 0) {
+                logger.warn("No SED-MLs are marked as master, so will run them all");
+            }
             return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
         }
 
