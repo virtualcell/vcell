@@ -13,12 +13,6 @@ import java.util.*;
 public class Hdf5DataPreparer {
     private final static Logger logger = LogManager.getLogger(Hdf5DataPreparer.class);
 
-    public static class Hdf5PreparedData{
-        public String sedmlId;
-        public long[] dataDimensions;
-        public double[] flattenedDataBuffer;
-    }
-
     /**
      * Spatial Data has a special attribute called "times". This function extracts that value
      * 
@@ -142,4 +136,5 @@ public class Hdf5DataPreparer {
         preparedData.flattenedDataBuffer = bigDataBuffer;
         return preparedData;
     }
+
 }

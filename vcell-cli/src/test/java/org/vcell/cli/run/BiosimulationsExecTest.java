@@ -35,7 +35,7 @@ public class BiosimulationsExecTest {
 	@BeforeAll
 	public static void setup() throws PythonStreamException, IOException {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
-		NativeLib.HDF5.load();
+//		NativeLib.HDF5.load();
 		VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
 
 		PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
