@@ -10,7 +10,7 @@
 
 package cbit.vcell.mapping.gui;
 
-import java.awt.Component;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,12 +18,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
-import javax.swing.JList;
-import javax.swing.SwingConstants;
+import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
 
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -31,6 +27,7 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -44,6 +41,8 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
+import org.vcell.util.springsalad.Colors;
+import org.vcell.util.springsalad.NamedColor;
 
 /**
  * Insert the type's description here.
@@ -63,7 +62,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		COLUMN_STRUCTURE("Location"),
 		COLUMN_STATE("Initial State"),
 		COLUMN_RADIUS("Radius (nm)"),
-		COLUMN_DIFFUSION("Diffusion Rate (um^2/s)");
+		COLUMN_DIFFUSION("Diff. Rate (um^2/s)"),
+		COLUMN_COLOR("Color");
 			
 		public final String label;
 		private ColumnType(String label){
@@ -95,6 +95,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		case COLUMN_RADIUS:
 		case COLUMN_DIFFUSION:
 			return Expression.class;
+		case COLUMN_COLOR:
+			return NamedColor.class;
 		default:
 			return Object.class;
 		}
@@ -151,6 +153,11 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 					return null;
 				}
 				return sas.getDiffusionRate();		// um^2/s
+			case COLUMN_COLOR:
+				if(sas == null) {
+					return null;
+				}
+				return sas.getColor();
 			default:
 				return null;
 			}
@@ -204,6 +211,16 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				sas.setDiffusionRate(result);
 				return;
 			}
+		case COLUMN_COLOR:
+			if (aValue instanceof NamedColor) {
+				NamedColor namedColor = (NamedColor)aValue;
+				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
+				if(sas == null) {
+					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+				}
+				sas.setColor(namedColor);
+				return;
+			}
 		default:
 			return;
 		}
@@ -227,6 +244,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		case COLUMN_STRUCTURE:
 		case COLUMN_RADIUS:
 		case COLUMN_DIFFUSION:
+		case COLUMN_COLOR:
 			return true;
 		default:
 			return false;
@@ -251,6 +269,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				case COLUMN_STATE:
 				case COLUMN_RADIUS:
 				case COLUMN_DIFFUSION:
+				case COLUMN_COLOR:
 				default:
 					return 1;
 				}
@@ -381,8 +400,40 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		GuiUtils.flexResizeTableColumns(ownerTable);
 		
 		updateLocationComboBox();
+		updateColorComboBox();
 	}
-	
+
+
+
+	private void updateColorComboBox() {
+		if(fieldSimulationContext == null) {
+			return;
+		}
+		DefaultComboBoxModel<NamedColor> model = new DefaultComboBoxModel<>();
+		for(NamedColor namedColor : Colors.COLORARRAY) {
+			model.addElement(namedColor);
+		}
+		JComboBox<NamedColor> colorComboBox = new JComboBox<>();
+		colorComboBox.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value,
+														  int index, boolean isSelected, boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				setHorizontalTextPosition(SwingConstants.LEFT);
+				if (value instanceof NamedColor) {
+					NamedColor namedColor = (NamedColor)value;
+					setText(namedColor.getName());
+					Icon icon = new ColorIcon(10,10,namedColor.getColor(), true);	// small square icon with subdomain color
+					setHorizontalTextPosition(SwingConstants.RIGHT);
+					setIcon(icon);
+				}
+				return this;
+			}
+		});
+		colorComboBox.setModel(model);
+		ownerTable.getColumnModel().getColumn(ColumnType.COLUMN_COLOR.ordinal()).setCellEditor(new DefaultCellEditor(colorComboBox));
+	}
+
 	private void updateLocationComboBox() {
 		if(fieldSimulationContext == null) {
 			return;

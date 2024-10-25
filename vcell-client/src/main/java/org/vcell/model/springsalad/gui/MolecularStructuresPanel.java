@@ -26,6 +26,7 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Coordinate;
+import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.EditorScrollTable;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
@@ -66,7 +67,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private EditorScrollTable molecularTypeSpecsTable = null;
 	private MolecularTypeSpecsTableModel molecularTypeSpecsTableModel = null;
 	
-	private JComboBox<String> siteColorComboBox = null;
+//	private JComboBox<String> siteColorComboBox = null;
 	private JTextField siteXField = null;
 	private JTextField siteYField = null;
 	private JTextField siteZField = null;
@@ -127,8 +128,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			} else if(source == deleteLinkButton) {
 				deleteLinkActionPerformed();
 				refreshSiteLinksList();
-			} else if(source == getSiteColorComboBox()) {
-				updateSiteColor();
+//			} else if(source == getSiteColorComboBox()) {
+//				updateSiteColor();
 			}
 		}
 		public void focusGained(FocusEvent e) {
@@ -217,7 +218,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		addLinkButton.addActionListener(eventHandler);
 		deleteLinkButton.addActionListener(eventHandler);
 		
-		getSiteColorComboBox().addActionListener(eventHandler);
+//		getSiteColorComboBox().addActionListener(eventHandler);
 		
 		ListSelectionModel lsm = getSpeciesContextSpecsTable().getSelectionModel();
 		if(lsm instanceof DefaultListSelectionModel) {
@@ -509,7 +510,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 3;
 		gbc.gridy = 0;
-		gbc.weightx = 0.5;
+		gbc.weightx = 0.1;
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(3, 2, 2, 3);
@@ -528,8 +529,34 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		gbc.insets = new Insets(2, 3, 3, 4);
-		sitesPanel.add(pb, gbc);
-		
+		sitesPanel.add(pb, gbc);		// MolecularTypeSpecsTable
+
+		// The NamedColor combobox cell renderer in the MolecularTypeSpecsTable
+		DefaultScrollTableCellRenderer namedColorTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			final Color lightBlueBackground = new Color(214, 234, 248);
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+														   int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof MolecularTypeSpecsTableModel) {
+					if (value instanceof NamedColor) {
+						System.out.println("NamedColor table cell");
+						NamedColor namedColor = (NamedColor)value;
+						setText(namedColor.getName());
+						Icon icon = new ColorIcon(10,10,namedColor.getColor(), true);	// small square icon with subdomain color
+						setHorizontalTextPosition(SwingConstants.RIGHT);
+						setIcon(icon);
+					}
+				}
+				return this;
+			}
+		};
+
+		getMolecularTypeSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
+		getMolecularTypeSpecsTable().setDefaultRenderer(Structure.class, structuresTableCellRenderer);	// The Structures combobox cell renderer
+		getMolecularTypeSpecsTable().setDefaultRenderer(NamedColor.class, namedColorTableCellRenderer);	// NamedColor combobox cell renderer
+
+
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 5;
@@ -578,21 +605,21 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(2, 2, 2, 2);
 		sitesPanel.add(siteZField, gbc);
 
-		gbc = new GridBagConstraints();
-		gbc.gridx = 6;
-		gbc.gridy = 5;
-		gbc.anchor = GridBagConstraints.SOUTH;
-		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(new JLabel(" Color "), gbc);
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 6;
+//		gbc.gridy = 5;
+//		gbc.anchor = GridBagConstraints.SOUTH;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		sitesPanel.add(new JLabel(" Color "), gbc);
 
-		gbc = new GridBagConstraints();
-		gbc.gridx = 7;
-		gbc.gridy = 5;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.SOUTH;
-		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(getSiteColorComboBox(), gbc);
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 7;
+//		gbc.gridy = 5;
+//		gbc.weightx = 1.0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.SOUTH;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		sitesPanel.add(getSiteColorComboBox(), gbc);
 
 //		// --- links -----------------------------------------------
 		linksPanel.setLayout(new GridBagLayout());
@@ -637,10 +664,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(5, 2, 2, 3);
 		linksPanel.add(deleteLinkButton, gbc);
 
-		getMolecularTypeSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
-		getMolecularTypeSpecsTable().setDefaultRenderer(Structure.class, structuresTableCellRenderer);	// The Structures combobox cell renderer
-		
-		
 		initConnections();		// adding listeners
 		
 		} catch(Throwable e) {
@@ -681,33 +704,33 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	// siteColorComboBox
-	private JComboBox<String> getSiteColorComboBox() {
-		if (siteColorComboBox == null) {
-			siteColorComboBox = new JComboBox<String>();
-			siteColorComboBox.setName("JComboBox1");
-			
-			DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
-			for(NamedColor namedColor : Colors.COLORARRAY) {
-				model.addElement(namedColor.getName());
-			}
-			siteColorComboBox.setModel(model);
-//			siteColorComboBox.setRenderer(new DefaultListCellRenderer() {
-// see ReactionRuleKineticsPropertiesPanel.getKineticsTypeComboBox() for complex renderer
-//			});
-		}
-		return siteColorComboBox;
-	}
-	private void updateSiteColor() {
-		String colorName = (String)getSiteColorComboBox().getSelectedItem();
-		if(colorName == null) {
-			return;
-		}
-		NamedColor namedColor = Colors.getColorByName(colorName);
-		SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
-		if(namedColor != null && namedColor != sas.getColor()) {
-			sas.setColor(namedColor);
-		}
-	}
+//	private JComboBox<String> getSiteColorComboBox() {
+//		if (siteColorComboBox == null) {
+//			siteColorComboBox = new JComboBox<String>();
+//			siteColorComboBox.setName("JComboBox1");
+//
+//			DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+//			for(NamedColor namedColor : Colors.COLORARRAY) {
+//				model.addElement(namedColor.getName());
+//			}
+//			siteColorComboBox.setModel(model);
+////			siteColorComboBox.setRenderer(new DefaultListCellRenderer() {
+//// see ReactionRuleKineticsPropertiesPanel.getKineticsTypeComboBox() for complex renderer
+////			});
+//		}
+//		return siteColorComboBox;
+//	}
+//	private void updateSiteColor() {
+//		String colorName = (String)getSiteColorComboBox().getSelectedItem();
+//		if(colorName == null) {
+//			return;
+//		}
+//		NamedColor namedColor = Colors.getColorByName(colorName);
+//		SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
+//		if(namedColor != null && namedColor != sas.getColor()) {
+//			sas.setColor(namedColor);
+//		}
+//	}
 
 	private void handleException(Throwable exception) {
 		System.out.println("--------- UNCAUGHT EXCEPTION --------- in cbit.vcell.mapping.InitialConditionPanel");
@@ -805,7 +828,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			siteXField.setText(sas.getCoordinate().getX()+"");
 			siteYField.setText(sas.getCoordinate().getY()+"");
 			siteZField.setText(sas.getCoordinate().getZ()+"");
-			getSiteColorComboBox().setSelectedItem(sas.getColor().getName());
+//			getSiteColorComboBox().setSelectedItem(sas.getColor().getName());
 		} else {
 			siteXField.setEditable(false);
 			siteYField.setEditable(false);
@@ -813,7 +836,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			siteXField.setText(null);
 			siteYField.setText(null);
 			siteZField.setText(null);
-			getSiteColorComboBox().setSelectedItem(null);
+//			getSiteColorComboBox().setSelectedItem(null);
 		}
 	}
 	
