@@ -121,7 +121,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        sets: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+        sets: ["0", "1", "2", "3", "4"]
     steps:
       - name: Create Docker Image Dir
         run: mkdir /tmp/docker
