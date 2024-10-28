@@ -31,43 +31,45 @@ public final class FileUtils {
 	 * path separator for os
 	 */
 	public final static String PATHSEP = System.getProperty("path.separator");
-	
-	
-/**
-* Convenience method to copy a directory from a source to a destination.
-* Overwrite is allowed, and the last modified is kept, 4k buffer used.
-*
-* @throws IOException
-* @author Ed Boyce
-*/
-public static void copyDirectory(File sourceDir, File destDir, boolean bDeep, FileFilter filter) throws IOException {
 
-	if (!(sourceDir.isDirectory())){
-		throw new IOException("Arguments for FileUtils.copyDirectory must be directories.  Problem with Source dir: "+sourceDir.getCanonicalPath());
-	}
-	if ((destDir.exists()) && !(destDir.isDirectory())) {
-		throw new IOException("Arguments for FileUtils.copyDirectory must be directories.  Problem with Destination dir: "+destDir.getCanonicalPath());
-	}
-	if (!destDir.exists()) {
-		if (!destDir.mkdir()) {
-			throw new IOException("Failed to create directory "+destDir.getCanonicalPath());
-		}
-	}
-	if (!destDir.canWrite()) {
-		throw new IOException("Cannot write directory "+destDir.getCanonicalPath());
-	}
-	File[] sourceFiles = sourceDir.listFiles();
-	for (int i=0; i<sourceFiles.length; i++){
-		if (filter == null || filter.accept(sourceFiles[i])){
-			if (sourceFiles[i].isFile()) {
-				copyFile(sourceFiles[i], new File(destDir,sourceFiles[i].getName()), true, true, 4*1024);
-			} else {
-				if (sourceFiles[i].isDirectory() && bDeep) {
-					copyDirectory(sourceFiles[i],new File(destDir.getCanonicalPath(),sourceFiles[i].getName()), bDeep, filter);
-				}
-			}	
-		}
-	}	
+    /**
+     * Convenience method to copy a directory from a source to a destination.
+     * Overwrite is allowed, and the last modified is kept, 4k buffer used.
+     * @param sourceDir the directory to copy the files inside of
+     * @param destDir destination for the copied contents
+     * @param performRecursive whether to recursively copy directory contents, or keep surface level
+     * @param filter FileFilter settings to selectively filter types of files
+     * @throws IOException If the files are not the correct types, or an IO problem was encountered
+     * @author Ed Boyce
+     * @author Logan Drescher
+     */
+    public static void copyDirectoryContents(File sourceDir, File destDir, boolean performRecursive, FileFilter filter) throws IOException {
+        if (!(sourceDir.isDirectory())){
+            throw new IOException("Arguments for FileUtils.copyDirectory must be directories.  Problem with Source dir: "+sourceDir.getCanonicalPath());
+        }
+        if ((destDir.exists()) && !(destDir.isDirectory())) {
+            throw new IOException("Arguments for FileUtils.copyDirectory must be directories.  Problem with Destination dir: "+destDir.getCanonicalPath());
+        }
+        if (!destDir.exists()) {
+            if (!destDir.mkdir()) {
+                throw new IOException("Failed to create directory "+destDir.getCanonicalPath());
+            }
+        }
+        if (!destDir.canWrite()) {
+            throw new IOException("Cannot write directory "+destDir.getCanonicalPath());
+        }
+        File[] sourceFiles = sourceDir.listFiles();
+        for (File sourceFile : sourceFiles) {
+            if (filter == null || filter.accept(sourceFile)) {
+                if (sourceFile.isFile()) {
+                    copyFile(sourceFile, new File(destDir, sourceFile.getName()), true, true, 4 * 1024);
+                } else {
+                    if (sourceFile.isDirectory() && performRecursive) {
+                        copyDirectoryContents(sourceFile, new File(destDir.getCanonicalPath(), sourceFile.getName()), performRecursive, filter);
+                    }
+                }
+            }
+        }
 }
 
 /**
