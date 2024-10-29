@@ -91,7 +91,11 @@ public class BiosimulationsHdf5Writer {
                             JhdfUtils.putAttribute(dataset, "sedmlRepeatedTaskParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
                         }
                         JhdfUtils.putAttribute(dataset, "sedmlId", data.datasetMetadata.sedmlId);
-                        JhdfUtils.putAttribute(dataset, "sedmlName", data.datasetMetadata.sedmlName);
+                        if (data.datasetMetadata.sedmlName != null) {
+                            JhdfUtils.putAttribute(dataset, "sedmlName", data.datasetMetadata.sedmlName);
+                        }else{
+                            JhdfUtils.putAttribute(dataset, "sedmlName", data.datasetMetadata.sedmlId);
+                        }
                         JhdfUtils.putAttribute(dataset, "uri", groupPath + "/" + data.datasetMetadata.sedmlId);
                     }
                 }
