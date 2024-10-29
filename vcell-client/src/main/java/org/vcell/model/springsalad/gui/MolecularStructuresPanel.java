@@ -20,6 +20,7 @@ import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.vcell.model.rbm.MolecularComponentPattern;
@@ -551,9 +552,42 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				return this;
 			}
 		};
+		// The Expression cell renderer  in the MolecularTypeSpecsTable
+		DefaultScrollTableCellRenderer expressionTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+														   int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof MolecularTypeSpecsTableModel) {
+					MolecularTypeSpecsTableModel model = (MolecularTypeSpecsTableModel)table.getModel();
+					if (value instanceof Double) {
+						String columnName = model.getColumnName(column);
+						if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_RADIUS.ordinal() == column) {
+							if(!isSelected) {
+								String brown = "#A52A2A";
+								String text = "<html>" + value + "<span style='color:" + brown + ";'> [nm]</span></html>";
+								setText(text);
+							} else {
+								setText(value + " [nm]");
+							}
+						} else if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_DIFFUSION.ordinal() == column) {
+							if(!isSelected) {
+								String darkRed = "#8B0000";
+								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [um^2/s]</span></html>";
+								setText(text);
+							} else {
+								setText(value + " [um^2/s");
+							}
+						}
+					}
+				}
+				return this;
+			}
+		};
 
 		getMolecularTypeSpecsTable().setDefaultRenderer(String.class, new DefaultScrollTableCellRenderer());
 		getMolecularTypeSpecsTable().setDefaultRenderer(Structure.class, structuresTableCellRenderer);	// The Structures combobox cell renderer
+		getMolecularTypeSpecsTable().setDefaultRenderer(Expression.class, expressionTableCellRenderer);	// Expression field cell renderer
 		getMolecularTypeSpecsTable().setDefaultRenderer(NamedColor.class, namedColorTableCellRenderer);	// NamedColor combobox cell renderer
 
 

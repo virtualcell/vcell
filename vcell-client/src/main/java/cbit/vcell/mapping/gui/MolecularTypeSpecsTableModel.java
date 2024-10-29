@@ -56,13 +56,13 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	// TODO: add is2D flag here as a checkbox (var is SpeciesContextSpec) - membrane species may have it set to true, for compartment species is always false
 	// TODO: math is wrong for a model with a membrane species, saving model fails, see model aaa-SS-membrane, see issue #1097
 
-	private enum ColumnType {
+	public enum ColumnType {
 		COLUMN_SITE("Site"),
 		COLUMN_MOLECULE("Molecule"),
 		COLUMN_STRUCTURE("Location"),
 		COLUMN_STATE("Initial State"),
-		COLUMN_RADIUS("Radius (nm)"),
-		COLUMN_DIFFUSION("Diff. Rate (um^2/s)"),
+		COLUMN_RADIUS("Radius"),
+		COLUMN_DIFFUSION("Diff. Rate"),
 		COLUMN_COLOR("Color");
 			
 		public final String label;
