@@ -1,6 +1,5 @@
 package org.vcell.cli.run.hdf5;
 
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
 import org.jlibsedml.DataSet;
@@ -14,8 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer.BiosimulationsHdfWriterException;
 
 @Tag("Fast")
 public class BiosimulationsHdf5WriterTest {

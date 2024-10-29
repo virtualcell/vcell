@@ -15,7 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer.BiosimulationsHdfWriterException;
+import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 
 /**
  * Contains the code necessary to execute an Omex archive in VCell

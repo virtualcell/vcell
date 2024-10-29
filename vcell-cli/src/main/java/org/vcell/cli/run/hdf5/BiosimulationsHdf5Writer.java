@@ -1,9 +1,9 @@
 package org.vcell.cli.run.hdf5;
 
+import cbit.vcell.export.server.JhdfUtils;
 import io.jhdf.HdfFile;
 import io.jhdf.WritableHdfFile;
 import io.jhdf.api.*;
-import io.jhdf.object.datatype.StringData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.Report;
@@ -11,21 +11,14 @@ import org.jlibsedml.SedML;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serial;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Static class for writing out Hdf5 formatted files
  */
 public class BiosimulationsHdf5Writer {
-
-    public static class BiosimulationsHdfWriterException extends Exception {
-        @Serial
-        private static final long serialVersionUID = 1L;
-        public BiosimulationsHdfWriterException(String message, Exception e) {
-            super(message, e);
-        }
-    }
 
     private final static Logger logger = LogManager.getLogger(BiosimulationsHdf5Writer.class);
 
@@ -63,8 +56,8 @@ public class BiosimulationsHdf5Writer {
                         group = (WritableGroup) child;
                     } else {
                         group = hdf5File.putGroup(groupPath);
-                        putAttribute(group,"combineArchiveLocation", groupPath);
-                        putAttribute(group,"uri", groupPath);
+                        JhdfUtils.putAttribute(group,"combineArchiveLocation", groupPath);
+                        JhdfUtils.putAttribute(group,"uri", groupPath);
                     }
 
                     // Process the Dataset
@@ -78,28 +71,28 @@ public class BiosimulationsHdf5Writer {
 
                         // multiDimDataArray is a double[], double[][], double[][][], ... depending on the data dimensions
                         final String datasetName = preparedData.sedmlId;
-                        final Object multiDimDataArray = preparedData.createMultidimensionalArray();
+                        final Object multiDimDataArray = JhdfUtils.createMultidimensionalArray(preparedData.dataDimensions, preparedData.flattenedDataBuffer);
                         WritiableDataset dataset = group.putDataset(datasetName, multiDimDataArray);
 
                         if (data.dataSource instanceof Hdf5SedmlResultsSpatial){
-                            putAttribute(dataset,"times", Hdf5DataPreparer.getSpatialHdf5Attribute_Times(report, data));
+                            JhdfUtils.putAttribute(dataset,"times", Hdf5DataPreparer.getSpatialHdf5Attribute_Times(report, data));
                         }
-                        putAttribute(dataset, "_type", data.datasetMetadata._type);
-                        putAttribute(dataset, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
-                        putAttribute(dataset, "sedmlDataSetIds", data.datasetMetadata.sedmlDataSetIds);
-                        putAttribute(dataset, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
-                        putAttribute(dataset, "sedmlDataSetLabels", data.datasetMetadata.sedmlDataSetLabels);
-                        putAttribute(dataset, "sedmlDataSetShapes", data.datasetMetadata.sedmlDataSetShapes);
+                        JhdfUtils.putAttribute(dataset, "_type", data.datasetMetadata._type);
+                        JhdfUtils.putAttribute(dataset, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
+                        JhdfUtils.putAttribute(dataset, "sedmlDataSetIds", data.datasetMetadata.sedmlDataSetIds);
+                        JhdfUtils.putAttribute(dataset, "sedmlDataSetNames", data.datasetMetadata.sedmlDataSetNames);
+                        JhdfUtils.putAttribute(dataset, "sedmlDataSetLabels", data.datasetMetadata.sedmlDataSetLabels);
+                        JhdfUtils.putAttribute(dataset, "sedmlDataSetShapes", data.datasetMetadata.sedmlDataSetShapes);
                         if (data.dataSource.scanParameterValues != null && data.dataSource.scanParameterValues.length > 0) {
                             List<String> scanValues = Arrays.stream(data.dataSource.scanParameterValues).map(Arrays::toString).toList();
-                            putAttribute(dataset, "sedmlRepeatedTaskValues", scanValues);
+                            JhdfUtils.putAttribute(dataset, "sedmlRepeatedTaskValues", scanValues);
                         }
                         if (data.dataSource.scanParameterNames != null && data.dataSource.scanParameterNames.length > 0) {
-                            putAttribute(dataset, "sedmlRepeatedTaskParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
+                            JhdfUtils.putAttribute(dataset, "sedmlRepeatedTaskParameterNames", Arrays.asList(data.dataSource.scanParameterNames));
                         }
-                        putAttribute(dataset, "sedmlId", data.datasetMetadata.sedmlId);
-                        putAttribute(dataset, "sedmlName", data.datasetMetadata.sedmlName);
-                        putAttribute(dataset, "uri", groupPath + "/" + data.datasetMetadata.sedmlId);
+                        JhdfUtils.putAttribute(dataset, "sedmlId", data.datasetMetadata.sedmlId);
+                        JhdfUtils.putAttribute(dataset, "sedmlName", data.datasetMetadata.sedmlName);
+                        JhdfUtils.putAttribute(dataset, "uri", groupPath + "/" + data.datasetMetadata.sedmlId);
                     }
                 }
             }
@@ -122,42 +115,6 @@ public class BiosimulationsHdf5Writer {
                 if (!didFail) throw new BiosimulationsHdfWriterException(message, e);
             }
         }
-    }
-
-    public static void putAttribute(WritableNode node, String name, List<String> values) {
-        if (values.contains(null)) {
-            //
-            // WORKAROUND for apparent bug in io.jhdf 0.8.3
-            //
-            // replace all null entries with max length of non-null entries
-            // replacing with the empty string is not good enough, and a single space also doesn't work
-            //
-            // e.g. for a list of ["a", null, "abc"], replace null with ["a","   ,"abc"]
-            //
-            int maxStringLength = 0;
-            for (String s : values) {
-                if (s != null && s.length() > maxStringLength) {
-                    maxStringLength = s.length();
-                }
-            }
-            final String nullString = " ".repeat(maxStringLength);
-            String[] paddedValues = values.stream().map(s -> s == null ? nullString : s).toArray(String[]::new);
-            System.out.println("name="+name+", orig=" + values + ", paddedValues=" + Arrays.toString(paddedValues));
-            Attribute attribute = node.putAttribute(name, paddedValues);
-            //attribute.getDataSpace().toString();
-
-        } else {
-            System.out.println("name="+name+", values=" + values);
-            node.putAttribute(name, values.toArray(new String[0]));
-        }
-    }
-
-    public static void putAttribute(WritableNode node, String name, String value) {
-        node.putAttribute(name, value);
-    }
-
-    public static void putAttribute(WritableNode node, String name, double[] value) {
-        node.putAttribute(name, value);
     }
 
 }
