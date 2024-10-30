@@ -15,7 +15,8 @@ public class BiosimulationsFiles {
     private final static String[] allProjectIDs = new String[]{
             "BIOMD0000000003_tellurium_A_minimal_cascade_model_for_th",
             "BIOMD0000000006_tellurium_Modeling_the_cell_division_cyc",
-            "BIOMD0000000036_tellurium_A_simple_model_of_circadian_rh"
+            "BIOMD0000000036_tellurium_A_simple_model_of_circadian_rh",
+            "BIOMD0000000300"
     };
 
     public static String[] getProjectIDs() {

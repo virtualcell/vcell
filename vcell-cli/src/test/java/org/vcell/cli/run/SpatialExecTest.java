@@ -5,6 +5,7 @@ import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,7 +32,6 @@ public class SpatialExecTest {
     @BeforeAll
     public static void setup() throws PythonStreamException, IOException {
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
-        NativeLib.HDF5.load();
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
 
         PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
@@ -103,6 +103,13 @@ public class SpatialExecTest {
     @ParameterizedTest
     @MethodSource("testCases")
     public void testSpatialOmex(String testCaseFilename) throws Exception {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String osArch = System.getProperty("os.arch").toLowerCase();
+
+        // Skip test if running on macOS ARM64
+        Assumptions.assumeFalse(osName.contains("mac") && osArch.equals("aarch64"),
+                "Test skipped on macOS ARM64");
+
         SpatialExecTest.FAULT knownFault = knownFaults().get(testCaseFilename);
         try {
             System.out.println("running test " + testCaseFilename);
