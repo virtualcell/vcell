@@ -30,6 +30,11 @@ from biosimulators_utils.sedml.io import SedmlSimulationReader, SedmlSimulationW
 from deprecated import deprecated
 from libsedml import SedReport, SedPlot2D
 
+
+# Debug code
+# import pydevd_pycharm
+# pydevd_pycharm.settrace('localhost', port=44911, stdoutToServer=True, stderrToServer=True)
+
 # Move status PY code here
 # Create temp directory
 tmp_dir = tempfile.mkdtemp()
@@ -90,10 +95,9 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
 
     for i_content, content in enumerate(sedml_contents):
         content_filename = os.path.join(temp_path, content.location)
-        if '/' in content.location:
-            sedml_name = content.location.split('/')[1].split('.')[0]
-        else:
-            sedml_name = content.location.split('.')[0]
+        starting_sedml_name_index = content.location.rfind("/") if '/' in content.location else 0
+        ending_sedml_name_index = content.location.rfind(".")
+        sedml_name = content.location[starting_sedml_name_index:ending_sedml_name_index]
 #        sedml_name = Path(content.location).stem
         print("name: ", sedml_name, file=sys.stdout)
         print("sedml_name: ", sedml_name, file=sys.stdout)
