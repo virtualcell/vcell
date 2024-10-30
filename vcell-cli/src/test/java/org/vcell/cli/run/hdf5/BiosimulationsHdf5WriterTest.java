@@ -97,7 +97,6 @@ public class BiosimulationsHdf5WriterTest {
     public void test() throws BiosimulationsHdfWriterException, IOException {
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
-        //NativeLib.HDF5.load();
         HDF5ExecutionResults exampleHdf5FileWrapper = BiosimulationsHdf5WriterTest.createExampleData();
         File dir = Files.createTempDir();
         BiosimulationsHdf5Writer.writeHdf5(exampleHdf5FileWrapper, dir);
