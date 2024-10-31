@@ -8,6 +8,7 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.client.desktop.biomodel.IssueManager;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveViewID;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.graph.SmallShapeManager;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.mapping.*;
@@ -554,8 +555,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		};
 		// The Expression cell renderer  in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer expressionTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final String darkRed = "#8B0000";
-			final String brown = "#A52A2A";
+			String darkRed = NamedColor.getHex(GraphConstants.darkred);	// "#8B0000"
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 														   int row, int column) {
@@ -563,7 +563,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				if (table.getModel() instanceof MolecularTypeSpecsTableModel) {
 					MolecularTypeSpecsTableModel model = (MolecularTypeSpecsTableModel)table.getModel();
 					if (value instanceof Double) {
-						String columnName = model.getColumnName(column);
 						if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_RADIUS.ordinal() == column) {
 							if(!isSelected) {
 								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";

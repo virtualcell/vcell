@@ -10,11 +10,19 @@
 
 package org.vcell.util.springsalad;
 
+import cbit.vcell.graph.GraphConstants;
+
 import java.awt.Color;
 import java.io.Serializable;
 
+/*
+ * Springsalad-style colors.
+ * See also Colors
+ * For vcell-style colors see GraphConstants
+ */
 @SuppressWarnings("serial")
 public class NamedColor implements Serializable {
+
 	private final Color color;
 	private final String name;
 	
@@ -46,6 +54,36 @@ public class NamedColor implements Serializable {
 				Math.max((int)(color.getGreen()*factor), 0),
 				Math.max((int)(color.getBlue() *factor), 0),
 				color.getAlpha());
+	}
+
+	public String getHex() {
+		Color c = getColor();
+		String hex =  getHex(c);
+		return hex;
+	}
+	public static String getHex(Color c) {
+		String hex = String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+		return hex;
+	}
+
+	public static void main(String[] args) {
+
+		Color red = Color.decode("#FF0000");
+		Color red1 = new Color(255, 0, 0, 32);
+		Color red2 = new Color(255, 0, 0, 127);
+		Color red3 = new Color(255, 0, 0, 255);			// plain red
+
+		// some alpha manipulation
+		Color darkred = GraphConstants.darkred;		// #8b0000
+		Color darkred1 = new Color(139, 0, 0, 32);
+		Color darkred2 = new Color(139, 0, 0, 127);
+		Color darkred3 = new Color(139, 0, 0, 255);		// plain darkred
+
+		Color brown = Color.decode("#A52A2A");
+		Color brown1 = new Color(165, 42, 42, 32);
+		Color brown2 = new Color(165, 42, 42, 127);
+		Color brown3 = new Color(165, 42, 42, 255);		// plain brown
+
 	}
 
 }
