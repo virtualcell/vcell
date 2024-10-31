@@ -554,6 +554,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		};
 		// The Expression cell renderer  in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer expressionTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			final String darkRed = "#8B0000";
+			final String brown = "#A52A2A";
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 														   int row, int column) {
@@ -564,15 +566,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 						String columnName = model.getColumnName(column);
 						if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_RADIUS.ordinal() == column) {
 							if(!isSelected) {
-								String brown = "#A52A2A";
-								String text = "<html>" + value + "<span style='color:" + brown + ";'> [nm]</span></html>";
+								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
 								setText(text);
 							} else {
 								setText(value + " [nm]");
 							}
 						} else if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_DIFFUSION.ordinal() == column) {
 							if(!isSelected) {
-								String darkRed = "#8B0000";
 								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [um^2/s]</span></html>";
 								setText(text);
 							} else {

@@ -60,7 +60,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		COLUMN_SITE("Site"),
 		COLUMN_MOLECULE("Molecule"),
 		COLUMN_STRUCTURE("Location"),
-		COLUMN_STATE("Initial State"),
+		COLUMN_STATE("State"),
 		COLUMN_RADIUS("Radius"),
 		COLUMN_DIFFUSION("Diff. Rate"),
 		COLUMN_COLOR("Color");
