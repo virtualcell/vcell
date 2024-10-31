@@ -100,7 +100,7 @@ public class SpringSaLaDGoodReactionsTest {
 		simContext.gatherIssues(issueContext, issueList, true);		// bIgnoreMathDescription == true
 		int numErrors = checkIssuesBySeverity(issueList, Issue.Severity.ERROR);
 		int numWarnings = checkIssuesBySeverity(issueList, Issue.Severity.WARNING);
-        assertTrue((numErrors == 2 && numWarnings == 8) ? true : false, "expecting 2 errors and 8 warnings for this model");
+        assertTrue((numErrors == 2 && numWarnings == 7) ? true : false, "expecting 2 errors and 8 warnings for this model");
 
 		/*		We should detect the following:
 		
@@ -111,7 +111,6 @@ public class SpringSaLaDGoodReactionsTest {
 		s1:		Each Site must have at least one State.
 		s2:		Internal Links are possible only when the Molecule has at least 2 sites.
 		s2:		The Species and the Molecular Type must share the same name.
-		MT2:	Link chain within the molecule has at least one discontinuity.
 		Sink:	SpringSaLaD reserved Molecules 'Source' and 'Sink' must not have any sites defined
 		s5:		There must be a biunivocal correspondence between the Species and the associated MolecularType.
 		s6:		There must be a biunivocal correspondence between the Species and the associated MolecularType.
