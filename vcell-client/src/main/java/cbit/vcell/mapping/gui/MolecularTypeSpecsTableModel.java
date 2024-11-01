@@ -27,6 +27,7 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.Coordinate;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
@@ -61,6 +62,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		COLUMN_MOLECULE("Molecule"),
 		COLUMN_STRUCTURE("Location"),
 		COLUMN_STATE("State"),
+		COLUMN_X(" X "),
+		COLUMN_Y(" Y "),
+		COLUMN_Z(" Z "),
 		COLUMN_RADIUS("Radius"),
 		COLUMN_DIFFUSION("Diff. Rate"),
 		COLUMN_COLOR("Color");
@@ -92,6 +96,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				return Structure.class;
 		case COLUMN_STATE:
 			return ComponentStatePattern.class;
+		case COLUMN_X:
+		case COLUMN_Y:
+		case COLUMN_Z:
 		case COLUMN_RADIUS:
 		case COLUMN_DIFFUSION:
 			return Expression.class;
@@ -143,11 +150,26 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				}
 				String name = csp.getComponentStateDefinition().getName();
 				return name;
+			case COLUMN_X:
+				if(sas == null) {
+					return null;
+				}
+				return sas.getCoordinate().getX();	// nm
+			case COLUMN_Y:
+				if(sas == null) {
+					return null;
+				}
+				return sas.getCoordinate().getY();	// nm
+			case COLUMN_Z:
+				if(sas == null) {
+					return null;
+				}
+				return sas.getCoordinate().getZ();	// nm
 			case COLUMN_RADIUS:
 				if(sas == null) {
 					return null;
 				}
-				return sas.getRadius();		// nm
+				return sas.getRadius();				// nm
 			case COLUMN_DIFFUSION:
 				if(sas == null) {
 					return null;
@@ -186,6 +208,66 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, structure);
 				} else {
 					sas.setLocation(structure);
+				}
+			}
+			return;
+		case COLUMN_X:
+			if (aValue instanceof String) {
+				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
+				if(sas == null) {
+					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+				}
+				String newExpressionString = (String)aValue;
+				double res = 0.0;
+				try {
+					res = Double.parseDouble(newExpressionString);
+				} catch(NumberFormatException e) {
+					return;
+				}
+				Coordinate c = sas.getCoordinate();
+				if(c.getX() != res) {
+					c = new Coordinate(res, c.getY(), c.getZ());
+					sas.setCoordinate(c);
+				}
+			}
+			return;
+		case COLUMN_Y:
+			if (aValue instanceof String) {
+				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
+				if(sas == null) {
+					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+				}
+				String newExpressionString = (String)aValue;
+				double res = 0.0;
+				try {
+					res = Double.parseDouble(newExpressionString);
+				} catch(NumberFormatException e) {
+					return;
+				}
+				Coordinate c = sas.getCoordinate();
+				if(c.getX() != res) {
+					c = new Coordinate(c.getX(), res, c.getZ());
+					sas.setCoordinate(c);
+				}
+			}
+			return;
+		case COLUMN_Z:
+			if (aValue instanceof String) {
+				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
+				if(sas == null) {
+					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+				}
+				String newExpressionString = (String)aValue;
+				double res = 0.0;
+				try {
+					res = Double.parseDouble(newExpressionString);
+				} catch(NumberFormatException e) {
+					return;
+				}
+				Coordinate c = sas.getCoordinate();
+				if(c.getX() != res) {
+					c = new Coordinate(c.getX(), c.getY(), res);
+					sas.setCoordinate(c);
 				}
 			}
 			return;
@@ -242,6 +324,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		case COLUMN_STATE:
 			return false;
 		case COLUMN_STRUCTURE:
+		case COLUMN_X:
+		case COLUMN_Y:
+		case COLUMN_Z:
 		case COLUMN_RADIUS:
 		case COLUMN_DIFFUSION:
 		case COLUMN_COLOR:
@@ -267,6 +352,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				case COLUMN_MOLECULE:
 				case COLUMN_STRUCTURE:
 				case COLUMN_STATE:
+				case COLUMN_X:
+				case COLUMN_Y:
+				case COLUMN_Z:
 				case COLUMN_RADIUS:
 				case COLUMN_DIFFUSION:
 				case COLUMN_COLOR:
@@ -496,11 +584,6 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 //		return parameterList;
 	}
 	
-	
-
-	
-
-
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() instanceof ReactionContext && evt.getPropertyName().equals("speciesContextSpecs")) {

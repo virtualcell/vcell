@@ -70,9 +70,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private MolecularTypeSpecsTableModel molecularTypeSpecsTableModel = null;
 	
 //	private JComboBox<String> siteColorComboBox = null;
-	private JTextField siteXField = null;
-	private JTextField siteYField = null;
-	private JTextField siteZField = null;
+//	private JTextField siteXField = null;
+//	private JTextField siteYField = null;
+//	private JTextField siteZField = null;
 	
 	private JTextField linkLengthField = null;
 	private JButton addLinkButton = null;
@@ -120,9 +120,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if (source == siteXField || source == siteYField || source == siteZField) {
-				changePosition((JTextField)source);
-			} else if(source == linkLengthField) {
+//			if (source == siteXField || source == siteYField || source == siteZField) {
+//				changePosition((JTextField)source);
+//			} else
+			if(source == linkLengthField) {
 				changeLinkLength();
 			} else if(source == addLinkButton) {
 				addLinkActionPerformed();
@@ -138,10 +139,11 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		}
 		public void focusLost(FocusEvent e) {
 			Object source = e.getSource();
-			if (source == siteXField || source == siteYField || source == siteZField) {
-				// TODO: are these even needed? we already call changePosition() on actionPerformed()
-				changePosition((JTextField)source);
-			} else if(source == linkLengthField) {
+//			if (source == siteXField || source == siteYField || source == siteZField) {
+//				// TODO: are these even needed? we already call changePosition() on actionPerformed()
+//				changePosition((JTextField)source);
+//			} else
+			if(source == linkLengthField) {
 				// TODO: do NOT call here changeLinkLength(), it will modified the newly selected link instead the old one
 				// changeLinkLength();
 			}
@@ -205,13 +207,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void initConnections() throws java.lang.Exception {		// listeners here!
-		siteXField.addFocusListener(eventHandler);
-		siteYField.addFocusListener(eventHandler);
-		siteZField.addFocusListener(eventHandler);
+//		siteXField.addFocusListener(eventHandler);
+//		siteYField.addFocusListener(eventHandler);
+//		siteZField.addFocusListener(eventHandler);
 		linkLengthField.addFocusListener(eventHandler);
-		siteXField.addActionListener(eventHandler);
-		siteYField.addActionListener(eventHandler);
-		siteZField.addActionListener(eventHandler);
+//		siteXField.addActionListener(eventHandler);
+//		siteYField.addActionListener(eventHandler);
+//		siteZField.addActionListener(eventHandler);
 		
 		siteLinksList.addListSelectionListener(eventHandler);
 		siteLinksList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -240,17 +242,17 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private void initialize() {
 		try {
 		// labels / button / combos / lists initialization
-			siteXField = new JTextField();
-			siteYField = new JTextField();
-			siteZField = new JTextField();
+//			siteXField = new JTextField();
+//			siteYField = new JTextField();
+//			siteZField = new JTextField();
 			siteLinksList = new JList<MolecularInternalLinkSpec>(siteLinksListModel);
 			siteLinksList.setCellRenderer(siteLinksCellRenderer);
 			linkLengthField = new JTextField("");
 			addLinkButton = new JButton("Add Link");
 			deleteLinkButton = new JButton("Delete Link");
-			siteXField.setEditable(false);
-			siteYField.setEditable(false);
-			siteZField.setEditable(false);
+//			siteXField.setEditable(false);
+//			siteYField.setEditable(false);
+//			siteZField.setEditable(false);
 			linkLengthField.setEditable(false);
 			deleteLinkButton.setEnabled(false);
 		
@@ -297,7 +299,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.8;
+		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(3, 0, 0, 0);	//  top, left, bottom, right 
 		thePanel.add(top, gbc);
@@ -307,7 +309,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridy = 1;
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
-		gbc.gridheight = 2;
+//		gbc.gridheight = 2;
 		gbc.insets = new Insets(1, 0, 0, 0);
 		gbc.fill = GridBagConstraints.BOTH;
 		thePanel.add(bottom, gbc);
@@ -545,6 +547,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 						System.out.println("NamedColor table cell");
 						NamedColor namedColor = (NamedColor)value;
 						setText(namedColor.getName());
+//						setText("");		// we may want to just display the icon and no text
 						Icon icon = new ColorIcon(10,10,namedColor.getColor(), true);	// small square icon with subdomain color
 						setHorizontalTextPosition(SwingConstants.RIGHT);
 						setIcon(icon);
@@ -563,21 +566,52 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				if (table.getModel() instanceof MolecularTypeSpecsTableModel) {
 					MolecularTypeSpecsTableModel model = (MolecularTypeSpecsTableModel)table.getModel();
 					if (value instanceof Double) {
-						if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_RADIUS.ordinal() == column) {
-							if(!isSelected) {
-								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
-								setText(text);
-							} else {
-								setText(value + " [nm]");
-							}
-						} else if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_DIFFUSION.ordinal() == column) {
-							if(!isSelected) {
-								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [um^2/s]</span></html>";
-								setText(text);
-							} else {
-								setText(value + " [um^2/s");
-							}
+						MolecularTypeSpecsTableModel.ColumnType columnType = MolecularTypeSpecsTableModel.ColumnType.values()[column];
+						switch(columnType) {
+							case COLUMN_X:
+							case COLUMN_Y:
+							case COLUMN_Z:
+							case COLUMN_RADIUS:
+								setText(value+"");
+								setToolTipText(value + " [nm]");
+								break;
+//							case COLUMN_RADIUS:		// good looking but too busy
+//								if(!isSelected) {
+//									String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
+//									setText(text);
+//								} else {
+//									setText(value + " [nm]");
+//								}
+//								setToolTipText(value + " [nm]");
+//								break;
+							case COLUMN_DIFFUSION:
+//								if(!isSelected) {
+//									String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [um^2/s]</span></html>";
+//									setText(text);
+//								} else {
+//									setText(value + " [um^2/s]");
+//								}
+								setText(value + "");
+								setToolTipText(value + " [um^2/s]");
+								break;
+							default:
+								break;
 						}
+//						if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_RADIUS.ordinal() == column) {
+//							if(!isSelected) {
+//								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
+//								setText(text);
+//							} else {
+//								setText(value + " [nm]");
+//							}
+//						} else if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_DIFFUSION.ordinal() == column) {
+//							if(!isSelected) {
+//								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [um^2/s]</span></html>";
+//								setText(text);
+//							} else {
+//								setText(value + " [um^2/s");
+//							}
+//						}
 					}
 				}
 				return this;
@@ -590,54 +624,54 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		getMolecularTypeSpecsTable().setDefaultRenderer(NamedColor.class, namedColorTableCellRenderer);	// NamedColor combobox cell renderer
 
 
-		gbc = new GridBagConstraints();
-		gbc.gridx = 0;
-		gbc.gridy = 5;
-		gbc.anchor = GridBagConstraints.SOUTH;
-		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(new JLabel(" X (nm) "), gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 5;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.SOUTH;
-		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(siteXField, gbc);		// 
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 2;
-		gbc.gridy = 5;
-		gbc.anchor = GridBagConstraints.SOUTH;
-		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(new JLabel(" Y (nm) "), gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 3;
-		gbc.gridy = 5;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.SOUTH;
-		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(siteYField, gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 4;
-		gbc.gridy = 5;
-		gbc.anchor = GridBagConstraints.SOUTH;
-		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(new JLabel(" Z (nm) "), gbc);
-
-		gbc = new GridBagConstraints();
-		gbc.gridx = 5;
-		gbc.gridy = 5;
-		gbc.weightx = 1.0;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.anchor = GridBagConstraints.SOUTH;
-		gbc.insets = new Insets(2, 2, 2, 2);
-		sitesPanel.add(siteZField, gbc);
-
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 0;
+//		gbc.gridy = 5;
+//		gbc.anchor = GridBagConstraints.SOUTH;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		sitesPanel.add(new JLabel(" X (nm) "), gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = 5;
+//		gbc.weightx = 1.0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.SOUTH;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		sitesPanel.add(siteXField, gbc);		//
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 2;
+//		gbc.gridy = 5;
+//		gbc.anchor = GridBagConstraints.SOUTH;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		sitesPanel.add(new JLabel(" Y (nm) "), gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 3;
+//		gbc.gridy = 5;
+//		gbc.weightx = 1.0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.SOUTH;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		sitesPanel.add(siteYField, gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 4;
+//		gbc.gridy = 5;
+//		gbc.anchor = GridBagConstraints.SOUTH;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		sitesPanel.add(new JLabel(" Z (nm) "), gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 5;
+//		gbc.gridy = 5;
+//		gbc.weightx = 1.0;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.anchor = GridBagConstraints.SOUTH;
+//		gbc.insets = new Insets(2, 2, 2, 2);
+//		sitesPanel.add(siteZField, gbc);
+//
 //		gbc = new GridBagConstraints();
 //		gbc.gridx = 6;
 //		gbc.gridy = 5;
@@ -855,20 +889,20 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 		if(bNonNullMolecularComponentPattern) {
 			SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
-			siteXField.setEditable(true);
-			siteYField.setEditable(true);
-			siteZField.setEditable(true);
-			siteXField.setText(sas.getCoordinate().getX()+"");
-			siteYField.setText(sas.getCoordinate().getY()+"");
-			siteZField.setText(sas.getCoordinate().getZ()+"");
+//			siteXField.setEditable(true);
+//			siteYField.setEditable(true);
+//			siteZField.setEditable(true);
+//			siteXField.setText(sas.getCoordinate().getX()+"");
+//			siteYField.setText(sas.getCoordinate().getY()+"");
+//			siteZField.setText(sas.getCoordinate().getZ()+"");
 //			getSiteColorComboBox().setSelectedItem(sas.getColor().getName());
 		} else {
-			siteXField.setEditable(false);
-			siteYField.setEditable(false);
-			siteZField.setEditable(false);
-			siteXField.setText(null);
-			siteYField.setText(null);
-			siteZField.setText(null);
+//			siteXField.setEditable(false);
+//			siteYField.setEditable(false);
+//			siteZField.setEditable(false);
+//			siteXField.setText(null);
+//			siteYField.setText(null);
+//			siteZField.setText(null);
 //			getSiteColorComboBox().setSelectedItem(null);
 		}
 	}
@@ -910,14 +944,14 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			return;
 		}
 
-		if(siteXField == source && c.getX() != res) {
-			c = new Coordinate(res, c.getY(), c.getZ());
-		} else if(siteYField == source && c.getY() != res) {
-			c = new Coordinate(c.getX(), res, c.getZ());
-		} else if(siteZField == source && c.getZ() != res) {
-			c = new Coordinate(c.getX(), c.getY(), res);
-		}
-		sas.setCoordinate(c);
+//		if(siteXField == source && c.getX() != res) {
+//			c = new Coordinate(res, c.getY(), c.getZ());
+//		} else if(siteYField == source && c.getY() != res) {
+//			c = new Coordinate(c.getX(), res, c.getZ());
+//		} else if(siteZField == source && c.getZ() != res) {
+//			c = new Coordinate(c.getX(), c.getY(), res);
+//		}
+//		sas.setCoordinate(c);
 		
 		recalculateLinkLengths();
 	}
