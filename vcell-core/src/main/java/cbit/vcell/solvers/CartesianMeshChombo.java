@@ -1,29 +1,20 @@
 package cbit.vcell.solvers;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.Vector;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-
+import cbit.vcell.math.MathFormatException;
+import cbit.vcell.simdata.DataIdentifier;
+import io.jhdf.HdfFile;
+import io.jhdf.api.Attribute;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 
-import cbit.vcell.math.MathFormatException;
-import cbit.vcell.simdata.DataIdentifier;
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.Dataset;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
 
 
 public class CartesianMeshChombo extends CartesianMesh {
@@ -226,23 +217,12 @@ public class CartesianMeshChombo extends CartesianMesh {
 
     public static CartesianMeshChombo readMeshFile(File chomboMeshFile) throws Exception{
         CartesianMeshChombo chomboMesh = new CartesianMeshChombo();
-        if(H5.H5open() < 0){
-            throw new Exception("H5.H5open() failed");
-        }
-        FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-        if(fileFormat == null){
-            throw new Exception("FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5) failed, returned null.");
-        }
-        FileFormat meshFile = null;
-        try {
-            meshFile = fileFormat.createInstance(chomboMeshFile.getAbsolutePath(), FileFormat.READ);
-            meshFile.open();
-            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) meshFile.getRootNode();
-            Group rootGroup = (Group) rootNode.getUserObject();
-            Group meshGroup = (Group) rootGroup.getMemberList().get(0);
-            List<Attribute> meshAttrList = meshGroup.getMetadata();
+        try (HdfFile hdfFile = new HdfFile(new File(chomboMeshFile.getAbsolutePath()))) {
+            Group rootGroup = hdfFile.getParent();
+            Node meshGroup = rootGroup.getChildren().values().iterator().next();
+            Map<String, Attribute> meshAttrList = meshGroup.getAttributes();
 
-            for(Attribute attr : meshAttrList){
+            for(Attribute attr : meshAttrList.values()){
                 String attrName = attr.getName();
                 MeshAttribute mattr = null;
                 try {
@@ -254,7 +234,7 @@ public class CartesianMeshChombo extends CartesianMesh {
                     logger.debug("mesh attribute " + attrName + " is not defined in Java");
                     continue;
                 }
-                Object value = attr.getValue();
+                Object value = attr.getData();
                 switch(mattr){
                     case dimension:
                         chomboMesh.dimension = ((int[]) value)[0];
@@ -301,13 +281,16 @@ public class CartesianMeshChombo extends CartesianMesh {
                 }
             }
 
-            List<HObject> memberList = meshGroup.getMemberList();
-            for(HObject member : memberList){
-                if(!(member instanceof Dataset)){
+            Map<String, Node> memberList = hdfFile.getChildren(); // meshGroup.getPath()+)
+            for(Node member : memberList.values()){
+                if(!(member instanceof Dataset dataset)){
                     continue;
                 }
-                Dataset dataset = (Dataset) member;
-                Vector vectValues = (Vector) dataset.read();
+                if (!dataset.isCompound()){
+                    throw new RuntimeException("Dataset " + dataset.getName() + " is not compound");
+                }
+                Map<String, Object> compoundData = (Map<String, Object>) dataset.getData();
+                Vector<Object> vectValues = new Vector<>(compoundData.values().stream().toList());
                 String name = dataset.getName();
                 MeshDataSet mdataset = null;
 
@@ -347,10 +330,6 @@ public class CartesianMeshChombo extends CartesianMesh {
                         collect3dSliceView(chomboMesh, vectValues);
                         break;
                 }
-            }
-        } finally {
-            if(meshFile != null){
-                meshFile.close();
             }
         }
         // set neighbors to membrane elements
