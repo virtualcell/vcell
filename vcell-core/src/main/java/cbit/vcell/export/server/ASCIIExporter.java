@@ -549,7 +549,12 @@ public class ASCIIExporter implements ExportConstants {
                                              GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs, String contextName, FileDataContainerManager fileDataContainerManager)
             throws DataAccessException, IOException{
 
-        NativeLib.HDF5.load();
+        // skip loading legacy native HDF5 library if the system is a macos arm64
+        // will get runtime errors for Chombo and MovingBoundary until HDF5 is updated
+        boolean MacosArm64 = System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X");
+        if (!MacosArm64) {
+            NativeLib.HDF5.load();
+        }
         ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
         Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
         double progressCounter = 0;
