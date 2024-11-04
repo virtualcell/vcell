@@ -82,7 +82,6 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                     if (speciesContextSpec == null || speciesContextSpec.getSpeciesContext() == null) {
                         return;
                     }
-                    System.out.println(speciesContextSpec.getSpeciesContext().getName() + ": painting shape");
                     scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec, issueManager);
                     scsls.paintSelf(g);
                 }
@@ -201,7 +200,6 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
         if(speciesContextSpec == null || speciesContextSpec.getSpeciesContext() == null) {
             return;
         }
-        System.out.println(speciesContextSpec.getSpeciesContext().getName() + ": painting shape");
         scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec, issueManager);
 
 //        shapePanel.setPreferredSize(scsls.getMaxSize());

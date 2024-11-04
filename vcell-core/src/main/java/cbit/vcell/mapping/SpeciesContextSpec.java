@@ -1455,6 +1455,37 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                     return;
                 }
+
+                // rate rules and assignment rules are not permitted
+                // normally it is not possible to create RateRule or AssignmentRule using the vcell UI, the Protocols subpanels are disabled
+                // we check this just in case the user is very crafty and finds a way
+                boolean foundRuleMatch = false;
+                if(simulationContext.getRateRules() != null && simulationContext.getRateRules().length > 0) {
+                    for(RateRule rr : simulationContext.getRateRules()) {
+                        if(rr.getRateRuleVar() == null) {
+                            continue;
+                        }
+                        if(sc.getName().equals(rr.getRateRuleVar().getName())) {
+                            String msg = "SpringSaLaD applications do not accept Rate Rules.";
+                            String tip = msg;
+                            issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                            return;
+                        }
+                    }
+                }
+                if(!foundRuleMatch && simulationContext.getAssignmentRules() != null && simulationContext.getAssignmentRules().length > 0) {
+                    for(AssignmentRule rr : simulationContext.getAssignmentRules()) {
+                        if(rr.getAssignmentRuleVar() == null) {
+                            continue;
+                        }
+                        if(sc.getName().equals(rr.getAssignmentRuleVar().getName())) {
+                            String msg = "SpringSaLaD applications do not accept Assignment Rules.";
+                            String tip = msg;
+                            issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                            return;
+                        }
+                    }
+                }
             } else {
                 String msg = "SpringSaLaD requires all Species to be associated with a MolecularType.";
                 String tip = "Associate a MolecularType to the Species in Physiology / Species panel.";
@@ -2336,6 +2367,9 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public List<SpeciesContextSpecParameter> computeApplicableParameterList(){
         List<SpeciesContextSpecParameter> speciesContextSpecParameterList = new ArrayList<SpeciesContextSpecParameter>();
         speciesContextSpecParameterList.add(getInitialConditionParameter());
+        if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+            return speciesContextSpecParameterList;
+        }
         int dimension = simulationContext.getGeometry().getDimension();
         if(!isConstant() && !isWellMixed() && dimension > 0){
             // diffusion

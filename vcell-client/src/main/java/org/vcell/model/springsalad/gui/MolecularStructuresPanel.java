@@ -168,7 +168,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				return;
 			}
 			if (e.getSource() == getSpeciesContextSpecsTable().getSelectionModel()) {
-				System.out.println("valueChanged: speciesContextSpecsTableModel");
+//				System.out.println("valueChanged: speciesContextSpecsTableModel");
 				int row = getSpeciesContextSpecsTable().getSelectedRow();
 				SpeciesContextSpec scsSelected = speciesContextSpecsTableModel.getValueAt(row);
 				setSpeciesContextSpec(scsSelected);
@@ -178,13 +178,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				selectionManager.setSelectedObjects(selectedObjects.toArray());
 
 			} else if (e.getSource() == getMolecularTypeSpecsTable().getSelectionModel()) {
-				System.out.println("valueChanged: molecularTypeSpecsTableModel");
+//				System.out.println("valueChanged: molecularTypeSpecsTableModel");
 				int row = getMolecularTypeSpecsTable().getSelectedRow();
 				MolecularComponentPattern mcmSelected = molecularTypeSpecsTableModel.getValueAt(row);
 				setMolecularComponentPattern(mcmSelected);
 
 			} else if(e.getSource() == siteLinksList) {
-				System.out.println("valueChanged: siteLinksList");
+//				System.out.println("valueChanged: siteLinksList");
 				showLinkLength(siteLinksList.getSelectedValue());
 			}
 			// for siteXField, siteYField, siteZField we have actionPerformed()
@@ -293,13 +293,15 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		top.setBorder(titleTop);
 		sitesPanel.setBorder(titleSites);
 		linksPanel.setBorder(titleLinks);
+
+		top.setMinimumSize(new Dimension(0, 100));
 		
 		thePanel.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+		gbc.weighty = 0.4;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(3, 0, 0, 0);	//  top, left, bottom, right 
 		thePanel.add(top, gbc);
@@ -308,10 +310,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridx = 0;
 		gbc.gridy = 1;
 		gbc.weightx = 1.0;
-		gbc.weighty = 1.0;
+		gbc.weighty = 0.6;
 //		gbc.gridheight = 2;
-		gbc.insets = new Insets(1, 0, 0, 0);
 		gbc.fill = GridBagConstraints.BOTH;
+		gbc.insets = new Insets(1, 0, 0, 0);
 		thePanel.add(bottom, gbc);
 
 		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
@@ -412,61 +414,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			}
 		};
 		
-		// renderer for the rules column (reaction rules / assignment rules)
-		// TODO: rules not compatible with springsalad, must create issue if present
-		DefaultScrollTableCellRenderer rulesTableCellRenderer = new DefaultScrollTableCellRenderer() {
-			final Color lightBlueBackground = new Color(214, 234, 248);
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-					int row, int column) {
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				
-				if (table.getModel() instanceof SpeciesContextSpecsTableModel) {
-					Icon icon = VCellIcons.issueGoodIcon;
-					Object selectedObject = null;
-					if (table.getModel() == speciesContextSpecsTableModel) {
-						selectedObject = speciesContextSpecsTableModel.getValueAt(row);
-					}
-					if (selectedObject != null) {
-						if(isSelected) {
-							setBackground(lightBlueBackground);
-						}
-						if(selectedObject instanceof SpeciesContextSpec) {
-							SpeciesContextSpec scs = (SpeciesContextSpec)selectedObject;
-							SpeciesContext sc = scs.getSpeciesContext();
-
-							boolean foundRuleMatch = false;
-							if(fieldSimulationContext.getRateRules() != null && fieldSimulationContext.getRateRules().length > 0) {
-								for(RateRule rr : fieldSimulationContext.getRateRules()) {
-									if(rr.getRateRuleVar() == null) {
-										continue;
-									}
-									if(sc.getName().equals(rr.getRateRuleVar().getName())) {
-										foundRuleMatch = true;
-										icon = VCellIcons.ruleRateIcon;
-										break;
-									}
-								}
-							}
-							if(!foundRuleMatch && fieldSimulationContext.getAssignmentRules() != null && fieldSimulationContext.getAssignmentRules().length > 0) {
-								for(AssignmentRule rr : fieldSimulationContext.getAssignmentRules()) {
-									if(rr.getAssignmentRuleVar() == null) {
-										continue;
-									}
-									if(sc.getName().equals(rr.getAssignmentRuleVar().getName())) {
-										icon = VCellIcons.ruleAssignIcon;
-										break;
-									}
-								}
-							}
-						}
-					}
-					setIcon(icon);
-				}
-				return this;
-			}
-		};
-		
 		// The Structures combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer structuresTableCellRenderer = new DefaultScrollTableCellRenderer() {
 			final Color lightBlueBackground = new Color(214, 234, 248);
@@ -496,7 +443,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		getSpeciesContextSpecsTable().setDefaultRenderer(Species.class, renderer);
 		getSpeciesContextSpecsTable().setDefaultRenderer(ScopedExpression.class, renderer);
 		getSpeciesContextSpecsTable().setDefaultRenderer(Boolean.class, new ScrollTableBooleanCellRenderer());
-		getSpeciesContextSpecsTable().setDefaultRenderer(SpeciesContextSpecsTableModel.RulesProvenance.class, rulesTableCellRenderer);	// icons for assignment and rate rules
 
 		// ---------------------------------------------------------------------------------------------
 		
@@ -544,7 +490,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (table.getModel() instanceof MolecularTypeSpecsTableModel) {
 					if (value instanceof NamedColor) {
-						System.out.println("NamedColor table cell");
 						NamedColor namedColor = (NamedColor)value;
 						setText(namedColor.getName());
 //						setText("");		// we may want to just display the icon and no text
@@ -567,51 +512,40 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 					MolecularTypeSpecsTableModel model = (MolecularTypeSpecsTableModel)table.getModel();
 					if (value instanceof Double) {
 						MolecularTypeSpecsTableModel.ColumnType columnType = MolecularTypeSpecsTableModel.ColumnType.values()[column];
+						int cellWidth = table.getColumnModel().getColumn(column).getWidth();
 						switch(columnType) {
 							case COLUMN_X:
 							case COLUMN_Y:
 							case COLUMN_Z:
 							case COLUMN_RADIUS:
-								setText(value+"");
+								if(cellWidth > 70) {
+								if(!isSelected) {
+									String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
+									setText(text);
+								} else {
+									setText(value + " [nm]");
+								}
+								} else {
+									setText(value + "");
+								}
 								setToolTipText(value + " [nm]");
 								break;
-//							case COLUMN_RADIUS:		// good looking but too busy
-//								if(!isSelected) {
-//									String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
-//									setText(text);
-//								} else {
-//									setText(value + " [nm]");
-//								}
-//								setToolTipText(value + " [nm]");
-//								break;
 							case COLUMN_DIFFUSION:
-//								if(!isSelected) {
-//									String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [um^2/s]</span></html>";
-//									setText(text);
-//								} else {
-//									setText(value + " [um^2/s]");
-//								}
-								setText(value + "");
-								setToolTipText(value + " [um^2/s]");
+								if(cellWidth > 70) {
+									if(!isSelected) {
+										String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [&mu;m^2/s]</span></html>";
+										setText(text);
+									} else {
+										setText(value + " [&mu;m^2/s]");		// &mu; is html for greek mu
+									}
+								} else {
+									setText(value + "");
+								}
+								setToolTipText(value + " [\u03BCm^2/s]");		// "\u03BC" is unicode for greek mu
 								break;
 							default:
 								break;
 						}
-//						if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_RADIUS.ordinal() == column) {
-//							if(!isSelected) {
-//								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
-//								setText(text);
-//							} else {
-//								setText(value + " [nm]");
-//							}
-//						} else if(MolecularTypeSpecsTableModel.ColumnType.COLUMN_DIFFUSION.ordinal() == column) {
-//							if(!isSelected) {
-//								String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [um^2/s]</span></html>";
-//								setText(text);
-//							} else {
-//								setText(value + " [um^2/s");
-//							}
-//						}
 					}
 				}
 				return this;

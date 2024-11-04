@@ -669,7 +669,7 @@ private boolean isBindingReaction(Map<String, Object> analysisResults) {
 			for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
 				BondType bt = mcp.getBondType();
 				ComponentStatePattern csp = mcp.getComponentStatePattern();
-				if(!csp.isAny() && BondType.Possible == bt) {
+				if(csp == null || (!csp.isAny() && BondType.Possible == bt)) {
 					// all the sites not binding must be in Any state
 					return false;
 				}

@@ -135,8 +135,8 @@ private void initialize() {
 		shapePanel.setEditable(false);	// colored with a shade of brown, close to DefaultScrollTableCellRenderer.uneditableForeground
 		shapePanel.setViewSingleRow(true);
 		shapePanel.setShowMoleculeColor(false);
-		shapePanel.setShowNonTrivialOnly(false);
-//		shapePanel.setShowDifferencesOnly(true);
+		shapePanel.setShowNonTrivialOnly(true);
+		shapePanel.setShowDifferencesOnly(true);
 		// ----------------------------------------------------------------------------------
 		
 		JPanel upperPanel = new JPanel();
@@ -239,7 +239,7 @@ private void initialize() {
 		splitPaneHorizontal.setTopComponent(upperPanel);
 		splitPaneHorizontal.setBottomComponent(containerOfScrollPanel);
 		splitPaneHorizontal.setOneTouchExpandable(true);
-		splitPaneHorizontal.setDividerLocation(125);
+		splitPaneHorizontal.setDividerLocation(110);
 		splitPaneHorizontal.setResizeWeight(1);
 
 		setLayout(new BorderLayout());
@@ -305,6 +305,7 @@ public void setReactionRule(ReactionRuleSpec rrSpec) {
 		ReactionRule rr = rrSpec.getReactionRule();
 		this.reactionRule = rr;
 	}
+	shapePanel.setReactionRule(reactionRule);
 	getReactionRulePropertiesTableModel().setReactionRule(reactionRule);
 	updateInterface();
 }

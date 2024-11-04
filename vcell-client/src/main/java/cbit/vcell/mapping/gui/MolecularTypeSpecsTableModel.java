@@ -53,9 +53,7 @@ import org.vcell.util.springsalad.NamedColor;
 @SuppressWarnings("serial")
 public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularComponentPattern> implements java.beans.PropertyChangeListener {
 
-	// TODO: sas is null for molecules added late (after the application is created)
-	// TODO: add is2D flag here as a checkbox (var is SpeciesContextSpec) - membrane species may have it set to true, for compartment species is always false
-	// TODO: math is wrong for a model with a membrane species, saving model fails, see model aaa-SS-membrane, see issue #1097
+	// TODO: the is2D flag here (a checkbox, var is SpeciesContextSpec) - membrane species may have it set to true, for compartment species is always false
 
 	public enum ColumnType {
 		COLUMN_SITE("Site"),
@@ -212,6 +210,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			}
 			return;
 		case COLUMN_X:
+			if(getSpeciesContextSpec() == null) {
+				return;
+			}
 			if (aValue instanceof String) {
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
@@ -232,6 +233,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			}
 			return;
 		case COLUMN_Y:
+			if(getSpeciesContextSpec() == null) {
+				return;
+			}
 			if (aValue instanceof String) {
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
@@ -253,6 +257,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			return;
 		case COLUMN_Z:
 			if (aValue instanceof String) {
+				if(getSpeciesContextSpec() == null) {
+					return;
+				}
 				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
 					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());

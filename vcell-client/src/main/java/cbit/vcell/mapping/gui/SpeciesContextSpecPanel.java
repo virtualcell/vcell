@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
+import cbit.vcell.mapping.SimulationContext;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -243,7 +244,7 @@ private void initialize() {
 		splitPaneHorizontal.setTopComponent(upperPanel);
 		splitPaneHorizontal.setBottomComponent(containerOfScrollPanel);
 		splitPaneHorizontal.setOneTouchExpandable(true);
-		splitPaneHorizontal.setDividerLocation(165);	// upper panel is 165 pixel height
+		splitPaneHorizontal.setDividerLocation(115);	// upper panel is 115 pixel height
 		splitPaneHorizontal.setResizeWeight(1);
 
 		setLayout(new BorderLayout());
@@ -299,7 +300,7 @@ public void setBioModel(BioModel newValue) {
 	}
 	Model model = bioModel.getModel();
 	if(model != null & model.getRbmModelContainer().getMolecularTypeList().size() > 0) {
-		splitPaneHorizontal.setDividerLocation(165);
+		splitPaneHorizontal.setDividerLocation(115);
 	} else {
 		// since we have no molecular types we initialize a much smaller shape panel 
 		// because we can only show a trivial shape (circle)
