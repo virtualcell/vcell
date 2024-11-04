@@ -14,56 +14,35 @@
 
 package cbit.vcell.solvers.mb;
 
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cern.colt.Arrays;
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
+import io.jhdf.HdfFile;
+import io.jhdf.api.Group;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Disabled
 @Tag("Fast")
 public class MovingBoundaryVH5PathTest {
     private static String fname  = "nformat2.h5";
-	private FileFormat testFile = null;
-	private Group root = null;
+	private HdfFile hdfFile = null;
 
     @BeforeEach
     public void setup( ) throws Exception {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
-		NativeLib.HDF5.load();
-
-
-		// retrieve an instance of H5File
-    		FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-
-    		if (fileFormat == null) {
-    			System.err.println("Cannot find HDF5 FileFormat.");
-    			return;
-    		}
-
-    		// open the file with read-only access
-    		testFile = fileFormat.createInstance(fname, FileFormat.READ);
-
-    		if (testFile == null) {
-    			System.err.println("Failed to open file: " + fname);
-    			return;
-    		}
-
-    		// open the file and retrieve the file structure
-    		testFile.open();
-    		root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
+		hdfFile = new HdfFile(new File(fname));
     }
 
     @AfterEach
     public void close( ) throws Exception {
-    	if (testFile != null) {
-    		testFile.close();
+    	if (hdfFile != null) {
+    		hdfFile.close();
     	}
 
     }
@@ -71,10 +50,10 @@ public class MovingBoundaryVH5PathTest {
     public void run()  {
     	// create the file and add groups ans dataset into the file
     	try {
-    		Group root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
+			Group root = hdfFile;
     		MovingBoundaryVH5Path vpath = new MovingBoundaryVH5Path(root, "elements" ,"volume");
     		System.out.println(vpath.foundType());
-    		MovingBoundaryVH5TypedPath<double[]> tpath = new MovingBoundaryVH5TypedPath<double[]>(root, double[].class,"elements" ,"volume");
+    		MovingBoundaryVH5TypedPath<double[]> tpath = new MovingBoundaryVH5TypedPath<>(root, double[].class,"elements" ,"volume");
     		double[] e = tpath.get();
     		System.out.println(e[0]);
     		MovingBoundaryVH5Path bpPath = new MovingBoundaryVH5Path(root, "elements" ,"boundaryPosition");
@@ -124,6 +103,7 @@ public class MovingBoundaryVH5PathTest {
     }
 
     private void dtype(String ...name) {
+		Group root = hdfFile;
 		MovingBoundaryVH5TypedPath<double[]> dpath = new MovingBoundaryVH5TypedPath<double[]>(root, double[].class,name);
 		System.out.println(StringUtils.join(name,'/') + ' ' + Arrays.toString(dpath.get()));
     }
@@ -132,6 +112,7 @@ public class MovingBoundaryVH5PathTest {
     @Test
     public void badType () {
 		assertThrows(UnsupportedOperationException.class, () -> {
+			Group root = hdfFile;
 			MovingBoundaryVH5TypedPath<int[]> ipath = new MovingBoundaryVH5TypedPath<int[]>(root, int[].class,"elements" ,"volume");
 			System.out.println(ipath);
 		});
@@ -140,6 +121,7 @@ public class MovingBoundaryVH5PathTest {
     @Test
     public void primType () {
 		assertThrows(UnsupportedOperationException.class, () -> {
+			Group root = hdfFile;
 			MovingBoundaryVH5TypedPath<Integer> ipath = new MovingBoundaryVH5TypedPath<Integer>(root, int.class,"elements" ,"volume");
 			System.out.println(ipath);
 		});

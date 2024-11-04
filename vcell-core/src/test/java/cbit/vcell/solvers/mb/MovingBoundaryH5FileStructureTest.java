@@ -14,16 +14,22 @@
 
 package cbit.vcell.solvers.mb;
 
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
-import ncsa.hdf.object.*;
-import ncsa.hdf.object.h5.H5File;
+import io.jhdf.HdfFile;
+import io.jhdf.WritableHdfFile;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
+import io.jhdf.api.WritiableDataset;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.vcell.util.CastingUtils;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -52,124 +58,83 @@ import java.io.File;
 @Tag("Fast")
 public class MovingBoundaryH5FileStructureTest {
     private static String fname = "nformat2.h5";
-    private static long[] dims2D = {20, 10};
-    private static long[] dims3D = {20, 10, 5};
+    private static int[] dims2D = {20, 10};
+    private static int[] dims3D = {20, 10, 5};
 
     @BeforeAll
-    public static void setup() {
+    public static void setup() throws Exception {
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
-        NativeLib.HDF5.load();
+        createFile(fname);
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        boolean _b = new File(fname).delete();
     }
 
     //public static void main(String args[]) throws Exception {
     @Test
     public void run(){
+        //createFile();
 
-        // create the file and add groups ans dataset into the file
-        try {
-            //createFile();
-
-            // retrieve an instance of H5File
-            FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-
-            if(fileFormat == null){
-                System.err.println("Cannot find HDF5 FileFormat.");
-                return;
+        try (HdfFile hdfFile = new HdfFile(new File(fname))) {
+            List<Node> childGroups = hdfFile.getChildren().values().stream().filter(node -> node instanceof Group).toList();
+            for (Node node : childGroups) {
+                if (node instanceof Group group) {
+                    printGroup(group, "");
+                }
             }
-
-            // open the file with read-only access
-            FileFormat testFile = fileFormat.createInstance(fname, FileFormat.READ);
-
-            if(testFile == null){
-                System.err.println("Failed to open file: " + fname);
-                return;
-            }
-
-            // open the file and retrieve the file structure
-            testFile.open();
-            Group root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
-
-            printGroup(root, "");
-
-            // close file resource
-            testFile.close();
-        } catch(Exception e){
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 
     /**
      * Recursively print a group and its members.
-     *
-     * @throws Exception
-     */
-    private static void printGroup(Group g, String indent) throws Exception{
+      */
+    private static void printGroup(Group g, String indent) {
         if(g == null) return;
+        System.out.println(indent + g.getName());
 
-        java.util.List members = g.getMemberList();
-
-        int n = members.size();
         indent += "    ";
-        HObject obj = null;
-        for(int i = 0; i < n; i++){
-            obj = (HObject) members.get(i);
-            System.out.println(indent + obj);
-            if(obj instanceof Group){
-                printGroup((Group) obj, indent);
+        Map<String, Node> members = g.getChildren();
+        for(Node node : members.values()) {
+            System.out.println(indent + node.getName());
+            if(node instanceof Group group){
+                printGroup(group, indent);
             }
-            Dataset ds = CastingUtils.downcast(Dataset.class, obj);
-            if(ds != null && ds.getName().equals("elements")){
-//            if (ds != null && ds.getName().equals("boundaries")) {
-                MovingBoundaryVH5Dataset vds = new MovingBoundaryVH5Dataset(ds);
-                vds.info();
-                vds.meta();
+            if (node instanceof Dataset ds && ds.getName().equals("elements")) {
+  //            if (node instanceof Dataset ds && ds.getName().equals("boundaries")) {
+                MovingBoundaryVH5Dataset.info(ds);
+                MovingBoundaryVH5Dataset.meta(ds);
             }
         }
     }
 
-    private static void createFile() throws Exception{
-        // retrieve an instance of H5File
-        FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
+    private static void createFile(String fname) throws Exception{
+        File tempFile;
+        WritableHdfFile hdf5File = null;
 
-        if(fileFormat == null){
-            System.err.println("Cannot find HDF5 FileFormat.");
-            return;
+        try {
+            tempFile = new File(fname);
+            hdf5File = HdfFile.write(tempFile.toPath());
+
+            // create groups at the root
+            Group g1 = hdf5File.putGroup("integer arrays");
+            Group g2 = hdf5File.putGroup("float arrays");
+
+            // create 2D 32-bit (4 bytes) integer dataset of 20 by 10
+            WritiableDataset ds1 = hdf5File.putDataset(g1.getPath()+"2D 32-bit integer 20x10", new int[dims2D[0]][dims2D[1]]);
+
+            // create 3D 8-bit (1 byte) unsigned integer dataset of 20 by 10 by 5
+            WritiableDataset ds2 = hdf5File.putDataset(g1.getPath()+"3D unsigned 8-bit integer 20x10x5", new byte[dims3D[0]][dims3D[1]][dims3D[2]]);
+
+            // create 2D 64-bit (8 bytes) double dataset of 20 by 10
+            WritiableDataset ds3 = hdf5File.putDataset(g2.getPath()+"2D 64-bit double 20x10", new double[dims2D[0]][dims2D[1]]);
+
+            // create 3D 32-bit (4 bytes) float dataset of 20 by 10 by 5
+            WritiableDataset ds4 = hdf5File.putDataset(g2.getPath()+"3D 32-bit float  20x10x5", new float[dims3D[0]][dims3D[1]][dims3D[2]]);
+         } finally {
+            if (hdf5File != null)
+                hdf5File.close();
         }
-
-        // create a new file with a given file name.
-        H5File testFile = (H5File) fileFormat.createFile(fname, FileFormat.FILE_CREATE_DELETE);
-
-        if(testFile == null){
-            System.err.println("Failed to create file:" + fname);
-            return;
-        }
-
-        // open the file and retrieve the root group
-        testFile.open();
-        Group root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
-
-        // create groups at the root
-        Group g1 = testFile.createGroup("integer arrays", root);
-        Group g2 = testFile.createGroup("float arrays", root);
-
-        // create 2D 32-bit (4 bytes) integer dataset of 20 by 10
-        Datatype dtype = testFile.createDatatype(Datatype.CLASS_INTEGER, 4, Datatype.NATIVE, Datatype.NATIVE);
-        Dataset dataset = testFile.createScalarDS("2D 32-bit integer 20x10", g1, dtype, dims2D, null, null, 0, null);
-
-        // create 3D 8-bit (1 byte) unsigned integer dataset of 20 by 10 by 5
-        dtype = testFile.createDatatype(Datatype.CLASS_INTEGER, 1, Datatype.NATIVE, Datatype.SIGN_NONE);
-        dataset = testFile.createScalarDS("3D 8-bit unsigned integer 20x10x5", g1, dtype, dims3D, null, null, 0, null);
-
-        // create 2D 64-bit (8 bytes) double dataset of 20 by 10
-        dtype = testFile.createDatatype(Datatype.CLASS_FLOAT, 8, Datatype.NATIVE, -1);
-        dataset = testFile.createScalarDS("2D 64-bit double 20x10", g2, dtype, dims2D, null, null, 0, null);
-
-        // create 3D 32-bit (4 bytes) float dataset of 20 by 10 by 5
-        dtype = testFile.createDatatype(Datatype.CLASS_FLOAT, 4, Datatype.NATIVE, -1);
-        dataset = testFile.createScalarDS("3D 32-bit float  20x10x5", g2, dtype, dims3D, null, null, 0, null);
-
-        // close file resource
-        testFile.close();
     }
 }

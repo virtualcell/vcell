@@ -4,18 +4,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
 
+import cbit.vcell.export.server.JhdfUtils;
+import io.jhdf.HdfFile;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.CastingUtils;
 import org.vcell.util.VCAssert;
 
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-import ncsa.hdf.object.Attribute;
-import ncsa.hdf.object.DataFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.HObject;
-import ncsa.hdf.object.h5.H5CompoundDS;
 
 /**
  * Class to recursively parse HDF5 file seeking requested data
@@ -35,11 +34,11 @@ public class MovingBoundaryVH5Path {
      * @param g     staring point, not null
      * @param names path to search
      */
-    public MovingBoundaryVH5Path(Group g, String... names){
+    public MovingBoundaryVH5Path(HdfFile hdfFile, Group g, String... names){
         target = null;
         exc = null;
         try {
-            target = walk(g, names, 0);
+            target = walk(hdfFile, g, names, 0);
         } catch(Exception e){
             exc = e;
             if(lg.isWarnEnabled()){
@@ -127,19 +126,18 @@ public class MovingBoundaryVH5Path {
     /**
      * find next object in sequence
      *
-     * @param hobj  previous element in sequence
+     * @param node  previous element in sequence
      * @param steps name of each step
      * @param index current step
      * @return next object path, if present
      * @throws HDF5Exception
      */
-    private static Object walk(Object hobj, String[] steps, int index) throws Exception{
+    private static Object walk(HdfFile hdfFile, Node node, String[] steps, int index) {
         final boolean isLastIndex = lastIndex(index, steps);
         final String finding = steps[index];
-        Group g = CastingUtils.downcast(Group.class, hobj);
-        if(g != null){
-            List<HObject> ml = g.getMemberList();
-            for(HObject sub : ml){
+        if(node instanceof Group g){
+            List<Node> nodes = JhdfUtils.getChildren(hdfFile, g);
+            for(Node sub : nodes){
 //				String p = sub.getPath();
 //				String name = sub.getName();
 //				String full = sub.getFullName();
@@ -147,18 +145,16 @@ public class MovingBoundaryVH5Path {
                     if(isLastIndex){
                         return sub;
                     }
-                    return walk(sub, steps, index + 1);
+                    return walk(hdfFile, sub, steps, index + 1);
                 }
             }
         }
-        H5CompoundDS cds = CastingUtils.downcast(H5CompoundDS.class, hobj);
-        if(cds != null){
-            cds.read();
-            String[] mn = cds.getMemberNames();
+        if (node instanceof Dataset cds && cds.isCompound()) {
+            String[] mn = JhdfUtils.getCompoundDatasetMemberNames(cds);
 
             for(int i = 0; i < mn.length; i++){
                 if(finding.equals(mn[i])){
-                    Object c = cds.read();
+                    Object c = cds.getData();
                     Vector<?> vec = CastingUtils.downcast(Vector.class, c);
                     if(vec != null){
                         VCAssert.assertTrue(i < vec.size(), "Disconnect between H5CompoundDS.getMemberNames( )  and returned Vector");

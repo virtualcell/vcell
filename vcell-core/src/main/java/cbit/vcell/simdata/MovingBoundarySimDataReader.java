@@ -2,71 +2,67 @@ package cbit.vcell.simdata;
 
 import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.CartesianMeshMovingBoundary;
-import ncsa.hdf.object.*;
+import io.jhdf.HdfFile;
+import io.jhdf.api.Attribute;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
 
-import javax.swing.tree.DefaultMutableTreeNode;
+import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 public class MovingBoundarySimDataReader {
+
     public static void readMBSDataMetadata(String fileName, Vector<DataBlock> dataBlockList) throws Exception
     {
-        FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-        FileFormat solFile = null;
-        try {
-            solFile = fileFormat.createInstance(fileName, FileFormat.READ);
-            solFile.open();
-            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
-            Group rootGroup = (Group)rootNode.getUserObject();
+        try (HdfFile hdfFile = new HdfFile(new File(fileName))) {
+            Map<String, Node> childNodes = hdfFile.getChildren();
             Group solutionGroup = null;
-            for (Object member : rootGroup.getMemberList())
-            {
-                String memberName = ((HObject)member).getName();
-                if (member instanceof Group)
-                {
+            for (Node member : childNodes.values()) {
+                String memberName = member.getName();
+                if (member instanceof Group memberGroup) {
                     CartesianMeshMovingBoundary.MBSDataGroup group = CartesianMeshMovingBoundary.MBSDataGroup.valueOf(memberName);
-                    if (group == CartesianMeshMovingBoundary.MBSDataGroup.Solution)
-                    {
-                        solutionGroup = (Group) member;
+                    if (group == CartesianMeshMovingBoundary.MBSDataGroup.Solution) {
+                        solutionGroup = memberGroup;
                         break;
                     }
                 }
             }
-            if (solutionGroup == null)
-            {
+            if (solutionGroup == null) {
                 throw new Exception("Group " + CartesianMeshMovingBoundary.MBSDataGroup.Solution + " not found");
             }
-
+            Group finalSolutionGroup = solutionGroup;
+            List<Node> solutionGroupMemberNodes = hdfFile.getChildren().values().stream()
+                    .filter(node -> node.getParent() == finalSolutionGroup).toList();
             // find any timeGroup
             Group timeGroup = null;
-            for (Object member : solutionGroup.getMemberList())
-            {
-                String memberName = ((HObject)member).getName();
-                if (member instanceof Group && memberName.startsWith("time"))
-                {
-                    timeGroup = (Group) member;
+            for (Node member : solutionGroupMemberNodes) {
+                if (member instanceof Group group && member.getName().startsWith("time")) {
+                    timeGroup = group;
                     break;
                 }
             }
 
-            if (timeGroup == null)
-            {
+            if (timeGroup == null) {
                 throw new Exception("No time group found");
             }
 
+            Group finalTimeGroup = timeGroup;
+            List<Node> timeGroupMemberNodes = hdfFile.getChildren().values().stream()
+                    .filter(node -> node.getParent() == finalTimeGroup).toList();
             // find all the datasets in that time group
-            for (Object member : timeGroup.getMemberList())
-            {
-                if (member instanceof Dataset)
-                {
-                    List<Attribute> solAttrList = ((Dataset)member).getMetadata();
+            for (Object timeMember : timeGroupMemberNodes) {
+                if (timeMember instanceof Dataset timeDataset) {
+                    Map<String, Attribute> solAttrList = timeDataset.getAttributes();
                     int size = 0;
                     String varName = null;
                     VariableType varType = null;
-                    for (Attribute attr : solAttrList)
+                    for (Attribute attr : solAttrList.values())
                     {
                         String attrName = attr.getName();
-                        Object attrValue = attr.getValue();
+                        Object attrValue = attr.getData();
                         if(attrName.equals(CartesianMeshMovingBoundary.MSBDataAttribute.name.name()))
                         {
                             varName = ((String[]) attrValue)[0];
@@ -106,87 +102,54 @@ public class MovingBoundarySimDataReader {
                 }
             }
         }
-        finally
-        {
-            if (solFile != null)
-            {
-                try {
-                    solFile.close();
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-        }
-    }
+     }
 
     public static double[] readMBSData(String fileName, Vector<DataBlock> dataBlockList, String varName, Double time) throws Exception {
-        FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-        FileFormat solFile = null;
         double[] data = null;
-        try {
-            solFile = fileFormat.createInstance(fileName, FileFormat.READ);
-            solFile.open();
-            DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode)solFile.getRootNode();
-            Group rootGroup = (Group)rootNode.getUserObject();
+        try (HdfFile hdfFile = new HdfFile(new File(fileName))) {
+            List<Node> memberNodes = hdfFile.getChildren().values().stream().filter(node -> node.getParent() == hdfFile.getParent()).toList();
             Group solutionGroup = null;
-            for (Object member : rootGroup.getMemberList())
-            {
-                String memberName = ((HObject)member).getName();
-                if (member instanceof Group)
-                {
+            for (Node member : memberNodes) {
+                String memberName = member.getName();
+                if (member instanceof Group memberGroup) {
                     CartesianMeshMovingBoundary.MBSDataGroup group = CartesianMeshMovingBoundary.MBSDataGroup.valueOf(memberName);
                     if (group == CartesianMeshMovingBoundary.MBSDataGroup.Solution)
                     {
-                        solutionGroup = (Group) member;
+                        solutionGroup = memberGroup;
                         break;
                     }
                 }
             }
-            if (solutionGroup == null)
-            {
+            if (solutionGroup == null) {
                 throw new Exception("Group " + CartesianMeshMovingBoundary.MBSDataGroup.Solution + " not found");
             }
 
             int varIndex = -1;
             int size = 0;
-            for (int i = 0; i < dataBlockList.size(); ++ i)
-            {
+            for (int i = 0; i < dataBlockList.size(); ++ i) {
                 DataBlock dataBlock = dataBlockList.get(i);
-                if (dataBlock.getVarName().equals(varName))
-                {
+                if (dataBlock.getVarName().equals(varName)) {
                     varIndex = i;
                     size = dataBlock.getSize();
                     break;
                 }
             }
 
-            if (varIndex == -1)
-            {
+            if (varIndex == -1) {
                 throw new Exception("Variable " + varName + " not found");
             }
 
             // find time group for that time
+            Group finalSolutionGroup = solutionGroup;
+            List<Node> solutionGroupChildren = hdfFile.getChildren().values().stream().filter(node -> node.getParent() == finalSolutionGroup).toList();
             Group timeGroup = null;
-            for (Object member : solutionGroup.getMemberList())
-            {
-                if (member instanceof Group)
-                {
+            for (Object member : solutionGroupChildren) {
+                if (member instanceof Group) {
                     Group group = (Group)member;
-                    List<Attribute> dsAttrList = group.getMetadata();
-                    Attribute timeAttribute = null;
-                    for (Attribute attr : dsAttrList)
-                    {
-                        if (attr.getName().equals(CartesianMeshMovingBoundary.MSBDataAttribute.time.name()))
-                        {
-                            timeAttribute = attr;
-                            break;
-                        }
-                    }
-                    if (timeAttribute != null)
-                    {
-                        double t = ((double[]) timeAttribute.getValue())[0];
-                        if (Math.abs(t - time) < 1e-8)
-                        {
+                    Attribute timeAttribute = group.getAttribute(CartesianMeshMovingBoundary.MSBDataAttribute.time.name());
+                    if (timeAttribute != null) {
+                        double t = ((double[]) timeAttribute.getData())[0];
+                        if (Math.abs(t - time) < 1e-8) {
                             timeGroup = group;
                             break;
                         }
@@ -194,36 +157,24 @@ public class MovingBoundarySimDataReader {
                 }
             }
 
-            if (timeGroup == null)
-            {
+            if (timeGroup == null) {
                 throw new Exception("No time group found for time=" + time);
             }
 
             // find variable dataset
+            Group finalTimeGroup = timeGroup;
+            List<Node> timeGroupChildren = hdfFile.getChildren().values().stream().filter(node -> node.getParent() == finalTimeGroup).toList();
             Dataset varDataset = null;
-            for (Object member : timeGroup.getMemberList())
-            {
-                if (member instanceof Dataset)
-                {
-                    List<Attribute> dsAttrList = ((Dataset)member).getMetadata();
-                    String var = null;
-                    for (Attribute attr : dsAttrList)
-                    {
-                        if (attr.getName().equals(CartesianMeshMovingBoundary.MSBDataAttribute.name.name()))
-                        {
-                            var = ((String[]) attr.getValue())[0];
-                            break;
-                        }
-                    }
-                    if (var != null && var.equals(varName))
-                    {
+            for (Node member : timeGroupChildren) {
+                if (member instanceof Dataset dataset) {
+                    Attribute nameAttr = dataset.getAttribute(CartesianMeshMovingBoundary.MSBDataAttribute.name.name());
+                    if (nameAttr != null && varName.equals(nameAttr.getData())) {
                         varDataset = (Dataset) member;
                         break;
                     }
                 }
             }
-            if (varDataset == null)
-            {
+            if (varDataset == null) {
                 throw new Exception("Data for Variable " + varName + " at time " + time + " not found");
             }
 
@@ -231,17 +182,5 @@ public class MovingBoundarySimDataReader {
             System.arraycopy((double[])varDataset.getData(), 0, data, 0, size);
             return data;
         }
-        finally
-        {
-            if (solFile != null)
-            {
-                try {
-                    solFile.close();
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-        }
     }
-
 }

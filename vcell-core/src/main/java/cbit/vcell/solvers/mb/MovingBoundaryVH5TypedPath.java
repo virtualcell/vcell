@@ -2,11 +2,9 @@ package cbit.vcell.solvers.mb;
 
 import java.util.Objects;
 
+import io.jhdf.api.Group;
 import org.vcell.util.CastingUtils;
 import org.vcell.util.VCAssert;
-
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.h5.H5ScalarDS;
 
 /**
  * extends MovingBoundardyVH5Path to include type checking and data conversion. Throws exception if data not found, or

@@ -1,9 +1,12 @@
 package cbit.vcell.solvers.mb;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
 
+import io.jhdf.HdfFile;
+import io.jhdf.api.Group;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,11 +14,6 @@ import org.vcell.util.CastingUtils.CastInfo;
 import org.vcell.util.CastingUtils;
 import org.vcell.util.ProgrammingException;
 import org.vcell.util.VCAssert;
-
-import ncsa.hdf.object.FileFormat;
-import ncsa.hdf.object.Group;
-import ncsa.hdf.object.h5.H5CompoundDS;
-import ncsa.hdf.object.h5.H5ScalarDS;
 
 /**
  * read results from MovingBoundary hdf5 file.
@@ -30,7 +28,7 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
     private static final String ELEM = "elements";
 
     private final String filename;
-    private Group root;
+    private HdfFile hdfFile;
     private MeshInfo meshInfo;
     private int lastTimeIndex_;
 
@@ -48,30 +46,8 @@ public class MovingBoundaryReader implements MovingBoundaryTypes {
         meshInfo = null;
         timeInfo = null;
         pointIndex = new PointIndexTreeAndList();
-        try {
-            // retrieve an instance of H5File
-            FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF5);
-
-            if(fileFormat == null){
-                System.err.println("Cannot find HDF5 FileFormat.");
-                return;
-            }
-
-            // open the file with read-only access
-            FileFormat testFile = fileFormat.createInstance(filename, FileFormat.READ);
-
-            if(testFile == null){
-                System.err.println("Failed to open file: " + filename);
-                return;
-            }
-
-            // open the file and retrieve the file structure
-            testFile.open();
-            root = (Group) ((javax.swing.tree.DefaultMutableTreeNode) testFile.getRootNode()).getUserObject();
-            lastTimeIndex_ = singleInt("lastTimeIndex");
-        } catch(Exception e){
-            throw new MovingBoundaryResultException("exception reading moving boundary result file " + filename, e);
-        }
+        hdfFile = new HdfFile(new File(filename));
+        lastTimeIndex_ = singleInt("lastTimeIndex");
     }
 
     public PointIndex getPointIndex(){
