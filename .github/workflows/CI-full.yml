@@ -43,43 +43,44 @@ jobs:
         cache: "pip"
       
     - name: Install Dependencies
-      run: pip install -r requirements.txt
+      # We want to make sure the poetry installation is attached to the correct python version, or it may not find said version.
+      run: python${{ env.python-version }} -m pip install -r requirements.txt
 
     - name: build vcell-cli-utils package
       run: |
         cd vcell-cli-utils
-        poetry install
-        poetry run python -m pytest
+        python${{ env.python-version }} -m poetry install
+        python${{ env.python-version }} -m poetry run python -m pytest
 
     - name: build vcell-admin package
       run: |
         cd docker/swarm/vcell-admin
-        poetry install
-        poetry run python -m pytest
+        python${{ env.python-version }} -m poetry install
+        python${{ env.python-version }} -m poetry run python -m pytest
 
     - name: build pythonCopasiOpt package
       run: |
         cd pythonCopasiOpt/vcell-opt
-        poetry install
-        poetry run python -m pytest
+        python${{ env.python-version }} -m poetry install
+        python${{ env.python-version }} -m poetry run python -m pytest
 
     - name: build pythonVtk package
       run: |
         cd pythonVtk
-        poetry install
-        poetry run python -m pytest
+        python${{ env.python-version }} -m poetry install
+        python${{ env.python-version }} -m poetry run python -m pytest
 
     - name: build vcutils package
       run: |
         cd python-utils
-        poetry install
-        poetry run python -m pytest
+        python${{ env.python-version }} -m poetry install
+        python${{ env.python-version }} -m poetry run python -m pytest
 
     - name: build python-restclient package
       run: |
         cd python-restclient
-        poetry install
-        poetry run python -m pytest
+        python${{ env.python-version }} -m poetry install
+        python${{ env.python-version }} -m poetry run python -m pytest
 
     - name: build vcelldata package
       run: |

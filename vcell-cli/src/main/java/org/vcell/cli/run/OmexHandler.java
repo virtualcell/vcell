@@ -5,15 +5,18 @@ import de.unirostock.sems.cbarchive.CombineArchive;
 import de.unirostock.sems.cbarchive.CombineArchiveException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdom2.IllegalNameException;
 import org.jdom2.JDOMException;
 import org.vcell.cli.CLIUtils;
 
+import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class OmexHandler {
     String tempPath;
@@ -23,14 +26,15 @@ public class OmexHandler {
     CombineArchive archive;
 
     private final static Logger logger = LogManager.getLogger(OmexHandler.class);
-    
+
     // Assuming omexPath will always be absolute path
     // NB: Need to convert class to use Log4j2
     public OmexHandler(String omexPath, String outDir) throws IOException {
         this.omexPath = omexPath;
         this.outDirPath = outDir;
 
-        if (!new File(omexPath).exists()) {
+        File omexFile = new File(omexPath);
+        if (!omexFile.exists()) {
             String[] omexNameArray = omexPath.split("/", -2);
             String omexName = omexNameArray[omexNameArray.length - 1];
             IOException e = new IOException("Provided OMEX `" + omexName + "` is not present at path: " + omexPath);
@@ -40,48 +44,78 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
         this.tempPath = RunUtils.getTempDir();
-        try {
-            replaceMetadataRdfFiles(Paths.get(omexPath));
-            this.archive = new CombineArchive(new File(omexPath));
-            if (this.archive.hasErrors()){
-                String message = "Unable to initialise OMEX archive "+this.omexName+": "+this.archive.getErrors();
-                logger.error(message);
-                throw new IOException(message);
+        boolean initiallyEncounteredErrors = false;
+        try (CombineArchive initialArchive = new CombineArchive(omexFile, true)){
+            // With the `continueOnError` flag set, an exception won't be thrown.
+            initiallyEncounteredErrors = initialArchive.hasErrors();
+            // We want to try and repair any RDF issue the archive has, because we don't care that much about RDF validity.
+            // so, if (1) We have RDF errors; OR (2) have no rdf file, then we add / find & replace
+            if ((initiallyEncounteredErrors && omexFile.canWrite() && initialArchive.getErrors().contains(".rdf"))
+                || initialArchive.getEntries().stream().map(ArchiveEntry::getFileName).noneMatch(name->name.endsWith(".rdf")))
+                this.replaceMetadataRdfFiles(Paths.get(omexPath)); // Replace the offending files
+        } catch (CombineArchiveException | JDOMException | IllegalNameException | ParseException e) {
+            // Alright, we got errors, AND an exception. Let's try a hail mary.
+            if (omexFile.canWrite())
+                this.replaceMetadataRdfFiles(Paths.get(omexPath));
+        }
+
+        try { // If we still have problems here, we're bombing out.
+            this.archive = new CombineArchive(omexFile);
+            if (!this.archive.hasErrors()){
+                if (initiallyEncounteredErrors) logger.info("Successfully Repaired `" + this.omexName + "`");
+                return;
             }
-        }catch (CombineArchiveException | JDOMException | ParseException e) {
+            // We're unable to solve the remaining errors, so we're officially rejecting this archive.
+            String message = "Unable to initialise OMEX archive " + this.omexName + ": " + this.archive.getErrors();
+            logger.error(message);
+            throw new IOException(message);
+        } catch (CombineArchiveException | JDOMException | ParseException e) {
             String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
             logger.error(message+": "+e.getMessage(), e);
             throw new IOException(e);
         }
     }
 
-    private void replaceMetadataRdfFiles(Path zipFilePath) throws IOException {
-        try( FileSystem fs = FileSystems.newFileSystem(zipFilePath) ) {
+    private void replaceMetadataRdfFiles(Path zipFilePath) {
+        try (FileSystem fs = FileSystems.newFileSystem(zipFilePath)) {
             for (Path root : fs.getRootDirectories()) {
-                Files.walk(root)
+                try (Stream<Path> rdfFiles = Files.walk(root)
                         .filter(Files::isRegularFile)
-                        .filter(path -> path.toString().endsWith(".rdf"))
-                        .forEach(path -> {
-                            try {
-                                // write empty RDF file to temp file and replace the file inside the zip
-                                Path tempFile = Files.createTempFile("temp", ".rdf");
-                                String new_rdf_content =
+                        .filter(path -> path.toString().endsWith(".rdf"))){
+
+                    if (rdfFiles.findAny().isEmpty()){
+                        Path targetPath = Paths.get(root.toString(), "metadata.rdf");
+                        Files.write(targetPath, "fileToBeReplaced".getBytes());
+                    }
+                }
+
+                try (Stream<Path> rdfFiles = Files.walk(root)
+                        .filter(Files::isRegularFile)
+                        .filter(path -> path.toString().endsWith(".rdf"))){
+
+                    rdfFiles.forEach(path -> {
+                        try {
+                            // write empty RDF file to temp file and replace the file inside the zip
+                            Path tempFile = Files.createTempFile("temp", ".rdf");
+                            String new_rdf_content =
                                     """
                                     <?xml version='1.0' encoding='UTF-8'?>
                                     <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
                                     </rdf:RDF>
                                     """;
-                                Files.write(tempFile, new_rdf_content.getBytes());
-                                // replace fileInsideZipPath with temp file
-                                Files.delete(path);
-                                Files.copy(tempFile, path);
-                                Files.delete(tempFile);
-                            } catch (IOException e) {
-                                logger.error("Unable to delete metadata.rdf file from OMEX archive: " + e.getMessage(), e);
-                            }
-                        });
+                            Files.write(tempFile, new_rdf_content.getBytes());
+                            // replace fileInsideZipPath with temp file
+                            Files.delete(path);
+                            Files.copy(tempFile, path);
+                            Files.delete(tempFile);
+                        } catch (IOException e) {
+                            logger.error("Unable to delete metadata.rdf file from OMEX archive: " + e.getMessage(), e);
+                        }
+                    });
+                }
             }
-
+        } catch (IOException | ReadOnlyFileSystemException e) {
+            throw new RuntimeException("Unable to delete metadata.rdf file from OMEX archive: ", e);
         }
     }
 
