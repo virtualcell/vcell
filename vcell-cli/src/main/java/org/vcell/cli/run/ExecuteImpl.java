@@ -21,7 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer.BiosimulationsHdfWriterException;
+import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 
 public class ExecuteImpl {
     
