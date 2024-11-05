@@ -9,53 +9,6 @@
  */
 
 package cbit.vcell.client.data;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.channels.FileChannel;
-import java.util.*;
-
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
-import javax.swing.border.LineBorder;
-
-import cbit.vcell.export.server.*;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.solver.*;
-import org.vcell.util.gui.GeneralGuiUtils;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.LocalVCDataIdentifier;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.gui.DefaultListModelCivilized;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.LineBorderBean;
-import org.vcell.util.gui.NoEventRadioButton;
-import org.vcell.util.gui.PropertyChangeButtonGroup;
-import org.vcell.util.gui.TitledBorderBean;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
@@ -67,24 +20,34 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.export.server.*;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataInfoProvider;
-import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SpatialSelection;
-import cbit.vcell.simdata.SpatialSelectionMembrane;
-import cbit.vcell.simdata.SpatialSelectionVolume;
+import cbit.vcell.simdata.*;
+import cbit.vcell.solver.*;
 import cbit.vcell.solvers.CartesianMesh;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.LocalVCDataIdentifier;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.*;
+
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.util.*;
 /**
  * This type was created in VisualAge.
  */
@@ -373,7 +336,7 @@ private void updateChoiceROI() {
 				getDefaultListModelCivilizedSelections().addElement(getSpatialSelectionsMembrane()[i]);
 			}
 		}
-		
+
 //		if(getJRadioButtonSelection().isSelected() && getDefaultListModelCivilizedSelections().getSize() == 0){
 //			if(getJRadioButtonSlice().isEnabled()){
 //				getJRadioButtonSlice().setSelected(true);
@@ -1746,7 +1709,10 @@ private void setFormatChoices_0(/*boolean bMembrane*/){
 		cb.addItem(ExportFormat.ANIMATED_GIF);
 		cb.addItem(ExportFormat.FORMAT_JPEG);
 		cb.addItem(ExportFormat.NRRD);
-		cb.addItem(ExportFormat.N5);
+
+		if (getPdeDataContext() != null && !(getPdeDataContext().getVCDataIdentifier() instanceof LocalVCDataIdentifier)){
+			cb.addItem(ExportFormat.N5);
+		}
 //		cb.addItem(ExportFormat.IMAGEJ);
 		cb.addItem(ExportFormat.UCD);
 		cb.addItem(ExportFormat.PLY);
