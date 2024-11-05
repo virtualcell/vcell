@@ -420,8 +420,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		}
 		if (speciesContextSpec != null) {
 			speciesContextSpec.addPropertyChangeListener(this);
-			refreshData();
 		}
+		refreshData();
 	}
 	private SpeciesContextSpec getSpeciesContextSpec() {
 		return fieldSpeciesContextSpec;

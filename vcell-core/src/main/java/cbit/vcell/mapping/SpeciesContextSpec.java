@@ -1319,13 +1319,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         return;
                     }
                 }
-// old way, imprecise! use graph above
-//                if(mcpList.size() > 1 && mcpList.size() > getInternalLinkSet().size() + 1){
-//                    String msg = "Link chain within the molecule has at least one discontinuity.";
-//                    String tip = "One or more links are missing";
-//                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-//                    return;
-//                }
                 for(MolecularInternalLinkSpec candidate : getInternalLinkSet()){
                     for(MolecularInternalLinkSpec other : getInternalLinkSet()){
                         if(candidate == other){
@@ -1386,12 +1379,26 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                             }
                         } else {    // all the other sites of a membrane species must not be on the membrane
                             SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
-                            if(sas.getLocation() instanceof Membrane){
+                            if(sas.getLocation() instanceof Membrane) {
                                 String msg = "All the Sites of a Membrane species, other than the 'Anchor', must NOT be located on a Membrane.";
-                                String tip = msg;
+                                String tip = "Relocate the site '" + mc.getName() + "' inside a compartment, or rename it to 'Anchor'";
                                 issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                                 return;
                             }
+                        }
+                    }
+                    // make sure that only one site is on the membrane
+                    int numSitesOnMembrane = 0;
+                    for(MolecularComponentPattern mcp : mcpList) {
+                        SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
+                        if(sas.getLocation() instanceof Membrane) {
+                            numSitesOnMembrane++;
+                        }
+                        if(numSitesOnMembrane > 1) {
+                            String msg = "Species localized on a membrane must have only one site on the membrane";
+                            String tip = msg;
+                            issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                            return;
                         }
                     }
                     if(anchorExists == false){
@@ -1414,6 +1421,39 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                             String tip = msg;
                             issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                             return;
+                        }
+                    }
+                    if(anchorExists == true) {
+                        // sites at the "left" of the anchor (site z < anchor z) must be located in 'Extracellular'
+                        // sites at the 'right' of the anchor (site z > anchor z) must be located in 'Intracellular'
+                        boolean foundSomething = false;
+                        SiteAttributesSpec sasAnchor = getSiteAttributesMap().get(mcpAnchor);
+                        double zAnchor = sasAnchor.getCoordinate().getZ();
+                        for(MolecularComponentPattern mcp : mcpList) {
+                            MolecularComponent mc = mcp.getMolecularComponent();
+                            SiteAttributesSpec sasCandidate = getSiteAttributesMap().get(mcp);
+                            if(sasCandidate.getLocation() instanceof Membrane) {
+                                continue;       // we skip self
+                            }
+                            double zCandidate = sasCandidate.getCoordinate().getZ();
+                            if(sasCandidate.getLocation().getName().equals(Structure.SpringStructureEnum.Extracellular.columnName)) {
+                                if(!(zCandidate < zAnchor)) {
+                                    String msg = "Sites located in the 'Extracellular' structure must have their z-coordinate smaller that the one of the 'Anchor' site";
+                                    String tip = "Relocate the site '" + mc.getName() + "' inside 'Intracellular', or decrease its 'z' coordinate to less than " + zAnchor;
+                                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                                    foundSomething = true;
+                                }
+                            } else if(sasCandidate.getLocation().getName().equals(Structure.SpringStructureEnum.Intracellular.columnName)){
+                                if(!(zCandidate > zAnchor)) {
+                                    String msg = "Sites located in the 'Intracellular' structure must have their z-coordinate larger that the one of the 'Anchor' site";
+                                    String tip = "Relocate the site '" + mc.getName() + "' inside 'Extracellular', or increase its 'z' coordinate to more than " + zAnchor;
+                                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                                    foundSomething = true;
+                                }
+                            }
+                        }
+                        if(foundSomething == true) {
+                            return;     // we show more than the 1st in this category, otherwise it'll be confusing
                         }
                     }
                 } else {        // a species inside a Feature must NOT have a site named Anchor

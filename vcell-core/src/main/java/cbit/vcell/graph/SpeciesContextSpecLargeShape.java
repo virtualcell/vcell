@@ -135,7 +135,26 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     }
 
     private boolean isPlanarYZ() {    // we only show entities that are 2D in the YZ plane
-        return true;    // TODO: check
+        Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
+        // here we could either iterate through the sasMap, or through the components of the mtp
+        // we use the second method because it provides a sanity check between the components in the sasMap (application level)
+        // and the physiology (which is authoritative)
+        double oldX = 0;    // dummy value to indulge the compiler
+        for(int i=0; i< mtp.getComponentPatternList().size(); i++) {
+            MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
+            SiteAttributesSpec sas = sasMap.get(mcp);
+            Structure structure = sas.getLocation();
+            Coordinate coordinate = sas.getCoordinate();
+            // to be planar in YZ, the X coordinates of all sites must be equal
+            double x = coordinate.getX();   // here x means x
+            if(i==0) {
+                oldX = x;   // first pass
+            }
+            if(oldX != x) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public Dimension getMaxSize() {

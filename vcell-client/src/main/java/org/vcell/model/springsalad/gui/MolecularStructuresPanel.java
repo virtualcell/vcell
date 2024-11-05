@@ -136,6 +136,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			}
 		}
 		public void focusGained(FocusEvent e) {
+			;
 		}
 		public void focusLost(FocusEvent e) {
 			Object source = e.getSource();
@@ -518,17 +519,17 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 							case COLUMN_Y:
 							case COLUMN_Z:
 							case COLUMN_RADIUS:
-								if(cellWidth > 70) {
-								if(!isSelected) {
-									String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
-									setText(text);
+								if(cellWidth > 70) {			// we show units only if there's enough space
+									if(!isSelected) {
+										String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
+										setText(text);
+									} else {
+										setText(value + " [nm]");
+									}
 								} else {
-									setText(value + " [nm]");
+									setText(value + "");		// if it's too busy, just show the numbers
 								}
-								} else {
-									setText(value + "");
-								}
-								setToolTipText(value + " [nm]");
+								setToolTipText(value + " [nm]");	// we always show the units in the tooltip
 								break;
 							case COLUMN_DIFFUSION:
 								if(cellWidth > 70) {
@@ -536,7 +537,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 										String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [&mu;m^2/s]</span></html>";
 										setText(text);
 									} else {
-										setText(value + " [&mu;m^2/s]");		// &mu; is html for greek mu
+										setText(value + " [\u03BCm^2/s]");		// &mu; is html for greek mu
 									}
 								} else {
 									setText(value + "");
@@ -860,7 +861,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	 * before the newly selected SpeciesContextStep becomes current
 	 */
 	private void changeSpeciesContextSpec() {
-		
+		;
 	}
 
 	private void changePosition(JTextField source) {

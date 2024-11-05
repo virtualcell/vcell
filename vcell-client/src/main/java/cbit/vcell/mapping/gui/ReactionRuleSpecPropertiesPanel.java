@@ -131,7 +131,7 @@ private void initialize() {
 			} 
 		});
 		shapePanel.setBackground(new Color(0xe0e0e0));		
-		shapePanel.setZoomFactor(-2);
+		shapePanel.setZoomFactor(-3);
 		shapePanel.setEditable(false);	// colored with a shade of brown, close to DefaultScrollTableCellRenderer.uneditableForeground
 		shapePanel.setViewSingleRow(true);
 		shapePanel.setShowMoleculeColor(false);
