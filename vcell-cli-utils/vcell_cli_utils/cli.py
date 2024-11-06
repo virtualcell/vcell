@@ -90,8 +90,8 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
     sedml_contents = get_sedml_contents(archive)
 
     for i_content, content in enumerate(sedml_contents):
-        content_filename = os.path.join(temp_path, content.location)
-        starting_sedml_name_index = content.location.rfind("/") if '/' in content.location else 0
+        content_filename = os.path.normpath(os.path.join(temp_path, content.location))
+        starting_sedml_name_index = content.location.rfind("/") + 1 if '/' in content.location else 0
         ending_sedml_name_index = content.location.rfind(".")
         sedml_name = content.location[starting_sedml_name_index:ending_sedml_name_index]
 #        sedml_name = Path(content.location).stem
@@ -135,6 +135,8 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
             temp_path, f'simulation_{sedml_name}.sedml')
         SedmlSimulationWriter().run(doc, filename_with_reports_for_plots,
                                     validate_models_with_languages=False)
+        if not os.path.exists(filename_with_reports_for_plots):
+            raise FileNotFoundError("The desired pseudo-sedml failed to generate!")
     return temp_path
 
 
