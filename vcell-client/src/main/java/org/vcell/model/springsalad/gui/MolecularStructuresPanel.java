@@ -533,16 +533,16 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 								break;
 							case COLUMN_DIFFUSION:
 								if(cellWidth > 70) {
-									if(!isSelected) {
-										String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [&mu;m^2/s]</span></html>";
+									if(!isSelected) {		// <sup>2</sup> is html for superscript 2  (x^2 for example)
+										String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [&mu;m<sup>2</sup>/s]</span></html>";
 										setText(text);
 									} else {
-										setText(value + " [\u03BCm^2/s]");		// &mu; is html for greek mu
+										setText(value + " [\u03BCm\u00B2/s]");		// \u03BC is unicode for greek mu, \u00B2 is unicode for superscript 2
 									}
 								} else {
 									setText(value + "");
 								}
-								setToolTipText(value + " [\u03BCm^2/s]");		// "\u03BC" is unicode for greek mu
+								setToolTipText(value + " [\u03BCm\u00B2/s]");
 								break;
 							default:
 								break;
