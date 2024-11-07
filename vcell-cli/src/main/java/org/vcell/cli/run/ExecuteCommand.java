@@ -6,12 +6,15 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
+import org.vcell.util.FileUtils;
 import org.vcell.util.exe.Executable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.concurrent.Callable;
+import java.util.Date;
 
 @Command(name = "execute", description = "run .vcml or .omex files via Python API")
 public class ExecuteCommand implements Callable<Integer> {
@@ -110,23 +113,23 @@ public class ExecuteCommand implements Callable<Integer> {
 
             Executable.setGlobalTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
             logger.info("Beginning execution");
+            File tmpDir = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
             if (inputFilePath.isDirectory()) {
                 logger.debug("Batch mode requested");
-                ExecuteImpl.batchMode(inputFilePath, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                ExecuteImpl.batchMode(inputFilePath, tmpDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
                         bSmallMeshOverride);
             } else {
                 logger.debug("Single mode requested");
                 File archiveToProcess = inputFilePath;
 
                 if (archiveToProcess.getName().endsWith("vcml")) {
-                    ExecuteImpl.singleExecVcml(archiveToProcess, outputFilePath, cliLogger);
+                    ExecuteImpl.singleExecVcml(archiveToProcess, tmpDir, cliLogger);
                 } else { // archiveToProcess.getName().endsWith("omex")
-                    ExecuteImpl.singleMode(archiveToProcess, outputFilePath, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                    ExecuteImpl.singleMode(archiveToProcess, tmpDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
                             bEncapsulateOutput, bSmallMeshOverride);
                 }
             }
-
-            
+            FileUtils.copyDirectoryContents(tmpDir, outputFilePath, true, null);
             CLIPythonManager.getInstance().closePythonProcess();
             // WARNING: Python needs re-instantiation once the above line is called!
             return 0;

@@ -528,7 +528,7 @@ public class RowColumnResultSet implements java.io.Serializable {
         if(maxRowCount > getRowCount() - 1){
             return; //nothing to do
         }
-        if(lg.isInfoEnabled()){
+        if(lg.isDebugEnabled()){
             lg.info("rowCount=" + getRowCount());
         }
         if(maxRowCount <= 0){
@@ -556,7 +556,7 @@ public class RowColumnResultSet implements java.io.Serializable {
             if(scale[i] == 0){
                 scale[i] = 1;
             }
-            if(lg.isInfoEnabled()){
+            if(lg.isDebugEnabled()){
                 lg.info("scale[" + i + "] = " + scale[i]);
             }
         }
@@ -592,7 +592,7 @@ public class RowColumnResultSet implements java.io.Serializable {
                     break;
                 }
             }
-            if(lg.isInfoEnabled()){
+            if(lg.isDebugEnabled()){
                 lg.info("TOLERANCE=" + TOLERANCE + ", threshold=" + threshold + ", size=" + linkedList.size());
             }
             threshold += TOLERANCE / 10;

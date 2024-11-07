@@ -377,8 +377,7 @@ public class SedmlJob {
         PythonCalls.genPlotsPseudoSedml(this.SEDML_LOCATION, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML.toString());    // generate the plots
         // We assume if no exception is returned that the plots pass
         for (Output output : this.sedml.getOutputs()){
-            if (!(output instanceof Plot2D)) continue;
-            Plot2D plot = (Plot2D) output;
+            if (!(output instanceof Plot2D plot)) continue;
             PythonCalls.updatePlotStatusYml(this.SEDML_LOCATION, plot.getId(), Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
         }
     }

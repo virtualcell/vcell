@@ -20,12 +20,12 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-biosimulators_utils = "^0.1.180"
+python = "^3.10"
+biosimulators_utils = "^0.2.3"
 python-libcombine = "0.2.19"
 fire = "^0.5.0"
 PyYAML = "^6.0"
-pandas = "^1.5.3"
+pandas = "^2.2"
 matplotlib = "^3.5.2"
 seaborn = "^0.12.2"
 python-libsbml-experimental = "^5.20.1"

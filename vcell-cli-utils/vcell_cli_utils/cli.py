@@ -8,6 +8,7 @@ import tempfile
 from dataclasses import dataclass
 from typing import List
 
+import biosimulators_utils.sedml.utils
 import fire
 import libsedml as lsed
 import matplotlib.pyplot as plt
@@ -28,7 +29,7 @@ from biosimulators_utils.report.io import ReportWriter
 from biosimulators_utils.sedml.data_model import Report, Plot2D, Plot3D, DataSet
 from biosimulators_utils.sedml.io import SedmlSimulationReader, SedmlSimulationWriter
 from deprecated import deprecated
-from libsedml import SedReport, SedPlot2D
+from libsedml import SedReport, SedPlot2D, SedDocument
 
 # Move status PY code here
 # Create temp directory
@@ -89,11 +90,10 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
     sedml_contents = get_sedml_contents(archive)
 
     for i_content, content in enumerate(sedml_contents):
-        content_filename = os.path.join(temp_path, content.location)
-        if '/' in content.location:
-            sedml_name = content.location.split('/')[1].split('.')[0]
-        else:
-            sedml_name = content.location.split('.')[0]
+        content_filename = os.path.normpath(os.path.join(temp_path, content.location))
+        starting_sedml_name_index = content.location.rfind("/") + 1 if '/' in content.location else 0
+        ending_sedml_name_index = content.location.rfind(".")
+        sedml_name = content.location[starting_sedml_name_index:ending_sedml_name_index]
 #        sedml_name = Path(content.location).stem
         print("name: ", sedml_name, file=sys.stdout)
         print("sedml_name: ", sedml_name, file=sys.stdout)
@@ -135,6 +135,8 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
             temp_path, f'simulation_{sedml_name}.sedml')
         SedmlSimulationWriter().run(doc, filename_with_reports_for_plots,
                                     validate_models_with_languages=False)
+        if not os.path.exists(filename_with_reports_for_plots):
+            raise FileNotFoundError("The desired pseudo-sedml failed to generate!")
     return temp_path
 
 
@@ -335,24 +337,76 @@ def gen_plot_pdfs(sedml_path, result_out_dir):
     plot_and_save_curves(all_plot_curves, report_frames, result_out_dir)
 
 
+def gen_plots_for_sed2d_only_2(sedml_path, result_out_dir):
+    sedml: biosimulators_utils.sedml.data_model.SedDocument \
+        = biosimulators_utils.sedml.io.SedmlSimulationReader().run(sedml_path)
+
+    for plot in [output for output in sedml.outputs if isinstance(output, Plot2D)]:
+        dims = (12, 8)
+        _, ax = plt.subplots(figsize=dims)
+
+
+        df = pd.read_csv(os.path.join(result_out_dir, plot.id + '.csv'), header=None).T
+
+        # create mapping from task to all repeated tasks (or just itself)
+        curve_id_mapping = {}
+        for elem in df.iloc[1]:
+            if elem not in curve_id_mapping:
+                curve_id_mapping[elem] = []
+            curve_id_mapping[elem].append(str(elem) + "_" + str(len(curve_id_mapping[elem])))
+
+        labels = []
+        for key in curve_id_mapping:
+            if len(curve_id_mapping[key]) == 1:
+                curve_id_mapping[key][0] = key  # If there wasn't repeated tasks, restore the old name
+            for elem in curve_id_mapping[key]:
+                labels.append(elem)
+
+        # format data frame
+        df.columns = labels
+        df.drop(0, inplace=True)
+        df.drop(1, inplace=True)
+        df.drop(2, inplace=True)
+        df.reset_index(inplace=True)
+        df.drop('index', axis=1, inplace=True)
+
+        with open("/home/ldrescher/DataFrameFile.df", "w+") as debug_file:
+            debug_file.write(repr(df))
+
+        for curve in plot.curves:
+            should_label = True
+            for curve_name in curve_id_mapping[curve.y_data_generator.id]:
+                if curve.x_data_generator.id in labels:
+                    raise(f"Can not find x data set `{curve.x_data_generator.id}` in data frame (legal set: {labels})")
+                if curve_name not in labels:
+                    raise(f"Can not find y data set `{curve_name}` in data frame (legal set: {labels})")
+                sns.lineplot(data=df, x=curve.x_data_generator.id, y=curve_name, ax=ax,
+                             label=(curve.id if should_label else None))
+                ax.set_ylabel('')
+                should_label = False
+            plt.savefig(os.path.join(result_out_dir, plot.id + '.pdf'), dpi=300)
+
 def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
     all_plot_curves = {}
 
-    sedml = lsed.readSedML(sedml_path)
-    # print(sedml)
+    sedml: SedDocument = lsed.readSedML(sedml_path)
 
     # Generate all_plot_curves
     for output in sedml.getListOfOutputs():
-        # print(output)
-        if type(output) == SedPlot2D:
-            all_curves = {}
-            for curve in output.getListOfCurves():
-                # print(curve)
-                all_curves[curve.getId()] = {
-                    'x': curve.getXDataReference(),
-                    'y': curve.getYDataReference()
-                }
-            all_plot_curves[output.getId()] = all_curves
+        if not isinstance(output, SedPlot2D):
+            continue
+        sed_plot_2d: SedPlot2D = output
+        all_curves = {}
+        all_plot_curves = {}
+
+
+        for curve in sed_plot_2d.getListOfCurves():
+            all_curves[curve.getId()] = {
+                'x': curve.getXDataReference(),
+                'y': curve.getYDataReference()
+            }
+        all_plot_curves[sed_plot_2d.getId()] = all_curves
+
 
     all_plots = dict(all_plot_curves)
     for plot_id, curve_dat_dict in all_plots.items(): # curve_dat_dict <--> all_curves
