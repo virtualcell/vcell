@@ -98,8 +98,8 @@ jobs:
       shell: bash
       run: |
         cd docker/build
-        sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
-        docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
+        echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
         ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
 
     - name: tag as latest and push to registry

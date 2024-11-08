@@ -267,7 +267,7 @@ jobs:
           REVISION=$(git rev-parse HEAD)
           CREATED=$(date --rfc-3339=seconds | sed 's/ /T/')
           sed -i 's/_VC_VERSION_TAG_/${{steps.version.outputs.tag}}/g' biosimulators.json
-          echo ${{ secrets.ACTION_TOKEN }} | docker login ghcr.io -u ${{ secrets.ACTION_USER }} --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker build \
             --no-cache \
             --file Dockerfile \
