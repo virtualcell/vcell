@@ -14,7 +14,9 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.function.Consumer;
 
-
+/**
+ * An HTTP client that stores all login information, in addition to renewing access tokens automatically when they expire.
+ */
 public class AuthApiClient extends ApiClient {
     private final URI oidcProviderTokenEndpoint;
     private RefreshToken refreshToken;
