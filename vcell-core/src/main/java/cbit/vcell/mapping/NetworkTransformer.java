@@ -745,9 +745,17 @@ public class NetworkTransformer implements SimContextTransformer {
 		mathMappingCallback.setMessage("generating network: adding observables...");
 		mathMappingCallback.setProgressFraction(progressFractionQuota/8.0f*7.0f);
 		startTime = System.currentTimeMillis();
+
+		long removeObsTime = 0;
+		long addParamTime = 0;
+		long st;		// start
+		long et;		// end
+
+
 		System.out.println("\nObservables :");
 		RbmModelContainer rbmmc = model.getRbmModelContainer();
 		for (int i = 0; i < outputSpec.getObservableGroups().length; i++){
+
 			ObservableGroup o = outputSpec.getObservableGroups()[i];
 //			System.out.println(i+1 + ":\t\t" + o.toString());
 			
@@ -764,8 +772,19 @@ public class NetworkTransformer implements SimContextTransformer {
 			exp.bindExpression(rbmmc.getSymbolTable());
 			RbmObservable originalObservable = rbmmc.getObservable(o.getObservableGroupName());
 			VCUnitDefinition observableUnitDefinition = originalObservable.getUnitDefinition();
+
+			st = System.currentTimeMillis();	// ==========================
 			rbmmc.removeObservable(originalObservable);
+			et = System.currentTimeMillis();	// ==========================
+			removeObsTime += (et-st);
+
+
+			st = System.currentTimeMillis();	// ==========================
 			Parameter newParameter = rbmmc.addParameter(o.getObservableGroupName(), exp, observableUnitDefinition);
+			et = System.currentTimeMillis();	// ==========================
+			addParamTime += (et-st);
+
+
 
 			RbmObservable origObservable = simContext.getModel().getRbmModelContainer().getObservable(o.getObservableGroupName());
 			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
@@ -780,6 +799,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		endTime = System.currentTimeMillis();
 		elapsedTime = endTime - startTime;
 		msg = "Adding " + outputSpec.getObservableGroups().length + " observables to model, " + elapsedTime + " ms";
+		System.out.println(msg);
+		msg = "removeObsTime: " + removeObsTime + ",  addParamTime: " + addParamTime;
 		System.out.println(msg);
 
 		} catch (PropertyVetoException | ModelException | ExpressionException | ClassNotFoundException | IOException  ex) {

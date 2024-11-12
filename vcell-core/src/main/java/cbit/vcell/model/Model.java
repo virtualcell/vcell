@@ -1611,7 +1611,8 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         public Parameter addParameter(String name, Expression expression, VCUnitDefinition unitDefinition) throws ModelException, PropertyVetoException{
-            return Model.this.addModelParameter(new ModelParameter(name, expression, ROLE_UserDefined, unitDefinition));
+            ModelParameter mp = new ModelParameter(name, expression, ROLE_UserDefined, unitDefinition);
+            return Model.this.addModelParameter(mp);
         }
 
         public RbmObservable getObservable(String obName){
