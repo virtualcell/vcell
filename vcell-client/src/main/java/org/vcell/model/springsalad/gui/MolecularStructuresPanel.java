@@ -565,6 +565,29 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 								break;
 						}
 					}
+				} else if(table.getModel() instanceof LinkSpecsTableModel) {
+					LinkSpecsTableModel model = (LinkSpecsTableModel)table.getModel();
+					if(value instanceof Double) {
+						LinkSpecsTableModel.ColumnType columnType = LinkSpecsTableModel.ColumnType.values()[column];
+						int cellWidth = table.getColumnModel().getColumn(column).getWidth();
+						switch(columnType) {
+							case COLUMN_LENGTH:
+								if(cellWidth > 70) {
+									if(!isSelected) {
+										String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
+										setText(text);
+									} else {
+										setText(value + " [nm]");
+									}
+								} else {
+									setText(value + "");		// if it's too busy, just show the numbers
+								}
+								setToolTipText(value + " [nm]");	// we always show the units in the tooltip
+								break;
+							default:
+								break;
+						}
+					}
 				}
 				return this;
 			}
@@ -654,6 +677,30 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		linksPanel.add(linksScrollPane, gbc);
+
+			DefaultScrollTableCellRenderer linkSpecsTableCellRenderer = new DefaultScrollTableCellRenderer() {
+				final Color lightBlueBackground = new Color(214, 234, 248);
+				@Override
+				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+															   int row, int column) {
+					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					if (table.getModel() instanceof LinkSpecsTableModel) {
+						if (value instanceof MolecularInternalLinkSpec) {
+							MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)value;
+							MolecularComponentPattern firstMcp = mils.getMolecularComponentPatternOne();
+							MolecularComponentPattern secondtMcp = mils.getMolecularComponentPatternTwo();
+							setText(firstMcp.getMolecularComponent().getName() + " :: " + secondtMcp.getMolecularComponent().getName());
+//							Icon icon = new ColorIcon(10,10,namedColor.getColor(), true);	// small square icon with subdomain color
+//							setHorizontalTextPosition(SwingConstants.RIGHT);
+//							setIcon(icon);
+						}
+					}
+					return this;
+				}
+			};
+			getLinkSpecsTable().setDefaultRenderer(MolecularInternalLinkSpec.class, linkSpecsTableCellRenderer);	// MolecularInternalLinkSpec field cell renderer
+			getLinkSpecsTable().setDefaultRenderer(Expression.class, expressionTableCellRenderer);	// Expression field cell renderer
+
 
 //		gbc = new GridBagConstraints();		// ----------------------
 //		gbc.gridx = 0;
