@@ -881,6 +881,46 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                             return new MathCompareResults(Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS, msg);
                         }
                     }
+
+                    //
+                    // 1) get list of old and new JumpProcesses
+                    // 2) filter out 'no-op' JPs (e.g. those only with trivial Actions such as open->open)
+                    // 3) add trivial Symmetry factor (1.0) if missing
+                    //
+                    List<JumpProcess> oldJpList = subDomainsOld.get(i).getJumpProcesses();
+                    List<JumpProcess> newJpList = subDomainsNew.get(i).getJumpProcesses();
+
+                    if(oldJpList.size() != newJpList.size()){
+                        Set<String> oldJpNameSet = oldJpList.stream().map(JumpProcess::getName).collect(Collectors.toSet());
+                        Set<String> newJpNameSet = newJpList.stream().map(JumpProcess::getName).collect(Collectors.toSet());
+                        Set<String> removedJpNames = new LinkedHashSet<>(oldJpNameSet);
+                        removedJpNames.removeAll(newJpNameSet);
+                        Set<String> addedPjpNames = new LinkedHashSet<>(newJpNameSet);
+                        addedPjpNames.removeAll(oldJpNameSet);
+                        String msg = "removed PJPs=" + removedJpNames + ", added PJPs=" + addedPjpNames;
+                        logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_JUMP_PROCESS, msg);
+                        return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_JUMP_PROCESS, msg);
+                    }
+                    for(JumpProcess oldJp : oldJpList){
+                        boolean bEqual = false;
+                        JumpProcess matchingJp = null;
+                        for(JumpProcess newJp : newJpList){
+                            if(Compare.isEqualOrNull(oldJp.getName(), newJp.getName())){
+                                matchingJp = newJp;
+                                if(oldJp.compareEqual(newJp)){
+                                    bEqual = true;
+                                }
+                                break;
+                            }
+                        }
+                        if(!bEqual){
+                            String oldExprList = Arrays.stream(oldJp.getExpressions()).map(Expression::infix).toList().toString();
+                            String newExprList = ((matchingJp == null) ? "null" : Arrays.stream(matchingJp.getExpressions()).map(Expression::infix).toList().toString());
+                            String msg = "JP='" + oldJp.getName() + "', " + "rate: " + "old='" + oldExprList + "', new='" + newExprList + "'";
+                            logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_JUMP_PROCESS, msg);
+                            return new MathCompareResults(Decision.MathDifferent_DIFFERENT_JUMP_PROCESS, msg);
+                        }
+                    }
                 }
 
                 //
