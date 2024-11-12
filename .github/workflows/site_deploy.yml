@@ -87,7 +87,7 @@ jobs:
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
         cd docker/swarm
-        sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
+        echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
         sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:$VCELL_TAG
         ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
     - name: upload generated installers
@@ -197,7 +197,7 @@ jobs:
       run: |
         set -ux
         cd docker/swarm
-        ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ secrets.ACTION_USER }} -p ${{ secrets.ACTION_TOKEN }} ghcr.io
+        ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ github.actor }} -p "${{ secrets.GITHUB_TOKEN }}" ghcr.io
         if ${{ github.event.inputs.server_only != 'true' }}; then
           # build and install the client installers, and the web help (kubernetes cluster deployments are separate)
           ./deploy-action-kubernetes.sh \
