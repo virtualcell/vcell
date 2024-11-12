@@ -13,6 +13,7 @@ import cbit.vcell.graph.SmallShapeManager;
 import cbit.vcell.graph.SpeciesPatternSmallShape;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
+import cbit.vcell.mapping.gui.LinkSpecsTableModel;
 import cbit.vcell.mapping.gui.MolecularTypeSpecsTableModel;
 import cbit.vcell.mapping.gui.SpeciesContextSpecsTableModel;
 import cbit.vcell.mapping.gui.StructureMappingTableRenderer.TextIcon;
@@ -61,13 +62,18 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private SimulationContext fieldSimulationContext;
 	private SpeciesContextSpec fieldSpeciesContextSpec;
 	private MolecularComponentPattern fieldMolecularComponentPattern;
-	
+	private MolecularInternalLinkSpec fieldMolecularInternalLinkSpec;
+
 	private EditorScrollTable speciesContextSpecsTable = null;
 	private SpeciesContextSpecsTableModel speciesContextSpecsTableModel = null;
 	private SmallShapeManager shapeManager = new SmallShapeManager(false, false, false, false);
 
 	private EditorScrollTable molecularTypeSpecsTable = null;
 	private MolecularTypeSpecsTableModel molecularTypeSpecsTableModel = null;
+
+	private EditorScrollTable linkSpecsTable = null;
+	private LinkSpecsTableModel linkSpecsTableModel = null;
+
 	
 //	private JComboBox<String> siteColorComboBox = null;
 //	private JTextField siteXField = null;
@@ -127,7 +133,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				changeLinkLength();
 			} else if(source == addLinkButton) {
 				addLinkActionPerformed();
-				refreshSiteLinksList();
+				refreshSiteLinksList();		// TODO: table stuff instead of this
 			} else if(source == deleteLinkButton) {
 				deleteLinkActionPerformed();
 				refreshSiteLinksList();
@@ -169,7 +175,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				return;
 			}
 			if (e.getSource() == getSpeciesContextSpecsTable().getSelectionModel()) {
-//				System.out.println("valueChanged: speciesContextSpecsTableModel");
+				System.out.println("valueChanged: speciesContextSpecsTableModel");
 				int row = getSpeciesContextSpecsTable().getSelectedRow();
 				SpeciesContextSpec scsSelected = speciesContextSpecsTableModel.getValueAt(row);
 				setSpeciesContextSpec(scsSelected);
@@ -179,14 +185,20 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				selectionManager.setSelectedObjects(selectedObjects.toArray());
 
 			} else if (e.getSource() == getMolecularTypeSpecsTable().getSelectionModel()) {
-//				System.out.println("valueChanged: molecularTypeSpecsTableModel");
+				System.out.println("valueChanged: molecularTypeSpecsTableModel");
 				int row = getMolecularTypeSpecsTable().getSelectedRow();
 				MolecularComponentPattern mcmSelected = molecularTypeSpecsTableModel.getValueAt(row);
 				setMolecularComponentPattern(mcmSelected);
 
+			} else if(e.getSource() == getLinkSpecsTable().getSelectionModel()) {		// links table
+				System.out.println("valueChanged: linkSpecsTableModel");
+				int row = getLinkSpecsTable().getSelectedRow();
+				MolecularInternalLinkSpec milsSelected = linkSpecsTableModel.getValueAt(row);
+				setMolecularInternalLinkSpec(milsSelected);
+
 			} else if(e.getSource() == siteLinksList) {
 //				System.out.println("valueChanged: siteLinksList");
-				showLinkLength(siteLinksList.getSelectedValue());
+//				showLinkLength(siteLinksList.getSelectedValue());
 			}
 			// for siteXField, siteYField, siteZField we have actionPerformed()
 		}
@@ -216,10 +228,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 //		siteYField.addActionListener(eventHandler);
 //		siteZField.addActionListener(eventHandler);
 		
-		siteLinksList.addListSelectionListener(eventHandler);
-		siteLinksList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//		siteLinksList.addListSelectionListener(eventHandler);
+//		siteLinksList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//		linkLengthField.addActionListener(eventHandler);
 
-		linkLengthField.addActionListener(eventHandler);
 		addLinkButton.addActionListener(eventHandler);
 		deleteLinkButton.addActionListener(eventHandler);
 		
@@ -237,6 +249,11 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			dlsm.addListSelectionListener(eventHandler);
 		}
 
+		ListSelectionModel lsm3 = getLinkSpecsTable().getSelectionModel();
+		if(lsm3 instanceof DefaultListSelectionModel) {
+			DefaultListSelectionModel dlsm = (DefaultListSelectionModel)lsm3;
+			dlsm.addListSelectionListener(eventHandler);
+		}
 
 	}
 	
@@ -625,7 +642,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 //		// --- links -----------------------------------------------
 		linksPanel.setLayout(new GridBagLayout());
-		JScrollPane scrollPane1 = new JScrollPane(siteLinksList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JScrollPane linksScrollPane = new JScrollPane(getLinkSpecsTable());
+		linksScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
@@ -634,34 +653,34 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(5, 2, 2, 3);
-		linksPanel.add(scrollPane1, gbc);
+		linksPanel.add(linksScrollPane, gbc);
 
-		gbc = new GridBagConstraints();		// ----------------------
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		gbc.anchor = GridBagConstraints.EAST;
-		gbc.insets = new Insets(5, 2, 2, 3);
-		linksPanel.add(new JLabel("Length (nm): "), gbc);
+//		gbc = new GridBagConstraints();		// ----------------------
+//		gbc.gridx = 0;
+//		gbc.gridy = 1;
+//		gbc.anchor = GridBagConstraints.EAST;
+//		gbc.insets = new Insets(5, 2, 2, 3);
+//		linksPanel.add(new JLabel("Length (nm): "), gbc);
+//
+//		gbc = new GridBagConstraints();
+//		gbc.gridx = 1;
+//		gbc.gridy = 1;
+//		gbc.weightx = 1.0;
+//		gbc.gridwidth = 2;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+//		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right
+//		linksPanel.add(linkLengthField, gbc);
 
 		gbc = new GridBagConstraints();
-		gbc.gridx = 1;
-		gbc.gridy = 1;
-		gbc.weightx = 1.0;
-		gbc.gridwidth = 2;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right 
-		linksPanel.add(linkLengthField, gbc);
-
-		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
-		gbc.gridy = 2;
+		gbc.gridy = 1;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		linksPanel.add(addLinkButton, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 1;
-		gbc.gridy = 2;
+		gbc.gridy = 1;
 //		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.insets = new Insets(5, 2, 2, 3);
 		linksPanel.add(deleteLinkButton, gbc);
@@ -672,7 +691,22 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			handleException(e);
 		}
 	}
-	
+
+	private EditorScrollTable getLinkSpecsTable() {
+		if (linkSpecsTable == null) {
+			try {
+				linkSpecsTable = new EditorScrollTable();
+				linkSpecsTable.setName("linkSpecsTable");
+				linkSpecsTableModel = new LinkSpecsTableModel(linkSpecsTable);
+				linkSpecsTable.setModel(linkSpecsTableModel);
+//				molecularComponentSpecsTable.setScrollTableActionManager(new InternalScrollTableActionManager(table));
+				linkSpecsTable.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return linkSpecsTable;
+	}
 	private EditorScrollTable getMolecularTypeSpecsTable() {
 		if (molecularTypeSpecsTable == null) {
 			try {
@@ -756,6 +790,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		}
 		speciesContextSpecsTableModel.setSimulationContext(simulationContext);
 		molecularTypeSpecsTableModel.setSimulationContext(simulationContext);
+		linkSpecsTableModel.setSimulationContext(simulationContext);
 		updateInterface();
 	}
 	public SimulationContext getSimulationContext() {
@@ -778,6 +813,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			newValue.addPropertyChangeListener(eventHandler);
 		}
 		molecularTypeSpecsTableModel.setSpeciesContextSpec(fieldSpeciesContextSpec);
+		linkSpecsTableModel.setSpeciesContextSpec(fieldSpeciesContextSpec);
 		updateInterface();
 	}
 	public SpeciesContextSpec getSpeciesContextSpec() {
@@ -785,6 +821,11 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	void setMolecularComponentPattern(MolecularComponentPattern mcp) {
 		fieldMolecularComponentPattern = mcp;
+		//TODO: stuff
+		updateInterface();
+	}
+	void setMolecularInternalLinkSpec(MolecularInternalLinkSpec mils) {
+		fieldMolecularInternalLinkSpec = mils;
 		//TODO: stuff
 		updateInterface();
 	}
@@ -801,7 +842,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		boolean bNonNullSpeciesPattern = bNonNullSpeciesContextSpec && fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern() != null;
 		boolean bNonNullMolecularTypePattern = bNonNullSpeciesPattern && fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0) != null;
 		boolean bNonNullMolecularComponentPattern = bNonNullMolecularTypePattern && fieldMolecularComponentPattern != null;
-		
+//		boolean bNonNullMolecularInternalLinkSpec = bNonNullMolecularTypePattern && fieldMolecularInternalLinkSpec != null;
+
 		MolecularTypePattern mtp = null;
 		if(bNonNullMolecularTypePattern) {
 			mtp = fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0);
@@ -811,16 +853,21 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			addLinkButton.setEnabled(true);
 			refreshSiteLinksList();
 		} else {
-			linkLengthField.setEditable(false);
-			linkLengthField.setText(null);
+//			linkLengthField.setEditable(false);
+//			linkLengthField.setText(null);
 			addLinkButton.setEnabled(false);
 			refreshSiteLinksList();
 		}
-		if(!siteLinksListModel.isEmpty() && siteLinksList.getSelectedValue() != null) {	// there are links we can delete
+		if(linkSpecsTableModel.getRowCount() > 0 && fieldMolecularInternalLinkSpec != null) {	// there are links we can delete
 			deleteLinkButton.setEnabled(true);
 		} else {
 			deleteLinkButton.setEnabled(false);
 		}
+//		if(!siteLinksListModel.isEmpty() && siteLinksList.getSelectedValue() != null) {	// there are links we can delete
+//			deleteLinkButton.setEnabled(true);
+//		} else {
+//			deleteLinkButton.setEnabled(false);
+//		}
 
 		if(bNonNullMolecularComponentPattern) {
 			SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
@@ -906,8 +953,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		
 		MolecularInternalLinkSpec mils = siteLinksList.getSelectedValue();
 		
-		
-		showLinkLength(mils);
+		// TODO: we need to update the table row (maybe??)
+//		showLinkLength(mils);
 	}
 	private void recalculatePositions() {
 	}
@@ -941,18 +988,18 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		return;
 	}
 
-	private void showLinkLength(MolecularInternalLinkSpec selectedValue) {
-		if(selectedValue == null) {
-			System.out.println("showLinkLength: SelectedValue is null");
-			deleteLinkButton.setEnabled(false);
-			linkLengthField.setEditable(false);
-			linkLengthField.setText(null);
-			return;		// nothing selected
-		}
-		System.out.println("showLinkLength(): Selected row is '" + siteLinksList.getSelectedIndex() + "'");
-		deleteLinkButton.setEnabled(true);
-		linkLengthField.setEditable(false);		// make it editable here, for now it's a derived value only
-		linkLengthField.setText(selectedValue.getLinkLength()+"");
-	};
+//	private void showLinkLength(MolecularInternalLinkSpec selectedValue) {
+//		if(selectedValue == null) {
+//			System.out.println("showLinkLength: SelectedValue is null");
+//			deleteLinkButton.setEnabled(false);
+//			linkLengthField.setEditable(false);
+//			linkLengthField.setText(null);
+//			return;		// nothing selected
+//		}
+//		System.out.println("showLinkLength(): Selected row is '" + siteLinksList.getSelectedIndex() + "'");
+//		deleteLinkButton.setEnabled(true);
+//		linkLengthField.setEditable(false);		// make it editable here, for now it's a derived value only
+//		linkLengthField.setText(selectedValue.getLinkLength()+"");
+//	};
 
 }

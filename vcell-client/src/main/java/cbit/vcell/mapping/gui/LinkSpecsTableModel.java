@@ -12,10 +12,7 @@ import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.springsalad.NamedColor;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLinkSpec> implements java.beans.PropertyChangeListener {
 
@@ -70,19 +67,23 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
             if (getSpeciesContextSpec() == null) {
                 return null;
             }
-
+            Set<MolecularInternalLinkSpec> ilSet = getSpeciesContextSpec().getInternalLinkSet();
+            MolecularInternalLinkSpec mils = getValueAt(row);
             ColumnType columnType = columns.get(col);
             switch (columnType) {
                 case COLUMN_LINK:
-
-                    return null;
+                    if(mils == null) {
+                        return null;
+                    }
+                    return mils;
                 case COLUMN_LENGTH:
-
-                    return null;
+                    if(mils == null) {
+                        return null;
+                    }
+                    return mils.getLinkLength();
                 default:
                     return null;
             }
-
         } catch(Exception e) {
             return null;
         }
@@ -226,21 +227,17 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
     }
     protected List<MolecularInternalLinkSpec> computeData() {
         ArrayList<MolecularInternalLinkSpec> allParameterList = new ArrayList<MolecularInternalLinkSpec>();
-//        if(fieldSpeciesContextSpec != null && fieldSpeciesContextSpec.getSpeciesContext() != null) {
-//            SpeciesPattern sp = fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern();
-//            if(sp == null) {
-//                return null;
-//            }
-//            MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
-//            MolecularType mt = mtp.getMolecularType();
-//            List<MolecularComponent> componentList = mt.getComponentList();
-//            for(MolecularComponent mc : componentList) {
-//                MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
-//                allParameterList.add(mcp);
-//            }
-//        } else {
-//            return null;
-//        }
+        if(fieldSpeciesContextSpec != null && fieldSpeciesContextSpec.getSpeciesContext() != null) {
+            Set<MolecularInternalLinkSpec> ilSet = fieldSpeciesContextSpec.getInternalLinkSet();
+            if (ilSet == null || ilSet.isEmpty()) {
+                return null;
+            }
+            for (MolecularInternalLinkSpec mils : ilSet) {
+                allParameterList.add(mils);
+            }
+        } else {
+            return null;
+        }
         return allParameterList;
     }
 
