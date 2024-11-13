@@ -1,9 +1,12 @@
 package cbit.vcell.export.server;
 
-import io.jhdf.api.Attribute;
+import io.jhdf.HdfFile;
+import io.jhdf.api.Dataset;
+import io.jhdf.api.Group;
+import io.jhdf.api.Node;
 import io.jhdf.api.WritableNode;
+import io.jhdf.object.datatype.CompoundDataType;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class JhdfUtils {
@@ -168,5 +171,37 @@ public class JhdfUtils {
 
     public static void putAttribute(WritableNode node, String name, double[] value) {
         node.putAttribute(name, value);
+    }
+
+    public static List<Node> getChildren(HdfFile hdfFile, Group group) {
+        return hdfFile.getChildren().values().stream()
+                .filter(node -> node.getParent() == group).toList();
+    }
+    
+    public static List<Group> getChildGroups(HdfFile hdfFile, Group group) {
+        return hdfFile.getChildren().values().stream()
+                .filter(node -> node.getParent() == group)
+                .filter(node -> node instanceof Group)
+                .map(node -> (Group)node).toList();
+    }
+
+    public static List<Dataset> getChildDatasets(HdfFile hdfFile, Group group) {
+        return hdfFile.getChildren().values().stream()
+                .filter(node -> node.getParent() == group)
+                .filter(node -> node instanceof Dataset)
+                .map(node -> (Dataset)node).toList();
+    }
+
+    public static String[] getCompoundDatasetMemberNames(Dataset cds) {
+        if (!cds.isCompound()) {
+            throw new IllegalArgumentException("Dataset is not compound.");
+        }
+        if (cds.getDataType() instanceof CompoundDataType compoundDataType) {
+            return compoundDataType.getMembers().stream()
+                    .map(CompoundDataType.CompoundDataMember::getName)
+                    .toArray(String[]::new);
+        } else {
+            throw new IllegalArgumentException("Dataset is not compound.");
+        }
     }
 }

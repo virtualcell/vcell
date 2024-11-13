@@ -404,10 +404,26 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
+		<dependency> <!-- deprecated -->
 			<groupId>org.scala-saddle</groupId>
 			<artifactId>jhdf5_2.10</artifactId>
 			<version>${jhdf5-2-10.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/cisd/jhdf5 -->
+		<dependency>
+			<groupId>cisd</groupId>
+			<artifactId>jhdf5</artifactId>
+			<version>${jhdf5.cisd.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-lang3</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>commons-io</groupId>
+					<artifactId>commons-io</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
