@@ -895,9 +895,9 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                         Set<String> newJpNameSet = newJpList.stream().map(JumpProcess::getName).collect(Collectors.toSet());
                         Set<String> removedJpNames = new LinkedHashSet<>(oldJpNameSet);
                         removedJpNames.removeAll(newJpNameSet);
-                        Set<String> addedPjpNames = new LinkedHashSet<>(newJpNameSet);
-                        addedPjpNames.removeAll(oldJpNameSet);
-                        String msg = "removed PJPs=" + removedJpNames + ", added PJPs=" + addedPjpNames;
+                        Set<String> addedJpNames = new LinkedHashSet<>(newJpNameSet);
+                        addedJpNames.removeAll(oldJpNameSet);
+                        String msg = "removed JPs=" + removedJpNames + ", added JPs=" + addedJpNames;
                         logMathTexts(this, newMathDesc, Decision.MathDifferent_DIFFERENT_NUMBER_OF_JUMP_PROCESS, msg);
                         return new MathCompareResults(Decision.MathDifferent_DIFFERENT_NUMBER_OF_JUMP_PROCESS, msg);
                     }
