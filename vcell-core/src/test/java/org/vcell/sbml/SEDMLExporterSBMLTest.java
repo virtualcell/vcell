@@ -141,7 +141,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_84982474.vcml", SEDML_FAULT.DIFF_NUMBER_OF_BIOMODELS); // not supported non-spatial histogram
 		faults.put("biomodel_9254662.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_92705462.vcml", SEDML_FAULT.SIMCONTEXT_NOT_FOUND_BY_NAME);  // round-tripped simulationContext not found with name 'stoch'
-		faults.put("biomodel_92981603.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT); // math overrides names not equivalent for simulation 'done 1 2 1' in simContext 'Copy of Application0 1'
 		faults.put("biomodel_97075423.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_97705317.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_97786619.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
