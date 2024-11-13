@@ -130,6 +130,7 @@ public class MathGenCompareTest {
 	public static Map<String, MathCompareResults.Decision> knownLegacyFaults() {
 		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
 		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (not saved): expressions are different: ' - (3.321077566325453E-8 * s1)' vs ' - (0.001660538783162726 * s1)'
+		faults.put("biomodel_185577495.vcml:Copy of Application0 1",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_JUMP_PROCESS); // (97681008:2020-07-30:Private): removed PJPs=[cAMPind_reverse], added PJPs=[]
 		faults.put("biomodel_47429473.vcml:NWASP at Lam Tip in 3D Geometry", MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION); // (les:6:2010-08-12:Public): could not find a match for fast invariant expression'Expression@b29ced42 '(BarbedD_Cyt - Prof_Cyt + BarbedDPi_Cyt + BarbedT_Cyt)''
 		faults.put("biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (Brown:26331356:2011-03-12:Private): line #630 Exception: variable Na not defined
 		faults.put("biomodel_97075423.vcml:NFSim", MathCompareResults.Decision.MathDifferent_LEGACY_SYMMETRY_PARTICLE_JUMP_PROCESS); // (mblinov:12487253:2015-10-07:Private): PJP='r1', ProcessSymmetryFactor: old='1.0', new='0.5'
