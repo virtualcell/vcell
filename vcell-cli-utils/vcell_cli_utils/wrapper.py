@@ -2,7 +2,6 @@ __package__ = "vcell_cli_utils"
 import sys
 import glob
 import os
-from deprecated import deprecated
 from pathlib import Path
 if __name__ == "__main__":
     from vcell_cli_utils import cli, status
@@ -35,7 +34,7 @@ def genSedml2d3d(omexFilePath : str, baseOutPath : str) -> None:
 def genPlotsPseudoSedml(sedmlPath : str, resultOutDir : str) -> None:
     cli.gen_plots_for_sed2d_only(sedmlPath, resultOutDir)
 
-@deprecated("This method is no longer used") 
+# this function is no longer used
 def execSedDoc(omexFilePath : str, baseOutPath : str) -> None:
     cli.exec_sed_doc(omexFilePath, baseOutPath)
 

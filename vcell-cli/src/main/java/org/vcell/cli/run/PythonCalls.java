@@ -72,20 +72,6 @@ public class PythonCalls {
         cliPythonManager.parsePythonReturn(results, "", "Failed updating task status YAML\n");
     }
 
-    public void convertCSVtoHDF(String omexFilePath, String outputDir, CLIPythonManager cliPythonManager) throws PythonStreamException {
-
-        // Convert CSV to HDF5
-        /*
-        Usage: cli.py SEDML_FILE_PATH WORKING_DIR BASE_OUT_PATH CSV_DIR <flags>
-                    optional flags:        --rel_out_path | --apply_xml_model_changes |
-                         --report_formats | --plot_formats | --log | --indent
-        * */
-        // handle exceptions here
-        logger.trace("Dialing Python function execSedDoc");
-        String results = cliPythonManager.callPython("execSedDoc", omexFilePath, outputDir);
-        cliPythonManager.parsePythonReturn(results, "HDF conversion successful\n","HDF conversion failed\n");
-    }
-
     // Sample STATUS YML
     /*
     sedDocuments:
