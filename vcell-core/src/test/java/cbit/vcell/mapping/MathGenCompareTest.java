@@ -130,11 +130,14 @@ public class MathGenCompareTest {
 	public static Map<String, MathCompareResults.Decision> knownLegacyFaults() {
 		HashMap<String, MathCompareResults.Decision> faults = new HashMap();
 		faults.put("lumped_reaction_proper_size_in_rate.vcml:Application0", MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (not saved): expressions are different: ' - (3.321077566325453E-8 * s1)' vs ' - (0.001660538783162726 * s1)'
+		faults.put("biomodel_185577495.vcml:Copy of Application0 1",MathCompareResults.Decision.MathDifferent_DIFFERENT_NUMBER_OF_JUMP_PROCESS); // (97681008:2020-07-30:Private): removed PJPs=[cAMPind_reverse], added PJPs=[]
 		faults.put("biomodel_47429473.vcml:NWASP at Lam Tip in 3D Geometry", MathCompareResults.Decision.MathDifferent_DIFFERENT_FASTINV_EXPRESSION); // (les:6:2010-08-12:Public): could not find a match for fast invariant expression'Expression@b29ced42 '(BarbedD_Cyt - Prof_Cyt + BarbedDPi_Cyt + BarbedT_Cyt)''
 		faults.put("biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology", MathCompareResults.Decision.MathDifferent_FAILURE_UNKNOWN); // (Brown:26331356:2011-03-12:Private): line #630 Exception: variable Na not defined
 		faults.put("biomodel_97075423.vcml:NFSim", MathCompareResults.Decision.MathDifferent_LEGACY_SYMMETRY_PARTICLE_JUMP_PROCESS); // (mblinov:12487253:2015-10-07:Private): PJP='r1', ProcessSymmetryFactor: old='1.0', new='0.5'
 		faults.put("biomodel_97705317.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-11-23:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
 		faults.put("biomodel_97786619.vcml:NFSim app", MathCompareResults.Decision.MathDifferent_DIFFERENT_PARTICLE_JUMP_PROCESS); // (BioNetGen:95093638:2015-12-02:Public): PJP='r10', SymmetryFactor: old='0.5' new='0.5', rate: old='[0.0016611295681063123]', new='[0.0033222591362126247]'
+		faults.put("biomodel_97786886.vcml:ssa",MathCompareResults.Decision.MathDifferent_DIFFERENT_JUMP_PROCESS); // (17:2015-12-02:Public): JP='r1', rate: old='[(1.6611295681061237E-5 * ca_tt_Count * open_Count), -1.0, 0.0, 1.0]', new='[(3.3222591362126247E-6 * ca_tt_Count * open_Count), -1.0, 0.0, 1.0]'
+		faults.put("biomodel_97787114.vcml:ssa",MathCompareResults.Decision.MathDifferent_DIFFERENT_JUMP_PROCESS); // (17:2015-12-02:Public): JP='r1', rate: old='[(1.6611295681061237E-5 * ca_tt_Count * open_Count), -1.0, 0.0, 1.0]', new='[(3.3222591362126247E-6 * ca_tt_Count * open_Count), -1.0, 0.0, 1.0]'
 
 		// all private legacy Mass Action models with no reactant and no-zero Kf (all rest of models identified in issue 536 are fixed)
 		faults.put("biomodel_115999897.vcml:Application0",MathCompareResults.Decision.MathDifferent_DIFFERENT_EXPRESSION); // (60339657:2017-08-06:Private): expressions are different: '(PI45P2 - (0.03 * IP3))' vs '((0.0928262 * PI45P2) - (0.03 * IP3))'

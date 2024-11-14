@@ -8,12 +8,12 @@ on:
         default: 3ca1093da599a0ff4229b1130efe7a3924ff2b4c
 
 env:
-  python-version: "3.9"
+  python-version: "3.10"
 
 jobs:
   CD:
     name: CD
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4

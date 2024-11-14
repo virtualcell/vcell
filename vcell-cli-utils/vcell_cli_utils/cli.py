@@ -28,7 +28,6 @@ from biosimulators_utils.report.data_model import DataSetResults, ReportResults,
 from biosimulators_utils.report.io import ReportWriter
 from biosimulators_utils.sedml.data_model import Report, Plot2D, Plot3D, DataSet
 from biosimulators_utils.sedml.io import SedmlSimulationReader, SedmlSimulationWriter
-from deprecated import deprecated
 from libsedml import SedReport, SedPlot2D, SedDocument
 
 # Move status PY code here
@@ -138,97 +137,6 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
         if not os.path.exists(filename_with_reports_for_plots):
             raise FileNotFoundError("The desired pseudo-sedml failed to generate!")
     return temp_path
-
-
-@deprecated("This method is no longer used")
-def exec_sed_doc(omex_file_path, base_out_path):
-    # defining archive
-    config = Config(VALIDATE_OMEX_MANIFESTS=False)
-    archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=tmp_dir,
-                                         config=config)
-
-    # determine files to execute
-    sedml_contents = get_sedml_contents(archive)
-
-    report_results = ReportResults()
-    for i_content, content in enumerate(sedml_contents):
-        content_filename = os.path.join(tmp_dir, content.location)
-
-        doc = SedmlSimulationReader().run(content_filename)
-
-        for report_filename in glob.glob(os.path.join(base_out_path, content.location, '*.csv')):
-            report_id = os.path.splitext(os.path.basename(report_filename))[0]
-
-            # read report from CSV file produced by VCell
-            data_set_df = pd.read_csv(report_filename).transpose()
-            data_set_df.columns = data_set_df.iloc[0]
-            data_set_df = data_set_df.drop(data_set_df.iloc[0].name)
-            data_set_df = data_set_df.reset_index()
-            data_set_df = data_set_df.rename(
-                columns={'index': data_set_df.columns.name})
-            data_set_df = data_set_df.transpose()
-            data_set_df.index.name = None
-
-            report = next(
-                report for report in doc.outputs if report.id == report_id)
-
-            data_set_results = DataSetResults()
-
-            # print("report: ", report, file=sys.stderr)
-            # print("report Type: ", type(report), file=sys.stderr)
-            # print("Plot Type: ", Plot2D, file=sys.stderr)
-            if type(report) != Plot2D and type(report) != Plot3D:
-                # Considering the scenario where it has the datasets in sedml
-                for data_set in report.data_sets:
-                    data_set_results[data_set.id] = data_set_df.loc[data_set.label, :].to_numpy(
-                        dtype='float64')
-                    # print("DF for report: ", data_set_results[data_set.id], file=sys.stderr)
-                    # print("df.types: ", data_set_results[data_set.id].dtype, file=sys.stderr)
-            else:
-                data_set_df = pd.read_csv(report_filename, header=None).T
-                data_set_df.columns = data_set_df.iloc[0]
-                data_set_df.drop(0, inplace=True)
-                data_set_df.reset_index(inplace=True)
-                data_set_df.drop('index', axis=1, inplace=True)
-                # print("DF for plot: ", data_set_df, file=sys.stderr)
-                # Considering the scenario where it doesn't have datasets in sedml (pseudo sedml for plots)
-                for col in list(data_set_df.columns):
-                    data_set_results[col] = data_set_df[col].values
-
-            # append to data structure of report results
-            report_results[report_id] = data_set_results
-
-            # save file in desired BioSimulators format(s)
-            # for report_format in report_formats:
-            # print("HDF report: ", report, file=sys.stderr)
-            # print("HDF dataset results: ", data_set_results, file=sys.stderr)
-            # print("HDF base_out_path: ", base_out_path,file=sys.stderr)
-            # print("HDF path: ", os.path.join(content.location, report.id), file=sys.stderr)
-
-            rel_path = os.path.join(content.location, report.id)
-
-            if len(rel_path.split("./")) > 1:
-                rel_path = rel_path.split("./")[1]
-
-            if type(report) != Plot2D and type(report) != Plot3D:
-                ReportWriter().run(report,
-                                   data_set_results,
-                                   base_out_path,
-                                   rel_path,
-                                   format='h5')
-            else:
-                datasets = []
-                for col in list(data_set_df.columns):
-                    datasets.append(DataSet(id=col, label=col, name=col))
-                report.data_sets = datasets
-                ReportWriter().run(report,
-                                   data_set_results,
-                                   base_out_path,
-                                   rel_path,
-                                   format='h5')
-
-    # Remove temp directory
-    shutil.rmtree(tmp_dir)
 
 
 def transpose_vcml_csv(csv_file_path: str):
@@ -451,7 +359,6 @@ if __name__ == "__main__":
     fire.Fire({
         'genSedml2d3d': gen_sedml_2d_3d,
         'genPlotsPseudoSedml': gen_plots_for_sed2d_only,
-        'execSedDoc': exec_sed_doc,
         'transposeVcmlCsv': transpose_vcml_csv,
         'genPlotPdfs': gen_plot_pdfs,
     })
