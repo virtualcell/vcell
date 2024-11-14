@@ -1,10 +1,11 @@
 package cbit.vcell.export.server;
 
 import io.jhdf.api.Attribute;
+import io.jhdf.api.WritableGroup;
 import io.jhdf.api.WritableNode;
+import org.vcell.util.trees.Tree;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class JhdfUtils {
     public static Object createMultidimensionalArray(long[] dataDimensions, double[] flattenedDataBuffer) {
@@ -168,5 +169,22 @@ public class JhdfUtils {
 
     public static void putAttribute(WritableNode node, String name, double[] value) {
         node.putAttribute(name, value);
+    }
+
+    public static Map<String, WritableGroup> addGroups(WritableGroup hdf5Group, Tree<String> tree, String ... startingPath){
+        Map<String, WritableGroup> pathToGroupMapping = new HashMap<>();
+        String pathString = String.join("/", startingPath);
+        for (String child : tree.getChildren(startingPath)){
+            WritableGroup newGroup = hdf5Group.putGroup(child);
+            if (newGroup == null) throw new RuntimeException("Null group generated!");
+            String childPathString = pathString + (pathString.isEmpty() ? "" : "/") + child;
+            JhdfUtils.putAttribute(newGroup,"combineArchiveLocation", childPathString);
+            JhdfUtils.putAttribute(newGroup,"uri", childPathString);
+            pathToGroupMapping.put(childPathString, newGroup);
+            String[] childPath = Arrays.copyOf(startingPath, startingPath.length + 1);
+            childPath[childPath.length - 1] = child;
+            pathToGroupMapping.putAll(JhdfUtils.addGroups(newGroup, tree, childPath));
+        }
+        return pathToGroupMapping;
     }
 }
