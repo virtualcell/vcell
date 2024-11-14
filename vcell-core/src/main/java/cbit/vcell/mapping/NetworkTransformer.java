@@ -753,6 +753,8 @@ public class NetworkTransformer implements SimContextTransformer {
 
 
 		System.out.println("\nObservables :");
+		// we delete all observables; instead, for each of them we create a user-defined global parameter
+		// which is the sum of all generated (by flattening) species that satisfy the observable pattern
 		RbmModelContainer rbmmc = model.getRbmModelContainer();
 		for (int i = 0; i < outputSpec.getObservableGroups().length; i++){
 
@@ -774,13 +776,13 @@ public class NetworkTransformer implements SimContextTransformer {
 			VCUnitDefinition observableUnitDefinition = originalObservable.getUnitDefinition();
 
 			st = System.currentTimeMillis();	// ==========================
-			rbmmc.removeObservable(originalObservable);
+			rbmmc.removeObservable(originalObservable, Model.PropertyNotificationMode.Silent);
 			et = System.currentTimeMillis();	// ==========================
 			removeObsTime += (et-st);
 
 
 			st = System.currentTimeMillis();	// ==========================
-			Parameter newParameter = rbmmc.addParameter(o.getObservableGroupName(), exp, observableUnitDefinition);
+			Parameter newParameter = rbmmc.addParameter(o.getObservableGroupName(), exp, observableUnitDefinition, Model.PropertyNotificationMode.Silent);
 			et = System.currentTimeMillis();	// ==========================
 			addParamTime += (et-st);
 

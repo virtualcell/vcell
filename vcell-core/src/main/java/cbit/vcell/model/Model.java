@@ -1572,7 +1572,10 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             return new ReactionRule(Model.this, label, structure, bReversible);
         }
 
-        public final void setObservableList(List<RbmObservable> newValue) throws PropertyVetoException{
+        public final void setObservableList(List<RbmObservable> newValue) throws PropertyVetoException {
+            setObservableList(newValue, PropertyNotificationMode.Loud);
+        }
+        public final void setObservableList(List<RbmObservable> newValue, PropertyNotificationMode mode) throws PropertyVetoException{
             List<RbmObservable> oldValue = observableList;
             fireVetoableChange(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST, oldValue, newValue);
             if(oldValue != null){
@@ -1590,7 +1593,9 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
                     mt.setModel(Model.this);
                 }
             }
-            firePropertyChange(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST, oldValue, newValue);
+            if(mode == PropertyNotificationMode.Loud) {
+                firePropertyChange(RbmModelContainer.PROPERTY_NAME_OBSERVABLE_LIST, oldValue, newValue);
+            }
         }
 
         public List<MolecularType> getMolecularTypeList(){
@@ -1610,9 +1615,14 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
             return Model.this.addModelParameter(new ModelParameter(name, expression, ROLE_UserDefined, unitDefinition));
         }
 
-        public Parameter addParameter(String name, Expression expression, VCUnitDefinition unitDefinition) throws ModelException, PropertyVetoException{
+        public Parameter addParameter(String name, Expression expression, VCUnitDefinition unitDefinition, PropertyNotificationMode mode) throws ModelException, PropertyVetoException {
             ModelParameter mp = new ModelParameter(name, expression, ROLE_UserDefined, unitDefinition);
-            return Model.this.addModelParameter(mp);
+            return Model.this.addModelParameter(mp, mode);
+
+        }
+        public Parameter addParameter(String name, Expression expression, VCUnitDefinition unitDefinition) throws ModelException, PropertyVetoException{
+            Parameter ret = addParameter(name, expression, unitDefinition, PropertyNotificationMode.Loud);
+            return ret;
         }
 
         public RbmObservable getObservable(String obName){
@@ -1640,12 +1650,16 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
 
         public boolean removeObservable(RbmObservable observable) throws PropertyVetoException{
+            boolean ret = removeObservable(observable, PropertyNotificationMode.Loud);
+            return ret;
+        }
+        public boolean removeObservable(RbmObservable observable, PropertyNotificationMode mode) throws PropertyVetoException{
             if(!observableList.contains(observable)){
                 return false;
             }
             ArrayList<RbmObservable> newValue = new ArrayList<RbmObservable>(observableList);
             newValue.remove(observable);
-            setObservableList(newValue);
+            setObservableList(newValue, mode);
             return true;
         }
 
@@ -1958,6 +1972,11 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         }
     }
 
+    public enum PropertyNotificationMode {
+        Silent,
+        Loud
+    }
+
     public Model(Version argVersion){
         this(argVersion, ModelUnitSystem.createDefaultVCModelUnitSystem());
     }
@@ -2053,11 +2072,14 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
 //	ModelParameter modelParameter = new ModelParameter(name, expr, role, units);
 //	return modelParameter;
 //}
-
     public ModelParameter addModelParameter(Model.ModelParameter modelParameter) throws PropertyVetoException{
+        ModelParameter ret = addModelParameter(modelParameter, PropertyNotificationMode.Loud);
+        return ret;
+    }
+    public ModelParameter addModelParameter(Model.ModelParameter modelParameter, PropertyNotificationMode mode) throws PropertyVetoException{
 //	if (!contains(modelParameter)){
         Model.ModelParameter[] newModelParameters = ArrayUtils.addElement(fieldModelParameters, modelParameter);
-        setModelParameters(newModelParameters);
+        setModelParameters(newModelParameters, mode);
 //	}
         return modelParameter;
     }
@@ -3722,12 +3744,16 @@ public class Model implements Versionable, Matchable, Relatable, PropertyChangeL
         ;
     }
 
-
     public void setModelParameters(ModelParameter[] modelParameters) throws java.beans.PropertyVetoException{
+        setModelParameters(modelParameters, PropertyNotificationMode.Loud);
+    }
+    public void setModelParameters(ModelParameter[] modelParameters, PropertyNotificationMode mode) throws java.beans.PropertyVetoException{
         ModelParameter[] oldValue = fieldModelParameters;
         fireVetoableChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
         fieldModelParameters = modelParameters;
-        firePropertyChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
+        if(mode == PropertyNotificationMode.Loud) {
+            firePropertyChange(Model.PROPERTY_NAME_MODEL_PARAMETERS, oldValue, modelParameters);
+        }
 
 //System.out.print("vcModel model parameters [");
 //for (ModelParameter p : oldValue){
