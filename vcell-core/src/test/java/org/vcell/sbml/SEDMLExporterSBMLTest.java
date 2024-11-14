@@ -326,16 +326,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 				!largeFileSet().contains(t) &&
 				!slowTestSet().contains(t);
 		Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fName -> new TestCase(fName, ModelFormat.SBML));
-//		return sbml_test_cases.collect(Collectors.toList());
-		return Arrays.asList(
-				new TestCase("biomodel_185577495.vcml", ModelFormat.SBML)
-//				new TestCase("biomodel_31523791.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_34855932.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_40882931.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_40883509.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_65311813.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_155016832.vcml", ModelFormat.SBML)
-				);
+		return sbml_test_cases.collect(Collectors.toList());
 	}
 
 	@ParameterizedTest
