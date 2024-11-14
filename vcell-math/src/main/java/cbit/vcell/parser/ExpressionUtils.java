@@ -423,7 +423,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		if (bFirstAnswer == bSecondAnswer){
 			return bFirstAnswer;
 		}else{
-			System.out.println("first  '"+exp1.infix()+"=="+exp2.infix()+"':"+bFirstAnswer+"'\nsecond '"+exp1.flattenSafe().infix()+"=="+exp2.flattenSafe().infix()+"':"+bSecondAnswer+"'");
+			lg.debug("first  '"+exp1.infix()+"=="+exp2.infix()+"':"+bFirstAnswer+"'\nsecond '"+exp1.flattenSafe().infix()+"=="+exp2.flattenSafe().infix()+"':"+bSecondAnswer+"'");
 			return bFirstAnswer;
 		}
 	} catch (ExpressionException e) {

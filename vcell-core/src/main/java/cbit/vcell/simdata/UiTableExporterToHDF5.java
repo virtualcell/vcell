@@ -1,10 +1,10 @@
 package cbit.vcell.simdata;
 
 import cbit.vcell.math.ReservedVariable;
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.hdf5lib.HDF5Constants;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
+import hdf.hdf5lib.H5;
+import hdf.hdf5lib.HDF5Constants;
+import hdf.hdf5lib.exceptions.HDF5Exception;
+import hdf.hdf5lib.exceptions.HDF5LibraryException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import java.util.ListIterator;
 
 public class UiTableExporterToHDF5 {
     public static File exportTableToHDF5(boolean bHistogram, String blankCellValue, int[] columns, int[] rows, String xVarColumnName, String hdf5DescriptionText, String[] columnNames, String[] paramScanParamNames, Double[][] paramScanParamValues, Object[][] rowColValues) throws Exception {
-		int hdf5FileID = -1;//Used if HDF5 format
+		long hdf5FileID = -1;//Used if HDF5 format
 		File hdf5TempFile = null;
 		try {
 			hdf5TempFile = File.createTempFile("plot2D", ".hdf");
@@ -90,7 +90,7 @@ public class UiTableExporterToHDF5 {
 				if(selectedColCount == 0) {
 					continue;
 				}
-				int jobGroupID = -1;//(int) UiTableExporterToHDF5.createGroup(hdf5FileID, "Set "+k);
+				long jobGroupID = -1;//(int) UiTableExporterToHDF5.createGroup(hdf5FileID, "Set "+k);
 						//writeHDF5Dataset(hdf5FileID, "Set "+k, null, null, false);
 				HDF5WriteHelper help0 = null;//UiTableExporterToHDF5.createDataset(jobGroupID, "data", new long[] {selectedColCount,rows.length});
 						//(HDF5WriteHelper) UiTableExporterToHDF5.writeHDF5Dataset(jobGroupID, "data", new long[] {selectedColCount,rows.length}, new Object[] {}, false);
@@ -141,7 +141,7 @@ public class UiTableExporterToHDF5 {
 						if(!bParamsDone) {
 							bParamsDone = true;
 							int set = Integer.parseInt(colName.substring(colName.lastIndexOf("Set ")+4));
-							jobGroupID = (int) createGroup(hdf5FileID, "Set "+set);
+							jobGroupID = createGroup(hdf5FileID, "Set "+set);
 							help0 = createDataset(jobGroupID, "data", new long[] {selectedColCount,actualLength});
 							for(int z=0;z<paramScanParamNames.length;z++) {
 								paramNames.add(paramScanParamNames[z]);
@@ -159,7 +159,7 @@ public class UiTableExporterToHDF5 {
 					System.arraycopy(fromData, i* rows.length, fromData2, i*actualLength, actualLength);
 				}
 				if(help0 == null) {
-					jobGroupID = (int) createGroup(hdf5FileID, "Set "+k);
+					jobGroupID = createGroup(hdf5FileID, "Set "+k);
 					help0 = createDataset(jobGroupID, "data", new long[] {selectedColCount,actualLength});
 				}
 				copySlice(help0.hdf5DatasetValuesID,fromData2,new long[] {0,0},new long[] {selectedColCount,actualLength},new long[] {selectedColCount,actualLength},new long[] {0,0},new long[] {selectedColCount,actualLength},help0.hdf5DataSpaceID);
@@ -197,12 +197,12 @@ public class UiTableExporterToHDF5 {
 		/**
 		 * The id number of the hdf5 dataspace
 		 */
-		public int hdf5DataSpaceID;
+		public long hdf5DataSpaceID;
 
 		/**
 		 * The id number of the hdf5 dataset
 		 */
-		public int hdf5DatasetValuesID;
+		public long hdf5DatasetValuesID;
 
 		/**
 		 * Construtor of te helper
@@ -210,7 +210,7 @@ public class UiTableExporterToHDF5 {
 		 * @param hdf5DataSpaceID The id number of the hdf5 dataspace
 		 * @param hdf5DatasetValuesID The id number of the hdf5 dataset
 		 */
-		public HDF5WriteHelper(int hdf5DataSpaceID, int hdf5DatasetValuesID) {
+		public HDF5WriteHelper(long hdf5DataSpaceID, long hdf5DatasetValuesID) {
 			super();
 			this.hdf5DataSpaceID = hdf5DataSpaceID;
 			this.hdf5DatasetValuesID = hdf5DatasetValuesID;
@@ -234,11 +234,11 @@ public class UiTableExporterToHDF5 {
 	 * @return a HDF5 Writer helper class to store the relevant values
 	 * @throws HDF5Exception if the hdf5 library encounters something unusual
 	 */
-	private static HDF5WriteHelper createDataset(int hdf5GroupID,String datasetName,long[] dims) throws HDF5Exception{
+	private static HDF5WriteHelper createDataset(long hdf5GroupID,String datasetName,long[] dims) throws HDF5Exception {
 		//Create dataset and return it, must be closed when finished
 		long[] datasetDimensions = dims;
-		int hdf5DataspaceIDValues = H5.H5Screate_simple(datasetDimensions.length, datasetDimensions, null);
-		int hdf5DatasetIDValues = H5.H5Dcreate(hdf5GroupID, datasetName, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+		long hdf5DataspaceIDValues = H5.H5Screate_simple(datasetDimensions.length, datasetDimensions, null);
+		long hdf5DatasetIDValues = H5.H5Dcreate(hdf5GroupID, datasetName, HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceIDValues,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
 		return new HDF5WriteHelper(hdf5DataspaceIDValues,hdf5DatasetIDValues);
 	}
 
@@ -250,7 +250,7 @@ public class UiTableExporterToHDF5 {
 	 * @return the new group's ID number
 	 * @throws HDF5Exception if the hdf5 library encounters something unusual
 	 */
-	private static int createGroup(int hdf5GroupID,String groupName) throws HDF5Exception{
+	private static long createGroup(long hdf5GroupID,String groupName) throws HDF5Exception{
 		return H5.H5Gcreate(hdf5GroupID, (String)groupName,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
 	}
 
@@ -269,8 +269,8 @@ public class UiTableExporterToHDF5 {
 	 * @throws IllegalArgumentException
 	 * @throws HDF5Exception
 	 */
-	private static void copySlice(int copyToDataSet,double[] copyFromData,long[] copyToStart,long[] copyToLength,long[] copyFromDims,long[] copyFromStart,long[] copyFromLength,int dataspaceID) throws NullPointerException, IllegalArgumentException, HDF5Exception {
-		int hdf5DataspaceIDSlice = H5.H5Screate_simple(copyFromDims.length, copyFromDims, null);
+	private static void copySlice(long copyToDataSet,double[] copyFromData,long[] copyToStart,long[] copyToLength,long[] copyFromDims,long[] copyFromStart,long[] copyFromLength,long dataspaceID) throws NullPointerException, IllegalArgumentException, HDF5Exception {
+		long hdf5DataspaceIDSlice = H5.H5Screate_simple(copyFromDims.length, copyFromDims, null);
 		//Select the generated sliceData to copy-from
 		H5.H5Sselect_hyperslab(hdf5DataspaceIDSlice, HDF5Constants.H5S_SELECT_SET, copyFromStart, null, copyFromLength, null);
 		//Select next section of destination to copy-to
@@ -290,19 +290,19 @@ public class UiTableExporterToHDF5 {
 	 * @throws NullPointerException (unsure how this occurs)
 	 * @throws HDF5Exception if the hdf5 library encounters something unusual
 	 */
-	private static void insertAttribute(int hdf5GroupID,String attributeName,String data) throws NullPointerException, HDF5Exception {
+	private static void insertAttribute(long hdf5GroupID,String attributeName,String data) throws NullPointerException, HDF5Exception {
 		//insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
 		//String[] attr = data.toArray(new String[0]);
 
 		String attr = data + '\u0000';
 
 		//https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
-		int h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+		long h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
 		H5.H5Tset_size (h5attrcs1, attr.length() /*HDF5Constants.H5T_VARIABLE*/);
-		int dataspace_id = -1;
+		long dataspace_id = -1;
 		//dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
 		dataspace_id = H5.H5Screate(HDF5Constants.H5S_SCALAR);
-		int attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
+		long attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
 		H5.H5Awrite(attribute_id, h5attrcs1, attr.getBytes());
 		H5.H5Sclose(dataspace_id);
 		H5.H5Aclose(attribute_id);
@@ -318,7 +318,7 @@ public class UiTableExporterToHDF5 {
 	 * @throws NullPointerException (unsure how this occurs)
 	 * @throws HDF5Exception if the hdf5 library encounters something unusual
 	 */
-	private static void insertAttributes(int hdf5GroupID,String attributeName,List<String> data) throws NullPointerException, HDF5Exception {
+	private static void insertAttributes(long hdf5GroupID,String attributeName,List<String> data) throws NullPointerException, HDF5Exception {
 		String[] attr = data.toArray(new String[0]);
 		long[] dims = new long[] {attr.length}; // Always an array of length == 1
 		StringBuffer sb = new StringBuffer();
@@ -346,11 +346,11 @@ public class UiTableExporterToHDF5 {
 		}
 
 		//https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
-		int h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+		long h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
 		H5.H5Tset_size (h5attrcs1, MAXSTRSIZE/*HDF5Constants.H5T_VARIABLE*/);
-		int dataspace_id = -1;
+		long dataspace_id = -1;
 		dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
-		int attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
+		long attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
 		H5.H5Awrite(attribute_id, h5attrcs1, sb.toString().getBytes());
 		H5.H5Sclose(dataspace_id);
 		H5.H5Aclose(attribute_id);

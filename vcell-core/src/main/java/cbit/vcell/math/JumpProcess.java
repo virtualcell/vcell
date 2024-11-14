@@ -12,6 +12,7 @@ package cbit.vcell.math;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import cbit.vcell.parser.ExpressionUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 
@@ -78,7 +79,8 @@ public boolean compareEqual(org.vcell.util.Matchable object)
 	
 	JumpProcess jumpProc = (JumpProcess) object;
 	if(processName.compareTo(jumpProc.processName) != 0 ) return false;//processName
-	if(!probabilityRate.compareEqual(jumpProc.probabilityRate)) return false; //probabilityRate
+	var predicate = new ExpressionUtils.ExpressionEquivalencePredicate();
+	if(!Compare.isEqual(probabilityRate, jumpProc.probabilityRate, predicate)) return false;
 	//actions
 	if((actions != null) && (jumpProc.actions != null))
 	{

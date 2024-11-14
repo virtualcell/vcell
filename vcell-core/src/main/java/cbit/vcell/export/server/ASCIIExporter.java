@@ -10,48 +10,29 @@
 
 package cbit.vcell.export.server;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.Vector;
-
+import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
+import cbit.vcell.geometry.SinglePoint;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.resource.NativeLib;
+import cbit.vcell.simdata.*;
+import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solvers.CartesianMesh;
+import edu.uchc.connjur.wb.ExecutionTrace;
+import hdf.hdf5lib.H5;
+import hdf.hdf5lib.HDF5Constants;
+import hdf.hdf5lib.exceptions.HDF5Exception;
+import hdf.hdf5lib.exceptions.HDF5LibraryException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper;
 import org.vcell.solver.smoldyn.SmoldynVCellMapper.SmoldynKeyword;
 import org.vcell.util.*;
-import org.vcell.util.document.TSJobResultsNoStats;
-import org.vcell.util.document.TimeSeriesJobSpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCDataJobID;
+import org.vcell.util.document.*;
 
-import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
-import cbit.vcell.geometry.SinglePoint;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.ParticleDataBlock;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.simdata.SpatialSelection;
-import cbit.vcell.simdata.SpatialSelectionMembrane;
-import cbit.vcell.simdata.SpatialSelectionVolume;
-import cbit.vcell.solver.ode.ODESimData;
-import cbit.vcell.solvers.CartesianMesh;
-import edu.uchc.connjur.wb.ExecutionTrace;
-import ncsa.hdf.hdf5lib.H5;
-import ncsa.hdf.hdf5lib.HDF5Constants;
-import ncsa.hdf.hdf5lib.exceptions.HDF5Exception;
-import ncsa.hdf.hdf5lib.exceptions.HDF5LibraryException;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Insert the type's description here.
@@ -84,10 +65,10 @@ public class ASCIIExporter implements ExportConstants {
      * @throws NullPointerException (unsure how this occurs)
      * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertDoubles(int hdf5GroupID,String dataspaceName,long[] dims,List<Double> data) throws NullPointerException, HDF5Exception {
+    public static void insertDoubles(long hdf5GroupID,String dataspaceName,long[] dims,List<Double> data) throws NullPointerException, HDF5Exception, HDF5LibraryException {
         double[] hdfData = org.apache.commons.lang.ArrayUtils.toPrimitive(((ArrayList<Double>)data).toArray(new Double[0]));
-        int hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-        int hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+        long hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
+        long hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
         H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, hdfData);
         H5.H5Dclose(hdf5DatasetID);
         H5.H5Sclose(hdf5DataspaceID);
@@ -103,9 +84,9 @@ public class ASCIIExporter implements ExportConstants {
      * @throws NullPointerException (unsure how this occurs)
      * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertDoubles(int hdf5GroupID,String dataspaceName,long[] dims,double[] data) throws NullPointerException, HDF5Exception {
-        int hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-        int hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+    public static void insertDoubles(long hdf5GroupID,String dataspaceName,long[] dims,double[] data) throws NullPointerException, HDF5Exception {
+        long hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
+        long hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_DOUBLE, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
         H5.H5Dwrite_double(hdf5DatasetID, HDF5Constants.H5T_NATIVE_DOUBLE, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (double[])data);
         H5.H5Dclose(hdf5DatasetID);
         H5.H5Sclose(hdf5DataspaceID);
@@ -121,9 +102,9 @@ public class ASCIIExporter implements ExportConstants {
      * @throws NullPointerException (unsure how this occurs)
      * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertInts(int hdf5GroupID,String dataspaceName,long[] dims,int[] data) throws NullPointerException, HDF5Exception {
-        int hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-        int hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_INT, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+    public static void insertInts(long hdf5GroupID,String dataspaceName,long[] dims,int[] data) throws NullPointerException, HDF5Exception {
+        long hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
+        long hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, dataspaceName,HDF5Constants.H5T_NATIVE_INT, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
         H5.H5Dwrite_int(hdf5DatasetID, HDF5Constants.H5T_NATIVE_INT, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, (int[])data);
         H5.H5Dclose(hdf5DatasetID);
         H5.H5Sclose(hdf5DataspaceID);
@@ -139,7 +120,7 @@ public class ASCIIExporter implements ExportConstants {
      * @throws NullPointerException (unsure how this occurs)
      * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertStrings(int hdf5GroupID,String datasetName,long[] dims,List<String> data) throws NullPointerException, HDF5Exception {
+    public static void insertStrings(long hdf5GroupID,String datasetName,long[] dims,List<String> data) throws NullPointerException, HDF5Exception {
         int largestStrLen = 0;
         for(int i=0;i<data.size();i++) {
             largestStrLen = Math.max(largestStrLen, data.get(i).length());
@@ -150,10 +131,10 @@ public class ASCIIExporter implements ExportConstants {
             System.arraycopy(data.get(i).getBytes(), 0, bytes, index, data.get(i).length());
             index+= largestStrLen;
         }
-        int h5tcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+        long h5tcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
         H5.H5Tset_size(h5tcs1, largestStrLen);
-        int hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
-        int hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, datasetName,h5tcs1, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+        long hdf5DataspaceID = H5.H5Screate_simple(dims.length, dims, null);
+        long hdf5DatasetID = H5.H5Dcreate(hdf5GroupID, datasetName,h5tcs1, hdf5DataspaceID,HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
         //final byte[] bytes = allStringSB.toString().getBytes();
         H5.H5Dwrite(hdf5DatasetID, h5tcs1, HDF5Constants.H5S_ALL, HDF5Constants.H5S_ALL, HDF5Constants.H5P_DEFAULT, bytes);
         H5.H5Tclose(h5tcs1);
@@ -170,19 +151,19 @@ public class ASCIIExporter implements ExportConstants {
      * @throws NullPointerException (unsure how this occurs)
      * @throws HDF5Exception if the hdf5 library encounters something unusual
      */
-    public static void insertAttribute(int hdf5GroupID,String attributeName,String data) throws NullPointerException, HDF5Exception {
+    public static void insertAttribute(long hdf5GroupID,String attributeName,String data) throws NullPointerException, HDF5Exception {
         //insertAttributes(hdf5GroupID, dataspaceName, new ArrayList<String>(Arrays.asList(new String[] {data})));
         //String[] attr = data.toArray(new String[0]);
 
         String attr = data + '\u0000';
 
         //https://support.hdfgroup.org/ftp/HDF5/examples/misc-examples/vlstra.c
-        int h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
+        long h5attrcs1 = H5.H5Tcopy(HDF5Constants.H5T_C_S1);
         H5.H5Tset_size (h5attrcs1, attr.length() /*HDF5Constants.H5T_VARIABLE*/);
-        int dataspace_id = -1;
+        long dataspace_id = -1;
         //dataspace_id = H5.H5Screate_simple(dims.length, dims,null);
         dataspace_id = H5.H5Screate(HDF5Constants.H5S_SCALAR);
-        int attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
+        long attribute_id = H5.H5Acreate(hdf5GroupID, attributeName, h5attrcs1, dataspace_id, HDF5Constants.H5P_DEFAULT,HDF5Constants.H5P_DEFAULT);
         H5.H5Awrite(attribute_id, h5attrcs1, attr.getBytes());
         H5.H5Sclose(dataspace_id);
         H5.H5Aclose(attribute_id);
@@ -568,7 +549,12 @@ public class ASCIIExporter implements ExportConstants {
                                              GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs, String contextName, FileDataContainerManager fileDataContainerManager)
             throws DataAccessException, IOException{
 
-        NativeLib.HDF5.load();
+        // skip loading legacy native HDF5 library if the system is a macos arm64
+        // will get runtime errors for Chombo and MovingBoundary until HDF5 is updated
+        boolean MacosArm64 = System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X");
+        if (!MacosArm64) {
+            NativeLib.HDF5.load();
+        }
         ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
         Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
         double progressCounter = 0;
@@ -592,7 +578,7 @@ public class ASCIIExporter implements ExportConstants {
             exportOutputV.add(new ExportOutput[]{sofyaFormat(outputContext, jobID, user, dataServerImpl, orig_vcdID, variableSpecs, timeSpecs, geometrySpecs, asciiSpecs, contextName, fileDataContainerManager)});
         } else {
             try {
-                int hdf5FileID = -1;//Used if HDF5 format
+                long hdf5FileID = -1;//Used if HDF5 format
                 if(asciiSpecs.isHDF5()){
                     hdf5TempFile = File.createTempFile("pde", ".hdf5");
                     lg.debug("========> VCell-style hdf5 file location: " + hdf5TempFile.getAbsolutePath());
@@ -630,7 +616,7 @@ public class ASCIIExporter implements ExportConstants {
                                         " '" + psName + "'=" + simNameSimDataIDs[v].getExportParamScanInfo().getParamScanConstantValues()[simJobIndex][i];
                             }
                         }
-                        int hdf5GroupID = -1;//Used if HDF5 format
+                        long hdf5GroupID = -1;//Used if HDF5 format
                         if(asciiSpecs.isHDF5()){
                             hdf5GroupID = H5.H5Gcreate(hdf5FileID, vcdID.toString(), HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                         }
@@ -685,12 +671,12 @@ public class ASCIIExporter implements ExportConstants {
                                     //StringBuilder data1 = new StringBuilder(data.toString());
                                     ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
                                     fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
-                                    int hdf5GroupPointID = -1;//Used if HDF5 format
+                                    long hdf5GroupPointID = -1;//Used if HDF5 format
                                     if(asciiSpecs.isHDF5()){
                                         hdf5GroupPointID = H5.H5Gcreate(hdf5GroupID, "Points", HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                                     }
                                     for(int varNameIndx = 0; varNameIndx < variableSpecs.getVariableNames().length; varNameIndx++){
-                                        int hdf5GroupVarID = -1;//Used if HDF5 format
+                                        long hdf5GroupVarID = -1;//Used if HDF5 format
                                         if(asciiSpecs.isHDF5()){
                                             hdf5GroupVarID = H5.H5Gcreate(hdf5GroupPointID, variableSpecs.getVariableNames()[varNameIndx], HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                                         }
@@ -714,13 +700,13 @@ public class ASCIIExporter implements ExportConstants {
                                     //StringBuilder data1 = new StringBuilder(data.toString());
                                     ExportOutput exportOutput1 = new ExportOutput(true, dataType, simID, dataID/* + variableSpecs.getVariableNames()[i]*/, fileDataContainerManager);
                                     fileDataContainerManager.append(exportOutput1.getFileDataContainerID(), fileDataContainerID_header);
-                                    int hdf5GroupPointID = -1;//Used if HDF5 format
+                                    long hdf5GroupPointID = -1;//Used if HDF5 format
                                     if(asciiSpecs.isHDF5()){
                                         hdf5GroupPointID = H5.H5Gcreate(hdf5GroupID, "Curves", HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
 
                                     }
                                     for(int varNameIndx = 0; varNameIndx < variableSpecs.getVariableNames().length; varNameIndx++){
-                                        int hdf5GroupVarID = -1;//Used if HDF5 format
+                                        long hdf5GroupVarID = -1;//Used if HDF5 format
                                         if(asciiSpecs.isHDF5()){
                                             hdf5GroupVarID = H5.H5Gcreate(hdf5GroupPointID, variableSpecs.getVariableNames()[varNameIndx], HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                                         }
@@ -843,7 +829,7 @@ public class ASCIIExporter implements ExportConstants {
      * @return java.lang.String
      * @throws IOException
      */
-    private FileDataContainerID getCurveTimeSeries(int hdf5GroupVarID, PointsCurvesSlices pointsCurvesSlices, OutputContext outputContext, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException{
+    private FileDataContainerID getCurveTimeSeries(long hdf5GroupVarID, PointsCurvesSlices pointsCurvesSlices, OutputContext outputContext, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException{
         int[] pointIndexes = null;
         double[] distances = null;
         int[] crossingMembraneIndexes = null;
@@ -960,7 +946,7 @@ public class ASCIIExporter implements ExportConstants {
 
         if(hdf5GroupVarID != -1){
             try {
-                int hdf5GroupCurveID = H5.H5Gcreate(hdf5GroupVarID, getSpatialSelectionDescription(curve), HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
+                long hdf5GroupCurveID = H5.H5Gcreate(hdf5GroupVarID, getSpatialSelectionDescription(curve), HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                 insertInts(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[]{((int[]) treePCS.get(PCS.CURVEINDEXES)).length}, (int[]) treePCS.get(PCS.CURVEINDEXES));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEINDEXES.name(), new long[] {((int[])treePCS.get(PCS.CURVEINDEXES)).length}, (int[])treePCS.get(PCS.CURVEINDEXES),false);
                 insertDoubles(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[]{((double[]) treePCS.get(PCS.CURVEDISTANCES)).length}, (double[]) treePCS.get(PCS.CURVEDISTANCES));//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupCurveID, PCS.CURVEDISTANCES.name(), new long[] {((double[])treePCS.get(PCS.CURVEDISTANCES)).length}, (double[])treePCS.get(PCS.CURVEDISTANCES),false);
                 if(treePCS.get(PCS.CURVECROSSMEMBRINDEX) != null){
@@ -1089,7 +1075,7 @@ public class ASCIIExporter implements ExportConstants {
      * @return java.lang.String
      * @throws IOException
      */
-    private FileDataContainerID getPointsTimeSeries(PointsCurvesSlices pcs, int hdf5GroupID, OutputContext outputContext, User user,
+    private FileDataContainerID getPointsTimeSeries(PointsCurvesSlices pcs, long hdf5GroupID, OutputContext outputContext, User user,
                                                     DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, GeometrySpecs geometrySpecs,
                                                     double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException, HDF5Exception{
 
@@ -1180,10 +1166,10 @@ public class ASCIIExporter implements ExportConstants {
 
 
     private class SliceHelper {
-        public int hdf5DataspaceIDSlice = -1;
-        public int hdf5GroupVarID = -1;
-        int hdf5DataspaceIDValues = -1;
-        int hdf5DatasetIDValues = -1;
+        public long hdf5DataspaceIDSlice = -1;
+        public long hdf5GroupVarID = -1;
+        long hdf5DataspaceIDValues = -1;
+        long hdf5DatasetIDValues = -1;
 
         public final String[] SLICE_PLANE_AXIS = {"X", "Y", "Z"};
         private final int[][][] loopIndexes = new int[][][]{{{1, 2}, {2, 1}}, {{0, 2}, {2, 0}}, {{0, 1}, {1, 0}}};
@@ -1219,7 +1205,7 @@ public class ASCIIExporter implements ExportConstants {
             innerSizeIndex = loopIndexes[slicePlaneIndex][(switchRowsColumns ? 0 : 1)][1];
         }
 
-        public void setHDF5GroupVarID(int hdf5GroupID, String varName) throws HDF5LibraryException{
+        public void setHDF5GroupVarID(long hdf5GroupID, String varName) throws HDF5LibraryException{
             if(isHDF5){
                 hdf5GroupVarID = H5.H5Gcreate(hdf5GroupID, varName, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT, HDF5Constants.H5P_DEFAULT);
                 currentTimeIndex = 0;

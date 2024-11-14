@@ -10,7 +10,7 @@ on:
     types: [published, edited]
 
 env:
-  python-version: "3.9"
+  python-version: "3.10"
 
 jobs:
   CI-Build:
