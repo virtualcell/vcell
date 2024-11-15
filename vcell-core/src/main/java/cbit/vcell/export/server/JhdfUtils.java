@@ -1,5 +1,6 @@
 package cbit.vcell.export.server;
 
+import io.jhdf.WritableDatasetImpl;
 import io.jhdf.api.Attribute;
 import io.jhdf.api.WritableGroup;
 import io.jhdf.HdfFile;
@@ -194,35 +195,88 @@ public class JhdfUtils {
         return pathToGroupMapping;
     }
 
-    public static List<Node> getChildren(HdfFile hdfFile, Group group) {
-        return hdfFile.getChildren().values().stream()
-                .filter(node -> node.getParent() == group).toList();
+    public static WritableGroup addGroupByPath(WritableGroup startingPoint, String path){
+        return JhdfUtils.addGroupByPath(startingPoint, path, false);
     }
 
-    public static List<Group> getChildGroups(HdfFile hdfFile, Group group) {
-        return hdfFile.getChildren().values().stream()
-                .filter(node -> node.getParent() == group)
-                .filter(node -> node instanceof Group)
-                .map(node -> (Group)node).toList();
+    /**
+     * Adds one (or more) groups to the starting point, with the goal of creating a group at the end of a path.
+     * Note that with the current implementation, if the group already exists, it will simply be returned.
+     *
+     * @param startingPoint starting group to path from
+     * @param path the relative path from the starting point to the desired group to add
+     * @param makeParentPaths allows the algorithm to add in any missing parent groups needed to make the target group
+     * @return the group at the end of the path
+     */
+    public static WritableGroup addGroupByPath(WritableGroup startingPoint, String path, boolean makeParentPaths){
+        if (startingPoint == null) throw new IllegalArgumentException("startingPoint can not be null!");
+        if (path == null) throw new IllegalArgumentException("path can not be null!");
+        WritableGroup currentGroup = startingPoint;
+        String[] components = path.split("/");
+        for (int i = 0; i < components.length ; i++) {
+            String component = components[i];
+            if ("".equals(component)) continue;
+            Node nextChild = currentGroup.getChild(component);
+            if (nextChild == null) {
+                if ((i != components.length - 1) && !makeParentPaths)
+                    throw new IllegalArgumentException("Parent group `" + component + "` does not exist!");
+                nextChild = currentGroup.putGroup(component);
+            }
+            if (!(nextChild instanceof WritableGroup writableGroup))
+                throw new IllegalArgumentException("`" + nextChild.getPath() + "` is not a writable group!");
+            currentGroup = writableGroup;
+        }
+        return currentGroup;
     }
 
-    public static List<Dataset> getChildDatasets(HdfFile hdfFile, Group group) {
-        return hdfFile.getChildren().values().stream()
-                .filter(node -> node.getParent() == group)
-                .filter(node -> node instanceof Dataset)
-                .map(node -> (Dataset)node).toList();
+    /**
+     * Returns the group at the provided relative path from the starting point.
+     *
+     * @param startingPoint starting group to path from
+     * @param path the relative path from the starting point to the desired group
+     * @return the group at the end of the path
+     */
+    public static WritableGroup getGroupByPath(WritableGroup startingPoint, String path){
+        if (startingPoint == null) throw new IllegalArgumentException("startingPoint can not be null!");
+        WritableGroup currentGroup = startingPoint;
+        for (String component : path.split("/")) {
+            Node nextChild = currentGroup.getChild(component);
+            if (nextChild == null) throw new IllegalArgumentException("Parent group `" + component + "` does not exist!");
+            if (!(nextChild instanceof WritableGroup writableGroup))
+                throw new IllegalArgumentException("`" + nextChild.getPath() + "` is not a writable group!");
+            currentGroup = writableGroup;
+        }
+        return currentGroup;
+    }
+
+    /**
+     * Returns the dataset at the provided relative path from the starting point.
+     *
+     * @param startingPoint starting group to path from
+     * @param path the relative path from the starting point to the desired group
+     * @return the group at the end of the path
+     */
+    public static WritableDatasetImpl getDatasetByPath(WritableGroup startingPoint, String path){
+        if (startingPoint == null) throw new IllegalArgumentException("startingPoint can not be null!");
+        if (path == null) throw new IllegalArgumentException("path can not be null!");
+        String[] pathComponents = path.split("/");
+        if (pathComponents.length == 0) throw new IllegalArgumentException("Illegal path provided: not enough terms!");
+        String datasetName = pathComponents[pathComponents.length - 1];
+        WritableGroup parent;
+        if (pathComponents.length == 1){
+            parent = startingPoint;
+        } else {
+            String parentPath = String.join("/", Arrays.copyOf(pathComponents, pathComponents.length - 1));
+            parent = JhdfUtils.getGroupByPath(startingPoint, parentPath);
+        }
+        if (!(parent.getChild(datasetName) instanceof WritableDatasetImpl writableDataset))
+            throw new IllegalArgumentException("`" + datasetName + "` is not a writable dataset!");
+        return  writableDataset;
     }
 
     public static String[] getCompoundDatasetMemberNames(Dataset cds) {
-        if (!cds.isCompound()) {
+        if (!cds.isCompound() || !(cds.getDataType() instanceof CompoundDataType compoundDataType))
             throw new IllegalArgumentException("Dataset is not compound.");
-        }
-        if (cds.getDataType() instanceof CompoundDataType compoundDataType) {
-            return compoundDataType.getMembers().stream()
-                    .map(CompoundDataType.CompoundDataMember::getName)
-                    .toArray(String[]::new);
-        } else {
-            throw new IllegalArgumentException("Dataset is not compound.");
-        }
+        return compoundDataType.getMembers().stream().map(CompoundDataType.CompoundDataMember::getName).toArray(String[]::new);
     }
 }

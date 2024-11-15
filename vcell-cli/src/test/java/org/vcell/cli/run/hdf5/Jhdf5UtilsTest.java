@@ -2,8 +2,10 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.export.server.JhdfUtils;
 import io.jhdf.HdfFile;
+import io.jhdf.WritableDatasetImpl;
 import io.jhdf.WritableHdfFile;
 import io.jhdf.api.Dataset;
+import io.jhdf.api.WritableGroup;
 import io.jhdf.api.WritiableDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
@@ -110,5 +112,26 @@ public class Jhdf5UtilsTest {
             tempFile.toFile().delete();
         }
 
+    }
+
+    @Test
+    public void testAddingAndGettingGroupByPath() throws IOException {
+        Path tempFile = Files.createTempFile(this.getClass().getSimpleName(), ".hdf5");
+        try(WritableHdfFile writableHdfFile = HdfFile.write(tempFile)){
+            WritableGroup subGroup = JhdfUtils.addGroupByPath(writableHdfFile, "/path/to", true);
+            Assertions.assertNotNull(JhdfUtils.getGroupByPath(writableHdfFile, "path/to"));
+            WritableGroup newGroup = JhdfUtils.addGroupByPath(subGroup, "the");
+                    Assertions.assertThrows(IllegalArgumentException.class,
+                    () -> JhdfUtils.addGroupByPath(writableHdfFile, "path/to/the/fictitious/group"));
+            newGroup.putDataset("dataset", new double[] {0.1, 0.2, 0.3});
+            Assertions.assertThrows(IllegalArgumentException.class, () -> JhdfUtils.addGroupByPath(writableHdfFile, "path/to/the/dataset"));
+            WritableGroup alsoNewGroup = JhdfUtils.getGroupByPath(writableHdfFile, "path/to/the");
+            Assertions.assertEquals(newGroup, alsoNewGroup);
+            Assertions.assertThrows(IllegalArgumentException.class, ()-> JhdfUtils.getGroupByPath(writableHdfFile, "path/to/the/dataset"));
+            WritableDatasetImpl dataset = JhdfUtils.getDatasetByPath(writableHdfFile, "path/to/the/dataset");
+            WritableDatasetImpl alsoDataset = JhdfUtils.getDatasetByPath(alsoNewGroup, "dataset");
+            Assertions.assertEquals(dataset, alsoDataset);
+            Assertions.assertThrows(IllegalArgumentException.class, ()-> JhdfUtils.getDatasetByPath(subGroup, "the"));
+        }
     }
 }
