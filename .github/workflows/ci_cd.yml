@@ -107,7 +107,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install hdf5 tools needed for testing
-        run: sudo apt-get -y update && sudo apt-get -y install hdf5-tools
+        run: sudo apt -y update && sudo apt -y install hdf5-tools
 
       - name: Set up Python
         uses: actions/setup-python@v5
