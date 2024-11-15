@@ -497,7 +497,19 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 		} else {
 			throw new ExpressionException("csymbol node type "+nodeMathML.getAttributeValue(MathMLTags.DEFINITIONURL)+" not supported yet");
 		}	
-	} else{
+	} else if (nodeMathML.getName().equals(MathMLTags.NOT_A_NUMBER)){
+		ASTFloatNode zeroNode = new ASTFloatNode(0.0);
+		ASTFloatNode zeroNode2 = new ASTFloatNode(0.0);
+		ASTInvertTermNode invNode = new ASTInvertTermNode();
+		invNode.jjtAddChild(zeroNode2);
+		ASTMultNode multNode = new ASTMultNode();
+		multNode.jjtAddChild(zeroNode);
+		multNode.jjtAddChild(invNode);
+		return multNode;
+	} else if (nodeMathML.getName().equals(MathMLTags.INFINITY)) {
+		ASTFloatNode infNode = new ASTFloatNode(Double.MAX_VALUE);
+		return infNode;
+	}else{
 		throw new ExpressionException("node type '"+nodeMathML.getName()+"' not supported yet");
 	}		
 }
