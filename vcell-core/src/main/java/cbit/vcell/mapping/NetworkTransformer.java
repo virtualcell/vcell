@@ -11,6 +11,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.bngl.ParseException;
 import org.vcell.model.rbm.FakeReactionRuleRateParameter;
 import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
@@ -67,6 +69,8 @@ import cbit.vcell.units.VCUnitDefinition;
  * Flattening a Rule-based Model
  */
 public class NetworkTransformer implements SimContextTransformer {
+
+	private final static Logger lg = LogManager.getLogger(NetworkTransformer.class);
 
 	private Map<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>> speciesEquivalenceMap = new LinkedHashMap<FakeSeedSpeciesInitialConditionsParameter, Pair<SpeciesContext, Expression>>();
 	private Map<FakeReactionRuleRateParameter, LocalParameter> kineticsParameterMap = new LinkedHashMap<FakeReactionRuleRateParameter, LocalParameter>();
@@ -142,13 +146,13 @@ public class NetworkTransformer implements SimContextTransformer {
 		}
 		String bngl = bnglStringWriter.toString();
 		pw.close();
-//		System.out.println(bngl);
+//		lg.debug(bngl);
 //		for (Map.Entry<String, Pair<SpeciesContext, Expression>> entry : speciesEquivalenceMap.entrySet()) {
 //	    String key = entry.getKey();
 //	    Pair<SpeciesContext, Expression> value = entry.getValue();
 //	    SpeciesContext sc = value.one;
 //	    Expression initial = value.two;
-//		System.out.println("key: " + key + ",   species: " + sc.getName() + ", initial: " + initial.infix());
+//		lg.debug("key: " + key + ",   species: " + sc.getName() + ", initial: " + initial.infix());
 //	}
 		return bngl;
 	}
@@ -179,24 +183,24 @@ public class NetworkTransformer implements SimContextTransformer {
 		    Pair<SpeciesContext, Expression> value = entry.getValue();
 		    SpeciesContext sc = value.one;
 		    Expression initial = value.two;
-			System.out.println("key: " + key.fakeParameterName + ",   species: " + sc.getName() + ", initial: " + initial.infix());
+			lg.info("key: " + key.fakeParameterName + ",   species: " + sc.getName() + ", initial: " + initial.infix());
 		}
 
 		String md5hash = MD5.md5(input);
 		if(isBngHashValid(input, md5hash, simContext)) {
 			String s = "Previously saved outputSpec is up-to-date, no need to generate network.";
-			System.out.println(s);
+			lg.info(s);
 			tcm = new TaskCallbackMessage(TaskCallbackStatus.Notification, s);
 			simContext.appendToConsole(tcm);
 			if(simContext.isInsufficientIterations()) {
 				s = NetworkTransformer.getInsufficientIterationsMessage();
-				System.out.println(s);
+				lg.info(s);
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);
 				simContext.appendToConsole(tcm);
 			}
 			if(simContext.isInsufficientMaxMolecules()) {
 				s = NetworkTransformer.getInsufficientMaxMoleculesMessage();
-				System.out.println(s);
+				lg.info(s);
 				tcm = new TaskCallbackMessage(TaskCallbackStatus.Error, s);
 				simContext.appendToConsole(tcm);
 			}
@@ -265,16 +269,16 @@ public class NetworkTransformer implements SimContextTransformer {
 			throw new RuntimeException(message);
 		}
 		
-//		System.out.println("new hash: " + md5hash);
-//		System.out.println("old hash: " + simContext.getMd5hash());
+//		lg.debug("new hash: " + md5hash);
+//		lg.debug("old hash: " + simContext.getMd5hash());
 		if(md5hash != null && md5hash.length() != 0 && outputSpec != null) {
-			System.out.println("saving hash and output spec");
+			lg.info("saving hash and output spec");
 			synchronized (this) {
 				simContext.setMd5hash(md5hash);
 				simContext.setMostRecentlyCreatedOutputSpec(outputSpec);
 			}
 		} else {
-			System.out.println("something is wrong with the hash and/or output spec");
+			lg.debug("something is wrong with the hash and/or output spec");
 		}
 		return (BNGOutputSpec)BeanUtils.cloneSerializable(outputSpec);
 	}
@@ -290,8 +294,8 @@ public class NetworkTransformer implements SimContextTransformer {
 		simContext.appendToConsole(tcm);
 		tcm = new TaskCallbackMessage(TaskCallbackStatus.TaskStart, msg);
 		simContext.appendToConsole(tcm);
-		long startTime = System.currentTimeMillis();
-		System.out.println("Convert to bngl, execute BNG, retrieve the results.");
+//		long startTime = System.currentTimeMillis();
+		lg.info("Convert to bngl, execute BNG, retrieve the results.");
 		try {
 		BNGOutputSpec outputSpec = generateNetwork(simContext, mathMappingCallback, networkGenerationRequirements);
 		if (mathMappingCallback.isInterrupted()){
@@ -300,28 +304,28 @@ public class NetworkTransformer implements SimContextTransformer {
 			simContext.appendToConsole(tcm);
 			throw new UserCancelException(msg);
 		}
-		long endTime = System.currentTimeMillis();
-		long elapsedTime = endTime - startTime;
-		System.out.println("     " + elapsedTime + " milliseconds");
+//		long endTime = System.currentTimeMillis();
+//		long elapsedTime = endTime - startTime;
+//		lg.info("     " + elapsedTime + " milliseconds");
 		
 		Model model = transformedSimulationContext.getModel();
 		ReactionContext reactionContext = transformedSimulationContext.getReactionContext();
 			// ---- Parameters -----------------------------------------------------------------------------------------------
-		startTime = System.currentTimeMillis();
+//		startTime = System.currentTimeMillis();
 		for (int i = 0; i < outputSpec.getBNGParams().length; i++){
 			BNGParameter p = outputSpec.getBNGParams()[i];
-//			System.out.println(i+1 + ":\t\t"+ p.toString());
+//			lg.info(i+1 + ":\t\t"+ p.toString());
 			if(model.getRbmModelContainer().getParameter(p.getName()) != null) {
-//				System.out.println("   ...already exists.");
+//				lg.warn("   ...already exists.");
 				continue;		// if it's already there we don't try to add it again; this should be true for all of them!
 			}
 			String s = p.getName();
 			if(NetworkConstraints.SPECIES_LIMIT_PARAMETER.equals(s)) {
-				System.out.println("found NetworkConstraints seciesLimit parameter.");
+				lg.info("found NetworkConstraints seciesLimit parameter.");
 				continue;
 			}
 			if(NetworkConstraints.REACTIONS_LIMIT_PARAMETER.equals(s)) {
-				System.out.println("found NetworkConstraints reactionsLimit parameter.");
+				lg.info("found NetworkConstraints reactionsLimit parameter.");
 				continue;
 			}
 
@@ -331,7 +335,7 @@ public class NetworkTransformer implements SimContextTransformer {
 			}
 			FakeReactionRuleRateParameter fakeKineticParam = FakeReactionRuleRateParameter.fromString(s);
 			if(fakeKineticParam != null) {
-				System.out.println("found fakeKineticParam "+fakeKineticParam.fakeParameterName);
+				lg.info("found fakeKineticParam "+fakeKineticParam.fakeParameterName);
 				continue;	// we get rid of the fake parameters we use as keys
 			}
 			throw new RuntimeException("unexpected parameter "+p.getName()+" in internal BNG processing");
@@ -339,16 +343,16 @@ public class NetworkTransformer implements SimContextTransformer {
 //			exp.bindExpression(model.getRbmModelContainer().getSymbolTable());
 //			model.getRbmModelContainer().addParameter(p.getName(), exp, model.getUnitSystem().getInstance_TBD());
 		}
-		endTime = System.currentTimeMillis();
-		elapsedTime = endTime - startTime;
-		msg = "Adding " + outputSpec.getBNGParams().length + " parameters to model, " + elapsedTime + " ms";
-		System.out.println(msg);
+//		endTime = System.currentTimeMillis();
+//		elapsedTime = endTime - startTime;
+//		msg = "Adding " + outputSpec.getBNGParams().length + " parameters to model, " + elapsedTime + " ms";
+//		lg.info(msg);
 		
 		// ---- Species ------------------------------------------------------------------------------------------------------------
 		mathMappingCallback.setMessage("generating network: adding species...");
 		mathMappingCallback.setProgressFraction(progressFractionQuota/4.0f);
-		startTime = System.currentTimeMillis();
-		System.out.println("\nSpecies :");
+//		startTime = System.currentTimeMillis();
+		lg.info("\nSpecies :");
 		HashMap<Integer, String>  speciesMap = new HashMap<Integer, String>(); // the reactions will need this map to recover the names of species knowing only the networkFileIndex
 		LinkedHashMap<String, Species> sMap = new LinkedHashMap<String, Species>();
 		LinkedHashMap<String, SpeciesContext> scMap = new LinkedHashMap<String, SpeciesContext>();
@@ -359,7 +363,7 @@ public class NetworkTransformer implements SimContextTransformer {
 //		final int decimalTickCount = Math.max(outputSpec.getBNGSpecies().length/10, 1);
 		for (int i = 0; i < outputSpec.getBNGSpecies().length; i++){
 			BNGSpecies s = outputSpec.getBNGSpecies()[i];
-//			System.out.println(i+1 + ":\t\t"+ s.toString());
+//			lg.debug(i+1 + ":\t\t"+ s.toString());
 			
 			String key = s.getConcentration().infix();
 			FakeSeedSpeciesInitialConditionsParameter fakeParam = FakeSeedSpeciesInitialConditionsParameter.fromString(key);
@@ -372,7 +376,7 @@ public class NetworkTransformer implements SimContextTransformer {
 				// we'll have to find the species context from the cloned model which correspond to the original species
 				SpeciesContext sc = model.getSpeciesContext(originalsc.getName());
 				
-//				System.out.println(sc.getName() + ", " + sc.getSpecies().getCommonName() + "   ...is one of the original seed species.");
+//				lg.info(sc.getName() + ", " + sc.getSpecies().getCommonName() + "   ...is one of the original seed species.");
 				speciesMap.put(s.getNetworkFileIndex(), sc.getName());		// existing name
 				sMap.put(sc.getName(), sc.getSpecies());
 				scMap.put(sc.getName(), sc);
@@ -440,7 +444,7 @@ public class NetworkTransformer implements SimContextTransformer {
 				throw new UserCancelException(msg);
 			}
 //			if(i%50 == 0) {
-//				System.out.println(i+"");
+//				lg.info(i+"");
 //			}
 //			if(i%decimalTickCount == 0) {
 //				int multiplier = i/decimalTickCount;
@@ -449,11 +453,11 @@ public class NetworkTransformer implements SimContextTransformer {
 //			}
 		}
 		
-//		System.out.println("Total generated species: " + countGenerated);
-//		System.out.println("------------------------ " + sMap.size() + " species in the map.");
-//		System.out.println("------------------------ " + scMap.size() + " species contexts in the map.");
-//		System.out.println("------------------------ " + model.getSpecies().length + " species in the Model.");
-//		System.out.println("------------------------ " + model.getSpeciesContexts().length + " species contexts in the Model.");
+//		lg.info("Total generated species: " + countGenerated);
+//		lg.info("------------------------ " + sMap.size() + " species in the map.");
+//		lg.info("------------------------ " + scMap.size() + " species contexts in the map.");
+//		lg.info("------------------------ " + model.getSpecies().length + " species in the Model.");
+//		lg.info("------------------------ " + model.getSpeciesContexts().length + " species contexts in the Model.");
 
 		for(SpeciesContext sc1 : model.getSpeciesContexts()) {
 			boolean found = false;
@@ -461,13 +465,13 @@ public class NetworkTransformer implements SimContextTransformer {
 				SpeciesContext sc2 = entry.getValue();
 				if(sc1.getName().equals(sc2.getName())) {
 					found = true;
-//					System.out.println("found species context " + sc1.getName() + " of species " + sc1.getSpecies().getCommonName() + " // " + sc2.getSpecies().getCommonName());
+//					lg.info("found species context " + sc1.getName() + " of species " + sc1.getSpecies().getCommonName() + " // " + sc2.getSpecies().getCommonName());
 					break;
 				}
 			}
 			if(found == false) {	// we add to the map the species context and the species which exist in the model but which are not in the map yet
 									// the only ones in this situation should be plain species which were not given to bngl for flattening (they are flat already)
-//				System.out.println("species context " + sc1.getName() + " not found in the map. Adding it.");
+//				lg.debug("species context " + sc1.getName() + " not found in the map. Adding it.");
 				scMap.put(sc1.getName(), sc1);
 				sMap.put(sc1.getName(), sc1.getSpecies());
 				noMapForThese.add(sc1);
@@ -479,12 +483,12 @@ public class NetworkTransformer implements SimContextTransformer {
 				Species s2 = entry.getValue();
 				if(s1.getCommonName().equals(s2.getCommonName())) {
 					found = true;
-//					System.out.println("found species " + s1.getCommonName());
+//					lg.info("found species " + s1.getCommonName());
 					break;
 				}
 			}
 			if(found == false) {
-				System.err.println("species " + s1.getCommonName() + " not found in the map!");
+				lg.error("species " + s1.getCommonName() + " not found in the map!");
 			}
 		}
 		SpeciesContext[] sca = new SpeciesContext[scMap.size()];
@@ -519,16 +523,16 @@ public class NetworkTransformer implements SimContextTransformer {
 //		for(SpeciesContext sc : sca) {		// clean all the species patterns from the flattened species, we have no sp now
 //			sc.setSpeciesPattern(null);
 //		}
-		endTime = System.currentTimeMillis();
-		elapsedTime = endTime - startTime;
-		msg = "Adding " + outputSpec.getBNGSpecies().length + " species to model, " + elapsedTime + " ms";
-		System.out.println(msg);
-		
+//		endTime = System.currentTimeMillis();
+//		elapsedTime = endTime - startTime;
+//		msg = "Adding " + outputSpec.getBNGSpecies().length + " species to model, " + elapsedTime + " ms";
+//		lg.info(msg);
+
 		// ---- Reactions -----------------------------------------------------------------------------------------------------
 		mathMappingCallback.setMessage("generating network: adding reactions...");
 		mathMappingCallback.setProgressFraction(progressFractionQuota/4.0f*3.0f);
-		startTime = System.currentTimeMillis();
-		System.out.println("\nReactions :");
+//		startTime = System.currentTimeMillis();
+		lg.info("\nReactions :");
 		
 		Map<String, HashSet<String>> ruleKeyMap = new HashMap<String, HashSet<String>>();
 		Map<String, BNGReaction> directBNGReactionsMap = new HashMap<String, BNGReaction>();
@@ -554,7 +558,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		Map<String, ReactionStep> reactionStepMap = new HashMap<String, ReactionStep>();
 		for (int i = 0; i < outputSpec.getBNGReactions().length; i++){
 			BNGReaction bngReaction = outputSpec.getBNGReactions()[i];
-//			System.out.println(i+1 + ":\t\t"+ r.writeReaction());
+//			lg.info(i+1 + ":\t\t"+ r.writeReaction());
 			String baseName = bngReaction.getRuleName();
 			// Hack to correct a corrupted bng reaction name, until we fix the root cause
 			// which may never happen since we encountered this problem only one time in many years
@@ -562,7 +566,7 @@ public class NetworkTransformer implements SimContextTransformer {
 				int pos = baseName.indexOf(",");
 				baseName = baseName.substring(0, pos);
 			}
-//			System.out.println(i + ": " + baseName);
+//			lg.info(i + ": " + baseName);
 			String reactionName = null;
 			HashSet<String> keySetsForThisRule = ruleKeyMap.get(bngReaction.getRuleName());
 			if (keySetsForThisRule.size()==1 && model.getReactionStep(bngReaction.getRuleName()) == null && !reactionStepMap.containsKey(bngReaction.getRuleName())) {	// we can reuse the reaction rule labels
@@ -593,7 +597,7 @@ public class NetworkTransformer implements SimContextTransformer {
 				ReactionRule rr = model.getRbmModelContainer().getReactionRule(name);
 				if(rr == null) {
 					// temp code, trying to catch a rare random bug, may be a race condition of some sort
-					System.out.println("ReactionRule " + name + " not found.");
+					lg.error("ReactionRule " + name + " not found.");
 				}
 
 				Structure structure = rr.getStructure();
@@ -734,25 +738,29 @@ public class NetworkTransformer implements SimContextTransformer {
 			simContext.appendToConsole(tcm);
 			throw new UserCancelException(msg);
 		}
-		endTime = System.currentTimeMillis();
-		elapsedTime = endTime - startTime;
-		msg = "Adding " + outputSpec.getBNGReactions().length + " reactions to model, " + elapsedTime + " ms";
-		System.out.println(msg);
+//		endTime = System.currentTimeMillis();
+//		elapsedTime = endTime - startTime;
+//		msg = "Adding " + outputSpec.getBNGReactions().length + " reactions to model, " + elapsedTime + " ms";
+//		lg.info(msg);
 		// clean all the reaction rules
 		model.getRbmModelContainer().getReactionRuleList().clear();
 
 		// ---- Observables -------------------------------------------------------------------------------------------------
 		mathMappingCallback.setMessage("generating network: adding observables...");
 		mathMappingCallback.setProgressFraction(progressFractionQuota/8.0f*7.0f);
-		startTime = System.currentTimeMillis();
-		System.out.println("\nObservables :");
+//		startTime = System.currentTimeMillis();
+
+		lg.info("\nObservables :");
+		// we delete all observables; instead, for each of them we create a user-defined global parameter
+		// which is the sum of all generated (by flattening) species that satisfy the observable pattern
 		RbmModelContainer rbmmc = model.getRbmModelContainer();
 		for (int i = 0; i < outputSpec.getObservableGroups().length; i++){
+
 			ObservableGroup o = outputSpec.getObservableGroups()[i];
-//			System.out.println(i+1 + ":\t\t" + o.toString());
+//			lg.info(i+1 + ":\t\t" + o.toString());
 			
 			if(rbmmc.getParameter(o.getObservableGroupName()) != null) {
-				System.out.println("   ...already exists.");
+				lg.info("   ...already exists.");
 				continue;		// if it's already there we don't try to add it again; this should be true for all of them!
 			}
 			ArrayList<Expression> terms = new ArrayList<Expression>();
@@ -764,8 +772,9 @@ public class NetworkTransformer implements SimContextTransformer {
 			exp.bindExpression(rbmmc.getSymbolTable());
 			RbmObservable originalObservable = rbmmc.getObservable(o.getObservableGroupName());
 			VCUnitDefinition observableUnitDefinition = originalObservable.getUnitDefinition();
-			rbmmc.removeObservable(originalObservable);
-			Parameter newParameter = rbmmc.addParameter(o.getObservableGroupName(), exp, observableUnitDefinition);
+
+			rbmmc.removeObservable(originalObservable, Model.PropertyNotificationMode.Silent);
+			Parameter newParameter = rbmmc.addParameter(o.getObservableGroupName(), exp, observableUnitDefinition, Model.PropertyNotificationMode.Silent);
 
 			RbmObservable origObservable = simContext.getModel().getRbmModelContainer().getObservable(o.getObservableGroupName());
 			ModelEntityMapping em = new ModelEntityMapping(origObservable,newParameter);
@@ -777,18 +786,15 @@ public class NetworkTransformer implements SimContextTransformer {
 			simContext.appendToConsole(tcm);
 			throw new UserCancelException(msg);
 		}
-		endTime = System.currentTimeMillis();
-		elapsedTime = endTime - startTime;
-		msg = "Adding " + outputSpec.getObservableGroups().length + " observables to model, " + elapsedTime + " ms";
-		System.out.println(msg);
+//		endTime = System.currentTimeMillis();
+//		elapsedTime = endTime - startTime;
+//		msg = "Adding " + outputSpec.getObservableGroups().length + " observables to model, " + elapsedTime + " ms";
+//		lg.info(msg);
 
 		} catch (PropertyVetoException | ModelException | ExpressionException | ClassNotFoundException | IOException  ex) {
 			throw new RuntimeException(ex.getMessage(), ex);
 		}
 		
-		System.out.println("Done transforming");		
-		msg = "Generating math...";
-		System.out.println(msg);
 		mathMappingCallback.setMessage(msg);
 		mathMappingCallback.setProgressFraction(progressFractionQuota);
 	}
@@ -824,7 +830,7 @@ public class NetworkTransformer implements SimContextTransformer {
 				throw new RuntimeException("unexpected identifier "+fakeSymbol+" in kinetic law during network generation");
 			}
 			LocalParameter localParameter = this.kineticsParameterMap.get(fakeParameter);
-			System.out.println(localParameter.getNameScope());
+			lg.info(localParameter.getNameScope());
 			if (localParameter.getNameScope() instanceof ReactionRule.ReactionRuleNameScope){
 				reactionRule = ((ReactionRule.ReactionRuleNameScope)localParameter.getNameScope()).getReactionRule();
 			}

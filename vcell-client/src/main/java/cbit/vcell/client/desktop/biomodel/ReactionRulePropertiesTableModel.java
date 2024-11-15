@@ -310,11 +310,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 }
 
-/**
- * Sets the geometry property (cbit.vcell.geometry.Geometry) value.
- * @param geometry The new value for the property.
- * @see #getGeometry
- */
 public void setReactionRule(ReactionRule newValue) {
 	ReactionRule oldValue = reactionRule;
 	reactionRule = newValue;
