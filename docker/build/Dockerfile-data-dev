@@ -17,14 +17,14 @@ COPY --from=jre-build /javaruntime $JAVA_HOME
 
 # now we have Java 17 and Python 3.9
 
-RUN apt-get -y update && \
-	apt-get -y install openssh-client screen apt-utils libfreetype6 fontconfig fonts-dejavu && \
+RUN apt -y update && \
+	apt -y install openssh-client screen apt-utils libfreetype6 fontconfig fonts-dejavu && \
     mkdir -p /usr/local/app
 
 RUN python3 -m pip install poetry &&  poetry config cache-dir "/poetry/.cache"
 ENV PATH="/root/.poetry/bin:/root/.local/bin:$PATH"
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+RUN DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true
 RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 

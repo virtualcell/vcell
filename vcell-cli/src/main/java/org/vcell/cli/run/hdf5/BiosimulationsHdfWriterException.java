@@ -6,6 +6,10 @@ public class BiosimulationsHdfWriterException extends Exception {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    public BiosimulationsHdfWriterException(String message) {
+        super(message);
+    }
+
     public BiosimulationsHdfWriterException(String message, Exception e) {
         super(message, e);
     }

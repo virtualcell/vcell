@@ -10,17 +10,17 @@ RUN $JAVA_HOME/bin/jlink \
          --output /javaruntime
 
 # Define base image and copy in jlink created minimal Java 17 environment
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 
 RUN mkdir -p /usr/local/app && \
-	apt-get -y update && \
-    apt-get -y install openssh-client curl screen apt-utils libfreetype6 fontconfig fonts-dejavu
+	apt -y update && \
+    apt -y install openssh-client curl screen apt-utils libfreetype6 fontconfig fonts-dejavu
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+RUN DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true
 RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 

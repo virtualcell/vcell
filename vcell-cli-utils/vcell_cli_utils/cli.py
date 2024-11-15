@@ -1,16 +1,12 @@
-import glob
 import json
 import os
-import shutil
 import stat
 import sys
 import tempfile
-from dataclasses import dataclass
 from typing import List
 
 import biosimulators_utils.sedml.utils
 import fire
-import libsedml as lsed
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -23,12 +19,9 @@ from biosimulators_utils.log.data_model import Status, CombineArchiveLog, SedDoc
 from biosimulators_utils.combine.validation import validate
 from biosimulators_utils.combine.data_model import CombineArchiveContentFormat
 
-# from biosimulators_utils.plot.data_model import PlotFormat  # noqa: F401
 from biosimulators_utils.report.data_model import DataSetResults, ReportResults, ReportFormat  # noqa: F401
-from biosimulators_utils.report.io import ReportWriter
-from biosimulators_utils.sedml.data_model import Report, Plot2D, Plot3D, DataSet
+from biosimulators_utils.sedml.data_model import Report, Plot2D, Plot3D, DataSet, SedDocument
 from biosimulators_utils.sedml.io import SedmlSimulationReader, SedmlSimulationWriter
-from libsedml import SedReport, SedPlot2D, SedDocument
 
 # Move status PY code here
 # Create temp directory
@@ -150,30 +143,29 @@ def get_all_dataref_and_curves(sedml_path):
     all_plot_curves = {}
     all_report_dataref = {}
 
-    sedml = lsed.readSedML(sedml_path)
+    sedml: SedDocument = SedmlSimulationReader().run(sedml_path)
 
-    for output in sedml.getListOfOutputs():
-        if type(output) == SedPlot2D:
+    for output in sedml.outputs:
+        if isinstance(output, Plot2D):
             all_curves = {}
-            for curve in output.getListOfCurves():
+            for curve in output.curves:
                 all_curves[curve.getId()] = {
                     'x': curve.getXDataReference(),
                     'y': curve.getYDataReference()
                 }
-            all_plot_curves[output.getId()] = all_curves
-        if type(output) == SedReport:
-            for dataset in output.getListOfDataSets():
+            all_plot_curves[output.id] = all_curves
+        if isinstance(output, Report):
+            for dataset in output.data_sets():
 
                 ######
-                if output.getId() in all_report_dataref:
-
-                    all_report_dataref[output.getId()].append({
+                if output.id in all_report_dataref:
+                    all_report_dataref[output.id].append({
                         'data_reference': dataset.getDataReference(),
                         'data_label': dataset.getLabel()
                     })
                 else:
-                    all_report_dataref[output.getId()] = []
-                    all_report_dataref[output.getId()].append({
+                    all_report_dataref[output.id] = []
+                    all_report_dataref[output.id].append({
                         'data_reference': dataset.getDataReference(),
                         'data_label': dataset.getLabel()
                     })
@@ -297,23 +289,22 @@ def gen_plots_for_sed2d_only_2(sedml_path, result_out_dir):
 def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
     all_plot_curves = {}
 
-    sedml: SedDocument = lsed.readSedML(sedml_path)
+    sedml: SedDocument = SedmlSimulationReader().run(sedml_path)
 
     # Generate all_plot_curves
-    for output in sedml.getListOfOutputs():
-        if not isinstance(output, SedPlot2D):
+    all_plot_curves = {}
+    for output in sedml.outputs:
+        if not isinstance(output, Plot2D):
             continue
-        sed_plot_2d: SedPlot2D = output
+        sed_plot_2d: Plot2D = output
         all_curves = {}
-        all_plot_curves = {}
 
-
-        for curve in sed_plot_2d.getListOfCurves():
-            all_curves[curve.getId()] = {
-                'x': curve.getXDataReference(),
-                'y': curve.getYDataReference()
+        for curve in sed_plot_2d.curves:
+            all_curves[curve.id] = {
+                'x': curve.x_data_generator,
+                'y': curve.y_data_generator
             }
-        all_plot_curves[sed_plot_2d.getId()] = all_curves
+        all_plot_curves[sed_plot_2d.id] = all_curves
 
 
     all_plots = dict(all_plot_curves)
@@ -348,8 +339,8 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
 
         for curve_id, data in curve_dat_dict.items(): # data <--> (dict)all_curves.values()
             shouldLabel = True
-            for series_name in labelMap[data['y']]:
-                sns.lineplot(data=df, x=data['x'], y=series_name, ax=ax, label=(curve_id if shouldLabel else None))
+            for series_name in labelMap[data['y'].id]:
+                sns.lineplot(data=df, x=data['x'].id, y=series_name, ax=ax, label=(curve_id if shouldLabel else None))
                 ax.set_ylabel('')
                 shouldLabel = False
             plt.savefig(os.path.join(result_out_dir, plot_id + '.pdf'), dpi=300)
