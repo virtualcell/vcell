@@ -80,6 +80,26 @@ public class MathMLTest {
 		assertTrue(equiv, msg);
 	}
 
+	@Test
+	public void testNaN_MathmlParsing() throws ExpressionException {
+		String nanMathML = "<notanumber/>";
+		Expression exp = new ExpressionMathMLParser(null).fromMathML(nanMathML, "t");
+		Expression expectedExp = new Expression("0/0");
+		boolean equiv = ExpressionUtils.functionallyEquivalent(exp, expectedExp, true);
+		String msg = "not equivalent: origExp='"+exp.infix()+"', expMathML='"+expectedExp.infix()+"'";
+		assertTrue(equiv, msg);
+	}
+
+	@Test
+	public void testInfinity_MathmlParsing() throws ExpressionException {
+		String nanMathML = "<infinity/>";
+		Expression exp = new ExpressionMathMLParser(null).fromMathML(nanMathML, "t");
+		Expression expectedExp = new Expression(Double.MAX_VALUE);
+		boolean equiv = ExpressionUtils.functionallyEquivalent(exp, expectedExp, true);
+		String msg = "not equivalent: origExp='"+exp.infix()+"', expMathML='"+expectedExp.infix()+"'";
+		assertTrue(equiv, msg);
+	}
+
 
 	@ParameterizedTest
 	@MethodSource("testCases")
