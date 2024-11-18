@@ -72,7 +72,7 @@ public class CLIPythonManager {
      * @throws InterruptedException if the python process was interrupted
      * @throws IOException if there was a system IO failure
      */
-
+    @Deprecated
     public static void callNonSharedPython(String cliCommand, String sedmlPath, String resultOutDir)
             throws InterruptedException, IOException, PythonStreamException {
         if (lg.isWarnEnabled()) lg.warn("Using old style python invocation!");

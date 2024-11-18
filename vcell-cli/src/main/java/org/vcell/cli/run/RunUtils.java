@@ -472,7 +472,7 @@ public class RunUtils {
 
     public static String getTempDir() throws IOException {
         String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory(
-            RunUtils.VCELL_TEMP_DIR_PREFIX + UUID.randomUUID().toString()).toAbsolutePath());
+            RunUtils.VCELL_TEMP_DIR_PREFIX + UUID.randomUUID()).toAbsolutePath());
         logger.info("TempPath Created: " + tempPath);
         return tempPath;
     }

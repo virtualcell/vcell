@@ -41,9 +41,10 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
         this.tempPath = RunUtils.getTempDir();
+        Path archiveTempDirPath = Files.copy(Paths.get(omexPath), Paths.get(RunUtils.getTempDir(), "archive_to_execute.omex"));
         try {
-            replaceMetadataRdfFiles(Paths.get(omexPath));
-            this.archive = new CombineArchive(new File(omexPath));
+            replaceMetadataRdfFiles(archiveTempDirPath);
+            this.archive = new CombineArchive(archiveTempDirPath.toFile());
             if (this.archive.hasErrors()){
                 String message = "Unable to initialise OMEX archive "+this.omexName+": "+this.archive.getErrors();
                 logger.error(message);
@@ -51,7 +52,7 @@ public class OmexHandler {
             }
         }catch (CombineArchiveException | JDOMException | ParseException e) {
             String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
-            logger.error(message+": "+e.getMessage(), e);
+            logger.error("{}: {}", message, e.getMessage());
             throw new IOException(e);
         }
     }

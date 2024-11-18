@@ -25,8 +25,8 @@ install jq (utility for json processing)
 install poetry (for building/installing vcell-admin)
 
 ```bash
-sudo apt-get install -y jq
-sudo apt-get install -y python3-poetry
+sudo apt install -y jq
+sudo apt install -y python3-poetry
 ```
 
 ## Install singularity [more info linux](https://singularity.lbl.gov/install-linux)

@@ -1,7 +1,7 @@
-FROM python:3.10-slim-buster
+FROM python:3.10-slim-bullseye
 
 RUN apt -y update && apt -y upgrade &&  \
-    apt-get install -y curl
+    apt install -y curl
 
 RUN mkdir -p /usr/local/app/vcell/installDir && \
     mkdir -p /usr/local/app/vcell/installDir/python/vcell_opt
