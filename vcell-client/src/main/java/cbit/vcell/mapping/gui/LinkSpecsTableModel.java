@@ -220,7 +220,7 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
         // TODO: may remove some columns ex: columns.remove(ColumnType.COLUMN_STRUCTURE)
     }
 
-    private void refreshData() {        // called in setSimulationContext()
+    public void refreshData() {        // called in setSimulationContext()
         List<MolecularInternalLinkSpec> molecularInternalLinkSpecList = computeData();
         setData(molecularInternalLinkSpecList);
         GuiUtils.flexResizeTableColumns(ownerTable);
