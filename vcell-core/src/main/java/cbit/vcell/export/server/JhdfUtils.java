@@ -10,9 +10,8 @@ import io.jhdf.api.Node;
 import io.jhdf.api.WritableNode;
 import org.vcell.util.trees.Tree;
 import io.jhdf.object.datatype.CompoundDataType;
-
 import java.util.*;
-import java.util.List;
+
 
 public class JhdfUtils {
     public static Object createMultidimensionalArray(long[] dataDimensions, double[] flattenedDataBuffer) {
@@ -177,6 +176,7 @@ public class JhdfUtils {
     public static void putAttribute(WritableNode node, String name, double[] value) {
         node.putAttribute(name, value);
     }
+
 
     public static Map<String, WritableGroup> addGroups(WritableGroup hdf5Group, Tree<String> tree, String ... startingPath){
         Map<String, WritableGroup> pathToGroupMapping = new HashMap<>();
