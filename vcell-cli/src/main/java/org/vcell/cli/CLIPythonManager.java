@@ -155,7 +155,7 @@ public class CLIPythonManager {
         String importantPrefix = ">>> ";
         StringBuilder results = new StringBuilder();
 
-        int currentTime = 0, TIMEOUT_LIMIT = 600000; // 600 seconds (10 minutes)
+        int currentTime = 0, TIMEOUT_LIMIT = 30000; // was 600 seconds (10 minutes), now 30 seconds
 
         // Wait for python to finish what it's working on
         while(!this.pythonISB.ready()){
@@ -165,16 +165,23 @@ public class CLIPythonManager {
         }
 
         // Python's ready (or we had a timeout?); lets get the buffer without going too far and getting blocked (see note 1 at bottom of file)
-        while ( results.length() < importantPrefix.length()
-                || !results.toString().endsWith(importantPrefix)){
+        while (this.pythonISB.ready() && (results.length() < importantPrefix.length()
+                || !results.toString().endsWith(importantPrefix))){
             // we do this unless we've found the prefix we need at the end of the results
             results.append((char) this.pythonISB.read());
         }
 
-        // Got the results we need. Now lets clean the results string up before returning it
-        results = new StringBuilder(CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length())));
 
-        return results.toString().equals("") ? null : results.toString();
+        if (results.toString().contains(importantPrefix)) {
+            // Got the results we need. Now lets clean the results string up before returning it
+            results = new StringBuilder(CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length())));
+        } else {
+            // We may have gotten a warning or something; continue to poll for
+            return this.getResultsOfLastCommand();
+        }
+
+
+        return results.toString().isEmpty() ? null : results.toString();
     }
 
     private void sendNewCommand(String cmd) throws IOException {
