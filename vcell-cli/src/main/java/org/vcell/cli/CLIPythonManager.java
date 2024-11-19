@@ -171,7 +171,11 @@ public class CLIPythonManager {
             results.append((char) this.pythonISB.read());
         }
 
+        if (results.toString().contains("ecure coding is not enabled for restorable state")){
+            this.sendNewCommand("");
+        }
 
+        
         if (results.toString().contains(importantPrefix)) {
             // Got the results we need. Now lets clean the results string up before returning it
             results = new StringBuilder(CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length())));
