@@ -17,7 +17,7 @@ import org.vcell.util.recording.TextFileRecord;
 public class CLIRecorder extends Recorder implements CLIRecordable {
     protected final static boolean DEFAULT_SHOULD_PRINT_LOG_FILES = false, DEFAULT_SHOULD_FLUSH_LOG_FILES = false;
     protected boolean shouldPrintLogFiles, shouldFlushLogFiles;
-    protected TextFileRecord detailedErrorLog, fullSuccessLog, errorLog, detailedResultsLog, spatialLog, importErrorLog;
+    protected TextFileRecord detailedErrorLog, fullSuccessLog, errorLog, detailedResultsLog, detailedSimBreakdown, spatialLog, importErrorLog;
     protected File outputDirectory;
 
     // Note: this constructor is not public
@@ -86,6 +86,7 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
         this.fullSuccessLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "fullSuccessLog.txt").toString());
         this.errorLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "errorLog.txt").toString());
         this.detailedResultsLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedResultLog.txt").toString());
+        this.detailedSimBreakdown = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "detailedSimBreakdown.txt").toString());
         this.spatialLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "hasSpatialLog.txt").toString());
         this.importErrorLog = logManager.requestNewRecord(Paths.get(this.outputDirectory.getAbsolutePath(), "importErrorLog.txt").toString());
         
@@ -150,6 +151,15 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
      */
     public void writeDetailedResultList(String message) throws IOException {
         this.writeToFileLog(this.detailedResultsLog, message);
+    }
+
+    /**
+     * Write to `detailedSimBreakdown.txt`
+     *
+     * @param message string to write to file
+     */
+    public void writeDetailedSimBreakdown(String message) throws IOException {
+        this.writeToFileLog(this.detailedSimBreakdown, message);
     }
 
     

@@ -1,5 +1,6 @@
 package org.vcell.cli.run;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.io.FilenameUtils;
@@ -228,7 +229,6 @@ public class SedmlJob {
         ExternalDocInfo externalDocInfo = new ExternalDocInfo(this.MASTER_OMEX_ARCHIVE, true);
 
         this.runSimulations(solverHandler, externalDocInfo);
-        this.recordRunDetails(solverHandler);
         Span span = null;
         try {
             span = Tracer.startSpan(Span.ContextType.PROCESSING_SIMULATION_OUTPUTS, "processOutputs", null);
@@ -244,7 +244,7 @@ public class SedmlJob {
         return this.evaluateResults();
     }
 
-    private void runSimulations(SolverHandler solverHandler, ExternalDocInfo externalDocInfo) throws IOException {
+    private void runSimulations(SolverHandler solverHandler, ExternalDocInfo externalDocInfo) {
         /*
          * - Run solvers and make reports; all failures/exceptions are being caught
          * - we send both the whole OMEX file and the extracted SEDML file path
@@ -256,10 +256,11 @@ public class SedmlJob {
             String str = "Building solvers and starting simulation of all tasks... ";
             logger.info(str);
             this.logDocumentMessage += str;
-            solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
+            RunResults results = solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
                     this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH,
                     this.ROOT_OUTPUT_DIR.getAbsolutePath(), this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES,
                     this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
+            this.recordRunDetails(solverHandler, results);
         } catch (Exception e) {
             Throwable currentTierOfException = e;
             StringBuilder errorMessage = new StringBuilder();
@@ -277,8 +278,6 @@ public class SedmlJob {
                 span.close();
             }
         }
-
-        this.recordRunDetails(solverHandler);
     }
 
     private void processOutputs(SolverHandler solverHandler, HDF5ExecutionResults masterHdf5File) throws InterruptedException, ExecutionException, PythonStreamException {
@@ -466,17 +465,27 @@ public class SedmlJob {
         PythonCalls.updateSedmlDocStatusYml(this.SEDML_LOCATION, Status.FAILED, this.RESULTS_DIRECTORY_PATH);
     }
 
-    private void recordRunDetails(SolverHandler solverHandler) throws IOException {
-        String message = this.DOC_STATISTICS.getNumModels() + ",";
-        message += this.DOC_STATISTICS.getNumSimulations() + ",";
-        message += this.DOC_STATISTICS.getNumTasks() + ",";
-        message += this.DOC_STATISTICS.getNumOutputs() + ",";
+    private void recordRunDetails(SolverHandler solverHandler, RunResults results) throws IOException {
+        StringBuilder generalMessage = new StringBuilder(this.BIOMODEL_BASE_NAME + ",");
+        generalMessage.append(this.DOC_STATISTICS.getNumModels()).append(",");
+        generalMessage.append(this.DOC_STATISTICS.getNumSimulations()).append(",");
+        generalMessage.append(this.DOC_STATISTICS.getNumTasks()).append(",");
+        generalMessage.append(this.DOC_STATISTICS.getNumOutputs()).append(",");
         
-        message += solverHandler.countBioModels + ",";
-        message += this.hasOverrides + ",";
-        message += this.hasScans + ",";
-        message += solverHandler.countSuccessfulSimulationRuns;
-        this.CLI_RECORDER.writeDetailedResultList(this.BIOMODEL_BASE_NAME + "," + message);
-        logger.debug(message);
+        generalMessage.append(solverHandler.countBioModels).append(",");
+        generalMessage.append(this.hasOverrides).append(",");
+        generalMessage.append(this.hasScans).append(",");
+        generalMessage.append(solverHandler.countSuccessfulSimulationRuns);
+        this.CLI_RECORDER.writeDetailedResultList(generalMessage.toString());
+
+        for (RunResults.IndividualResult result : results.generateRecordsOfResults()){
+            String individualMessage = result.bioModel() + "," +
+                    result.tempSimulation() + "," +
+                    result.duration() + "," +
+                    result.status() + ",";
+            this.CLI_RECORDER.writeDetailedSimBreakdown(individualMessage);
+        }
+
+        logger.debug(generalMessage.toString());
     }
 }

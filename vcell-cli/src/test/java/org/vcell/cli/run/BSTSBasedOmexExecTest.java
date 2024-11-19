@@ -160,6 +160,10 @@ public class BSTSBasedOmexExecTest {
 					System.out.println("writeDetailedResultList(): " + message);
 				}
 				@Override
+				public void writeDetailedSimBreakdown(String message) {
+					System.out.println("writeDetailedSimBreakdown(): " + message);
+				}
+				@Override
 				public void writeSpatialList(String message) {
 					System.out.println("writeSpatialList(): " + message);
 				}

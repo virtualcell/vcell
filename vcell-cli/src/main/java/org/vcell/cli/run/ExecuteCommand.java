@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import java.util.concurrent.Callable;
 import java.util.Date;
 
-@Command(name = "execute", description = "run .vcml or .omex files via Python API")
+@Command(name = "execute", description = "run .vcml or .omex files")
 public class ExecuteCommand implements Callable<Integer> {
 
     private final static Logger logger = org.apache.logging.log4j.LogManager.getLogger(ExecuteCommand.class);
@@ -100,7 +100,7 @@ public class ExecuteCommand implements Callable<Integer> {
                     bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, 
                     EXECUTABLE_MAX_WALLCLOCK_MILLIS, help, bDebug, bQuiet
             );
-            logger.trace(trace_args);
+            logger.debug(trace_args);
 
             logger.debug("Validating CLI arguments");
             if (bDebug && bQuiet) {

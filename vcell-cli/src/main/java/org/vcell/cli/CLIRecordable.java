@@ -5,16 +5,18 @@ import java.io.IOException;
 
 public interface CLIRecordable {
 
-    public void writeDetailedErrorList(String message) throws IOException;
+    void writeDetailedErrorList(String message) throws IOException;
 
-    public void writeFullSuccessList(String message) throws IOException;
+    void writeFullSuccessList(String message) throws IOException;
 
-    public void writeErrorList(String message) throws IOException;
+    void writeErrorList(String message) throws IOException;
 
-    public void writeDetailedResultList(String message) throws IOException;
+    void writeDetailedResultList(String message) throws IOException;
+
+    void writeDetailedSimBreakdown(String message) throws IOException;
 
     // we make a list with the omex files that contain (some) spatial simulations (FVSolverStandalone solver)
-    public void writeSpatialList(String message) throws IOException;
+    void writeSpatialList(String message) throws IOException;
 
-    public void writeImportErrorList(String message) throws IOException;
+    void writeImportErrorList(String message) throws IOException;
 }
