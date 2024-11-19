@@ -53,8 +53,7 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
-// we should use WindowBuilder Plugin (add it to Eclipse IDE) to speed up panel design
-// can choose absolute layout and place everything exactly as we see fit
+
 @SuppressWarnings("serial")
 public class MolecularStructuresPanel extends DocumentEditorSubPanel implements ApplicationSpecificationsPanel.Specifier {
 
@@ -74,18 +73,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private EditorScrollTable linkSpecsTable = null;
 	private LinkSpecsTableModel linkSpecsTableModel = null;
 
-	
-//	private JComboBox<String> siteColorComboBox = null;
-//	private JTextField siteXField = null;
-//	private JTextField siteYField = null;
-//	private JTextField siteZField = null;
-	
-//	private JTextField linkLengthField = null;
 	private JButton addLinkButton = null;
 	private JButton deleteLinkButton = null;
 	//
 	// TODO: make it possible to use right click menu to delete links
 	//
+
+	// keep the code below, just in case we need to override a ListCellRenderer
 //	private JList<MolecularInternalLinkSpec> siteLinksList = null;
 //	private DefaultListModel<MolecularInternalLinkSpec> siteLinksListModel = new DefaultListModel<>();
 //	private ListCellRenderer<Object> siteLinksCellRenderer = new DefaultListCellRenderer(){
@@ -102,7 +96,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 //		}
 //	};
 
-	// TODO: this is for popup menus in the table (instantiated in getMolecularTypeSpecsTable() - uncomment there too)
+	// TODO: keep this code
+	//  this is for popup menus in the table (instantiated in getMolecularTypeSpecsTable() - uncomment there too)
 //	private class InternalScrollTableActionManager extends DefaultScrollTableActionManager {
 //		InternalScrollTableActionManager(JTable table) {
 //			super(table);
@@ -126,38 +121,24 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-//			if (source == siteXField || source == siteYField || source == siteZField) {
-//				changePosition((JTextField)source);
-//			} else
 			if(source == addLinkButton) {
 				addLinkActionPerformed();
-				refreshSiteLinksList();		// TODO: table stuff instead of this
+				refreshSiteLinksList();
 			} else if(source == deleteLinkButton) {
 				deleteLinkActionPerformed();
 				refreshSiteLinksList();
-//			} else if(source == getSiteColorComboBox()) {
-//				updateSiteColor();
 			}
 		}
 		public void focusGained(FocusEvent e) {
 			;
 		}
 		public void focusLost(FocusEvent e) {
-			Object source = e.getSource();
-//			if (source == siteXField || source == siteYField || source == siteZField) {
-//				// TODO: are these even needed? we already call changePosition() on actionPerformed()
-//				changePosition((JTextField)source);
-//			} else
-//			if(source == linkLengthField) {
-//				// TODO: do NOT call here changeLinkLength(), it will modified the newly selected link instead the old one
-//				// changeLinkLength();
-//			}
+			;
 		}
 		public void propertyChange(java.beans.PropertyChangeEvent e) {
 			if(e.getSource() instanceof Model && e.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				updateInterface();
 			}
-			// TODO: I think this is not needed
 //			if (e.getSource() == selectionManager) {
 //				System.out.println(e.getPropertyName());
 //				if (e.getPropertyName().equals(SelectionManager.PROPERTY_NAME_SELECTED_OBJECTS)) {
@@ -193,12 +174,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				int row = getLinkSpecsTable().getSelectedRow();
 				MolecularInternalLinkSpec milsSelected = linkSpecsTableModel.getValueAt(row);
 				setMolecularInternalLinkSpec(milsSelected);
-
-//			} else if(e.getSource() == siteLinksList) {
-//				System.out.println("valueChanged: siteLinksList");
-//				showLinkLength(siteLinksList.getSelectedValue());
 			}
-			// for siteXField, siteYField, siteZField we have actionPerformed()
 		}
 	}
 
@@ -218,23 +194,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void initConnections() throws java.lang.Exception {		// listeners here!
-//		siteXField.addFocusListener(eventHandler);
-//		siteYField.addFocusListener(eventHandler);
-//		siteZField.addFocusListener(eventHandler);
-//		linkLengthField.addFocusListener(eventHandler);
-//		siteXField.addActionListener(eventHandler);
-//		siteYField.addActionListener(eventHandler);
-//		siteZField.addActionListener(eventHandler);
-		
-//		siteLinksList.addListSelectionListener(eventHandler);
-//		siteLinksList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//		linkLengthField.addActionListener(eventHandler);
-
 		addLinkButton.addActionListener(eventHandler);
 		deleteLinkButton.addActionListener(eventHandler);
-		
-//		getSiteColorComboBox().addActionListener(eventHandler);
-		
+
 		ListSelectionModel lsm = getSpeciesContextSpecsTable().getSelectionModel();
 		if(lsm instanceof DefaultListSelectionModel) {
 			DefaultListSelectionModel dlsm = (DefaultListSelectionModel)lsm;
@@ -257,19 +219,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	
 	private void initialize() {
 		try {
-		// labels / button / combos / lists initialization
-//			siteXField = new JTextField();
-//			siteYField = new JTextField();
-//			siteZField = new JTextField();
-//			siteLinksList = new JList<MolecularInternalLinkSpec>(siteLinksListModel);
-//			siteLinksList.setCellRenderer(siteLinksCellRenderer);
-//			linkLengthField = new JTextField("");
 			addLinkButton = new JButton("Add Link");
 			deleteLinkButton = new JButton("Delete Link");
-//			siteXField.setEditable(false);
-//			siteYField.setEditable(false);
-//			siteZField.setEditable(false);
-//			linkLengthField.setEditable(false);
+
+			addLinkButton.setEnabled(true);
 			deleteLinkButton.setEnabled(false);
 		
 		// ------------------------------------------- The 2 group boxes --------------------------
@@ -596,71 +549,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		getMolecularTypeSpecsTable().setDefaultRenderer(Expression.class, expressionTableCellRenderer);	// Expression field cell renderer
 		getMolecularTypeSpecsTable().setDefaultRenderer(NamedColor.class, namedColorTableCellRenderer);	// NamedColor combobox cell renderer
 
-
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 0;
-//		gbc.gridy = 5;
-//		gbc.anchor = GridBagConstraints.SOUTH;
-//		gbc.insets = new Insets(2, 2, 2, 2);
-//		sitesPanel.add(new JLabel(" X (nm) "), gbc);
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 1;
-//		gbc.gridy = 5;
-//		gbc.weightx = 1.0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.SOUTH;
-//		gbc.insets = new Insets(2, 2, 2, 2);
-//		sitesPanel.add(siteXField, gbc);		//
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 2;
-//		gbc.gridy = 5;
-//		gbc.anchor = GridBagConstraints.SOUTH;
-//		gbc.insets = new Insets(2, 2, 2, 2);
-//		sitesPanel.add(new JLabel(" Y (nm) "), gbc);
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 3;
-//		gbc.gridy = 5;
-//		gbc.weightx = 1.0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.SOUTH;
-//		gbc.insets = new Insets(2, 2, 2, 2);
-//		sitesPanel.add(siteYField, gbc);
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 4;
-//		gbc.gridy = 5;
-//		gbc.anchor = GridBagConstraints.SOUTH;
-//		gbc.insets = new Insets(2, 2, 2, 2);
-//		sitesPanel.add(new JLabel(" Z (nm) "), gbc);
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 5;
-//		gbc.gridy = 5;
-//		gbc.weightx = 1.0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.SOUTH;
-//		gbc.insets = new Insets(2, 2, 2, 2);
-//		sitesPanel.add(siteZField, gbc);
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 6;
-//		gbc.gridy = 5;
-//		gbc.anchor = GridBagConstraints.SOUTH;
-//		gbc.insets = new Insets(2, 2, 2, 2);
-//		sitesPanel.add(new JLabel(" Color "), gbc);
-
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 7;
-//		gbc.gridy = 5;
-//		gbc.weightx = 1.0;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.anchor = GridBagConstraints.SOUTH;
-//		gbc.insets = new Insets(2, 2, 2, 2);
-//		sitesPanel.add(getSiteColorComboBox(), gbc);
-
 //		// --- links -----------------------------------------------
 		linksPanel.setLayout(new GridBagLayout());
 		JScrollPane linksScrollPane = new JScrollPane(getLinkSpecsTable());
@@ -698,23 +586,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			};
 			getLinkSpecsTable().setDefaultRenderer(MolecularInternalLinkSpec.class, linkSpecsTableCellRenderer);	// MolecularInternalLinkSpec field cell renderer
 			getLinkSpecsTable().setDefaultRenderer(Expression.class, expressionTableCellRenderer);	// Expression field cell renderer
-
-
-//		gbc = new GridBagConstraints();		// ----------------------
-//		gbc.gridx = 0;
-//		gbc.gridy = 1;
-//		gbc.anchor = GridBagConstraints.EAST;
-//		gbc.insets = new Insets(5, 2, 2, 3);
-//		linksPanel.add(new JLabel("Length (nm): "), gbc);
-//
-//		gbc = new GridBagConstraints();
-//		gbc.gridx = 1;
-//		gbc.gridy = 1;
-//		gbc.weightx = 1.0;
-//		gbc.gridwidth = 2;
-//		gbc.fill = GridBagConstraints.HORIZONTAL;
-//		gbc.insets = new Insets(5, 2, 2, 3);	//  top, left, bottom, right
-//		linksPanel.add(linkLengthField, gbc);
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -784,35 +655,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		return speciesContextSpecsTable;
 	}
 	
-	// siteColorComboBox
-//	private JComboBox<String> getSiteColorComboBox() {
-//		if (siteColorComboBox == null) {
-//			siteColorComboBox = new JComboBox<String>();
-//			siteColorComboBox.setName("JComboBox1");
-//
-//			DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
-//			for(NamedColor namedColor : Colors.COLORARRAY) {
-//				model.addElement(namedColor.getName());
-//			}
-//			siteColorComboBox.setModel(model);
-////			siteColorComboBox.setRenderer(new DefaultListCellRenderer() {
-//// see ReactionRuleKineticsPropertiesPanel.getKineticsTypeComboBox() for complex renderer
-////			});
-//		}
-//		return siteColorComboBox;
-//	}
-//	private void updateSiteColor() {
-//		String colorName = (String)getSiteColorComboBox().getSelectedItem();
-//		if(colorName == null) {
-//			return;
-//		}
-//		NamedColor namedColor = Colors.getColorByName(colorName);
-//		SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
-//		if(namedColor != null && namedColor != sas.getColor()) {
-//			sas.setColor(namedColor);
-//		}
-//	}
-
 	private void handleException(Throwable exception) {
 		System.out.println("--------- UNCAUGHT EXCEPTION --------- in cbit.vcell.mapping.InitialConditionPanel");
 		exception.printStackTrace(System.out);
@@ -886,8 +728,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		boolean bNonNullSpeciesContextSpec = fieldSpeciesContextSpec != null && fieldSimulationContext != null;
 		boolean bNonNullSpeciesPattern = bNonNullSpeciesContextSpec && fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern() != null;
 		boolean bNonNullMolecularTypePattern = bNonNullSpeciesPattern && fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern().getMolecularTypePatterns().get(0) != null;
-		boolean bNonNullMolecularComponentPattern = bNonNullMolecularTypePattern && fieldMolecularComponentPattern != null;
-//		boolean bNonNullMolecularInternalLinkSpec = bNonNullMolecularTypePattern && fieldMolecularInternalLinkSpec != null;
 
 		MolecularTypePattern mtp = null;
 		if(bNonNullMolecularTypePattern) {
@@ -896,58 +736,22 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		
 		if(bNonNullMolecularTypePattern && mtp.getComponentPatternList().size() > 1) {		// a link requires 2 sites (components)
 			addLinkButton.setEnabled(true);
-//			refreshSiteLinksList();
 		} else {
-//			linkLengthField.setEditable(false);
-//			linkLengthField.setText(null);
 			addLinkButton.setEnabled(false);
-//			refreshSiteLinksList();
 		}
 		if(linkSpecsTableModel.getRowCount() > 0 && fieldMolecularInternalLinkSpec != null) {	// there are links we can delete
 			deleteLinkButton.setEnabled(true);
 		} else {
 			deleteLinkButton.setEnabled(false);
 		}
-//		if(!siteLinksListModel.isEmpty() && siteLinksList.getSelectedValue() != null) {	// there are links we can delete
-//			deleteLinkButton.setEnabled(true);
-//		} else {
-//			deleteLinkButton.setEnabled(false);
-//		}
-
-		if(bNonNullMolecularComponentPattern) {
-			SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
-//			siteXField.setEditable(true);
-//			siteYField.setEditable(true);
-//			siteZField.setEditable(true);
-//			siteXField.setText(sas.getCoordinate().getX()+"");
-//			siteYField.setText(sas.getCoordinate().getY()+"");
-//			siteZField.setText(sas.getCoordinate().getZ()+"");
-//			getSiteColorComboBox().setSelectedItem(sas.getColor().getName());
-		} else {
-//			siteXField.setEditable(false);
-//			siteYField.setEditable(false);
-//			siteZField.setEditable(false);
-//			siteXField.setText(null);
-//			siteYField.setText(null);
-//			siteZField.setText(null);
-//			getSiteColorComboBox().setSelectedItem(null);
-		}
 	}
 
 	/*
-	 * Here we refresh the links table when we
+	 * Here we refresh the links table when we add or delete a link
 	 */
 	private void refreshSiteLinksList() {
 		System.out.println("refreshSiteLinksList");
 		linkSpecsTableModel.refreshData();
-
-//		siteLinksListModel.removeAllElements();
-//		if(fieldSpeciesContextSpec != null) {
-//			for (MolecularInternalLinkSpec mils : fieldSpeciesContextSpec.getInternalLinkSet()){
-//				siteLinksListModel.addElement(mils);
-//
-//			}
-//		}
 	}
 
 	@Override
@@ -955,10 +759,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		setTableSelections(selectedObjects, speciesContextSpecsTable, speciesContextSpecsTableModel);
 	}
 
-	/*
-	 * TODO: commit changes to current (old) SpeciesContextStep 
-	 * before the newly selected SpeciesContextStep becomes current
-	 */
 	private void changeSpeciesContextSpec() {
 		;
 	}
@@ -977,16 +777,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		} catch(NumberFormatException e) {
 			return;
 		}
-
-//		if(siteXField == source && c.getX() != res) {
-//			c = new Coordinate(res, c.getY(), c.getZ());
-//		} else if(siteYField == source && c.getY() != res) {
-//			c = new Coordinate(c.getX(), res, c.getZ());
-//		} else if(siteZField == source && c.getZ() != res) {
-//			c = new Coordinate(c.getX(), c.getY(), res);
-//		}
-//		sas.setCoordinate(c);
-		
 		recalculateLinkLengths();
 	}
 	private void changeLinkLength() {
@@ -1042,19 +832,5 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		}
 		return;
 	}
-
-//	private void showLinkLength(MolecularInternalLinkSpec selectedValue) {
-//		if(selectedValue == null) {
-//			System.out.println("showLinkLength: SelectedValue is null");
-//			deleteLinkButton.setEnabled(false);
-//			linkLengthField.setEditable(false);
-//			linkLengthField.setText(null);
-//			return;		// nothing selected
-//		}
-//		System.out.println("showLinkLength(): Selected row is '" + siteLinksList.getSelectedIndex() + "'");
-//		deleteLinkButton.setEnabled(true);
-//		linkLengthField.setEditable(false);		// make it editable here, for now it's a derived value only
-//		linkLengthField.setText(selectedValue.getLinkLength()+"");
-//	};
 
 }
