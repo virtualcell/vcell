@@ -190,6 +190,11 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	public void setValueAt(Object aValue, int row, int col) {
 		MolecularComponentPattern mcp = getValueAt(row);
 		ColumnType columnType = columns.get(col);
+		SpeciesContextSpec scs = getSpeciesContextSpec();
+		if(scs == null) {
+			return;
+		}
+		SiteAttributesSpec sas = scs.getSiteAttributesMap().get(mcp);
 		switch (columnType) {
 		case COLUMN_SITE:
 		case COLUMN_MOLECULE:
@@ -197,26 +202,19 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			return;
 		case COLUMN_STRUCTURE:
 			if(aValue instanceof Structure) {
-				if(getSpeciesContextSpec() == null) {
-					return;
-				}
 				Structure structure = (Structure)aValue;
-				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, structure);
+					sas = new SiteAttributesSpec(scs, mcp, structure);
 				} else {
 					sas.setLocation(structure);
 				}
+				scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 			}
 			return;
 		case COLUMN_X:
-			if(getSpeciesContextSpec() == null) {
-				return;
-			}
 			if (aValue instanceof String) {
-				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
 				String newExpressionString = (String)aValue;
 				double res = 0.0;
@@ -229,17 +227,15 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				if(c.getX() != res) {
 					c = new Coordinate(res, c.getY(), c.getZ());
 					sas.setCoordinate(c);
+					scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 				}
 			}
 			return;
 		case COLUMN_Y:
-			if(getSpeciesContextSpec() == null) {
-				return;
-			}
 			if (aValue instanceof String) {
-				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+					// TODO: is this necessary?
+					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
 				String newExpressionString = (String)aValue;
 				double res = 0.0;
@@ -252,17 +248,14 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				if(c.getX() != res) {
 					c = new Coordinate(c.getX(), res, c.getZ());
 					sas.setCoordinate(c);
+					scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 				}
 			}
 			return;
 		case COLUMN_Z:
 			if (aValue instanceof String) {
-				if(getSpeciesContextSpec() == null) {
-					return;
-				}
-				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
 				String newExpressionString = (String)aValue;
 				double res = 0.0;
@@ -275,6 +268,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				if(c.getX() != res) {
 					c = new Coordinate(c.getX(), c.getY(), res);
 					sas.setCoordinate(c);
+					// updates the Length in the links table (LinkSpecsTableModel)
+					scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 				}
 			}
 			return;
@@ -282,32 +277,32 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			if (aValue instanceof String) {
 				String newExpressionString = (String)aValue;
 				double result = Double.parseDouble(newExpressionString);
-				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
 				sas.setRadius(result);
+				scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 			}
 			return;
 		case COLUMN_DIFFUSION:
 			if (aValue instanceof String) {
 				String newExpressionString = (String)aValue;
 				double result = Double.parseDouble(newExpressionString);
-				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
 				sas.setDiffusionRate(result);
+				scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 				return;
 			}
 		case COLUMN_COLOR:
 			if (aValue instanceof NamedColor) {
 				NamedColor namedColor = (NamedColor)aValue;
-				SiteAttributesSpec sas = getSpeciesContextSpec().getSiteAttributesMap().get(mcp);
 				if(sas == null) {
-					sas = new SiteAttributesSpec(fieldSpeciesContextSpec, mcp, getSpeciesContextSpec().getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
 				sas.setColor(namedColor);
+				scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 				return;
 			}
 		default:

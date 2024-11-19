@@ -17,7 +17,7 @@ import java.util.*;
 public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLinkSpec> implements java.beans.PropertyChangeListener {
 
     public enum ColumnType {
-        COLUMN_LINK("Link"),
+        COLUMN_LINK("      Link between sites     "),
         COLUMN_LENGTH("Length");
 
         public final String label;
@@ -34,11 +34,6 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
         super(table);
         refreshColumns();
     }
-
-
-
-
-
 
     @Override
     public Class<?> getColumnClass(int column) {
@@ -251,7 +246,11 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
         }
 
         if (evt.getSource() instanceof SpeciesContextSpec) {
-            fireTableRowsUpdated(0,getRowCount()-1);
+            if(evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE)) {
+                refreshData();
+            } else {
+                fireTableRowsUpdated(0, getRowCount() - 1);
+            }
         }
         if (evt.getSource() instanceof SpeciesContextSpec.SpeciesContextSpecParameter) {    // prolly not needed
             fireTableRowsUpdated(0,getRowCount()-1);

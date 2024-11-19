@@ -70,6 +70,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
     private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
     private static final String PROPERTY_NAME_FORCECONTINUOUS = "forceContinuous";
+    public static final String PROPERTY_NAME_SITE_ATTRIBUTE = "SiteAttributes";
     private static final int INITIAL_YZ_SITE_OFFSET = 4;
 
     public static final boolean TrackClusters = true;            // SpringSaLaD specific

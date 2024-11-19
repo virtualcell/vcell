@@ -24,6 +24,8 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 
@@ -40,7 +42,9 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     private JButton zoomSmallerButton = null;
 
 
-    private class EventHandler implements ActionListener {
+    private class EventHandler implements ActionListener, PropertyChangeListener {
+
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
             if (e.getSource() == getZoomLargerButton()) {
                 System.out.println("Zoom to larger (Zoom In)");
@@ -53,6 +57,13 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                 boolean ret = shapePanel.zoomSmaller();
                 getZoomLargerButton().setEnabled(true);
                 getZoomSmallerButton().setEnabled(ret);
+                updateShape();
+            }
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE)) {
                 updateShape();
             }
         }
@@ -208,10 +219,15 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     }
 
     public void setSpeciesContextSpec(SpeciesContextSpec scSpec) {
+        SpeciesContextSpec oldValue = this.speciesContextSpec;
+        if(oldValue != null) {
+            oldValue.removePropertyChangeListener(eventHandler);
+        }
         if(scSpec == null) {
             this.speciesContextSpec = null;
         } else {
             this.speciesContextSpec = scSpec;
+            scSpec.addPropertyChangeListener(eventHandler);
         }
 //        getSpeciesContextSpecParameterTableModel().setSpeciesContextSpec(scSpec);
         updateInterface();
