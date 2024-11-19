@@ -202,8 +202,7 @@ def get_report_dataframes(all_report_dataref, result_out_dir):
     report_frames = {}
     reports_list = list(set(all_report_dataref.keys()))
     for report in reports_list:
-        report_frames[report] = pd.read_csv(os.path.join(
-            result_out_dir, report + ".csv")).T.reset_index()
+        report_frames[report] = pd.read_csv(str(os.path.join(result_out_dir, report + ".csv"))).T.reset_index()
         report_frames[report].columns = report_frames[report].iloc[0].values
         report_frames[report].drop(index=0, inplace=True)
     return report_frames
@@ -302,7 +301,8 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
         for curve in sed_plot_2d.curves:
             all_curves[curve.id] = {
                 'x': curve.x_data_generator,
-                'y': curve.y_data_generator
+                'y': curve.y_data_generator,
+                'name': curve.name
             }
         all_plot_curves[sed_plot_2d.id] = all_curves
 
@@ -325,23 +325,35 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
         labels = []
         for key in labelMap:
             if len(labelMap[key]) == 1:
-                labelMap[key][0] = key      # If there wasn't repreated tasks, restore the old name
+                labelMap[key][0] = key      # If there wasn't repeated tasks, restore the old name
             for elem in labelMap[key]:
                 labels.append(elem)
 
         # format data frame
-        df.columns = labels 
-        df.drop(0, inplace=True)
-        df.drop(1, inplace=True)
-        df.drop(2, inplace=True)
+        df.columns = labels
+        labels_df = df.copy()
+
+        df.drop(df.index[:3], inplace=True)
+        labels_df.drop(labels_df.index[:2], inplace=True)
+        labels_df.drop(labels_df.index[1:], inplace=True)
+
         df.reset_index(inplace=True)
         df.drop('index', axis=1, inplace=True)
 
         for curve_id, data in curve_dat_dict.items(): # data <--> (dict)all_curves.values()
             shouldLabel = True
-            for series_name in labelMap[data['y'].id]:
-                sns.lineplot(data=df, x=data['x'].id, y=series_name, ax=ax, label=(curve_id if shouldLabel else None))
+            x_axis_id = data['x'].id
+            y_axis_id = data['y'].id
+            x_data_sets = labelMap[x_axis_id]
+            y_data_sets = labelMap[y_axis_id]
+
+            for i in range(len(y_data_sets)):
+                series_name = y_data_sets[i]
+                x_data_set = x_data_sets[0] if len(x_data_sets) == 1 else x_data_sets[i]
+                label_name = data['name'] if data['name'] is not None else curve_id
+                sns.lineplot(data=df, x=x_data_set, y=series_name, ax=ax, label=(label_name if shouldLabel else None))
                 ax.set_ylabel('')
+                ax.set_xlabel(labels_df.at[labels_df.index[0], x_data_set])
                 shouldLabel = False
             plt.savefig(os.path.join(result_out_dir, plot_id + '.pdf'), dpi=300)
 
