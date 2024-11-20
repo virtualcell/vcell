@@ -35,6 +35,7 @@ public class CLIPythonManager {
     private static final String PYTHON_EXE_NAME = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
 
     private static CLIPythonManager instance = null;
+    private static final int DEFAULT_TIMEOUT = 5000; // was 600 seconds (10 minutes), now 5 seconds
 
     private static final boolean USE_SHARED_SHELL = true;
 
@@ -166,7 +167,7 @@ public class CLIPythonManager {
 
         // "construction" commands
         try {
-            this.getResultsOfLastCommand(); // Clear Buffer of Python Interpreter
+            this.getResultsOfLastCommand(15000); // Clear Buffer of Python Interpreter
             this.executeThroughPython();
             lg.info("Python initialization success!");
         } catch (IOException | TimeoutException | InterruptedException e){
@@ -175,26 +176,31 @@ public class CLIPythonManager {
         }
     }
 
+
     // Needs properly formatted python command
     private String callPython(String command) throws PythonStreamException, TimeoutException {
         try {
             this.instantiatePythonProcess(); // Make sure we have a python instance; will not override already done
             this.sendNewCommand(command);
-            return this.getResultsOfLastCommand();
+            return this.getResultsOfLastCommand(CLIPythonManager.DEFAULT_TIMEOUT);
         } catch (IOException | InterruptedException e){
             throw new PythonStreamException("Python process encountered an exception:\n" + e.getMessage(), e);
         }
     }
 
     private String getResultsOfLastCommand() throws IOException, TimeoutException, InterruptedException {
+        return this.getResultsOfLastCommand(CLIPythonManager.DEFAULT_TIMEOUT);
+    }
+
+    private String getResultsOfLastCommand(int msTimeout) throws IOException, TimeoutException, InterruptedException {
         String importantPrefix = ">>> ";
         StringBuilder results = new StringBuilder();
 
-        int currentTime = 0, TIMEOUT_LIMIT = 5000; // was 600 seconds (10 minutes), now 5 seconds
+        int currentTime = 0;
 
         // Wait for python to finish what it's working on
         while(!this.pythonISB.ready()){
-            if (currentTime++ >= TIMEOUT_LIMIT) throw new TimeoutException();
+            if (currentTime++ >= msTimeout) throw new TimeoutException();
             Thread.sleep(1); // wait ~1ms at a time
             //TODO: Rewrite this class to work asynchronously, and get rid of this busy wait
         }
