@@ -1,10 +1,8 @@
-package org.vcell.cli.trace;
+package org.vcell.trace;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Optional;
 
 
 public class TracerTest {

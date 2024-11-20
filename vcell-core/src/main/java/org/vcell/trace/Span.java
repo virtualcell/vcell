@@ -1,4 +1,4 @@
-package org.vcell.cli.trace;
+package org.vcell.trace;
 
 import java.util.HashMap;
 import java.util.Map;

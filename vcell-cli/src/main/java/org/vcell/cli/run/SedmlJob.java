@@ -13,8 +13,8 @@ import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
 import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.cli.run.hdf5.Hdf5DataExtractor;
-import org.vcell.cli.trace.Span;
-import org.vcell.cli.trace.Tracer;
+import org.vcell.trace.Span;
+import org.vcell.trace.Tracer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 

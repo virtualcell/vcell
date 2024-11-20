@@ -1,4 +1,4 @@
-package org.vcell.cli.trace;
+package org.vcell.trace;
 
 public class TraceEvent {
     public enum EventType {
