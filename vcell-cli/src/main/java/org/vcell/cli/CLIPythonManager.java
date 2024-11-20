@@ -36,6 +36,8 @@ public class CLIPythonManager {
 
     private static CLIPythonManager instance = null;
 
+    private static final boolean USE_SHARED_SHELL = true;
+
     private Process pythonProcess; 			// hold python interpreter instance used in updateXxx...() methods
     private OutputStreamWriter pythonOSW; 	// input channel *to* python interpreter (see above)
     private BufferedReader pythonISB; 		// output channel ("Input Stream Buffer") *from* python interpreter (see above)
@@ -61,26 +63,30 @@ public class CLIPythonManager {
      * @throws PythonStreamException if there is any exception encountered in this exchange.
      */
     public String callPython(String functionName, String... arguments) throws PythonStreamException {
-        return this.callPython(this.formatPythonFunctionCall(functionName, arguments));
+        String command = this.formatPythonFunctionCall(functionName, arguments);
+        if (CLIPythonManager.USE_SHARED_SHELL) return this.callPython(command);
+        try {
+            return CLIPythonManager.callNonSharedPython(command);
+        } catch (Exception e){
+            lg.error("Error calling python: " + e.getMessage());
+            String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
+            throw new PythonStreamException(errorPrefix, e);
+        }
     }
 
     /**
      * 
      * @param cliCommand the command to run
-     * @param sedmlPath path to the sedml file
-     * @param resultOutDir where to put the results
      * @throws InterruptedException if the python process was interrupted
      * @throws IOException if there was a system IO failure
      */
-    @Deprecated
-    public static void callNonSharedPython(String cliCommand, String sedmlPath, String resultOutDir)
+    public static String callNonSharedPython(String cliCommand)
             throws InterruptedException, IOException, PythonStreamException {
-        if (lg.isWarnEnabled()) lg.warn("Using old style python invocation!");
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
-        ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-m", "vcell_cli_utils.cli",
-                cliCommand, sedmlPath, resultOutDir);
+        String commandString = "from vcell_cli_utils import wrapper; " + cliCommand;
+        ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-c", commandString);
         pb.directory(cliWorkingDir.toFile());
-        CLIPythonManager.runAndPrintProcessStreams(pb, "","");
+        return CLIPythonManager.runAndPrintProcessStreams(pb, "","");
     }
 
     /**
@@ -114,6 +120,10 @@ public class CLIPythonManager {
     public void instantiatePythonProcess() throws IOException, PythonStreamException {
         if (this.pythonProcess != null) return; // prevent override
         lg.info("Initializing Python...");
+        if (!USE_SHARED_SHELL) {
+            lg.warn("Not using shared shell, canceling initialization; python will be slower!!");
+            return;
+        }
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
         // install virtual environment
@@ -175,7 +185,7 @@ public class CLIPythonManager {
             this.sendNewCommand("");
         }
 
-        
+
         if (results.toString().contains(importantPrefix)) {
             // Got the results we need. Now lets clean the results string up before returning it
             results = new StringBuilder(CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length())));
@@ -241,7 +251,7 @@ public class CLIPythonManager {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString)
+    public static String runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString)
             throws InterruptedException, IOException, PythonStreamException {
         // Process printing code goes here
         File of = File.createTempFile("temp-", ".out", CURRENT_WORKING_DIR.toFile());
@@ -265,9 +275,10 @@ public class CLIPythonManager {
             // don't print here, send the error down to caller who is responsible for dealing with it
             throw new PythonStreamException(es);
         } else {
-            if (!outString.equals("")) lg.info(outString);
-            if (!os.equals("")) lg.info(os);
+            if (!outString.isEmpty()) lg.info(outString);
+            if (!os.isEmpty()) lg.info(os);
         }
+        return os;
     }
 
     public void parsePythonReturn(String returnedString) throws PythonStreamException {
