@@ -59,6 +59,7 @@ import cbit.vcell.units.VCUnitDefinition;
 import net.sourceforge.interval.ia_math.RealInterval;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
+import org.vcell.util.springsalad.GraphContinuity;
 
 @SuppressWarnings("serial")
 public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Serializable, SimulationContextEntity, IssueSource,
@@ -69,6 +70,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
     private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
     private static final String PROPERTY_NAME_FORCECONTINUOUS = "forceContinuous";
+    public static final String PROPERTY_NAME_SITE_ATTRIBUTE = "SiteAttributes";
+    private static final int INITIAL_YZ_SITE_OFFSET = 4;
 
     public static final boolean TrackClusters = true;            // SpringSaLaD specific
     public static final boolean InitialLocationRandom = true;
@@ -456,6 +459,23 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     // TODO: add getIs2DSQL() and readIs2DSQL(), similar to getSiteAttributesSQL(), readSiteAttributesSQL
     private boolean is2D = false;
 
+    // We implement Provenance as a means to use different PropertiesPanels when viewing SpeciesContextSpec properties
+    // we want the general SCS panel for non-springsalad applications, and 2 special panels for
+    // initial conditions - simplified initial conditions panel without the parameters table which make no sense for springsalad
+    // site specifications properties panel = for springsalad site attributes (will contain the viewer)
+    public transient Provenance provenance = Provenance.GeneralInitialConditions;
+    public enum Provenance {		// SpringSaLaD specific
+        GeneralInitialConditions,
+        LangevinInitialConditions,
+        LangevinSpecs;
+//
+//        final public String columnName;
+//        private SpringStructureEnum(String columnName) {
+//            this.columnName = columnName;
+//        }
+    }
+
+
     protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
     private SpeciesContextSpecParameter[] fieldParameters = null;
     private SpeciesContextSpecProxyParameter[] fieldProxyParameters = new SpeciesContextSpecProxyParameter[0];
@@ -754,24 +774,62 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             oldMcpSet.clear();
 
             // step 3.4: we add any new instance of authoritative mcp not there yet, and we initialize with default sas
-            int componentCount = 0;
-            for (MolecularComponent mc : componentList) {
+            boolean isMmembraneMolecule = false;
+            boolean hasAnchor = false;
+            int anchorIndex = 0;
+            if(getSpeciesContext().getStructure().getName().equals(Structure.SpringStructureEnum.Membrane.columnName)) {
+                isMmembraneMolecule = true;
+                // in a membrane molecule, we arrange Sites left to the anchor as located in Extracellular,
+                // the Anchor site is on the Membrane,
+                // the sites right to the anchor are to be initialized as located in Intracellular
+                for (int count = 0; count<componentList.size(); count++) {
+                    MolecularComponent mc = componentList.get(count);
+                    if(mc.getName().equals(SpeciesContextSpec.AnchorSiteString)) {
+                        hasAnchor = true;
+                        anchorIndex = count;
+                    }
+                }
+                if(isMmembraneMolecule != true || hasAnchor != true) {
+                    // useful just for debugging
+                    System.out.println("membrane molecule must have an anchor.");
+                }
+            }
+            for (int componentCount=0; componentCount < componentList.size(); componentCount++) {
+                MolecularComponent mc = componentList.get(componentCount);
                 MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
                 if (siteAttributesMap.containsKey(mcp)) {
                     continue;       // exists, already dealt with
                 }
-                SiteAttributesSpec sas = siteAttributesMap.get(mcp);
-                if (sas == null || sas.getMolecularComponentPattern() == null) {
-                    sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
-                    if(initialPass == true) {
-                        Coordinate coordinate = new Coordinate(0, 0, (componentCount+1)*4);
-                        sas.setCoordinate(coordinate);
-                        NamedColor nextColor = Colors.COLORARRAY[componentCount];
-                        sas.setColor(nextColor);
+                SiteAttributesSpec sas;     // we have no sas for this mcp in the siteAttributesMap, so we make one
+                if(hasAnchor) {
+                    if(componentCount < anchorIndex) {          // Extracellular
+                        Structure struct = getSimulationContext().getModel().getStructure(Structure.SpringStructureEnum.Extracellular.columnName);
+                        sas = new SiteAttributesSpec(this, mcp, struct);
+                    } else if(componentCount > anchorIndex) {   // Intracellular
+                        Structure struct = getSimulationContext().getModel().getStructure(Structure.SpringStructureEnum.Intracellular.columnName);
+                        sas = new SiteAttributesSpec(this, mcp, struct);
+                    } else {    // Anchor, the only site located on the Membrane
+                        Structure struct = getSimulationContext().getModel().getStructure(Structure.SpringStructureEnum.Membrane.columnName);
+                        sas = new SiteAttributesSpec(this, mcp, struct);
                     }
-                    siteAttributesMap.put(mcp, sas);
+                } else {
+                    sas = new SiteAttributesSpec(this, mcp, getSpeciesContext().getStructure());
                 }
-                componentCount++;
+                if(initialPass == true) {
+                    Coordinate coordinate = new Coordinate(0, INITIAL_YZ_SITE_OFFSET, INITIAL_YZ_SITE_OFFSET + (componentCount * 4));
+                    sas.setCoordinate(coordinate);
+                    NamedColor nextColor;
+                    if(componentCount == anchorIndex) {
+                        nextColor = Colors.DARKGRAY;
+                    } else {
+                        nextColor = Colors.COLORARRAY[componentCount];
+                    }
+                    sas.setColor(nextColor);
+                } else {    // if this is a new site added to an existing molecule, the existing sites already have
+                    ;       // attributes (like coordinates, diffusion rates, colors) and links.
+                            // We cannot guess how the user will want to deal with the new site.
+                }
+                siteAttributesMap.put(mcp, sas);
             }
             // at this point the siteAttributesMap should be fully reconstructed
 
@@ -1242,11 +1300,25 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         return;
                     }
                 }
-                if(mcpList.size() > 1 && mcpList.size() > getInternalLinkSet().size() + 1){
-                    String msg = "Link chain within the molecule has at least one discontinuity.";
-                    String tip = "One or more links are missing";
-                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-                    return;
+                if(mcpList.size() > 1 && getInternalLinkSet().size() > 0) {
+                    GraphContinuity.Graph graph = new GraphContinuity.Graph(mcpList.size());
+                    Map<MolecularComponentPattern, Integer> mcpMap = new LinkedHashMap<> ();
+                    for(int i=0; i<mcpList.size(); i++) {
+                        MolecularComponentPattern mcp = mcpList.get(i);
+                        mcpMap.put(mcp, i);
+                    }
+                    for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
+                        Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+                        int one = mcpMap.get(link.one);
+                        int two = mcpMap.get(link.two);
+                        graph.addEdge(one, two);
+                    }
+                    if(!graph.isConnected(GraphContinuity.Algorithm.DFS)) {     // let's use DFS!
+                        String msg = "Link chain within the molecule has at least one discontinuity.";
+                        String tip = "One or more links are missing";
+                        issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                        return;
+                    }
                 }
                 for(MolecularInternalLinkSpec candidate : getInternalLinkSet()){
                     for(MolecularInternalLinkSpec other : getInternalLinkSet()){
@@ -1308,12 +1380,26 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                             }
                         } else {    // all the other sites of a membrane species must not be on the membrane
                             SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
-                            if(sas.getLocation() instanceof Membrane){
+                            if(sas.getLocation() instanceof Membrane) {
                                 String msg = "All the Sites of a Membrane species, other than the 'Anchor', must NOT be located on a Membrane.";
-                                String tip = msg;
+                                String tip = "Relocate the site '" + mc.getName() + "' inside a compartment, or rename it to 'Anchor'";
                                 issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                                 return;
                             }
+                        }
+                    }
+                    // make sure that only one site is on the membrane
+                    int numSitesOnMembrane = 0;
+                    for(MolecularComponentPattern mcp : mcpList) {
+                        SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
+                        if(sas.getLocation() instanceof Membrane) {
+                            numSitesOnMembrane++;
+                        }
+                        if(numSitesOnMembrane > 1) {
+                            String msg = "Species localized on a membrane must have only one site on the membrane";
+                            String tip = msg;
+                            issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                            return;
                         }
                     }
                     if(anchorExists == false){
@@ -1336,6 +1422,39 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                             String tip = msg;
                             issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                             return;
+                        }
+                    }
+                    if(anchorExists == true) {
+                        // sites at the "left" of the anchor (site z < anchor z) must be located in 'Extracellular'
+                        // sites at the 'right' of the anchor (site z > anchor z) must be located in 'Intracellular'
+                        boolean foundSomething = false;
+                        SiteAttributesSpec sasAnchor = getSiteAttributesMap().get(mcpAnchor);
+                        double zAnchor = sasAnchor.getCoordinate().getZ();
+                        for(MolecularComponentPattern mcp : mcpList) {
+                            MolecularComponent mc = mcp.getMolecularComponent();
+                            SiteAttributesSpec sasCandidate = getSiteAttributesMap().get(mcp);
+                            if(sasCandidate.getLocation() instanceof Membrane) {
+                                continue;       // we skip self
+                            }
+                            double zCandidate = sasCandidate.getCoordinate().getZ();
+                            if(sasCandidate.getLocation().getName().equals(Structure.SpringStructureEnum.Extracellular.columnName)) {
+                                if(!(zCandidate < zAnchor)) {
+                                    String msg = "Sites located in the 'Extracellular' structure must have their z-coordinate smaller that the one of the 'Anchor' site";
+                                    String tip = "Relocate the site '" + mc.getName() + "' inside 'Intracellular', or decrease its 'z' coordinate to less than " + zAnchor;
+                                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                                    foundSomething = true;
+                                }
+                            } else if(sasCandidate.getLocation().getName().equals(Structure.SpringStructureEnum.Intracellular.columnName)){
+                                if(!(zCandidate > zAnchor)) {
+                                    String msg = "Sites located in the 'Intracellular' structure must have their z-coordinate larger that the one of the 'Anchor' site";
+                                    String tip = "Relocate the site '" + mc.getName() + "' inside 'Extracellular', or increase its 'z' coordinate to more than " + zAnchor;
+                                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                                    foundSomething = true;
+                                }
+                            }
+                        }
+                        if(foundSomething == true) {
+                            return;     // we show more than the 1st in this category, otherwise it'll be confusing
                         }
                     }
                 } else {        // a species inside a Feature must NOT have a site named Anchor
@@ -1376,6 +1495,37 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     String tip = msg;
                     issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                     return;
+                }
+
+                // rate rules and assignment rules are not permitted
+                // normally it is not possible to create RateRule or AssignmentRule using the vcell UI, the Protocols subpanels are disabled
+                // we check this just in case the user is very crafty and finds a way
+                boolean foundRuleMatch = false;
+                if(simulationContext.getRateRules() != null && simulationContext.getRateRules().length > 0) {
+                    for(RateRule rr : simulationContext.getRateRules()) {
+                        if(rr.getRateRuleVar() == null) {
+                            continue;
+                        }
+                        if(sc.getName().equals(rr.getRateRuleVar().getName())) {
+                            String msg = "SpringSaLaD applications do not accept Rate Rules.";
+                            String tip = msg;
+                            issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                            return;
+                        }
+                    }
+                }
+                if(!foundRuleMatch && simulationContext.getAssignmentRules() != null && simulationContext.getAssignmentRules().length > 0) {
+                    for(AssignmentRule rr : simulationContext.getAssignmentRules()) {
+                        if(rr.getAssignmentRuleVar() == null) {
+                            continue;
+                        }
+                        if(sc.getName().equals(rr.getAssignmentRuleVar().getName())) {
+                            String msg = "SpringSaLaD applications do not accept Assignment Rules.";
+                            String tip = msg;
+                            issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                            return;
+                        }
+                    }
                 }
             } else {
                 String msg = "SpringSaLaD requires all Species to be associated with a MolecularType.";
@@ -2258,6 +2408,9 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public List<SpeciesContextSpecParameter> computeApplicableParameterList(){
         List<SpeciesContextSpecParameter> speciesContextSpecParameterList = new ArrayList<SpeciesContextSpecParameter>();
         speciesContextSpecParameterList.add(getInitialConditionParameter());
+        if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
+            return speciesContextSpecParameterList;
+        }
         int dimension = simulationContext.getGeometry().getDimension();
         if(!isConstant() && !isWellMixed() && dimension > 0){
             // diffusion

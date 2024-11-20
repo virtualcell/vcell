@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -157,8 +158,15 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
             if (e.getValueIsAdjusting()) {
                 return;
             }
-            if (e.getSource() == getScrollPaneTable().getSelectionModel())
-                setSelectedObjectsFromTable(getScrollPaneTable(), tableModel);
+            if (e.getSource() == getScrollPaneTable().getSelectionModel()) {
+
+                int row = getScrollPaneTable().getSelectedRow();
+                SpeciesContextSpec scsSelected = tableModel.getValueAt(row);
+
+                ArrayList<Object> selectedObjects = new ArrayList<Object>();
+                selectedObjects.add(scsSelected);
+                selectionManager.setSelectedObjects(selectedObjects.toArray());
+            }
         }
 
         ;
@@ -440,7 +448,7 @@ public class InitialConditionsPanel extends DocumentEditorSubPanel implements Ap
             try {
                 table = new JSortTable();
                 table.setName("spceciesContextSpecsTable");
-                tableModel = new SpeciesContextSpecsTableModel(table);
+                tableModel = new SpeciesContextSpecsTableModel(table, this);
                 table.setModel(tableModel);
                 table.setScrollTableActionManager(new InternalScrollTableActionManager(table));
                 table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);

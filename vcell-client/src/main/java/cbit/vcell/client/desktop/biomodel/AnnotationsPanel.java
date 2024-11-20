@@ -517,7 +517,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					VCMetaDataDataType mdt = (VCMetaDataDataType)jComboBoxURI.getSelectedItem();
-					System.out.println("aici");
 					if(mdt != null && mdt.isSearchable()) {
 						getJButtonSearchRef().setEnabled(true);
 					} else {
@@ -939,7 +938,6 @@ public class AnnotationsPanel extends DocumentEditorSubPanel {
 			}
 			if(selectedObjects[0] instanceof Identifiable && selectedObjects[0] instanceof Displayable) {
 				selectedObject = (Identifiable)selectedObjects[0];
-				System.out.println("AnnotationsPanel: class: " + selectedObject.getClass().getSimpleName() + ", selected object: " + ((Displayable)selectedObject).getDisplayName());
 			} else {
 				selectedObject = null;
 				System.out.println("Unsupported or null entity");

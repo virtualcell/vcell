@@ -36,10 +36,10 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 	private transient boolean bHighlighted = false;
 	
 	public enum BondType {
-		Specified(""), // numbers	// explicit
-		Exists("+"),    // "+"		// bound
-		Possible("?"),  // "?"		// any
-		None("-");  	   				// unbound
+		Specified(""),	// numbers	// Explicit (in springsalad this is TransitionCondition.BOUND)
+		Exists("+"),		// "+"		// Bound to some other (unspecified) site (this one doesn't exist in springsalad)
+		Possible("?"),	// "?"		// Any bonding situation (in springsalad this is TransitionCondition.NONE)
+		None("-");		// "-"		// Unbound (in springsalad this is TransitionCondition.FREE)
 		
 		public String symbol;
 		BondType(String s) {

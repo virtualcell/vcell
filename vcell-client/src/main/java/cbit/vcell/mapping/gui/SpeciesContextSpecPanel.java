@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
+import cbit.vcell.mapping.SimulationContext;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -243,7 +244,7 @@ private void initialize() {
 		splitPaneHorizontal.setTopComponent(upperPanel);
 		splitPaneHorizontal.setBottomComponent(containerOfScrollPanel);
 		splitPaneHorizontal.setOneTouchExpandable(true);
-		splitPaneHorizontal.setDividerLocation(165);	// upper panel is 165 pixel height
+		splitPaneHorizontal.setDividerLocation(115);	// upper panel is 115 pixel height
 		splitPaneHorizontal.setResizeWeight(1);
 
 		setLayout(new BorderLayout());
@@ -267,6 +268,9 @@ public static final int xOffsetInitial = 20;
 public static final int yOffsetInitial = 10;
 private void updateShape() {
 	if(speciesContext == null) {
+		return;
+	}
+	if(shapePanel.getGraphics() == null) {
 		return;
 	}
 	SpeciesPattern sp = speciesContext.getSpeciesPattern();
@@ -296,7 +300,7 @@ public void setBioModel(BioModel newValue) {
 	}
 	Model model = bioModel.getModel();
 	if(model != null & model.getRbmModelContainer().getMolecularTypeList().size() > 0) {
-		splitPaneHorizontal.setDividerLocation(165);
+		splitPaneHorizontal.setDividerLocation(115);
 	} else {
 		// since we have no molecular types we initialize a much smaller shape panel 
 		// because we can only show a trivial shape (circle)
@@ -309,8 +313,13 @@ protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	SpeciesContextSpec speciesContextSpec = null;
 	if (selectedObjects != null && selectedObjects.length == 1 && selectedObjects[0] instanceof SpeciesContextSpec) {
 		speciesContextSpec = (SpeciesContextSpec) selectedObjects[0];
+		// TODO: we'll need to be more specific here in the future, we also return for LangevinInitialConditions
+		if(speciesContextSpec.provenance == SpeciesContextSpec.Provenance.LangevinSpecs) {
+			setSpeciesContextSpec(null);
+		}
 	}
-	setSpeciesContextSpec(speciesContextSpec);	
+	// TODO: eventually we'll do this only for GeneralInitialConditions
+	setSpeciesContextSpec(speciesContextSpec);
 }
 
 private JButton getZoomLargerButton() {

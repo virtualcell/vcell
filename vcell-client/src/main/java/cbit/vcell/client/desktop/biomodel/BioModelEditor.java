@@ -24,6 +24,8 @@ import java.util.Objects;
 import javax.swing.JComponent;
 import javax.swing.ListSelectionModel;
 
+import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.gui.*;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
@@ -56,20 +58,9 @@ import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.geometry.CSGObject;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.geometry.gui.CSGObjectPropertiesPanel;
-import cbit.vcell.mapping.BioEvent;
-import cbit.vcell.mapping.MathMappingCallbackTaskAdapter;
-import cbit.vcell.mapping.ReactionRuleSpec;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.gui.DataSymbolsSpecPanel;
-import cbit.vcell.mapping.gui.ReactionRuleSpecPropertiesPanel;
-import cbit.vcell.mapping.gui.SpatialObjectPropertyPanel;
-import cbit.vcell.mapping.gui.SpatialProcessPropertyPanel;
-import cbit.vcell.mapping.gui.SpeciesContextSpecPanel;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.processes.SpatialProcess;
 import cbit.vcell.model.Model;
@@ -132,6 +123,7 @@ public class BioModelEditor extends DocumentEditor {
 	private ReactionParticipantPropertiesPanel reactionParticipantPropertiesPanel = null;
 	private ApplicationPropertiesPanel applicationPropertiesPanel = null;
 	private SpeciesContextSpecPanel speciesContextSpecPanel = null;
+	private MolecularStructuresPropertiesPanel molecularStructuresPropertiesPanel = null;
 	private KineticsTypeTemplatePanel kineticsTypeTemplatePanel = null;
 	private ReactionRuleSpecPropertiesPanel reactionRuleSpecPropertiesPanel = null;
 	private SimulationSummaryPanel simulationSummaryPanel = null;
@@ -631,6 +623,17 @@ private SpeciesContextSpecPanel getSpeciesContextSpecPanel() {
 	}
 	return speciesContextSpecPanel;
 }
+	private MolecularStructuresPropertiesPanel getMolecularStructuresPropertiesPanel() {
+		if (molecularStructuresPropertiesPanel == null) {
+			try {
+				molecularStructuresPropertiesPanel = new MolecularStructuresPropertiesPanel();
+				molecularStructuresPropertiesPanel.setName("MolecularStructuresPropertiesPanel");
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return molecularStructuresPropertiesPanel;
+	}
 
 private void initialize() {
 	try {
@@ -681,6 +684,7 @@ private void initialize() {
 		getReactionRulePropertiesPanel().setSelectionManager(selectionManager);
 		getReactionPropertiesPanel().setSelectionManager(selectionManager);
 		getSpeciesContextSpecPanel().setSelectionManager(selectionManager);
+		getMolecularStructuresPropertiesPanel().setSelectionManager(selectionManager);
 		getReactionRuleSpecPropertiesPanel().setSelectionManager(selectionManager);
 		getSpatialObjectPropertyPanel().setSelectionManager(selectionManager);
 		getSpatialProcessPropertyPanel().setSelectionManager(selectionManager);
@@ -769,7 +773,19 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 			bShowInDatabaseProperties = true;
 			bottomComponent = geometryMetaDataPanel;
 		} else if (singleSelection instanceof SpeciesContextSpec) {
-			bottomComponent = getSpeciesContextSpecPanel();
+			SpeciesContextSpec scs = (SpeciesContextSpec)singleSelection;
+			switch(scs.provenance) {
+				case LangevinSpecs:
+					bottomComponent = getMolecularStructuresPropertiesPanel();
+					break;
+				case LangevinInitialConditions:	// TODO: we'll have here a simplified SpeciesContextSpecPanel
+					bottomComponent = getSpeciesContextSpecPanel();
+					break;
+				case GeneralInitialConditions:
+				default:
+					bottomComponent = getSpeciesContextSpecPanel();
+					break;
+			}
 		} else if (singleSelection instanceof ReactionSpec) {
 			bottomComponent = getKineticsTypeTemplatePanel();
 		} else if (singleSelection instanceof ReactionRuleSpec) {		// 
@@ -1006,7 +1022,6 @@ private BioModelEditorApplicationsPanel getBioModelEditorApplicationsPanel() {
 /**
  * Sets the bioModel property (cbit.vcell.biomodel.BioModel) value.
  * @param bioModel The new value for the property.
- * @see #getBioModel
  */
 public void setBioModel(BioModel bioModel) {
 	if (this.bioModel == bioModel) {
@@ -1016,6 +1031,7 @@ public void setBioModel(BioModel bioModel) {
 	bioModelEditorModelPanel.setBioModel(bioModel);
 	getBioModelEditorApplicationsPanel().setBioModel(bioModel);
 	getSpeciesContextSpecPanel().setBioModel(bioModel);
+	getMolecularStructuresPropertiesPanel().setBioModel(bioModel);
 	getReactionRuleSpecPropertiesPanel().setBioModel(bioModel);
 	getScriptingPanel().setBioModel(bioModel);	
 	getBioModelEditorPathwayPanel().setBioModel(bioModel);
@@ -1041,7 +1057,7 @@ public void setBioModel(BioModel bioModel) {
 /**
  * Insert the method's description here.
  * Creation date: (5/7/2004 5:40:13 PM)
- * @param newBioModelWindowManager cbit.vcell.client.desktop.BioModelWindowManager
+ * @param bioModelWindowManager cbit.vcell.client.desktop.BioModelWindowManager
  */
 public void setBioModelWindowManager(BioModelWindowManager bioModelWindowManager) {
 	if (this.bioModelWindowManager == bioModelWindowManager) {
