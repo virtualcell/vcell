@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.table.TableCellRenderer;
 
 import org.vcell.model.rbm.ComponentStatePattern;
@@ -29,6 +30,7 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Coordinate;
 import org.vcell.util.gui.ColorIcon;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
@@ -57,7 +59,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 
 	public enum ColumnType {
 		COLUMN_SITE("Site"),
-		COLUMN_MOLECULE("Molecule"),
+//		COLUMN_MOLECULE("Molecule"),
 		COLUMN_STRUCTURE("Location"),
 		COLUMN_STATE("State"),
 		COLUMN_X(" X "),
@@ -88,8 +90,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		switch (columnType) {
 		case COLUMN_SITE:
 			return MolecularComponentPattern.class;
-		case COLUMN_MOLECULE:
-				return MolecularType.class;
+//		case COLUMN_MOLECULE:
+//				return MolecularType.class;
 		case COLUMN_STRUCTURE:
 				return Structure.class;
 		case COLUMN_STATE:
@@ -131,8 +133,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			switch (columnType) {
 			case COLUMN_SITE:
 				return mcp.getMolecularComponent().getName();
-			case COLUMN_MOLECULE:
-				return mtp.getMolecularType().getName();
+//			case COLUMN_MOLECULE:
+//				return mtp.getMolecularType().getName();
 			case COLUMN_STRUCTURE:
 				if(sas == null) {
 					return null;
@@ -197,12 +199,11 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		SiteAttributesSpec sas = scs.getSiteAttributesMap().get(mcp);
 		switch (columnType) {
 		case COLUMN_SITE:
-		case COLUMN_MOLECULE:
+//		case COLUMN_MOLECULE:
 		case COLUMN_STATE:
 			return;
 		case COLUMN_STRUCTURE:
-			if(aValue instanceof Structure) {
-				Structure structure = (Structure)aValue;
+			if(aValue instanceof Structure structure) {
 				if(sas == null) {
 					sas = new SiteAttributesSpec(scs, mcp, structure);
 				} else {
@@ -212,15 +213,15 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			}
 			return;
 		case COLUMN_X:
-			if (aValue instanceof String) {
+			if (aValue instanceof String newExpressionString) {
 				if(sas == null) {
 					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
-				String newExpressionString = (String)aValue;
 				double res = 0.0;
 				try {
 					res = Double.parseDouble(newExpressionString);
 				} catch(NumberFormatException e) {
+					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				Coordinate c = sas.getCoordinate();
@@ -232,16 +233,16 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			}
 			return;
 		case COLUMN_Y:
-			if (aValue instanceof String) {
+			if (aValue instanceof String newExpressionString) {
 				if(sas == null) {
 					// TODO: is this necessary?
 					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
-				String newExpressionString = (String)aValue;
 				double res = 0.0;
 				try {
 					res = Double.parseDouble(newExpressionString);
 				} catch(NumberFormatException e) {
+					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				Coordinate c = sas.getCoordinate();
@@ -253,16 +254,27 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			}
 			return;
 		case COLUMN_Z:
-			if (aValue instanceof String) {
+			if (aValue instanceof String newExpressionString) {
 				if(sas == null) {
 					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
-				String newExpressionString = (String)aValue;
 				double res = 0.0;
 				try {
 					res = Double.parseDouble(newExpressionString);
-				} catch(NumberFormatException e) {
-					return;
+				} catch(NumberFormatException ex) {
+					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+//					DialogUtils.showErrorDialog(ownerTable.getParent(), "Number expected");
+//					SwingUtilities.invokeLater(new Runnable() {
+//						public void run() {
+//							ownerTable.requestFocus();
+//							ownerTable.setRowSelectionInterval(row, row);
+//							ownerTable.setColumnSelectionInterval(col, col);
+//							ownerTable.changeSelection(row, col, false, false);
+//							((JComponent)getComponent()).setBorder(new LineBorder(Color.red));
+//							textFieldAutoCompletion.requestFocus();
+//						}
+//					});
+//					return;
 				}
 				Coordinate c = sas.getCoordinate();
 				if(c.getX() != res) {
@@ -274,30 +286,47 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			}
 			return;
 		case COLUMN_RADIUS:
-			if (aValue instanceof String) {
-				String newExpressionString = (String)aValue;
-				double result = Double.parseDouble(newExpressionString);
+			if (aValue instanceof String newExpressionString) {
+				double res = 0.0;
+				try {
+					res = Double.parseDouble(newExpressionString);
+				} catch(NumberFormatException ex) {
+					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if(res <= 0.0) {
+					JOptionPane.showMessageDialog(null, "Site radius must be a positive number", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				if(sas == null) {
 					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
-				sas.setRadius(result);
+				sas.setRadius(res);
 				scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 			}
 			return;
 		case COLUMN_DIFFUSION:
-			if (aValue instanceof String) {
-				String newExpressionString = (String)aValue;
-				double result = Double.parseDouble(newExpressionString);
+			if (aValue instanceof String newExpressionString) {
+				double res = 0.0;
+				try {
+					res = Double.parseDouble(newExpressionString);
+				} catch(NumberFormatException ex) {
+					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if(res <= 0.0) {
+					JOptionPane.showMessageDialog(null, "Site diffusion coefficient must be a positive number", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				if(sas == null) {
 					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
-				sas.setDiffusionRate(result);
+				sas.setDiffusionRate(res);
 				scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
 				return;
 			}
 		case COLUMN_COLOR:
-			if (aValue instanceof NamedColor) {
-				NamedColor namedColor = (NamedColor)aValue;
+			if (aValue instanceof NamedColor namedColor) {
 				if(sas == null) {
 					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
 				}
@@ -322,7 +351,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 //		}
 		switch (columnType) {
 		case COLUMN_SITE:
-		case COLUMN_MOLECULE:
+//		case COLUMN_MOLECULE:
 		case COLUMN_STATE:
 			return false;
 		case COLUMN_STRUCTURE:
@@ -351,7 +380,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				ColumnType columnType = columns.get(col);
 				switch (columnType) {
 				case COLUMN_SITE:
-				case COLUMN_MOLECULE:
+//				case COLUMN_MOLECULE:
 				case COLUMN_STRUCTURE:
 				case COLUMN_STATE:
 				case COLUMN_X:
@@ -510,8 +539,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 														  int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				setHorizontalTextPosition(SwingConstants.LEFT);
-				if (value instanceof NamedColor) {
-					NamedColor namedColor = (NamedColor)value;
+				if (value instanceof NamedColor namedColor) {
 					setText(namedColor.getName());
 					Icon icon = new ColorIcon(10,10,namedColor.getColor(), true);	// small square icon with subdomain color
 					setHorizontalTextPosition(SwingConstants.RIGHT);
@@ -540,8 +568,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 					int index, boolean isSelected, boolean cellHasFocus) {
 				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				setHorizontalTextPosition(SwingConstants.LEFT);
-				if (value instanceof Structure) {
-					Structure structure = (Structure)value;
+				if (value instanceof Structure structure) {
 					setText(structure.getName());
 
 				}

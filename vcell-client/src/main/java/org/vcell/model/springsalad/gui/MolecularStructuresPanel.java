@@ -419,7 +419,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
-		gbc.weightx = 1.0;
+		gbc.weightx = 0.9;
 		gbc.weighty = 1.0;
 		gbc.gridwidth = 3;
 		gbc.fill = GridBagConstraints.BOTH;
