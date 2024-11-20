@@ -63,14 +63,39 @@ public class CLIPythonManager {
      * @throws PythonStreamException if there is any exception encountered in this exchange.
      */
     public String callPython(String functionName, String... arguments) throws PythonStreamException {
+        // Attempt 1
         String command = this.formatPythonFunctionCall(functionName, arguments);
-        if (CLIPythonManager.USE_SHARED_SHELL) return this.callPython(command);
         try {
-            return CLIPythonManager.callNonSharedPython(command);
-        } catch (Exception e){
-            lg.error("Error calling python: " + e.getMessage());
-            String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
-            throw new PythonStreamException(errorPrefix, e);
+            if (CLIPythonManager.USE_SHARED_SHELL) return this.callPython(command);
+            try {
+                return CLIPythonManager.callNonSharedPython(command);
+            } catch (Exception e){
+                lg.error("Error calling python: {}", e.getMessage());
+                String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
+                throw new PythonStreamException(errorPrefix, e);
+            }
+        } catch (TimeoutException e) {
+            // Attempt 2
+            lg.warn("Error calling python: {}", e.getMessage());
+            lg.warn("Attempting to acknowledge warnings / prompts.");
+            try {
+                String result = this.callPython("");
+                lg.info("Second python attempt successful!");
+                return result; // we may get the result of the original call, if we "accept" a warning / prompt the shell got
+            } catch (TimeoutException e2){
+                // Final Attempt; use the independent shell!
+                lg.warn("Error on second attempt calling python: {}", e2.getMessage());
+                lg.warn("Attempting last resort");
+                try {
+                    String lastChanceResult = CLIPythonManager.callNonSharedPython(command);
+                    lg.info("Last python attempt successful!");
+                    return lastChanceResult;
+                } catch (InterruptedException | IOException e3){
+                    lg.error("Error on last resort: {}", e.getMessage());
+                    String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
+                    throw new PythonStreamException(errorPrefix, e3);
+                }
+            }
         }
     }
 
@@ -127,14 +152,14 @@ public class CLIPythonManager {
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
         // install virtual environment
-        // e.g. source /Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
+        // e.g. source ~/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
 
         // Start poetry based Python
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-i", "-W ignore");
         pb.redirectErrorStream(true);
         File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
         pb.directory(cliWorkingDir);
-        lg.debug("Loading poetry in directory: " + cliWorkingDir);
+        lg.debug("Loading poetry in directory: {}", cliWorkingDir);
         this.pythonProcess = pb.start();
         this.pythonOSW = new OutputStreamWriter(this.pythonProcess.getOutputStream());
         this.pythonISB = new BufferedReader(new InputStreamReader(this.pythonProcess.getInputStream()));
@@ -145,18 +170,18 @@ public class CLIPythonManager {
             this.executeThroughPython();
             lg.info("Python initialization success!");
         } catch (IOException | TimeoutException | InterruptedException e){
-            lg.warn("Python instantiation Exception Thrown:\n" + e);
+            lg.warn("Python instantiation Exception Thrown:\n", e);
             throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.", e);
         }
     }
 
     // Needs properly formatted python command
-    private String callPython(String command) throws PythonStreamException {
+    private String callPython(String command) throws PythonStreamException, TimeoutException {
         try {
             this.instantiatePythonProcess(); // Make sure we have a python instance; will not override already done
             this.sendNewCommand(command);
             return this.getResultsOfLastCommand();
-        } catch (IOException | InterruptedException | TimeoutException e){
+        } catch (IOException | InterruptedException e){
             throw new PythonStreamException("Python process encountered an exception:\n" + e.getMessage(), e);
         }
     }
@@ -165,7 +190,7 @@ public class CLIPythonManager {
         String importantPrefix = ">>> ";
         StringBuilder results = new StringBuilder();
 
-        int currentTime = 0, TIMEOUT_LIMIT = 30000; // was 600 seconds (10 minutes), now 30 seconds
+        int currentTime = 0, TIMEOUT_LIMIT = 5000; // was 600 seconds (10 minutes), now 5 seconds
 
         // Wait for python to finish what it's working on
         while(!this.pythonISB.ready()){
@@ -181,6 +206,7 @@ public class CLIPythonManager {
             results.append((char) this.pythonISB.read());
         }
 
+        // Weird mac shell warning causing us bugs; try to clear and get the results.
         if (results.toString().contains("ecure coding is not enabled for restorable state")){
             this.sendNewCommand("");
         }
@@ -202,15 +228,20 @@ public class CLIPythonManager {
         // we can easily send the command, but we need to format it first.
 
         String command = String.format("%s\n", CLIPythonManager.stripStringForPython(cmd));
-        lg.trace("Sent cmd to Python: " + command);
+        lg.trace("Sent cmd to Python: {}", command);
         this.pythonOSW.write(command);
         this.pythonOSW.flush();
     }
 
     // Helper method for easy, local calling.
     private void executeThroughPython() throws PythonStreamException {
-        String results = this.callPython("from vcell_cli_utils import wrapper");
-        this.parsePythonReturn(results);
+        String results;
+        try {
+            results = this.callPython("from vcell_cli_utils import wrapper");
+            this.parsePythonReturn(results);
+        } catch (TimeoutException e) {
+            throw new PythonStreamException("Python process encountered an exception:\n" + e.getMessage(), e);
+        }
     }
 
     private void checkPythonInstallation() {
@@ -238,7 +269,8 @@ public class CLIPythonManager {
             lg.error("Please check your local Python and PIP Installation, install required packages and versions", e);
             throw new MissingResourceException("Error validating Python installation:\n" + e.getMessage(), "Python 3.9+", "");
         } catch (IOException | InterruptedException e) {
-            lg.error("System produced " + e.getClass().getSimpleName() + " when trying to validate Python.", e);
+            String msg = "System produced " + e.getClass().getSimpleName() + " when trying to validate Python.";
+            lg.error(msg, e);
         }
     }
 
@@ -250,7 +282,6 @@ public class CLIPythonManager {
         return new ProcessBuilder(args);
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     public static String runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString)
             throws InterruptedException, IOException, PythonStreamException {
         // Process printing code goes here
@@ -294,7 +325,7 @@ public class CLIPythonManager {
         if (errString == null) errString = "";
 
         // Null or empty strings are considered passing results
-        if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).equals("")){
+        if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).isEmpty()){
             lg.trace("Python returned successfully.");
             return;
         }
@@ -326,7 +357,7 @@ public class CLIPythonManager {
         for (String arg : arguments){
             argList.append("r\"\"\"").append(CLIUtils.stripString(arg)).append("\"\"\","); // python r-string
         }
-        adjArgLength = argList.length() == 0 ? 0 : argList.length() - 1;
+        adjArgLength = argList.isEmpty() ? 0 : argList.length() - 1;
         return argList.substring(0, adjArgLength);
     }
 
