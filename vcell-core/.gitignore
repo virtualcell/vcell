@@ -13,7 +13,6 @@
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000012.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000013.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000014.xml
-/src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000015.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000016.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000017.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000018.xml
@@ -68,7 +67,6 @@
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000068.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000069.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000070.xml
-/src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000071.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000072.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000073.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000074.xml
@@ -583,10 +581,8 @@
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000588.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000589.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000590.xml
-/src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000591.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000592.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000593.xml
-/src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000596.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000597.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000598.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000599.xml
@@ -632,7 +628,6 @@
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000640.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000641.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000642.xml
-/src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000643.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000644.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000645.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000646.xml
@@ -683,7 +678,6 @@
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000692.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000693.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000695.xml
-/src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000696.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000697.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000698.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000699.xml
@@ -938,7 +932,6 @@
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000949.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000950.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000951.xml
-/src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000952.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000953.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000954.xml
 /src/test/resources/org/vcell/sbml/sbml-biomodels-curated/BIOMD0000000955.xml

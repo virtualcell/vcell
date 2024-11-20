@@ -72,20 +72,6 @@ public class PythonCalls {
         cliPythonManager.parsePythonReturn(results, "", "Failed updating task status YAML\n");
     }
 
-    public void convertCSVtoHDF(String omexFilePath, String outputDir, CLIPythonManager cliPythonManager) throws PythonStreamException {
-
-        // Convert CSV to HDF5
-        /*
-        Usage: cli.py SEDML_FILE_PATH WORKING_DIR BASE_OUT_PATH CSV_DIR <flags>
-                    optional flags:        --rel_out_path | --apply_xml_model_changes |
-                         --report_formats | --plot_formats | --log | --indent
-        * */
-        // handle exceptions here
-        logger.trace("Dialing Python function execSedDoc");
-        String results = cliPythonManager.callPython("execSedDoc", omexFilePath, outputDir);
-        cliPythonManager.parsePythonReturn(results, "HDF conversion successful\n","HDF conversion failed\n");
-    }
-
     // Sample STATUS YML
     /*
     sedDocuments:
@@ -155,11 +141,13 @@ public class PythonCalls {
         cliPythonManager.parsePythonReturn(results);
     }
 
-    // Due to what appears to be a leaky python function call, this method will continue using execShellCommand until the unerlying python is fixed
+    // Due to what appears to be a leaky python function call, this method will continue using execShellCommand until the underlying python is fixed
     public static void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws PythonStreamException, InterruptedException, IOException {
         logger.trace("Dialing Python function genPlotsPseudoSedml");
-        CLIPythonManager.callNonSharedPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
-
+        //CLIPythonManager.callNonSharedPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
+        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+        String results = cliPythonManager.callPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
+        cliPythonManager.parsePythonReturn(results);
         /**
          * replace with the following once the leak is fixed
          */

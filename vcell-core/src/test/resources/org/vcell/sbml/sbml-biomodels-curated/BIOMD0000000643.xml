@@ -1,0 +1,1354 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level3/version1/core" layout:required="false" level="3" metaid="_36c6af43-934f-4c4a-acc2-949adf6d3768" render:required="false" version="1" xmlns:layout="http://www.sbml.org/sbml/level3/version1/layout/version1" xmlns:render="http://www.sbml.org/sbml/level3/version1/render/version1">
+  <model areaUnits="area" extentUnits="substance" id="MODEL1707020000" lengthUnits="length" metaid="COPASI0" name="Musante2017 - Switching behaviour of PP2A inhibition by ARPP-16 - mutual inhibitions" substanceUnits="substance" timeUnits="time" volumeUnits="volume">
+    <notes>
+      <body xmlns="http://www.w3.org/1999/xhtml">
+        <div class="dc:title">Musante2017 - Switching behaviour of PP2A
+inhibition by ARPP-16 - mutual inhibitions</div>
+<div class="dc:bibliographicCitation">
+  <p>This model is described in the article:</p>
+  <div class="bibo:title">
+    <a href="http://identifiers.org/pubmed/28613156" title="Access to this publication">Reciprocal regulation of
+    ARPP-16 by PKA and MAST3 kinases provides a cAMP-regulated
+    switch in protein phosphatase 2A inhibition.</a>
+  </div>
+  <div class="bibo:authorList">Musante V, Li L, Kanyo J, Lam TT,
+  Colangelo CM, Cheng SK, Brody AH, Greengard P, Le Novère N,
+  Nairn AC.</div>
+  <div class="bibo:Journal">Elife 2017 Jun; 6:</div>
+  <p>Abstract:</p>
+  <div class="bibo:abstract">
+    <p>ARPP-16, ARPP-19, and ENSA are inhibitors of protein
+    phosphatase PP2A. ARPP-19 and ENSA phosphorylated by Greatwall
+    kinase inhibit PP2A during mitosis. ARPP-16 is expressed in
+    striatal neurons where basal phosphorylation by MAST3 kinase
+    inhibits PP2A and regulates key components of striatal
+    signaling. The ARPP-16/19 proteins were discovered as
+    substrates for PKA, but the function of PKA phosphorylation is
+    unknown. We find that phosphorylation by PKA or MAST3 mutually
+    suppresses the ability of the other kinase to act on ARPP-16.
+    Phosphorylation by PKA also acts to prevent inhibition of PP2A
+    by ARPP-16 phosphorylated by MAST3. Moreover, PKA
+    phosphorylates MAST3 at multiple sites resulting in its
+    inhibition. Mathematical modeling highlights the role of these
+    three regulatory interactions to create a switch-like response
+    to cAMP. Together, the results suggest a complex antagonistic
+    interplay between the control of ARPP-16 by MAST3 and PKA that
+    creates a mechanism whereby cAMP mediates PP2A
+    disinhibition.</p>
+  </div>
+</div>
+<div class="dc:publisher">
+  <p>This model is hosted on 
+  <a href="http://www.ebi.ac.uk/biomodels/">BioModels Database</a>
+  and identified by: 
+  <a href="http://identifiers.org/biomodels.db/BIOMD0000000643">BIOMD0000000643</a>.</p>
+  <p>To cite BioModels Database, please use: 
+  <a href="http://identifiers.org/pubmed/25414348" target="_blank">Chelliah V et al. BioModels: ten-year
+  anniversary. Nucl. Acids Res. 2015, 43(Database
+  issue):D542-8</a>.</p>
+</div>
+<div class="dc:license">
+  <p>To the extent possible under law, all copyright and related or
+  neighbouring rights to this encoded model have been dedicated to
+  the public domain worldwide. Please refer to 
+  <a href="http://creativecommons.org/publicdomain/zero/1.0/" title="Access to: CC0 1.0 Universal (CC0 1.0), Public Domain Dedication">CC0
+  Public Domain Dedication</a> for more information.</p>
+</div>
+</body>
+    </notes>
+    <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+        <rdf:Description rdf:about="#COPASI0">
+	<dc:creator>
+	<rdf:Bag>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Kothamachu</vCard:Family>
+	<vCard:Given>Varun</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>kothamav@babraham.ac.uk</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>Babraham Institute</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Li</vCard:Family>
+	<vCard:Given>Lu</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>Lu.Li@babraham.ac.uk</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>The Babraham Institute</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	</rdf:Bag>
+	</dc:creator>
+	<dcterms:created rdf:parseType="Resource">
+	<dcterms:W3CDTF>2017-05-08T15:01:01Z</dcterms:W3CDTF>
+	</dcterms:created>
+	<dcterms:modified rdf:parseType="Resource">
+	<dcterms:W3CDTF>2017-09-07T11:13:45Z</dcterms:W3CDTF>
+	</dcterms:modified>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL1707020000"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/BIOMD0000000643"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/28613156"/>
+	</rdf:Bag>
+	</bqmodel:isDescribedBy>
+	<bqmodel:isDerivedFrom>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/bto/BTO:0002181"/>
+	</rdf:Bag>
+	</bqmodel:isDerivedFrom>
+	<bqbiol:hasProperty>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/mamo/MAMO_0000046"/>
+	</rdf:Bag>
+	</bqbiol:hasProperty>
+	<bqbiol:hasTaxon>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/taxonomy/10095"/>
+	</rdf:Bag>
+	</bqbiol:hasTaxon>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+      </rdf:RDF>
+      <COPASI xmlns="http://www.copasi.org/static/sbml">
+        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#">
+          <rdf:Description rdf:about="#COPASI0">
+            <dcterms:bibliographicCitation>
+              <rdf:Description>
+                <dcterms:description>Reciprocal regulation of ARPP-16 by PKA and MAST3 kinases provides a cAMP-regulated switch in protein phosphatase 2A inhibition</dcterms:description>
+                <CopasiMT:isDescribedBy rdf:resource="urn:miriam:doi:10.7554/eLife.24998"/>
+              </rdf:Description>
+            </dcterms:bibliographicCitation>
+            <dcterms:created>
+              <rdf:Description>
+                <dcterms:W3CDTF>2017-05-08T15:01:01Z</dcterms:W3CDTF>
+              </rdf:Description>
+            </dcterms:created>
+            <dcterms:creator>
+              <rdf:Description>
+                <vCard:EMAIL>lu.li@babraham.ac.uk</vCard:EMAIL>
+                <vCard:N>
+                  <rdf:Description>
+                    <vCard:Family>Li</vCard:Family>
+                    <vCard:Given>Lu</vCard:Given>
+                  </rdf:Description>
+                </vCard:N>
+                <vCard:ORG>
+                  <rdf:Description>
+                    <vCard:Orgname>Babraham Institute</vCard:Orgname>
+                  </rdf:Description>
+                </vCard:ORG>
+              </rdf:Description>
+            </dcterms:creator>
+          </rdf:Description>
+        </rdf:RDF>
+      </COPASI>
+    </annotation>
+      <listOfUnitDefinitions>
+      <unitDefinition id="length" metaid="_9efc372e-320a-439e-b7e3-8adb94c6fabe" name="length">
+        <listOfUnits>
+          <unit exponent="1" kind="metre" metaid="f4d2cf8f-3d8b-46a2-be31-a937fd953315" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="area" metaid="_7277936f-5750-48fb-8d40-f32a12617a9f" name="area">
+        <listOfUnits>
+          <unit exponent="2" kind="metre" metaid="eefeb0fa-c7b8-49f3-b19d-da9fb281aa79" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="volume" metaid="_030f47eb-534d-4701-a51c-a46b27f01c1d" name="volume">
+        <listOfUnits>
+          <unit exponent="1" kind="litre" metaid="d78c4f19-5849-4674-b262-26094274d425" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="time" metaid="c4ce1cad-9e53-4791-8a22-4d4f57b3c9e9" name="time">
+        <listOfUnits>
+          <unit exponent="1" kind="second" metaid="_1132c965-efe2-4a5c-a73d-16f147913293" multiplier="1" scale="0"/>
+        </listOfUnits>
+      </unitDefinition>
+      <unitDefinition id="substance" metaid="e5a43c03-c545-4314-8176-09696578da6f" name="substance">
+        <listOfUnits>
+          <unit exponent="1" kind="mole" metaid="_0af716ad-6e57-4eba-b168-811d83d7b7c1" multiplier="1" scale="-6"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment constant="true" id="compartment" metaid="COPASI1" name="compartment" sboTerm="SBO:0000290" size="1" spatialDimensions="3" units="volume">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI1">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-14T10:12:59Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species boundaryCondition="true" compartment="compartment" constant="false" hasOnlySubstanceUnits="false" id="A46" initialConcentration="9.80000000000001" metaid="COPASI2" name="A46" substanceUnits="substance">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI2">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-08T15:01:58Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI2">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="urn:miriam:pr:PR_P56212-2"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="true" compartment="compartment" constant="false" hasOnlySubstanceUnits="false" id="A88" initialConcentration="0.199999999999994" metaid="COPASI3" name="A88" substanceUnits="substance">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI3">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-08T15:02:28Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI3">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="urn:miriam:pr:PR_P56212-2"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="true" compartment="compartment" constant="false" hasOnlySubstanceUnits="false" id="M" initialConcentration="0" metaid="COPASI4" name="M" substanceUnits="substance">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI4">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-08T15:01:40Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI4">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q3U214"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="true" compartment="compartment" constant="false" hasOnlySubstanceUnits="false" id="PKA" initialConcentration="0" metaid="COPASI5" name="PKA" substanceUnits="substance">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI5">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-08T15:02:34Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI5">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P05132"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="true" compartment="compartment" constant="false" hasOnlySubstanceUnits="false" id="BB" initialConcentration="11.8161515151515" metaid="COPASI6" name="BB" substanceUnits="substance">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI6">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-08T16:02:55Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI6">
+	<bqbiol:hasPart>
+	<rdf:Bag>
+	<rdf:li rdf:resource="urn:miriam:pr:PR%3AP56212-2"/>
+	</rdf:Bag>
+	</bqbiol:hasPart>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+      <species boundaryCondition="true" compartment="compartment" constant="false" hasOnlySubstanceUnits="false" id="Complex" initialConcentration="1.9958693267679" metaid="COPASI7" name="Complex" substanceUnits="substance">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI7">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-08T16:04:14Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI7">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0000159"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </species>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter constant="true" id="ARPPtot" metaid="COPASI8" name="ARPPtot" value="10">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI8">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-14T13:56:12Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="PP2Atot" metaid="COPASI9" name="PP2Atot" value="2">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI9">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2017-03-01T15:50:41Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="MASTtot" metaid="COPASI10" name="MASTtot" value="2.7">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI10">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-19T17:28:02Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="PKActot" metaid="COPASI11" name="PKActot" value="12">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI11">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2017-03-01T15:50:22Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="kass" metaid="COPASI12" name="kass" value="3.3">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI12">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-19T14:24:31Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="kdiss" metaid="COPASI13" name="kdiss" value="0.0033">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI13">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2017-03-01T15:48:01Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="kcatpp2a" metaid="COPASI14" name="kcatpp2a" value="0.05">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI14">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-19T14:24:32Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI14">
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/25683003"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </parameter>
+      <parameter constant="false" id="kmpp2a" metaid="COPASI15" name="kmpp2a" value="0.0161515151515152">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI15">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-08T15:46:42Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="kcatmast" metaid="COPASI16" name="kcatmast" value="0.0988">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI16">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-19T14:24:31Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI16">
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/28613156"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </parameter>
+      <parameter constant="true" id="kmmast" metaid="COPASI17" name="kmmast" value="0.09">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI17">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-15T11:29:43Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="kcatpka" metaid="COPASI18" name="kcatpka" value="0.935">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI18">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-19T14:24:32Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI18">
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/28613156"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </parameter>
+      <parameter constant="true" id="kmpka" metaid="COPASI19" name="kmpka" value="1.6">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI19">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2017-03-01T15:49:00Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI19">
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/28613156"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </parameter>
+      <parameter constant="true" id="kcatpp1" metaid="COPASI20" name="kcatpp1" value="0.5">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI20">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-19T14:24:33Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="pp1" metaid="COPASI21" name="pp1" value="5">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI21">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2017-03-01T15:50:32Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="kmpp1" metaid="COPASI22" name="kmpp1" value="1">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI22">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2017-03-01T15:49:00Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="k88" metaid="COPASI23" name="k88" value="0.01865">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI23">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-14T14:12:49Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="kcamp" metaid="COPASI24" name="kcamp" value="0.7">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI24">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-19T14:24:31Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI24">
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/14625280"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </parameter>
+      <parameter constant="true" id="n" metaid="COPASI25" name="n" value="2">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI25">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2017-03-01T15:50:22Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI25">
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/14625280"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </parameter>
+      <parameter constant="true" id="KA" metaid="COPASI26" name="KA" value="10">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI26">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-19T14:24:30Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#COPASI26">
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/14625280"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </parameter>
+      <parameter constant="true" id="k46" metaid="COPASI27" name="k46" value="0.02335">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI27">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-14T14:12:49Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="cAMP" metaid="COPASI28" name="cAMP" value="0">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI28">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-14T15:27:04Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="false" id="A46bar" metaid="COPASI29" name="A46bar" value="0.980000000000001">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI29">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2016-07-15T16:01:27Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="a" metaid="COPASI30" name="a" value="0.37526">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI30">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2017-03-01T17:12:46Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="b" metaid="COPASI31" name="b" value="2.36">
+        <annotation>
+          <COPASI xmlns="http://www.copasi.org/static/sbml">
+            <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+              <rdf:Description rdf:about="#COPASI31">
+                <dcterms:created>
+                  <rdf:Description>
+                    <dcterms:W3CDTF>2017-03-02T15:04:22Z</dcterms:W3CDTF>
+                  </rdf:Description>
+                </dcterms:created>
+              </rdf:Description>
+            </rdf:RDF>
+          </COPASI>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="kppx" metaid="COPASI32" name="kppx" value="0.05"/>
+      <parameter constant="true" id="ModelValue_0" metaid="cc7e190f-0045-4ba4-a09a-fa0f0e0bad16" name="Initial for ARPPtot" value="10">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="ARPPtot"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_18" metaid="_44fd4c37-644f-4aa1-95ca-befdbe3d3bde" name="Initial for KA" value="10">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="KA"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_2" metaid="e6b24459-f1e5-4a2d-a8fc-221c86265fcd" name="Initial for MASTtot" value="2.7">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="MASTtot"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_3" metaid="cd9726d6-a39c-4e02-be78-f33118020a43" name="Initial for PKActot" value="12">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="PKActot"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_1" metaid="_28d76c4c-3edc-47ac-baf9-85da8dd10c52" name="Initial for PP2Atot" value="2">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="PP2Atot"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_22" metaid="_68d30833-f9a7-443b-a46a-39e5ec84e525" name="Initial for a" value="0.37526">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="a"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_23" metaid="_45f78f5c-e864-450b-947e-267e43bb69be" name="Initial for b" value="2.36">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="b"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_20" metaid="c5e8c5b2-8457-458e-8d1e-9d25121db990" name="Initial for cAMP" value="0">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="cAMP"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_19" metaid="_3354a204-b572-41c3-ba76-8be972c20fe4" name="Initial for k46" value="0.02335">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="k46"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_15" metaid="_8525270e-3acf-4722-8da6-210d3639bec7" name="Initial for k88" value="0.01865">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="k88"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_4" metaid="_88f6e2b7-ed2c-47d6-8716-69b22387ee5a" name="Initial for kass" value="3.3">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kass"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_16" metaid="_3bcc3c40-2ad5-44c3-8aa6-c29e6215b0f0" name="Initial for kcamp" value="0.7">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kcamp"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_8" metaid="b119dd3a-e99a-4c38-972c-a766fac25775" name="Initial for kcatmast" value="0.0988">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kcatmast"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_10" metaid="_20df9a06-c211-4331-a2dc-6419f221e0cd" name="Initial for kcatpka" value="0.935">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kcatpka"/>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_20df9a06-c211-4331-a2dc-6419f221e0cd">
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/28613156"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_12" metaid="_2066ef00-a779-4d48-add7-0383fb1fed0e" name="Initial for kcatpp1" value="0.5">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kcatpp1"/>
+        <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_2066ef00-a779-4d48-add7-0383fb1fed0e">
+	<bqbiol:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/16110334"/>
+	</rdf:Bag>
+	</bqbiol:isDescribedBy>
+	</rdf:Description>
+	
+	
+	
+	
+	
+	
+	</rdf:RDF>
+	</annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_6" metaid="_214e889b-d2f8-458c-bd06-c196bb4ecd93" name="Initial for kcatpp2a" value="0.05">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kcatpp2a"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_5" metaid="_96df6eac-81ee-4738-baf9-c86b21c7d572" name="Initial for kdiss" value="0.0033">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kdiss"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_9" metaid="_15cbdd45-2463-4d4a-80c9-a23bb695fe4a" name="Initial for kmmast" value="0.09">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kmmast"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_11" metaid="ec20be73-823c-4317-b477-d3dab0ee47b4" name="Initial for kmpka" value="1.6">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kmpka"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_14" metaid="dcb959b7-c4d9-4675-804d-9d71d20d47b6" name="Initial for kmpp1" value="1">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="kmpp1"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_17" metaid="b28c601b-94c5-4e8e-ad6e-8fbb864a6595" name="Initial for n" value="2">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="n"/>
+        </annotation>
+            </parameter>
+      <parameter constant="true" id="ModelValue_13" metaid="_035b83a3-beec-411e-9371-aea2f00be1cb" name="Initial for pp1" value="5">
+        <annotation>
+          <initialValue xmlns="http://copasi.org/initialValue" parent="pp1"/>
+        </annotation>
+            </parameter>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment metaid="cffb87ec-c61e-48a0-8dcf-7489429f7759" symbol="A88">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <minus/>
+            <ci> ARPPtot </ci>
+            <ci> A46 </ci>
+          </apply>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_94f9e2f7-dda7-4e28-a5f8-8a6a6bc122e9" symbol="ModelValue_0">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> ARPPtot </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="e560076c-97a1-4eb7-bc06-f5b210b01fb1" symbol="ModelValue_18">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> KA </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="ed6554a0-d5c7-45e0-b77c-63f13a3ba075" symbol="ModelValue_2">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> MASTtot </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="f43ee317-b118-4ca6-9ca9-164a9e075fa5" symbol="ModelValue_3">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> PKActot </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_5e6a4253-5cdf-482d-b682-9748f42a2004" symbol="ModelValue_1">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> PP2Atot </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_3e5ea61b-764b-46af-881b-91052114ec12" symbol="ModelValue_22">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> a </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_1e42574c-727d-42b9-806b-582976a583c8" symbol="ModelValue_23">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> b </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_8ed79b35-ef94-4f74-bb77-336c343801f1" symbol="ModelValue_20">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> cAMP </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="be2ab535-d56c-4bb6-ba26-e72d62f54eb9" symbol="ModelValue_19">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> k46 </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_96753cc8-5445-4466-9541-bbafcce4d5e2" symbol="ModelValue_15">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> k88 </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_6b7b33e1-ca19-4b7f-854f-68eab9adebb6" symbol="ModelValue_4">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kass </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="ccc4ffad-1e96-4934-b2ee-6430b136bec5" symbol="ModelValue_16">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kcamp </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_929b4bd9-1ff1-4873-9301-269698b4dcc2" symbol="ModelValue_8">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kcatmast </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_268318d3-fd00-4a90-8aa5-2c70841df8ac" symbol="ModelValue_10">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kcatpka </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_559e112b-3db4-4dfc-8f9c-b345826fbfcd" symbol="ModelValue_12">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kcatpp1 </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_17ae0f79-175c-4507-9ab5-9b96ad4e80e6" symbol="ModelValue_6">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kcatpp2a </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_3a542d56-c6ab-4122-8208-cb8a950823d1" symbol="ModelValue_5">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kdiss </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_3ce04e17-f65f-419d-8063-573eff5552fe" symbol="ModelValue_9">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kmmast </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="c3f1a4d2-5df0-4a0e-b09f-4e55bb2eb303" symbol="ModelValue_11">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kmpka </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="a9629967-1aed-455d-bd85-d6b4f1ab5f6c" symbol="ModelValue_14">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> kmpp1 </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_5c42997b-d195-4d9b-8cae-b6f0bfaaea1d" symbol="ModelValue_17">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> n </ci>
+        </math>
+            </initialAssignment>
+      <initialAssignment metaid="_3a76dc6f-d7a3-45d9-978b-07c1a5f62950" symbol="ModelValue_13">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <ci> pp1 </ci>
+        </math>
+            </initialAssignment>
+    </listOfInitialAssignments>
+    <listOfRules>
+      <assignmentRule metaid="e4e870c2-2fc2-41c6-bb3e-23930704a777" variable="kmpp2a">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <apply>
+              <plus/>
+              <ci> ModelValue_5 </ci>
+              <ci> ModelValue_6 </ci>
+            </apply>
+            <ci> ModelValue_4 </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="aca44bc9-16ad-496b-b483-807fe4d81f52" variable="BB">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <plus/>
+            <ci> A46 </ci>
+            <ci> ModelValue_1 </ci>
+            <ci> kmpp2a </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="_12f7773b-2ed7-475d-971b-58bbbc56483d" variable="Complex">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <ci> BB </ci>
+              <apply>
+                <root/>
+                <degree>
+                  <cn type="integer"> 2 </cn>
+                </degree>
+                <apply>
+                  <minus/>
+                  <apply>
+                    <power/>
+                    <ci> BB </ci>
+                    <cn> 2 </cn>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <cn> 4 </cn>
+                    <ci> A46 </ci>
+                    <ci> ModelValue_1 </ci>
+                  </apply>
+                </apply>
+              </apply>
+            </apply>
+            <cn> 2 </cn>
+          </apply>
+        </math>
+            </assignmentRule>
+      <assignmentRule metaid="bc1b6219-fe6f-4923-b335-2e7742d4de7e" variable="A46bar">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <divide/>
+            <ci> A46 </ci>
+            <ci> ModelValue_0 </ci>
+          </apply>
+        </math>
+            </assignmentRule>
+      <rateRule metaid="_0a64d4e1-4d4c-42b5-b42c-b6f3f8e261f2" variable="A46">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <minus/>
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> ModelValue_8 </ci>
+                <ci> M </ci>
+                <apply>
+                  <minus/>
+                  <ci> ModelValue_0 </ci>
+                  <ci> A46 </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <ci> ModelValue_9 </ci>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <ci> ModelValue_22 </ci>
+                    <ci> A88 </ci>
+                  </apply>
+                  <ci> ModelValue_0 </ci>
+                </apply>
+                <apply>
+                  <minus/>
+                  <ci> ModelValue_0 </ci>
+                  <ci> A46 </ci>
+                </apply>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <ci> ModelValue_6 </ci>
+              <ci> Complex </ci>
+            </apply>
+          </apply>
+        </math>
+            </rateRule>
+      <rateRule metaid="ba2a6906-144f-45ee-a555-daf32b23892c" variable="A88">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <minus/>
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> ModelValue_10 </ci>
+                <ci> PKA </ci>
+                <apply>
+                  <minus/>
+                  <ci> ModelValue_0 </ci>
+                  <ci> A88 </ci>
+                </apply>
+              </apply>
+              <apply>
+                <minus/>
+                <apply>
+                  <plus/>
+                  <ci> ModelValue_11 </ci>
+                  <apply>
+                    <divide/>
+                    <apply>
+                      <times/>
+                      <ci> ModelValue_23 </ci>
+                      <ci> A46 </ci>
+                    </apply>
+                    <ci> ModelValue_0 </ci>
+                  </apply>
+                  <ci> ModelValue_0 </ci>
+                </apply>
+                <ci> A88 </ci>
+              </apply>
+            </apply>
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> ModelValue_12 </ci>
+                <ci> ModelValue_13 </ci>
+                <ci> A88 </ci>
+              </apply>
+              <apply>
+                <plus/>
+                <ci> ModelValue_14 </ci>
+                <ci> A88 </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+            </rateRule>
+      <rateRule metaid="_59e51aa9-5004-4fe5-b4b9-b7aef2de1776" variable="M">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <minus/>
+            <apply>
+              <times/>
+              <ci> kppx </ci>
+              <apply>
+                <minus/>
+                <ci> ModelValue_2 </ci>
+                <ci> M </ci>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <ci> ModelValue_15 </ci>
+              <ci> A88 </ci>
+              <ci> M </ci>
+            </apply>
+          </apply>
+        </math>
+            </rateRule>
+      <rateRule metaid="d51a1243-490a-44e0-a6e2-deeaa99df176" variable="PKA">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">        
+          <apply>
+            <minus/>
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> ModelValue_16 </ci>
+                <apply>
+                  <minus/>
+                  <ci> ModelValue_3 </ci>
+                  <ci> PKA </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> ModelValue_20 </ci>
+                  <ci> ModelValue_17 </ci>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> ModelValue_18 </ci>
+                  <ci> ModelValue_17 </ci>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> ModelValue_20 </ci>
+                  <ci> ModelValue_17 </ci>
+                </apply>
+              </apply>
+            </apply>
+            <apply>
+              <times/>
+              <ci> ModelValue_19 </ci>
+              <ci> A46 </ci>
+              <ci> PKA </ci>
+            </apply>
+          </apply>
+        </math>
+            </rateRule>
+    </listOfRules>
+  </model>
+</sbml>

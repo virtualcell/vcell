@@ -11,7 +11,7 @@
    2. 
        ```bash
        pushd ../build
-       ./build.sh --skip-maven --skip-singularity --skip-sudo all localhost:5000/virtualcell dev_zeke
+       ./build.sh --skip-maven --skip-sudo all localhost:5000/virtualcell dev_zeke
        popd
       ```
 

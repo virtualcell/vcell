@@ -472,7 +472,7 @@ public class RunUtils {
 
     public static String getTempDir() throws IOException {
         String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory(
-            RunUtils.VCELL_TEMP_DIR_PREFIX + UUID.randomUUID().toString()).toAbsolutePath());
+            RunUtils.VCELL_TEMP_DIR_PREFIX + UUID.randomUUID()).toAbsolutePath());
         logger.info("TempPath Created: " + tempPath);
         return tempPath;
     }
@@ -493,22 +493,22 @@ public class RunUtils {
 
 
     public static boolean removeAndMakeDirs(File f) {
-        boolean removalSuccess = true;
-        if (f.exists()) {
-            boolean isRemoved = CLIUtils.removeDirs(f);
-            if (!isRemoved)
-                removalSuccess = false;
-                // we don't throw an exception up the stack here for two reasons:
-                // 1) deletion of files differs on different OS. Punishing users for their OS or their understanding thereof seems wrong.
-                // 2) the user may be using software that is necessarily holding resources; by blocking on failed deletion, we are
-                //      denying the potential use cases of VCell.
-                try{
-                    throw new Exception("File '" + f.getCanonicalPath() + "' could not be deleted!");
-                } catch (Exception e){
-                    logger.error(e);
-                }
+        if (!f.exists()) return f.mkdirs();
+        String filePath = "";
+        try {
+            filePath += f.getCanonicalPath();
+            org.vcell.util.FileUtils.deleteDirectoryContents(f, true, null);
+        } catch (IOException e) {
+            // if we got to here, we've tried to clear the contents of a directory a failed.
+            // we don't throw an exception up the stack here for two reasons:
+            // 1) deletion of files differs on different OS. Punishing users for their OS or their understanding thereof seems wrong.
+            // 2) the user may be using software that is necessarily holding resources; by blocking on failed deletion, we are
+            //      denying the potential use cases of VCell.
+            String msg = "File '" + filePath + "' could not be deleted!";
+            logger.error(msg, e);
+            return false;
         }
-        return f.mkdirs() && removalSuccess;
+        return true;
     }
 
     public static void createCSVFromODEResultSet(ODESolverResultSet resultSet, File f) throws ExpressionException {

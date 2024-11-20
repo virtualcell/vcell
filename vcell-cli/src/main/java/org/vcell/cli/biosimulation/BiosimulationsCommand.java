@@ -9,11 +9,14 @@ import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.run.ExecuteImpl;
 import org.vcell.cli.trace.Tracer;
+import org.vcell.util.FileUtils;
 import org.vcell.util.exe.Executable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.util.Date;
 import java.util.concurrent.Callable;
 
 @Command(name = "biosimulations", description = "BioSimulators-compliant command-line interface to the vcell simulation program <https://vcell.org>.")
@@ -90,18 +93,17 @@ public class BiosimulationsCommand implements Callable<Integer> {
             }
 
             logger.info("Beginning execution");
+            File tmpDir = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
-                ExecuteImpl.singleMode(ARCHIVE, OUT_DIR, cliRecorder, true);
-                if (Tracer.hasErrors()){
-                    if (!bQuiet) {
-                        logger.error("Errors occurred during execution");
-                        Tracer.reportErrors(bDebug);
-                    }
-                    return 1;
-                } else {
-                    return 0;
+                ExecuteImpl.singleMode(ARCHIVE, tmpDir, cliRecorder, true);
+                FileUtils.copyDirectoryContents(tmpDir, OUT_DIR, true, null);
+                if (!Tracer.hasErrors()) return 0;
+                if (!bQuiet) {
+                    logger.error("Errors occurred during execution");
+                    Tracer.reportErrors(bDebug);
                 }
+                return 1;
             } finally {
                 try {
                     CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called

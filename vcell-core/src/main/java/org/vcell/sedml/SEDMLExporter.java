@@ -17,6 +17,7 @@ import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.ReservedSymbol;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.*;
+import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.MathOverridesResolver.SymbolReplacement;
@@ -57,8 +58,7 @@ import org.vcell.util.document.Version;
 
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.nio.file.*;
 import java.util.*;
@@ -1342,6 +1342,7 @@ public class SEDMLExporter {
 				replaceMetadataRdfFileInArchive(omexFile.toPath(), rdfFilePath);
 			}
 
+			if (OperatingSystemInfo.getInstance().isWindows()) repairManifestEntry(omexFile.toPath());
 			removeOtherFiles(srcFolder, files);
 
 		} catch (Exception e) {
@@ -1356,6 +1357,26 @@ public class SEDMLExporter {
 			Path fileInsideZipPath = fs.getPath(pathInZip);
 			Files.delete(fileInsideZipPath);
 			Files.copy(newFilePath, fileInsideZipPath);
+		}
+	}
+
+	private static void repairManifestEntry(Path zipFilePath) throws IOException {
+		try (FileSystem fs = FileSystems.newFileSystem(zipFilePath)) {
+			Path manifestPath = fs.getPath("/", "manifest.xml");
+			if (!Files.exists(manifestPath)) throw new IOException("The manifest file in " + zipFilePath + " is missing");
+
+			List<String> rawLines, correctedLines = new ArrayList<>();
+			try (BufferedReader reader = new BufferedReader(Files.newBufferedReader(manifestPath))) {
+				rawLines = reader.lines().toList();
+			}
+			for (String rawLine : rawLines) {
+				correctedLines.add(rawLine.contains(".\\") ? rawLine.replace(".\\", "./") : rawLine);
+			}
+			Path tmpFilePath = Files.createTempFile("fixedManifest", "");
+			try (BufferedWriter writer = new BufferedWriter(Files.newBufferedWriter(tmpFilePath))) {
+				for (String line : correctedLines) writer.write(line + "\n");
+			}
+			Files.copy(tmpFilePath, manifestPath, StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
 

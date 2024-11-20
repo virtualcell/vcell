@@ -14,6 +14,7 @@ import java.net.URI;
 import java.nio.file.*;
 import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class OmexHandler {
     String tempPath;
@@ -40,9 +41,10 @@ public class OmexHandler {
         int indexOfLastSlash = omexPath.lastIndexOf("/");
         this.omexName = omexPath.substring(indexOfLastSlash + 1);
         this.tempPath = RunUtils.getTempDir();
+        Path archiveTempDirPath = Files.copy(Paths.get(omexPath), Paths.get(RunUtils.getTempDir(), "archive_to_execute.omex"));
         try {
-            replaceMetadataRdfFiles(Paths.get(omexPath));
-            this.archive = new CombineArchive(new File(omexPath));
+            replaceMetadataRdfFiles(archiveTempDirPath);
+            this.archive = new CombineArchive(archiveTempDirPath.toFile());
             if (this.archive.hasErrors()){
                 String message = "Unable to initialise OMEX archive "+this.omexName+": "+this.archive.getErrors();
                 logger.error(message);
@@ -50,36 +52,43 @@ public class OmexHandler {
             }
         }catch (CombineArchiveException | JDOMException | ParseException e) {
             String message = String.format("Unable to initialise OMEX archive \"%s\", archive maybe corrupted", this.omexName);
-            logger.error(message+": "+e.getMessage(), e);
+            logger.error("{}: {}", message, e.getMessage());
             throw new IOException(e);
         }
     }
 
     private void replaceMetadataRdfFiles(Path zipFilePath) throws IOException {
+        if (!zipFilePath.toFile().exists() || !zipFilePath.toFile().isFile())
+            throw new IllegalArgumentException("ZipFile supposedly at `" + zipFilePath + "` is invalid");
+        if (!zipFilePath.toFile().canWrite()) if (!zipFilePath.toFile().setWritable(true))
+            throw new IllegalArgumentException("ZipFile at `" + zipFilePath + "` can not be written to.");
+        if (!zipFilePath.toFile().canExecute()) if (!zipFilePath.toFile().setExecutable(true))
+            throw new IllegalArgumentException("ZipFile at `" + zipFilePath + "` does not allow execution.");
         try( FileSystem fs = FileSystems.newFileSystem(zipFilePath) ) {
             for (Path root : fs.getRootDirectories()) {
-                Files.walk(root)
-                        .filter(Files::isRegularFile)
-                        .filter(path -> path.toString().endsWith(".rdf"))
-                        .forEach(path -> {
-                            try {
-                                // write empty RDF file to temp file and replace the file inside the zip
-                                Path tempFile = Files.createTempFile("temp", ".rdf");
-                                String new_rdf_content =
-                                    """
-                                    <?xml version='1.0' encoding='UTF-8'?>
-                                    <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
-                                    </rdf:RDF>
-                                    """;
-                                Files.write(tempFile, new_rdf_content.getBytes());
-                                // replace fileInsideZipPath with temp file
-                                Files.delete(path);
-                                Files.copy(tempFile, path);
-                                Files.delete(tempFile);
-                            } catch (IOException e) {
-                                logger.error("Unable to delete metadata.rdf file from OMEX archive: " + e.getMessage(), e);
-                            }
-                        });
+                try (Stream<Path> contents = Files.walk(root)) {
+                    contents.filter(Files::isRegularFile)
+                            .filter(path -> path.toString().endsWith(".rdf"))
+                            .forEach(path -> {
+                                try {
+                                    // write empty RDF file to temp file and replace the file inside the zip
+                                    Path tempFile = Files.createTempFile("temp", ".rdf");
+                                    String new_rdf_content =
+                                            """
+                                            <?xml version='1.0' encoding='UTF-8'?>
+                                            <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
+                                            </rdf:RDF>
+                                            """;
+                                    Files.write(tempFile, new_rdf_content.getBytes());
+                                    // replace fileInsideZipPath with temp file
+                                    Files.delete(path);
+                                    Files.copy(tempFile, path);
+                                    Files.delete(tempFile);
+                                } catch (IOException e) {
+                                    logger.error("Unable to delete metadata.rdf file from OMEX archive: " + e.getMessage(), e);
+                                }
+                            });
+                }
             }
 
         }
@@ -128,11 +137,12 @@ public class OmexHandler {
 
         // Test corner cases
         if (sedmlMap.get(MASTER).isEmpty()){
-            if (masterCount > 0)
-                throw new RuntimeException("No SED-MLs are intended to be executed (non SED-ML file is set to be master)");
-            if (sedmlMap.get(REGULAR).isEmpty())
+            if (sedmlMap.get(REGULAR).isEmpty()) {
                 throw new RuntimeException("There are no SED-MLs in the archive to execute");
-
+            }
+            if (masterCount > 0) {
+                logger.warn("No SED-MLs are marked as master, so will run them all");
+            }
             return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
         }
 

@@ -60,6 +60,7 @@ public class N5ExporterTest {
     private User testUser;
     private CartesianMesh modelMesh;
     private double[] times;
+    private ExportServiceImpl exportService = new ExportServiceImpl();
 
 
     private ArrayList<DataIdentifier> dataIdentifiers;
@@ -129,8 +130,6 @@ public class N5ExporterTest {
         previousSimCacheSize = PropertyLoader.getProperty(PropertyLoader.simdataCacheSizeProperty, null);
         PropertyLoader.setProperty(PropertyLoader.simdataCacheSizeProperty, "100000");
 
-        ExportServiceImpl exportService = new ExportServiceImpl();
-
         Cachetable cachetable = new Cachetable(10 * Cachetable.minute, Long.parseLong(PropertyLoader.getRequiredProperty(PropertyLoader.simdataCacheSizeProperty)));
         File primaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty));
         File secodaryDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty));
@@ -138,7 +137,6 @@ public class N5ExporterTest {
         DataServerImpl dataServer = new DataServerImpl(dataSetController, exportService);
 
         testUser = new User("ezequiel23", new KeyValue("258925427"));
-        n5Exporter = new N5Exporter(exportService);
         this.dataServer = dataServer;
     }
 
@@ -202,7 +200,7 @@ public class N5ExporterTest {
         VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(simModel.simID), testUser);
 
         vcDataID = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
-        n5Exporter.initalizeDataControllers(testUser, dataServer, vcDataID);
+        n5Exporter = new N5Exporter(exportService, testUser, dataServer, vcDataID);
         dataIdentifiers = new ArrayList<>(Arrays.asList(dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), testUser, vcDataID)));
 
         modelMesh = dataServer.getMesh(testUser, vcDataID);

@@ -1,6 +1,5 @@
 package org.vcell.cli.run.hdf5;
 
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
 import org.jlibsedml.DataSet;
@@ -14,8 +13,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer.BiosimulationsHdfWriterException;
 
 @Tag("Fast")
 public class BiosimulationsHdf5WriterTest {
@@ -100,7 +97,6 @@ public class BiosimulationsHdf5WriterTest {
     public void test() throws BiosimulationsHdfWriterException, IOException {
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
-        NativeLib.HDF5.load();
         HDF5ExecutionResults exampleHdf5FileWrapper = BiosimulationsHdf5WriterTest.createExampleData();
         File dir = Files.createTempDir();
         BiosimulationsHdf5Writer.writeHdf5(exampleHdf5FileWrapper, dir);

@@ -28,12 +28,12 @@ jobs:
 
       - name: Install Perl # for BioNetGen
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y --no-install-recommends perl
+          sudo apt update -y
+          sudo apt install -y --no-install-recommends perl
 
       - name: Install XPP
         run: |
-          sudo apt-get install -y --no-install-recommends xppaut
+          sudo apt install -y --no-install-recommends xppaut
 
       - name: Install Go (for Singularity)
         uses: actions/setup-go@v3
@@ -47,7 +47,7 @@ jobs:
           OS: linux
           ARCH: amd64
         run: |
-          sudo apt-get install -y --no-install-recommends \
+          sudo apt install -y --no-install-recommends \
             build-essential \
             libseccomp-dev \
             pkg-config \
@@ -91,7 +91,7 @@ jobs:
       - name: Login into Docker registries
         run: |
           # VCell Docker registry (GHCR)
-          docker login ghcr.io --username ${{ secrets.GHCR_USERNAME }} --password ${{ secrets.GHCR_TOKEN }}
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - id: validateCommitSimulator
         name: Validate and commit simulator

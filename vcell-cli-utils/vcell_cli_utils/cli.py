@@ -1,15 +1,12 @@
-import glob
 import json
 import os
-import shutil
 import stat
 import sys
 import tempfile
-from dataclasses import dataclass
 from typing import List
 
+import biosimulators_utils.sedml.utils
 import fire
-import libsedml as lsed
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -22,13 +19,9 @@ from biosimulators_utils.log.data_model import Status, CombineArchiveLog, SedDoc
 from biosimulators_utils.combine.validation import validate
 from biosimulators_utils.combine.data_model import CombineArchiveContentFormat
 
-# from biosimulators_utils.plot.data_model import PlotFormat  # noqa: F401
 from biosimulators_utils.report.data_model import DataSetResults, ReportResults, ReportFormat  # noqa: F401
-from biosimulators_utils.report.io import ReportWriter
-from biosimulators_utils.sedml.data_model import Report, Plot2D, Plot3D, DataSet
+from biosimulators_utils.sedml.data_model import Report, Plot2D, Plot3D, DataSet, SedDocument
 from biosimulators_utils.sedml.io import SedmlSimulationReader, SedmlSimulationWriter
-from deprecated import deprecated
-from libsedml import SedReport, SedPlot2D
 
 # Move status PY code here
 # Create temp directory
@@ -89,11 +82,10 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
     sedml_contents = get_sedml_contents(archive)
 
     for i_content, content in enumerate(sedml_contents):
-        content_filename = os.path.join(temp_path, content.location)
-        if '/' in content.location:
-            sedml_name = content.location.split('/')[1].split('.')[0]
-        else:
-            sedml_name = content.location.split('.')[0]
+        content_filename = os.path.normpath(os.path.join(temp_path, content.location))
+        starting_sedml_name_index = content.location.rfind("/") + 1 if '/' in content.location else 0
+        ending_sedml_name_index = content.location.rfind(".")
+        sedml_name = content.location[starting_sedml_name_index:ending_sedml_name_index]
 #        sedml_name = Path(content.location).stem
         print("name: ", sedml_name, file=sys.stdout)
         print("sedml_name: ", sedml_name, file=sys.stdout)
@@ -135,98 +127,9 @@ def gen_sedml_2d_3d(omex_file_path, base_out_path):
             temp_path, f'simulation_{sedml_name}.sedml')
         SedmlSimulationWriter().run(doc, filename_with_reports_for_plots,
                                     validate_models_with_languages=False)
+        if not os.path.exists(filename_with_reports_for_plots):
+            raise FileNotFoundError("The desired pseudo-sedml failed to generate!")
     return temp_path
-
-
-@deprecated("This method is no longer used")
-def exec_sed_doc(omex_file_path, base_out_path):
-    # defining archive
-    config = Config(VALIDATE_OMEX_MANIFESTS=False)
-    archive = CombineArchiveReader().run(in_file=omex_file_path, out_dir=tmp_dir,
-                                         config=config)
-
-    # determine files to execute
-    sedml_contents = get_sedml_contents(archive)
-
-    report_results = ReportResults()
-    for i_content, content in enumerate(sedml_contents):
-        content_filename = os.path.join(tmp_dir, content.location)
-
-        doc = SedmlSimulationReader().run(content_filename)
-
-        for report_filename in glob.glob(os.path.join(base_out_path, content.location, '*.csv')):
-            report_id = os.path.splitext(os.path.basename(report_filename))[0]
-
-            # read report from CSV file produced by VCell
-            data_set_df = pd.read_csv(report_filename).transpose()
-            data_set_df.columns = data_set_df.iloc[0]
-            data_set_df = data_set_df.drop(data_set_df.iloc[0].name)
-            data_set_df = data_set_df.reset_index()
-            data_set_df = data_set_df.rename(
-                columns={'index': data_set_df.columns.name})
-            data_set_df = data_set_df.transpose()
-            data_set_df.index.name = None
-
-            report = next(
-                report for report in doc.outputs if report.id == report_id)
-
-            data_set_results = DataSetResults()
-
-            # print("report: ", report, file=sys.stderr)
-            # print("report Type: ", type(report), file=sys.stderr)
-            # print("Plot Type: ", Plot2D, file=sys.stderr)
-            if type(report) != Plot2D and type(report) != Plot3D:
-                # Considering the scenario where it has the datasets in sedml
-                for data_set in report.data_sets:
-                    data_set_results[data_set.id] = data_set_df.loc[data_set.label, :].to_numpy(
-                        dtype='float64')
-                    # print("DF for report: ", data_set_results[data_set.id], file=sys.stderr)
-                    # print("df.types: ", data_set_results[data_set.id].dtype, file=sys.stderr)
-            else:
-                data_set_df = pd.read_csv(report_filename, header=None).T
-                data_set_df.columns = data_set_df.iloc[0]
-                data_set_df.drop(0, inplace=True)
-                data_set_df.reset_index(inplace=True)
-                data_set_df.drop('index', axis=1, inplace=True)
-                # print("DF for plot: ", data_set_df, file=sys.stderr)
-                # Considering the scenario where it doesn't have datasets in sedml (pseudo sedml for plots)
-                for col in list(data_set_df.columns):
-                    data_set_results[col] = data_set_df[col].values
-
-            # append to data structure of report results
-            report_results[report_id] = data_set_results
-
-            # save file in desired BioSimulators format(s)
-            # for report_format in report_formats:
-            # print("HDF report: ", report, file=sys.stderr)
-            # print("HDF dataset results: ", data_set_results, file=sys.stderr)
-            # print("HDF base_out_path: ", base_out_path,file=sys.stderr)
-            # print("HDF path: ", os.path.join(content.location, report.id), file=sys.stderr)
-
-            rel_path = os.path.join(content.location, report.id)
-
-            if len(rel_path.split("./")) > 1:
-                rel_path = rel_path.split("./")[1]
-
-            if type(report) != Plot2D and type(report) != Plot3D:
-                ReportWriter().run(report,
-                                   data_set_results,
-                                   base_out_path,
-                                   rel_path,
-                                   format='h5')
-            else:
-                datasets = []
-                for col in list(data_set_df.columns):
-                    datasets.append(DataSet(id=col, label=col, name=col))
-                report.data_sets = datasets
-                ReportWriter().run(report,
-                                   data_set_results,
-                                   base_out_path,
-                                   rel_path,
-                                   format='h5')
-
-    # Remove temp directory
-    shutil.rmtree(tmp_dir)
 
 
 def transpose_vcml_csv(csv_file_path: str):
@@ -240,30 +143,29 @@ def get_all_dataref_and_curves(sedml_path):
     all_plot_curves = {}
     all_report_dataref = {}
 
-    sedml = lsed.readSedML(sedml_path)
+    sedml: SedDocument = SedmlSimulationReader().run(sedml_path)
 
-    for output in sedml.getListOfOutputs():
-        if type(output) == SedPlot2D:
+    for output in sedml.outputs:
+        if isinstance(output, Plot2D):
             all_curves = {}
-            for curve in output.getListOfCurves():
+            for curve in output.curves:
                 all_curves[curve.getId()] = {
                     'x': curve.getXDataReference(),
                     'y': curve.getYDataReference()
                 }
-            all_plot_curves[output.getId()] = all_curves
-        if type(output) == SedReport:
-            for dataset in output.getListOfDataSets():
+            all_plot_curves[output.id] = all_curves
+        if isinstance(output, Report):
+            for dataset in output.data_sets():
 
                 ######
-                if output.getId() in all_report_dataref:
-
-                    all_report_dataref[output.getId()].append({
+                if output.id in all_report_dataref:
+                    all_report_dataref[output.id].append({
                         'data_reference': dataset.getDataReference(),
                         'data_label': dataset.getLabel()
                     })
                 else:
-                    all_report_dataref[output.getId()] = []
-                    all_report_dataref[output.getId()].append({
+                    all_report_dataref[output.id] = []
+                    all_report_dataref[output.id].append({
                         'data_reference': dataset.getDataReference(),
                         'data_label': dataset.getLabel()
                     })
@@ -335,24 +237,75 @@ def gen_plot_pdfs(sedml_path, result_out_dir):
     plot_and_save_curves(all_plot_curves, report_frames, result_out_dir)
 
 
+def gen_plots_for_sed2d_only_2(sedml_path, result_out_dir):
+    sedml: biosimulators_utils.sedml.data_model.SedDocument \
+        = biosimulators_utils.sedml.io.SedmlSimulationReader().run(sedml_path)
+
+    for plot in [output for output in sedml.outputs if isinstance(output, Plot2D)]:
+        dims = (12, 8)
+        _, ax = plt.subplots(figsize=dims)
+
+
+        df = pd.read_csv(os.path.join(result_out_dir, plot.id + '.csv'), header=None).T
+
+        # create mapping from task to all repeated tasks (or just itself)
+        curve_id_mapping = {}
+        for elem in df.iloc[1]:
+            if elem not in curve_id_mapping:
+                curve_id_mapping[elem] = []
+            curve_id_mapping[elem].append(str(elem) + "_" + str(len(curve_id_mapping[elem])))
+
+        labels = []
+        for key in curve_id_mapping:
+            if len(curve_id_mapping[key]) == 1:
+                curve_id_mapping[key][0] = key  # If there wasn't repeated tasks, restore the old name
+            for elem in curve_id_mapping[key]:
+                labels.append(elem)
+
+        # format data frame
+        df.columns = labels
+        df.drop(0, inplace=True)
+        df.drop(1, inplace=True)
+        df.drop(2, inplace=True)
+        df.reset_index(inplace=True)
+        df.drop('index', axis=1, inplace=True)
+
+        with open("/home/ldrescher/DataFrameFile.df", "w+") as debug_file:
+            debug_file.write(repr(df))
+
+        for curve in plot.curves:
+            should_label = True
+            for curve_name in curve_id_mapping[curve.y_data_generator.id]:
+                if curve.x_data_generator.id in labels:
+                    raise(f"Can not find x data set `{curve.x_data_generator.id}` in data frame (legal set: {labels})")
+                if curve_name not in labels:
+                    raise(f"Can not find y data set `{curve_name}` in data frame (legal set: {labels})")
+                sns.lineplot(data=df, x=curve.x_data_generator.id, y=curve_name, ax=ax,
+                             label=(curve.id if should_label else None))
+                ax.set_ylabel('')
+                should_label = False
+            plt.savefig(os.path.join(result_out_dir, plot.id + '.pdf'), dpi=300)
+
 def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
     all_plot_curves = {}
 
-    sedml = lsed.readSedML(sedml_path)
-    # print(sedml)
+    sedml: SedDocument = SedmlSimulationReader().run(sedml_path)
 
     # Generate all_plot_curves
-    for output in sedml.getListOfOutputs():
-        # print(output)
-        if type(output) == SedPlot2D:
-            all_curves = {}
-            for curve in output.getListOfCurves():
-                # print(curve)
-                all_curves[curve.getId()] = {
-                    'x': curve.getXDataReference(),
-                    'y': curve.getYDataReference()
-                }
-            all_plot_curves[output.getId()] = all_curves
+    all_plot_curves = {}
+    for output in sedml.outputs:
+        if not isinstance(output, Plot2D):
+            continue
+        sed_plot_2d: Plot2D = output
+        all_curves = {}
+
+        for curve in sed_plot_2d.curves:
+            all_curves[curve.id] = {
+                'x': curve.x_data_generator,
+                'y': curve.y_data_generator
+            }
+        all_plot_curves[sed_plot_2d.id] = all_curves
+
 
     all_plots = dict(all_plot_curves)
     for plot_id, curve_dat_dict in all_plots.items(): # curve_dat_dict <--> all_curves
@@ -386,8 +339,8 @@ def gen_plots_for_sed2d_only(sedml_path, result_out_dir):
 
         for curve_id, data in curve_dat_dict.items(): # data <--> (dict)all_curves.values()
             shouldLabel = True
-            for series_name in labelMap[data['y']]:
-                sns.lineplot(data=df, x=data['x'], y=series_name, ax=ax, label=(curve_id if shouldLabel else None))
+            for series_name in labelMap[data['y'].id]:
+                sns.lineplot(data=df, x=data['x'].id, y=series_name, ax=ax, label=(curve_id if shouldLabel else None))
                 ax.set_ylabel('')
                 shouldLabel = False
             plt.savefig(os.path.join(result_out_dir, plot_id + '.pdf'), dpi=300)
@@ -397,7 +350,6 @@ if __name__ == "__main__":
     fire.Fire({
         'genSedml2d3d': gen_sedml_2d_3d,
         'genPlotsPseudoSedml': gen_plots_for_sed2d_only,
-        'execSedDoc': exec_sed_doc,
         'transposeVcmlCsv': transpose_vcml_csv,
         'genPlotPdfs': gen_plot_pdfs,
     })

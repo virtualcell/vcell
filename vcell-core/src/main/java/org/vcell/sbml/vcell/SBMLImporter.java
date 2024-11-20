@@ -2975,18 +2975,35 @@ public class SBMLImporter {
     private static void applySavedExpressions(org.sbml.jsbml.Model sbmlModel, SBMLSymbolMapping sbmlSymbolMapping, VCLogger vcLogger) throws Exception{
         for(SBase sbmlValueTargetSbase : sbmlSymbolMapping.getSbmlValueTargets()){
             Double sbmlValue = sbmlSymbolMapping.getSbmlValue(sbmlValueTargetSbase);
-            if(sbmlValue != null && !sbmlValue.isInfinite() && !sbmlValue.isNaN()){
+            final Expression sbmlValueExp;
+            if (sbmlValue != null) {
+                if (sbmlValue.isInfinite() && sbmlValue > 0) {
+                    sbmlValueExp = new Expression(Double.MAX_VALUE);
+                    logger.debug("setting infinite value for SBML id " + sbmlValueTargetSbase.getId() + " to " + Double.MAX_VALUE);
+                } else if (sbmlValue.isInfinite() && sbmlValue < 0){
+                    sbmlValueExp = new Expression(-Double.MAX_VALUE);
+                    logger.debug("setting infinite value for SBML id " + sbmlValueTargetSbase.getId() + " to " + -Double.MAX_VALUE);
+                } else if (sbmlValue.isNaN()){
+                    sbmlValueExp = new Expression("0/0");
+                    logger.debug("setting NaN value for SBML id " + sbmlValueTargetSbase.getId() + " to 0/0");
+                } else {
+                    sbmlValueExp = new Expression(sbmlValue);
+                }
+            } else {
+                sbmlValueExp = null;
+            }
+            if(sbmlValueExp != null){
                 EditableSymbolTableEntry targetSte = sbmlSymbolMapping.getInitialSte(sbmlValueTargetSbase);
                 try {
                     if(targetSte != null){
                         if(targetSte.isExpressionEditable()){
-                            targetSte.setExpression(new Expression(sbmlValue));
+                            targetSte.setExpression(sbmlValueExp);
                         }
                     } else {
                         targetSte = sbmlSymbolMapping.getRuntimeSte(sbmlValueTargetSbase);
                         if(targetSte != null){
                             if(targetSte.isExpressionEditable()){
-                                targetSte.setExpression(new Expression(sbmlValue));
+                                targetSte.setExpression(sbmlValueExp);
                             }
                         } else {
                             logger.error("couldn't find vcell object mapped to sbml object: " + sbmlValueTargetSbase);
@@ -2998,7 +3015,7 @@ public class SBMLImporter {
                     vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.OverallWarning, msg);
                 }
             } else {
-                String msg = "missing or unexpected value attribute '" + sbmlValue + "' for SBML object id " + sbmlValueTargetSbase.getId();
+                String msg = "missing value attribute for SBML object id " + sbmlValueTargetSbase.getId();
                 logger.error(msg);
                 vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.OverallWarning, msg);
             }
@@ -3189,15 +3206,20 @@ public class SBMLImporter {
                 }
                 Structure reactionStructure = getReactionStructure(sbmlModel, sbmlReaction, vcBioModel, lambdaFunctions, sbmlSymbolMapping, vcLogger);
                 final ReactionStep vcReaction;
+                String reactionStepName = sbmlReaction.getId();
+                // see if reactionStepName is in the reserved words of Model (e.g. x,y,z,t)
+                if(vcModel.getReservedSymbolByName(reactionStepName) != null){
+                    reactionStepName = TokenMangler.fixTokenStrict("RESERVED_"+reactionStepName);
+                }
                 if(bIsFluxReaction){
                     if(!(reactionStructure instanceof Membrane)){
                         throw new SBMLImportException("Flux reaction on " + reactionStructure.getClass().getSimpleName() + ", not a membrane.");
                     }
-                    vcReaction = new FluxReaction(vcModel, (Membrane) reactionStructure, null, sbmlReaction.getId(), bReversible);
+                    vcReaction = new FluxReaction(vcModel, (Membrane) reactionStructure, null, reactionStepName, bReversible);
                     sbmlSymbolMapping.putReactionMapping(sbmlReaction, vcReaction);
                     vcReaction.setModel(vcModel);
                 } else {
-                    vcReaction = new SimpleReaction(vcModel, reactionStructure, sbmlReaction.getId(), bReversible);
+                    vcReaction = new SimpleReaction(vcModel, reactionStructure, reactionStepName, bReversible);
                     sbmlSymbolMapping.putReactionMapping(sbmlReaction, vcReaction);
                 }
 

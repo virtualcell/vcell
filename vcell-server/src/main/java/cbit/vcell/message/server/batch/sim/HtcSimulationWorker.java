@@ -678,7 +678,11 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.slurm_qos,
 		PropertyLoader.slurm_partition_pu,
 		PropertyLoader.slurm_reservation_pu,
-		PropertyLoader.slurm_qos_pu
+		PropertyLoader.slurm_qos_pu,
+		PropertyLoader.htcMinMemoryMB,
+		PropertyLoader.htcMaxMemoryMB,
+		PropertyLoader.htcPowerUserMemoryFloorMB,
+		PropertyLoader.htcPowerUserMemoryMaxMB
 	};
 
 

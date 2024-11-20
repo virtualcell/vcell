@@ -38,7 +38,12 @@ public class VtkMeshGenerator implements PortableCommand {
 	@Override
 	public int execute() {
 		try {
-			NativeLib.HDF5.load();
+			// skip loading legacy native HDF5 library if the system is a macos arm64
+			// will get runtime errors for Chombo and MovingBoundary until HDF5 is updated
+			boolean MacosArm64 = System.getProperty("os.arch").equals("aarch64") && System.getProperty("os.name").equals("Mac OS X");
+			if (!MacosArm64) {
+				NativeLib.HDF5.load();
+			}
 			KeyValue u = new KeyValue(userkey);
 			User owner = new User(username,u);
 			KeyValue simKey = new KeyValue(simkey);

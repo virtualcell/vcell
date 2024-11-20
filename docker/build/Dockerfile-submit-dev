@@ -10,16 +10,16 @@ RUN $JAVA_HOME/bin/jlink \
          --output /javaruntime
 
 # Define base image and copy in jlink created minimal Java 17 environment
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH "${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 RUN mkdir -p /usr/local/app && \
-	apt-get -y update && \
-    apt-get -y install openssh-client screen apt-utils libfreetype6 fontconfig fonts-dejavu
+	apt -y update && \
+    apt -y install openssh-client screen apt-utils libfreetype6 fontconfig fonts-dejavu
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+RUN DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends tzdata
 RUN unlink /etc/localtime || true
 RUN ln -s /usr/share/zoneinfo/America/New_York /etc/localtime
 
@@ -91,7 +91,11 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
     vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
     simdatadir_archive_external="simdatadir_archive_external-not-set" \
-    simdatadir_archive_internal="simdatadir_archive_internal-not-set"
+    simdatadir_archive_internal="simdatadir_archive_internal-not-set" \
+    htcMinMemoryMB="htc-min-memory-not-set" \
+    htcMaxMemoryMB="htc-max-memory-not-set" \
+    htcPowerUserMemoryFloorMB="htc-power-user-memory-floor-not-set" \
+    htcPowerUserMemoryMaxMB="htc-power-user-memory-max-not-set"
 
 ENV jmspswdfile=/run/secrets/jmspswd \
 	jmsrestpswdfile=/run/secrets/jmsrestpswd \
@@ -170,4 +174,8 @@ ENTRYPOINT java \
 	-Dvcell.simdatadir.archive.external=${simdatadir_archive_external} \
 	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
 	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
+	-Dvcell.htc.memory.min.mb=${htcMinMemoryMB} \
+    -Dvcell.htc.memory.max.mb=${htcMaxMemoryMB} \
+    -Dvcell.htc.memory.pu.floor.mb=${htcPowerUserMemoryFloorMB} \
+    -Dvcell.htc.memory.pu.max.mb=${htcPowerUserMemoryMaxMB} \
 	-cp "./lib/*" cbit.vcell.message.server.batch.sim.HtcSimulationWorker

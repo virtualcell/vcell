@@ -64,9 +64,12 @@ public class N5Exporter implements ExportConstants {
 	));
 
 
-	public N5Exporter(ExportServiceImpl exportServiceImpl) {
-	this.exportServiceImpl = exportServiceImpl;
-}
+	public N5Exporter(ExportServiceImpl exportServiceImpl, User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) {
+		this.exportServiceImpl = exportServiceImpl;
+		this.user = user;
+		this.dataServer = dataServer;
+		this.vcDataID = vcSimulationDataIdentifier;
+	}
 
 	private ExportOutput exportToN5(OutputContext outputContext, long jobID, N5Specs n5Specs, ExportSpecs exportSpecs, FileDataContainerManager fileDataContainerManager) throws Exception {
 		VCUnitDefinition lengthUnit = ModelUnitSystem.createDefaultVCModelUnitSystem().getLengthUnit();
@@ -139,6 +142,7 @@ public class N5Exporter implements ExportConstants {
 
 		int timeLoops = 1;
 		double progress = 0;
+
 		for (int variableIndex=0; variableIndex < (numVariables -1); variableIndex++){
 			for (int timeIndex=timeSpecs.getBeginTimeIndex(); timeIndex <= timeSpecs.getEndTimeIndex(); timeIndex++){
 				int normalizedTimeIndex = timeIndex - timeSpecs.getBeginTimeIndex();
@@ -193,12 +197,6 @@ public class N5Exporter implements ExportConstants {
 			}
 		}
 		return false;
-	}
-
-	public void initalizeDataControllers(User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) throws IOException, DataAccessException {
-		this.user = user;
-		this.vcDataID = vcSimulationDataIdentifier;
-		this.dataServer = dataServer;
 	}
 
 

@@ -90,6 +90,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		faults.put("biomodel_169993006.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_17098642.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_17257105.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT);  // simulation '1 uM iso' in simContext 'compartmental'
+		faults.put("biomodel_185577495.vcml", SEDML_FAULT.MATH_OVERRIDE_NAMES_DIFFERENT); // simulation 'done 1 2 1' in simContext 'Copy of Application0 1'
 		faults.put("biomodel_188880263.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);
 		faults.put("biomodel_18894555.vcml", SEDML_FAULT.MATH_OVERRIDE_NOT_EQUIVALENT);  // simulation 'baseline' in simContext 'compartmental'
 		faults.put("biomodel_189321805.vcml", SEDML_FAULT.NO_MODELS_IN_OMEX);  // new
@@ -326,14 +327,6 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 				!slowTestSet().contains(t);
 		Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fName -> new TestCase(fName, ModelFormat.SBML));
 		return sbml_test_cases.collect(Collectors.toList());
-//		return Arrays.asList(
-//				new TestCase("biomodel_31523791.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_34855932.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_40882931.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_40883509.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_65311813.vcml", ModelFormat.SBML),
-//				new TestCase("biomodel_155016832.vcml", ModelFormat.SBML)
-//				);
 	}
 
 	@ParameterizedTest

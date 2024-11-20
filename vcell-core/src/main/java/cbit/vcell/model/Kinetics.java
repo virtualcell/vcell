@@ -905,8 +905,7 @@ private final void cleanupParameters() throws ModelException, ExpressionExceptio
 				try {
 					exp.bindExpression(reactionStep);
 				}catch (ExpressionBindingException e){
-					if (logger.isDebugEnabled()) logger.error("error binding expression '"+exp.infix()+"': "+e.getMessage(), e);
-					else logger.error("error binding expression '"+exp.infix()+"': "+e.getMessage(), e);
+					logger.debug("Kinetics.cleanupParameters(): binding expression '"+exp.infix()+"': "+e.getMessage(), e);
 				}
 			}
 		}
@@ -1827,7 +1826,9 @@ public void propertyChange(PropertyChangeEvent event) {
 			refreshUnits();
 			cleanupParameters();
 		}
-	}catch (Throwable e){
+	}catch (ExpressionBindingException e){
+		logger.debug(e.getMessage(), e);
+	}catch (Exception e){
 		logger.error(e.getMessage(), e);
 	}
 }
