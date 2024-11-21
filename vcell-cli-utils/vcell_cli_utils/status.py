@@ -32,7 +32,7 @@ def extract_omex_archive(omex_file) -> list:
     return sedml_files_list
 
 
-def status_yml(omex_file: str, out_dir: str) -> None:
+def status_yml(omex_file: str, out_dir: str) -> str:
     yaml_dicts: List[Dict] = []
     for sedml in extract_omex_archive(omex_file):
         outputs_dict: Dict[str, List[Dict]] = {"outputs": []}
@@ -100,6 +100,8 @@ def status_yml(omex_file: str, out_dir: str) -> None:
         sy.write(yaml.dump(final_dict))
     # "return" final_dict
     shutil.rmtree(tmp_dir)
+    print("Success!")
+    return "Success!"
 
 
 def get_yaml_as_str(yaml_path: str) -> dict:
@@ -125,7 +127,7 @@ def dump_json_dict(json_path: str,yaml_dict: dict):
         json.dump(yaml_dict,json_out,sort_keys=True,indent=4)
 
 
-def update_task_status(sedml: str, task: str, status: str, out_dir: str, duration: int, algorithm: str) -> None:
+def update_task_status(sedml: str, task: str, status: str, out_dir: str, duration: int, algorithm: str) -> str:
     # Hardcoded because name is static
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -146,9 +148,11 @@ def update_task_status(sedml: str, task: str, status: str, out_dir: str, duratio
     status_yaml_path = os.path.join(out_dir, "log.yml")
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+    print("Success!")
+    return "Success!"
 
 
-def update_sedml_doc_status(sedml: str, status: str, out_dir: str) -> None:
+def update_sedml_doc_status(sedml: str, status: str, out_dir: str) -> str:
     # Hardcoded because name is static
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -158,9 +162,11 @@ def update_sedml_doc_status(sedml: str, status: str, out_dir: str) -> None:
 
     status_yaml_path = os.path.join(out_dir, "log.yml")
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+    print("Success!")
+    return "Success!"
 
 
-def update_omex_status(status: str, out_dir: str, duration: int) -> None:
+def update_omex_status(status: str, out_dir: str, duration: int) -> str:
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     yaml_dict['status'] = status
@@ -168,9 +174,11 @@ def update_omex_status(status: str, out_dir: str, duration: int) -> None:
 
     status_yaml_path = os.path.join(out_dir, "log.yml")
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+    print("Success!")
+    return "Success!"
 
 
-def update_dataset_status(sedml: str, report: str, dataset: str, status: str, out_dir: str) -> None:
+def update_dataset_status(sedml: str, report: str, dataset: str, status: str, out_dir: str) -> str:
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
         if sedml.endswith(sedml_list["location"]):
@@ -206,9 +214,11 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
 
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+    print("Success!")
+    return "Success!"
 
 
-def update_plot_status(sedml: str, plot_id: str, status: str, out_dir: str) -> None:
+def update_plot_status(sedml: str, plot_id: str, status: str, out_dir: str) -> str:
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
         if sedml.endswith(sedml_list["location"]):
@@ -243,6 +253,8 @@ def update_plot_status(sedml: str, plot_id: str, status: str, out_dir: str) -> N
 
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+    print("Success!")
+    return "Success!"
 
 #
 # sedmlAbsolutePath - full path to location of the actual sedml file (document) used as input
@@ -250,7 +262,7 @@ def update_plot_status(sedml: str, plot_id: str, status: str, out_dir: str) -> N
 # outDir            - path to directory where the log files will be placed
 # entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
 #
-def set_output_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str , message: str) -> None:
+def set_output_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str , message: str) -> str:
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     if entityType == 'omex':
@@ -274,8 +286,10 @@ def set_output_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, enti
     status_yaml_path = os.path.join(out_dir, "log.yml")
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+    print("Success!")
+    return "Success!"
 
-def set_exception_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str, type: str, message: str) -> None:
+def set_exception_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str, type: str, message: str) -> str:
 
     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
@@ -304,6 +318,8 @@ def set_exception_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, e
 
     # Convert json to yaml # Save new yaml
     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+    print("Success!")
+    return "Success!"
 
 
 if __name__ == "__main__":
