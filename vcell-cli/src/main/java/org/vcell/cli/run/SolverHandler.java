@@ -545,11 +545,11 @@ public class SolverHandler {
 							if (!bTimeoutFound) {        // don't repeat this for each task
 								String str = logTaskError.substring(0, logTaskError.indexOf("Process timed out"));
 								str += "Process timed out";        // truncate the rest of the spam
-								cliLogger.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
+								cliLogger.writeDetailedErrorList(e, bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + str);
 								bTimeoutFound = true;
 							}
 						} else {
-							cliLogger.writeDetailedErrorList(bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
+							cliLogger.writeDetailedErrorList(e,bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
 						}
 						RunUtils.drawBreakLine("-", 100);
 					} finally {

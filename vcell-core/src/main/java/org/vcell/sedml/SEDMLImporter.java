@@ -45,6 +45,7 @@ import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.SymbolContext;
+import org.vcell.trace.Tracer;
 import org.vcell.util.FileUtils;
 import org.vcell.util.ISize;
 import org.vcell.util.RelationVisitor;
@@ -358,9 +359,9 @@ public class SEDMLImporter {
 			// TODO: apply TransformMassActions to usedBiomodels
 			// cannot do this for now, as it can be very expensive (hours!!)
 			// also has serious memory issues (runs out of memory even with bumping up to Xmx12G
-
 			return bioModelList;
 		} catch (Exception e) {
+			Tracer.failure(e,"Unable to initialize bioModel for the given selection: "+e.getMessage());
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
 		}
 	}
@@ -840,9 +841,9 @@ public class SEDMLImporter {
 						advancedModelsList.element().addAll(advancedModels); // Move this set to the next set to process
 						break;
 					} else {
-						String message = String.format("Errors reported:\n%s", errorsReported);
+						String message = String.format("Errors reported: %s", errorsReported);
 						Exception errorFilledException = new Exception(message);
-						throw new RuntimeException(MODEL_RESOLUTION_ERROR, errorFilledException);
+						throw new RuntimeException(MODEL_RESOLUTION_ERROR + " " + message, errorFilledException);
 					}
 				}
 
@@ -855,6 +856,7 @@ public class SEDMLImporter {
 					idToBiomodelMap.put(nextModel.getId(), bioModel);
 					count = 0;
 				} catch (RuntimeException e){
+					Tracer.failure(e, "Error processing model: " + nextModel.getId() + " - " + e.getMessage());
 					errorsReported.append(e.getMessage()).append("\n");
 					advancedModels.add(nextModel);
 					count++;

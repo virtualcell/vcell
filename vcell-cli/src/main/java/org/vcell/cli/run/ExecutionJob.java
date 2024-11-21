@@ -92,7 +92,7 @@ public class ExecutionJob {
             this.sedmlLocations = this.omexHandler.getSedmlLocationsAbsolute();
         } catch (IOException e){
             String error = e.getMessage() + ", error for OmexHandler with " + this.inputFilePath;
-            this.cliRecorder.writeErrorList(this.bioModelBaseName);
+            this.cliRecorder.writeErrorList(e, this.bioModelBaseName);
             this.cliRecorder.writeDetailedResultList(this.bioModelBaseName + ", " + "IO error with OmexHandler");
             logger.error(error);
             throw new RuntimeException(error, e);
@@ -100,7 +100,7 @@ public class ExecutionJob {
             String error = e.getMessage() + ", error for archive " + this.inputFilePath;
             logger.error(error);
             if (this.omexHandler != null) this.omexHandler.deleteExtractedOmex();
-            this.cliRecorder.writeErrorList(this.bioModelBaseName);
+            this.cliRecorder.writeErrorList(e, this.bioModelBaseName);
             this.cliRecorder.writeDetailedResultList(this.bioModelBaseName + ", " + "unknown error with the archive file");
 
             throw new RuntimeException(error, e);
@@ -183,7 +183,7 @@ public class ExecutionJob {
             PythonCalls.updateOmexStatusYml(Status.FAILED, outputDir, duration + "");
             logger.error(error);
             logOmexMessage.append(error);
-            cliRecorder.writeErrorList(bioModelBaseName);
+            cliRecorder.writeErrorList(new Exception("exception not recorded"), bioModelBaseName);
         } else {
             PythonCalls.updateOmexStatusYml(Status.SUCCEEDED, outputDir, duration + "");
             cliRecorder.writeFullSuccessList(bioModelBaseName);

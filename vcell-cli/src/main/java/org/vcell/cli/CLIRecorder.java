@@ -121,7 +121,8 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
      * 
      * @param message string to write to file
      */
-    public void writeDetailedErrorList(String message) throws IOException {
+    @Override
+    public void writeDetailedErrorList(Exception _e, String message) throws IOException {
         this.writeToFileLog(this.detailedErrorLog, message);     
     }
 
@@ -130,6 +131,7 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
      * 
      * @param message string to write to file
      */
+    @Override
     public void writeFullSuccessList(String message) throws IOException {
         this.writeToFileLog(this.fullSuccessLog, message);
     }
@@ -139,7 +141,8 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
      * 
      * @param message string to write to file
      */
-    public void writeErrorList(String message) throws IOException {
+    @Override
+    public void writeErrorList(Exception _e, String message) throws IOException {
         this.writeToFileLog(this.errorLog, message);
     }
 
@@ -148,6 +151,7 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
      * 
      * @param message string to write to file
      */
+    @Override
     public void writeDetailedResultList(String message) throws IOException {
         this.writeToFileLog(this.detailedResultsLog, message);
     }
@@ -168,7 +172,8 @@ public class CLIRecorder extends Recorder implements CLIRecordable {
      * 
      * @param message string to write to file
      */
-    public void writeImportErrorList(String message) throws IOException {
+    @Override
+    public void writeImportErrorList(Exception _e, String message) throws IOException {
         this.writeToFileLog(this.importErrorLog, message);
     }
 

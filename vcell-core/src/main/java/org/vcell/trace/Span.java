@@ -6,7 +6,15 @@ import java.util.Map;
 public class Span {
 
     public enum ContextType {
-        Root, Other, OMEX_EXPORT, OMEX_EXECUTE, SIMULATION_RUN, PROCESSING_SIMULATION_OUTPUTS, PROCESSING_SEDML, SIMULATIONS_RUN, BioModel;
+        Root,
+        Other,
+        OMEX_EXPORT,
+        OMEX_EXECUTE,
+        SIMULATION_RUN,
+        PROCESSING_SIMULATION_OUTPUTS,
+        PROCESSING_SEDML,
+        SIMULATIONS_RUN,
+        BioModel;
     }
 
     public String getNestedContextName() {

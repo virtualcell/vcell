@@ -19,6 +19,10 @@ public class Tracer {
         traceEventsVar.get().add(new TraceEvent(TraceEvent.EventType.Log, currentSpan(), message));
     }
 
+    public static void logEvent(TraceEvent.UserTraceEvent userTraceEvent) {
+        traceEventsVar.get().add(new TraceEvent(TraceEvent.EventType.UserDefined, currentSpan(), userTraceEvent));
+    }
+
     public static List<TraceEvent> getTraceEvents() {
         return traceEventsVar.get();
     }
@@ -40,9 +44,13 @@ public class Tracer {
         }
     }
 
+    public static List<TraceEvent> getErrors() {
+        return traceEventsVar.get().stream().filter(event -> event.eventType == TraceEvent.EventType.Failure).toList();
+    }
+
     // has error event been recorded?
     public static boolean hasErrors() {
-        return traceEventsVar.get().stream().anyMatch(event -> event.eventType == TraceEvent.EventType.Failure);
+        return !getErrors().isEmpty();
     }
 
     public static Span currentSpan() {
@@ -79,5 +87,9 @@ public class Tracer {
             throw new IllegalStateException("Span to end is not the current span");
         }
         spanStackVar.get().pop();
+    }
+
+    public static void success(String message) {
+        traceEventsVar.get().add(new TraceEvent(TraceEvent.EventType.Success, currentSpan(), message));
     }
 }

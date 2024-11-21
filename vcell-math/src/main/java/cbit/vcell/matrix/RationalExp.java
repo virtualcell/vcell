@@ -16,6 +16,8 @@ import java.util.Vector;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import jscl.text.ParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Insert the type's description here.
@@ -23,6 +25,8 @@ import jscl.text.ParseException;
  * @author: Jim Schaff
  */
 public class RationalExp implements java.io.Serializable {
+
+	Logger logger = LogManager.getLogger(RationalExp.class);
 
 	private Vector<Term> numTermList = new Vector<Term>();
 	private Vector<Term> denTermList = new Vector<Term>();
@@ -626,16 +630,15 @@ public RationalExp simplify() {
 		try {
 			jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
 		}catch (jscl.text.ParseException e){
-			e.printStackTrace(System.out);
-			System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
+			logger.info("JSCL couldn't parse \"%s\"".formatted(jsclExpressionString), e);
 			return null;
 		}
 		cbit.vcell.parser.Expression solution = null;
 		jscl.math.Generic jsclSolution = jsclExpression.expand().simplify();
 		try {
 			solution = new cbit.vcell.parser.Expression(jsclSolution.toString());
-		}catch (Throwable e){
-			e.printStackTrace(System.out);
+		}catch (Exception e){
+			logger.warn("failed to parse JSCL simplified expression \"%s\"".formatted(jsclSolution), e);
 		}
 		if (solution!=null){
 			String[] jsclSymbols = solution.getSymbols();

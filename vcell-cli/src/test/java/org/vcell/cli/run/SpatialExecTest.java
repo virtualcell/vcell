@@ -13,6 +13,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
+import org.vcell.trace.TraceEvent;
+import org.vcell.trace.Tracer;
 import org.vcell.util.VCellUtilityHub;
 
 import java.io.File;
@@ -111,50 +113,49 @@ public class SpatialExecTest {
                 "Test skipped on macOS ARM64");
 
         SpatialExecTest.FAULT knownFault = knownFaults().get(testCaseFilename);
+        Tracer.clearTraceEvents();
         try {
             System.out.println("running test " + testCaseFilename);
-            final boolean[] bFailed = new boolean[1];
-            final String[] errorMessage = new String[1];
 
             Path outdirPath = Files.createTempDirectory("Spatial_OmexExecTest");
             CLIRecordable cliRecorder = new CLIRecordable() {
                 @Override
-                public void writeDetailedErrorList(String message) {
+                public void writeDetailedErrorList(Exception e, String message) {
                     System.err.println("writeDetailedErrorList(): " + message);
-                    bFailed[0] = true;
-                    errorMessage[0] = message;
+                    Tracer.failure(e, "detailedErrorList: " + message);
                 }
                 @Override
                 public void writeFullSuccessList(String message) {
                     System.out.println("writeFullSuccessList(): " + message);
+                    Tracer.success("fullSuccessList: " + message);
                 }
                 @Override
-                public void writeErrorList(String message) {
+                public void writeErrorList(Exception e, String message) {
                     System.err.println("writeErrorList(): " + message);
-                    bFailed[0] = true;
-                    errorMessage[0] = message;
+                    Tracer.failure(e, "errorList: " + message);
                 }
                 @Override
                 public void writeDetailedResultList(String message) {
                     System.out.println("writeDetailedResultList(): " + message);
+                    Tracer.log("detailedResultList: " + message);
                 }
                 @Override
                 public void writeSpatialList(String message) {
                     System.out.println("writeSpatialList(): " + message);
+                    Tracer.log("spatialList: " + message);
                 }
                 @Override
-                public void writeImportErrorList(String message) {
+                public void writeImportErrorList(Exception e, String message) {
                     System.err.println("writeImportErrorList(): " + message);
-                    bFailed[0] = true;
-                    errorMessage[0] = message;
+                    Tracer.failure(e, "importErrorList: " + message);
                 }
             };
             InputStream omexInputStream = SpatialArchiveFiles.getSpatialTestCase(testCaseFilename);
             Path omexFile = Files.createTempFile("Spatial_OmexFile_", "omex");
             FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
             ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
-            String errMessage = (errorMessage[0] != null) ? errorMessage[0].replace("\n", " | ") : "";
-            assertFalse(bFailed[0], "failure: '" + errMessage + "'");
+
+            assertFalse(Tracer.hasErrors(), "no exception, but trace errors found: error[0] = "+Tracer.getErrors().get(0).message.replace("\n"," | "));
             if (knownFault != null){
                 throw new RuntimeException("test case passed, but expected " + knownFault.name() + ", remove "
                         + testCaseFilename + " from known faults");

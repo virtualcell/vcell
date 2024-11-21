@@ -175,9 +175,11 @@ public class SedmlJob {
                 PythonCalls.genSedmlForSed2DAnd3D(this.MASTER_OMEX_ARCHIVE.getAbsolutePath(), this.RESULTS_DIRECTORY_PATH);
             }
             if (!Files.exists(path)) {
-                String message = "Failed to create file " + this.plotFile.getAbsolutePath();
+                String message = "Failed to create plot file " + this.plotFile.getAbsolutePath();
                 this.CLI_RECORDER.writeDetailedResultList(this.BIOMODEL_BASE_NAME + "," + this.sedmlName + "," + message);
-                throw new RuntimeException(message);
+                RuntimeException exception = new RuntimeException(message);
+                Tracer.failure(exception, this.BIOMODEL_BASE_NAME + "," + this.sedmlName + "," + message);
+                throw exception;
             }
 
             // Converting pseudo SED-ML to biomodel
@@ -464,7 +466,7 @@ public class SedmlJob {
         String type = e.getClass().getSimpleName();
         PythonCalls.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", this.logDocumentMessage);
         PythonCalls.setExceptionMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", type, this.logDocumentError);
-        this.CLI_RECORDER.writeDetailedErrorList(this.BIOMODEL_BASE_NAME + ",  doc:    " + type + ": " + this.logDocumentError);
+        this.CLI_RECORDER.writeDetailedErrorList(e, this.BIOMODEL_BASE_NAME + ",  doc:    " + type + ": " + this.logDocumentError);
         PythonCalls.updateSedmlDocStatusYml(this.SEDML_LOCATION, Status.FAILED, this.RESULTS_DIRECTORY_PATH);
     }
 
