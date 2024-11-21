@@ -35,7 +35,7 @@ public class CLIPythonManager {
     private static final String PYTHON_EXE_NAME = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
 
     private static CLIPythonManager instance = null;
-    private static final int DEFAULT_TIMEOUT = 5000; // was 600 seconds (10 minutes), now 5 seconds
+    private static final int DEFAULT_TIMEOUT = 7000; // was 600 seconds (10 minutes), now 5 seconds
 
     private static final boolean USE_SHARED_SHELL = true;
 
@@ -64,40 +64,50 @@ public class CLIPythonManager {
      * @throws PythonStreamException if there is any exception encountered in this exchange.
      */
     public String callPython(String functionName, String... arguments) throws PythonStreamException {
-        // Attempt 1
         String command = this.formatPythonFunctionCall(functionName, arguments);
         try {
-            if (CLIPythonManager.USE_SHARED_SHELL) return this.callPython(command);
-            try {
-                return CLIPythonManager.callNonSharedPython(command);
-            } catch (Exception e){
-                lg.error("Error calling python: {}", e.getMessage());
-                String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
-                throw new PythonStreamException(errorPrefix, e);
-            }
-        } catch (TimeoutException e) {
-            // Attempt 2
-            lg.warn("Error calling python: {}", e.getMessage());
-            lg.warn("Attempting to acknowledge warnings / prompts.");
-            try {
-                String result = this.callPython("");
-                lg.info("Second python attempt successful!");
-                return result; // we may get the result of the original call, if we "accept" a warning / prompt the shell got
-            } catch (TimeoutException e2){
-                // Final Attempt; use the independent shell!
-                lg.warn("Error on second attempt calling python: {}", e2.getMessage());
-                lg.warn("Attempting last resort");
-                try {
-                    String lastChanceResult = CLIPythonManager.callNonSharedPython(command);
-                    lg.info("Last python attempt successful!");
-                    return lastChanceResult;
-                } catch (InterruptedException | IOException e3){
-                    lg.error("Error on last resort: {}", e.getMessage());
-                    String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
-                    throw new PythonStreamException(errorPrefix, e3);
-                }
-            }
+            return CLIPythonManager.USE_SHARED_SHELL ?
+                    this.callPython(command) : CLIPythonManager.callNonSharedPython(command);
+        } catch (PythonStreamException e) {
+            throw e;
+        } catch (Exception e){
+            lg.error("Error calling python: {}", e.getMessage());
+            String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
+            throw new PythonStreamException(errorPrefix, e);
         }
+//        String command = this.formatPythonFunctionCall(functionName, arguments);
+//        try {
+//            if (CLIPythonManager.USE_SHARED_SHELL) return this.callPython(command);
+//            try {
+//                return CLIPythonManager.callNonSharedPython(command);
+//            } catch (Exception e){
+//                lg.error("Error calling python: {}", e.getMessage());
+//                String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
+//                throw new PythonStreamException(errorPrefix, e);
+//            }
+//        } catch (TimeoutException e) {
+//            // Attempt 2
+//            lg.warn("Error calling python: {}", e.getMessage());
+//            lg.warn("Attempting to acknowledge warnings / prompts.");
+//            try {
+//                String result = this.callPython("");
+//                lg.info("Second python attempt successful!");
+//                return result; // we may get the result of the original call, if we "accept" a warning / prompt the shell got
+//            } catch (TimeoutException e2){
+//                // Final Attempt; use the independent shell!
+//                lg.warn("Error on second attempt calling python: {}", e2.getMessage());
+//                lg.warn("Attempting last resort");
+//                try {
+//                    String lastChanceResult = CLIPythonManager.callNonSharedPython(command);
+//                    lg.info("Last python attempt successful!");
+//                    return lastChanceResult;
+//                } catch (InterruptedException | IOException e3){
+//                    lg.error("Error on last resort: {}", e.getMessage());
+//                    String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
+//                    throw new PythonStreamException(errorPrefix, e3);
+//                }
+//            }
+//        }
     }
 
     /**
@@ -167,8 +177,9 @@ public class CLIPythonManager {
 
         // "construction" commands
         try {
-            this.getResultsOfLastCommand(15000); // Clear Buffer of Python Interpreter
-            this.executeThroughPython();
+            this.getResultsOfLastCommand(); // Clear Buffer of Python Interpreter
+            this.callPython("");
+            this.callPython("from vcell_cli_utils import wrapper");
             lg.info("Python initialization success!");
         } catch (IOException | TimeoutException | InterruptedException e){
             lg.warn("Python instantiation Exception Thrown:\n", e);
@@ -179,12 +190,48 @@ public class CLIPythonManager {
 
     // Needs properly formatted python command
     private String callPython(String command) throws PythonStreamException, TimeoutException {
+//        try {
+//            this.instantiatePythonProcess(); // Make sure we have a python instance; will not override already done
+//            this.sendNewCommand(command);
+//            return this.getResultsOfLastCommand(CLIPythonManager.DEFAULT_TIMEOUT);
+//        } catch (IOException | InterruptedException e){
+//            throw new PythonStreamException("Python process encountered an exception:\n" + e.getMessage(), e);
+//        }
+        // Attempt 1
         try {
             this.instantiatePythonProcess(); // Make sure we have a python instance; will not override already done
             this.sendNewCommand(command);
-            return this.getResultsOfLastCommand(CLIPythonManager.DEFAULT_TIMEOUT);
+            String lastCommandResult = this.getResultsOfLastCommand(CLIPythonManager.DEFAULT_TIMEOUT);
+            return lastCommandResult == null ? "" : lastCommandResult;
         } catch (IOException | InterruptedException e){
             throw new PythonStreamException("Python process encountered an exception:\n" + e.getMessage(), e);
+        } catch (TimeoutException e) {
+            // Attempt 2
+            lg.warn("Error calling python: {}", e.getMessage());
+            lg.warn("Attempting to acknowledge warnings / prompts.");
+            try {
+                this.instantiatePythonProcess(); // Make sure we have a python instance; will not override already done
+                // we may get the result of the original call, if we "accept" a warning / prompt the shell got
+                this.sendNewCommand(""); // We just want to "hit enter" so to speak
+                String result = this.getResultsOfLastCommand(CLIPythonManager.DEFAULT_TIMEOUT);
+                lg.info("Second python attempt successful!");
+                return result == null ? "" : result;
+            } catch (TimeoutException e2){
+                // Final Attempt; use the independent shell!
+                lg.warn("Error on second attempt calling python: {}", e2.getMessage());
+                lg.warn("Attempting last resort");
+                try {
+                    String lastChanceResult = CLIPythonManager.callNonSharedPython(command);
+                    lg.info("Last python attempt successful!");
+                    return lastChanceResult;
+                } catch (InterruptedException | IOException e3){
+                    lg.error("Error on last resort: {}", e3.getMessage());
+                    String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
+                    throw new PythonStreamException(errorPrefix, e3);
+                }
+            } catch (IOException | InterruptedException e4){
+                throw new PythonStreamException("Python process encountered an exception:\n" + e4.getMessage(), e4);
+            }
         }
     }
 
