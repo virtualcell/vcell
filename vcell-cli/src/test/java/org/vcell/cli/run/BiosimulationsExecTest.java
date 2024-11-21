@@ -151,7 +151,8 @@ public class BiosimulationsExecTest {
 			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
 			Path computedH5File = outdirPath.resolve("report.h5");
 
-			assertFalse(Tracer.hasErrors(), "failure: '" + Tracer.getErrors().get(0).message.replace("\n", " | "));
+			String errorMessage = (Tracer.hasErrors()) ? "failure: '" + Tracer.getErrors().get(0).message.replace("\n", " | ") : "";
+			assertFalse(Tracer.hasErrors(), errorMessage);
 			if (knownFault != null){
 				throw new RuntimeException("test case passed, but expected " + knownFault.name() + ", remove "
 						+ testCaseProjectID + " from known faults");

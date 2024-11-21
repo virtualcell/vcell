@@ -1,0 +1,303 @@
+
+<Model>
+    <name>Dutta-Roy2015 - Opening of the multiple AMPA receptor conductance states</name>
+    <description>&lt;notes xmlns="http://www.sbml.org/sbml/level2/version4">&#xd;
+        &lt;body xmlns="http://www.w3.org/1999/xhtml">&#xd;
+        &lt;div class="dc:title">Dutta-Roy2015 - Opening of the multiple AMPA&#xd;
+        receptor conductance states&lt;/div>&#xd;
+        &lt;div class="dc:bibliographicCitation">&#xd;
+        &lt;p>This model is described in the article:&lt;/p>&#xd;
+        &lt;div class="bibo:title">&#xd;
+        &lt;a href="http://identifiers.org/pubmed/25629405" title="Access to this publication">Ligand-dependent opening of&#xd;
+        the multiple AMPA receptor conductance States: a concerted&#xd;
+        model.&lt;/a>&#xd;
+        &lt;/div>&#xd;
+        &lt;div class="bibo:authorList">Dutta-Roy R, Rosenmund C, Edelstein&#xd;
+        SJ, Le Novère N.&lt;/div>&#xd;
+        &lt;div class="bibo:Journal">PLoS ONE 2015; 10(1): e0116616&lt;/div>&#xd;
+        &lt;p>Abstract:&lt;/p>&#xd;
+        &lt;div class="bibo:abstract">&#xd;
+        &lt;p>Modulation of the properties of AMPA receptors at the&#xd;
+        post-synaptic membrane is one of the main suggested mechanisms&#xd;
+        underlying fast synaptic transmission in the central nervous&#xd;
+        system of vertebrates. Electrophysiological recordings of&#xd;
+        single channels stimulated with agonists showed that both&#xd;
+        recombinant and native AMPA receptors visit multiple&#xd;
+        conductance states in an agonist concentration dependent&#xd;
+        manner. We propose an allosteric model of the multiple&#xd;
+        conductance states based on concerted conformational&#xd;
+        transitions of the four subunits, as an iris diaphragm. Our&#xd;
+        model predicts that the thermodynamic behaviour of the&#xd;
+        conductance states upon full and partial agonist stimulations&#xd;
+        can be described with increased affinity of receptors as they&#xd;
+        progress to higher conductance states. The model also predicts&#xd;
+        the existence of AMPA receptors in non-liganded conductive&#xd;
+        substates. However, the probability of spontaneous openings&#xd;
+        decreases with increasing conductances. Finally, we predict&#xd;
+        that the large conductance states are stabilized within the&#xd;
+        rise phase of a whole-cell EPSC in glutamatergic hippocampal&#xd;
+        neurons. Our model provides a mechanistic link between ligand&#xd;
+        concentration and conductance states that can explain&#xd;
+        thermodynamic and kinetic features of AMPA receptor gating.&lt;/p>&#xd;
+        &lt;/div>&#xd;
+        &lt;/div>&#xd;
+        &lt;div class="dc:publisher">&#xd;
+        &lt;p>This model is hosted on &#xd;
+        &lt;a href="http://www.ebi.ac.uk/biomodels/">BioModels Database&lt;/a>&#xd;
+        and identified by: &#xd;
+        &lt;a href="http://identifiers.org/biomodels.db/BIOMD0000000569">BIOMD0000000569&lt;/a>.&lt;/p>&#xd;
+        &lt;p>To cite BioModels Database, please use: &#xd;
+        &lt;a href="http://identifiers.org/pubmed/20587024" title="Latest BioModels Database publication">BioModels Database:&#xd;
+        An enhanced, curated and annotated resource for published&#xd;
+        quantitative kinetic models&lt;/a>.&lt;/p>&#xd;
+        &lt;/div>&#xd;
+        &lt;div class="dc:license">&#xd;
+        &lt;p>To the extent possible under law, all copyright and related or&#xd;
+        neighbouring rights to this encoded model have been dedicated to&#xd;
+        the public domain worldwide. Please refer to &#xd;
+        &lt;a href="http://creativecommons.org/publicdomain/zero/1.0/" title="Access to: CC0 1.0 Universal (CC0 1.0), Public Domain Dedication">CC0&#xd;
+        Public Domain Dedication&lt;/a> for more information.&lt;/p>&#xd;
+        &lt;/div>&#xd;
+        &lt;/body>&#xd;
+        &lt;/notes></description>
+    <format>
+        <name>SBML</name>
+        <version>L2V4</version>
+    </format>
+    <publication>
+        <type>PubMed ID</type>
+        <accession>25629405</accession>
+        <journal>PloS one</journal>
+        <title>Ligand-dependent opening of the multiple AMPA receptor conductance states: a concerted model.</title>
+        <affiliation>Department of Medicine Solna, Karolinska Insitutet, 171 76 Stockholm, Sweden; NWFZ, Charite Universitatsmedizin, 101 17 Berlin, Germany; European Bioinformatics Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton, Cambridgeshire CB10 1SD, UK.</affiliation>
+        <synopsis>Modulation of the properties of AMPA receptors at the post-synaptic membrane is one of the main suggested mechanisms underlying fast synaptic transmission in the central nervous system of vertebrates. Electrophysiological recordings of single channels stimulated with agonists showed that both recombinant and native AMPA receptors visit multiple conductance states in an agonist concentration dependent manner. We propose an allosteric model of the multiple conductance states based on concerted conformational transitions of the four subunits, as an iris diaphragm. Our model predicts that the thermodynamic behaviour of the conductance states upon full and partial agonist stimulations can be described with increased affinity of receptors as they progress to higher conductance states. The model also predicts the existence of AMPA receptors in non-liganded conductive substates. However, the probability of spontaneous openings decreases with increasing conductances. Finally, we predict that the large conductance states are stabilized within the rise phase of a whole-cell EPSC in glutamatergic hippocampal neurons. Our model provides a mechanistic link between ligand concentration and conductance states that can explain thermodynamic and kinetic features of AMPA receptor gating.</synopsis>
+        <year>2015</year>
+        <month>0</month>
+        <volume>10</volume>
+        <issue>1</issue>
+        <pages>e0116616</pages>
+        <link>http://identifiers.org/pubmed/25629405</link>
+        <authors>
+            <authors>
+                <name>Ranjita Dutta-Roy</name>
+                <institution>Department of Medicine Solna, Karolinska Insitutet, 171 76 Stockholm, Sweden; NWFZ, Charite Universitatsmedizin, 101 17 Berlin, Germany; European Bioinformatics Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton, Cambridgeshire CB10 1SD, UK.</institution>
+            </authors>
+            <authors>
+                <name>Christian Rosenmund</name>
+                <institution>NWFZ, Charite Universitatsmedizin, 101 17 Berlin, Germany.</institution>
+                <orcid>0000-0002-3905-2444</orcid>
+            </authors>
+            <authors>
+                <name>Stuart J Edelstein</name>
+                <institution>The Babraham Institute, Babraham, Cambridgeshire CB22 3AT, UK.</institution>
+            </authors>
+            <authors>
+                <name>Nicolas Le Novère</name>
+                <institution>European Bioinformatics Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton, Cambridgeshire CB10 1SD, UK; The Babraham Institute, Babraham, Cambridgeshire CB22 3AT, UK.</institution>
+            </authors>
+        </authors>
+    </publication>
+    <files>
+        <main>
+            <main>
+                <name>BIOMD0000000569_url.xml</name>
+                <description>SBML L2V4 representation of Dutta-Roy2015 - Opening of the multiple AMPA receptor conductance states</description>
+                <fileSize>159211</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>db15a229a6c6a84ed83105a6ad591757</md5sum>
+                <sha1sum>e7eccb22e96c72108813cb61094591b3049e840f</sha1sum>
+                <sha256sum>7d4e6f34a7c1a2dc34660c146aa46d0913081a72b228d794d982e784c3206a28</sha256sum>
+            </main>
+        </main>
+        <additional>
+            <additional>
+                <name>BIOMD0000000569-biopax2.owl</name>
+                <description>Auto-generated BioPAX (Level 2)</description>
+                <fileSize>80547</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>465ec12395260e937bc6173448ba8c8f</md5sum>
+                <sha1sum>2781010168052f5b00746e4e3ed12ece79e7ebcd</sha1sum>
+                <sha256sum>b8819cce2e740db0bcf735cad25e9b42f2aa3bb07e4343435f727a16dddc2e3c</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000569-biopax3.owl</name>
+                <description>Auto-generated BioPAX (Level 3)</description>
+                <fileSize>141059</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>0284b6502337e9c7dfeaca5581c5313b</md5sum>
+                <sha1sum>05c78b59989fa7336ae2983bade8762869b16cab</sha1sum>
+                <sha256sum>89326dcaa9f8260238be44edc097ec14951afadf6016e2cf1884cb9a256179c3</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000569.m</name>
+                <description>Auto-generated Octave file</description>
+                <fileSize>19665</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>d37ebf9d386e215f00ff272c414d4831</md5sum>
+                <sha1sum>e38b74c70a55bc0cabff6aa02577f9fb6bf31f5c</sha1sum>
+                <sha256sum>913ce5921cd8fc558fdc80b87dcf26c9d2ee7b46c5f00dcf18452ccabc320a5d</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000569.pdf</name>
+                <description>Auto-generated PDF file</description>
+                <fileSize>469135</fileSize>
+                <mimeType>application/pdf</mimeType>
+                <md5sum>b1904b1af79247b2969ec8d3b7ec4b12</md5sum>
+                <sha1sum>8dd5f90f1342b4caa15e181ec4a6c81bb5d00bd5</sha1sum>
+                <sha256sum>80791fe9adb8bf14c7d022ab702556f765301e7ee381828193ade4b2dad07cba</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000569.png</name>
+                <description>Auto-generated Reaction graph (PNG)</description>
+                <fileSize>1542837</fileSize>
+                <mimeType>image/png</mimeType>
+                <md5sum>4e12f334706f0ac49bbcbaf190bdac46</md5sum>
+                <sha1sum>2973321e6bb906f969b5d9f0c8ee5a28abea0d3a</sha1sum>
+                <sha256sum>596c1d4e9de56846012ef7c937881eaca2c38fa1e17ba4907e8107fa5c99aaff</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000569.sci</name>
+                <description>Auto-generated Scilab file</description>
+                <fileSize>11135</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>8a3f9057ac1199f2a5e1733b3e9f2dbd</md5sum>
+                <sha1sum>77f64edc7af00762ce09de40ee0f706f93717a95</sha1sum>
+                <sha256sum>354ba9e0ceaadaaec0a9ae5df5adaa16cafb06fce60453e464c16b4490ce5a73</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000569.svg</name>
+                <description>Auto-generated Reaction graph (SVG)</description>
+                <fileSize>173243</fileSize>
+                <mimeType>image/svg+xml</mimeType>
+                <md5sum>c4e8e384dfa5650ea24c66ce42f67eea</md5sum>
+                <sha1sum>b1360814d9dfadbc39fd51f14a9322eecddc7686</sha1sum>
+                <sha256sum>db29fbe66eb938817045bbdf6375736a65761c78e5f387a50ddacab07d404388</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000569.vcml</name>
+                <description>Auto-generated VCML file</description>
+                <fileSize>169158</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>66f1bae52b5c6215f2b2f8859e456a40</md5sum>
+                <sha1sum>a5c878cd07a4e7d5b0438c1a81759fd07cab4d4a</sha1sum>
+                <sha256sum>0d6cbd1cf693babaed9bc3f3212277dadafe5679ef9fff4854ddc12fee1642ef</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000569.xpp</name>
+                <description>Auto-generated XPP file</description>
+                <fileSize>14276</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>866e25abbb1900688b86a8771cfe05c1</md5sum>
+                <sha1sum>74cceb5299f22fa8c77c992bbe7f4ac58aebf9bd</sha1sum>
+                <sha256sum>40da0ec95f6a034f81579d7aabb4583fba9049892d2eb8a1c9e605318fa520df</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000569_urn.xml</name>
+                <description>Auto-generated SBML file with URNs</description>
+                <fileSize>159037</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>ea9347794719141550630d1811daaab6</md5sum>
+                <sha1sum>31b1f5a8285a8054de5981808a293b9eea8d52d7</sha1sum>
+                <sha256sum>586b5f070f4ce00ce038c3a347f7e6a60a42e5beff5096f69ec71362acff4d90</sha256sum>
+            </additional>
+            <additional>
+                <name>Dutta-Roy2015.cps</name>
+                <description>Copasi file of the model</description>
+                <fileSize>218665</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>77ca85760d857c6fe67f9d22d24355f4</md5sum>
+                <sha1sum>58540e2d66fd545b31f7089792805b072794adfd</sha1sum>
+                <sha256sum>9afc819f7d58d3c72419e2e1e87276bfbd79d2b153a2a4c59773f87ddea3a655</sha256sum>
+            </additional>
+            <additional>
+                <name>Morris2008.cps</name>
+                <description>Morris2008.cps</description>
+                <fileSize>32662</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>446593a5b3c5cd77b56010df9501afca</md5sum>
+                <sha1sum>df1d232dfd4f53d07c44f0f75f44ba3497d697aa</sha1sum>
+                <sha256sum>e7707c25652e21f319622d009ea7c31b2fb6cded247f98691801b4b8580a75c4</sha256sum>
+            </additional>
+        </additional>
+    </files>
+    <history>
+        <revisions>
+            <revisions>
+                <version>1</version>
+                <submitted>1405543614</submitted>
+                <submitter>Nicolas Le Novère</submitter>
+                <comment>Original import of AMPAR concerted opening</comment>
+            </revisions>
+            <revisions>
+                <version>2</version>
+                <submitted>1460137985</submitted>
+                <submitter>Nicolas Le Novère</submitter>
+                <comment>Current version of Dutta-Roy2015 - Opening of the multiple AMPA receptor conductance states</comment>
+            </revisions>
+            <revisions>
+                <version>3</version>
+                <submitted>1545414876</submitted>
+                <submitter>administrator</submitter>
+                <comment>Include the additional files provided by the submitter in the original submission: Dutta-Roy2015.cps, Morris2008.cps</comment>
+            </revisions>
+            <revisions>
+                <version>4</version>
+                <submitted>1724278215</submitted>
+                <submitter>Lucian Smith</submitter>
+                <comment>CRBM-sponsored manual and automated updates.</comment>
+            </revisions>
+        </revisions>
+    </history>
+    <firstPublished>1725281755</firstPublished>
+    <submissionId>MODEL1407160000</submissionId>
+    <publicationId>BIOMD0000000569</publicationId>
+    <modellingApproach>
+        <accession>MAMO_0000046</accession>
+        <name>ordinary differential equation model</name>
+        <resource>http://identifiers.org/mamo/MAMO_0000046</resource>
+    </modellingApproach>
+    <curationStatus>CURATED</curationStatus>
+    <contributors>
+        <Modeller>
+            <name>administrator</name>
+            <email>biomodels-developers@ebi.ac.uk</email>
+            <affiliation>EMBL - European Bioinformatics Institute (EBI)</affiliation>
+            <external>false</external>
+        </Modeller>
+    </contributors>
+    <vcsIdentifier>aaa</vcsIdentifier>
+    <modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasTaxon</qualifier>
+            <accession>9606</accession>
+            <name>Homo sapiens</name>
+            <resource>Taxonomy</resource>
+            <uri>http://identifiers.org/taxonomy/9606</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>MODEL1407160000</accession>
+            <resource>BioModels Database</resource>
+            <uri>https://identifiers.org/biomodels.db/MODEL1407160000</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>BIOMD0000000569</accession>
+            <resource>BioModels Database</resource>
+            <uri>https://identifiers.org/biomodels.db/BIOMD0000000569</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:isDescribedBy</qualifier>
+            <accession>25629405</accession>
+            <resource>PubMed</resource>
+            <uri>https://identifiers.org/pubmed/25629405</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:isVersionOf</qualifier>
+            <accession>GO:0004971</accession>
+            <name>AMPA glutamate receptor activity</name>
+            <resource>Gene Ontology</resource>
+            <uri>http://identifiers.org/go/GO:0004971</uri>
+        </modelLevelAnnotations>
+    </modelLevelAnnotations>
+</Model>

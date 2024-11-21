@@ -1,0 +1,353 @@
+
+<Model>
+    <name>Krohn2011 - Cerebral amyloid-β proteostasis regulated by membrane transport protein ABCC1</name>
+    <description>&lt;notes xmlns="http://www.sbml.org/sbml/level2/version4">&#xd;
+        &lt;body xmlns="http://www.w3.org/1999/xhtml">&#xd;
+        &lt;div class="dc:title">Krohn2011 - Cerebral amyloid-β&#xd;
+        proteostasis regulated by membrane transport protein ABCC1&lt;/div>&#xd;
+        &lt;div class="dc:bibliographicCitation">&#xd;
+        &lt;p>This model is described in the article:&lt;/p>&#xd;
+        &lt;div class="bibo:title">&#xd;
+        &lt;a href="http://identifiers.org/pubmed/21881209" title="Access to this publication">Cerebral amyloid-β&#xd;
+        proteostasis is regulated by the membrane transport protein&#xd;
+        ABCC1 in mice.&lt;/a>&#xd;
+        &lt;/div>&#xd;
+        &lt;div class="bibo:authorList">Krohn M, Lange C, Hofrichter J,&#xd;
+        Scheffler K, Stenzel J, Steffen J, Schumacher T, Brüning T,&#xd;
+        Plath AS, Alfen F, Schmidt A, Winter F, Rateitschak K, Wree A,&#xd;
+        Gsponer J, Walker LC, Pahnke J.&lt;/div>&#xd;
+        &lt;div class="bibo:Journal">J. Clin. Invest. 2011 Oct; 121(10):&#xd;
+        3924-3931&lt;/div>&#xd;
+        &lt;p>Abstract:&lt;/p>&#xd;
+        &lt;div class="bibo:abstract">&#xd;
+        &lt;p>In Alzheimer disease (AD), the intracerebral accumulation of&#xd;
+        amyloid-β (Aβ) peptides is a critical yet poorly understood&#xd;
+        process. Aβ clearance via the blood-brain barrier is reduced by&#xd;
+        approximately 30% in AD patients, but the underlying mechanisms&#xd;
+        remain elusive. ABC transporters have been implicated in the&#xd;
+        regulation of Aβ levels in the brain. Using a mouse model of AD&#xd;
+        in which the animals were further genetically modified to lack&#xd;
+        specific ABC transporters, here we have shown that the&#xd;
+        transporter ABCC1 has an important role in cerebral Aβ&#xd;
+        clearance and accumulation. Deficiency of ABCC1 substantially&#xd;
+        increased cerebral Aβ levels without altering the expression of&#xd;
+        most enzymes that would favor the production of Aβ from the Aβ&#xd;
+        precursor protein. In contrast, activation of ABCC1 using&#xd;
+        thiethylperazine (a drug approved by the FDA to relieve nausea&#xd;
+        and vomiting) markedly reduced Aβ load in a mouse model of AD&#xd;
+        expressing ABCC1 but not in such mice lacking ABCC1. Thus, by&#xd;
+        altering the temporal aggregation profile of Aβ,&#xd;
+        pharmacological activation of ABC transporters could impede the&#xd;
+        neurodegenerative cascade that culminates in the dementia of&#xd;
+        AD.&lt;/p>&#xd;
+        &lt;/div>&#xd;
+        &lt;/div>&#xd;
+        &lt;div class="dc:publisher">&#xd;
+        &lt;p>This model is hosted on &#xd;
+        &lt;a href="http://www.ebi.ac.uk/biomodels/">BioModels Database&lt;/a>&#xd;
+        and identified by: &#xd;
+        &lt;a href="http://identifiers.org/biomodels.db/BIOMD0000000618">BIOMD0000000618&lt;/a>.&lt;/p>&#xd;
+        &lt;p>To cite BioModels Database, please use: &#xd;
+        &lt;a href="http://identifiers.org/pubmed/20587024" title="Latest BioModels Database publication">BioModels Database:&#xd;
+        An enhanced, curated and annotated resource for published&#xd;
+        quantitative kinetic models&lt;/a>.&lt;/p>&#xd;
+        &lt;/div>&#xd;
+        &lt;div class="dc:license">&#xd;
+        &lt;p>To the extent possible under law, all copyright and related or&#xd;
+        neighbouring rights to this encoded model have been dedicated to&#xd;
+        the public domain worldwide. Please refer to &#xd;
+        &lt;a href="http://creativecommons.org/publicdomain/zero/1.0/" title="Access to: CC0 1.0 Universal (CC0 1.0), Public Domain Dedication">CC0&#xd;
+        Public Domain Dedication&lt;/a> for more information.&lt;/p>&#xd;
+        &lt;/div>&#xd;
+        &lt;/body>&#xd;
+        &lt;/notes></description>
+    <format>
+        <name>SBML</name>
+        <version>L2V4</version>
+    </format>
+    <publication>
+        <type>PubMed ID</type>
+        <accession>21881209</accession>
+        <journal>The Journal of clinical investigation</journal>
+        <title>Cerebral amyloid-β proteostasis is regulated by the membrane transport protein ABCC1 in mice.</title>
+        <affiliation>Department of Neurology, Neurodegeneration Research Laboratory, University of Rostock, Rostock, Germany.</affiliation>
+        <synopsis>In Alzheimer disease (AD), the intracerebral accumulation of amyloid-β (Aβ) peptides is a critical yet poorly understood process. Aβ clearance via the blood-brain barrier is reduced by approximately 30% in AD patients, but the underlying mechanisms remain elusive. ABC transporters have been implicated in the regulation of Aβ levels in the brain. Using a mouse model of AD in which the animals were further genetically modified to lack specific ABC transporters, here we have shown that the transporter ABCC1 has an important role in cerebral Aβ clearance and accumulation. Deficiency of ABCC1 substantially increased cerebral Aβ levels without altering the expression of most enzymes that would favor the production of Aβ from the Aβ precursor protein. In contrast, activation of ABCC1 using thiethylperazine (a drug approved by the FDA to relieve nausea and vomiting) markedly reduced Aβ load in a mouse model of AD expressing ABCC1 but not in such mice lacking ABCC1. Thus, by altering the temporal aggregation profile of Aβ, pharmacological activation of ABC transporters could impede the neurodegenerative cascade that culminates in the dementia of AD.</synopsis>
+        <year>2011</year>
+        <month>10</month>
+        <volume>121</volume>
+        <issue>10</issue>
+        <pages>3924-3931</pages>
+        <link>http://identifiers.org/pubmed/21881209</link>
+        <authors>
+            <authors>
+                <name>Markus Krohn</name>
+                <institution>Department of Neurology, Neurodegeneration Research Laboratory, University of Rostock, Rostock, Germany.</institution>
+                <orcid>0000-0002-5345-9048</orcid>
+            </authors>
+            <authors>
+                <name>Cathleen Lange</name>
+            </authors>
+            <authors>
+                <name>Jacqueline Hofrichter</name>
+            </authors>
+            <authors>
+                <name>Katja Scheffler</name>
+                <orcid>0000-0002-1734-7807</orcid>
+            </authors>
+            <authors>
+                <name>Jan Stenzel</name>
+            </authors>
+            <authors>
+                <name>Johannes Steffen</name>
+            </authors>
+            <authors>
+                <name>Toni Schumacher</name>
+                <orcid>0000-0001-7077-1300</orcid>
+            </authors>
+            <authors>
+                <name>Thomas Brüning</name>
+                <orcid>0000-0002-7060-6564</orcid>
+            </authors>
+            <authors>
+                <name>Anne-Sophie Plath</name>
+            </authors>
+            <authors>
+                <name>Franziska Alfen</name>
+            </authors>
+            <authors>
+                <name>Anke Schmidt</name>
+            </authors>
+            <authors>
+                <name>Felix Winter</name>
+                <institution>1 ASD Advanced Simulation and Design GmbH, Rostock, Germany.2 Department of Systems Biology and Bioinformatics, Rostock University, Rostock, Germany.</institution>
+                <orcid>0000-0003-2987-6797</orcid>
+            </authors>
+            <authors>
+                <name>Katja Rateitschak</name>
+            </authors>
+            <authors>
+                <name>Andreas Wree</name>
+            </authors>
+            <authors>
+                <name>Jörg Gsponer</name>
+            </authors>
+            <authors>
+                <name>Lary C Walker</name>
+                <orcid>0000-0001-9166-3261</orcid>
+            </authors>
+            <authors>
+                <name>Jens Pahnke</name>
+                <orcid>0000-0001-7355-4213</orcid>
+            </authors>
+        </authors>
+    </publication>
+    <files>
+        <main>
+            <main>
+                <name>BIOMD0000000618_url.xml</name>
+                <description>SBML L2V4 representation of Krohn2011 - Cerebral amyloid-β proteostasis regulated by membrane transport protein ABCC1</description>
+                <fileSize>138769</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>b17dac747dda1288dfe1c428ac754c5d</md5sum>
+                <sha1sum>50aa8f53c7a7b132f0ec5fde31a0df0db1b82e06</sha1sum>
+                <sha256sum>dcca78cd2447fd268837641b641213d03857ef3120b4cd0261b4b97a99885d67</sha256sum>
+            </main>
+        </main>
+        <additional>
+            <additional>
+                <name>BIOMD0000000618-biopax2.owl</name>
+                <description>Auto-generated BioPAX (Level 2)</description>
+                <fileSize>7678</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>80a8cb13cc755e5dc9a57f32de8d2c18</md5sum>
+                <sha1sum>312414882ff18461a3231704cd726765fb595013</sha1sum>
+                <sha256sum>f355767f125a1c3c04b80be89018fe03c3a5fc5c00af73ed8ffee15a47ea40c6</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618-biopax3.owl</name>
+                <description>Auto-generated BioPAX (Level 3)</description>
+                <fileSize>12659</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>88cb28aa9815ba0e47c4c83887155d6c</md5sum>
+                <sha1sum>b8678b61ba8e9a8bdccbda4e5a57cb7bbdbdde7e</sha1sum>
+                <sha256sum>016880f79ec626a0ca6f3e4aa76280d45865273c9edd0fd4b9f2e4b2642cb464</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618.m</name>
+                <description>Auto-generated Octave file</description>
+                <fileSize>18217</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>d4bd5798e8991aea4cb99c115debcb48</md5sum>
+                <sha1sum>41fe2c61b2298d5576d595e4ccf62d5ad26e8c68</sha1sum>
+                <sha256sum>e112016e6dba57c9ba9b49533c8c773d21a037a396bb0ae53900a31bd21f905c</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618.pdf</name>
+                <description>Auto-generated PDF file</description>
+                <fileSize>226641</fileSize>
+                <mimeType>application/pdf</mimeType>
+                <md5sum>80bb7251d59b8da7d3b88add9764b189</md5sum>
+                <sha1sum>246332bab90e6199695589b4a87b8aac60ee09e4</sha1sum>
+                <sha256sum>d80548ca204878c151c8c2e7ec8ee70be88d776132e1f073d7d7cb9fdb96364f</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618.png</name>
+                <description>Auto-generated Reaction graph (PNG)</description>
+                <fileSize>4370</fileSize>
+                <mimeType>image/png</mimeType>
+                <md5sum>51a02aeed2d9b25335f3564484b8bb20</md5sum>
+                <sha1sum>be6004b6e09f0df48128af03d07c541ebc1da0e9</sha1sum>
+                <sha256sum>2fc210bd801811e46547af171bb390ae3cc4ccc9794865e866bc9874201a9bd3</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618.sci</name>
+                <description>Auto-generated Scilab file</description>
+                <fileSize>11523</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>54297a6eb8e16b69334105789c618c87</md5sum>
+                <sha1sum>d29459e9a3707d5d08b3531b4356686bd94a9cf3</sha1sum>
+                <sha256sum>8a7226f342c4b06a7489aa9df443f709dd0fd832e3ddcd6e9f685795a82cd96b</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618.svg</name>
+                <description>Auto-generated Reaction graph (SVG)</description>
+                <fileSize>845</fileSize>
+                <mimeType>image/svg+xml</mimeType>
+                <md5sum>9b345eba60fb5fb51c1e86515ef1b1cb</md5sum>
+                <sha1sum>56a72abee084f689db146a0d1ace6132f483a4d7</sha1sum>
+                <sha256sum>8a070ba5edcbe7079387c07a50fac9475a04ef6a850294ab749026d911f249c4</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618.vcml</name>
+                <description>Auto-generated VCML file</description>
+                <fileSize>900</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>90cf1f1d747646dd984f108a2f94155c</md5sum>
+                <sha1sum>498ef6580c702e46682454e40c534e78c03f7a50</sha1sum>
+                <sha256sum>ea37288399e7b9c7ac1877d7f492bd183e7171a5c53f934b5a87de516eef6036</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618.xpp</name>
+                <description>Auto-generated XPP file</description>
+                <fileSize>10008</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>e7ba84a4b60436399b97a79677d8d1d4</md5sum>
+                <sha1sum>f81b0a41c04ab397fd30819babe99aeee9afb89c</sha1sum>
+                <sha256sum>d03bd35f6a38b7bba714814b0b089577d3157b0b29e2379b91103d6cff90616b</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618_SED-ML.xml</name>
+                <description>This SED-ML file allow you to reproduce the curation results (Figures 2A-D), for example,&#xd;
+                    by loading it into SED-ML Web Tools (http://sysbioapps.dyndns.org/SED-ML_Web_Tools/).</description>
+                <fileSize>4152</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>ec682ae53075a32a484b673ea7e5b556</md5sum>
+                <sha1sum>511627daead88ea4142f1a8761c28e7314facadc</sha1sum>
+                <sha256sum>76a279b579c4d82109e4b631566583cd6a77e155d4b38b34e19d063bd29b4e2e</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000618_urn.xml</name>
+                <description>Auto-generated SBML file with URNs</description>
+                <fileSize>138667</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>f725974007f972fb76e14c151a0e87d4</md5sum>
+                <sha1sum>e6bdb6b1dd287237427d4296708891a0118fa545</sha1sum>
+                <sha256sum>986e39599383d685f997ff955bb0ab3d2a18b52869dd12dc26bc6eb152b98bc7</sha256sum>
+            </additional>
+        </additional>
+    </files>
+    <history>
+        <revisions>
+            <revisions>
+                <version>1</version>
+                <submitted>1469608293</submitted>
+                <submitter>Felix Winter</submitter>
+                <comment>Original import of ProtAggABC</comment>
+            </revisions>
+            <revisions>
+                <version>2</version>
+                <submitted>1496244158</submitted>
+                <submitter>Felix Winter</submitter>
+                <comment>Current version of Krohn2011 - Cerebral amyloid-β proteostasis regulated by membrane transport protein ABCC1</comment>
+            </revisions>
+            <revisions>
+                <version>3</version>
+                <submitted>1545416317</submitted>
+                <submitter>administrator</submitter>
+                <comment>Include the additional files provided by the submitter in the original submission: BIOMD0000000618_SED-ML.xml</comment>
+            </revisions>
+            <revisions>
+                <version>4</version>
+                <submitted>1724280678</submitted>
+                <submitter>Lucian Smith</submitter>
+                <comment>CRBM-sponsored manual and automated updates.</comment>
+            </revisions>
+        </revisions>
+    </history>
+    <firstPublished>1725281792</firstPublished>
+    <submissionId>MODEL1607270000</submissionId>
+    <publicationId>BIOMD0000000618</publicationId>
+    <modellingApproach>
+        <accession>MAMO_0000046</accession>
+        <name>ordinary differential equation model</name>
+        <resource>http://identifiers.org/mamo/MAMO_0000046</resource>
+    </modellingApproach>
+    <curationStatus>CURATED</curationStatus>
+    <contributors>
+        <Modeller>
+            <name>administrator</name>
+            <email>biomodels-developers@ebi.ac.uk</email>
+            <affiliation>EMBL - European Bioinformatics Institute (EBI)</affiliation>
+            <external>false</external>
+        </Modeller>
+    </contributors>
+    <vcsIdentifier>aaa</vcsIdentifier>
+    <modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:isVersionOf</qualifier>
+            <accession>GO:1990000</accession>
+            <name>amyloid fibril formation</name>
+            <resource>Gene Ontology</resource>
+            <uri>http://identifiers.org/go/GO:1990000</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>DOID:10652</accession>
+            <name>Alzheimer's disease</name>
+            <resource>Human Disease Ontology</resource>
+            <uri>http://identifiers.org/doid/DOID:10652</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>MODEL1607270000</accession>
+            <resource>BioModels Database</resource>
+            <uri>https://identifiers.org/biomodels.db/MODEL1607270000</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>BIOMD0000000618</accession>
+            <resource>BioModels Database</resource>
+            <uri>https://identifiers.org/biomodels.db/BIOMD0000000618</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:isDescribedBy</qualifier>
+            <accession>21881209</accession>
+            <resource>PubMed</resource>
+            <uri>https://identifiers.org/pubmed/21881209</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:isVersionOf</qualifier>
+            <accession>GO:0006810</accession>
+            <name>transport</name>
+            <resource>Gene Ontology</resource>
+            <uri>http://identifiers.org/go/GO:0006810</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:isVersionOf</qualifier>
+            <accession>SBO:0000293</accession>
+            <name>non-spatial continuous framework</name>
+            <resource>Systems Biology Ontology</resource>
+            <uri>https://identifiers.org/sbo/SBO:0000293</uri>
+        </modelLevelAnnotations>
+    </modelLevelAnnotations>
+</Model>

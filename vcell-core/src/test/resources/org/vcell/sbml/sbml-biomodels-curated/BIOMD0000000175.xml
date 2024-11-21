@@ -1,0 +1,297 @@
+
+<Model>
+    <name>Birtwistle2007_ErbB_Signalling</name>
+    <description>&lt;notes xmlns="http://www.sbml.org/sbml/level2/version3">&#xd;
+        &lt;body xmlns="http://www.w3.org/1999/xhtml">&#xd;
+        &lt;p>This model originates from BioModels Database: A Database of Annotated Published Models. It is copyright (c) 2005-2009 The BioModels Team.&lt;br />For more information see the &lt;a href="http://www.ebi.ac.uk/biomodels/legal.html" target="_blank">terms of use&lt;/a>.&lt;br />To cite BioModels Database, please use &lt;a href="http://www.pubmedcentral.nih.gov/articlerender.fcgi?tool=pubmed&amp;amp;pubmedid=16381960" target="_blank"> Le Novère N., Bornstein B., Broicher A., Courtot M., Donizelli M., Dharuri H., Li L., Sauro H., Schilstra M., Shapiro B., Snoep J.L., Hucka M. (2006) BioModels Database: A Free, Centralized Database of Curated, Published, Quantitative Kinetic Models of Biochemical and Cellular Systems Nucleic Acids Res., 34: D689-D691.&lt;/a>&#xd;
+        &lt;/p>&#xd;
+        &lt;/body>&#xd;
+        &lt;/notes></description>
+    <format>
+        <name>SBML</name>
+        <version>L2V3</version>
+    </format>
+    <publication>
+        <type>PubMed ID</type>
+        <accession>18004277</accession>
+        <journal>Molecular systems biology</journal>
+        <title>Ligand-dependent responses of the ErbB signaling network: experimental and modeling analyses.</title>
+        <affiliation>Department of Chemical Engineering, University of Delaware, Newark, DE, USA.</affiliation>
+        <synopsis>Deregulation of ErbB signaling plays a key role in the progression of multiple human cancers. To help understand ErbB signaling quantitatively, in this work we combine traditional experiments with computational modeling, building a model that describes how stimulation of all four ErbB receptors with epidermal growth factor (EGF) and heregulin (HRG) leads to activation of two critical downstream proteins, extracellular-signal-regulated kinase (ERK) and Akt. Model analysis and experimental validation show that (i) ErbB2 overexpression, which occurs in approximately 25% of all breast cancers, transforms transient EGF-induced signaling into sustained signaling, (ii) HRG-induced ERK activity is much more robust to the ERK cascade inhibitor U0126 than EGF-induced ERK activity, and (iii) phosphoinositol-3 kinase is a major regulator of post-peak but not pre-peak EGF-induced ERK activity. Sensitivity analysis leads to the hypothesis that ERK activation is robust to parameter perturbation at high ligand doses, while Akt activation is not.</synopsis>
+        <year>2007</year>
+        <month>0</month>
+        <volume>3</volume>
+        <pages>144</pages>
+        <link>http://identifiers.org/pubmed/18004277</link>
+        <authors>
+            <authors>
+                <name>Marc R Birtwistle</name>
+                <orcid>0000-0002-0341-0705</orcid>
+            </authors>
+            <authors>
+                <name>Mariko Hatakeyama</name>
+            </authors>
+            <authors>
+                <name>Noriko Yumoto</name>
+            </authors>
+            <authors>
+                <name>Babatunde A Ogunnaike</name>
+                <orcid>0000-0002-8246-070X</orcid>
+            </authors>
+            <authors>
+                <name>Jan B Hoek</name>
+                <orcid>0000-0001-7127-4218</orcid>
+            </authors>
+            <authors>
+                <name>Boris N Kholodenko</name>
+                <orcid>0000-0002-9483-4975</orcid>
+            </authors>
+        </authors>
+    </publication>
+    <files>
+        <main>
+            <main>
+                <name>BIOMD0000000175_url.xml</name>
+                <description>SBML L2V3 representation of Birtwistle2007_ErbB_Signalling</description>
+                <fileSize>227645</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>a9ed3edb181eac049eedf4f2b605ad11</md5sum>
+                <sha1sum>1b14f87abfe2bf8730bbb1979bc4c8115df3ada8</sha1sum>
+                <sha256sum>e909b41c2c629cc7a287b5e7fa55c0881b549583f84891877eb811bdea493c6e</sha256sum>
+            </main>
+        </main>
+        <additional>
+            <additional>
+                <name>BIOMD0000000175-biopax2.owl</name>
+                <description>Auto-generated BioPAX (Level 2)</description>
+                <fileSize>195229</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>b0c850c812d93eb24cfceace973af939</md5sum>
+                <sha1sum>f6afce5e9666c1e81e460c55525f8c07c769cc40</sha1sum>
+                <sha256sum>f1f0a710d918513a387697a5ff1186c976198b09b2f9452195f36fe74dddcf5c</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175-biopax3.owl</name>
+                <description>Auto-generated BioPAX (Level 3)</description>
+                <fileSize>345784</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>16204610ba69c9fec5c8f6156a805c43</md5sum>
+                <sha1sum>8560dad53c857924e461a05380e60437956c2b84</sha1sum>
+                <sha256sum>9d1f8fd3e6af49fb70174a3a1f6a413b7a95ef12f1ff86c7413ac9e41dbef03f</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175-matlab.m</name>
+                <description>Auto-generated Matlab file.</description>
+                <fileSize>69717</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>bfcacd743cd57cfd2b0d6950329a922b</md5sum>
+                <sha1sum>1bd8c480023f675db8e7e99b757601363002924d</sha1sum>
+                <sha256sum>651bfa3d00ddab2e217e9c842df814ca7bed8c834c59f25d41f769a61c570125</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175-octave.m</name>
+                <description>Auto-generated Octave file.</description>
+                <fileSize>69717</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>7775617721ac38fa22e5c979d253e9b6</md5sum>
+                <sha1sum>fa7ad3a22c7189aad34a46f1399deca2c2828956</sha1sum>
+                <sha256sum>217307d7fc1067d5895f9f9181c74b4450c2ddc1f8592ed787ed3dc69e642711</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175.m</name>
+                <description>Auto-generated Octave file</description>
+                <fileSize>69717</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>7775617721ac38fa22e5c979d253e9b6</md5sum>
+                <sha1sum>fa7ad3a22c7189aad34a46f1399deca2c2828956</sha1sum>
+                <sha256sum>217307d7fc1067d5895f9f9181c74b4450c2ddc1f8592ed787ed3dc69e642711</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175.ode</name>
+                <description>Auto-generated ODE file for XPP.</description>
+                <fileSize>53332</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>96e74c1dea549917e6a24e14c9f756e0</md5sum>
+                <sha1sum>d7272fc93ff1edb1923f124154128bc6ce3d3824</sha1sum>
+                <sha256sum>0f879fcd130bec18a2fd04a1926f46efc37f54c0a85203931d4a7dbe96d2eaac</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175.pdf</name>
+                <description>Auto-generated PDF file</description>
+                <fileSize>803306</fileSize>
+                <mimeType>application/pdf</mimeType>
+                <md5sum>abe19628f83b0e42feed2de22cdccd95</md5sum>
+                <sha1sum>df55eb59e836973916511ac325af22eaff440181</sha1sum>
+                <sha256sum>eb264c04cfc0feb604b85764c54bcf068bbd9573d60885ffe9761d71d37284d0</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175.png</name>
+                <description>Auto-generated Reaction graph (PNG)</description>
+                <fileSize>4334430</fileSize>
+                <mimeType>image/png</mimeType>
+                <md5sum>603f7ab62b5e4af99dbaca79c0570cc1</md5sum>
+                <sha1sum>2ea545986269e8171141816062476aa88290e68a</sha1sum>
+                <sha256sum>c725699c2f6e0f0dc35df7dab8a85b8a134ae0682aeac318b0141250b1079390</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175.sci</name>
+                <description>Auto-generated Scilab file</description>
+                <fileSize>61605</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>006adc90af461e072a7a3ff15d9e5c45</md5sum>
+                <sha1sum>0cb1ae4e04905851b9ac606bce64aff0a667139f</sha1sum>
+                <sha256sum>257dfdc5b4c597c96becd813fa6af81b151621827f1591801774b71813504cca</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175.svg</name>
+                <description>Auto-generated Reaction graph (SVG)</description>
+                <fileSize>388473</fileSize>
+                <mimeType>image/svg+xml</mimeType>
+                <md5sum>161594542f0a1b39b275947997b3f1b5</md5sum>
+                <sha1sum>20a5c0474e8b860512319e12af52926553adf19e</sha1sum>
+                <sha256sum>d876e17ed48b3beda61412b91a68681cc39110abe8d43fa0934796150287a7c5</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000175_url.sedml</name>
+                <description>CRBM auto-generated "template" SED-ML file.</description>
+                <fileSize>267839</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>d7e3ed0af5f250d7bc37ff2004ead379</md5sum>
+                <sha1sum>9129d5e40d295a789572b2d4a68252d4fd4a3f8e</sha1sum>
+                <sha256sum>d8ccca17601d3d3b785857a92a6faac88034ade689577467b2b62ab43cd86875</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_image.png</name>
+                <description>Reproduced figure(s) from original curation.</description>
+                <fileSize>18394</fileSize>
+                <mimeType>image/png</mimeType>
+                <md5sum>5edcbc3d21f43e0f498483d795addc14</md5sum>
+                <sha1sum>cf83383a46224fc463ef12efb17cc89b91f06ccb</sha1sum>
+                <sha256sum>fddc7d00bd592b8c56c88b370553bf56054c349b45d02037be4b1db3e102cb82</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_notes.txt</name>
+                <description>Notes from original curation (describes curation_image).</description>
+                <fileSize>55</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>65ae4284a6c7fae723021af0d757376b</md5sum>
+                <sha1sum>02dd6ac8408378b1698f7ce42965e7ebfd9e98e4</sha1sum>
+                <sha256sum>f55cfa568c567d0dd9e66ada3d9db51eae386dc80b0c2a56fb5a7c41022a1878</sha256sum>
+            </additional>
+            <additional>
+                <name>manifest.xml</name>
+                <description>Auto-generated manifest file for OMEX archives.</description>
+                <fileSize>1911</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>c4b724898bbfb171d3698af0fe25b3b8</md5sum>
+                <sha1sum>f7b209835fd1ae10367d54b120fba37c77dfdb1e</sha1sum>
+                <sha256sum>36b0cd8860352222b411e8965262746f94cea78b615246d656f5677e40b8aaa3</sha256sum>
+            </additional>
+            <additional>
+                <name>metadata.rdf</name>
+                <description>Auto-generated annotation metadata file.</description>
+                <fileSize>2643</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>ffa11dbad9e3d3a447373265c51e63a0</md5sum>
+                <sha1sum>a50c973f9a81ef2d831352e45ba508b53bc6a121</sha1sum>
+                <sha256sum>e46c6160a597563824d1cfa0814461e482b8011c7aaa9923674613de046b1d69</sha256sum>
+            </additional>
+        </additional>
+    </files>
+    <history>
+        <revisions>
+            <revisions>
+                <version>1</version>
+                <submitted>1216388702</submitted>
+                <submitter>Molecular Systems Biology</submitter>
+                <comment>Original import of ErbB</comment>
+            </revisions>
+            <revisions>
+                <version>2</version>
+                <submitted>1460130136</submitted>
+                <submitter>Molecular Systems Biology</submitter>
+                <comment>Current version of Birtwistle2007_ErbB_Signalling</comment>
+            </revisions>
+            <revisions>
+                <version>3</version>
+                <submitted>1724265827</submitted>
+                <submitter>Lucian Smith</submitter>
+                <comment>CRBM-sponsored manual and automated updates.</comment>
+            </revisions>
+        </revisions>
+    </history>
+    <firstPublished>1725281317</firstPublished>
+    <submissionId>MODEL5563731079</submissionId>
+    <publicationId>BIOMD0000000175</publicationId>
+    <modellingApproach>
+        <accession>MAMO_0000046</accession>
+        <name>ordinary differential equation model</name>
+        <resource>http://identifiers.org/mamo/MAMO_0000046</resource>
+    </modellingApproach>
+    <curationStatus>CURATED</curationStatus>
+    <contributors>
+        <Curator>
+            <name>Lucian Smith</name>
+            <email>lpsmith@uw.edu</email>
+            <affiliation>University of Washington</affiliation>
+            <orcid>0000-0001-7002-6386</orcid>
+            <external>false</external>
+        </Curator>
+    </contributors>
+    <vcsIdentifier>aaa</vcsIdentifier>
+    <modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasTaxon</qualifier>
+            <accession>9606</accession>
+            <name>Homo sapiens</name>
+            <resource>Taxonomy</resource>
+            <uri>http://identifiers.org/taxonomy/9606</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>MODEL5563731079</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/MODEL5563731079</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>BIOMD0000000175</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/BIOMD0000000175</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:isDescribedBy</qualifier>
+            <accession>18004277</accession>
+            <resource>PubMed</resource>
+            <uri>http://identifiers.org/pubmed/18004277</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasVersion</qualifier>
+            <accession>REACT_12058.1</accession>
+            <name>Signalling to ERKs</name>
+            <resource>Reactome</resource>
+            <uri>http://identifiers.org/reactome/REACT_12058.1</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasVersion</qualifier>
+            <accession>GO:0000165</accession>
+            <name>MAPK cascade</name>
+            <resource>Gene Ontology</resource>
+            <uri>http://identifiers.org/go/GO:0000165</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:isVersionOf</qualifier>
+            <accession>GO:0038127</accession>
+            <name>ERBB signaling pathway</name>
+            <resource>Gene Ontology</resource>
+            <uri>http://identifiers.org/go/GO:0038127</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>MAMO_0000046</accession>
+            <name>Ordinary differential equation model</name>
+            <resource>Mathematical Modelling Ontology</resource>
+            <uri>http://identifiers.org/mamo/MAMO_0000046</uri>
+        </modelLevelAnnotations>
+    </modelLevelAnnotations>
+</Model>

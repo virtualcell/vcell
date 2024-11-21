@@ -1,0 +1,216 @@
+
+<Model>
+    <name>Robertson-Tessi M 2012 A model of tumor Immune interaction</name>
+    <description>&lt;notes xmlns="http://www.sbml.org/sbml/level2/version4">&#xd;
+        &lt;body xmlns="http://www.w3.org/1999/xhtml">&#xd;
+        &lt;p>Its a mathematical model presenting the interaction between a growing tumor and immune system. Model involves tumor cells, dendritic cell, helper Tcells, regulatory Tcells, effector cells and certain cytokines (e.g. TGFbeta, IL10, IL2 ) produced by these cells. It represent a dynamic regulation of tumor production/killing by different immune cells and cytokines.&lt;/p>&#xd;
+        &lt;/body>&#xd;
+        &lt;/notes></description>
+    <format>
+        <name>SBML</name>
+        <version>L2V4</version>
+    </format>
+    <publication>
+        <type>PubMed ID</type>
+        <accession>22051568</accession>
+        <journal>Journal of theoretical biology</journal>
+        <title>A mathematical model of tumor-immune interactions.</title>
+        <affiliation>Program in Applied Mathematics, University of Arizona, Tucson, AZ 85721, United States. mark.robertsontessi@moffitt.org</affiliation>
+        <synopsis>A mathematical model of the interactions between a growing tumor and the immune system is presented. The equations and parameters of the model are based on experimental and clinical results from published studies. The model includes the primary cell populations involved in effector T-cell mediated tumor killing: regulatory T cells, helper T cells, and dendritic cells. A key feature is the inclusion of multiple mechanisms of immunosuppression through the main cytokines and growth factors mediating the interactions between the cell populations. Decreased access of effector cells to the tumor interior with increasing tumor size is accounted for. The model is applied to tumors with different growth rates and antigenicities to gauge the relative importance of various immunosuppressive mechanisms. The most important factors leading to tumor escape are TGF-β-induced immunosuppression, conversion of helper T cells into regulatory T cells, and the limitation of immune cell access to the full tumor at large tumor sizes. The results suggest that for a given tumor growth rate, there is an optimal antigenicity maximizing the response of the immune system. Further increases in antigenicity result in increased immunosuppression, and therefore a decrease in tumor killing rate. This result may have implications for immunotherapies which modulate the effective antigenicity. Simulation of dendritic cell therapy with the model suggests that for some tumors, there is an optimal dose of transfused dendritic cells.</synopsis>
+        <year>2012</year>
+        <month>2</month>
+        <volume>294</volume>
+        <pages>56-73</pages>
+        <link>http://identifiers.org/pubmed/22051568</link>
+        <authors>
+            <authors>
+                <name>Mark Robertson-Tessi</name>
+                <institution>Program in Applied Mathematics, University of Arizona, Tucson, AZ 85721, United States. mark.robertsontessi@moffitt.org</institution>
+                <orcid>0000-0003-0143-9587</orcid>
+            </authors>
+            <authors>
+                <name>Ardith El-Kareh</name>
+            </authors>
+            <authors>
+                <name>Alain Goriely</name>
+                <orcid>0000-0002-6436-8483</orcid>
+            </authors>
+        </authors>
+    </publication>
+    <files>
+        <main>
+            <main>
+                <name>22051568_Tessi.xml</name>
+                <description>SBML Level2 version4</description>
+                <fileSize>155225</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>4c371fa902e626ca4931257ccea9df9c</md5sum>
+                <sha1sum>1b99bd8b55c332532e977c693ccee0fb0bc9e1d8</sha1sum>
+                <sha256sum>654639588b84f8c6be742ef435200c8db838f454e0a58bf53106b39afb78500c</sha256sum>
+            </main>
+        </main>
+        <additional>
+            <additional>
+                <name>22051568_Tessi-biopax2.owl</name>
+                <description>Auto-generated BioPAX (Level 2) file.</description>
+                <fileSize>39875</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>491acd4c25cd49f72db3e5edab79899a</md5sum>
+                <sha1sum>78c4975f2cd26c83327dcb5907215ceaa9485ae6</sha1sum>
+                <sha256sum>fb9a357ef2d100032fb2f7eb04547fe418845a5f39ecaf0254a1ac969709252f</sha256sum>
+            </additional>
+            <additional>
+                <name>22051568_Tessi-biopax3.owl</name>
+                <description>Auto-generated BioPAX (Level 3) file.</description>
+                <fileSize>64119</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>9cecbc09e7792bde363568fd7e83e290</md5sum>
+                <sha1sum>a9497327e5be7b549fb666884c2278e88747f783</sha1sum>
+                <sha256sum>f7241519259e4fcf4e3c31c6cf7249295c0f79a08c9ced2a6056c224d36832eb</sha256sum>
+            </additional>
+            <additional>
+                <name>22051568_Tessi.cps</name>
+                <description>COPASI 4.24 (build196) file</description>
+                <fileSize>186770</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>38060653ecba94a68538cb011727adcc</md5sum>
+                <sha1sum>6442417dede24c1bcc12779870bbe01dc7fbe0f8</sha1sum>
+                <sha256sum>bf0f1dcff3677e838b1304589fa7977bd5133a19ea1a25552b12a797cb0ab4b8</sha256sum>
+            </additional>
+            <additional>
+                <name>22051568_Tessi.sedml</name>
+                <description>SEDML file (additionally CRBM-validated and adjusted).</description>
+                <fileSize>54437</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>729673bd707e47aabf85a446da62e30b</md5sum>
+                <sha1sum>c6546a2c4e63fb13c5c384ee55fe38883a761f3b</sha1sum>
+                <sha256sum>fbfb3ba9da420ec7023dcf111d79ae55a92ad597f877fb95a7a563bd0c9f75a0</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_image.png</name>
+                <description>Reproduced figure(s) from original curation.</description>
+                <fileSize>122884</fileSize>
+                <mimeType>image/png</mimeType>
+                <md5sum>d4e327996bf0da791792097c7ae7c1b1</md5sum>
+                <sha1sum>d39618f77b135dbe03767232a8b2dc600b75b173</sha1sum>
+                <sha256sum>21c408d68c0061343bccac5e5ff85e18e913c310bece9dc0b6d59403df2eb2a7</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_notes.txt</name>
+                <description>Notes from original curation (describes curation_image).</description>
+                <fileSize>474</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>eb7fcd18c2afe4fa0b2b8cc6168a7631</md5sum>
+                <sha1sum>c3da7f45cb37544f533558bee1a980af77939aa3</sha1sum>
+                <sha256sum>f2ca1d0834ad236f1c30dafab439969be1a15005db24ce220458cb612c6b5a2a</sha256sum>
+            </additional>
+            <additional>
+                <name>manifest.xml</name>
+                <description>Auto-generated manifest file for OMEX archives.</description>
+                <fileSize>1097</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>ea9b31fde65d7c8a60706a416e2ed7f7</md5sum>
+                <sha1sum>ddf0341262f543ff8584a2fc5e7f6f599b0326d0</sha1sum>
+                <sha256sum>5905c83295e86cdd90f0b4f2f96e78b82fc7f2161ea61c7a08a81a1821dc88be</sha256sum>
+            </additional>
+            <additional>
+                <name>metadata.rdf</name>
+                <description>Auto-generated annotation metadata file.</description>
+                <fileSize>1951</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>d39bd4500b38e1986bd59f0e00185f9a</md5sum>
+                <sha1sum>df5f51b814c2b85b7c83d54ac7a9ddbf60f87d92</sha1sum>
+                <sha256sum>57cc70ff952e732fe0ac278be21a949b4364d1c66f4c246d7ff1246e2106a8eb</sha256sum>
+            </additional>
+        </additional>
+    </files>
+    <history>
+        <revisions>
+            <revisions>
+                <version>5</version>
+                <submitted>1548774035</submitted>
+                <submitter>Krishna Kumar Tiwari</submitter>
+                <comment>Automatically added model identifier BIOMD0000000731</comment>
+            </revisions>
+            <revisions>
+                <version>6</version>
+                <submitted>1724284480</submitted>
+                <submitter>Lucian Smith</submitter>
+                <comment>CRBM-sponsored manual and automated updates.</comment>
+            </revisions>
+        </revisions>
+    </history>
+    <firstPublished>1725281830</firstPublished>
+    <submissionId>MODEL1901250001</submissionId>
+    <publicationId>BIOMD0000000731</publicationId>
+    <modellingApproach>
+        <accession>MAMO_0000046</accession>
+        <name>ordinary differential equation model</name>
+        <resource>http://identifiers.org/mamo/MAMO_0000046</resource>
+    </modellingApproach>
+    <curationStatus>CURATED</curationStatus>
+    <contributors>
+        <Curator>
+            <name>Lucian Smith</name>
+            <email>lpsmith@uw.edu</email>
+            <affiliation>University of Washington</affiliation>
+            <orcid>0000-0001-7002-6386</orcid>
+            <external>false</external>
+        </Curator>
+    </contributors>
+    <vcsIdentifier>aag</vcsIdentifier>
+    <modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasTaxon</qualifier>
+            <accession>9606</accession>
+            <name>Homo sapiens</name>
+            <resource>Taxonomy</resource>
+            <uri>http://identifiers.org/taxonomy/9606</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>MAMO_0000046</accession>
+            <name>Ordinary differential equation model</name>
+            <resource>Mathematical Modelling Ontology</resource>
+            <uri>http://identifiers.org/mamo/MAMO_0000046</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:isPropertyOf</qualifier>
+            <accession>MAMO_0000046</accession>
+            <name>Ordinary differential equation model</name>
+            <resource>Mathematical Modelling Ontology</resource>
+            <uri>http://identifiers.org/mamo/MAMO_0000046</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>MODEL1901250001</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/MODEL1901250001</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>BIOMD0000000731</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/BIOMD0000000731</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:isDescribedBy</qualifier>
+            <accession>22051568</accession>
+            <resource>PubMed</resource>
+            <uri>https://identifiers.org/pubmed:22051568</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasPart</qualifier>
+            <accession>C153548</accession>
+            <name>Tumor-Infiltrating Immune Cell</name>
+            <resource>NCIt</resource>
+            <uri>http://identifiers.org/ncit/C153548</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:isDescribedBy</qualifier>
+            <accession>22051568</accession>
+            <resource>PubMed</resource>
+            <uri>http://identifiers.org/pubmed/22051568</uri>
+        </modelLevelAnnotations>
+    </modelLevelAnnotations>
+</Model>

@@ -1,0 +1,181 @@
+
+<Model>
+    <name>Dasgupta2020 - Reduced model of receptor clusturing and aggregation</name>
+    <description>a simple kinetic mass-action-law-based model could be utilized to adequately describe clustering in&#xd;
+        response to activation both in 2D and in 3D</description>
+    <format>
+        <name>SBML</name>
+        <version>L2V4</version>
+    </format>
+    <publication>
+        <type>PubMed ID</type>
+        <accession>32604803</accession>
+        <journal>Life (Basel, Switzerland)</journal>
+        <title>Development of a Simple Kinetic Mathematical Model of Aggregation of Particles or Clustering of Receptors.</title>
+        <affiliation>Faculty of Physics, Lomonosov Moscow State University, 1/2 Leninskie gory, 119991 Moscow, Russia.</affiliation>
+        <synopsis>The process of clustering of plasma membrane receptors in response to their agonist is the first step in signal transduction. The rate of the clustering process and the size of the clusters determine further cell responses. Here we aim to demonstrate that a simple 2-differential equation mathematical model is capable of quantitative description of the kinetics of 2D or 3D cluster formation in various processes. Three mathematical models based on mass action kinetics were considered and compared with each other by their ability to describe experimental data on GPVI or CR3 receptor clustering (2D) and albumin or platelet aggregation (3D) in response to activation. The models were able to successfully describe experimental data without losing accuracy after switching between complex and simple models. However, additional restrictions on parameter values are required to match a single set of parameters for the given experimental data. The extended clustering model captured several properties of the kinetics of cluster formation, such as the existence of only three typical steady states for this system: unclustered receptors, receptor dimers, and clusters. Therefore, a simple kinetic mass-action-law-based model could be utilized to adequately describe clustering in response to activation both in 2D and in 3D.</synopsis>
+        <year>2020</year>
+        <month>6</month>
+        <volume>10</volume>
+        <issue>6</issue>
+        <pages>E97</pages>
+        <link>http://identifiers.org/pubmed/32604803</link>
+        <authors>
+            <authors>
+                <name>Andrei K Garzon Dasgupta</name>
+                <institution>Faculty of Physics, Lomonosov Moscow State University, 1/2 Leninskie gory, 119991 Moscow, Russia.National Medical Research Centеr of Pediatric Hematology, Oncology and Immunology named after Dmitry Rogachev, 1 Samory Mashela St, 117198 Moscow, Russia.</institution>
+            </authors>
+            <authors>
+                <name>Alexey A Martyanov</name>
+                <institution>Faculty of Physics, Lomonosov Moscow State University, 1/2 Leninskie gory, 119991 Moscow, Russia.National Medical Research Centеr of Pediatric Hematology, Oncology and Immunology named after Dmitry Rogachev, 1 Samory Mashela St, 117198 Moscow, Russia.Institute for Biochemical Physics (IBCP), Russian Academy of Sciences (RAS), Russian Federation, Kosyigina 4, 119334 Moscow, Russia.Center for Theoretical Problems of Physico-Сhemical Pharmacology, Russian Academy of Sciences, 30 Srednyaya Kalitnikovskaya str., 109029 Moscow, Russia.</institution>
+                <orcid>0000-0003-0211-6325</orcid>
+            </authors>
+            <authors>
+                <name>Aleksandra A Filkova</name>
+                <institution>Faculty of Physics, Lomonosov Moscow State University, 1/2 Leninskie gory, 119991 Moscow, Russia.National Medical Research Centеr of Pediatric Hematology, Oncology and Immunology named after Dmitry Rogachev, 1 Samory Mashela St, 117198 Moscow, Russia.Center for Theoretical Problems of Physico-Сhemical Pharmacology, Russian Academy of Sciences, 30 Srednyaya Kalitnikovskaya str., 109029 Moscow, Russia.</institution>
+                <orcid>0000-0002-0448-3981</orcid>
+            </authors>
+            <authors>
+                <name>Mikhail A Panteleev</name>
+                <institution>Faculty of Physics, Lomonosov Moscow State University, 1/2 Leninskie gory, 119991 Moscow, Russia.National Medical Research Centеr of Pediatric Hematology, Oncology and Immunology named after Dmitry Rogachev, 1 Samory Mashela St, 117198 Moscow, Russia.Center for Theoretical Problems of Physico-Сhemical Pharmacology, Russian Academy of Sciences, 30 Srednyaya Kalitnikovskaya str., 109029 Moscow, Russia.Faculty of Biological and Medical Physics, Moscow Institute of Physics and Technology, 9 Institutskii per., 141700 Dolgoprudnyi, Russia.</institution>
+            </authors>
+            <authors>
+                <name>Anastasia N Sveshnikova</name>
+                <institution>Faculty of Physics, Lomonosov Moscow State University, 1/2 Leninskie gory, 119991 Moscow, Russia.National Medical Research Centеr of Pediatric Hematology, Oncology and Immunology named after Dmitry Rogachev, 1 Samory Mashela St, 117198 Moscow, Russia.Center for Theoretical Problems of Physico-Сhemical Pharmacology, Russian Academy of Sciences, 30 Srednyaya Kalitnikovskaya str., 109029 Moscow, Russia.Department of Normal Physiology, Sechenov First Moscow State Medical University, 8/2 Trubetskaya St., 119991 Moscow, Russia.</institution>
+                <orcid>0000-0003-4720-7319</orcid>
+            </authors>
+        </authors>
+    </publication>
+    <files>
+        <main>
+            <main>
+                <name>Dasgupta2020.xml</name>
+                <description>SBML L2V4 file of the model</description>
+                <fileSize>32336</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>a275f2c3fca9cfca5835ddd0434e7eca</md5sum>
+                <sha1sum>0ace739e13539d787e5e40d5aaf132417c983b98</sha1sum>
+                <sha256sum>958b131d4df2f215dae68255433542f228601db0326d26a54efd08ddcf823489</sha256sum>
+            </main>
+        </main>
+        <additional>
+            <additional>
+                <name>Dasgupta2020.cps</name>
+                <description>COPASI 4.28 (Build217) file for the model</description>
+                <fileSize>63901</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>935c72c6c6864b542990b1fb3e54a31f</md5sum>
+                <sha1sum>5de3a21951b30119d3b079d42ed47665071691a6</sha1sum>
+                <sha256sum>f1f6c1a61080c48ae349495ee0bf0e0a64c737bb3643d8eb11f4cd574bde8ce8</sha256sum>
+            </additional>
+            <additional>
+                <name>Dasgupta2020.omex</name>
+                <description>COMBINE archive file</description>
+                <fileSize>727</fileSize>
+                <mimeType>application/zip</mimeType>
+                <md5sum>4d30ee225a74e17cf49985fa1b81042f</md5sum>
+                <sha1sum>fee185c59be3a684218a686dc9a5f8dc8ff678c5</sha1sum>
+                <sha256sum>f81ca68c9c8890414cc903adec98125a4b367767c7283ff6129c85b8462ff015</sha256sum>
+            </additional>
+            <additional>
+                <name>Dasgupta2020.sedml</name>
+                <description>SEDML file for the model</description>
+                <fileSize>12048</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>5e8f3d0ea0f7fbccef71477492a6b1d8</md5sum>
+                <sha1sum>8e3789a741d04951223f8c927fcc93bf9481920b</sha1sum>
+                <sha256sum>93fbffed0aed0eadd2b8b83d48a596891b45b3037941e17479db9c308a2753ae</sha256sum>
+            </additional>
+        </additional>
+    </files>
+    <history>
+        <revisions>
+            <revisions>
+                <version>3</version>
+                <submitted>1604415279</submitted>
+                <submitter>Krishna Kumar Tiwari</submitter>
+                <comment>Automatically added model identifier BIOMD0000000973</comment>
+            </revisions>
+            <revisions>
+                <version>4</version>
+                <submitted>1724290671</submitted>
+                <submitter>Lucian Smith</submitter>
+                <comment>CRBM-sponsored manual and automated updates.</comment>
+            </revisions>
+        </revisions>
+    </history>
+    <firstPublished>1725281950</firstPublished>
+    <submissionId>MODEL2011030002</submissionId>
+    <publicationId>BIOMD0000000973</publicationId>
+    <modellingApproach>
+        <accession>MAMO_0000046</accession>
+        <name>ordinary differential equation model</name>
+        <resource>http://identifiers.org/mamo/MAMO_0000046</resource>
+    </modellingApproach>
+    <curationStatus>CURATED</curationStatus>
+    <contributors>
+        <Modeller>
+            <name>Krishna Kumar Tiwari</name>
+            <email>ktiwari@ebi.ac.uk</email>
+            <affiliation>EMBL-EBI</affiliation>
+            <orcid>0000-0002-3699-0937</orcid>
+            <external>false</external>
+        </Modeller>
+    </contributors>
+    <vcsIdentifier>aaj</vcsIdentifier>
+    <modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasTaxon</qualifier>
+            <accession>9606</accession>
+            <name>Homo sapiens</name>
+            <resource>Taxonomy</resource>
+            <uri>http://identifiers.org/taxonomy/9606</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>MAMO_0000046</accession>
+            <name>Ordinary differential equation model</name>
+            <resource>Mathematical Modelling Ontology</resource>
+            <uri>http://identifiers.org/mamo/MAMO_0000046</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>GO:0007596</accession>
+            <name>blood coagulation</name>
+            <resource>Gene Ontology</resource>
+            <uri>http://identifiers.org/go/GO:0007596</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:isDescribedBy</qualifier>
+            <accession>32604803</accession>
+            <resource>PubMed</resource>
+            <uri>https://identifiers.org/pubmed/32604803</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:occursIn</qualifier>
+            <accession>C77681</accession>
+            <name>Injury Site</name>
+            <resource>NCIt</resource>
+            <uri>https://identifiers.org/ncit/C77681</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>GO:0070527</accession>
+            <name>platelet aggregation</name>
+            <resource>Gene Ontology</resource>
+            <uri>https://identifiers.org/go/GO:0070527</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>BIOMD0000000973</accession>
+            <resource>BioModels Database</resource>
+            <uri>https://identifiers.org/biomodels.db/BIOMD0000000973</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>MODEL2011030002</accession>
+            <resource>BioModels Database</resource>
+            <uri>https://identifiers.org/biomodels.db/MODEL2011030002</uri>
+        </modelLevelAnnotations>
+    </modelLevelAnnotations>
+</Model>

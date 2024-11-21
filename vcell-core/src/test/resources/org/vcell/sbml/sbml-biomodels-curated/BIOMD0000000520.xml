@@ -1,0 +1,287 @@
+
+<Model>
+    <name>Smallbone2013 - Colon Crypt cycle - Version 0</name>
+    <description>&lt;notes xmlns="http://www.sbml.org/sbml/level2/version4">&#xd;
+        &lt;body xmlns="http://www.w3.org/1999/xhtml">&#xd;
+        &lt;div class="dc:title">Smallbone2013 - Colon Crypt cycle - Version 0&lt;/div>&#xd;
+        &lt;div class="dc:bibliographicCitation">      &lt;p>This model is described in the article:&lt;/p>&#xd;
+        &lt;div class="bibo:title">        &lt;a href="http://identifiers.org/pubmed/24354351" title="Access to this publication">A mathematical model of the colon crypt capturing compositional dynamic interactions between cell types&lt;/a>&#xd;
+        &lt;/div>&#xd;
+        &lt;div class="bibo:authorList">Kieran Smallbone, Bernard M. Corfe&lt;/div>&#xd;
+        &lt;div class="bibo:Journal">Int J Exp Pathol. 2014 Feb;95(1):1-7.&lt;/div>&#xd;
+        &lt;p>Abstract:&lt;/p>&#xd;
+        &lt;div class="bibo:abstract">        &lt;p>Models of the development and early progression of colorectal cancer are based upon understanding the cycle of stem cell turnover, proliferation, differentiation and death. Existing crypt compartmental models feature a linear pathway of cell types, with little regulatory mechanism. Previous work has shown that there are perturbations in the enteroendocrine cell population of macroscopically normal crypts, a compartment not included in existing models. We show that existing models do not adequately recapitulate the dynamics of cell fate pathways in the crypt. We report the progressive development, iterative testing and fitting of a developed compartmental model with additional cell types, and which includes feedback mechanisms and cross-regulatory mechanisms between cell types. The fitting of the model to existing data sets suggests a need to invoke cross-talk between cell types as a feature of colon crypt cycle models.&lt;/p>&#xd;
+        &lt;/div>&#xd;
+        &lt;/div>&#xd;
+        &lt;div class="dc:publisher">      &lt;p>This model is hosted on        &lt;a href="http://www.ebi.ac.uk/biomodels/">BioModels Database&lt;/a>&#xd;
+        and identified&#xd;
+        by:        &lt;a href="http://identifiers.org/biomodels.db/MODEL1306190000">MODEL1306190000&lt;/a>&#xd;
+        .        &lt;/p>&#xd;
+        &lt;p>To cite BioModels Database, please use:        &lt;a href="http://identifiers.org/pubmed/20587024" title="Latest BioModels Database publication">BioModels Database: An enhanced, curated and annotated resource&#xd;
+        for published quantitative kinetic models&lt;/a>&#xd;
+        .        &lt;/p>&#xd;
+        &lt;/div>&#xd;
+        &lt;div class="dc:license">      &lt;p>To the extent possible under law, all copyright and related or&#xd;
+        neighbouring rights to this encoded model have been dedicated to the public&#xd;
+        domain worldwide. Please refer to        &lt;a href="http://creativecommons.org/publicdomain/zero/1.0/" title="Access to: CC0 1.0 Universal (CC0 1.0), Public Domain Dedication">CC0 Public Domain&#xd;
+        Dedication&lt;/a>&#xd;
+        for more information.        &lt;/p>&#xd;
+        &lt;/div>&#xd;
+        &lt;/body>&#xd;
+        &#xd;
+        &lt;/notes></description>
+    <format>
+        <name>SBML</name>
+        <version>L2V4</version>
+    </format>
+    <publication>
+        <type>PubMed ID</type>
+        <accession>24354351</accession>
+        <journal>International journal of experimental pathology</journal>
+        <title>A mathematical model of the colon crypt capturing compositional dynamic interactions between cell types.</title>
+        <affiliation>Manchester Centre for Integrative Systems Biology, University of Manchester, Manchester, UK.</affiliation>
+        <synopsis>Models of the development and early progression of colorectal cancer are based upon understanding the cycle of stem cell turnover, proliferation, differentiation and death. Existing crypt compartmental models feature a linear pathway of cell types, with little regulatory mechanism. Previous work has shown that there are perturbations in the enteroendocrine cell population of macroscopically normal crypts, a compartment not included in existing models. We show that existing models do not adequately recapitulate the dynamics of cell fate pathways in the crypt. We report the progressive development, iterative testing and fitting of a developed compartmental model with additional cell types, and which includes feedback mechanisms and cross-regulatory mechanisms between cell types. The fitting of the model to existing data sets suggests a need to invoke cross-talk between cell types as a feature of colon crypt cycle models.</synopsis>
+        <year>2014</year>
+        <month>2</month>
+        <volume>95</volume>
+        <issue>1</issue>
+        <pages>1-7</pages>
+        <link>http://identifiers.org/pubmed/24354351</link>
+        <authors>
+            <authors>
+                <name>Kieran Smallbone</name>
+                <institution>Manchester Centre for Integrative Systems Biology, University of Manchester, Manchester, UK.</institution>
+            </authors>
+            <authors>
+                <name>Bernard M Corfe</name>
+            </authors>
+        </authors>
+    </publication>
+    <files>
+        <main>
+            <main>
+                <name>BIOMD0000000520_url.xml</name>
+                <description>SBML L2V4 representation of Smallbone2013 - Colon Crypt cycle - Version 0</description>
+                <fileSize>18941</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>2a37c5f0fdc046eb017a2549e1fe9690</md5sum>
+                <sha1sum>75de33e681f4cd1ec37c1c3c064d04a912b89e0d</sha1sum>
+                <sha256sum>b5a34495c8a8bcc47e81eff11026e52b2866dd2ab7c9005c17b7b41269290e2d</sha256sum>
+            </main>
+        </main>
+        <additional>
+            <additional>
+                <name>BIOMD0000000520-biopax2.owl</name>
+                <description>Auto-generated BioPAX (Level 2)</description>
+                <fileSize>11804</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>5846f25aec201f9e91a3c6bc118752fb</md5sum>
+                <sha1sum>66af5dcaaa0ed55595ebff127d9602dad4cb5e8a</sha1sum>
+                <sha256sum>91997646db13bc844c6b82297e49401e6c8479c0b2f7109a35693d3db80e3ac8</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000520-biopax3.owl</name>
+                <description>Auto-generated BioPAX (Level 3)</description>
+                <fileSize>17094</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>5f080a23c845bcdf9225a0bb02103110</md5sum>
+                <sha1sum>3f655397ee4d180415e2607fdf0a36ce9e7ef05f</sha1sum>
+                <sha256sum>21d9859a9f390a31d1a743c5215b34de893f546b97450a41ae3c520c4827acd5</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000520-matlab.m</name>
+                <description>Auto-generated Matlab file.</description>
+                <fileSize>4495</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>cf91ebbc1c1f33e9a741c99204adda5a</md5sum>
+                <sha1sum>b0e6c9e4a13833d361d90fa3b6335a4b16213e2b</sha1sum>
+                <sha256sum>2c73929e1fdc70c2e2f4486b13d849c9a32d25d215c8d7f8d8c09ee284734665</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000520-octave.m</name>
+                <description>Auto-generated Octave file.</description>
+                <fileSize>4495</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>672e569515326007795c7a90876ea1eb</md5sum>
+                <sha1sum>adfe17459416121d8a440dc2ba4a643bfec39e00</sha1sum>
+                <sha256sum>358ffd83dfd8a4e4a064db137dc55f46d582adb2a022da94dc94b1336a38d31d</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000520.m</name>
+                <description>Auto-generated Octave file</description>
+                <fileSize>4495</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>672e569515326007795c7a90876ea1eb</md5sum>
+                <sha1sum>adfe17459416121d8a440dc2ba4a643bfec39e00</sha1sum>
+                <sha256sum>358ffd83dfd8a4e4a064db137dc55f46d582adb2a022da94dc94b1336a38d31d</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000520.ode</name>
+                <description>Auto-generated ODE file for XPP.</description>
+                <fileSize>2609</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>511af7e880b66945f436ebe0bc663990</md5sum>
+                <sha1sum>8c28ed12b544c1b53a6b4d8d93a8ada9aac3a3f9</sha1sum>
+                <sha256sum>b0caf52317f0ad4ce6fd3f1eef31c132ddd9f97cc6df21c4a6abbc27e69d5e22</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000520.png</name>
+                <description>Auto-generated Reaction graph (PNG)</description>
+                <fileSize>54010</fileSize>
+                <mimeType>image/png</mimeType>
+                <md5sum>8999daedf6baa8862ca70579081a57d1</md5sum>
+                <sha1sum>46f73fb6172b34c9060682471796a5934a1c92d8</sha1sum>
+                <sha256sum>81cafec1a99ed50c9d661a3f998521b0ec1d4df32a2b3327e26ec2ee205333b0</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000520.svg</name>
+                <description>Auto-generated Reaction graph (SVG)</description>
+                <fileSize>18355</fileSize>
+                <mimeType>image/svg+xml</mimeType>
+                <md5sum>05724696909220954a46699c0d6c6b8e</md5sum>
+                <sha1sum>c0c94faf1c55d8670b4e915d4415061a1048cb22</sha1sum>
+                <sha256sum>5a52c2655909d19c028e580969eaa765cb03de18b204bb42cca9f6a28e519f51</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000520_url.sedml</name>
+                <description>CRBM auto-generated "template" SED-ML file.</description>
+                <fileSize>13472</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>090f2229ac15a50f848170b5aba50db6</md5sum>
+                <sha1sum>ddb5b50eabf5f597ac3204a6c285dfb27ea51846</sha1sum>
+                <sha256sum>7b2f4a2e4c5311c7f2f1d354d5afc74952a8d3c3a1268e93656b4d9ebe77b9b8</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_image.png</name>
+                <description>Reproduced figure(s) from original curation.</description>
+                <fileSize>2565</fileSize>
+                <mimeType>image/png</mimeType>
+                <md5sum>39af9de3d73648a89c859da35ed3f60d</md5sum>
+                <sha1sum>2df21c0adb25f9806ef696e41522daffb419c155</sha1sum>
+                <sha256sum>41a205f9e389bafe00956b76392af36e9a325d1d6c5d6cf42dc666f8933e0e29</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_notes.txt</name>
+                <description>Notes from original curation (describes curation_image).</description>
+                <fileSize>244</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>1bb2c75f05ff29e995bbae42292fc12c</md5sum>
+                <sha1sum>ffbbc84833458a6b23b608a307af9d960b154024</sha1sum>
+                <sha256sum>06c8ce491bd92b4ee56764bfe57af980a625abd9292112c1b34f928831e39e94</sha256sum>
+            </additional>
+            <additional>
+                <name>manifest.xml</name>
+                <description>Auto-generated manifest file for OMEX archives.</description>
+                <fileSize>1674</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>5d80effda198a13e72cef9752c408837</md5sum>
+                <sha1sum>0c3e0a8e126746d30ab7c251d0016af92bed76a5</sha1sum>
+                <sha256sum>99b88cfaaaa36274318bf4ceac80cb54b6e0acd2eb89f9812fe085c517f14cd6</sha256sum>
+            </additional>
+            <additional>
+                <name>metadata.rdf</name>
+                <description>Auto-generated annotation metadata file.</description>
+                <fileSize>5259</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>275ef40ff8cc27c4c1c970978862507b</md5sum>
+                <sha1sum>b92148e8e48d54796ac5e95927765634c8b6e611</sha1sum>
+                <sha256sum>07a389f824c2b5eb7be138acb48226cf8fa34d5f2c106b96b10979e83a680f9f</sha256sum>
+            </additional>
+        </additional>
+    </files>
+    <history>
+        <revisions>
+            <revisions>
+                <version>1</version>
+                <submitted>1371655973</submitted>
+                <submitter>Kieran Smallbone</submitter>
+                <comment>Original import of crypt</comment>
+            </revisions>
+            <revisions>
+                <version>2</version>
+                <submitted>1393606418</submitted>
+                <submitter>Kieran Smallbone</submitter>
+                <comment>Current version of Smallbone2013 - Colon Crypt cycle - Version 0</comment>
+            </revisions>
+            <revisions>
+                <version>3</version>
+                <submitted>1724276497</submitted>
+                <submitter>Lucian Smith</submitter>
+                <comment>CRBM-sponsored manual and automated updates.</comment>
+            </revisions>
+        </revisions>
+    </history>
+    <firstPublished>1725281680</firstPublished>
+    <submissionId>MODEL1306190000</submissionId>
+    <publicationId>BIOMD0000000520</publicationId>
+    <modellingApproach>
+        <accession>MAMO_0000046</accession>
+        <name>ordinary differential equation model</name>
+        <resource>http://identifiers.org/mamo/MAMO_0000046</resource>
+    </modellingApproach>
+    <curationStatus>CURATED</curationStatus>
+    <contributors>
+        <Curator>
+            <name>Lucian Smith</name>
+            <email>lpsmith@uw.edu</email>
+            <affiliation>University of Washington</affiliation>
+            <orcid>0000-0001-7002-6386</orcid>
+            <external>false</external>
+        </Curator>
+    </contributors>
+    <vcsIdentifier>aaa</vcsIdentifier>
+    <modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:isDescribedBy</qualifier>
+            <accession>24354351</accession>
+            <resource>PubMed</resource>
+            <uri>http://identifiers.org/pubmed/24354351</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasTaxon</qualifier>
+            <accession>39107</accession>
+            <name>Murinae</name>
+            <resource>Taxonomy</resource>
+            <uri>http://identifiers.org/taxonomy/39107</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:occursIn</qualifier>
+            <accession>BTO:0000305</accession>
+            <name>crypt</name>
+            <resource>Brenda Tissue Ontology</resource>
+            <uri>http://identifiers.org/bto/BTO:0000305</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:isVersionOf</qualifier>
+            <accession>GO:0048863</accession>
+            <name>stem cell differentiation</name>
+            <resource>Gene Ontology</resource>
+            <uri>http://identifiers.org/go/GO:0048863</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>MODEL1306190000</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/MODEL1306190000</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>BIOMD0000000520</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/BIOMD0000000520</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:isDerivedFrom</qualifier>
+            <accession>17360468</accession>
+            <resource>PubMed</resource>
+            <uri>http://identifiers.org/pubmed/17360468</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>MAMO_0000046</accession>
+            <name>Ordinary differential equation model</name>
+            <resource>Mathematical Modelling Ontology</resource>
+            <uri>http://identifiers.org/mamo/MAMO_0000046</uri>
+        </modelLevelAnnotations>
+    </modelLevelAnnotations>
+</Model>

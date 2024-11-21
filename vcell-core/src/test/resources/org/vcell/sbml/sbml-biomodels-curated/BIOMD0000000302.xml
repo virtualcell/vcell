@@ -1,0 +1,277 @@
+
+<Model>
+    <name>Wang1996_Synaptic_Inhibition_Two_Neuron</name>
+    <description>&lt;notes xmlns="http://www.sbml.org/sbml/level2/version4">&#xd;
+        &lt;body xmlns="http://www.w3.org/1999/xhtml">&#xd;
+        &lt;p> This is a model of one presynaptic and one postsynaptic cell, as described in the article:&lt;br />&#xd;
+        &lt;b>Gamma oscillation by synaptic inhibition in a hippocampal interneuronal network model.&lt;/b>&#xd;
+        &lt;br />  &#xd;
+        Wang XJ, Buzsáki G. J Neurosci. 1996 Oct 15;16(20):6402-13. PMID:&lt;a href="http://www.ncbi.nlm.nih.gov/pubmed/8815919">8815919&lt;/a>;&#xd;
+        &lt;/p>&#xd;
+        &lt;p>&#xd;
+        Abstract:&lt;br />&#xd;
+        Fast neuronal oscillations (gamma, 20-80 Hz) have been observed in the neocortex and hippocampus during behavioral arousal. Using computer simulations, we investigated the hypothesis that such rhythmic activity can emerge in a random network of interconnected GABAergic fast-spiking interneurons. Specific conditions for the population synchronization, on properties of single cells and the circuit, were identified. These include the following: (1) that the amplitude of spike afterhyperpolarization be above the GABAA synaptic reversal potential; (2) that the ratio between the synaptic decay time constant and the oscillation period be sufficiently large; (3) that the effects of heterogeneities be modest because of a steep frequency-current relationship of fast-spiking neurons. Furthermore, using a population coherence measure, based on coincident firings of neural pairs, it is demonstrated that large-scale network synchronization requires a critical (minimal) average number of synaptic contacts per cell, which is not sensitive to the network size. By changing the GABAA synaptic maximal conductance, synaptic decay time constant, or the mean external excitatory drive to the network, the neuronal firing frequencies were gradually and monotonically varied. By contrast, the network synchronization was found to be high only within a frequency band coinciding with the gamma (20-80 Hz) range. We conclude that the GABAA synaptic transmission provides a suitable mechanism for synchronized gamma oscillations in a sparsely connected network of fast-spiking interneurons. In turn, the interneuronal network can presumably maintain subthreshold oscillations in principal cell populations and serve to synchronize discharges of spatially distributed neurons.&#xd;
+        &lt;/p>&#xd;
+        &lt;p>&#xd;
+        The presynaptic and postsynaptic cell have identical parameters and the variables in each cell are identified by using &lt;b>_pre&lt;/b> or &lt;b>_post&lt;/b> as a postfix to their names. The presynaptic cell influences the postsynaptic one via the synapse (variables and parameters: I_syn, E_syn, g_syn, F, theta_syn, alpha, beta). The applied current to the presynaptic cell, I_app_pre, is set to 2 microA/cm&lt;sup>2&lt;/sup> for 10 ms as in figure 1C of the article. The dependence of the postsynaptic cell on directly applied current can be investigated in isolation by setting I_app_pre to 0 and altering I_app_post.   &#xd;
+        &lt;/p>&#xd;
+        &lt;p> Originally created by libAntimony v1.4 (using libSBML 3.4.1) &lt;/p>&#xd;
+        &lt;/body>&#xd;
+        &lt;/notes></description>
+    <format>
+        <name>SBML</name>
+        <version>L2V4</version>
+    </format>
+    <publication>
+        <type>PubMed ID</type>
+        <accession>8815919</accession>
+        <journal>The Journal of neuroscience : the official journal of the Society for Neuroscience</journal>
+        <title>Gamma oscillation by synaptic inhibition in a hippocampal interneuronal network model.</title>
+        <affiliation>Physics Department, Brandeis University, Waltham, Massachusetts 02254, USA.</affiliation>
+        <synopsis>Fast neuronal oscillations (gamma, 20-80 Hz) have been observed in the neocortex and hippocampus during behavioral arousal. Using computer simulations, we investigated the hypothesis that such rhythmic activity can emerge in a random network of interconnected GABAergic fast-spiking interneurons. Specific conditions for the population synchronization, on properties of single cells and the circuit, were identified. These include the following: (1) that the amplitude of spike afterhyperpolarization be above the GABAA synaptic reversal potential; (2) that the ratio between the synaptic decay time constant and the oscillation period be sufficiently large; (3) that the effects of heterogeneities be modest because of a steep frequency-current relationship of fast-spiking neurons. Furthermore, using a population coherence measure, based on coincident firings of neural pairs, it is demonstrated that large-scale network synchronization requires a critical (minimal) average number of synaptic contacts per cell, which is not sensitive to the network size. By changing the GABAA synaptic maximal conductance, synaptic decay time constant, or the mean external excitatory drive to the network, the neuronal firing frequencies were gradually and monotonically varied. By contrast, the network synchronization was found to be high only within a frequency band coinciding with the gamma (20-80 Hz) range. We conclude that the GABAA synaptic transmission provides a suitable mechanism for synchronized gamma oscillations in a sparsely connected network of fast-spiking interneurons. In turn, the interneuronal network can presumably maintain subthreshold oscillations in principal cell populations and serve to synchronize discharges of spatially distributed neurons.</synopsis>
+        <year>1996</year>
+        <month>10</month>
+        <volume>16</volume>
+        <issue>20</issue>
+        <pages>6402-6413</pages>
+        <link>http://identifiers.org/pubmed/8815919</link>
+        <authors>
+            <authors>
+                <name>X J Wang</name>
+                <institution>Physics Department, Brandeis University, Waltham, Massachusetts 02254, USA.</institution>
+            </authors>
+            <authors>
+                <name>G Buzsáki</name>
+                <orcid>0000-0002-3100-4800</orcid>
+            </authors>
+        </authors>
+    </publication>
+    <files>
+        <main>
+            <main>
+                <name>BIOMD0000000302_url.xml</name>
+                <description>SBML L2V4 representation of Wang1996_Synaptic_Inhibition_Two_Neuron</description>
+                <fileSize>34806</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>c8c615fea921ab7423edf13cc7204cde</md5sum>
+                <sha1sum>9950242f61d86a947cc251619dfce4b7dac87655</sha1sum>
+                <sha256sum>d3cffad4265081c0db17583cc4c5986cd6432c61b90b7a6b8a15aa24168e03d9</sha256sum>
+            </main>
+        </main>
+        <additional>
+            <additional>
+                <name>BIOMD0000000302-biopax2.owl</name>
+                <description>Auto-generated BioPAX (Level 2)</description>
+                <fileSize>5091</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>6d9b2c679248a77f5d4934d347fa5481</md5sum>
+                <sha1sum>f12e0b80328e0ce9fc3e29b64004286291330927</sha1sum>
+                <sha256sum>b40315c96bc998b2ff0056cd0809307fefa5c1118c98431240cff178e0fc8e78</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000302-biopax3.owl</name>
+                <description>Auto-generated BioPAX (Level 3)</description>
+                <fileSize>5192</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>67dcb1bc2002ba513df7f401d63fa656</md5sum>
+                <sha1sum>b0cd215e06c8cb94e7e91b34a4f288c2f0868797</sha1sum>
+                <sha256sum>23c5887ec956bcff0476d9e448caecb8c483122d7ae3cf365c599fd893d0cb16</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000302-matlab.m</name>
+                <description>Auto-generated Matlab file.</description>
+                <fileSize>9154</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>d8965421e84bd07ce7d4e9db9323ae6d</md5sum>
+                <sha1sum>e8e263622261ef24def945c3563ceea63b9e087c</sha1sum>
+                <sha256sum>99350d583824977393c6905fe717fcec54a4d6e2cd1f2b5e99fe97d2ead13b08</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000302-octave.m</name>
+                <description>Auto-generated Octave file.</description>
+                <fileSize>9154</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>7072c675b5ba34d4e3eb912c805ee2a1</md5sum>
+                <sha1sum>41673b241d94f7a8bd11a42c01dccfe727770702</sha1sum>
+                <sha256sum>c27e5162d1d3edb8295e6c56c5947c4305774fbaeb61ab5bb4b57c92a6e2af78</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000302.m</name>
+                <description>Auto-generated Octave file</description>
+                <fileSize>9154</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>7072c675b5ba34d4e3eb912c805ee2a1</md5sum>
+                <sha1sum>41673b241d94f7a8bd11a42c01dccfe727770702</sha1sum>
+                <sha256sum>c27e5162d1d3edb8295e6c56c5947c4305774fbaeb61ab5bb4b57c92a6e2af78</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000302.pdf</name>
+                <description>Auto-generated PDF file</description>
+                <fileSize>171450</fileSize>
+                <mimeType>application/pdf</mimeType>
+                <md5sum>a247c5f1ab155c8c3669283eb16faa47</md5sum>
+                <sha1sum>ffcd85f72330ac2e35b4d496bc19231765907d66</sha1sum>
+                <sha256sum>9027a5a8af947d7aed628a725c843421b0678c3f5576086320026b8ccfaede1e</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000302.png</name>
+                <description>Auto-generated Reaction graph (PNG)</description>
+                <fileSize>5164</fileSize>
+                <mimeType>image/png</mimeType>
+                <md5sum>c30b7d56ea47c3843c82b135d7d61387</md5sum>
+                <sha1sum>29aaa040058418305071301e82afe443bf2be038</sha1sum>
+                <sha256sum>5fda4a6ecf6f2bffcaae62525ab174b281c1fd8500d928e26c38e127a4bb8b70</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000302.svg</name>
+                <description>Auto-generated Reaction graph (SVG)</description>
+                <fileSize>868</fileSize>
+                <mimeType>image/svg+xml</mimeType>
+                <md5sum>24be42d8086ccb62699e8e5aa9319cf0</md5sum>
+                <sha1sum>6edffc291715c4657200f33e72e8c453d616a6ed</sha1sum>
+                <sha256sum>3545c85a1ad33a0ce132486ba2cf1b3d42693f8c6ab22de9baaca3e2eef2e649</sha256sum>
+            </additional>
+            <additional>
+                <name>BIOMD0000000302_url.sedml</name>
+                <description>CRBM auto-generated "template" SED-ML file.</description>
+                <fileSize>34100</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>b008abf65621d13c92f52da1b612a17b</md5sum>
+                <sha1sum>35c1bf76deaae948f834234ae880c312d5f03109</sha1sum>
+                <sha256sum>38eee9343694d57e3755db4a92feaaaa8e5d92239ea1c5d4d592d4c3495e94a8</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_image.png</name>
+                <description>Reproduced figure(s) from original curation.</description>
+                <fileSize>56798</fileSize>
+                <mimeType>image/png</mimeType>
+                <md5sum>ce9b00a026e2e7297e20323e5d164587</md5sum>
+                <sha1sum>232362baad7714555b2fd6dac98f2eadfa69ed74</sha1sum>
+                <sha256sum>3ecd16ea0cd7691dc7ece93f9fb63f9565fcfcddaf1c4a3c7dcf628392808cff</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_notes.txt</name>
+                <description>Notes from original curation (describes curation_image).</description>
+                <fileSize>72</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>dd945916a12a92257e2452d85b93ea30</md5sum>
+                <sha1sum>65bcb82b9f011bd25a5d838f981afadbb9bd4e47</sha1sum>
+                <sha256sum>502722f3020611ef437b54d982d0c54330c8b1bced1d18d2c5f279f301ad63c7</sha256sum>
+            </additional>
+            <additional>
+                <name>manifest.xml</name>
+                <description>Auto-generated manifest file for OMEX archives.</description>
+                <fileSize>1679</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>28c5c1ea18f756f80044797778e2bc65</md5sum>
+                <sha1sum>99431381e97c094f9ad9e34db1654fbc71a9cc48</sha1sum>
+                <sha256sum>eed921419214924c32b721489e9064dbed8a6160e120d3d3c41f0aaf52bf9bbe</sha256sum>
+            </additional>
+            <additional>
+                <name>metadata.rdf</name>
+                <description>Auto-generated annotation metadata file.</description>
+                <fileSize>4749</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>d190e03ff2d2f34b2ee27b24bf5f0b6b</md5sum>
+                <sha1sum>daa6ee0816fc5c700555c3b4ffb0adc8f65d94bc</sha1sum>
+                <sha256sum>c1f49030339eb183353406aab57267161c7fcf71380b01a67bd87ab7100d0c7d</sha256sum>
+            </additional>
+        </additional>
+    </files>
+    <history>
+        <revisions>
+            <revisions>
+                <version>1</version>
+                <submitted>1295829586</submitted>
+                <submitter>Lukas Endler</submitter>
+                <comment>Original import of Wang1996_Synaptic_Inhibition_Two_Neuron</comment>
+            </revisions>
+            <revisions>
+                <version>2</version>
+                <submitted>1460134627</submitted>
+                <submitter>Lukas Endler</submitter>
+                <comment>Current version of Wang1996_Synaptic_Inhibition_Two_Neuron</comment>
+            </revisions>
+            <revisions>
+                <version>3</version>
+                <submitted>1724269418</submitted>
+                <submitter>Lucian Smith</submitter>
+                <comment>CRBM-sponsored manual and automated updates.</comment>
+            </revisions>
+        </revisions>
+    </history>
+    <firstPublished>1725281418</firstPublished>
+    <submissionId>MODEL1101240000</submissionId>
+    <publicationId>BIOMD0000000302</publicationId>
+    <modellingApproach>
+        <accession>MAMO_0000046</accession>
+        <name>ordinary differential equation model</name>
+        <resource>http://identifiers.org/mamo/MAMO_0000046</resource>
+    </modellingApproach>
+    <curationStatus>CURATED</curationStatus>
+    <contributors>
+        <Curator>
+            <name>Lucian Smith</name>
+            <email>lpsmith@uw.edu</email>
+            <affiliation>University of Washington</affiliation>
+            <orcid>0000-0001-7002-6386</orcid>
+            <external>false</external>
+        </Curator>
+    </contributors>
+    <vcsIdentifier>aaa</vcsIdentifier>
+    <modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>MODEL1101240000</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/MODEL1101240000</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>BIOMD0000000302</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/BIOMD0000000302</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:isDescribedBy</qualifier>
+            <accession>8815919</accession>
+            <resource>PubMed</resource>
+            <uri>http://identifiers.org/pubmed/8815919</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasTaxon</qualifier>
+            <accession>10116</accession>
+            <name>Rattus norvegicus</name>
+            <resource>Taxonomy</resource>
+            <uri>http://identifiers.org/taxonomy/10116</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:occursIn</qualifier>
+            <accession>BTO:0000601</accession>
+            <name>hippocampus</name>
+            <resource>Brenda Tissue Ontology</resource>
+            <uri>http://identifiers.org/bto/BTO:0000601</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:occursIn</qualifier>
+            <accession>BTO:0000920</accession>
+            <name>neocortex</name>
+            <resource>Brenda Tissue Ontology</resource>
+            <uri>http://identifiers.org/bto/BTO:0000920</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasVersion</qualifier>
+            <accession>GO:0051932</accession>
+            <name>synaptic transmission, GABAergic</name>
+            <resource>Gene Ontology</resource>
+            <uri>http://identifiers.org/go/GO:0051932</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>MAMO_0000046</accession>
+            <name>Ordinary differential equation model</name>
+            <resource>Mathematical Modelling Ontology</resource>
+            <uri>http://identifiers.org/mamo/MAMO_0000046</uri>
+        </modelLevelAnnotations>
+    </modelLevelAnnotations>
+</Model>
