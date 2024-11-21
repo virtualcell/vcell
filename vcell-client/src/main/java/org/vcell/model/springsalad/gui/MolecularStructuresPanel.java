@@ -479,14 +479,31 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (table.getModel() instanceof MolecularTypeSpecsTableModel) {
 					MolecularTypeSpecsTableModel model = (MolecularTypeSpecsTableModel)table.getModel();
-					if (value instanceof Double) {
+					if (value instanceof Double dvalue) {
+						Integer intValue = dvalue.intValue();
+						String formattedValue = Integer.toString(intValue);		// we initialize with the int value
+						if(dvalue % 1 != 0) {									// if it has a non-zero fractional part,
+							formattedValue = String.format("%.1f", dvalue);		// we truncate the double to the first decimal (angstrom)
+						}
 						MolecularTypeSpecsTableModel.ColumnType columnType = MolecularTypeSpecsTableModel.ColumnType.values()[column];
 						int cellWidth = table.getColumnModel().getColumn(column).getWidth();
 						switch(columnType) {
 							case COLUMN_X:
 							case COLUMN_Y:
 							case COLUMN_Z:
-							case COLUMN_RADIUS:
+								if(cellWidth > 70) {			// we show units only if there's enough space
+									if(!isSelected) {
+										String text = "<html>" + formattedValue + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
+										setText(text);
+									} else {
+										setText(formattedValue + " [nm]");
+									}
+								} else {
+									setText(formattedValue + "");		// if it's too busy, just show the numbers
+								}
+								setToolTipText(formattedValue + " [nm]");	// we always show the units in the tooltip
+								break;
+							case COLUMN_RADIUS:					// for Diffusion and Radius we show what the user explicitely entered, no truncation
 								if(cellWidth > 70) {			// we show units only if there's enough space
 									if(!isSelected) {
 										String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
@@ -518,22 +535,27 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 					}
 				} else if(table.getModel() instanceof LinkSpecsTableModel) {
 					LinkSpecsTableModel model = (LinkSpecsTableModel)table.getModel();
-					if(value instanceof Double) {
+					if(value instanceof Double dvalue) {
+						Integer intValue = dvalue.intValue();
+						String formattedValue = Integer.toString(intValue);		// we initialize with the int value
+						if(dvalue % 1 != 0) {									// if it has a non-zero fractional part,
+							formattedValue = String.format("%.1f", dvalue);		// we truncate the double to the first decimal (angstrom)
+						}
 						LinkSpecsTableModel.ColumnType columnType = LinkSpecsTableModel.ColumnType.values()[column];
 						int cellWidth = table.getColumnModel().getColumn(column).getWidth();
 						switch(columnType) {
 							case COLUMN_LENGTH:
 								if(cellWidth > 70) {
 									if(!isSelected) {
-										String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
+										String text = "<html>" + formattedValue + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
 										setText(text);
 									} else {
-										setText(value + " [nm]");
+										setText(formattedValue + " [nm]");
 									}
 								} else {
-									setText(value + "");		// if it's too busy, just show the numbers
+									setText(formattedValue + "");		// if it's too busy, just show the numbers
 								}
-								setToolTipText(value + " [nm]");	// we always show the units in the tooltip
+								setToolTipText(formattedValue + " [nm]");	// we always show the units in the tooltip
 								break;
 							default:
 								break;

@@ -47,19 +47,28 @@ public class ModelProcessSpecsTableModel extends VCellSortTableModel<ModelProces
 		COLUMN_NAME("Name"),
 		COLUMN_DEPICTION("Depiction"),
 		COLUMN_TYPE("Type"),
-		COLUMN_SUBTYPE("Subtype"),
-		COLUMN_CONDITION("Condition"),
 		COLUMN_ENABLED("Enabled"),
 		COLUMN_FAST("Fast"),
+		COLUMN_SUBTYPE("Subtype"),
+		COLUMN_CONDITION("Condition"),
 		COLUMN_BOND_LENGTH("Bond Length");
-		
+
 		public final String label;
-		private ColumnType(String label){
+		private ColumnType(String label) {
 			this.label = label;
 		}
-	}
-	ArrayList<ColumnType> columns = new ArrayList<ColumnType>();
 
+		public static ColumnType fromLabel(String label) {
+			for (ColumnType value : ColumnType.values()) {
+				if (value.label.equals(label)) {
+					return value;
+				}
+			}
+			throw new IllegalArgumentException("No enum constant with label " + label);
+		}
+	}
+
+	ArrayList<ColumnType> columns = new ArrayList<ColumnType>();
 	private SimulationContext fieldSimulationContext = null;
 	
 /**
@@ -92,10 +101,10 @@ private void refreshColumns(){
 		columns.remove(ColumnType.COLUMN_FAST);
 	}
 	if(getSimulationContext().getApplicationType() == Application.SPRINGSALAD) {
-		columns.add(ColumnType.COLUMN_BOND_LENGTH);
+		columns.remove(ColumnType.COLUMN_FAST);
 		columns.add(ColumnType.COLUMN_SUBTYPE);
 		columns.add(ColumnType.COLUMN_CONDITION);
-		columns.remove(ColumnType.COLUMN_FAST);
+		columns.add(ColumnType.COLUMN_BOND_LENGTH);
 	}
 }
 @Override

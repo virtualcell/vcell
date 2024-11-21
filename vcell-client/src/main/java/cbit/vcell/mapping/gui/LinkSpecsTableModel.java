@@ -161,9 +161,6 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
         };
     }
 
-
-
-
     public void setSimulationContext(SimulationContext simulationContext) {
         SimulationContext oldValue = fieldSimulationContext;
         int oldColumnCount = getColumnCount();
@@ -289,8 +286,6 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
             refreshColumns();
             fireTableStructureChanged();
         }
-
     }
-
 
 }
