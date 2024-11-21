@@ -1,0 +1,800 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
+    <model id="Dasgupta2020___Reduced_model_of_receptor_clusturing_and_aggregation" metaid="COPASI0" name="Dasgupta2020 - Reduced model of receptor clusturing and aggregation">
+        <notes>
+            <body xmlns="http://www.w3.org/1999/xhtml">
+                <p>a simple kinetic mass-action-law-based model could be utilized to adequately describe clustering in
+                    response to activation both in 2D and in 3D</p>
+            </body>
+        </notes>
+        <annotation>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                <rdf:Description rdf:about="#COPASI0">
+                    <dc:creator>
+                        <rdf:Bag>
+                            <rdf:li rdf:parseType="Resource">
+                                <vCard:N rdf:parseType="Resource">
+                                    <vCard:Family>Tiwari</vCard:Family>
+                                    <vCard:Given>Krishna</vCard:Given>
+                                </vCard:N>
+                                <vCard:EMAIL>tiwarik@babraham.ac.uk</vCard:EMAIL>
+                                <vCard:ORG rdf:parseType="Resource">
+                                    <vCard:Orgname>Babraham Institute</vCard:Orgname>
+                                </vCard:ORG>
+                            </rdf:li>
+                        </rdf:Bag>
+                    </dc:creator>
+                    <dcterms:created rdf:parseType="Resource">
+                        <dcterms:W3CDTF>2020-10-30T15:25:02Z</dcterms:W3CDTF>
+                    </dcterms:created>
+                    <dcterms:modified rdf:parseType="Resource">
+                        <dcterms:W3CDTF>2020-10-30T15:25:02Z</dcterms:W3CDTF>
+                    </dcterms:modified>
+                    <bqmodel:isDescribedBy>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/pubmed/32604803"/>
+                        </rdf:Bag>
+                    </bqmodel:isDescribedBy>
+                    <bqbiol:occursIn>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/ncit/C77681"/>
+                        </rdf:Bag>
+                    </bqbiol:occursIn>
+                    <bqbiol:hasTaxon>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/taxonomy/9606"/>
+                        </rdf:Bag>
+                    </bqbiol:hasTaxon>
+                    <bqbiol:hasProperty>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/go/GO:0007596"/>
+                            <rdf:li rdf:resource="http://identifiers.org/go/GO:0070527"/>
+                            <rdf:li rdf:resource="http://identifiers.org/mamo/MAMO_0000046"/>
+                        </rdf:Bag>
+                    </bqbiol:hasProperty>
+                    <bqmodel:is>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL2011030002"/>
+                            <rdf:li rdf:resource="http://identifiers.org/biomodels.db/BIOMD0000000973"/>
+                        </rdf:Bag>
+                    </bqmodel:is>
+                </rdf:Description>
+
+
+
+            </rdf:RDF>
+            <COPASI xmlns="http://www.copasi.org/static/sbml">
+                <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                    <rdf:Description rdf:about="#COPASI0">
+                        <bqbiol:hasProperty rdf:resource="urn:miriam:go:GO:0007596"/>
+                        <bqbiol:hasProperty rdf:resource="urn:miriam:go:GO:0070527"/>
+                        <bqbiol:hasProperty rdf:resource="urn:miriam:mamo:MAMO_0000046"/>
+                        <bqbiol:hasTaxon rdf:resource="urn:miriam:taxonomy:9606"/>
+                        <dcterms:bibliographicCitation>
+                            <rdf:Description>
+                                <CopasiMT:isDescribedBy rdf:resource="urn:miriam:pubmed:32604803"/>
+                            </rdf:Description>
+                        </dcterms:bibliographicCitation>
+                        <dcterms:created>
+                            <rdf:Description>
+                                <dcterms:W3CDTF>2020-10-30T15:25:02Z</dcterms:W3CDTF>
+                            </rdf:Description>
+                        </dcterms:created>
+                        <dcterms:creator>
+                            <rdf:Description>
+                                <vCard:EMAIL>tiwarik@babraham.ac.uk</vCard:EMAIL>
+                                <vCard:N>
+                                    <rdf:Description>
+                                        <vCard:Family>Tiwari</vCard:Family>
+                                        <vCard:Given>Krishna</vCard:Given>
+                                    </rdf:Description>
+                                </vCard:N>
+                                <vCard:ORG>
+                                    <rdf:Description>
+                                        <vCard:Orgname>Babraham Institute</vCard:Orgname>
+                                    </rdf:Description>
+                                </vCard:ORG>
+                            </rdf:Description>
+                        </dcterms:creator>
+                        <CopasiMT:occursIn rdf:resource="urn:miriam:ncit:C77681"/>
+                    </rdf:Description>
+                </rdf:RDF>
+            </COPASI>
+        </annotation>
+        <listOfFunctionDefinitions>
+            <functionDefinition id="R2_flux" metaid="COPASI17" name="R2_flux">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI17">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:44:40Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci> k2 </ci>
+                        </bvar>
+                        <bvar>
+                            <ci> p </ci>
+                        </bvar>
+                        <apply>
+                            <times/>
+                            <cn> 2 </cn>
+                            <ci> k2 </ci>
+                            <apply>
+                                <power/>
+                                <ci> p </ci>
+                                <cn> 2 </cn>
+                            </apply>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="R3_flux" metaid="COPASI18" name="R3_flux">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI18">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:44:41Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci> k_1 </ci>
+                        </bvar>
+                        <bvar>
+                            <ci> n </ci>
+                        </bvar>
+                        <apply>
+                            <times/>
+                            <ci> k_1 </ci>
+                            <ci> n </ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="R4_flux" metaid="COPASI19" name="R4_flux">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI19">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:44:41Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci> k2 </ci>
+                        </bvar>
+                        <bvar>
+                            <ci> p </ci>
+                        </bvar>
+                        <apply>
+                            <times/>
+                            <ci> k2 </ci>
+                            <apply>
+                                <power/>
+                                <ci> p </ci>
+                                <cn> 2 </cn>
+                            </apply>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="R5_flux" metaid="COPASI20" name="R5_flux">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI20">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:44:42Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci> k_2 </ci>
+                        </bvar>
+                        <bvar>
+                            <ci> n </ci>
+                        </bvar>
+                        <apply>
+                            <times/>
+                            <ci> k_2 </ci>
+                            <apply>
+                                <power/>
+                                <ci> n </ci>
+                                <cn> 2 </cn>
+                            </apply>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="R1_flux" metaid="COPASI21" name="R1_flux">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI21">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:44:39Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci> k1 </ci>
+                        </bvar>
+                        <bvar>
+                            <ci> n </ci>
+                        </bvar>
+                        <bvar>
+                            <ci> p </ci>
+                        </bvar>
+                        <apply>
+                            <times/>
+                            <ci> k1 </ci>
+                            <ci> n </ci>
+                            <ci> p </ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+        </listOfFunctionDefinitions>
+        <listOfUnitDefinitions>
+            <unitDefinition id="length" name="length">
+                <listOfUnits>
+                    <unit exponent="1" kind="metre" multiplier="1" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="area" name="area">
+                <listOfUnits>
+                    <unit exponent="2" kind="metre" multiplier="1" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="volume" name="volume">
+                <listOfUnits>
+                    <unit exponent="1" kind="litre" multiplier="1" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="time" name="time">
+                <listOfUnits>
+                    <unit exponent="1" kind="second" multiplier="1" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="substance" name="substance">
+                <listOfUnits>
+                    <unit exponent="1" kind="mole" multiplier="1" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+        </listOfUnitDefinitions>
+        <listOfCompartments>
+            <compartment constant="true" id="Cell" metaid="COPASI1" name="Cell" size="1" spatialDimensions="3">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI1">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:29:06Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </compartment>
+        </listOfCompartments>
+        <listOfSpecies>
+            <species boundaryCondition="false" compartment="Cell" constant="false" id="P" initialConcentration="10000" metaid="COPASI2" name="P">
+                <notes>
+                    <body xmlns="http://www.w3.org/1999/xhtml">
+                        <pre>Concentration of single receptor/particle</pre>
+                    </body>
+                </notes>
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI2">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C18106"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI2">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:31:05Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C18106"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="Cell" constant="false" id="N" initialConcentration="0" metaid="COPASI3" name="N">
+                <notes>
+                    <body xmlns="http://www.w3.org/1999/xhtml">
+                        <pre>Concentration of receptor aggregate</pre>
+                    </body>
+                </notes>
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI3">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C62344"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+
+                            <bqbiol:hasProperty>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C18106"/>
+                                </rdf:Bag>
+                            </bqbiol:hasProperty>
+                        </rdf:Description>
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI3">
+                                <bqbiol:hasProperty rdf:resource="urn:miriam:ncit:C18106"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:32:16Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C62344"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+        </listOfSpecies>
+        <listOfParameters>
+            <parameter constant="true" id="k1" metaid="COPASI4" name="k1" value="0.00021">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI4">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:32:40Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="k2" metaid="COPASI5" name="k2" value="7.5E-6">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI5">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:32:44Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="k_1" metaid="COPASI6" name="k_1" value="6.6E-9">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI6">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:32:52Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="k_2" metaid="COPASI7" name="k_2" value="0.03">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI7">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:33:17Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="k3" metaid="COPASI8" name="k3" value="1.16">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI8">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:33:19Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="false" id="s" metaid="COPASI9" name="s">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI9">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:33:36Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="p0" metaid="COPASI10" name="p0" value="10000">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI10">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:33:48Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_6" name="Initial for p0" value="10000">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="p0"/>
+                </annotation>
+            </parameter>
+        </listOfParameters>
+        <listOfInitialAssignments>
+            <initialAssignment symbol="ModelValue_6">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> p0 </ci>
+                </math>
+            </initialAssignment>
+        </listOfInitialAssignments>
+        <listOfRules>
+            <assignmentRule variable="s">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <apply>
+                            <minus/>
+                            <ci> ModelValue_6 </ci>
+                            <ci> P </ci>
+                        </apply>
+                        <ci> N </ci>
+                    </apply>
+                </math>
+            </assignmentRule>
+        </listOfRules>
+        <listOfReactions>
+            <reaction id="R1" metaid="COPASI11" name="R1" reversible="false">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI11">
+                            <bqmodel:isInstanceOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C61470"/>
+                                </rdf:Bag>
+                            </bqmodel:isInstanceOf>
+                        </rdf:Description>
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI11">
+                                <bqmodel:isInstanceOf rdf:resource="urn:miriam:ncit:C61470"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:29:18Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="P" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfModifiers>
+                    <modifierSpeciesReference species="N"/>
+                </listOfModifiers>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci> Cell </ci>
+                            <apply>
+                                <ci> R1_flux </ci>
+                                <ci> k1 </ci>
+                                <ci> N </ci>
+                                <ci> P </ci>
+                            </apply>
+                        </apply>
+                    </math>
+                </kineticLaw>
+            </reaction>
+            <reaction id="R2" metaid="COPASI12" name="R2" reversible="false">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI12">
+                            <bqmodel:isInstanceOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C62344"/>
+                                </rdf:Bag>
+                            </bqmodel:isInstanceOf>
+                        </rdf:Description>
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI12">
+                                <bqmodel:isInstanceOf rdf:resource="urn:miriam:ncit:C62344"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:29:21Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="P" stoichiometry="1"/>
+                </listOfReactants>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci> Cell </ci>
+                            <apply>
+                                <ci> R2_flux </ci>
+                                <ci> k2 </ci>
+                                <ci> P </ci>
+                            </apply>
+                        </apply>
+                    </math>
+                </kineticLaw>
+            </reaction>
+            <reaction id="R3" metaid="COPASI13" name="R3" reversible="false">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI13">
+                            <bqmodel:isInstanceOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/sbo/SBO:0000180"/>
+                                </rdf:Bag>
+                            </bqmodel:isInstanceOf>
+                        </rdf:Description>
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI13">
+                                <bqmodel:isInstanceOf rdf:resource="urn:miriam:sbo:SBO:0000180"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:30:13Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfProducts>
+                    <speciesReference species="P" stoichiometry="1"/>
+                </listOfProducts>
+                <listOfModifiers>
+                    <modifierSpeciesReference species="N"/>
+                </listOfModifiers>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci> Cell </ci>
+                            <apply>
+                                <ci> R3_flux </ci>
+                                <ci> k_1 </ci>
+                                <ci> N </ci>
+                            </apply>
+                        </apply>
+                    </math>
+                </kineticLaw>
+            </reaction>
+            <reaction id="R4" metaid="COPASI14" name="R4" reversible="false">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI14">
+                            <bqmodel:isInstanceOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C62344"/>
+                                </rdf:Bag>
+                            </bqmodel:isInstanceOf>
+                        </rdf:Description>
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI14">
+                                <bqmodel:isInstanceOf rdf:resource="urn:miriam:ncit:C62344"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:30:19Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfProducts>
+                    <speciesReference species="N" stoichiometry="1"/>
+                </listOfProducts>
+                <listOfModifiers>
+                    <modifierSpeciesReference species="P"/>
+                </listOfModifiers>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci> Cell </ci>
+                            <apply>
+                                <ci> R4_flux </ci>
+                                <ci> k2 </ci>
+                                <ci> P </ci>
+                            </apply>
+                        </apply>
+                    </math>
+                </kineticLaw>
+            </reaction>
+            <reaction id="R5" metaid="COPASI15" name="R5" reversible="false">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI15">
+                            <bqmodel:isInstanceOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/sbo/SBO:0000180"/>
+                                </rdf:Bag>
+                            </bqmodel:isInstanceOf>
+                        </rdf:Description>
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI15">
+                                <bqmodel:isInstanceOf rdf:resource="urn:miriam:sbo:SBO:0000180"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:30:23Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="N" stoichiometry="1"/>
+                </listOfReactants>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci> Cell </ci>
+                            <apply>
+                                <ci> R5_flux </ci>
+                                <ci> k_2 </ci>
+                                <ci> N </ci>
+                            </apply>
+                        </apply>
+                    </math>
+                </kineticLaw>
+            </reaction>
+            <reaction id="R6" metaid="COPASI16" name="R6" reversible="false">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI16">
+                            <bqmodel:isInstanceOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C62344"/>
+                                </rdf:Bag>
+                            </bqmodel:isInstanceOf>
+                        </rdf:Description>
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI16">
+                                <bqmodel:isInstanceOf rdf:resource="urn:miriam:ncit:C62344"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-10-30T15:30:27Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="N" stoichiometry="1"/>
+                </listOfReactants>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci> Cell </ci>
+                            <ci> k3 </ci>
+                            <ci> N </ci>
+                        </apply>
+                    </math>
+                </kineticLaw>
+            </reaction>
+        </listOfReactions>
+    </model>
+</sbml>

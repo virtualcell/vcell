@@ -1,0 +1,963 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" metaid="_1bdc7c1e-31f5-4c94-bc01-a01ae7f15915" version="4">
+    <model id="Wang1996_Single_Neuron" metaid="_740160" name="Wang1996_Synaptic_Inhibition_Two_Neuron">
+        <notes>
+            <body xmlns="http://www.w3.org/1999/xhtml">
+                <p> This is a model of one presynaptic and one postsynaptic cell, as described in the article:<br/>
+                    <b>Gamma oscillation by synaptic inhibition in a hippocampal interneuronal network model.</b>
+                    <br/>
+                    Wang XJ, Buzsáki G. J Neurosci. 1996 Oct 15;16(20):6402-13. PMID:<a href="http://www.ncbi.nlm.nih.gov/pubmed/8815919">8815919</a>;
+                </p>
+                <p>
+                    Abstract:<br/>
+                    Fast neuronal oscillations (gamma, 20-80 Hz) have been observed in the neocortex and hippocampus during behavioral arousal. Using computer simulations, we investigated the hypothesis that such rhythmic activity can emerge in a random network of interconnected GABAergic fast-spiking interneurons. Specific conditions for the population synchronization, on properties of single cells and the circuit, were identified. These include the following: (1) that the amplitude of spike afterhyperpolarization be above the GABAA synaptic reversal potential; (2) that the ratio between the synaptic decay time constant and the oscillation period be sufficiently large; (3) that the effects of heterogeneities be modest because of a steep frequency-current relationship of fast-spiking neurons. Furthermore, using a population coherence measure, based on coincident firings of neural pairs, it is demonstrated that large-scale network synchronization requires a critical (minimal) average number of synaptic contacts per cell, which is not sensitive to the network size. By changing the GABAA synaptic maximal conductance, synaptic decay time constant, or the mean external excitatory drive to the network, the neuronal firing frequencies were gradually and monotonically varied. By contrast, the network synchronization was found to be high only within a frequency band coinciding with the gamma (20-80 Hz) range. We conclude that the GABAA synaptic transmission provides a suitable mechanism for synchronized gamma oscillations in a sparsely connected network of fast-spiking interneurons. In turn, the interneuronal network can presumably maintain subthreshold oscillations in principal cell populations and serve to synchronize discharges of spatially distributed neurons.
+                </p>
+                <p>
+                    The presynaptic and postsynaptic cell have identical parameters and the variables in each cell are identified by using <b>_pre</b> or <b>_post</b> as a postfix to their names. The presynaptic cell influences the postsynaptic one via the synapse (variables and parameters: I_syn, E_syn, g_syn, F, theta_syn, alpha, beta). The applied current to the presynaptic cell, I_app_pre, is set to 2 microA/cm<sup>2</sup> for 10 ms as in figure 1C of the article. The dependence of the postsynaptic cell on directly applied current can be investigated in isolation by setting I_app_pre to 0 and altering I_app_post.
+                </p>
+                <p> Originally created by libAntimony v1.4 (using libSBML 3.4.1) </p>
+            </body>
+        </notes>
+        <annotation>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+                <rdf:Description rdf:about="#_740160">
+                    <dc:creator>
+                        <rdf:Bag>
+                            <rdf:li rdf:parseType="Resource">
+                                <vCard:N rdf:parseType="Resource">
+                                    <vCard:Family>Endler</vCard:Family>
+                                    <vCard:Given>Lukas</vCard:Given>
+                                </vCard:N>
+                                <vCard:EMAIL>lukas@ebi.ac.uk</vCard:EMAIL>
+                                <vCard:ORG rdf:parseType="Resource">
+                                    <vCard:Orgname>EMBL-EBI</vCard:Orgname>
+                                </vCard:ORG>
+                            </rdf:li>
+                        </rdf:Bag>
+                    </dc:creator>
+                    <dcterms:created rdf:parseType="Resource">
+                        <dcterms:W3CDTF>2011-01-24T00:42:22Z</dcterms:W3CDTF>
+                    </dcterms:created>
+                    <dcterms:modified rdf:parseType="Resource">
+                        <dcterms:W3CDTF>2016-04-08T16:57:07Z</dcterms:W3CDTF>
+                    </dcterms:modified>
+                    <bqmodel:is>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL1101240000"/>
+                        </rdf:Bag>
+                    </bqmodel:is>
+                    <bqmodel:is>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/biomodels.db/BIOMD0000000302"/>
+                        </rdf:Bag>
+                    </bqmodel:is>
+                    <bqmodel:isDescribedBy>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/pubmed/8815919"/>
+                        </rdf:Bag>
+                    </bqmodel:isDescribedBy>
+                    <bqbiol:hasTaxon>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/taxonomy/10116"/>
+                        </rdf:Bag>
+                    </bqbiol:hasTaxon>
+                    <bqbiol:occursIn>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/bto/BTO:0000920"/>
+                            <rdf:li rdf:resource="http://identifiers.org/bto/BTO:0000601"/>
+                        </rdf:Bag>
+                    </bqbiol:occursIn>
+                    <bqbiol:hasVersion>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/go/GO:0051932"/>
+                        </rdf:Bag>
+                    </bqbiol:hasVersion>
+                    <bqbiol:hasProperty>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/mamo/MAMO_0000046"/>
+                        </rdf:Bag>
+                    </bqbiol:hasProperty>
+                </rdf:Description>
+
+
+            </rdf:RDF>
+        </annotation>
+        <listOfUnitDefinitions>
+            <unitDefinition id="time" metaid="_792ad8cb-053d-46c5-9170-04b5379eaaed" name="ms">
+                <listOfUnits>
+                    <unit kind="second" metaid="_56dfd48f-80a7-4b35-8adc-7737dafbbaf9" scale="-3"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="per_ms" metaid="_88bc1ada-94ea-4a23-bff4-87c3c0c888e2" name="per_ms">
+                <listOfUnits>
+                    <unit exponent="-1" kind="second" metaid="_437cd9bd-9762-4afa-bffc-8d5cc9ef1237" scale="-3"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="mV" metaid="fcb5baa5-d994-4a4d-8aaa-a9302a02b5bb" name="mV">
+                <listOfUnits>
+                    <unit kind="volt" metaid="_5826ec7e-93d8-431e-9071-9e2b5d883611" scale="-3"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="uA_per_cm2" metaid="_6c5b25ef-b90c-463e-8bd0-129921fb76e4" name="microA_per_cm2">
+                <listOfUnits>
+                    <unit kind="ampere" metaid="_2a322883-9231-4c34-9f56-475b93796a7f" scale="-6"/>
+                    <unit exponent="-2" kind="metre" metaid="ed2d0c07-43c3-4b90-a75a-7a18a79a45e1" scale="-2"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="uF_per_cm2" metaid="_2c761b5d-148d-4472-b3cb-b6fc9dd29f9a" name="uF_per_cm2">
+                <listOfUnits>
+                    <unit kind="farad" metaid="_88fe044d-b6ec-412f-91cc-a2bbe797b96a" scale="-6"/>
+                    <unit exponent="-2" kind="metre" metaid="_7e1b746b-4fbc-4ee8-8de4-3fb448b7dbe7" scale="-2"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="mS_per_cm2" metaid="_7c601ad4-241c-4ef6-9bcd-ed9d92392825" name="mS_per_cm2">
+                <listOfUnits>
+                    <unit kind="siemens" metaid="_62dcabc5-7264-49ac-b43e-b8f3435f19f2" scale="-3"/>
+                    <unit exponent="-2" kind="metre" metaid="_6a9200d3-6a9f-4950-b192-5deca25d485a" scale="-2"/>
+                </listOfUnits>
+            </unitDefinition>
+        </listOfUnitDefinitions>
+        <listOfCompartments>
+            <compartment id="pre_synaptic_cell" metaid="_740161" sboTerm="SBO:0000290" size="1">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+                        <rdf:Description rdf:about="#_740161">
+                            <bqbiol:occursIn>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/fma/FMA:62493"/>
+                                </rdf:Bag>
+                            </bqbiol:occursIn>
+
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/fma/FMA:54527"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                </annotation>
+            </compartment>
+            <compartment id="post_synaptic_cell" metaid="_740162" sboTerm="SBO:0000290" size="1">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+                        <rdf:Description rdf:about="#_740162">
+                            <bqbiol:occursIn>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/fma/FMA:62493"/>
+                                </rdf:Bag>
+                            </bqbiol:occursIn>
+
+                            <bqbiol:is>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/fma/FMA:54527"/>
+                                </rdf:Bag>
+                            </bqbiol:is>
+                        </rdf:Description>
+
+
+                    </rdf:RDF>
+                </annotation>
+            </compartment>
+        </listOfCompartments>
+        <listOfParameters>
+            <parameter id="Cm" metaid="_740201" sboTerm="SBO:0000258" units="uF_per_cm2" value="1"/>
+            <parameter id="gL" metaid="_740202" sboTerm="SBO:0000257" units="mS_per_cm2" value="0.1"/>
+            <parameter id="gK" metaid="_740203" sboTerm="SBO:0000257" units="mS_per_cm2" value="9"/>
+            <parameter id="gNa" metaid="_740205" sboTerm="SBO:0000257" units="mS_per_cm2" value="35"/>
+            <parameter id="E_K" metaid="_740206" sboTerm="SBO:0000259" units="mV" value="-90"/>
+            <parameter id="E_L" metaid="_740207" sboTerm="SBO:0000259" units="mV" value="-65"/>
+            <parameter id="E_Na" metaid="_740208" sboTerm="SBO:0000259" units="mV" value="55"/>
+            <parameter id="phi" metaid="_740210" units="dimensionless" value="5"/>
+            <parameter constant="false" id="tau_0" metaid="_740211" units="time"/>
+            <parameter id="I_app_post" metaid="_740212" units="uA_per_cm2" value="0"/>
+            <parameter constant="false" id="I_Na_post" metaid="_740213" units="uA_per_cm2"/>
+            <parameter constant="false" id="m_inf_post" metaid="_740214" units="dimensionless"/>
+            <parameter constant="false" id="h_post" metaid="_740215" units="dimensionless"/>
+            <parameter constant="false" id="V_post" metaid="_740216" sboTerm="SBO:0000259" units="mV" value="-64"/>
+            <parameter constant="false" id="alpha_m_post" metaid="_740217" units="per_ms"/>
+            <parameter constant="false" id="beta_m_post" metaid="_740218" units="per_ms"/>
+            <parameter constant="false" id="alpha_h_post" metaid="_740219" units="per_ms"/>
+            <parameter constant="false" id="beta_h_post" metaid="_740220" units="per_ms"/>
+            <parameter constant="false" id="I_K_post" metaid="_740221" units="uA_per_cm2"/>
+            <parameter constant="false" id="n_post" metaid="_740222" units="dimensionless"/>
+            <parameter constant="false" id="alpha_n_post" metaid="_740223" units="per_ms"/>
+            <parameter constant="false" id="beta_n_post" metaid="_740224" units="per_ms"/>
+            <parameter constant="false" id="I_L_post" metaid="_740225" units="uA_per_cm2"/>
+            <parameter constant="false" id="I_syn" metaid="_740226" units="uA_per_cm2"/>
+            <parameter id="g_syn" metaid="_740227" sboTerm="SBO:0000257" units="mS_per_cm2" value="0.1"/>
+            <parameter constant="false" id="s" metaid="_740228" units="dimensionless"/>
+            <parameter id="E_syn" metaid="_740229" units="mV" value="-75"/>
+            <parameter id="alpha" metaid="_740230" units="per_ms" value="12"/>
+            <parameter constant="false" id="F" metaid="_740231" units="dimensionless"/>
+            <parameter id="beta" metaid="_740232" units="per_ms" value="0.1"/>
+            <parameter constant="false" id="V_pre" metaid="_740233" sboTerm="SBO:0000259" units="mV" value="-64"/>
+            <parameter id="theta_syn" metaid="_740235" units="mV" value="0"/>
+            <parameter constant="false" id="I_app_pre" metaid="_740236" units="uA_per_cm2"/>
+            <parameter constant="false" id="I_Na_pre" metaid="_740237" units="uA_per_cm2"/>
+            <parameter constant="false" id="m_inf_pre" metaid="_740238" units="dimensionless"/>
+            <parameter constant="false" id="h_pre" metaid="_740239" units="dimensionless"/>
+            <parameter constant="false" id="n_pre" metaid="_740240" units="dimensionless"/>
+            <parameter constant="false" id="alpha_n_pre" metaid="_740241" units="per_ms"/>
+            <parameter constant="false" id="beta_n_pre" metaid="_740242" units="per_ms"/>
+            <parameter constant="false" id="alpha_h_pre" metaid="_740243" units="per_ms"/>
+            <parameter constant="false" id="beta_h_pre" metaid="_740244" units="per_ms"/>
+            <parameter constant="false" id="alpha_m_pre" metaid="_740245" units="per_ms"/>
+            <parameter constant="false" id="beta_m_pre" metaid="_740246" units="per_ms"/>
+            <parameter constant="false" id="I_K_pre" metaid="_740247" units="uA_per_cm2"/>
+            <parameter constant="false" id="I_L_pre" metaid="_740248" units="uA_per_cm2"/>
+        </listOfParameters>
+        <listOfInitialAssignments>
+            <initialAssignment metaid="c3476108-eecb-4ff3-a2f6-5b06627a3890" symbol="h_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <ci> alpha_h_post </ci>
+                        <apply>
+                            <plus/>
+                            <ci> beta_h_post </ci>
+                            <ci> alpha_h_post </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </initialAssignment>
+            <initialAssignment metaid="_87f69b07-a5b2-42d0-bd4f-9b60f9fcce24" symbol="n_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <ci> alpha_n_post </ci>
+                        <apply>
+                            <plus/>
+                            <ci> beta_n_post </ci>
+                            <ci> alpha_n_post </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </initialAssignment>
+            <initialAssignment metaid="f7235f48-414b-4267-9dd1-394c231d5cb1" symbol="s">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <apply>
+                            <times/>
+                            <ci> alpha </ci>
+                            <ci> F </ci>
+                        </apply>
+                        <apply>
+                            <plus/>
+                            <ci> beta </ci>
+                            <apply>
+                                <times/>
+                                <ci> alpha </ci>
+                                <ci> F </ci>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </initialAssignment>
+            <initialAssignment metaid="_74956f1d-3dc0-46a5-9a45-db324839aeb8" symbol="h_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <ci> alpha_h_pre </ci>
+                        <apply>
+                            <plus/>
+                            <ci> beta_h_pre </ci>
+                            <ci> alpha_h_pre </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </initialAssignment>
+            <initialAssignment metaid="_454215df-fe99-41f0-a3aa-f4f8b204a39f" symbol="n_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <ci> alpha_n_pre </ci>
+                        <apply>
+                            <plus/>
+                            <ci> beta_n_pre </ci>
+                            <ci> alpha_n_pre </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </initialAssignment>
+        </listOfInitialAssignments>
+        <listOfRules>
+            <assignmentRule metaid="_740166" variable="tau_0">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <ci> Cm </ci>
+                        <ci> gL </ci>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740167" variable="I_Na_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> gNa </ci>
+                        <apply>
+                            <power/>
+                            <ci> m_inf_post </ci>
+                            <cn type="integer"> 3 </cn>
+                        </apply>
+                        <ci> h_post </ci>
+                        <apply>
+                            <minus/>
+                            <ci> V_post </ci>
+                            <ci> E_Na </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740168" variable="m_inf_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <ci> alpha_m_post </ci>
+                        <apply>
+                            <plus/>
+                            <ci> alpha_m_post </ci>
+                            <ci> beta_m_post </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <rateRule metaid="_740169" variable="h_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> phi </ci>
+                        <apply>
+                            <minus/>
+                            <apply>
+                                <times/>
+                                <ci> alpha_h_post </ci>
+                                <apply>
+                                    <minus/>
+                                    <cn type="integer"> 1 </cn>
+                                    <ci> h_post </ci>
+                                </apply>
+                            </apply>
+                            <apply>
+                                <times/>
+                                <ci> beta_h_post </ci>
+                                <ci> h_post </ci>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </rateRule>
+            <rateRule metaid="_740170" variable="V_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <apply>
+                            <minus/>
+                            <ci> I_app_post </ci>
+                            <apply>
+                                <plus/>
+                                <ci> I_Na_post </ci>
+                                <ci> I_K_post </ci>
+                                <ci> I_L_post </ci>
+                                <ci> I_syn </ci>
+                            </apply>
+                        </apply>
+                        <ci> Cm </ci>
+                    </apply>
+                </math>
+            </rateRule>
+            <assignmentRule metaid="_740172" variable="alpha_m_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <apply>
+                            <times/>
+                            <cn> -0.1 </cn>
+                            <apply>
+                                <plus/>
+                                <ci> V_post </ci>
+                                <cn type="integer"> 35 </cn>
+                            </apply>
+                        </apply>
+                        <apply>
+                            <minus/>
+                            <apply>
+                                <exp/>
+                                <apply>
+                                    <times/>
+                                    <cn> -0.1 </cn>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_post </ci>
+                                        <cn type="integer"> 35 </cn>
+                                    </apply>
+                                </apply>
+                            </apply>
+                            <cn type="integer"> 1 </cn>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740173" variable="beta_m_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <cn type="integer"> 4 </cn>
+                        <apply>
+                            <exp/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <minus/>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_post </ci>
+                                        <cn type="integer"> 60 </cn>
+                                    </apply>
+                                </apply>
+                                <cn type="integer"> 18 </cn>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740174" variable="alpha_h_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <cn> 0.07 </cn>
+                        <apply>
+                            <exp/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <minus/>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_post </ci>
+                                        <cn type="integer"> 58 </cn>
+                                    </apply>
+                                </apply>
+                                <cn type="integer"> 20 </cn>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740175" variable="beta_h_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <cn type="integer"> 1 </cn>
+                        <apply>
+                            <plus/>
+                            <apply>
+                                <exp/>
+                                <apply>
+                                    <times/>
+                                    <cn> -0.1 </cn>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_post </ci>
+                                        <cn type="integer"> 28 </cn>
+                                    </apply>
+                                </apply>
+                            </apply>
+                            <cn type="integer"> 1 </cn>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740176" variable="I_K_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> gK </ci>
+                        <apply>
+                            <power/>
+                            <ci> n_post </ci>
+                            <cn type="integer"> 4 </cn>
+                        </apply>
+                        <apply>
+                            <minus/>
+                            <ci> V_post </ci>
+                            <ci> E_K </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <rateRule metaid="_740177" variable="n_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> phi </ci>
+                        <apply>
+                            <minus/>
+                            <apply>
+                                <times/>
+                                <ci> alpha_n_post </ci>
+                                <apply>
+                                    <minus/>
+                                    <cn type="integer"> 1 </cn>
+                                    <ci> n_post </ci>
+                                </apply>
+                            </apply>
+                            <apply>
+                                <times/>
+                                <ci> beta_n_post </ci>
+                                <ci> n_post </ci>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </rateRule>
+            <assignmentRule metaid="_740178" variable="alpha_n_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <apply>
+                            <times/>
+                            <cn> -0.01 </cn>
+                            <apply>
+                                <plus/>
+                                <ci> V_post </ci>
+                                <cn type="integer"> 34 </cn>
+                            </apply>
+                        </apply>
+                        <apply>
+                            <minus/>
+                            <apply>
+                                <exp/>
+                                <apply>
+                                    <times/>
+                                    <cn> -0.1 </cn>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_post </ci>
+                                        <cn type="integer"> 34 </cn>
+                                    </apply>
+                                </apply>
+                            </apply>
+                            <cn type="integer"> 1 </cn>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740179" variable="beta_n_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <cn> 0.125 </cn>
+                        <apply>
+                            <exp/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <minus/>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_post </ci>
+                                        <cn type="integer"> 44 </cn>
+                                    </apply>
+                                </apply>
+                                <cn type="integer"> 80 </cn>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740181" variable="I_L_post">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> gL </ci>
+                        <apply>
+                            <minus/>
+                            <ci> V_post </ci>
+                            <ci> E_L </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740182" variable="I_syn">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> g_syn </ci>
+                        <ci> s </ci>
+                        <apply>
+                            <minus/>
+                            <ci> V_post </ci>
+                            <ci> E_syn </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <rateRule metaid="_740183" variable="s">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <minus/>
+                        <apply>
+                            <times/>
+                            <ci> alpha </ci>
+                            <ci> F </ci>
+                            <apply>
+                                <minus/>
+                                <cn type="integer"> 1 </cn>
+                                <ci> s </ci>
+                            </apply>
+                        </apply>
+                        <apply>
+                            <times/>
+                            <ci> beta </ci>
+                            <ci> s </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </rateRule>
+            <assignmentRule metaid="_740184" variable="F">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <cn type="integer"> 1 </cn>
+                        <apply>
+                            <plus/>
+                            <cn type="integer"> 1 </cn>
+                            <apply>
+                                <exp/>
+                                <apply>
+                                    <divide/>
+                                    <apply>
+                                        <minus/>
+                                        <apply>
+                                            <minus/>
+                                            <ci> V_pre </ci>
+                                            <ci> theta_syn </ci>
+                                        </apply>
+                                    </apply>
+                                    <cn type="integer"> 2 </cn>
+                                </apply>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <rateRule metaid="_740185" variable="V_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <apply>
+                            <minus/>
+                            <ci> I_app_pre </ci>
+                            <apply>
+                                <plus/>
+                                <ci> I_Na_pre </ci>
+                                <ci> I_K_pre </ci>
+                                <ci> I_L_pre </ci>
+                            </apply>
+                        </apply>
+                        <ci> Cm </ci>
+                    </apply>
+                </math>
+            </rateRule>
+            <assignmentRule metaid="_740186" variable="I_app_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <piecewise>
+                        <piece>
+                            <cn type="integer"> 2 </cn>
+                            <apply>
+                                <and/>
+                                <apply>
+                                    <geq/>
+                                    <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                                    <cn type="integer"> 10 </cn>
+                                </apply>
+                                <apply>
+                                    <leq/>
+                                    <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                                    <cn type="integer"> 20 </cn>
+                                </apply>
+                            </apply>
+                        </piece>
+                        <otherwise>
+                            <cn type="integer"> 0 </cn>
+                        </otherwise>
+                    </piecewise>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740187" variable="I_Na_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> gNa </ci>
+                        <apply>
+                            <power/>
+                            <ci> m_inf_pre </ci>
+                            <cn type="integer"> 3 </cn>
+                        </apply>
+                        <ci> h_pre </ci>
+                        <apply>
+                            <minus/>
+                            <ci> V_pre </ci>
+                            <ci> E_Na </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740188" variable="m_inf_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <ci> alpha_m_pre </ci>
+                        <apply>
+                            <plus/>
+                            <ci> alpha_m_pre </ci>
+                            <ci> beta_m_pre </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <rateRule metaid="_740189" variable="h_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> phi </ci>
+                        <apply>
+                            <minus/>
+                            <apply>
+                                <times/>
+                                <ci> alpha_h_pre </ci>
+                                <apply>
+                                    <minus/>
+                                    <cn type="integer"> 1 </cn>
+                                    <ci> h_pre </ci>
+                                </apply>
+                            </apply>
+                            <apply>
+                                <times/>
+                                <ci> beta_h_pre </ci>
+                                <ci> h_pre </ci>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </rateRule>
+            <rateRule metaid="_740190" variable="n_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> phi </ci>
+                        <apply>
+                            <minus/>
+                            <apply>
+                                <times/>
+                                <ci> alpha_n_pre </ci>
+                                <apply>
+                                    <minus/>
+                                    <cn type="integer"> 1 </cn>
+                                    <ci> n_pre </ci>
+                                </apply>
+                            </apply>
+                            <apply>
+                                <times/>
+                                <ci> beta_n_pre </ci>
+                                <ci> n_pre </ci>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </rateRule>
+            <assignmentRule metaid="_740191" variable="alpha_n_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <apply>
+                            <times/>
+                            <cn> -0.01 </cn>
+                            <apply>
+                                <plus/>
+                                <ci> V_pre </ci>
+                                <cn type="integer"> 34 </cn>
+                            </apply>
+                        </apply>
+                        <apply>
+                            <minus/>
+                            <apply>
+                                <exp/>
+                                <apply>
+                                    <times/>
+                                    <cn> -0.1 </cn>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_pre </ci>
+                                        <cn type="integer"> 34 </cn>
+                                    </apply>
+                                </apply>
+                            </apply>
+                            <cn type="integer"> 1 </cn>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740192" variable="beta_n_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <cn> 0.125 </cn>
+                        <apply>
+                            <exp/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <minus/>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_pre </ci>
+                                        <cn type="integer"> 44 </cn>
+                                    </apply>
+                                </apply>
+                                <cn type="integer"> 80 </cn>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740194" variable="alpha_h_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <cn> 0.07 </cn>
+                        <apply>
+                            <exp/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <minus/>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_pre </ci>
+                                        <cn type="integer"> 58 </cn>
+                                    </apply>
+                                </apply>
+                                <cn type="integer"> 20 </cn>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740195" variable="beta_h_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <cn type="integer"> 1 </cn>
+                        <apply>
+                            <plus/>
+                            <apply>
+                                <exp/>
+                                <apply>
+                                    <times/>
+                                    <cn> -0.1 </cn>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_pre </ci>
+                                        <cn type="integer"> 28 </cn>
+                                    </apply>
+                                </apply>
+                            </apply>
+                            <cn type="integer"> 1 </cn>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740196" variable="alpha_m_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <apply>
+                            <times/>
+                            <cn> -0.1 </cn>
+                            <apply>
+                                <plus/>
+                                <ci> V_pre </ci>
+                                <cn type="integer"> 35 </cn>
+                            </apply>
+                        </apply>
+                        <apply>
+                            <minus/>
+                            <apply>
+                                <exp/>
+                                <apply>
+                                    <times/>
+                                    <cn> -0.1 </cn>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_pre </ci>
+                                        <cn type="integer"> 35 </cn>
+                                    </apply>
+                                </apply>
+                            </apply>
+                            <cn type="integer"> 1 </cn>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740197" variable="beta_m_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <cn type="integer"> 4 </cn>
+                        <apply>
+                            <exp/>
+                            <apply>
+                                <divide/>
+                                <apply>
+                                    <minus/>
+                                    <apply>
+                                        <plus/>
+                                        <ci> V_pre </ci>
+                                        <cn type="integer"> 60 </cn>
+                                    </apply>
+                                </apply>
+                                <cn type="integer"> 18 </cn>
+                            </apply>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740198" variable="I_K_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> gK </ci>
+                        <apply>
+                            <power/>
+                            <ci> n_pre </ci>
+                            <cn type="integer"> 4 </cn>
+                        </apply>
+                        <apply>
+                            <minus/>
+                            <ci> V_pre </ci>
+                            <ci> E_K </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule metaid="_740199" variable="I_L_pre">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> gL </ci>
+                        <apply>
+                            <minus/>
+                            <ci> V_pre </ci>
+                            <ci> E_L </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+        </listOfRules>
+    </model>
+</sbml>

@@ -4,7 +4,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.vcell.cli.trace.Tracer;
+import org.vcell.trace.Tracer;
 import org.vcell.sedml.ModelFormat;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

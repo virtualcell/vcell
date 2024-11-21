@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
+import org.vcell.trace.Tracer;
 import org.vcell.util.VCellUtilityHub;
 import org.vcell.util.exe.Executable;
 
@@ -97,38 +98,40 @@ public class BiosimulationsExecTest {
 	}
 
     static class TestRecorder implements CLIRecordable {
-        public boolean bFailed = false;
-        public String errorMessage = "";
+
+		public TestRecorder() {
+			Tracer.clearTraceEvents();
+		}
 
         @Override
-        public void writeDetailedErrorList(String message) {
+        public void writeDetailedErrorList(Exception e, String message) {
             System.err.println("writeDetailedErrorList(): " + message);
-            bFailed = true;
-            errorMessage = message;
+			Tracer.failure(e, "writeDetailedErrorList(): "+message);
         }
         @Override
         public void writeFullSuccessList(String message) {
             System.out.println("writeFullSuccessList(): " + message);
+			Tracer.success("writeFullSuccessList(): " + message);
         }
         @Override
-        public void writeErrorList(String message) {
+        public void writeErrorList(Exception e, String message) {
             System.err.println("writeErrorList(): " + message);
-            bFailed = true;
-            errorMessage = message;
+			Tracer.failure(e, "writeErrorList(): " + message);
         }
         @Override
         public void writeDetailedResultList(String message) {
             System.out.println("writeDetailedResultList(): " + message);
+			Tracer.log("writeDetailedResultList(): "+message);
         }
         @Override
         public void writeSpatialList(String message) {
             System.out.println("writeSpatialList(): " + message);
+			Tracer.log("writeSpatialList(): "+message);
         }
         @Override
-        public void writeImportErrorList(String message) {
+        public void writeImportErrorList(Exception e, String message) {
             System.err.println("writeImportErrorList(): " + message);
-            bFailed = true;
-            errorMessage = message;
+			Tracer.failure(e, "writeImportErrorList(): " + message);
         }
     }
 
@@ -148,8 +151,8 @@ public class BiosimulationsExecTest {
 			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
 			Path computedH5File = outdirPath.resolve("report.h5");
 
-			String errMessage = cliRecorder.errorMessage.replace("\n", " | ");
-			assertFalse(cliRecorder.bFailed, "failure: '" + errMessage + "'");
+			String errorMessage = (Tracer.hasErrors()) ? "failure: '" + Tracer.getErrors().get(0).message.replace("\n", " | ") : "";
+			assertFalse(Tracer.hasErrors(), errorMessage);
 			if (knownFault != null){
 				throw new RuntimeException("test case passed, but expected " + knownFault.name() + ", remove "
 						+ testCaseProjectID + " from known faults");

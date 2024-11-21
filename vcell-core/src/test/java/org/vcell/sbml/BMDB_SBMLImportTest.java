@@ -134,7 +134,6 @@ public class BMDB_SBMLImportTest {
 		faults.put(496, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.1358' for reactant 's_0001' in reaction 'r_1812') or stoichiometryMath not handled in VCell at this time.
 		faults.put(497, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.1358' for reactant 's_0001' in reaction 'r_1812') or stoichiometryMath not handled in VCell at this time.
 		faults.put(499, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_9' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
-		faults.put(520, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute 'NaN' for SBML object id T
 		faults.put(534, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_6' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
 		faults.put(535, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_3' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
 		faults.put(536, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_80' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
@@ -161,8 +160,7 @@ public class BMDB_SBMLImportTest {
 		faults.put(705, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_21' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
 		faults.put(706, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  found more than one SBase match for sid=v, matched [org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@67cc48df, org.vcell.sbml.vcell.SBMLSymbolMapping$SBaseWrapper@483ac21f]
 		faults.put(710, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_0_0' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that y
-		faults.put(731, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute '-Infinity' for SBML object id log_Treg
-		faults.put(739, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_19' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
+		faults.put(731, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Treg_origin_fraction_CD4' to model: 'func_TRegs_Production_from_CD4'		faults.put(739, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_19' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
 		faults.put(764, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_3' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
 		faults.put(775, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
 		faults.put(804, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_1' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
@@ -179,7 +177,6 @@ public class BMDB_SBMLImportTest {
 		faults.put(872, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'beta' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you have pr
 		faults.put(908, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_2' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you
 		faults.put(925, SBMLTestSuiteTest.FAULT.UNCATEGORIZED);  // cause:  OverallWarning: missing or unexpected value attribute '-Infinity' for SBML object id log_time
-		faults.put(956, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  Error adding Lambda function UnsupportedConstruct: error parsing expression ' <math><notanumber/></math>': node type 'notanumber' not supported yet
 		faults.put(961, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'rateOf_re15' to model: 're15' is either not found in your model or is not allowed to be used in the current context. Check that you have provided t
 		faults.put(969, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Metabolite_11' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that yo
 		faults.put(1005, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><piecewise><piece><cn> 1 </cn><apply><and/><apply><geq/><piecewise><piece><apply><minus/><csymbol encoding="text" definition
@@ -191,10 +188,9 @@ public class BMDB_SBMLImportTest {
 		faults.put(1039, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Compartment_10' to model: 'UNRESOLVED.Size' is either not found in your model or is not allowed to be used in the current context. Check that you h
 		faults.put(1040, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'Summary_flux_to_RBC' to model: 'Vin' is either not found in your model or is not allowed to be used in the current context. Check that you have pro
 		faults.put(1046, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
-		faults.put(1061, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
 		faults.put(1062, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
 		faults.put(1063, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
-		faults.put(1064, SBMLTestSuiteTest.FAULT.FBC_PACKAGE);  // cause: Unable to import the SBML file. The model includes elements of SBML extension 'fbc', which is required for simulating the model but is not supported.
+		faults.put(1064, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // UnsupportedConstruct: Non-integer stoichiometry ('0.5' for reactant 'M_O2' in reaction 'R_R181') not handled in VCell at this time.
 		return faults;
 	}
 
@@ -260,7 +256,10 @@ public class BMDB_SBMLImportTest {
 				fault = SBMLTestSuiteTest.FAULT.FBC_PACKAGE;
 			}else if (cause.contains("error parsing expression")){
 				fault = SBMLTestSuiteTest.FAULT.MATHML_PARSING;
+			}else if (cause.contains("class org.sbml.jsbml.Constraint cannot be cast to class org.sbml.jsbml.SBMLDocument")) {
+				fault = SBMLTestSuiteTest.FAULT.CONSTRAINT_CLASS_CAST_EXCEPTION;
 			}
+
 			try (BufferedWriter codeProblemFileWriter = new BufferedWriter(new FileWriter(codeKnownProblemFile, true));
 				 BufferedWriter csvProblemFileWriter = new BufferedWriter(new FileWriter(csvKnownProblemFile, true));
 			) {

@@ -3937,7 +3937,7 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
             //
             setMathDescription(math);
         } catch(Exception e){
-            throw new MappingException("failed to gerate math: " + e.getMessage(), e);
+            throw new MappingException("failed to generate math: " + e.getMessage(), e);
         }
     }
 }

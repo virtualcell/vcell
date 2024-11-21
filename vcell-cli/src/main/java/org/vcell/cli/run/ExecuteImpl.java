@@ -7,8 +7,8 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
-import org.vcell.cli.trace.Span;
-import org.vcell.cli.trace.Tracer;
+import org.vcell.trace.Span;
+import org.vcell.trace.Tracer;
 import org.vcell.util.FileUtils;
 
 import java.io.File;

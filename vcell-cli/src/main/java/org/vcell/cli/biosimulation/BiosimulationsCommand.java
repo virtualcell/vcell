@@ -8,9 +8,8 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecorder;
 import org.vcell.cli.run.ExecuteImpl;
-import org.vcell.cli.trace.Tracer;
+import org.vcell.trace.Tracer;
 import org.vcell.util.FileUtils;
-import org.vcell.util.exe.Executable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
