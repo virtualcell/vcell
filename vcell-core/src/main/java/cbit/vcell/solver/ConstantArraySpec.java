@@ -215,11 +215,16 @@ public static ConstantArraySpec createIntervalSpec(String name, String minValueE
 							((double)i)/(numValues - 1))));
 		}
 	} else {
-		for (int i = 0; i < numValues; i++){
-			spec.constants[i] = new Constant(name, Expression.add(
-					minValueExp,
-					Expression.mult(Expression.add(maxValueExp, Expression.negate(minValueExp)),
-							new Expression(((double)i)/(numValues - 1)))));
+		if (numValues == 1){
+			spec.constants[0] = new Constant(name, minValueExp);
+			return spec;
+		} else {
+			for (int i = 0; i < numValues; i++) {
+				spec.constants[i] = new Constant(name, Expression.add(
+						minValueExp,
+						Expression.mult(Expression.add(maxValueExp, Expression.negate(minValueExp)),
+								new Expression(((double) i) / (numValues - 1)))));
+			}
 		}
 	}
 	return spec;
