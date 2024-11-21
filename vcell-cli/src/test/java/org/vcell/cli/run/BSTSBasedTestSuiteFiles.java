@@ -21,6 +21,7 @@ public class BSTSBasedTestSuiteFiles {
         "misc-projects/BIOMD0000000569.omex",
         "misc-projects/BIOMD0000000973.omex",
         "misc-projects/BIOMD0000000520.omex",
+        "misc-projects/BIOMD0000000561.omex",
         "misc-projects/BIOMD0000000731.omex",
         "misc-projects/BIOMD0000001061.omex",
         "misc-projects/BIOMD0000001064.omex",
