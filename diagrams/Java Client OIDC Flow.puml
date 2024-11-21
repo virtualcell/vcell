@@ -1,0 +1,60 @@
+@startuml Login
+'https://plantuml.com/sequence-diagram
+
+title VCell App OIDC Authentication
+
+autonumber
+box Local Machine #LightBlue
+control "Local Host"
+actor VCell
+participant Browser
+end box
+
+entity Auth0
+
+== Gather Information and Prepare ==
+note over Auth0: For this to work, the callback URL "localhost" must\nbe placed as and accepted callback URL in Auth0
+note over "Local Host": Only used to be a listening \nendpoint for Auth0's redirection
+
+VCell -> Auth0: Request OIDC Metadata
+Auth0 --> VCell: Return OIDC Metadata
+
+activate VCell
+VCell -> VCell: Find an open port
+VCell -> VCell: Create code verifier
+VCell -> VCell: Create the authorization request URI with challenge code,\nscopes, clientID, redirect URI
+VCell -> "Local Host": Create local host server listening\nfor Auth0 callback.
+deactivate VCell
+
+== Make Requests ==
+
+VCell -> Browser: Open the authorization request URI in the users browser
+
+
+group Not Logged In vs. Logged In
+else Not Logged In
+Browser -> Auth0: Request login/authorization
+Auth0 --> Browser: Display Auth0 Login Screen
+Browser -> Auth0: Authenticate
+Auth0 --> Browser: Redirect to local host\nwith exchange code
+else Logged In
+Browser -> Auth0: Send cookies
+Auth0 --> Browser: Redirect to local host\nwith exchange code
+end
+
+
+Browser --> "Local Host": Receive exchange code
+"Local Host" -> VCell: Process exchange code
+VCell -> Auth0: Give exchange code with previously created challenge code
+activate Auth0
+Auth0 -> Auth0: Verify the challenge code
+Auth0 --> VCell: Receive ID, access, and refresh token
+deactivate Auth0
+
+VCell -> VCell: Create an HTTP client with tokens, that automatically \nrefreshes access token
+
+
+
+
+
+@enduml

@@ -30,12 +30,38 @@ public class InteractiveLogin {
 
     private InteractiveLogin() {
     }
+
+    /**
+     *  1. Goes to the authorization server, gather metadata about it's OIDC configuration
+     *  (ex. Scopes supported, signing methods supported, auth and token endpoint, response types...)
+     *  <br>
+     *  2. Find a port available on local host, specifying the server to be created with a preset path for authentication related calls.
+     *  The path, port, and domain (localhost) need to be approved on the Auth0 end pre-emptively.
+     *  <br>
+     *  3. Create a custom URI that contains scope, callback URL, code-verifier, state, and OIDC metadata
+     *  <br>
+     *  4. Spin up the local host callback URL, waiting to receive notification from the Auth0 server
+     *  <br>
+     *  5. Once the Auth0 server responds to the callback URL, which in this case is our local host server. The exchange token is given.
+     *  <br>
+     *  6. The exchange token is sent to Auth0 server, used to receive an OIDC token. One time use only.
+     *  <br>
+     *  7. Create an HTTP client with the OIDC token suite (refresh, ID, access, etc...), and return it.
+     *  <br>
+     *  P.S: This HTTP client created has an automated refresh capability for the access token, allowing users to stay logged in
+     *  for an extended period of time.
+     * @param clientID
+     * @param authServerUri
+     * @param apiBaseUri
+     * @param ignoreSSLCertProblems
+     * @return
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws ParseException
+     */
+
     public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri, boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException {
         URI successRedirectURI = new URI(apiBaseUri+( apiBaseUri.getHost().equals("localhost")?  "" : "/login_success"));
-        return login(clientID, authServerUri, apiBaseUri, successRedirectURI, ignoreSSLCertProblems);
-    }
-
-    public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri, URI successRedirectURI, boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException {
 
         // Retrieve OpenID Provider Metadata
         URI metadata_endpoint = new URI(authServerUri + "/.well-known/openid-configuration");
@@ -115,6 +141,25 @@ public class InteractiveLogin {
         }
         return authorizationResponse;
     }
+
+    /**
+     * 1. Create an HTTP server with a /ping endpoint for ensuring it's alive, and a call back endpoint that has already been approved by
+     * Auth0.
+     * <br>
+     * 2. Set the call back path to accept the redirect URI given in an HTTP data packet.
+     * <br>
+     * 3. Redirect the user to the auth request URI in their browser, which either prompts them to a login screen or directly
+     * takes them to the redirect URL if they are already logged in.
+     * <br>
+     * 4. Receive the authorization response when the Auth0 endpoint redirects us to our localhost server
+     * @param localHttpServerPort
+     * @param callback_endpoint_path
+     * @param authRequestURI
+     * @param successRedirectURI
+     * @return AuthorizationResponse
+     * @throws IOException
+     * @throws ParseException
+     */
 
     private static AuthorizationResponse getAuthorizationResponseAutomated(int localHttpServerPort, String callback_endpoint_path, URI authRequestURI, URI successRedirectURI) throws IOException, ParseException {
         AuthorizationResponse authorizationResponse;
@@ -202,6 +247,21 @@ public class InteractiveLogin {
         System.out.println("http server ping successful");
     }
 
+    /**
+     * Create a URI that contains the clientID, scope, redirectURI, state (essentially a session ID for the current transaction),
+     * and a challenge code.
+     * This URI is used to initiate the authentication process.
+     * @param oidcProviderMetadata
+     * @param redirectURI
+     * @param clientID
+     * @param scope
+     * @param state
+     * @param codeVerifier
+     * @return URI
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws ParseException
+     */
     private static URI getAuthRequestURI(OIDCProviderMetadata oidcProviderMetadata, URI redirectURI, ClientID clientID, Scope scope, State state, CodeVerifier codeVerifier) throws URISyntaxException, IOException, ParseException {
         // Create the authorization request
         URI authorizationEndpoint = oidcProviderMetadata.getAuthorizationEndpointURI();
@@ -216,6 +276,26 @@ public class InteractiveLogin {
 
         return authorizationRequest.toURI();
     }
+
+    /**
+     * 1. Take the authorization response. Inside it has a one use token which gets extracted.
+     * <br>
+     * 2. With this one use token in conjecture with the code verifier, they can be exchanged for the ID token, access token, and refresh token
+     * if that is allowed.
+     * <br>
+     * P.S: The code verifier is used so that Auth0 is sure that who started this authentication process is the same individual who's
+     * exchanging this token.
+     * @param authorizationResponse
+     * @param tokenEndpoint
+     * @param clientID
+     * @param scope
+     * @param redirectURI
+     * @param codeVerifier
+     * @return
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws ParseException
+     */
 
     private static OIDCTokens exchangeCodeForTokens(AuthorizationResponse authorizationResponse, URI tokenEndpoint, ClientID clientID, Scope scope, URI redirectURI, CodeVerifier codeVerifier) throws URISyntaxException, IOException, ParseException {
 
