@@ -35,6 +35,9 @@ public class CLIPythonManager {
     private static final String PYTHON_EXE_NAME = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
 
     private static CLIPythonManager instance = null;
+    private static final int DEFAULT_TIMEOUT = 7000; // was 600 seconds (10 minutes), now 5 seconds
+
+    private static final boolean USE_SHARED_SHELL = true;
 
     private Process pythonProcess; 			// hold python interpreter instance used in updateXxx...() methods
     private OutputStreamWriter pythonOSW; 	// input channel *to* python interpreter (see above)
@@ -61,26 +64,32 @@ public class CLIPythonManager {
      * @throws PythonStreamException if there is any exception encountered in this exchange.
      */
     public String callPython(String functionName, String... arguments) throws PythonStreamException {
-        return this.callPython(this.formatPythonFunctionCall(functionName, arguments));
+        String command = this.formatPythonFunctionCall(functionName, arguments);
+        try {
+            return CLIPythonManager.USE_SHARED_SHELL ?
+                    this.callPython(command) : CLIPythonManager.callNonSharedPython(command);
+        } catch (PythonStreamException e) {
+            throw e;
+        } catch (Exception e){
+            lg.error("Error calling python: {}", e.getMessage());
+            String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
+            throw new PythonStreamException(errorPrefix, e);
+        }
     }
 
     /**
      * 
      * @param cliCommand the command to run
-     * @param sedmlPath path to the sedml file
-     * @param resultOutDir where to put the results
      * @throws InterruptedException if the python process was interrupted
      * @throws IOException if there was a system IO failure
      */
-    @Deprecated
-    public static void callNonSharedPython(String cliCommand, String sedmlPath, String resultOutDir)
+    public static String callNonSharedPython(String cliCommand)
             throws InterruptedException, IOException, PythonStreamException {
-        if (lg.isWarnEnabled()) lg.warn("Using old style python invocation!");
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
-        ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-m", "vcell_cli_utils.cli",
-                cliCommand, sedmlPath, resultOutDir);
+        String commandString = "from vcell_cli_utils import wrapper; " + cliCommand;
+        ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-c", commandString);
         pb.directory(cliWorkingDir.toFile());
-        CLIPythonManager.runAndPrintProcessStreams(pb, "","");
+        return CLIPythonManager.runAndPrintProcessStreams(pb, "","");
     }
 
     /**
@@ -114,17 +123,21 @@ public class CLIPythonManager {
     public void instantiatePythonProcess() throws IOException, PythonStreamException {
         if (this.pythonProcess != null) return; // prevent override
         lg.info("Initializing Python...");
+        if (!USE_SHARED_SHELL) {
+            lg.warn("Not using shared shell, canceling initialization; python will be slower!!");
+            return;
+        }
         // Confirm we have python properly installed or kill this exe where it stands.
         this.checkPythonInstallation();
         // install virtual environment
-        // e.g. source /Users/schaff/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
+        // e.g. source ~/Library/Caches/pypoetry/virtualenvs/vcell-cli-utils-g4hrdDfL-py3.9/bin/activate
 
         // Start poetry based Python
         ProcessBuilder pb = new ProcessBuilder("poetry", "run", "python", "-i", "-W ignore");
         pb.redirectErrorStream(true);
         File cliWorkingDir = PropertyLoader.getRequiredDirectory(PropertyLoader.cliWorkingDir).getCanonicalFile();
         pb.directory(cliWorkingDir);
-        lg.debug("Loading poetry in directory: " + cliWorkingDir);
+        lg.debug("Loading poetry in directory: {}", cliWorkingDir);
         this.pythonProcess = pb.start();
         this.pythonOSW = new OutputStreamWriter(this.pythonProcess.getOutputStream());
         this.pythonISB = new BufferedReader(new InputStreamReader(this.pythonProcess.getInputStream()));
@@ -132,64 +145,116 @@ public class CLIPythonManager {
         // "construction" commands
         try {
             this.getResultsOfLastCommand(); // Clear Buffer of Python Interpreter
-            this.executeThroughPython();
+            this.callPython("");
+            this.callPython("from vcell_cli_utils import wrapper");
             lg.info("Python initialization success!");
         } catch (IOException | TimeoutException | InterruptedException e){
-            lg.warn("Python instantiation Exception Thrown:\n" + e);
+            lg.warn("Python instantiation Exception Thrown:\n", e);
             throw new PythonStreamException("Could not initialize Python. Problem is probably python-side.", e);
         }
     }
 
+
     // Needs properly formatted python command
-    private String callPython(String command) throws PythonStreamException {
+    private String callPython(String command) throws PythonStreamException, TimeoutException {
+        // Attempt 1
         try {
             this.instantiatePythonProcess(); // Make sure we have a python instance; will not override already done
             this.sendNewCommand(command);
-            return this.getResultsOfLastCommand();
-        } catch (IOException | InterruptedException | TimeoutException e){
+            String lastCommandResult = this.getResultsOfLastCommand(CLIPythonManager.DEFAULT_TIMEOUT);
+            return lastCommandResult == null ? "" : lastCommandResult;
+        } catch (IOException | InterruptedException e){
             throw new PythonStreamException("Python process encountered an exception:\n" + e.getMessage(), e);
+        } catch (TimeoutException e) {
+            // Attempt 2
+            lg.warn("Error calling python: {}", e.getMessage());
+            lg.warn("Attempting to acknowledge warnings / prompts.");
+            try {
+                this.instantiatePythonProcess(); // Make sure we have a python instance; will not override already done
+                // we may get the result of the original call, if we "accept" a warning / prompt the shell got
+                this.sendNewCommand(""); // We just want to "hit enter" so to speak
+                String result = this.getResultsOfLastCommand(CLIPythonManager.DEFAULT_TIMEOUT);
+                lg.info("Second python attempt successful!");
+                return result == null ? "" : result;
+            } catch (TimeoutException e2){
+                // Final Attempt; use the independent shell!
+                lg.warn("Error on second attempt calling python: {}", e2.getMessage());
+                lg.warn("Attempting last resort");
+                try {
+                    String lastChanceResult = CLIPythonManager.callNonSharedPython(command);
+                    lg.info("Last python attempt successful!");
+                    return lastChanceResult;
+                } catch (InterruptedException | IOException e3){
+                    lg.error("Error on last resort: {}", e3.getMessage());
+                    String errorPrefix = String.format("Command `%s` failed in non-shared mode.", command);
+                    throw new PythonStreamException(errorPrefix, e3);
+                }
+            } catch (IOException | InterruptedException e4){
+                throw new PythonStreamException("Python process encountered an exception:\n" + e4.getMessage(), e4);
+            }
         }
     }
 
     private String getResultsOfLastCommand() throws IOException, TimeoutException, InterruptedException {
+        return this.getResultsOfLastCommand(CLIPythonManager.DEFAULT_TIMEOUT);
+    }
+
+    private String getResultsOfLastCommand(int msTimeout) throws IOException, TimeoutException, InterruptedException {
         String importantPrefix = ">>> ";
         StringBuilder results = new StringBuilder();
 
-        int currentTime = 0, TIMEOUT_LIMIT = 600000; // 600 seconds (10 minutes)
+        int currentTime = 0;
 
         // Wait for python to finish what it's working on
         while(!this.pythonISB.ready()){
-            if (currentTime++ >= TIMEOUT_LIMIT) throw new TimeoutException();
+            if (currentTime++ >= msTimeout) throw new TimeoutException();
             Thread.sleep(1); // wait ~1ms at a time
             //TODO: Rewrite this class to work asynchronously, and get rid of this busy wait
         }
 
         // Python's ready (or we had a timeout?); lets get the buffer without going too far and getting blocked (see note 1 at bottom of file)
-        while ( results.length() < importantPrefix.length()
-                || !results.toString().endsWith(importantPrefix)){
+        while (this.pythonISB.ready() && (results.length() < importantPrefix.length()
+                || !results.toString().endsWith(importantPrefix))){
             // we do this unless we've found the prefix we need at the end of the results
             results.append((char) this.pythonISB.read());
         }
 
-        // Got the results we need. Now lets clean the results string up before returning it
-        results = new StringBuilder(CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length())));
+        // Weird mac shell warning causing us bugs; try to clear and get the results.
+        if (results.toString().contains("ecure coding is not enabled for restorable state")){
+            this.sendNewCommand("");
+        }
 
-        return results.toString().equals("") ? null : results.toString();
+
+        if (results.toString().contains(importantPrefix)) {
+            // Got the results we need. Now lets clean the results string up before returning it
+            results = new StringBuilder(CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length())));
+        } else {
+            // We may have gotten a warning or something; continue to poll for
+            return this.getResultsOfLastCommand();
+        }
+
+
+        return results.toString().isEmpty() ? null : results.toString();
     }
 
     private void sendNewCommand(String cmd) throws IOException {
         // we can easily send the command, but we need to format it first.
 
         String command = String.format("%s\n", CLIPythonManager.stripStringForPython(cmd));
-        lg.trace("Sent cmd to Python: " + command);
+        lg.trace("Sent cmd to Python: {}", command);
         this.pythonOSW.write(command);
         this.pythonOSW.flush();
     }
 
     // Helper method for easy, local calling.
     private void executeThroughPython() throws PythonStreamException {
-        String results = this.callPython("from vcell_cli_utils import wrapper");
-        this.parsePythonReturn(results);
+        String results;
+        try {
+            results = this.callPython("from vcell_cli_utils import wrapper");
+            this.parsePythonReturn(results);
+        } catch (TimeoutException e) {
+            throw new PythonStreamException("Python process encountered an exception:\n" + e.getMessage(), e);
+        }
     }
 
     private void checkPythonInstallation() {
@@ -217,7 +282,8 @@ public class CLIPythonManager {
             lg.error("Please check your local Python and PIP Installation, install required packages and versions", e);
             throw new MissingResourceException("Error validating Python installation:\n" + e.getMessage(), "Python 3.9+", "");
         } catch (IOException | InterruptedException e) {
-            lg.error("System produced " + e.getClass().getSimpleName() + " when trying to validate Python.", e);
+            String msg = "System produced " + e.getClass().getSimpleName() + " when trying to validate Python.";
+            lg.error(msg, e);
         }
     }
 
@@ -229,8 +295,7 @@ public class CLIPythonManager {
         return new ProcessBuilder(args);
     }
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static void runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString)
+    public static String runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString)
             throws InterruptedException, IOException, PythonStreamException {
         // Process printing code goes here
         File of = File.createTempFile("temp-", ".out", CURRENT_WORKING_DIR.toFile());
@@ -254,9 +319,10 @@ public class CLIPythonManager {
             // don't print here, send the error down to caller who is responsible for dealing with it
             throw new PythonStreamException(es);
         } else {
-            if (!outString.equals("")) lg.info(outString);
-            if (!os.equals("")) lg.info(os);
+            if (!outString.isEmpty()) lg.info(outString);
+            if (!os.isEmpty()) lg.info(os);
         }
+        return os;
     }
 
     public void parsePythonReturn(String returnedString) throws PythonStreamException {
@@ -272,7 +338,7 @@ public class CLIPythonManager {
         if (errString == null) errString = "";
 
         // Null or empty strings are considered passing results
-        if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).equals("")){
+        if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).isEmpty()){
             lg.trace("Python returned successfully.");
             return;
         }
@@ -304,7 +370,7 @@ public class CLIPythonManager {
         for (String arg : arguments){
             argList.append("r\"\"\"").append(CLIUtils.stripString(arg)).append("\"\"\","); // python r-string
         }
-        adjArgLength = argList.length() == 0 ? 0 : argList.length() - 1;
+        adjArgLength = argList.isEmpty() ? 0 : argList.length() - 1;
         return argList.substring(0, adjArgLength);
     }
 

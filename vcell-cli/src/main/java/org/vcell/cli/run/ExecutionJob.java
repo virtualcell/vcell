@@ -70,8 +70,7 @@ public class ExecutionJob {
 
     /**
      * Run the neexed steps to prepare an archive for execution.
-     * 
-     * Follow up call: `executeArchive()`
+     * Follow-up call: `executeArchive()`
      * 
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues.
@@ -81,27 +80,28 @@ public class ExecutionJob {
         this.startTime = System.currentTimeMillis();
 
         // Beginning of Execution
-        logger.info("Executing OMEX archive " + inputFilePath);
+        logger.info("Executing OMEX archive `{}`", this.inputFile.getName());
+        logger.info("Archive location: {}", this.inputFilePath);
         RunUtils.drawBreakLine("-", 100);
 
         // Unpack the Omex Archive
         try { // It's unlikely, but if we get errors here they're fatal.
-            this.sedmlPath2d3d = Paths.get(outputDir, "temp");
-            this.omexHandler = new OmexHandler(inputFilePath, outputDir);
+            this.sedmlPath2d3d = Paths.get(this.outputDir, "temp");
+            this.omexHandler = new OmexHandler(this.inputFilePath, this.outputDir);
             this.omexHandler.extractOmex();
-            this.sedmlLocations = omexHandler.getSedmlLocationsAbsolute();
+            this.sedmlLocations = this.omexHandler.getSedmlLocationsAbsolute();
         } catch (IOException e){
-            String error = e.getMessage() + ", error for OmexHandler with " + inputFilePath;
-            this.cliRecorder.writeErrorList(bioModelBaseName);
-            this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "IO error with OmexHandler");
+            String error = e.getMessage() + ", error for OmexHandler with " + this.inputFilePath;
+            this.cliRecorder.writeErrorList(this.bioModelBaseName);
+            this.cliRecorder.writeDetailedResultList(this.bioModelBaseName + ", " + "IO error with OmexHandler");
             logger.error(error);
             throw new RuntimeException(error, e);
         } catch (Exception e) {
-            String error = e.getMessage() + ", error for archive " + inputFilePath;
+            String error = e.getMessage() + ", error for archive " + this.inputFilePath;
             logger.error(error);
-            if (omexHandler!=null) omexHandler.deleteExtractedOmex();
-            this.cliRecorder.writeErrorList(bioModelBaseName);
-            this.cliRecorder.writeDetailedResultList(bioModelBaseName + ", " + "unknown error with the archive file");
+            if (this.omexHandler != null) this.omexHandler.deleteExtractedOmex();
+            this.cliRecorder.writeErrorList(this.bioModelBaseName);
+            this.cliRecorder.writeDetailedResultList(this.bioModelBaseName + ", " + "unknown error with the archive file");
 
             throw new RuntimeException(error, e);
         } 
