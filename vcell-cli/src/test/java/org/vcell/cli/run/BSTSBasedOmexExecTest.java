@@ -123,21 +123,19 @@ public class BSTSBasedOmexExecTest {
 				FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM);
 
 
-		// faults.put("misc-projects/BIOMD0000000005.omex", null); // works
-		faults.put("misc-projects/BIOMD0000000302.omex", FAULT.MATH_GENERATION_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_8639905465728503850omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Unable to initialize bioModel for the given selection: MappingException occurred: failed to generate math: generated an invalid mathDescription: Initial condition for variable 'h_post' references variable 'V_post'. Initial conditions cannot reference variables.
+		//faults.put("misc-projects/BIOMD0000000005.omex", null); // works
 		faults.put("misc-projects/BIOMD0000000175.omex", FAULT.MATH_GENERATION_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_6652012719407098827omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Unable to initialize bioModel for the given selection: MappingException occurred: failed to generate math: Unable to sort, unknown identifier I_Net_E44PPI3K_binding
-		faults.put("misc-projects/BIOMD0000000618.omex", FAULT.SBML_IMPORT_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_13012177097014737572omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Error processing model: model2 - couldn't find SBase with sid=null in SBMLSymbolMapping
-		//faults.put("misc-projects/BIOMD0000000569.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000973.omex", null); // works!!
+		faults.put("misc-projects/BIOMD0000000302.omex", FAULT.MATH_GENERATION_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_8639905465728503850omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Unable to initialize bioModel for the given selection: MappingException occurred: failed to generate math: generated an invalid mathDescription: Initial condition for variable 'h_post' references variable 'V_post'. Initial conditions cannot reference variables.
 		//faults.put("misc-projects/BIOMD0000000520.omex", null); // works!!
-		faults.put("misc-projects/BIOMD0000000731.omex", FAULT.SBML_IMPORT_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_7811157837075929926omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Unable to initialize bioModel for the given selection: Failed to translate SBML model into BioModel: Error binding global parameter 'Treg_origin_fraction_CD4' to model: 'func_TRegs_Production_from_CD4' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the correct and full name (e.g. Ca_Cytosol).
-		faults.put("misc-projects/BIOMD0000001061.omex", FAULT.SEDML_NO_SEDMLS_TO_EXECUTE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_6151950245083004772omex) | **** Error: writeErrorList(): BSTS_OmexFile_6151950245083004772omex | java.lang.RuntimeException: There are no SED-MLs in the archive to execute
-		faults.put("misc-projects/BIOMD0000001064.omex", FAULT.SEDML_NO_SEDMLS_TO_EXECUTE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_855930052238018769omex) | **** Error: writeErrorList(): BSTS_OmexFile_855930052238018769omex | java.lang.RuntimeException: There are no SED-MLs in the archive to execute
+		faults.put("misc-projects/BIOMD0000000561.omex", FAULT.UNCATETORIZED_FAULT); // (not a dynamic system - can't solve) | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_4023640363466179720omex) | SIMULATIONS_RUN(runSimulations) | BioModel(BSTS_OmexFile_4023640363466179720omex_Martins2013.sedml_model) | SIMULATION_RUN(task1_task1) | **** Error: Failed execution: Model 'BSTS_OmexFile_4023640363466179720omex_Martins2013.sedml_model' Task 'task1'.
+		//faults.put("misc-projects/BIOMD0000000569.omex", null); // works!!
+		faults.put("misc-projects/BIOMD0000000618.omex", FAULT.SBML_IMPORT_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_13012177097014737572omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Error processing model: model2 - couldn't find SBase with sid=null in SBMLSymbolMapping
 		//faults.put("misc-projects/BIOMD0000000651.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000668.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000669.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000676.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000718.omex", null); // works!!
+		faults.put("misc-projects/BIOMD0000000731.omex", FAULT.SBML_IMPORT_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_7811157837075929926omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Unable to initialize bioModel for the given selection: Failed to translate SBML model into BioModel: Error binding global parameter 'Treg_origin_fraction_CD4' to model: 'func_TRegs_Production_from_CD4' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the correct and full name (e.g. Ca_Cytosol).
 		//faults.put("misc-projects/BIOMD0000000842.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000843.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000932.omex", null); // works!!
@@ -146,6 +144,7 @@ public class BSTSBasedOmexExecTest {
 		//faults.put("misc-projects/BIOMD0000000957.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000968.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000972.omex", null); // works!!
+		//faults.put("misc-projects/BIOMD0000000973.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000983.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000985.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000000989.omex", null); // works!!
@@ -154,6 +153,8 @@ public class BSTSBasedOmexExecTest {
 		//faults.put("misc-projects/BIOMD0000001010.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000001014.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000001018.omex", null); // works!!
+		faults.put("misc-projects/BIOMD0000001061.omex", FAULT.SEDML_NO_SEDMLS_TO_EXECUTE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_6151950245083004772omex) | **** Error: writeErrorList(): BSTS_OmexFile_6151950245083004772omex | java.lang.RuntimeException: There are no SED-MLs in the archive to execute
+		faults.put("misc-projects/BIOMD0000001064.omex", FAULT.SEDML_NO_SEDMLS_TO_EXECUTE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_855930052238018769omex) | **** Error: writeErrorList(): BSTS_OmexFile_855930052238018769omex | java.lang.RuntimeException: There are no SED-MLs in the archive to execute
 		//faults.put("misc-projects/BIOMD0000001072.omex", null); // works!!
 		//faults.put("misc-projects/BIOMD0000001077.omex", null); // works!!
 
@@ -170,6 +171,13 @@ public class BSTSBasedOmexExecTest {
 
 		return Arrays.stream(BSTSBasedTestSuiteFiles.getBSTSTestCases()).filter(filter).collect(Collectors.toList());
 //		return Arrays.asList(
+//				"misc-projects/BIOMD0000000561.omex",
+//				"misc-projects/BIOMD0000000679.omex",
+//				"misc-projects/BIOMD0000000680.omex",
+//				"misc-projects/BIOMD0000000681.omex",
+//				"misc-projects/BIOMD0000000684.omex",
+//				"misc-projects/BIOMD0000000724.omex",
+//				"misc-projects/BIOMD0000000915.omex"
 //				"misc-projects/BIOMD0000000302.omex",
 //				"misc-projects/BIOMD0000000175.omex",
 //				"misc-projects/BIOMD0000000618.omex",
