@@ -1,271 +1,1217 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
+    <model id="Bertozzi2020___SIR_model_of_scenarios_of_COVID_19_spread_in_CA" metaid="COPASI0" name="Bertozzi2020 - SIR model of scenarios of COVID-19 spread in CA and NY">
+        <notes>
+            <body xmlns="http://www.w3.org/1999/xhtml">
+                <p>The coronavirus disease 2019 (COVID-19) pandemic has placed epidemic modeling at the forefront of worldwide public policy making. Nonetheless, modeling and forecasting the spread of COVID-19 remains a challenge. Here, we detail three regional scale models for forecasting and assessing the course of the pandemic. This work demonstrates the utility of parsimonious models for early-time data and provides an accessible framework for generating policy-relevant insights into its course. We show how these models can be connected to each other and to time series data for a particular region. Capable of measuring and forecasting the impacts of social distancing, these models highlight the dangers of relaxing nonpharmaceutical public health interventions in the absence of a vaccine or antiviral therapies.</p>
+            </body>
+        </notes>
+        <annotation>
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                <rdf:Description rdf:about="#COPASI0">
+                    <dc:creator>
+                        <rdf:Bag>
+                            <rdf:li rdf:parseType="Resource">
+                                <vCard:N rdf:parseType="Resource">
+                                    <vCard:Family>Ramachandran</vCard:Family>
+                                    <vCard:Given>Kausthubh</vCard:Given>
+                                </vCard:N>
+                                <vCard:EMAIL>kramachandran@ebi.ac.uk</vCard:EMAIL>
+                                <vCard:ORG rdf:parseType="Resource">
+                                    <vCard:Orgname>European Bioinformatics Institute, European Molecular Biology Organisation</vCard:Orgname>
+                                </vCard:ORG>
+                            </rdf:li>
+                        </rdf:Bag>
+                    </dc:creator>
+                    <dcterms:created rdf:parseType="Resource">
+                        <dcterms:W3CDTF>2020-07-28T08:39:31Z</dcterms:W3CDTF>
+                    </dcterms:created>
+                    <dcterms:modified rdf:parseType="Resource">
+                        <dcterms:W3CDTF>2020-07-28T08:39:31Z</dcterms:W3CDTF>
+                    </dcterms:modified>
+                    <bqmodel:isDescribedBy>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/pubmed/32616574"/>
+                        </rdf:Bag>
+                    </bqmodel:isDescribedBy>
+                    <bqbiol:hasTaxon>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/taxonomy/2697049"/>
+                            <rdf:li rdf:resource="http://identifiers.org/taxonomy/9606"/>
+                        </rdf:Bag>
+                    </bqbiol:hasTaxon>
+                    <bqbiol:hasProperty>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/doid/DOID:0080600"/>
+                            <rdf:li rdf:resource="http://identifiers.org/ido/0000503"/>
+                            <rdf:li rdf:resource="http://identifiers.org/mamo/MAMO_0000028"/>
+                        </rdf:Bag>
+                    </bqbiol:hasProperty>
+                    <bqmodel:is>
+                        <rdf:Bag>
+                            <rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL2008070001"/>
+                            <rdf:li rdf:resource="http://identifiers.org/biomodels.db/BIOMD0000000956"/>
+                        </rdf:Bag>
+                    </bqmodel:is>
+                </rdf:Description>
 
-<Model>
-    <name>Bertozzi2020 - SIR model of scenarios of COVID-19 spread in CA and NY</name>
-    <description>The coronavirus disease 2019 (COVID-19) pandemic has placed epidemic modeling at the forefront of worldwide public policy making. Nonetheless, modeling and forecasting the spread of COVID-19 remains a challenge. Here, we detail three regional scale models for forecasting and assessing the course of the pandemic. This work demonstrates the utility of parsimonious models for early-time data and provides an accessible framework for generating policy-relevant insights into its course. We show how these models can be connected to each other and to time series data for a particular region. Capable of measuring and forecasting the impacts of social distancing, these models highlight the dangers of relaxing nonpharmaceutical public health interventions in the absence of a vaccine or antiviral therapies.</description>
-    <format>
-        <name>SBML</name>
-        <version>L2V4</version>
-    </format>
-    <publication>
-        <type>PubMed ID</type>
-        <accession>32616574</accession>
-        <journal>Proceedings of the National Academy of Sciences of the United States of America</journal>
-        <title>The challenges of modeling and forecasting the spread of COVID-19.</title>
-        <affiliation>Department of Mathematics, University of California, Los Angeles, CA 90095; bertozzi@ucla.edu.</affiliation>
-        <synopsis>The coronavirus disease 2019 (COVID-19) pandemic has placed epidemic modeling at the forefront of worldwide public policy making. Nonetheless, modeling and forecasting the spread of COVID-19 remains a challenge. Here, we detail three regional-scale models for forecasting and assessing the course of the pandemic. This work demonstrates the utility of parsimonious models for early-time data and provides an accessible framework for generating policy-relevant insights into its course. We show how these models can be connected to each other and to time series data for a particular region. Capable of measuring and forecasting the impacts of social distancing, these models highlight the dangers of relaxing nonpharmaceutical public health interventions in the absence of a vaccine or antiviral therapies.</synopsis>
-        <year>2020</year>
-        <month>7</month>
-        <volume>117</volume>
-        <issue>29</issue>
-        <pages>16732-16738</pages>
-        <link>http://identifiers.org/pubmed/32616574</link>
-        <authors>
-            <authors>
-                <name>Andrea L Bertozzi</name>
-                <institution>Department of Mathematics, University of California, Los Angeles, CA 90095; bertozzi@ucla.edu.Department of Mechanical and Aerospace Engineering, University of California, Los Angeles, CA 90095.</institution>
-                <orcid>0000-0003-0396-7391</orcid>
-            </authors>
-            <authors>
-                <name>Elisa Franco</name>
-                <institution>Department of Mechanical and Aerospace Engineering, University of California, Los Angeles, CA 90095.Department of Bioengineering, University of California, Los Angeles, CA 90095.</institution>
-            </authors>
-            <authors>
-                <name>George Mohler</name>
-                <institution>Department of Computer Science, Indiana University-Purdue University Indianapolis, Indianapolis, IN 46202.</institution>
-            </authors>
-            <authors>
-                <name>Martin B Short</name>
-                <institution>Department of Mathematics, Georgia Institute of Technology, Atlanta, GA 30332.</institution>
-            </authors>
-            <authors>
-                <name>Daniel Sledge</name>
-                <institution>Department of Political Science, University of Texas at Arlington, Arlington, TX 76019.</institution>
-            </authors>
-        </authors>
-    </publication>
-    <files>
-        <main>
-            <main>
-                <name>Bertozzi2020.xml</name>
-                <description>SBML L2V4 representation of challenges in modelling and forecasting the spread of COVID-19</description>
-                <fileSize>50960</fileSize>
-                <mimeType>application/xml</mimeType>
-                <md5sum>d649af2056fa231870404eda2927a414</md5sum>
-                <sha1sum>cc96d7cdc57e3190a86db575e67f9e295aba23c8</sha1sum>
-                <sha256sum>0959f62ad51af2cc85a7ba53fd837ee5c0368466aeaa758693c9ff596bad235b</sha256sum>
-            </main>
-        </main>
-        <additional>
-            <additional>
-                <name>Bertozzi2020-biopax2.owl</name>
-                <description>Auto-generated BioPAX (Level 2) file.</description>
-                <fileSize>8301</fileSize>
-                <mimeType>application/rdf+xml</mimeType>
-                <md5sum>ecb94e0a82fa9aa06bdf4f4ce1ed0134</md5sum>
-                <sha1sum>d73e9e008846a616cf7f6565375100948deb360c</sha1sum>
-                <sha256sum>da025ae0f4b7c7e7ecb6a1a2bc4df6a59a026cec16d65efe23204a55de2f5d30</sha256sum>
-            </additional>
-            <additional>
-                <name>Bertozzi2020-biopax3.owl</name>
-                <description>Auto-generated BioPAX (Level 3) file.</description>
-                <fileSize>10625</fileSize>
-                <mimeType>application/rdf+xml</mimeType>
-                <md5sum>35bf4d6db98a300a2f015cee5c025934</md5sum>
-                <sha1sum>943d9e5113fc8d10c643ae43c0f2f28fdfa9ed8b</sha1sum>
-                <sha256sum>5b14b16a3e42934d620a9395593990a06c685020d5145d899cb5f29c64f6a87d</sha256sum>
-            </additional>
-            <additional>
-                <name>Bertozzi2020-matlab.m</name>
-                <description>Auto-generated Matlab file.</description>
-                <fileSize>7762</fileSize>
-                <mimeType>text/x-matlab</mimeType>
-                <md5sum>2551ba5cb3288492335e6fcda429a4b0</md5sum>
-                <sha1sum>6235f09fcbb361d6437635cf9c345c61ba5a8c55</sha1sum>
-                <sha256sum>a40b547dac5537864cc3fefa6f2e0d6b5bfd389828dd31d20205a68910cd0df9</sha256sum>
-            </additional>
-            <additional>
-                <name>Bertozzi2020-octave.m</name>
-                <description>Auto-generated Octave file.</description>
-                <fileSize>7762</fileSize>
-                <mimeType>text/x-matlab</mimeType>
-                <md5sum>52782b1c51d07d4087b5823ce2b5d85a</md5sum>
-                <sha1sum>1d8103899e26cdf546eef105ffa4be4785f5ad4b</sha1sum>
-                <sha256sum>3aa8182d7487d895eba3a3e3c1ba74a8cb5a543a9f9d4bb75fdcb6ed78e2319c</sha256sum>
-            </additional>
-            <additional>
-                <name>Bertozzi2020.cps</name>
-                <description>CPS file created on COPASI version 4.28 (Build 226) representation of challenges in modelling and forecasting the spread of COVID-19</description>
-                <fileSize>76175</fileSize>
-                <mimeType>application/xml</mimeType>
-                <md5sum>0e5391db6bb7a8c27a6e96392419b352</md5sum>
-                <sha1sum>0c32485cd3bf5f4e664ff1fed2e3e71639cdf1cc</sha1sum>
-                <sha256sum>066a3d8f12b79b456a893d96fd6cb1c6445fde5a6701579d3dfb81160d50e33a</sha256sum>
-            </additional>
-            <additional>
-                <name>Bertozzi2020.ode</name>
-                <description>Auto-generated ODE file for XPP.</description>
-                <fileSize>5507</fileSize>
-                <mimeType>text/plain</mimeType>
-                <md5sum>809b11694388f6031139e02cd577cf74</md5sum>
-                <sha1sum>3095f667a41c8c2dac4e679796acd7b89b87f0c1</sha1sum>
-                <sha256sum>2d1c871781efd1a25258bf26d342b93e63d31dd95913068f609b5ef6dc52e3a4</sha256sum>
-            </additional>
-            <additional>
-                <name>Bertozzi2020.sedml</name>
-                <description>SED-ML file representation of challenges in modelling and forecasting the spread of COVID-19 (additionally CRBM-validated and adjusted).</description>
-                <fileSize>27334</fileSize>
-                <mimeType>application/xml</mimeType>
-                <md5sum>f0731ae240b8a3446ed81c96ee2ba70e</md5sum>
-                <sha1sum>09adb5b6cabdbed7304181ed59c693e04174868f</sha1sum>
-                <sha256sum>7ccca8b69e7e1161e8dd0cd6ab6427b5210c72cf1df71479dc1a98ab0968a454</sha256sum>
-            </additional>
-            <additional>
-                <name>curation_image.jpeg</name>
-                <description>Reproduced figure(s) from original curation.</description>
-                <fileSize>169314</fileSize>
-                <mimeType>image/jpeg</mimeType>
-                <md5sum>969c761b3600cb100a6a656b9346bb82</md5sum>
-                <sha1sum>c87256f8e186c7133d314a532ad9702e02a6401e</sha1sum>
-                <sha256sum>584cd66b1cad5214c153dee3d58b97755d2add621cdce2177121ea14a432436b</sha256sum>
-            </additional>
-            <additional>
-                <name>curation_notes.txt</name>
-                <description>Notes from original curation (describes curation_image).</description>
-                <fileSize>1506</fileSize>
-                <mimeType>text/plain</mimeType>
-                <md5sum>98fa9a131a3454de21477447860ca24b</md5sum>
-                <sha1sum>18d82c81b9dad0d66dea1c3c2bd333a9cd0faa88</sha1sum>
-                <sha256sum>cbfd523f986bf1fdb8a4f78535da45658d10b7741619f9e6e426a0fe12c3039b</sha256sum>
-            </additional>
-            <additional>
-                <name>manifest.xml</name>
-                <description>Auto-generated manifest file for OMEX archives.</description>
-                <fileSize>1429</fileSize>
-                <mimeType>application/xml</mimeType>
-                <md5sum>481d861492c23570dd4b27a967deb099</md5sum>
-                <sha1sum>7e92c4bcea4ae027b6d84ca9276fadc5fe2d3436</sha1sum>
-                <sha256sum>74f357999391a07103a1e5f82393a8ded5c3849262259dc2bfdf7450f8d74f2b</sha256sum>
-            </additional>
-            <additional>
-                <name>metadata.rdf</name>
-                <description>Auto-generated annotation metadata file.</description>
-                <fileSize>2319</fileSize>
-                <mimeType>application/rdf+xml</mimeType>
-                <md5sum>bbf7b3e95216a330cfc63c93771a3f5c</md5sum>
-                <sha1sum>a5279768ab5840c11f419f896fa4a3b1d1a11289</sha1sum>
-                <sha256sum>8863495cd6eb61cfcf5bbfb1dba7fe963297022f1fac73512802ca48b4533299</sha256sum>
-            </additional>
-        </additional>
-    </files>
-    <history>
-        <revisions>
-            <revisions>
-                <version>2</version>
-                <submitted>1596830002</submitted>
-                <submitter>Kausthubh Ramachandran</submitter>
-                <comment>Edited model metadata online.</comment>
-            </revisions>
-            <revisions>
-                <version>3</version>
-                <submitted>1596830366</submitted>
-                <submitter>Kausthubh Ramachandran</submitter>
-                <comment>Automatically added model identifier BIOMD0000000956</comment>
-            </revisions>
-            <revisions>
-                <version>6</version>
-                <submitted>1596831369</submitted>
-                <submitter>Kausthubh Ramachandran</submitter>
-                <comment>Automatically added model identifier BIOMD0000000956</comment>
-            </revisions>
-            <revisions>
-                <version>9</version>
-                <submitted>1601935796</submitted>
-                <submitter>Kausthubh Ramachandran</submitter>
-                <comment>Automatically added model identifier BIOMD0000000956</comment>
-            </revisions>
-            <revisions>
-                <version>10</version>
-                <submitted>1724290272</submitted>
-                <submitter>Lucian Smith</submitter>
-                <comment>CRBM-sponsored manual and automated updates.</comment>
-            </revisions>
-        </revisions>
-    </history>
-    <firstPublished>1725281945</firstPublished>
-    <submissionId>MODEL2008070001</submissionId>
-    <publicationId>BIOMD0000000956</publicationId>
-    <modellingApproach>
-        <accession>MAMO_0000028</accession>
-        <name>population model</name>
-        <resource>http://identifiers.org/mamo/MAMO_0000028</resource>
-    </modellingApproach>
-    <curationStatus>CURATED</curationStatus>
-    <modelTags>
-        <modelTags>COVID-19</modelTags>
-    </modelTags>
-    <contributors>
-        <Curator>
-            <name>Lucian Smith</name>
-            <email>lpsmith@uw.edu</email>
-            <affiliation>University of Washington</affiliation>
-            <orcid>0000-0001-7002-6386</orcid>
-            <external>false</external>
-        </Curator>
-    </contributors>
-    <vcsIdentifier>aaj</vcsIdentifier>
-    <modelLevelAnnotations>
-        <modelLevelAnnotations>
-            <qualifier>bqbiol:hasTaxon</qualifier>
-            <accession>9606</accession>
-            <name>Homo sapiens</name>
-            <resource>Taxonomy</resource>
-            <uri>http://identifiers.org/taxonomy/9606</uri>
-        </modelLevelAnnotations>
-        <modelLevelAnnotations>
-            <qualifier>bqmodel:isDescribedBy</qualifier>
-            <accession>32616574</accession>
-            <resource>PubMed</resource>
-            <uri>http://identifiers.org/pubmed/32616574</uri>
-        </modelLevelAnnotations>
-        <modelLevelAnnotations>
-            <qualifier>bqmodel:is</qualifier>
-            <accession>BIOMD0000000956</accession>
-            <resource>BioModels Database</resource>
-            <uri>http://identifiers.org/biomodels.db/BIOMD0000000956</uri>
-        </modelLevelAnnotations>
-        <modelLevelAnnotations>
-            <qualifier>bqmodel:is</qualifier>
-            <accession>MODEL2008070001</accession>
-            <resource>BioModels Database</resource>
-            <uri>http://identifiers.org/biomodels.db/MODEL2008070001</uri>
-        </modelLevelAnnotations>
-        <modelLevelAnnotations>
-            <qualifier>bqbiol:hasTaxon</qualifier>
-            <accession>2697049</accession>
-            <name>SARS-CoV-2</name>
-            <resource>Taxonomy</resource>
-            <uri>http://identifiers.org/taxonomy/2697049</uri>
-        </modelLevelAnnotations>
-        <modelLevelAnnotations>
-            <qualifier>bqbiol:hasProperty</qualifier>
-            <accession>MAMO_0000028</accession>
-            <name>population model</name>
-            <resource>Mathematical Modelling Ontology</resource>
-            <uri>http://identifiers.org/mamo/MAMO_0000028</uri>
-        </modelLevelAnnotations>
-        <modelLevelAnnotations>
-            <qualifier>bqbiol:hasProperty</qualifier>
-            <accession>0000503</accession>
-            <resource>Infectious Disease Ontology</resource>
-            <uri>http://identifiers.org/ido/0000503</uri>
-        </modelLevelAnnotations>
-        <modelLevelAnnotations>
-            <qualifier>bqbiol:hasProperty</qualifier>
-            <accession>DOID:0080600</accession>
-            <name>COVID-19</name>
-            <resource>
-                Human Disease Ontology</resource>
-            <uri>http://identifiers.org/doid/DOID:0080600</uri>
-        </modelLevelAnnotations>
-    </modelLevelAnnotations>
-</Model>
+
+
+
+
+
+
+
+
+            </rdf:RDF>
+            <COPASI xmlns="http://www.copasi.org/static/sbml">
+                <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#">
+                    <rdf:Description rdf:about="#COPASI0">
+                        <bqbiol:hasProperty rdf:resource="urn:miriam:doid:DOID:0080600"/>
+                        <bqbiol:hasProperty rdf:resource="urn:miriam:ido:0000503"/>
+                        <bqbiol:hasProperty rdf:resource="urn:miriam:mamo:MAMO_0000028"/>
+                        <bqbiol:hasProperty rdf:resource="urn:miriam:mamo:MAMO_0000046"/>
+                        <bqbiol:hasTaxon rdf:resource="urn:miriam:taxonomy:2697049"/>
+                        <bqbiol:hasTaxon rdf:resource="urn:miriam:taxonomy:9606"/>
+                        <dcterms:bibliographicCitation>
+                            <rdf:Description>
+                                <CopasiMT:isDescribedBy rdf:resource="urn:miriam:pubmed:32616574"/>
+                            </rdf:Description>
+                        </dcterms:bibliographicCitation>
+                        <dcterms:created>
+                            <rdf:Description>
+                                <dcterms:W3CDTF>2020-07-28T08:39:31Z</dcterms:W3CDTF>
+                            </rdf:Description>
+                        </dcterms:created>
+                        <dcterms:creator>
+                            <rdf:Description>
+                                <vCard:EMAIL>kramachandran@ebi.ac.uk</vCard:EMAIL>
+                                <vCard:N>
+                                    <rdf:Description>
+                                        <vCard:Family>Ramachandran</vCard:Family>
+                                        <vCard:Given>Kausthubh</vCard:Given>
+                                    </rdf:Description>
+                                </vCard:N>
+                                <vCard:ORG>
+                                    <rdf:Description>
+                                        <vCard:Orgname>European Bioinformatics Institute, European Molecular Biology Organisation</vCard:Orgname>
+                                    </rdf:Description>
+                                </vCard:ORG>
+                            </rdf:Description>
+                        </dcterms:creator>
+                    </rdf:Description>
+                </rdf:RDF>
+            </COPASI>
+        </annotation>
+        <listOfFunctionDefinitions>
+            <functionDefinition id="rateOf">
+                <annotation>
+                    <symbols xmlns="http://sbml.org/annotations/symbols" definition="http://en.wikipedia.org/wiki/Derivative"/>
+                </annotation>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci> a </ci>
+                        </bvar>
+                        <notanumber/>
+                    </lambda>
+                </math>
+            </functionDefinition>
+            <functionDefinition id="Rate_Law_for_Susceptible_to_Infected" metaid="COPASI31" name="Rate Law for Susceptible_to_Infected">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI31">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-28T13:25:55Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <lambda>
+                        <bvar>
+                            <ci> Ro </ci>
+                        </bvar>
+                        <bvar>
+                            <ci> I </ci>
+                        </bvar>
+                        <bvar>
+                            <ci> S </ci>
+                        </bvar>
+                        <bvar>
+                            <ci> gamma </ci>
+                        </bvar>
+                        <apply>
+                            <times/>
+                            <ci> gamma </ci>
+                            <ci> Ro </ci>
+                            <ci> I </ci>
+                            <ci> S </ci>
+                        </apply>
+                    </lambda>
+                </math>
+            </functionDefinition>
+        </listOfFunctionDefinitions>
+        <listOfUnitDefinitions>
+            <unitDefinition id="length" name="length">
+                <listOfUnits>
+                    <unit exponent="1" kind="metre" multiplier="1" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="area" name="area">
+                <listOfUnits>
+                    <unit exponent="2" kind="metre" multiplier="1" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="volume" name="volume">
+                <listOfUnits>
+                    <unit exponent="1" kind="litre" multiplier="1" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="time" name="time">
+                <listOfUnits>
+                    <unit exponent="1" kind="second" multiplier="86400" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+            <unitDefinition id="substance" name="substance">
+                <listOfUnits>
+                    <unit exponent="1" kind="item" multiplier="1" scale="0"/>
+                </listOfUnits>
+            </unitDefinition>
+        </listOfUnitDefinitions>
+        <listOfCompartments>
+            <compartment constant="true" id="USA___CA__NY" metaid="COPASI1" name="USA - CA, NY" size="1" spatialDimensions="3">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI1">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C43509"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C43468"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+
+
+
+
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI1">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-28T08:43:20Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C43468"/>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C43509"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </compartment>
+        </listOfCompartments>
+        <listOfSpecies>
+            <species boundaryCondition="false" compartment="USA___CA__NY" constant="false" id="Infected" initialConcentration="1.2639029322548E-7" metaid="COPASI2" name="Infected">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI2">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C171133"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ido/0000511"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+
+
+
+
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI2">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-28T08:45:09Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ido:0000511"/>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C171133"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="USA___CA__NY" constant="false" id="Recovered" initialConcentration="0" metaid="COPASI3" name="Recovered">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI3">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C171133"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+
+                            <bqbiol:hasProperty>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ido/0000621"/>
+                                </rdf:Bag>
+                            </bqbiol:hasProperty>
+                        </rdf:Description>
+
+
+
+
+
+
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI3">
+                                <bqbiol:hasProperty rdf:resource="urn:miriam:ido:0000621"/>
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-28T08:45:11Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C171133"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+            <species boundaryCondition="false" compartment="USA___CA__NY" constant="false" id="Susceptible" initialConcentration="0.999999999999997" metaid="COPASI4" name="Susceptible">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI4">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ido/0000514"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C171133"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+
+
+
+
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI4">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-28T13:13:29Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ido:0000514"/>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C171133"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </species>
+        </listOfSpecies>
+        <listOfParameters>
+            <parameter constant="true" id="Pop_CA" metaid="COPASI5" name="Pop_CA" value="39560000">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI5">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-28T13:16:18Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="false" id="Ro_CA" metaid="COPASI6" name="Ro_CA" value="2.7">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI6">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-29T11:01:54Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="gamma_CA" metaid="COPASI7" name="gamma_CA" value="0.14">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI7">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-29T11:02:06Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Io_CA" metaid="COPASI8" name="Io_CA" value="5">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI8">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-29T11:03:52Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="false" id="Time" metaid="COPASI9" name="Time" value="0">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI9">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-29T17:54:43Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Trigger_CA" metaid="COPASI10" name="Trigger_CA" value="1">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI10">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T19:30:53Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Trigger_NY" metaid="COPASI11" name="Trigger_NY" value="0">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI11">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T20:54:01Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Pop_NY" metaid="COPASI12" name="Pop_NY" value="19540000">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI12">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T20:54:11Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="false" id="Ro_NY" metaid="COPASI13" name="Ro_NY" value="4.1">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI13">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T20:54:35Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="gamma_NY" metaid="COPASI14" name="gamma_NY" value="0.1">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI14">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T20:54:42Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Io_NY" metaid="COPASI15" name="Io_NY" value="29">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI15">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T20:54:51Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="false" id="Pop" metaid="COPASI16" name="Pop" value="39560000">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI16">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T20:54:55Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="false" id="Ro" metaid="COPASI17" name="Ro" value="2.7">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI17">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T20:54:57Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="false" id="gamma" metaid="COPASI18" name="gamma" value="0.14">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI18">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T20:55:00Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Trigger_Lockdown" metaid="COPASI19" name="Trigger_Lockdown" value="0">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI19">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T21:00:18Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Lockdown_CA_start" metaid="COPASI20" name="Lockdown_CA_start" value="27">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI20">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T21:03:15Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Lockdown_CA_end" metaid="COPASI21" name="Lockdown_CA_end" value="66">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI21">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T21:03:25Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Lockdown_NY_start" metaid="COPASI22" name="Lockdown_NY_start" value="30">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI22">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T21:03:36Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="true" id="Lockdown_NY_end" metaid="COPASI23" name="Lockdown_NY_end" value="67">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI23">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T21:03:46Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="false" id="Io" metaid="COPASI24" name="Io" value="5">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI24">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T21:24:28Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter constant="false" id="Peak_Time" metaid="COPASI25" name="Peak_Time" value="0">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI25">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-08-04T04:12:35Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_3" name="Initial for Io_CA" value="5">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Io_CA"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_10" name="Initial for Io_NY" value="29">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Io_NY"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_16" name="Initial for Lockdown_CA_end" value="66">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Lockdown_CA_end"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_15" name="Initial for Lockdown_CA_start" value="27">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Lockdown_CA_start"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_18" name="Initial for Lockdown_NY_end" value="67">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Lockdown_NY_end"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_17" name="Initial for Lockdown_NY_start" value="30">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Lockdown_NY_start"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_0" name="Initial for Pop_CA" value="39560000">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Pop_CA"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_7" name="Initial for Pop_NY" value="19540000">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Pop_NY"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_1" name="Initial for Ro_CA" value="2.7">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Ro_CA"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_8" name="Initial for Ro_NY" value="4.1">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Ro_NY"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_5" name="Initial for Trigger_CA" value="1">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Trigger_CA"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_14" name="Initial for Trigger_Lockdown" value="0">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Trigger_Lockdown"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_6" name="Initial for Trigger_NY" value="0">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="Trigger_NY"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_2" name="Initial for gamma_CA" value="0.14">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="gamma_CA"/>
+                </annotation>
+            </parameter>
+            <parameter id="ModelValue_9" name="Initial for gamma_NY" value="0.1">
+                <annotation>
+                    <initialValue xmlns="http://copasi.org/initialValue" parent="gamma_NY"/>
+                </annotation>
+            </parameter>
+        </listOfParameters>
+        <listOfInitialAssignments>
+            <initialAssignment symbol="Infected">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <ci> Io </ci>
+                        <ci> Pop </ci>
+                    </apply>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="Susceptible">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <divide/>
+                        <apply>
+                            <minus/>
+                            <ci> Pop </ci>
+                            <ci> Infected </ci>
+                        </apply>
+                        <ci> Pop </ci>
+                    </apply>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_3">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Io_CA </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_10">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Io_NY </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_16">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Lockdown_CA_end </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_15">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Lockdown_CA_start </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_18">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Lockdown_NY_end </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_17">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Lockdown_NY_start </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_0">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Pop_CA </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_7">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Pop_NY </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_1">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Ro_CA </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_8">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Ro_NY </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_5">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Trigger_CA </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_14">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Trigger_Lockdown </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_6">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> Trigger_NY </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_2">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> gamma_CA </ci>
+                </math>
+            </initialAssignment>
+            <initialAssignment symbol="ModelValue_9">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <ci> gamma_NY </ci>
+                </math>
+            </initialAssignment>
+        </listOfInitialAssignments>
+        <listOfRules>
+            <assignmentRule variable="Time">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <times/>
+                        <ci> ModelValue_2 </ci>
+                        <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule variable="Pop">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <plus/>
+                        <apply>
+                            <times/>
+                            <ci> ModelValue_5 </ci>
+                            <ci> ModelValue_0 </ci>
+                        </apply>
+                        <apply>
+                            <times/>
+                            <ci> ModelValue_6 </ci>
+                            <ci> ModelValue_7 </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule variable="Ro">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <plus/>
+                        <apply>
+                            <times/>
+                            <ci> ModelValue_5 </ci>
+                            <ci> Ro_CA </ci>
+                        </apply>
+                        <apply>
+                            <times/>
+                            <ci> ModelValue_6 </ci>
+                            <ci> Ro_NY </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule variable="gamma">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <plus/>
+                        <apply>
+                            <times/>
+                            <ci> ModelValue_5 </ci>
+                            <ci> ModelValue_2 </ci>
+                        </apply>
+                        <apply>
+                            <times/>
+                            <ci> ModelValue_6 </ci>
+                            <ci> ModelValue_9 </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+            <assignmentRule variable="Io">
+                <math xmlns="http://www.w3.org/1998/Math/MathML">
+                    <apply>
+                        <plus/>
+                        <apply>
+                            <times/>
+                            <ci> ModelValue_5 </ci>
+                            <ci> ModelValue_3 </ci>
+                        </apply>
+                        <apply>
+                            <times/>
+                            <ci> ModelValue_6 </ci>
+                            <ci> ModelValue_10 </ci>
+                        </apply>
+                    </apply>
+                </math>
+            </assignmentRule>
+        </listOfRules>
+        <listOfReactions>
+            <reaction id="Susceptible_to_Infected" metaid="COPASI29" name="Susceptible_to_Infected" reversible="false">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI29">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C128320"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C171133"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+
+
+
+
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI29">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-28T13:13:09Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C128320"/>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C171133"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="Susceptible" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="Infected" stoichiometry="1"/>
+                </listOfProducts>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci> USA___CA__NY </ci>
+                            <apply>
+                                <ci> Rate_Law_for_Susceptible_to_Infected </ci>
+                                <ci> Ro </ci>
+                                <ci> Infected </ci>
+                                <ci> Susceptible </ci>
+                                <ci> gamma </ci>
+                            </apply>
+                        </apply>
+                    </math>
+                </kineticLaw>
+            </reaction>
+            <reaction id="Infected_to_Recovered" metaid="COPASI30" name="Infected_to_Recovered" reversible="false">
+                <annotation>
+                    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+                        <rdf:Description rdf:about="#COPASI30">
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C25746"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+
+                            <bqbiol:isVersionOf>
+                                <rdf:Bag>
+                                    <rdf:li rdf:resource="http://identifiers.org/ncit/C171133"/>
+                                </rdf:Bag>
+                            </bqbiol:isVersionOf>
+                        </rdf:Description>
+
+
+
+
+
+
+
+
+
+                    </rdf:RDF>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:CopasiMT="http://www.copasi.org/RDF/MiriamTerms#" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI30">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-28T13:13:18Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C171133"/>
+                                <CopasiMT:isVersionOf rdf:resource="urn:miriam:ncit:C25746"/>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <listOfReactants>
+                    <speciesReference species="Infected" stoichiometry="1"/>
+                </listOfReactants>
+                <listOfProducts>
+                    <speciesReference species="Recovered" stoichiometry="1"/>
+                </listOfProducts>
+                <kineticLaw>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <times/>
+                            <ci> USA___CA__NY </ci>
+                            <ci> gamma </ci>
+                            <ci> Infected </ci>
+                        </apply>
+                    </math>
+                </kineticLaw>
+            </reaction>
+        </listOfReactions>
+        <listOfEvents>
+            <event id="Lockdown_start" metaid="COPASI26" name="Lockdown_start" useValuesFromTriggerTime="true">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI26">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T21:03:00Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <trigger>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <and/>
+                            <apply>
+                                <eq/>
+                                <ci> ModelValue_14 </ci>
+                                <cn> 1 </cn>
+                            </apply>
+                            <apply>
+                                <gt/>
+                                <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                                <apply>
+                                    <plus/>
+                                    <apply>
+                                        <times/>
+                                        <ci> ModelValue_5 </ci>
+                                        <ci> ModelValue_15 </ci>
+                                    </apply>
+                                    <apply>
+                                        <times/>
+                                        <ci> ModelValue_6 </ci>
+                                        <ci> ModelValue_17 </ci>
+                                    </apply>
+                                </apply>
+                            </apply>
+                        </apply>
+                    </math>
+                </trigger>
+                <delay>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <cn> 0 </cn>
+                    </math>
+                </delay>
+                <listOfEventAssignments>
+                    <eventAssignment variable="Ro_CA">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML">
+                            <apply>
+                                <divide/>
+                                <ci> Ro_CA </ci>
+                                <cn> 2 </cn>
+                            </apply>
+                        </math>
+                    </eventAssignment>
+                    <eventAssignment variable="Ro_NY">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML">
+                            <apply>
+                                <divide/>
+                                <ci> Ro_NY </ci>
+                                <cn> 2 </cn>
+                            </apply>
+                        </math>
+                    </eventAssignment>
+                </listOfEventAssignments>
+            </event>
+            <event id="Lockdown_end" metaid="COPASI27" name="Lockdown_end" useValuesFromTriggerTime="true">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI27">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-07-31T21:20:40Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <trigger>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <and/>
+                            <apply>
+                                <eq/>
+                                <ci> ModelValue_14 </ci>
+                                <cn> 1 </cn>
+                            </apply>
+                            <apply>
+                                <gt/>
+                                <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                                <apply>
+                                    <plus/>
+                                    <apply>
+                                        <times/>
+                                        <ci> ModelValue_5 </ci>
+                                        <ci> ModelValue_16 </ci>
+                                    </apply>
+                                    <apply>
+                                        <times/>
+                                        <ci> ModelValue_6 </ci>
+                                        <ci> ModelValue_18 </ci>
+                                    </apply>
+                                </apply>
+                            </apply>
+                        </apply>
+                    </math>
+                </trigger>
+                <delay>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <cn> 0 </cn>
+                    </math>
+                </delay>
+                <listOfEventAssignments>
+                    <eventAssignment variable="Ro_CA">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML">
+                            <ci> ModelValue_1 </ci>
+                        </math>
+                    </eventAssignment>
+                    <eventAssignment variable="Ro_NY">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML">
+                            <ci> ModelValue_8 </ci>
+                        </math>
+                    </eventAssignment>
+                </listOfEventAssignments>
+            </event>
+            <event id="Peak_time_record_start" metaid="COPASI28" name="Peak_time_record_start" useValuesFromTriggerTime="true">
+                <annotation>
+                    <COPASI xmlns="http://www.copasi.org/static/sbml">
+                        <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                            <rdf:Description rdf:about="#COPASI28">
+                                <dcterms:created>
+                                    <rdf:Description>
+                                        <dcterms:W3CDTF>2020-08-04T04:13:00Z</dcterms:W3CDTF>
+                                    </rdf:Description>
+                                </dcterms:created>
+                            </rdf:Description>
+                        </rdf:RDF>
+                    </COPASI>
+                </annotation>
+                <trigger>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <apply>
+                            <lt/>
+                            <apply>
+                                <ci> rateOf </ci>
+                                <ci> Infected </ci>
+                            </apply>
+                            <cn type="e-notation">1 <sep/> -12 </cn>
+                        </apply>
+                    </math>
+                </trigger>
+                <delay>
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <cn> 0 </cn>
+                    </math>
+                </delay>
+                <listOfEventAssignments>
+                    <eventAssignment variable="Peak_Time">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML">
+                            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> time </csymbol>
+                        </math>
+                    </eventAssignment>
+                </listOfEventAssignments>
+            </event>
+        </listOfEvents>
+    </model>
+</sbml>
