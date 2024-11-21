@@ -65,6 +65,8 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE)) {
                 updateShape();
+            } else if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_LINK_LENGTH)) {
+                updateShape();
             }
         }
     }
