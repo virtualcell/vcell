@@ -258,7 +258,7 @@ public class BSTSBasedOmexExecTest {
 			TestRecorder cliRecorder = new TestRecorder();
 			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
 			List<TraceEvent> errorEvents = Tracer.getErrors();
-			String errorMessages = (errorEvents.isEmpty()) ? "" : errorEvents.get(0).message;
+			String errorMessages = (errorEvents.isEmpty()) ? "" : errorEvents.get(0).message + " " + errorEvents.get(0).exception;
 			assertTrue(errorEvents.isEmpty(), "failure: '" + errorMessages + "'");
 			if (knownFault != null) {
 				fail("Expected error " + knownFault.name() + " but found no error");
@@ -306,7 +306,7 @@ public class BSTSBasedOmexExecTest {
 			if (subException instanceof ArrayIndexOutOfBoundsException){
 				return FAULT.ARRAY_INDEX_OUT_OF_BOUNDS;
 			}
-		} else if (errorMessage.contains("inconsistent unit system in SBML model") ||
+		} else if (errorMessage.contains("nconsistent unit system in SBML model") ||
 				errorMessage.contains("ust be of type")){
 			return FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM;
 		} else if (errorMessage.contains("There are no SED-MLs in the archive to execute")) {
