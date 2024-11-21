@@ -1,0 +1,271 @@
+
+<Model>
+    <name>Bertozzi2020 - SIR model of scenarios of COVID-19 spread in CA and NY</name>
+    <description>The coronavirus disease 2019 (COVID-19) pandemic has placed epidemic modeling at the forefront of worldwide public policy making. Nonetheless, modeling and forecasting the spread of COVID-19 remains a challenge. Here, we detail three regional scale models for forecasting and assessing the course of the pandemic. This work demonstrates the utility of parsimonious models for early-time data and provides an accessible framework for generating policy-relevant insights into its course. We show how these models can be connected to each other and to time series data for a particular region. Capable of measuring and forecasting the impacts of social distancing, these models highlight the dangers of relaxing nonpharmaceutical public health interventions in the absence of a vaccine or antiviral therapies.</description>
+    <format>
+        <name>SBML</name>
+        <version>L2V4</version>
+    </format>
+    <publication>
+        <type>PubMed ID</type>
+        <accession>32616574</accession>
+        <journal>Proceedings of the National Academy of Sciences of the United States of America</journal>
+        <title>The challenges of modeling and forecasting the spread of COVID-19.</title>
+        <affiliation>Department of Mathematics, University of California, Los Angeles, CA 90095; bertozzi@ucla.edu.</affiliation>
+        <synopsis>The coronavirus disease 2019 (COVID-19) pandemic has placed epidemic modeling at the forefront of worldwide public policy making. Nonetheless, modeling and forecasting the spread of COVID-19 remains a challenge. Here, we detail three regional-scale models for forecasting and assessing the course of the pandemic. This work demonstrates the utility of parsimonious models for early-time data and provides an accessible framework for generating policy-relevant insights into its course. We show how these models can be connected to each other and to time series data for a particular region. Capable of measuring and forecasting the impacts of social distancing, these models highlight the dangers of relaxing nonpharmaceutical public health interventions in the absence of a vaccine or antiviral therapies.</synopsis>
+        <year>2020</year>
+        <month>7</month>
+        <volume>117</volume>
+        <issue>29</issue>
+        <pages>16732-16738</pages>
+        <link>http://identifiers.org/pubmed/32616574</link>
+        <authors>
+            <authors>
+                <name>Andrea L Bertozzi</name>
+                <institution>Department of Mathematics, University of California, Los Angeles, CA 90095; bertozzi@ucla.edu.Department of Mechanical and Aerospace Engineering, University of California, Los Angeles, CA 90095.</institution>
+                <orcid>0000-0003-0396-7391</orcid>
+            </authors>
+            <authors>
+                <name>Elisa Franco</name>
+                <institution>Department of Mechanical and Aerospace Engineering, University of California, Los Angeles, CA 90095.Department of Bioengineering, University of California, Los Angeles, CA 90095.</institution>
+            </authors>
+            <authors>
+                <name>George Mohler</name>
+                <institution>Department of Computer Science, Indiana University-Purdue University Indianapolis, Indianapolis, IN 46202.</institution>
+            </authors>
+            <authors>
+                <name>Martin B Short</name>
+                <institution>Department of Mathematics, Georgia Institute of Technology, Atlanta, GA 30332.</institution>
+            </authors>
+            <authors>
+                <name>Daniel Sledge</name>
+                <institution>Department of Political Science, University of Texas at Arlington, Arlington, TX 76019.</institution>
+            </authors>
+        </authors>
+    </publication>
+    <files>
+        <main>
+            <main>
+                <name>Bertozzi2020.xml</name>
+                <description>SBML L2V4 representation of challenges in modelling and forecasting the spread of COVID-19</description>
+                <fileSize>50960</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>d649af2056fa231870404eda2927a414</md5sum>
+                <sha1sum>cc96d7cdc57e3190a86db575e67f9e295aba23c8</sha1sum>
+                <sha256sum>0959f62ad51af2cc85a7ba53fd837ee5c0368466aeaa758693c9ff596bad235b</sha256sum>
+            </main>
+        </main>
+        <additional>
+            <additional>
+                <name>Bertozzi2020-biopax2.owl</name>
+                <description>Auto-generated BioPAX (Level 2) file.</description>
+                <fileSize>8301</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>ecb94e0a82fa9aa06bdf4f4ce1ed0134</md5sum>
+                <sha1sum>d73e9e008846a616cf7f6565375100948deb360c</sha1sum>
+                <sha256sum>da025ae0f4b7c7e7ecb6a1a2bc4df6a59a026cec16d65efe23204a55de2f5d30</sha256sum>
+            </additional>
+            <additional>
+                <name>Bertozzi2020-biopax3.owl</name>
+                <description>Auto-generated BioPAX (Level 3) file.</description>
+                <fileSize>10625</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>35bf4d6db98a300a2f015cee5c025934</md5sum>
+                <sha1sum>943d9e5113fc8d10c643ae43c0f2f28fdfa9ed8b</sha1sum>
+                <sha256sum>5b14b16a3e42934d620a9395593990a06c685020d5145d899cb5f29c64f6a87d</sha256sum>
+            </additional>
+            <additional>
+                <name>Bertozzi2020-matlab.m</name>
+                <description>Auto-generated Matlab file.</description>
+                <fileSize>7762</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>2551ba5cb3288492335e6fcda429a4b0</md5sum>
+                <sha1sum>6235f09fcbb361d6437635cf9c345c61ba5a8c55</sha1sum>
+                <sha256sum>a40b547dac5537864cc3fefa6f2e0d6b5bfd389828dd31d20205a68910cd0df9</sha256sum>
+            </additional>
+            <additional>
+                <name>Bertozzi2020-octave.m</name>
+                <description>Auto-generated Octave file.</description>
+                <fileSize>7762</fileSize>
+                <mimeType>text/x-matlab</mimeType>
+                <md5sum>52782b1c51d07d4087b5823ce2b5d85a</md5sum>
+                <sha1sum>1d8103899e26cdf546eef105ffa4be4785f5ad4b</sha1sum>
+                <sha256sum>3aa8182d7487d895eba3a3e3c1ba74a8cb5a543a9f9d4bb75fdcb6ed78e2319c</sha256sum>
+            </additional>
+            <additional>
+                <name>Bertozzi2020.cps</name>
+                <description>CPS file created on COPASI version 4.28 (Build 226) representation of challenges in modelling and forecasting the spread of COVID-19</description>
+                <fileSize>76175</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>0e5391db6bb7a8c27a6e96392419b352</md5sum>
+                <sha1sum>0c32485cd3bf5f4e664ff1fed2e3e71639cdf1cc</sha1sum>
+                <sha256sum>066a3d8f12b79b456a893d96fd6cb1c6445fde5a6701579d3dfb81160d50e33a</sha256sum>
+            </additional>
+            <additional>
+                <name>Bertozzi2020.ode</name>
+                <description>Auto-generated ODE file for XPP.</description>
+                <fileSize>5507</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>809b11694388f6031139e02cd577cf74</md5sum>
+                <sha1sum>3095f667a41c8c2dac4e679796acd7b89b87f0c1</sha1sum>
+                <sha256sum>2d1c871781efd1a25258bf26d342b93e63d31dd95913068f609b5ef6dc52e3a4</sha256sum>
+            </additional>
+            <additional>
+                <name>Bertozzi2020.sedml</name>
+                <description>SED-ML file representation of challenges in modelling and forecasting the spread of COVID-19 (additionally CRBM-validated and adjusted).</description>
+                <fileSize>27334</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>f0731ae240b8a3446ed81c96ee2ba70e</md5sum>
+                <sha1sum>09adb5b6cabdbed7304181ed59c693e04174868f</sha1sum>
+                <sha256sum>7ccca8b69e7e1161e8dd0cd6ab6427b5210c72cf1df71479dc1a98ab0968a454</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_image.jpeg</name>
+                <description>Reproduced figure(s) from original curation.</description>
+                <fileSize>169314</fileSize>
+                <mimeType>image/jpeg</mimeType>
+                <md5sum>969c761b3600cb100a6a656b9346bb82</md5sum>
+                <sha1sum>c87256f8e186c7133d314a532ad9702e02a6401e</sha1sum>
+                <sha256sum>584cd66b1cad5214c153dee3d58b97755d2add621cdce2177121ea14a432436b</sha256sum>
+            </additional>
+            <additional>
+                <name>curation_notes.txt</name>
+                <description>Notes from original curation (describes curation_image).</description>
+                <fileSize>1506</fileSize>
+                <mimeType>text/plain</mimeType>
+                <md5sum>98fa9a131a3454de21477447860ca24b</md5sum>
+                <sha1sum>18d82c81b9dad0d66dea1c3c2bd333a9cd0faa88</sha1sum>
+                <sha256sum>cbfd523f986bf1fdb8a4f78535da45658d10b7741619f9e6e426a0fe12c3039b</sha256sum>
+            </additional>
+            <additional>
+                <name>manifest.xml</name>
+                <description>Auto-generated manifest file for OMEX archives.</description>
+                <fileSize>1429</fileSize>
+                <mimeType>application/xml</mimeType>
+                <md5sum>481d861492c23570dd4b27a967deb099</md5sum>
+                <sha1sum>7e92c4bcea4ae027b6d84ca9276fadc5fe2d3436</sha1sum>
+                <sha256sum>74f357999391a07103a1e5f82393a8ded5c3849262259dc2bfdf7450f8d74f2b</sha256sum>
+            </additional>
+            <additional>
+                <name>metadata.rdf</name>
+                <description>Auto-generated annotation metadata file.</description>
+                <fileSize>2319</fileSize>
+                <mimeType>application/rdf+xml</mimeType>
+                <md5sum>bbf7b3e95216a330cfc63c93771a3f5c</md5sum>
+                <sha1sum>a5279768ab5840c11f419f896fa4a3b1d1a11289</sha1sum>
+                <sha256sum>8863495cd6eb61cfcf5bbfb1dba7fe963297022f1fac73512802ca48b4533299</sha256sum>
+            </additional>
+        </additional>
+    </files>
+    <history>
+        <revisions>
+            <revisions>
+                <version>2</version>
+                <submitted>1596830002</submitted>
+                <submitter>Kausthubh Ramachandran</submitter>
+                <comment>Edited model metadata online.</comment>
+            </revisions>
+            <revisions>
+                <version>3</version>
+                <submitted>1596830366</submitted>
+                <submitter>Kausthubh Ramachandran</submitter>
+                <comment>Automatically added model identifier BIOMD0000000956</comment>
+            </revisions>
+            <revisions>
+                <version>6</version>
+                <submitted>1596831369</submitted>
+                <submitter>Kausthubh Ramachandran</submitter>
+                <comment>Automatically added model identifier BIOMD0000000956</comment>
+            </revisions>
+            <revisions>
+                <version>9</version>
+                <submitted>1601935796</submitted>
+                <submitter>Kausthubh Ramachandran</submitter>
+                <comment>Automatically added model identifier BIOMD0000000956</comment>
+            </revisions>
+            <revisions>
+                <version>10</version>
+                <submitted>1724290272</submitted>
+                <submitter>Lucian Smith</submitter>
+                <comment>CRBM-sponsored manual and automated updates.</comment>
+            </revisions>
+        </revisions>
+    </history>
+    <firstPublished>1725281945</firstPublished>
+    <submissionId>MODEL2008070001</submissionId>
+    <publicationId>BIOMD0000000956</publicationId>
+    <modellingApproach>
+        <accession>MAMO_0000028</accession>
+        <name>population model</name>
+        <resource>http://identifiers.org/mamo/MAMO_0000028</resource>
+    </modellingApproach>
+    <curationStatus>CURATED</curationStatus>
+    <modelTags>
+        <modelTags>COVID-19</modelTags>
+    </modelTags>
+    <contributors>
+        <Curator>
+            <name>Lucian Smith</name>
+            <email>lpsmith@uw.edu</email>
+            <affiliation>University of Washington</affiliation>
+            <orcid>0000-0001-7002-6386</orcid>
+            <external>false</external>
+        </Curator>
+    </contributors>
+    <vcsIdentifier>aaj</vcsIdentifier>
+    <modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasTaxon</qualifier>
+            <accession>9606</accession>
+            <name>Homo sapiens</name>
+            <resource>Taxonomy</resource>
+            <uri>http://identifiers.org/taxonomy/9606</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:isDescribedBy</qualifier>
+            <accession>32616574</accession>
+            <resource>PubMed</resource>
+            <uri>http://identifiers.org/pubmed/32616574</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>BIOMD0000000956</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/BIOMD0000000956</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqmodel:is</qualifier>
+            <accession>MODEL2008070001</accession>
+            <resource>BioModels Database</resource>
+            <uri>http://identifiers.org/biomodels.db/MODEL2008070001</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasTaxon</qualifier>
+            <accession>2697049</accession>
+            <name>SARS-CoV-2</name>
+            <resource>Taxonomy</resource>
+            <uri>http://identifiers.org/taxonomy/2697049</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>MAMO_0000028</accession>
+            <name>population model</name>
+            <resource>Mathematical Modelling Ontology</resource>
+            <uri>http://identifiers.org/mamo/MAMO_0000028</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>0000503</accession>
+            <resource>Infectious Disease Ontology</resource>
+            <uri>http://identifiers.org/ido/0000503</uri>
+        </modelLevelAnnotations>
+        <modelLevelAnnotations>
+            <qualifier>bqbiol:hasProperty</qualifier>
+            <accession>DOID:0080600</accession>
+            <name>COVID-19</name>
+            <resource>
+                Human Disease Ontology</resource>
+            <uri>http://identifiers.org/doid/DOID:0080600</uri>
+        </modelLevelAnnotations>
+    </modelLevelAnnotations>
+</Model>
