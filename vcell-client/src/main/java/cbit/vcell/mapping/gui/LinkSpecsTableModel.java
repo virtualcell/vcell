@@ -7,10 +7,12 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import org.vcell.model.rbm.*;
+import org.vcell.util.Coordinate;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.springsalad.NamedColor;
 
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 
@@ -86,13 +88,40 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
     @Override
     public void setValueAt(Object aValue, int row, int col) {
         MolecularInternalLinkSpec mils = getValueAt(row);
+        if(mils == null) {
+            return;
+        }
         ColumnType columnType = columns.get(col);
-        switch (columnType) {
-            case COLUMN_LINK:
+        SpeciesContextSpec scs = getSpeciesContextSpec();
 
+        MolecularComponentPattern mcpOne = mils.getMolecularComponentPatternOne();
+        MolecularComponentPattern mcpTwo = mils. getMolecularComponentPatternTwo();
+        SiteAttributesSpec sasOne = mils. getSite1();
+        SiteAttributesSpec sasTwo = mils. getSite2();
+
+        switch (columnType) {
+            case COLUMN_LINK:   // not editable
                 return;
             case COLUMN_LENGTH:
-
+                if (aValue instanceof String newExpressionString) {
+                    double res = 0.0;
+                    try {
+                        res = Double.parseDouble(newExpressionString);
+                    } catch(NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    // the link is a derived value, we don't store it - we just show it in the table
+                    // instead, we adjust the x, y, z of the molecules involved
+                    double[] unitVector = mils.unitVector();
+                    double newX = sasOne.getX() + res*unitVector[0];
+                    double newY = sasOne.getY() + res*unitVector[1];
+                    double newZ = sasOne.getZ() + res*unitVector[2];
+                    Coordinate coord = new Coordinate (newX, newY, newZ);
+                    sasTwo.setCoordinate(coord);
+                    refreshData();
+                    scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_LINK_LENGTH, null, mils);
+                }
                 return;
             default:
                 return;
@@ -103,8 +132,9 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
         ColumnType columnType = columns.get(col);
         switch (columnType) {
             case COLUMN_LINK:
-            case COLUMN_LENGTH:
                 return false;
+            case COLUMN_LENGTH:
+                return true;
             default:
                 return false;
         }
@@ -130,9 +160,6 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
             }
         };
     }
-
-
-
 
     public void setSimulationContext(SimulationContext simulationContext) {
         SimulationContext oldValue = fieldSimulationContext;
@@ -259,8 +286,6 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
             refreshColumns();
             fireTableStructureChanged();
         }
-
     }
-
 
 }

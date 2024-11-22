@@ -17,8 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JTable;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import cbit.vcell.graph.GraphConstants;
+import cbit.vcell.parser.Expression;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.gui.DefaultScrollTableCellRenderer;
 import org.vcell.util.gui.sorttable.JSortTable;
@@ -38,6 +41,9 @@ import cbit.vcell.model.ProductPattern;
 import cbit.vcell.model.ReactantPattern;
 import cbit.vcell.model.ReactionRule;
 import cbit.vcell.model.ReactionStep;
+import org.vcell.util.springsalad.NamedColor;
+
+import static cbit.vcell.mapping.gui.ModelProcessSpecsTableModel.ColumnType.COLUMN_BOND_LENGTH;
 
 /**
  * Insert the type's description here.
@@ -294,10 +300,53 @@ private void initConnections() throws java.lang.Exception {
 			}
 		}
 	};
-	
-	
+
+	// The Expression cell renderer  in the ModelProcessSpecsTable
+	DefaultScrollTableCellRenderer expressionTableCellRenderer = new DefaultScrollTableCellRenderer() {
+		String darkRed = NamedColor.getHex(GraphConstants.darkred);	// "#8B0000"
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+													   int row, int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			if (table.getModel() instanceof ModelProcessSpecsTableModel) {
+				if (value instanceof Double) {
+					TableColumn tc = table.getColumnModel().getColumn(column);
+					Object headerValue = tc.getHeaderValue();
+					if(!(headerValue instanceof String)) {
+						throw new RuntimeException("Expecting HeaderValue to be a String");
+					}
+					/*
+					 * This is the correct way to recover the column type - using the label!!!
+					 * Because the index may be wrong if some columns have been removed or relocated
+					 */
+					ModelProcessSpecsTableModel.ColumnType columnType = ModelProcessSpecsTableModel.ColumnType.fromLabel((String) headerValue);
+					int cellWidth = table.getColumnModel().getColumn(column).getWidth();
+					switch (columnType) {
+						case COLUMN_BOND_LENGTH:
+							if(cellWidth > 70) {
+								if(!isSelected) {
+									String text = "<html>" + value + "<span style='color:" + darkRed + ";'> [nm]</span></html>";
+									setText(text);
+								} else {
+									setText(value + " [nm]");
+								}
+							} else {
+								setText(value + "");		// if it's too busy, just show the numbers
+							}
+							setToolTipText(value + " [nm]");	// we always show the units in the tooltip
+							break;
+						default:
+							break;
+					}
+				}
+			}
+			return this;
+		}
+	};
+
 	getScrollPaneTable().setDefaultRenderer(SpeciesPattern.class, rbmReactionShapeDepictionCellRenderer);
-	
+	getScrollPaneTable().setDefaultRenderer(Expression.class, expressionTableCellRenderer);	// Expression field cell renderer
+
 //	ivjScrollPaneTable.getColumnModel().getColumn(ModelProcessSpecsTableModel.ColumnType.COLUMN_DEPICTION.ordinal()).setCellRenderer(rbmReactionShapeDepictionCellRenderer);
 //	ivjScrollPaneTable.getColumnModel().getColumn(ModelProcessSpecsTableModel.ColumnType.COLUMN_DEPICTION.ordinal()).setPreferredWidth(180);
 	
