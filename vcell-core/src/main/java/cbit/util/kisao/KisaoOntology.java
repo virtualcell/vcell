@@ -10,7 +10,7 @@ import cbit.vcell.solver.SolverUtilities;;
 
 public class KisaoOntology {
 	
-	private List<KisaoTerm> terms = new ArrayList<>();
+	private final List<KisaoTerm> terms = new ArrayList<>();
 	private static KisaoOntology instance;
 	
 	
@@ -61,7 +61,7 @@ public class KisaoOntology {
 			if(tmpList.size() > 1) {
 				System.err.println("Each kisao term must have no more than 1 descendant");
 			}
-			if(tmpList.size() == 0) {	// we seldom get here
+			if(tmpList.isEmpty()) {	// we seldom get here
 				if(root.getId().equals("KISAO_0000000")) {
 					throw new RuntimeException("Error reaching KISAO_0000000");
 				} else {

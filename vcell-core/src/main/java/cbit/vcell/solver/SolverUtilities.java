@@ -86,14 +86,14 @@ public class SolverUtilities {
 
 	/**
 	 * Ensure solvers extracted from resources and registered as property
-	 * @param cf
+	 * @param sd the solver description
 	 * @return array of exes used by provided solver
 	 * @throws IOException, {@link UnsupportedOperationException} if no exe for this solver
 	 */
 	public static File[] getExes(SolverDescription sd) throws IOException {
 		SolverExecutable se = sd.getSolverExecutable(); 
 		if (se != null) {
-			SolverExecutable.NameInfo nameInfos[] = se.getNameInfo(); 
+			SolverExecutable.NameInfo[] nameInfos = se.getNameInfo();
 			File files[] = new File[nameInfos.length];
 			for (int i = 0; i < nameInfos.length; ++i) {
 				SolverExecutable.NameInfo ni = nameInfos[i];
@@ -106,7 +106,7 @@ public class SolverUtilities {
 	}
 
 	/**
-	 * calls {@link #getExes(SolverConfig)} if solver requires executables,
+	 * calls {@link #getExes(SolverDescription)} if solver requires executables,
 	 * no-op otherwise
 	 */
 	public static void prepareSolverExecutable(SolverDescription solverDescription) throws IOException {
@@ -179,33 +179,29 @@ public class SolverUtilities {
 	}
 
 	private static SolverDescription attemptLastResortMatch(KisaoTerm last) {
-		switch(last.getId()) {
-		case "KISAO_0000433":
-			return SolverDescription.CVODE;
-		case "KISAO_0000094":
-			return SolverDescription.CVODE;
-		case "KISAO_0000284":
-			return SolverDescription.CVODE;
-		case "KISAO_0000319":
-			return SolverDescription.StochGibson;
-		case "KISAO_0000408":
-			return SolverDescription.IDA;
-		case "KISAO_0000056":
-			return SolverDescription.Smoldyn;
-		case "KISAO_0000352":
-			return SolverDescription.HybridMilstein;
-		case "KISAO_0000398":
-			return SolverDescription.SundialsPDE;
-		case "KISAO_0000369":
-			return SolverDescription.SundialsPDE;
-		case "KISAO_0000281":
-			return SolverDescription.AdamsMoulton;
-		case "KISAO_0000377":
-			return SolverDescription.RungeKuttaFehlberg;
-		default:
-			logger.error("Failed last resort match for descendant " + last.getId());
-			return null;
-		}
+        return switch (last.getId()) {
+            case "KISAO_0000056" -> SolverDescription.Smoldyn; // Livermore Solver
+            case "KISAO_0000094" /* Livermore Solver */, "KISAO_0000284" /* ? missing ? */,
+				 "KISAO_0000433" /* CVODE-like method */, "KISAO_0000694" /* ODE-solver */ ->
+                    SolverDescription.CVODE;
+            case "KISAO_0000281" /*multi-step method*/ ->
+                    SolverDescription.AdamsMoulton;
+            case "KISAO_0000319" /*Monte-carlo*/ ->
+                    SolverDescription.StochGibson;
+            case "KISAO_0000352" /* Hybrid-method */ ->
+                    SolverDescription.HybridMilstein;
+            case "KISAO_0000369" /* partial differential equation discretization method */,
+				 "KISAO_0000398" /* iterative method for solving a system of equations */ ->
+                    SolverDescription.SundialsPDE;
+            case "KISAO_0000377" /* one-step method */ ->
+                    SolverDescription.RungeKuttaFehlberg;
+            case "KISAO_0000408" /* Newton type method */ ->
+                    SolverDescription.IDA;
+            default -> {
+                logger.error("Failed last resort match for descendant {}", last.getId());
+                yield null;
+            }
+        };
 	}
 
 	private static boolean needsExactMatch(boolean cmdRequestedMatch){
