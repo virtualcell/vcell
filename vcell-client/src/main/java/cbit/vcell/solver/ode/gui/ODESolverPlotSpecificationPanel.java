@@ -62,6 +62,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JPanel speciesOptionsPanel = null;
 	JCheckBox concentrationCheckBox = null;
 	JCheckBox countCheckBox = null;
+	JCheckBox trivialCheckBox = null;		// springsalad specific: filters out trivial result sets (where nothing happens)
 	private JLabel ivjCurLabel = null;
 	private JSlider ivjSensitivityParameterSlider = null;
 	private JScrollPane ivjJScrollPaneYAxis = null;
@@ -92,7 +93,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 				firePropertyChange(ODE_DATA_CHANGED, false, true);
 			}else if(filterSettings != null && filterSettings.containsKey(e.getSource())){
 				processFilterSelection();
-			} else if(e.getSource() == concentrationCheckBox || e.getSource() == countCheckBox) {
+			} else if(e.getSource() == concentrationCheckBox || e.getSource() == countCheckBox || e.getSource() == trivialCheckBox) {
 				try {
 					updateChoices(getMyDataInterface());
 				}catch(Exception exc){
@@ -493,7 +494,6 @@ private javax.swing.JLabel getMinLabel() {
 /**
  * Gets the odeSolverResultSet property (cbit.vcell.solver.ode.ODESolverResultSet) value.
  * @return The odeSolverResultSet property value.
- * @see #setOdeSolverResultSet
  */
 public ODEDataInterface getMyDataInterface() {
 	return oDEDataInterface;
@@ -1172,10 +1172,8 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 
 
 /**
- * Sets the odeSolverResultSet property (cbit.vcell.solver.ode.ODESolverResultSet) value.
- * @param odeSolverResultSet The new value for the property.
- * @see #getOdeSolverResultSet
- */
+ * Sets the oDEDataInterface property
+*/
 public void setMyDataInterface(ODEDataInterface newMyDataInterface) {
 	ODEDataInterface oldValue = oDEDataInterface;
 	/* Stop listening for events from the current object */
@@ -1203,7 +1201,6 @@ public void setSymbolTable(SymbolTable symbolTable) {
 /**
  * Insert the method's description here.
  * Creation date: (2/8/2001 4:56:15 PM)
- * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
 private void sortColumnDescriptions(ArrayList<ColumnDescription> columnDescriptions) {
 	Collections.sort(columnDescriptions, new Comparator<ColumnDescription>() {
@@ -1217,7 +1214,6 @@ private void sortColumnDescriptions(ArrayList<ColumnDescription> columnDescripti
 /**
  * Insert the method's description here.
  * Creation date: (2/8/2001 4:56:15 PM)
- * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
 private synchronized void updateChoices(ODEDataInterface odedi) throws ExpressionException,ObjectNotFoundException {
 	if (odedi == null) {
@@ -1262,6 +1258,14 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
 					continue;
 				} else if(filterCategory instanceof BioModelCategoryType && filterCategory == BioModelCategoryType.Species && !cd.getName().endsWith(AbstractMathMapping.MATH_VAR_SUFFIX_SPECIES_COUNT) && !concentrationCheckBox.isSelected()) {
 					continue;
+				}
+			}
+
+			if(trivialCheckBox != null) {
+				if(trivialCheckBox.isSelected()) {
+					// TODO: implement filtration based on trivial results or not
+				} else {
+					// TODO: implement filtration based on trivial results or not
 				}
 			}
 			
@@ -1385,12 +1389,12 @@ public static Point2D[] generateHistogram(double[] rawData)
 	for(int i=0;i<rawData.length;i++)
 	{
 		int val = ((int)Math.round(rawData[i]));
-		if(temp.get(new Integer(val))!= null)
+		if(temp.get(val)!= null)
 		{
-			int v = temp.get(new Integer(val)).intValue();
-			temp.put(new Integer(val), new Integer(v+1));
+			int v = temp.get(val).intValue();
+			temp.put(val, v+1);
 		}
-		else temp.put(new Integer(val), new Integer(1));
+		else temp.put(val, 1);
 	}
 	//sort the hashtable ascendantly and also calculate the frequency in terms of percentage.
 	Vector<Integer> keys = new Vector<Integer>(temp.keySet());
@@ -1399,7 +1403,7 @@ public static Point2D[] generateHistogram(double[] rawData)
 	for (int i=0; i<keys.size(); i++)
 	{
         Integer key = keys.elementAt(i);
-        Double valperc = new Double(((double)temp.get(key).intValue())/((double)rawData.length));
+        Double valperc = (double)temp.get(key).intValue() / ((double)rawData.length);
         result[i] = new Point2D.Double(key,valperc);
     }
 	return result;
@@ -1541,6 +1545,21 @@ private void showFilterSettings() {
 		gbc.insets = new Insets(1, 10, 3, 0);
 		gbc.anchor = GridBagConstraints.WEST;
 		filterContentPanel.add(getSpeciesOptionsPanel(), gbc);
+		gridy++;
+	}
+	if(getMyDataInterface().isSpringSaLaD()) {
+		trivialCheckBox = new JCheckBox("Hide Trivial");
+		trivialCheckBox.setToolTipText("Hides the result sets where nothing happens.");
+		trivialCheckBox.addItemListener(ivjEventHandler);
+		trivialCheckBox.setSelected(true);
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = gridx;
+		gbc.gridy = gridy;
+		gbc.weightx = 1;
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		filterContentPanel.add(trivialCheckBox, gbc);
+		gridy++;
 	}
 }
 

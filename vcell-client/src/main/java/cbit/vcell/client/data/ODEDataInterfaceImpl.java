@@ -163,4 +163,12 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 		return (simulationModelInfo!=null?simulationModelInfo.getDataSymbolMetadataResolver():null);
 	}
 
+	@Override
+	public boolean isSpringSaLaD() {
+		if(simulationModelInfo != null && simulationModelInfo.isSpringSaLad()) {
+			return true;
+		}
+		return false;
+	}
+
 }

@@ -569,7 +569,17 @@ public DataSymbolMetadataResolver getDataSymbolMetadataResolver() {
 	return dataSymbolMetadataResolver;
 }
 
-private static void addOutputFunctionsToMetaData(SimulationContext simulationContext,HashMap<String, DataSymbolMetadata> metaDataMap){
+@Override
+public boolean isSpringSaLad() {
+	if(simulationOwner != null && simulationOwner instanceof SimulationContext simContext) {
+		if(simContext.getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+			return true;
+		}
+	}
+	return false;
+}
+
+	private static void addOutputFunctionsToMetaData(SimulationContext simulationContext,HashMap<String, DataSymbolMetadata> metaDataMap){
 	if(metaDataMap != null &&
 		simulationContext.getOutputFunctionContext() != null &&
 		simulationContext.getOutputFunctionContext().getOutputFunctionsList() != null){

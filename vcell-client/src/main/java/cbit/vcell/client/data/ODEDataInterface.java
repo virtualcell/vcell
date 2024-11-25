@@ -42,4 +42,6 @@ public interface ODEDataInterface {
 	void selectCategory(ModelCategoryType[] filterCategories);
 	
 	DataSymbolMetadataResolver getDataSymbolMetadataResolver();
+
+	boolean isSpringSaLaD();
 }
