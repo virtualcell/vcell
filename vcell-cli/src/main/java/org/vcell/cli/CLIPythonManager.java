@@ -101,6 +101,9 @@ public class CLIPythonManager {
         // Exit the living Python Process
         lg.debug("Closing Python Instance");
         if (this.pythonOSW != null && this.pythonISB != null) this.sendNewCommand("exit()"); // Sends kill command ("exit()") to python.exe instance;
+        try {
+            for (int i = 1; i <= 5; i++) if (this.pythonProcess != null && this.pythonProcess.isAlive()) Thread.sleep(1000 * i);
+        } catch (InterruptedException ignored) {} // Just want to try and give the process a chance to close gracefully
         if (this.pythonProcess != null && this.pythonProcess.isAlive()) this.pythonProcess.destroyForcibly(); // Making sure it's quite dead
 
         // Making sure we clean up

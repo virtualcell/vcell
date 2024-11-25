@@ -96,7 +96,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
             try {
                 CLIPythonManager.getInstance().instantiatePythonProcess();
                 ExecuteImpl.singleMode(ARCHIVE, tmpDir, cliRecorder, true);
-                FileUtils.copyDirectoryContents(tmpDir, OUT_DIR, true, null);
+                CLIPythonManager.getInstance().closePythonProcess(); // Give the process time to finish
                 if (!Tracer.hasErrors()) return 0;
                 if (!bQuiet) {
                     logger.error("Errors occurred during execution");
@@ -110,6 +110,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
                     logger.error(e.getMessage(), e);
                 }
                 logger.debug("Finished all execution.");
+                FileUtils.copyDirectoryContents(tmpDir, OUT_DIR, true, null);
             }
         } catch (Exception e) {
             if (!bQuiet) {
