@@ -148,22 +148,16 @@ public class PythonCalls {
         CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
         String results = cliPythonManager.callPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
         cliPythonManager.parsePythonReturn(results);
-        /**
-         * replace with the following once the leak is fixed
-         */
-//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-//        String results = cliPythonManager.callPython("genPlotsPseudoSedml", sedmlPath, resultOutDir);
-//        cliPythonManager.printPythonErrors(results);
     }
 
     private static String stripIllegalChars(String s){
-        String fStr = "";
+        StringBuilder fStr = new StringBuilder();
         for (char c : s.toCharArray()){
             char cAppend = ((int)c) < 16 ? ' ' : c;
             if (cAppend == '"') 
             	cAppend = '\'';
-            fStr += cAppend;
+            fStr.append(cAppend);
         }
-        return fStr;
+        return fStr.toString();
     }
 }
