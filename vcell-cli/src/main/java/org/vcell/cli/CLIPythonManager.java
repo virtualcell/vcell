@@ -194,6 +194,16 @@ public class CLIPythonManager {
                 }
             } catch (IOException | InterruptedException e4){
                 throw new PythonStreamException("Python process encountered an exception:\n" + e4.getMessage(), e4);
+            } finally { // Let's make sure our buffer isn't clogged; for now, we'll log, but discard any extra output
+                StringBuilder remainder = new StringBuilder("Leftovers in buffer: \n");
+                try {
+                    while (this.pythonISB.ready()){
+                        remainder.append(this.getResultsOfLastCommand()).append("\n");
+                    }
+                } catch (IOException | InterruptedException cleaningException){
+                    lg.warn("Received exception while trying to clear buffer:", cleaningException);
+                }
+                lg.debug(remainder.toString());
             }
         }
     }
