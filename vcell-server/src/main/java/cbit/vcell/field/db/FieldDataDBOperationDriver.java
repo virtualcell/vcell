@@ -189,8 +189,8 @@ public class FieldDataDBOperationDriver {
         return fieldDataDBOperationResults;
     }
 
-    private static FieldDataDBOperationResults getExtraDataIDs(Connection con, KeyFactory keyFactory, User user,
-                                                               FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException {
+    private static FieldDataDBOperationResults getExternalDataIDs(Connection con, KeyFactory keyFactory, User user,
+                                                                  FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException {
         String sql;
         ResultSet rset;
         if (fieldDataDBOperationSpec.bIncludeSimRefs) {
@@ -275,8 +275,8 @@ public class FieldDataDBOperationDriver {
         return fieldDataDBOperationResults;
     }
 
-    private static FieldDataDBOperationResults saveExtraDataID(Connection con, KeyFactory keyFactory, User user,
-                                                               FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, SQLException {
+    private static FieldDataDBOperationResults saveExternalDataID(Connection con, KeyFactory keyFactory, User user,
+                                                                  FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, SQLException {
         if (!fieldDataDBOperationSpec.newExtDataIDName.equals(
                 TokenMangler.fixTokenStrict(fieldDataDBOperationSpec.newExtDataIDName))) {
             throw new DataAccessException("Error inserting Field Data name " +
@@ -331,9 +331,9 @@ public class FieldDataDBOperationDriver {
         if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_COPY_NO_CONFLICT) {
             return copyNoConflict(con, keyFactory, user, fieldDataDBOperationSpec);
         } else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS) {
-            return getExtraDataIDs(con, keyFactory, user, fieldDataDBOperationSpec);
+            return getExternalDataIDs(con, keyFactory, user, fieldDataDBOperationSpec);
         } else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID) {
-            return saveExtraDataID(con, keyFactory, user, fieldDataDBOperationSpec);
+            return saveExternalDataID(con, keyFactory, user, fieldDataDBOperationSpec);
         } else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE) {
             return deleteFieldData(con, keyFactory, user, fieldDataDBOperationSpec);
         }
