@@ -35,7 +35,7 @@ public class CLIPythonManager {
     private static final String PYTHON_EXE_NAME = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
 
     private static CLIPythonManager instance = null;
-    private static final int DEFAULT_TIMEOUT = 7000; // was 600 seconds (10 minutes), now 5 seconds
+    private static final int DEFAULT_TIMEOUT = 15000; // was 600 seconds (10 minutes), now 15 seconds
 
     private static final boolean USE_SHARED_SHELL = true;
 
