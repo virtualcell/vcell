@@ -29,7 +29,7 @@ public class KisaoTermParser {
 		boolean inState = false;
 
 		InputStream is = KisaoTermParser.class.getClassLoader().getResourceAsStream(Kisao_OBO);
-        assert is != null;
+		if (is == null) throw new RuntimeException("Unable to load OBO file necessary for KiSAO!");
 
 		try {
 			for (String line : (new BufferedReader(new InputStreamReader(is))).lines().toList()){
