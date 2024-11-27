@@ -180,11 +180,11 @@ public class SEDMLImporter {
 				// try to find a match in the ontology tree
 				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, this.exactMatchOnly);
 				if (solverDescription != null) {
-					logger.info("Task (id='"+selectedTask.getId()+"') is compatible, solver match found in ontology: '" + kisaoID + "' matched to " + solverDescription);
+                    logger.info("Task (id='{}') is compatible, solver match found in ontology: '{}' matched to {}", selectedTask.getId(), kisaoID, solverDescription);
 				} else {
 					// give it a try anyway with our deterministic default solver
 					solverDescription = SolverDescription.CombinedSundials;
-					logger.error("Task (id='"+selectedTask.getId()+")' is not compatible, no equivalent solver found in ontology for requested algorithm '"+kisaoID + "'; trying with deterministic default solver "+solverDescription);
+                    logger.error("Task (id='{})' is not compatible, no equivalent solver found in ontology for requested algorithm '{}'; trying with deterministic default solver {}", selectedTask.getId(), kisaoID, solverDescription);
 				}
 				// find out everything else we need about the application we're going to use,
 				// as some more info will be needed when we parse the sbml file
@@ -1010,7 +1010,7 @@ public class SEDMLImporter {
 		String kisaoID = algorithm.getKisaoID();
 		ErrorTolerance errorTolerance = new ErrorTolerance();
 		List<AlgorithmParameter> sedmlAlgorithmParameters = algorithm.getListOfAlgorithmParameters();
-		for(AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
+		for (AlgorithmParameter sedmlAlgorithmParameter : sedmlAlgorithmParameters) {
 
 			String apKisaoID = sedmlAlgorithmParameter.getKisaoID();
 			String apValue = sedmlAlgorithmParameter.getValue();
