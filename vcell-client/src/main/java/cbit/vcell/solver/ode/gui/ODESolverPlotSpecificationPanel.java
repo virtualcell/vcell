@@ -1243,11 +1243,8 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
         //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
         if (cd.getParameterName() == null) {
         	String name = cd.getName();
-			DataSymbolMetadata damd = null;
-			if (damdr != null) {
-				damd = damdr.getDataSymbolMetadata(name);
-			}
-        	
+			DataSymbolMetadata damd = damdr.getDataSymbolMetadata(name);
+
         	// filter entities measured as count vs concentration, based on the checkbox settings
 			ModelCategoryType filterCategory = null;
 			if (damd != null) {
@@ -1264,8 +1261,9 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
 			if(trivialCheckBox != null) {
 				if(trivialCheckBox.isSelected()) {
 					// TODO: implement filtration based on trivial results or not
-				} else {
-					// TODO: implement filtration based on trivial results or not
+					//  access the RowColumnResultSet and find out if data is trivial or not for this ColumnDescription
+					double[] values = odedi.extractColumn(name);
+
 				}
 			}
 			
@@ -1547,20 +1545,6 @@ private void showFilterSettings() {
 		filterContentPanel.add(getSpeciesOptionsPanel(), gbc);
 		gridy++;
 	}
-	if(getMyDataInterface().isSpringSaLaD()) {
-		trivialCheckBox = new JCheckBox("Hide Trivial");
-		trivialCheckBox.setToolTipText("Hides the result sets where nothing happens.");
-		trivialCheckBox.addItemListener(ivjEventHandler);
-		trivialCheckBox.setSelected(true);
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx = gridx;
-		gbc.gridy = gridy;
-		gbc.weightx = 1;
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.fill = GridBagConstraints.HORIZONTAL;
-		filterContentPanel.add(trivialCheckBox, gbc);
-		gridy++;
-	}
 }
 
 private JPanel getSpeciesOptionsPanel() {
@@ -1613,7 +1597,11 @@ private void processFilterSelection(){
 				selectedFilterCategories.add(filterSettings.get(jCheckBox));
 			}
 		}
-		getMyDataInterface().selectCategory(selectedFilterCategories.toArray(new ModelCategoryType[0]));
+		if(getMyDataInterface().isSpringSaLaD()) {
+			getMyDataInterface().selectCategory(selectedFilterCategories.toArray(new ModelCategoryType[0]));
+		} else {
+			getMyDataInterface().selectCategory(selectedFilterCategories.toArray(new ModelCategoryType[0]));
+		}
 	}else{
 		getMyDataInterface().selectCategory(null);
 		

@@ -307,14 +307,26 @@ public class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRes
 		// if called before the map is populated, it will indicate an empty list of FilterCategoryTypes (not yet processed).
 		//
 		HashSet<ModelCategoryType> filters = new HashSet<ModelCategoryType>();
+		if(simulationOwner instanceof SimulationContext simContext) {
+			if(simContext.getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+				filters.add(BioModelCategoryType.Molecules);
+				filters.add(BioModelCategoryType.BoundSites);
+				filters.add(BioModelCategoryType.FreeSites);
+				filters.add(BioModelCategoryType.TotalSites);
+				ModelCategoryType[] ret = filters.toArray(new BioModelCategoryType[0]);
+				return ret;
+			}
+		}
 		if (savedMetadataMap != null){
 			for (DataSymbolMetadata dsm : savedMetadataMap.values()){
 				if (dsm.filterCategory != null){
-					filters.add(dsm.filterCategory);
+					ModelCategoryType mct = dsm.filterCategory;
+					filters.add(mct);
 				}
 			}
-		}	
-		return filters.toArray(new BioModelCategoryType[0]);
+		}
+		ModelCategoryType[] ret = filters.toArray(new BioModelCategoryType[0]);
+		return ret;
 	}
 	
 	private SymbolTableEntry[] getSortedBiologicalSymbols(SymbolTableEntry[] bioSymbols){
@@ -523,7 +535,11 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	GeneratedSpecies,
 	ReservedXYZT(true,false),
 	Other,
-	Sensitivity;
+	Sensitivity,
+	Molecules(true, true),
+	FreeSites(true, true, "Free Sites"),
+	BoundSites(true, true, "Bound Sites"),
+	TotalSites(true, true, "Total Sites");
 	/**
 	 * should this be selected initially on GUI?
 	 */
@@ -532,6 +548,9 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	 * should this be enabled so user can select / deselect?
 	 */
 	private final boolean enabled;
+
+	// we provide a default, which is the name exactly as spelled in the enum
+	private final String displayName;
 	
 	/**
 	 * initialSelect is false, enabled is true
@@ -539,6 +558,7 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	private BioModelCategoryType( ) {
 		initialSelect = false;
 		enabled = true;
+		displayName = name();
 	}
 	/**
 	 * @param initialSelect display checked initially?
@@ -547,8 +567,14 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	private BioModelCategoryType(boolean initialSelect, boolean enabled) {
 		this.initialSelect = initialSelect;
 		this.enabled = enabled;
+		displayName = name();
 	}
-	
+	private BioModelCategoryType(boolean initialSelect, boolean enabled, String displayName) {
+		this.initialSelect = initialSelect;
+		this.enabled = enabled;
+		this.displayName = displayName;
+	}
+
 	@Override
 	public String getName(){
 		return name();
@@ -562,6 +588,18 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	public boolean isEnabled() {
 		return enabled;
 	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+} // Static method to get enum by label
+	public static BioModelCategoryType fromLabel(String label) {
+	for (BioModelCategoryType value : BioModelCategoryType.values()) {
+		if (value.getDisplayName().equals(label)) {
+			return value;
+		}
+	} throw new IllegalArgumentException("No enum constant with label " + label);
 };
 
 @Override

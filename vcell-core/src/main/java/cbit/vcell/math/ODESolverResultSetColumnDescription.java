@@ -54,7 +54,6 @@ public ODESolverResultSetColumnDescription(String variableName, String parameter
 /**
  * Gets the displayName property (java.lang.String) value.
  * @return The displayName property value.
- * @see #setDisplayName
  */
 public java.lang.String getDisplayName() {
 	return fieldDisplayName;
@@ -62,7 +61,6 @@ public java.lang.String getDisplayName() {
 /**
  * Gets the variableName property (java.lang.String) value.
  * @return The variableName property value.
- * @see #setVariableName
  */
 public java.lang.String getName() {
 	return (getVariableName());
@@ -70,7 +68,6 @@ public java.lang.String getName() {
 /**
  * Gets the parameterName property (java.lang.String) value.
  * @return The name of the sensitivity parameter, may be null.
- * @see #setParameterName
  */
 public java.lang.String getParameterName() {
 	return fieldParameterName;
@@ -78,7 +75,6 @@ public java.lang.String getParameterName() {
 /**
  * Gets the variableName property (java.lang.String) value.
  * @return The variableName property value.
- * @see #setVariableName
  */
 public java.lang.String getVariableName() {
 	return fieldVariableName;
