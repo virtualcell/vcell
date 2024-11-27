@@ -191,6 +191,7 @@ public class ExecutionJob {
             
         }
         PythonCalls.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage.toString());
+
         logger.debug("Finished Execution of Archive: " + bioModelBaseName);
     }
 

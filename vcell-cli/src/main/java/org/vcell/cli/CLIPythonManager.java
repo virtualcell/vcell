@@ -35,7 +35,7 @@ public class CLIPythonManager {
     private static final String PYTHON_EXE_NAME = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
 
     private static CLIPythonManager instance = null;
-    private static final int DEFAULT_TIMEOUT = 7000; // was 600 seconds (10 minutes), now 5 seconds
+    private static final int DEFAULT_TIMEOUT = 15000; // was 600 seconds (10 minutes), now 15 seconds
 
     private static final boolean USE_SHARED_SHELL = true;
 
@@ -101,6 +101,9 @@ public class CLIPythonManager {
         // Exit the living Python Process
         lg.debug("Closing Python Instance");
         if (this.pythonOSW != null && this.pythonISB != null) this.sendNewCommand("exit()"); // Sends kill command ("exit()") to python.exe instance;
+        try {
+            for (int i = 1; i <= 5; i++) if (this.pythonProcess != null && this.pythonProcess.isAlive()) Thread.sleep(1000 * i);
+        } catch (InterruptedException ignored) {} // Just want to try and give the process a chance to close gracefully
         if (this.pythonProcess != null && this.pythonProcess.isAlive()) this.pythonProcess.destroyForcibly(); // Making sure it's quite dead
 
         // Making sure we clean up
@@ -191,6 +194,16 @@ public class CLIPythonManager {
                 }
             } catch (IOException | InterruptedException e4){
                 throw new PythonStreamException("Python process encountered an exception:\n" + e4.getMessage(), e4);
+            } finally { // Let's make sure our buffer isn't clogged; for now, we'll log, but discard any extra output
+                StringBuilder remainder = new StringBuilder("Leftovers in buffer: \n");
+                try {
+                    while (this.pythonISB.ready()){
+                        remainder.append(this.getResultsOfLastCommand()).append("\n");
+                    }
+                } catch (IOException | InterruptedException cleaningException){
+                    lg.warn("Received exception while trying to clear buffer:", cleaningException);
+                }
+                lg.debug(remainder.toString());
             }
         }
     }

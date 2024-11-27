@@ -129,9 +129,9 @@ public class ExecuteCommand implements Callable<Integer> {
                             bEncapsulateOutput, bSmallMeshOverride);
                 }
             }
-            FileUtils.copyDirectoryContents(tmpDir, outputFilePath, true, null);
             CLIPythonManager.getInstance().closePythonProcess();
             // WARNING: Python needs re-instantiation once the above line is called!
+            FileUtils.copyDirectoryContents(tmpDir, outputFilePath, true, null);
             return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
             org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
