@@ -42,7 +42,7 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 		if(resolver != null){
 			return resolver.getUniqueFilterCategories();
 		}
-		return new ModelCategoryType[0];	// TODO: simulationModelInfo.isSpringSaLad()
+		return new ModelCategoryType[0];
 	}
 
 	@Override
@@ -130,8 +130,9 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 			return getOdeSolverResultSet().getColumnDescriptions();
 		}else{
 			ArrayList<ColumnDescription> selectedColumnDescriptions = new ArrayList<ColumnDescription>();
-			for (int i = 0; i < getOdeSolverResultSet().getColumnDescriptions().length; i++) {
-				String name = getOdeSolverResultSet().getColumnDescriptions()[i].getName();
+			ColumnDescription[] columnDescriptions = getOdeSolverResultSet().getColumnDescriptions();
+			for (int i = 0; i < columnDescriptions.length; i++) {
+				String name = columnDescriptions[i].getName();
 				DataSymbolMetadataResolver dataSymbolMetadataResolver = simulationModelInfo.getDataSymbolMetadataResolver();
 				DataSymbolMetadata dataSymbolMetadata = dataSymbolMetadataResolver.getDataSymbolMetadata(name);
 				ModelCategoryType selectedFilterCategory = null;
@@ -143,12 +144,12 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 				// dataSymbolMetadata.filterCategory is null
 				for (int j = 0; j < selectedFilters.length; j++) {
 					if(selectedFilters[j].equals(selectedFilterCategory)){
-						selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
+						selectedColumnDescriptions.add(columnDescriptions[i]);
 						break;
 					}
 					// Langevin values just shown as species
 					if(selectedFilters[j].getName().equals("Molecules") && selectedFilterCategory == null) {
-						ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions()[i];
+						ColumnDescription cd = columnDescriptions[i];
 						String columnName = cd.getName();
 						SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
 						if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
@@ -156,11 +157,11 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 							break;
 						}
 						if(!lr.molecule.isEmpty() && lr.site.isEmpty() && lr.state.isEmpty()) {
-							selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
+							selectedColumnDescriptions.add(columnDescriptions[i]);
 							break;
 						}
 					} else if(selectedFilters[j].getName().equals("FreeSites") && selectedFilterCategory == null) {
-						ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions()[i];
+						ColumnDescription cd = columnDescriptions[i];
 						String columnName = cd.getName();
 						SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
 						if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
@@ -168,11 +169,11 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 							break;
 						}
 						if(lr.qualifier.equals("FREE") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
-							selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
+							selectedColumnDescriptions.add(columnDescriptions[i]);
 							break;
 						}
 					} else if(selectedFilters[j].getName().equals("BoundSites") && selectedFilterCategory == null) {
-						ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions()[i];
+						ColumnDescription cd = columnDescriptions[i];
 						String columnName = cd.getName();
 						SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
 						if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
@@ -180,11 +181,11 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 							break;
 						}
 						if(lr.qualifier.equals("BOUND") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
-							selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
+							selectedColumnDescriptions.add(columnDescriptions[i]);
 							break;
 						}
 					} else if(selectedFilters[j].getName().equals("TotalSites") && selectedFilterCategory == null) {
-						ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions()[i];
+						ColumnDescription cd = columnDescriptions[i];
 						String columnName = cd.getName();
 						SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
 						if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
@@ -192,7 +193,7 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 							break;
 						}
 						if(lr.qualifier.equals("TOTAL") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
-							selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
+							selectedColumnDescriptions.add(columnDescriptions[i]);
 							break;
 						}
 					}

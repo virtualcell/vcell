@@ -10,12 +10,7 @@
 
 package cbit.vcell.client.data;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.VCellThreadChecker;
@@ -306,7 +301,7 @@ public class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRes
 		//
 		// if called before the map is populated, it will indicate an empty list of FilterCategoryTypes (not yet processed).
 		//
-		HashSet<ModelCategoryType> filters = new HashSet<ModelCategoryType>();
+		LinkedHashSet<ModelCategoryType> filters = new LinkedHashSet<ModelCategoryType>();
 		if(simulationOwner instanceof SimulationContext simContext) {
 			if(simContext.getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
 				filters.add(BioModelCategoryType.Molecules);
@@ -537,9 +532,9 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	Other,
 	Sensitivity,
 	Molecules(true, true),
-	FreeSites(true, true, "Free Sites"),
-	BoundSites(true, true, "Bound Sites"),
-	TotalSites(true, true, "Total Sites");
+	FreeSites(false, true, "Free Sites"),
+	BoundSites(false, true, "Bound Sites"),
+	TotalSites(false, true, "Total Sites");
 	/**
 	 * should this be selected initially on GUI?
 	 */

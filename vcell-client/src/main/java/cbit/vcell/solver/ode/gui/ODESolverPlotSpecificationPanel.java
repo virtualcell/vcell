@@ -1434,11 +1434,11 @@ private JPanel getPanel() {
 	return panel;
 }
 
-private HashMap<JCheckBox, ModelCategoryType> filterSettings;
+private LinkedHashMap<JCheckBox, ModelCategoryType> filterSettings;
 private JLabel yAxisJLabel;
 private JCheckBox getFilterSetting(ModelCategoryType filterCategory){
 	if(filterSettings == null){
-		filterSettings = new HashMap<JCheckBox, ModelCategoryType>();
+		filterSettings = new LinkedHashMap<>();
 	}
 	for(JCheckBox jCheckBox:filterSettings.keySet()){
 		if(filterSettings.get(jCheckBox).equals(filterCategory)){
@@ -1464,16 +1464,18 @@ private JCheckBox getFilterSetting(ModelCategoryType filterCategory){
 	return newJCheckBox;		
 }
 private void showFilterSettings() {
-	if(getMyDataInterface() != null &&
-		getMyDataInterface().getSupportedFilterCategories() != null &&
-		getMyDataInterface().getSupportedFilterCategories().length > 0){
-		
+	ODEDataInterface di = getMyDataInterface();
+	if(di == null) {
+		return;
+	}
+	ModelCategoryType[] filterCategories = di.getSupportedFilterCategories();
+	if(filterCategories != null && filterCategories.length > 0) {
+
 		getFilterPanel().getContentPanel().removeAll();
 		getFilterPanel().getContentPanel().setLayout(null);
 		HashMap<JCheckBox, ModelCategoryType> oldFilterSettings = filterSettings;
 		filterSettings = null;
 
-		ModelCategoryType[] filterCategories = getMyDataInterface().getSupportedFilterCategories();
 		for (int i = 0; i < filterCategories.length; i++) {
 			JCheckBox newFiltersJCheckBox = getFilterSetting(filterCategories[i]);//generate filter set
 			if(oldFilterSettings != null){
@@ -1505,13 +1507,15 @@ private void showFilterSettings() {
 	
 //	filterPanel.setBorder(new LineBorder(Color.black));
 	JCheckBox[] sortedJCheckBoxes = filterSettings.keySet().toArray(new JCheckBox[0]);
-	Arrays.sort(sortedJCheckBoxes, new Comparator<JCheckBox>() {
-		@Override
-		public int compare(JCheckBox o1, JCheckBox o2) {
-			// TODO Auto-generated method stub
-			return o1.getText().compareToIgnoreCase(o2.getText());
-		}
-	});
+	if(!getMyDataInterface().isSpringSaLaD()) {
+		Arrays.sort(sortedJCheckBoxes, new Comparator<JCheckBox>() {
+			@Override
+			public int compare(JCheckBox o1, JCheckBox o2) {
+				// TODO Auto-generated method stub
+				return o1.getText().compareToIgnoreCase(o2.getText());
+			}
+		});
+	}
 	for (int i = 0; i < sortedJCheckBoxes.length; i++) {
 		sortedJCheckBoxes[i].removeItemListener(ivjEventHandler);
 		sortedJCheckBoxes[i].addItemListener(ivjEventHandler);
