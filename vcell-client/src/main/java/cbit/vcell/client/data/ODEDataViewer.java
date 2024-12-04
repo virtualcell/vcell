@@ -139,7 +139,21 @@ private void updateMetadata() {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				if(ODEDataViewer.this.getSimulationModelInfo() != null){
 					SimulationModelInfo simulationModelInfo = ODEDataViewer.this.getSimulationModelInfo();
-					simulationModelInfo.getDataSymbolMetadataResolver().populateDataSymbolMetadata(auxDataSymbolMap);
+					SimulationModelInfo.DataSymbolMetadataResolver dsmr = simulationModelInfo.getDataSymbolMetadataResolver();
+					dsmr.populateDataSymbolMetadata(auxDataSymbolMap);
+					// TODO: stub to calculate MetaData for langevin generated objects (?) and move the parser here?
+//					if(getSimulationModelInfo().isSpringSaLad()) {
+//						ColumnDescription[] cdArray = getOdeSolverResultSet().getColumnDescriptions();
+//						for(ColumnDescription cd : cdArray) {
+//							DataSymbolMetadata metaData = dsmr.getDataSymbolMetadata(cd.getName());
+//							if(metaData == null) {
+//								// TODO: move the parser here
+//								metaData = new DataSymbolMetadata();
+//								auxDataSymbolMap.put(cd.getName(), metaData);
+//							}
+//
+//						}
+//					}
 				}
 			}
 		};
