@@ -12,7 +12,12 @@ package cbit.vcell.client.data;
 
 import java.util.*;
 
+import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.units.VCUnitSystem;
+import cbit.vcell.units.parser.UnitSymbol;
+import cbit.vcell.util.ColumnDescription;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.geometry.GeometryClass;
@@ -357,7 +362,48 @@ public class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRes
 			return 10;
 		}
 	}
-	
+
+	public void populateDataSymbolMetadata(ColumnDescription[] cdArray) {
+
+		VCellThreadChecker.checkCpuIntensiveInvocation();	// must be explicitly called from a non-swing thread
+		if(!(simulationOwner instanceof SimulationContext)) {
+			return;
+		}
+
+		String tooltipString = "Solver generated";
+		HashMap<String, DataSymbolMetadata> metadataMap = new HashMap<>();
+
+		for(ColumnDescription cd : cdArray) {
+			DataSymbolMetadata metaData = getDataSymbolMetadata(cd.getName());
+			if(metaData == null) {
+				String columnName = cd.getName();
+				ModelCategoryType filterCategory = null;	// parse name to find the filter category
+				SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
+				if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
+					System.out.println("Ignoring LangevinResult token: " + columnName);
+					continue;
+				}
+				if(!lr.molecule.isEmpty() && lr.site.isEmpty() && lr.state.isEmpty()) {
+					filterCategory = BioModelCategoryType.Molecules;
+				} else if(lr.qualifier.equals("FREE") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
+					filterCategory = BioModelCategoryType.FreeSites;
+				} else if(lr.qualifier.equals("BOUND") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
+					filterCategory = BioModelCategoryType.BoundSites;
+				} else if(lr.qualifier.equals("TOTAL") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
+					filterCategory = BioModelCategoryType.TotalSites;
+				}
+				VCUnitDefinition unit = null;
+				metaData = new DataSymbolMetadata(filterCategory, unit, tooltipString, columnName);
+				metadataMap.put(cd.getName(), metaData);
+			}
+		}
+		if(savedMetadataMap == null) {
+			savedMetadataMap = metadataMap;
+		} else {
+			savedMetadataMap.putAll(metadataMap);
+		}
+	}
+
 	@Override
 	public void populateDataSymbolMetadata(HashMap<String, DataSymbolMetadata> auxMap) {
 		VCellThreadChecker.checkCpuIntensiveInvocation();	// must be explicitly called from a non-swing thread
@@ -478,6 +524,9 @@ for (SymbolTableEntry bioSymbol : sortedBioSymbols){
 	mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
 }
 tooltipString+="</html>";
+						if(filterCategory == BioModelCategoryType.GeneratedSpecies) {
+							System.out.println("var.getName");
+						}
 						metadataMap.put(var.getName(), new DataSymbolMetadata(filterCategory, unit, tooltipString, displayName));
 					}else{
 						isSymbolsNotFound = true;
