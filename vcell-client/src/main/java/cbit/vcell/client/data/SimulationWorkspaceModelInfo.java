@@ -620,10 +620,9 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	}
 
 	@Override
-	public String getName(){
+	public String getName() {
 		return name();
 	}
-	
 	@Override
 	public boolean isInitialSelect() {
 		return initialSelect;
@@ -632,19 +631,19 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	public boolean isEnabled() {
 		return enabled;
 	}
-
 	public String getDisplayName() {
 		return displayName;
 	}
 
-} // Static method to get enum by label
+	// Static method to get enum by label
 	public static BioModelCategoryType fromLabel(String label) {
-	for (BioModelCategoryType value : BioModelCategoryType.values()) {
-		if (value.getDisplayName().equals(label)) {
-			return value;
-		}
-	} throw new IllegalArgumentException("No enum constant with label " + label);
-};
+		for (BioModelCategoryType value : BioModelCategoryType.values()) {
+			if (value.getDisplayName().equals(label)) {
+				return value;
+			}
+		} throw new IllegalArgumentException("No enum constant with label " + label);
+	}
+}
 
 @Override
 public DataSymbolMetadataResolver getDataSymbolMetadataResolver() {

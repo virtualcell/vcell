@@ -161,58 +161,6 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 						selectedColumnDescriptions.add(columnDescriptions[i]);
 						break;
 					}
-
-
-
-//					if(selectedFilters[j].getName().equals("Molecules") && selectedFilterCategory == null) {
-//						ColumnDescription cd = columnDescriptions[i];
-//						String columnName = cd.getName();
-//						SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
-//						if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
-//							System.out.println("Ignoring LangevinResult token: " + columnName);
-//							break;
-//						}
-//						if(!lr.molecule.isEmpty() && lr.site.isEmpty() && lr.state.isEmpty()) {
-//							selectedColumnDescriptions.add(columnDescriptions[i]);
-//							break;
-//						}
-//					} else if(selectedFilters[j].getName().equals("FreeSites") && selectedFilterCategory == null) {
-//						ColumnDescription cd = columnDescriptions[i];
-//						String columnName = cd.getName();
-//						SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
-//						if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
-//							System.out.println("Ignoring LangevinResult token: " + columnName);
-//							break;
-//						}
-//						if(lr.qualifier.equals("FREE") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
-//							selectedColumnDescriptions.add(columnDescriptions[i]);
-//							break;
-//						}
-//					} else if(selectedFilters[j].getName().equals("BoundSites") && selectedFilterCategory == null) {
-//						ColumnDescription cd = columnDescriptions[i];
-//						String columnName = cd.getName();
-//						SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
-//						if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
-//							System.out.println("Ignoring LangevinResult token: " + columnName);
-//							break;
-//						}
-//						if(lr.qualifier.equals("BOUND") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
-//							selectedColumnDescriptions.add(columnDescriptions[i]);
-//							break;
-//						}
-//					} else if(selectedFilters[j].getName().equals("TotalSites") && selectedFilterCategory == null) {
-//						ColumnDescription cd = columnDescriptions[i];
-//						String columnName = cd.getName();
-//						SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
-//						if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
-//							System.out.println("Ignoring LangevinResult token: " + columnName);
-//							break;
-//						}
-//						if(lr.qualifier.equals("TOTAL") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
-//							selectedColumnDescriptions.add(columnDescriptions[i]);
-//							break;
-//						}
-//					}
 				}
 			}
 			return selectedColumnDescriptions.toArray(new ColumnDescription[0]);
