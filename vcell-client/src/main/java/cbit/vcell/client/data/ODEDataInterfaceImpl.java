@@ -1,6 +1,7 @@
 package cbit.vcell.client.data;
 
 import cbit.vcell.math.FunctionColumnDescription;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.MultiTrialNonspatialStochSimDataReader;
 import cbit.vcell.simdata.SummaryStatisticType;
@@ -182,6 +183,36 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void checkTrivial(ArrayList<ColumnDescription> columnDescriptions) {
+		for(ColumnDescription columnDedcription : columnDescriptions) {
+			if(columnDedcription instanceof ODESolverResultSetColumnDescription cd) {
+
+				double[] data = null;
+				int index = odeSolverResultSet.findColumn(cd.getName());
+				try {
+					data = odeSolverResultSet.extractColumn(index);
+				} catch (ExpressionException e) {
+					System.out.println("Failed to extract column: " + e.getMessage());
+					continue;
+				}
+				if(data == null || data.length == 0) {
+					continue;
+				}
+				double initial = data[0];
+				boolean isTrivial = true;
+				for(double d : data) {
+					if(initial != d) {
+						isTrivial = false;
+						break;	// one mismatch is enough to know it's not trivial
+					}
+				}
+				cd.setIsTrivial(isTrivial);
+			}
+		}
+
 	}
 
 }

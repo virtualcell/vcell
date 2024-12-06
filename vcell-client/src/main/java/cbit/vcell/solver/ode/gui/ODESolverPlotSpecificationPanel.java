@@ -19,6 +19,7 @@ import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FunctionColumnDescription;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -77,7 +78,26 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private ODEDataInterface oDEDataInterface = null;
 	
 	private static ImageIcon function_icon = null;
-	
+
+//	private ListCellRenderer<Object> yAxisChoiceListRenderer = new DefaultListCellRenderer() {
+//		@Override
+//		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+//			Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+//			if (value instanceof ODESolverResultSetColumnDescription cd && component instanceof JLabel label) {
+//
+//				label.setText(cd.getName());
+//				if(cd.isTrivial()) {
+//					setForeground(Color.lightGray);
+//				} else {
+//					setForeground(Color.black);
+//				}
+//			setOpaque(true);
+//			}
+//			return component;
+//		}
+//	};
+
+
 	public static final String ODE_DATA_CHANGED = "ODE_DATA_CHANGED";
 	public static final String ODE_FILTER_CHANGED = "ODE_FILTER_CHANGED";
 	public static final String ODESOLVERRESULTSET_CHANGED = "ODESOLVERRESULTSET_CHANGED";
@@ -794,6 +814,14 @@ private void initConnections() throws java.lang.Exception {
 					tooltipString = varName;
 				}
 				setToolTipText(tooltipString);
+				if (cd instanceof ODESolverResultSetColumnDescription odeSolverResultSetColumnDescription) {
+					if (odeSolverResultSetColumnDescription.isTrivial()) {
+						setForeground(Color.gray);
+					} else {
+						setForeground(Color.black);
+					}
+				}
+//			setOpaque(true);
 			}
 			return this;
 		}
@@ -1279,6 +1307,11 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
         	sensitivityColumnDescriptions.add(cd);
         }
     }
+
+	if(odedi.isSpringSaLaD()) {
+		odedi.checkTrivial(variableColumnDescriptions);
+	}
+
     sortColumnDescriptions(variableColumnDescriptions);
     sortColumnDescriptions(sensitivityColumnDescriptions); 
     

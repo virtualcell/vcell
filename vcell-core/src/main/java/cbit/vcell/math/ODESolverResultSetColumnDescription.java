@@ -19,6 +19,7 @@ public class ODESolverResultSetColumnDescription implements cbit.vcell.util.Colu
 	private java.lang.String fieldDisplayName = new String();
 	private java.lang.String fieldVariableName = new String();
 	private java.lang.String fieldParameterName = null;
+	private transient boolean fieldIsTrivial = false;
 /**
  * ODESolverResultSetColDescription constructor comment.
  */
@@ -27,6 +28,7 @@ public ODESolverResultSetColumnDescription(ODESolverResultSetColumnDescription o
 	fieldVariableName = odeColumnDescription.fieldVariableName;
 	fieldParameterName = odeColumnDescription.fieldParameterName;
 	fieldDisplayName = odeColumnDescription.fieldDisplayName;
+	fieldIsTrivial = odeColumnDescription.fieldIsTrivial;
 }
 /**
  * ODESolverResultSetColDescription constructor comment.
@@ -91,6 +93,12 @@ public int hashCode() {
 	// This implementation forwards the message to super.  You may replace or supplement this.
 	// NOTE: if two objects are equal (equals(Object) returns true) they must have the same hash code
 	return getDisplayName().hashCode();
+}
+public boolean isTrivial() {
+	return fieldIsTrivial;
+}
+public void setIsTrivial(boolean isTrivial) {
+	fieldIsTrivial = isTrivial;
 }
 /**
  * Starts the application.
