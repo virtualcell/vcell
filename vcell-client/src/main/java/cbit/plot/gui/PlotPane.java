@@ -483,7 +483,6 @@ private void connPtoP4SetTarget() {
 /**
  * Insert the method's description here.
  * Creation date: (12/16/2004 3:00:42 PM)
- * @param range cbit.util.Range
  */
 public void forceXYRange(Range xRange, Range yRange) {
 
@@ -1208,7 +1207,7 @@ public void setBCompact(boolean bCompact) {
 	getJLabelRight().setVisible(!bCompact);
 	boolean oldValue = fieldBCompact;
 	fieldBCompact = bCompact;
-	firePropertyChange("bCompact", new Boolean(oldValue), new Boolean(bCompact));
+	firePropertyChange("bCompact", oldValue, bCompact);
 }
 
 public void setHDF5DescriptionText(String descr) {
