@@ -15,8 +15,10 @@ public class BiosimulationLog {
 
     public enum Status {
         QUEUED,
+        RUNNING,
         SUCCEEDED,
         FAILED,
+        ABORTED,
         SKIPPED
     }
     public static class ExceptionLog {

@@ -127,29 +127,29 @@ def dump_json_dict(json_path: str,yaml_dict: dict):
         json.dump(yaml_dict,json_out,sort_keys=True,indent=4)
 
 
-def update_task_status(sedml: str, task: str, status: str, out_dir: str, duration: int, algorithm: str) -> str:
-    # Hardcoded because name is static
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
-    for sedml_list in yaml_dict['sedDocuments']:
-        if sedml.endswith(sedml_list["location"]):
-            sedml_name_nested = sedml_list["location"]
-            # Update task status
-            for taskList in sedml_list['tasks']:
-                if taskList['id'] == task:
-                    taskList['status'] = status
-                    taskList['duration'] = duration
-                    taskList['algorithm'] = algorithm
-                    # update individual SED-ML status
-                    # if taskList['status'] == 'QUEUED' or taskList['status']== 'SUCCEEDED':
-                    #     sedml_list['status'] = 'SUCCEEDED'
-                    # else:
-                    #     sedml_list['status'] = 'FAILED'
-
-    status_yaml_path = os.path.join(out_dir, "log.yml")
-    # Convert json to yaml # Save new yaml
-    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
-    print("Success!")
-    return "Success!"
+# def update_task_status(sedml: str, task: str, status: str, out_dir: str, duration: int, algorithm: str) -> str:
+#     # Hardcoded because name is static
+#     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
+#     for sedml_list in yaml_dict['sedDocuments']:
+#         if sedml.endswith(sedml_list["location"]):
+#             sedml_name_nested = sedml_list["location"]
+#             # Update task status
+#             for taskList in sedml_list['tasks']:
+#                 if taskList['id'] == task:
+#                     taskList['status'] = status
+#                     taskList['duration'] = duration
+#                     taskList['algorithm'] = algorithm
+#                     # update individual SED-ML status
+#                     # if taskList['status'] == 'QUEUED' or taskList['status']== 'SUCCEEDED':
+#                     #     sedml_list['status'] = 'SUCCEEDED'
+#                     # else:
+#                     #     sedml_list['status'] = 'FAILED'
+#
+#     status_yaml_path = os.path.join(out_dir, "log.yml")
+#     # Convert json to yaml # Save new yaml
+#     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+#     print("Success!")
+#     return "Success!"
 
 
 def update_sedml_doc_status(sedml: str, status: str, out_dir: str) -> str:

@@ -1,15 +1,20 @@
 package org.vcell.cli.run;
 
-import org.vcell.cli.CLIPythonManager;
-import org.vcell.cli.PythonStreamException;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.cli.CLIPythonManager;
+import org.vcell.cli.PythonStreamException;
+import org.vcell.sedml.log.BiosimulationLog;
 
+import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
+
 
 public class PythonCalls {
 
@@ -22,15 +27,63 @@ public class PythonCalls {
         cliPythonManager.parsePythonReturn(results, "", "Failed generating SED-ML for plot2d and 3D ");
     }
 
-    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws PythonStreamException {
-        algorithm = algorithm.toUpperCase(Locale.ROOT);
-        algorithm = algorithm.replace("KISAO:", "KISAO_");
+//    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws PythonStreamException {
+//        algorithm = algorithm.toUpperCase(Locale.ROOT);
+//        algorithm = algorithm.replace("KISAO:", "KISAO_");
+//
+//        logger.trace("Dialing Python function updateTaskStatus");
+//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+//        String results = cliPythonManager.callPython("updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm);
+//        cliPythonManager.parsePythonReturn(results, "", "Failed updating task status YAML\n");
+//    }
 
-        logger.trace("Dialing Python function updateTaskStatus");
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("updateTaskStatus", sedmlName, taskName, taskStatus.toString(), outDir, duration, algorithm);
-        cliPythonManager.parsePythonReturn(results, "", "Failed updating task status YAML\n");
+    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, "log.yml");
+        BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
+
+        for (BiosimulationLog.SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlName.endsWith(sedDocument.location)) {
+                for (BiosimulationLog.TaskLog taskItem : sedDocument.tasks) {
+                    if (taskItem.id.equals(taskName)) {
+                        taskItem.status = toLogStatus(taskStatus);
+                        taskItem.duration = new BigDecimal(duration);
+                        taskItem.algorithm = algorithm;
+//                        // update individual task status
+//                        if ( taskItem.status == BiosimulationLog.Status.QUEUED || taskItem.status == BiosimulationLog.Status.SUCCEEDED){
+//                            sedDocument.status = BiosimulationLog.Status.SUCCEEDED;
+//                        } else {
+//                            sedDocument.status = BiosimulationLog.Status.FAILED;
+//                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
     }
+
+    public static BiosimulationLog.Status toLogStatus(Status status) {
+        switch (status) {
+            case RUNNING:
+                return BiosimulationLog.Status.RUNNING;
+            case SKIPPED:
+                return BiosimulationLog.Status.SKIPPED;
+            case SUCCEEDED:
+                return BiosimulationLog.Status.SUCCEEDED;
+            case FAILED:
+                return BiosimulationLog.Status.FAILED;
+            case ABORTED:
+                return BiosimulationLog.Status.ABORTED;
+            case QUEUED:
+                return BiosimulationLog.Status.QUEUED;
+            default:
+                throw new IllegalArgumentException("Unknown status: " + status);
+        }
+    }
+
+
+
     public static void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws PythonStreamException, InterruptedException, IOException {
         logger.trace("Dialing Python function updateSedmlDupdateSedmlDocStatusocStatus");
         CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
