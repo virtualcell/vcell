@@ -499,10 +499,19 @@ public class VCellApiClient implements AutoCloseable {
 		if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             try {
                 Desktop.getDesktop().browse(URI.create("https://dev-dzhx7i2db3x3kkvq.us.auth0.com/oidc/logout"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+				if (Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
+					try {
+						Desktop.getDesktop().requestForeground(true);
+					} catch (Exception e) {
+						lg.error("requestForeground failed", e);
+					}
+				} else {
+					lg.error("APP_REQUEST_FOREGROUND not supported");
+				}
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
