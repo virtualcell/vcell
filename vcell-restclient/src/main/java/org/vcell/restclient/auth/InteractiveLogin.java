@@ -102,6 +102,19 @@ public class InteractiveLogin {
             // set up web server to receive redirect and send URL to system browser - will be redirected back to http://localhost:9999/oidc_test_callback
             System.out.println("launched browser with login window, will intercept the authentication response sent to local web server");
             authorizationResponse = getAuthorizationResponseAutomated(localHttpServerPort, callback_endpoint_path, authRequestURI, successRedirectURI);
+            if (authorizationResponse != null) {
+                if (Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
+                    System.out.println("requesting foreground");
+                    try {
+                        Desktop.getDesktop().requestForeground(true);
+                        System.out.println("foreground requested");
+                    } catch (Exception e) {
+                        System.err.println("failed to request foreground: " + e.getMessage());
+                    }
+                } else {
+                    System.err.println("foreground not supported");
+                }
+            }
         } else {
             // manual copy/paste of redirect URL into browser, and copy/paste of redirect URL back into console
             authorizationResponse = getAuthorizationResponseManual(authRequestURI);
