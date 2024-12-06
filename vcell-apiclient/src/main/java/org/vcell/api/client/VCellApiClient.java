@@ -506,7 +506,7 @@ public class VCellApiClient implements AutoCloseable {
 						lg.error("requestForeground failed", e);
 					}
 				} else {
-					lg.error("APP_REQUEST_FOREGROUND not supported");
+					lg.warn("APP_REQUEST_FOREGROUND not supported");
 				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
