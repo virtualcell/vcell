@@ -85,7 +85,7 @@ public class PythonCalls {
         }
     }
 
-    
+
 
 //    public static void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws PythonStreamException, InterruptedException, IOException {
 //        logger.trace("Dialing Python function updateSedmlDupdateSedmlDocStatusocStatus");
@@ -225,6 +225,9 @@ public class PythonCalls {
                         BiosimulationLog.CurveLog curveItem = new BiosimulationLog.CurveLog();
                         curveItem.id = curve.getId();
                         curveItem.status = BiosimulationLog.Status.QUEUED;
+                        if (outputItem.curves == null) {
+                            outputItem.curves = new ArrayList<>();
+                        }
                         outputItem.curves.add(curveItem);
                     }
                 } else if (output instanceof Report) {
@@ -232,6 +235,9 @@ public class PythonCalls {
                         BiosimulationLog.DataSetLog dataSetItem = new BiosimulationLog.DataSetLog();
                         dataSetItem.id = dataSet.getId();
                         dataSetItem.status = BiosimulationLog.Status.QUEUED;
+                        if (outputItem.dataSets == null) {
+                            outputItem.dataSets = new ArrayList<>();
+                        }
                         outputItem.dataSets.add(dataSetItem);
                     }
                 }
