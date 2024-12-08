@@ -9,6 +9,7 @@ import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
+import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
 import org.vcell.util.FileUtils;
@@ -48,7 +49,7 @@ public class ExecuteImpl {
             if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
                 RunUtils.removeAndMakeDirs(adjustedOutputDir);
             try {
-                PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+                BiosimulationLog.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
             } catch (XMLException e){
                 throw new RuntimeException("Python call did not process correctly:", e);
             }
@@ -137,7 +138,7 @@ public class ExecuteImpl {
         if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
             RunUtils.removeAndMakeDirs(adjustedOutputDir);
 
-        PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+        BiosimulationLog.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
         ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
                 bEncapsulateOutput, bSmallMeshOverride, bBioSimMode);

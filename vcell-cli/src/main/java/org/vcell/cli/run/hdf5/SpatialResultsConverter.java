@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
-import org.vcell.cli.run.PythonCalls;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.sedml.log.BiosimulationLog;
 
@@ -40,7 +39,7 @@ public class SpatialResultsConverter {
                 if (!returnedGoodResult) continue;
                 if (!dataGenToDataSets.containsKey(dataGen)) dataGenToDataSets.put(dataGen, new ArrayList<>());
                 dataGenToDataSets.get(dataGen).add(dataSet);
-                PythonCalls.updateDatasetStatusYml(sedmlLocation, report.getId(), dataSet.getId(), BiosimulationLog.Status.SUCCEEDED, outDir);
+                BiosimulationLog.updateDatasetStatusYml(sedmlLocation, report.getId(), dataSet.getId(), BiosimulationLog.Status.SUCCEEDED, outDir);
             } // end of dataset
 
             // Fill out DatasetWrapper Values

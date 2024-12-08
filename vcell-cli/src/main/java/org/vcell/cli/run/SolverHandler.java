@@ -368,7 +368,7 @@ public class SolverHandler {
 
 					AbstractTask task = tempSimulationToTaskMap.get(tempSimulation);
 					simStatusMap.put(tempSimulation, BiosimulationLog.Status.RUNNING);
-					PythonCalls.updateTaskStatusYml(sedmlLocation, task.getId(), BiosimulationLog.Status.RUNNING, outDir,
+					BiosimulationLog.updateTaskStatusYml(sedmlLocation, task.getId(), BiosimulationLog.Status.RUNNING, outDir,
 							"0", tempSimulation.getSolverTaskDescription().getSolverDescription().getKisao());
 					simDurationMap.put(tempSimulation, 0);
 
@@ -492,7 +492,7 @@ public class SolverHandler {
 							if (simStatusMap.get(originalSim) != BiosimulationLog.Status.ABORTED && simStatusMap.get(originalSim) != BiosimulationLog.Status.FAILED) {
 								simStatusMap.put(originalSim, BiosimulationLog.Status.SUCCEEDED);
 							}
-							PythonCalls.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
+							BiosimulationLog.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
 							RunUtils.drawBreakLine("-", 100);
 						} else {
 							String error = solver.getSolverStatus().getSimulationMessage().getDisplayMessage();
@@ -534,8 +534,8 @@ public class SolverHandler {
 							logTaskError += (error + ". ");
 						}
 						String type = e.getClass().getSimpleName();
-						PythonCalls.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
-						PythonCalls.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", type, logTaskError);
+						BiosimulationLog.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
+						BiosimulationLog.setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", type, logTaskError);
 						String sdl = "";
 						if (sd != null && sd.getShortDisplayLabel() != null && !sd.getShortDisplayLabel().isEmpty()) {
 							sdl = sd.getShortDisplayLabel();
@@ -597,11 +597,11 @@ public class SolverHandler {
 					SolverTaskDescription std = tempSimulation.getSolverTaskDescription();
 					SolverDescription sd = std.getSolverDescription();
 					String kisao = sd.getKisao();
-					PythonCalls.updateTaskStatusYml(sedmlLocation, task.getId(), status, outDir, duration + "", kisao);
+					BiosimulationLog.updateTaskStatusYml(sedmlLocation, task.getId(), status, outDir, duration + "", kisao);
 
 					List<AbstractTask> children = taskToListOfSubTasksMap.get(task);
 					for (AbstractTask rt : children) {
-						PythonCalls.updateTaskStatusYml(sedmlLocation, rt.getId(), status, outDir, duration + "", kisao);
+						BiosimulationLog.updateTaskStatusYml(sedmlLocation, rt.getId(), status, outDir, duration + "", kisao);
 					}
 				}
 				bioModelCount++;
