@@ -270,19 +270,72 @@ public class PythonCalls {
         cliPythonManager.parsePythonReturn(results);
     }
 
-    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws PythonStreamException {
-        logger.trace("Dialing Python function updateDataSetStatus");
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir);
-        cliPythonManager.parsePythonReturn(results);
+//    public static void updateDatasetStatusYml(String sedmlName, String dataSet, String var, Status simStatus, String outDir) throws PythonStreamException {
+//        logger.trace("Dialing Python function updateDataSetStatus");
+//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+//        String results = cliPythonManager.callPython("updateDataSetStatus", sedmlName, dataSet, var, simStatus.toString(), outDir);
+//        cliPythonManager.parsePythonReturn(results);
+//    }
+
+    public static void updateDatasetStatusYml(String sedmlName, String report, String dataset, Status simStatus, String outDir) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, "log.yml");
+        BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
+
+        for (BiosimulationLog.SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlName.endsWith(sedDocument.location)) {
+                for (BiosimulationLog.OutputLog output : sedDocument.outputs) {
+                    if (output.id.equals(report)) {
+                        for (BiosimulationLog.DataSetLog dataSet : output.dataSets) {
+                            if (dataSet.id.equals(dataset)) {
+                                dataSet.status = toLogStatus(simStatus);
+                                if (simStatus == Status.QUEUED || simStatus == Status.SUCCEEDED) {
+                                    output.status = BiosimulationLog.Status.SUCCEEDED;
+                                } else {
+                                    output.status = BiosimulationLog.Status.FAILED;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
     }
 
-    public static void updatePlotStatusYml(String sedmlName, String var, Status simStatus, String outDir) throws PythonStreamException {
-        logger.trace("Dialing Python function updatePlotStatus");
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("updatePlotStatus", sedmlName, var, simStatus.toString(), outDir);
-        cliPythonManager.parsePythonReturn(results);
+//    public static void updatePlotStatusYml(String sedmlName, String var, Status simStatus, String outDir) throws PythonStreamException {
+//        logger.trace("Dialing Python function updatePlotStatus");
+//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+//        String results = cliPythonManager.callPython("updatePlotStatus", sedmlName, var, simStatus.toString(), outDir);
+//        cliPythonManager.parsePythonReturn(results);
+//    }
+
+    public static void updatePlotStatusYml(String sedmlName, String plotId, Status simStatus, String outDir) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, "log.yml");
+        BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
+
+        for (BiosimulationLog.SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlName.endsWith(sedDocument.location)) {
+                for (BiosimulationLog.OutputLog output : sedDocument.outputs) {
+                    if (output.id.equals(plotId)) {
+                        for (BiosimulationLog.CurveLog curveLog : output.curves) {
+                            curveLog.status = toLogStatus(simStatus);
+                            if (simStatus == Status.QUEUED || simStatus == Status.SUCCEEDED) {
+                                output.status = BiosimulationLog.Status.SUCCEEDED;
+                            } else {
+                                output.status = BiosimulationLog.Status.FAILED;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
     }
+
 
     // Due to what appears to be a leaky python function call, this method will continue using execShellCommand until the underlying python is fixed
     public static void genPlotsPseudoSedml(String sedmlPath, String resultOutDir) throws PythonStreamException, InterruptedException, IOException {

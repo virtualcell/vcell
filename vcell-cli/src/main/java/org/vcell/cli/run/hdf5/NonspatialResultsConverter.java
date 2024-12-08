@@ -9,19 +9,19 @@ import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
-import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.run.PythonCalls;
 import org.vcell.cli.run.Status;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 public class NonspatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonspatialResultsConverter.class);
 
 
-    public static Map<Report, List<Hdf5SedmlResults>> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws ExpressionException, PythonStreamException {
+    public static Map<Report, List<Hdf5SedmlResults>> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws ExpressionException, IOException {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
 
         for (Report report : NonspatialResultsConverter.getReports(sedml.getOutputs())){
