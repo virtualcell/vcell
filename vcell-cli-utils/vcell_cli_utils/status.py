@@ -325,7 +325,7 @@ def set_exception_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, e
 if __name__ == "__main__":
     fire.Fire({
         'genStatusYaml': status_yml,
-        'updateTaskStatus': update_task_status,
+#         'updateTaskStatus': update_task_status,
         'updateSedmlDocStatus': update_sedml_doc_status,
         'updateOmexStatus': update_omex_status,
         'updateDataSetStatus': update_dataset_status,
