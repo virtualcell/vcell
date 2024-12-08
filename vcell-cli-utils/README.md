@@ -31,17 +31,3 @@ poetry run python -i -W ignore
 
 ### example command session
 Caution: use of stdin/stdout to pipe commands/reponses to process.  This is sensitive to print statements or logging to stdout. 
-```python
->>> from vcell_cli_utils import wrapper
->>> wrapper.genStatusYaml("../../vcdb/published/biomodel/omex/sbml/biomodel_102061382.omex", "/tmp")
->>> wrapper.genStatusYaml("missing-file", "/tmp")
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-  File "/Users/schaff/Documents/workspace/vcell/vcell-cli-utils/vcell_cli_utils/wrapper.py", line 31, in genStatusYaml
-    status.status_yml(omexFile, outDir)
-  File "/Users/schaff/Documents/workspace/vcell/vcell-cli-utils/vcell_cli_utils/status.py", line 37, in status_yml
-    for sedml in extract_omex_archive(omex_file):
-  File "/Users/schaff/Documents/workspace/vcell/vcell-cli-utils/vcell_cli_utils/status.py", line 19, in extract_omex_archive
-    raise FileNotFoundError("File does not exist: {}".format(omex_file))
-FileNotFoundError: File does not exist: missing-file
-```
