@@ -107,11 +107,22 @@ public class PythonCalls {
         mapper.writeValue(yamlFile, log);
     }
 
-    public static void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws PythonStreamException {
-        logger.trace("Dialing Python function updateOmexStatus");
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("updateOmexStatus", simStatus.toString(), outDir, duration);
-        cliPythonManager.parsePythonReturn(results);
+//    public static void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws PythonStreamException {
+//        logger.trace("Dialing Python function updateOmexStatus");
+//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+//        String results = cliPythonManager.callPython("updateOmexStatus", simStatus.toString(), outDir, duration);
+//        cliPythonManager.parsePythonReturn(results);
+//    }
+
+    public static void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, "log.yml");
+        BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
+
+        log.status = toLogStatus(simStatus);
+        log.duration = new BigDecimal(duration);
+
+        mapper.writeValue(yamlFile, log);
     }
 
     public static void genPlots(String sedmlPath, String resultOutDir) throws PythonStreamException {

@@ -163,16 +163,16 @@ def dump_json_dict(json_path: str,yaml_dict: dict):
 #     return "Success!"
 
 
-def update_omex_status(status: str, out_dir: str, duration: int) -> str:
-
-    yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
-    yaml_dict['status'] = status
-    yaml_dict['duration'] = duration
-
-    status_yaml_path = os.path.join(out_dir, "log.yml")
-    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
-    print("Success!")
-    return "Success!"
+# def update_omex_status(status: str, out_dir: str, duration: int) -> str:
+#
+#     yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
+#     yaml_dict['status'] = status
+#     yaml_dict['duration'] = duration
+#
+#     status_yaml_path = os.path.join(out_dir, "log.yml")
+#     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+#     print("Success!")
+#     return "Success!"
 
 
 def update_dataset_status(sedml: str, report: str, dataset: str, status: str, out_dir: str) -> str:
@@ -324,7 +324,7 @@ if __name__ == "__main__":
 #         'genStatusYaml': status_yml,
 #         'updateTaskStatus': update_task_status,
 #         'updateSedmlDocStatus': update_sedml_doc_status,
-        'updateOmexStatus': update_omex_status,
+#         'updateOmexStatus': update_omex_status,
         'updateDataSetStatus': update_dataset_status,
         'updatePlotStatus': update_plot_status,
         'setOutputMessage': set_output_message,
