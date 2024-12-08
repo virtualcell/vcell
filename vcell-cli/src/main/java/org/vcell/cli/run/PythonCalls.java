@@ -85,14 +85,28 @@ public class PythonCalls {
         }
     }
 
+    
 
+//    public static void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws PythonStreamException, InterruptedException, IOException {
+//        logger.trace("Dialing Python function updateSedmlDupdateSedmlDocStatusocStatus");
+//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+//        String results = cliPythonManager.callPython("updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir);
+//        cliPythonManager.parsePythonReturn(results, "", "Failed updating sedml document status YAML\n");
+//    }
 
-    public static void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws PythonStreamException, InterruptedException, IOException {
-        logger.trace("Dialing Python function updateSedmlDupdateSedmlDocStatusocStatus");
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("updateSedmlDocStatus", sedmlName, sedmlDocStatus.toString(), outDir);
-        cliPythonManager.parsePythonReturn(results, "", "Failed updating sedml document status YAML\n");
+    public static void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, "log.yml");
+        BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
+
+        for (BiosimulationLog.SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlName.endsWith(sedDocument.location)) {
+                sedDocument.status = toLogStatus(sedmlDocStatus);
+            }
+        }
+        mapper.writeValue(yamlFile, log);
     }
+
     public static void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws PythonStreamException {
         logger.trace("Dialing Python function updateOmexStatus");
         CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();

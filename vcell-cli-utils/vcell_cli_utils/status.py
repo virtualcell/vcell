@@ -1,14 +1,11 @@
+import json
 import os
-
-import fire
-from biosimulators_utils.archive.io import ArchiveReader
-import libsedml
-import yaml
 import tempfile
 import zipfile
-import shutil
-import json
-from typing import  Dict, List, Union
+
+import fire
+import yaml
+from biosimulators_utils.archive.io import ArchiveReader
 
 # Create temp directory
 tmp_dir = tempfile.mkdtemp()
@@ -104,13 +101,13 @@ def extract_omex_archive(omex_file) -> list:
 #     return "Success!"
 
 
-def get_yaml_as_str(yaml_path: str) -> dict:
+def get_yaml_as_dict(yaml_path: str) -> dict:
     # Import yaml
     yaml_str = ''
     with open(yaml_path, 'r') as sy:
         yaml_str = sy.read()
 
-    # Convert yaml to json
+    # Convert yaml to dict
     yaml_dict = yaml.load(yaml_str, yaml.SafeLoader)
     return yaml_dict
 
@@ -129,7 +126,7 @@ def dump_json_dict(json_path: str,yaml_dict: dict):
 
 # def update_task_status(sedml: str, task: str, status: str, out_dir: str, duration: int, algorithm: str) -> str:
 #     # Hardcoded because name is static
-#     yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
+#     yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
 #     for sedml_list in yaml_dict['sedDocuments']:
 #         if sedml.endswith(sedml_list["location"]):
 #             sedml_name_nested = sedml_list["location"]
@@ -152,23 +149,23 @@ def dump_json_dict(json_path: str,yaml_dict: dict):
 #     return "Success!"
 
 
-def update_sedml_doc_status(sedml: str, status: str, out_dir: str) -> str:
-    # Hardcoded because name is static
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
-    for sedml_list in yaml_dict['sedDocuments']:
-        if sedml.endswith(sedml_list["location"]):
-            sedml_name_nested = sedml_list["location"]
-            sedml_list['status'] = status
-
-    status_yaml_path = os.path.join(out_dir, "log.yml")
-    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
-    print("Success!")
-    return "Success!"
+# def update_sedml_doc_status(sedml: str, status: str, out_dir: str) -> str:
+#     # Hardcoded because name is static
+#     yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
+#     for sedml_list in yaml_dict['sedDocuments']:
+#         if sedml.endswith(sedml_list["location"]):
+#             sedml_name_nested = sedml_list["location"]
+#             sedml_list['status'] = status
+#
+#     status_yaml_path = os.path.join(out_dir, "log.yml")
+#     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+#     print("Success!")
+#     return "Success!"
 
 
 def update_omex_status(status: str, out_dir: str, duration: int) -> str:
 
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
+    yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
     yaml_dict['status'] = status
     yaml_dict['duration'] = duration
 
@@ -179,7 +176,7 @@ def update_omex_status(status: str, out_dir: str, duration: int) -> str:
 
 
 def update_dataset_status(sedml: str, report: str, dataset: str, status: str, out_dir: str) -> str:
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
+    yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
         if sedml.endswith(sedml_list["location"]):
             sedml_name_nested = sedml_list["location"]
@@ -219,7 +216,7 @@ def update_dataset_status(sedml: str, report: str, dataset: str, status: str, ou
 
 
 def update_plot_status(sedml: str, plot_id: str, status: str, out_dir: str) -> str:
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
+    yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
         if sedml.endswith(sedml_list["location"]):
             sedml_name_nested = sedml_list["location"]
@@ -264,7 +261,7 @@ def update_plot_status(sedml: str, plot_id: str, status: str, out_dir: str) -> s
 #
 def set_output_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str , message: str) -> str:
 
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
+    yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
     if entityType == 'omex':
         # update omex archive output message
         yaml_dict['output'] = message
@@ -291,7 +288,7 @@ def set_output_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, enti
 
 def set_exception_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str, type: str, message: str) -> str:
 
-    yaml_dict = get_yaml_as_str(os.path.join(out_dir, "log.yml"))
+    yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
     for sedml_list in yaml_dict['sedDocuments']:
         if sedmlAbsolutePath.endswith(sedml_list["location"]):
             sedml_name_nested = sedml_list["location"]
@@ -326,7 +323,7 @@ if __name__ == "__main__":
     fire.Fire({
 #         'genStatusYaml': status_yml,
 #         'updateTaskStatus': update_task_status,
-        'updateSedmlDocStatus': update_sedml_doc_status,
+#         'updateSedmlDocStatus': update_sedml_doc_status,
         'updateOmexStatus': update_omex_status,
         'updateDataSetStatus': update_dataset_status,
         'updatePlotStatus': update_plot_status,

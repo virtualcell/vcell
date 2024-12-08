@@ -50,8 +50,8 @@ def genPlotPdfs(sedmlPath : str, resultOutDir : str) -> None:
 # def updateTaskStatus(sedml: str, task: str, statusVar: str, outDir: str, duration: str, algorithm: str) -> None:
 #     status.update_task_status(sedml, task, statusVar, outDir, int(duration), algorithm)
 
-def updateSedmlDocStatus(sedml: str, statusVar: str, outDir: str) -> None:
-    status.update_sedml_doc_status(sedml, statusVar, outDir)
+# def updateSedmlDocStatus(sedml: str, statusVar: str, outDir: str) -> None:
+#     status.update_sedml_doc_status(sedml, statusVar, outDir)
 
 def updateOmexStatus(statusVar: str, outDir: str, duration: str) -> None:
     status.update_omex_status(statusVar, outDir, int(duration))
