@@ -4,9 +4,11 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jlibsedml.XMLException;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
+import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
 import org.vcell.util.FileUtils;
@@ -20,8 +22,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 
 public class ExecuteImpl {
     
@@ -49,7 +49,7 @@ public class ExecuteImpl {
                 RunUtils.removeAndMakeDirs(adjustedOutputDir);
             try {
                 PythonCalls.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
-            } catch (PythonStreamException e){
+            } catch (XMLException e){
                 throw new RuntimeException("Python call did not process correctly:", e);
             }
         }

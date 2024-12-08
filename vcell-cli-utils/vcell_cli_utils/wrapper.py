@@ -44,8 +44,8 @@ def transposeVcmlCsv(csvFilePath: str) -> None:
 def genPlotPdfs(sedmlPath : str, resultOutDir : str) -> None:
     cli.gen_plot_pdfs(sedmlPath, resultOutDir)
 
-def genStatusYaml(omexFile: str, outDir: str) -> None:
-    status.status_yml(omexFile, outDir)
+# def genStatusYaml(omexFile: str, outDir: str) -> None:
+#     status.status_yml(omexFile, outDir)
 
 # def updateTaskStatus(sedml: str, task: str, statusVar: str, outDir: str, duration: str, algorithm: str) -> None:
 #     status.update_task_status(sedml, task, statusVar, outDir, int(duration), algorithm)

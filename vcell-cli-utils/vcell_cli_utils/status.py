@@ -32,76 +32,76 @@ def extract_omex_archive(omex_file) -> list:
     return sedml_files_list
 
 
-def status_yml(omex_file: str, out_dir: str) -> str:
-    yaml_dicts: List[Dict] = []
-    for sedml in extract_omex_archive(omex_file):
-        outputs_dict: Dict[str, List[Dict]] = {"outputs": []}
-        tasks_dict: Dict[str, List[Dict]] = {"tasks": []}
-        # add temp dir path
-        sedml_path = os.path.join(tmp_dir, sedml)
-        sedml_doc = libsedml.readSedMLFromFile(sedml_path)
-
-        # Get all the required metadata
-        tasks = sedml_doc.getListOfTasks()
-        plots = sedml_doc.getListOfOutputs()
-
-        # Convert into the list
-        task_list = [task.getId() for task in tasks]
-        plots_dict = {}
-        reports_dict = {}
-        other_list = []
-
-        for plot in plots:
-            if type(plot) == libsedml.SedPlot2D:
-                plots_dict[plot.getId()] = [curve.getId() for curve in plot.getListOfCurves()]
-            elif type(plot) == libsedml.SedReport:
-                reports_dict[plot.getId()] = [dataSet.getId() for dataSet in plot.getListOfDataSets()]
-            else:
-                other_list.append(plot.getId())
-
-        for plot in list(plots_dict.keys()):
-            curves_list = []
-            for curve in plots_dict[plot]:
-                curves_list.append({"id":curve, "status":"QUEUED"})
-            outputs_dict["outputs"].append({"id":plot,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None,"curves": curves_list})
-           
-
-        for report in list(reports_dict.keys()):
-            dataset_list = []
-            #dataset_dict = {}
-            for dataset in reports_dict[report]:
-                dataset_list.append({"id":dataset , "status" :"QUEUED"})
-            exc_dict = {'type': "", 'message': ""}
-            outputs_dict["outputs"].append({"id":report,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
-            #outputs_dict["outputs"][report].update({"status": "QUEUED"})
-
-        for task in task_list:
-            exc_dict = {'type': "", 'message': ""}
-            tasks_dict["tasks"].append({"id": task ,"status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None, "algorithm": None, "simulatorDetails": None})
-
-        exc_dict = {'type': "", 'message': ""}
-        sed_doc_dict = {"location": sedml, "status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None}
-        sed_doc_dict.update(outputs_dict)
-        sed_doc_dict.update(tasks_dict)
-        yaml_dicts.append(sed_doc_dict)
-    exc_dict = {'type': "", 'message': ""}
-    final_dict: Dict[str, Union[List[Dict], str, None]] = {
-        'sedDocuments': yaml_dicts,
-        'status': "QUEUED",
-        'exception': None,
-        'skipReason': None,
-        'duration': None,
-        'output': None
-    }
-
-    status_yaml_path = os.path.join(out_dir, "log.yml")
-
-    with open(status_yaml_path, 'w' , encoding="utf-8") as sy:
-        sy.write(yaml.dump(final_dict))
-    # "return" final_dict
-    shutil.rmtree(tmp_dir)
-    print("Success!")
-    return "Success!"
+# def status_yml(omex_file: str, out_dir: str) -> str:
+#     yaml_dicts: List[Dict] = []
+#     for sedml in extract_omex_archive(omex_file):
+#         outputs_dict: Dict[str, List[Dict]] = {"outputs": []}
+#         tasks_dict: Dict[str, List[Dict]] = {"tasks": []}
+#         # add temp dir path
+#         sedml_path = os.path.join(tmp_dir, sedml)
+#         sedml_doc = libsedml.readSedMLFromFile(sedml_path)
+#
+#         # Get all the required metadata
+#         tasks = sedml_doc.getListOfTasks()
+#         plots = sedml_doc.getListOfOutputs()
+#
+#         # Convert into the list
+#         task_list = [task.getId() for task in tasks]
+#         plots_dict = {}
+#         reports_dict = {}
+#         other_list = []
+#
+#         for plot in plots:
+#             if type(plot) == libsedml.SedPlot2D:
+#                 plots_dict[plot.getId()] = [curve.getId() for curve in plot.getListOfCurves()]
+#             elif type(plot) == libsedml.SedReport:
+#                 reports_dict[plot.getId()] = [dataSet.getId() for dataSet in plot.getListOfDataSets()]
+#             else:
+#                 other_list.append(plot.getId())
+#
+#         for plot in list(plots_dict.keys()):
+#             curves_list = []
+#             for curve in plots_dict[plot]:
+#                 curves_list.append({"id":curve, "status":"QUEUED"})
+#             outputs_dict["outputs"].append({"id":plot,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None,"curves": curves_list})
+#
+#
+#         for report in list(reports_dict.keys()):
+#             dataset_list = []
+#             #dataset_dict = {}
+#             for dataset in reports_dict[report]:
+#                 dataset_list.append({"id":dataset , "status" :"QUEUED"})
+#             exc_dict = {'type': "", 'message': ""}
+#             outputs_dict["outputs"].append({"id":report,"status": "QUEUED","exception": None,"skipReason": None,"output": None,"duration": None, "dataSets": dataset_list})
+#             #outputs_dict["outputs"][report].update({"status": "QUEUED"})
+#
+#         for task in task_list:
+#             exc_dict = {'type': "", 'message': ""}
+#             tasks_dict["tasks"].append({"id": task ,"status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None, "algorithm": None, "simulatorDetails": None})
+#
+#         exc_dict = {'type': "", 'message': ""}
+#         sed_doc_dict = {"location": sedml, "status": "QUEUED", "exception": None, "skipReason": None, "output": None, "duration": None}
+#         sed_doc_dict.update(outputs_dict)
+#         sed_doc_dict.update(tasks_dict)
+#         yaml_dicts.append(sed_doc_dict)
+#     exc_dict = {'type': "", 'message': ""}
+#     final_dict: Dict[str, Union[List[Dict], str, None]] = {
+#         'sedDocuments': yaml_dicts,
+#         'status': "QUEUED",
+#         'exception': None,
+#         'skipReason': None,
+#         'duration': None,
+#         'output': None
+#     }
+#
+#     status_yaml_path = os.path.join(out_dir, "log.yml")
+#
+#     with open(status_yaml_path, 'w' , encoding="utf-8") as sy:
+#         sy.write(yaml.dump(final_dict))
+#     # "return" final_dict
+#     shutil.rmtree(tmp_dir)
+#     print("Success!")
+#     return "Success!"
 
 
 def get_yaml_as_str(yaml_path: str) -> dict:
@@ -324,7 +324,7 @@ def set_exception_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, e
 
 if __name__ == "__main__":
     fire.Fire({
-        'genStatusYaml': status_yml,
+#         'genStatusYaml': status_yml,
 #         'updateTaskStatus': update_task_status,
         'updateSedmlDocStatus': update_sedml_doc_status,
         'updateOmexStatus': update_omex_status,

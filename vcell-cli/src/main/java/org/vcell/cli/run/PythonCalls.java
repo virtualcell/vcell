@@ -4,16 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jlibsedml.*;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.sedml.log.BiosimulationLog;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
+
 
 
 public class PythonCalls {
@@ -149,28 +152,87 @@ public class PythonCalls {
             status: SKIPPED
     status: SUCCEEDED
     * */
-    public static void generateStatusYaml(String omexPath, String outDir) throws PythonStreamException {
-        // Note: by default every status is being skipped
-        Path omexFilePath = Paths.get(omexPath);
-        /*
-         USAGE:
+//    public static void generateStatusYaml(String omexPath, String outDir) throws PythonStreamException {
+//        // Note: by default every status is being skipped
+//        Path omexFilePath = Paths.get(omexPath);
+//        /*
+//         USAGE:
+//
+//         NAME
+//         status.py
+//
+//         SYNOPSIS
+//         status.py COMMAND
+//
+//         COMMANDS
+//         COMMAND is one of the following:
+//
+//         status_yml
+//        */
+//
+//        logger.trace("Dialing Python function genStatusYaml");
+//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+//        String results = cliPythonManager.callPython("genStatusYaml", String.valueOf(omexFilePath), outDir);
+//        cliPythonManager.parsePythonReturn(results, "", "Failed generating status YAML\n");
+//    }
 
-         NAME
-         status.py
+    public static void generateStatusYaml(String omexFile, String outDir) throws IOException, XMLException {
+        List<BiosimulationLog.SedDocumentLog> sedDocumentLogs = new ArrayList<>();
+        // read sedml file
+        ArchiveComponents ac = Libsedml.readSEDMLArchive(new FileInputStream(omexFile));
+        List<SEDMLDocument> sedmlDocs = ac.getSedmlDocuments();
+        if (sedmlDocs.isEmpty()) {
+            throw new RuntimeException("No SED-ML documents found in the archive");
+        }
 
-         SYNOPSIS
-         status.py COMMAND
+        for (SEDMLDocument sedmlDoc : sedmlDocs) {
+            SedML sedmlModel = sedmlDoc.getSedMLModel();
 
-         COMMANDS
-         COMMAND is one of the following:
+            BiosimulationLog.SedDocumentLog sedDocumentLog = new BiosimulationLog.SedDocumentLog();
+            sedDocumentLog.location = sedmlModel.getPathForURI();
+            sedDocumentLog.status = BiosimulationLog.Status.QUEUED;
 
-         status_yml
-        */
+            List<AbstractTask> tasks = sedmlModel.getTasks();
+            for (AbstractTask task : tasks) {
+                BiosimulationLog.TaskLog taskItem = new BiosimulationLog.TaskLog();
+                taskItem.id = task.getId();
+                taskItem.status = BiosimulationLog.Status.QUEUED;
+                sedDocumentLog.tasks.add(taskItem);
+            }
 
-        logger.trace("Dialing Python function genStatusYaml");
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("genStatusYaml", String.valueOf(omexFilePath), outDir);
-        cliPythonManager.parsePythonReturn(results, "", "Failed generating status YAML\n");
+            List<Output> outputs = sedmlModel.getOutputs();
+            for (Output output : outputs) {
+                BiosimulationLog.OutputLog outputItem = new BiosimulationLog.OutputLog();
+                outputItem.id = output.getId();
+                outputItem.status = BiosimulationLog.Status.QUEUED;
+
+                if (output instanceof Plot2D) {
+                    for (org.jlibsedml.Curve curve : ((Plot2D) output).getListOfCurves()) {
+                        BiosimulationLog.CurveLog curveItem = new BiosimulationLog.CurveLog();
+                        curveItem.id = curve.getId();
+                        curveItem.status = BiosimulationLog.Status.QUEUED;
+                        outputItem.curves.add(curveItem);
+                    }
+                } else if (output instanceof Report) {
+                    for (org.jlibsedml.DataSet dataSet : ((Report) output).getListOfDataSets()) {
+                        BiosimulationLog.DataSetLog dataSetItem = new BiosimulationLog.DataSetLog();
+                        dataSetItem.id = dataSet.getId();
+                        dataSetItem.status = BiosimulationLog.Status.QUEUED;
+                        outputItem.dataSets.add(dataSetItem);
+                    }
+                }
+                sedDocumentLog.outputs.add(outputItem);
+            }
+            sedDocumentLogs.add(sedDocumentLog);
+        }
+
+        BiosimulationLog.ArchiveLog archiveLog = new BiosimulationLog.ArchiveLog();
+        archiveLog.sedDocuments = sedDocumentLogs;
+        archiveLog.status = BiosimulationLog.Status.QUEUED;
+
+        String statusYamlPath = Paths.get(outDir, "log.yml").toString();
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.writeValue(new File(statusYamlPath), archiveLog);
     }
 
     public static void transposeVcmlCsv(String csvFilePath) throws PythonStreamException {
