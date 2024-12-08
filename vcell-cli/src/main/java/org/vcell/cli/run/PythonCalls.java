@@ -195,9 +195,6 @@ public class PythonCalls {
         // read sedml file
         ArchiveComponents ac = Libsedml.readSEDMLArchive(new FileInputStream(omexFile));
         List<SEDMLDocument> sedmlDocs = ac.getSedmlDocuments();
-        if (sedmlDocs.isEmpty()) {
-            throw new RuntimeException("No SED-ML documents found in the archive");
-        }
 
         for (SEDMLDocument sedmlDoc : sedmlDocs) {
             SedML sedmlModel = sedmlDoc.getSedMLModel();
