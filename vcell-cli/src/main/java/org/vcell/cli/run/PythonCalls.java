@@ -137,23 +137,78 @@ public class PythonCalls {
     // outDir            - path to directory where the log files will be placed
     // entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
     // message           - useful info about the execution of the entity (ex: task), could be human readable or concatenation of stdout and stderr
-    public static void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws PythonStreamException, InterruptedException, IOException {
-        logger.trace("Dialing Python function setOutputMessage");
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message);
-        cliPythonManager.parsePythonReturn(results, "", "Failed updating task status YAML\n");
+//    public static void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws PythonStreamException, InterruptedException, IOException {
+//        logger.trace("Dialing Python function setOutputMessage");
+//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+//        String results = cliPythonManager.callPython("setOutputMessage", sedmlAbsolutePath, entityId, outDir, entityType, message);
+//        cliPythonManager.parsePythonReturn(results, "", "Failed updating task status YAML\n");
+//    }
+
+    public static void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, "log.yml");
+        BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
+
+        if (entityType.equals("omex")) {
+            log.output = message;
+        } else {
+            for (BiosimulationLog.SedDocumentLog sedDocument : log.sedDocuments) {
+                if (sedmlAbsolutePath.endsWith(sedDocument.location)) {
+                    if (entityType.equals("sedml") && sedDocument.location.equals(entityId)) {
+                        sedDocument.output = message;
+                    } else if (entityType.equals("task")) {
+                        for (BiosimulationLog.TaskLog task : sedDocument.tasks) {
+                            if (task.id.equals(entityId)) {
+                                task.output = message;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
     }
 
     // type - exception class, ex RuntimeException
     // message  - exception message
-    public static void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws PythonStreamException {
-        logger.trace("Dialing Python function setExceptionMessage");
-        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
-        String results = cliPythonManager.callPython("setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, stripIllegalChars(message));
-        cliPythonManager.parsePythonReturn(results, "", "Failed updating task status YAML\n");
+//    public static void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type , String message) throws PythonStreamException {
+//        logger.trace("Dialing Python function setExceptionMessage");
+//        CLIPythonManager cliPythonManager = CLIPythonManager.getInstance();
+//        String results = cliPythonManager.callPython("setExceptionMessage", sedmlAbsolutePath, entityId, outDir, entityType, type, stripIllegalChars(message));
+//        cliPythonManager.parsePythonReturn(results, "", "Failed updating task status YAML\n");
+//    }
+
+    public static void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type, String message) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, "log.yml");
+        BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
+
+        for (BiosimulationLog.SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlAbsolutePath.endsWith(sedDocument.location)) {
+                if (entityType.equals("sedml") && sedDocument.location.equals(entityId)) {
+                    BiosimulationLog.ExceptionLog exceptionLog = new BiosimulationLog.ExceptionLog();
+                    exceptionLog.type = type;
+                    exceptionLog.message = message;
+                    sedDocument.exception = exceptionLog;
+                } else if (entityType.equals("task")) {
+                    for (BiosimulationLog.TaskLog task : sedDocument.tasks) {
+                        if (task.id.equals(entityId)) {
+                            BiosimulationLog.ExceptionLog exceptionLog = new BiosimulationLog.ExceptionLog();
+                            exceptionLog.type = type;
+                            exceptionLog.message = message;
+                            task.exception = exceptionLog;
+                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
+        System.out.println("Success!");
     }
 
-    // Sample STATUS YML
+        // Sample STATUS YML
     /*
     sedDocuments:
       BIOMD0000000912_sim.sedml:

@@ -259,64 +259,64 @@ def dump_json_dict(json_path: str,yaml_dict: dict):
 # outDir            - path to directory where the log files will be placed
 # entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
 #
-def set_output_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str , message: str) -> str:
+# def set_output_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str , message: str) -> str:
+#
+#     yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
+#     if entityType == 'omex':
+#         # update omex archive output message
+#         yaml_dict['output'] = message
+#     else:
+#         for sedml_list in yaml_dict['sedDocuments']:
+#             if sedmlAbsolutePath.endswith(sedml_list["location"]):
+#                 sedml_name_nested = sedml_list["location"]
+#                 # Update sedml document output message
+#                 if entityType == 'sedml':
+#                     if sedml_name_nested == entityId:
+#                         sedml_list['output'] = message
+#
+#                 # Update task output message
+#                 if entityType == 'task':
+#                     for taskList in sedml_list['tasks']:
+#                         if taskList['id'] == entityId:
+#                             taskList['output'] = message
+#
+#     status_yaml_path = os.path.join(out_dir, "log.yml")
+#     # Convert json to yaml # Save new yaml
+#     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+#     print("Success!")
+#     return "Success!"
 
-    yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
-    if entityType == 'omex':
-        # update omex archive output message
-        yaml_dict['output'] = message
-    else:
-        for sedml_list in yaml_dict['sedDocuments']:
-            if sedmlAbsolutePath.endswith(sedml_list["location"]):
-                sedml_name_nested = sedml_list["location"]
-                # Update sedml document output message
-                if entityType == 'sedml':
-                    if sedml_name_nested == entityId:
-                        sedml_list['output'] = message
-            
-                # Update task output message
-                if entityType == 'task':
-                    for taskList in sedml_list['tasks']:
-                        if taskList['id'] == entityId:
-                            taskList['output'] = message
-                        
-    status_yaml_path = os.path.join(out_dir, "log.yml")
-    # Convert json to yaml # Save new yaml
-    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
-    print("Success!")
-    return "Success!"
-
-def set_exception_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str, type: str, message: str) -> str:
-
-    yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
-    for sedml_list in yaml_dict['sedDocuments']:
-        if sedmlAbsolutePath.endswith(sedml_list["location"]):
-            sedml_name_nested = sedml_list["location"]
-            # Update sedml document status
-            # print(" --- sedml: ", sedml_name_nested, file=sys.stdout)
-            # print(" --- name: ", name, file=sys.stdout)
-            if entityType == 'sedml':
-                if sedml_name_nested == entityId:
-                    exc_dict = {'type': type, 'message': message}
-                    sedml_list['exception'] = exc_dict
-                    #exc['type'] = type
-                    #exc['message'] = message
-            
-            # Update task status
-            if entityType == 'task':
-                for taskList in sedml_list['tasks']:
-                    if taskList['id'] == entityId:
-                        exc_dict = {'type': type, 'message': message}
-                        taskList['exception'] = exc_dict
-                        #exc = taskList['exception']
-                        #exc['type'] = type
-                        #exc['message'] = message
-    status_yaml_path = os.path.join(out_dir, "log.yml")
-
-    # Convert json to yaml # Save new yaml
-    dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
-    print("Success!")
-    return "Success!"
+# def set_exception_message(sedmlAbsolutePath: str, entityId: str, out_dir: str, entityType: str, type: str, message: str) -> str:
+#
+#     yaml_dict = get_yaml_as_dict(os.path.join(out_dir, "log.yml"))
+#     for sedml_list in yaml_dict['sedDocuments']:
+#         if sedmlAbsolutePath.endswith(sedml_list["location"]):
+#             sedml_name_nested = sedml_list["location"]
+#             # Update sedml document status
+#             # print(" --- sedml: ", sedml_name_nested, file=sys.stdout)
+#             # print(" --- name: ", name, file=sys.stdout)
+#             if entityType == 'sedml':
+#                 if sedml_name_nested == entityId:
+#                     exc_dict = {'type': type, 'message': message}
+#                     sedml_list['exception'] = exc_dict
+#                     #exc['type'] = type
+#                     #exc['message'] = message
+#
+#             # Update task status
+#             if entityType == 'task':
+#                 for taskList in sedml_list['tasks']:
+#                     if taskList['id'] == entityId:
+#                         exc_dict = {'type': type, 'message': message}
+#                         taskList['exception'] = exc_dict
+#                         #exc = taskList['exception']
+#                         #exc['type'] = type
+#                         #exc['message'] = message
+#     status_yaml_path = os.path.join(out_dir, "log.yml")
+#
+#     # Convert json to yaml # Save new yaml
+#     dump_yaml_dict(status_yaml_path, yaml_dict=yaml_dict, out_dir=out_dir)
+#     print("Success!")
+#     return "Success!"
 
 
 if __name__ == "__main__":
@@ -327,6 +327,6 @@ if __name__ == "__main__":
 #         'updateOmexStatus': update_omex_status,
 #         'updateDataSetStatus': update_dataset_status,
 #         'updatePlotStatus': update_plot_status,
-        'setOutputMessage': set_output_message,
-        'setExceptionMessage': set_exception_message,
+#         'setOutputMessage': set_output_message,
+#         'setExceptionMessage': set_exception_message,
     })
