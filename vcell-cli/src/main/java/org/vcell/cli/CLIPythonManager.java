@@ -31,7 +31,7 @@ public class CLIPythonManager {
 
     private static final Logger lg = LogManager.getLogger(CLIPythonManager.class);
 
-    public static final Path CURRENT_WORKING_DIR = Paths.get("").toAbsolutePath();
+    private static final Path CURRENT_WORKING_DIR = Paths.get("").toAbsolutePath();
     private static final String PYTHON_EXE_NAME = OperatingSystemInfo.getInstance().isWindows() ? "python" : "python3";
 
     private static CLIPythonManager instance = null;
@@ -83,7 +83,7 @@ public class CLIPythonManager {
      * @throws InterruptedException if the python process was interrupted
      * @throws IOException if there was a system IO failure
      */
-    public static String callNonSharedPython(String cliCommand)
+    private static String callNonSharedPython(String cliCommand)
             throws InterruptedException, IOException, PythonStreamException {
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
         String commandString = "from vcell_cli_utils import wrapper; " + cliCommand;
@@ -308,7 +308,7 @@ public class CLIPythonManager {
         return new ProcessBuilder(args);
     }
 
-    public static String runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString)
+    private static String runAndPrintProcessStreams(ProcessBuilder pb, String outString, String errString)
             throws InterruptedException, IOException, PythonStreamException {
         // Process printing code goes here
         File of = File.createTempFile("temp-", ".out", CURRENT_WORKING_DIR.toFile());

@@ -7,6 +7,7 @@ import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
+import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.util.FileUtils;
 
 import java.io.File;
@@ -107,7 +108,7 @@ public class ExecutionJob {
         } 
         
         // Update Status
-        PythonCalls.updateOmexStatusYml(Status.RUNNING, outputDir, "0");
+        BiosimulationLog.updateOmexStatusYml(BiosimulationLog.Status.RUNNING, outputDir, "0");
     }
 
     /**
@@ -180,24 +181,24 @@ public class ExecutionJob {
             if (anySedmlDocumentHasSucceeded) {        // some succeeded, some failed
                 error = " At least one document in this archive failed to execute";
             }
-            PythonCalls.updateOmexStatusYml(Status.FAILED, outputDir, duration + "");
+            BiosimulationLog.updateOmexStatusYml(BiosimulationLog.Status.FAILED, outputDir, duration + "");
             logger.error(error);
             logOmexMessage.append(error);
             cliRecorder.writeErrorList(new Exception("exception not recorded"), bioModelBaseName);
         } else {
-            PythonCalls.updateOmexStatusYml(Status.SUCCEEDED, outputDir, duration + "");
+            BiosimulationLog.updateOmexStatusYml(BiosimulationLog.Status.SUCCEEDED, outputDir, duration + "");
             cliRecorder.writeFullSuccessList(bioModelBaseName);
             logOmexMessage.append(" Done");
             
         }
-        PythonCalls.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage.toString());
+        BiosimulationLog.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage.toString());
 
         logger.debug("Finished Execution of Archive: " + bioModelBaseName);
     }
 
     private void queueAllSedml() throws PythonStreamException, InterruptedException, IOException {
         for (String sedmlLocation: sedmlLocations){
-            PythonCalls.updateSedmlDocStatusYml(sedmlLocation, Status.QUEUED, outputDir);
+            BiosimulationLog.updateSedmlDocStatusYml(sedmlLocation, BiosimulationLog.Status.QUEUED, outputDir);
         }
     }
 
