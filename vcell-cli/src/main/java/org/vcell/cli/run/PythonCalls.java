@@ -29,7 +29,7 @@ public class PythonCalls {
         cliPythonManager.parsePythonReturn(results, "", "Failed generating SED-ML for plot2d and 3D ");
     }
 
-    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws IOException {
+    public static void updateTaskStatusYml(String sedmlName, String taskName, BiosimulationLog.Status taskStatus, String outDir, String duration, String algorithm) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         File yamlFile = new File(outDir, "log.yml");
         BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
@@ -38,7 +38,7 @@ public class PythonCalls {
             if (sedmlName.endsWith(sedDocument.location)) {
                 for (BiosimulationLog.TaskLog taskItem : sedDocument.tasks) {
                     if (taskItem.id.equals(taskName)) {
-                        taskItem.status = toLogStatus(taskStatus);
+                        taskItem.status = taskStatus;
                         taskItem.duration = new BigDecimal(duration);
                         taskItem.algorithm = algorithm;
 //                        // update individual task status
@@ -55,44 +55,25 @@ public class PythonCalls {
         mapper.writeValue(yamlFile, log);
     }
 
-    public static BiosimulationLog.Status toLogStatus(Status status) {
-        switch (status) {
-            case RUNNING:
-                return BiosimulationLog.Status.RUNNING;
-            case SKIPPED:
-                return BiosimulationLog.Status.SKIPPED;
-            case SUCCEEDED:
-                return BiosimulationLog.Status.SUCCEEDED;
-            case FAILED:
-                return BiosimulationLog.Status.FAILED;
-            case ABORTED:
-                return BiosimulationLog.Status.ABORTED;
-            case QUEUED:
-                return BiosimulationLog.Status.QUEUED;
-            default:
-                throw new IllegalArgumentException("Unknown status: " + status);
-        }
-    }
-
-    public static void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws IOException {
+    public static void updateSedmlDocStatusYml(String sedmlName, BiosimulationLog.Status sedmlDocStatus, String outDir) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         File yamlFile = new File(outDir, "log.yml");
         BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
 
         for (BiosimulationLog.SedDocumentLog sedDocument : log.sedDocuments) {
             if (sedmlName.endsWith(sedDocument.location)) {
-                sedDocument.status = toLogStatus(sedmlDocStatus);
+                sedDocument.status = sedmlDocStatus;
             }
         }
         mapper.writeValue(yamlFile, log);
     }
 
-    public static void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws IOException {
+    public static void updateOmexStatusYml(BiosimulationLog.Status simStatus, String outDir, String duration) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         File yamlFile = new File(outDir, "log.yml");
         BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
 
-        log.status = toLogStatus(simStatus);
+        log.status = simStatus;
         log.duration = new BigDecimal(duration);
 
         mapper.writeValue(yamlFile, log);
@@ -237,7 +218,7 @@ public class PythonCalls {
         cliPythonManager.parsePythonReturn(results);
     }
 
-    public static void updateDatasetStatusYml(String sedmlName, String report, String dataset, Status simStatus, String outDir) throws IOException {
+    public static void updateDatasetStatusYml(String sedmlName, String report, String dataset, BiosimulationLog.Status simStatus, String outDir) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         File yamlFile = new File(outDir, "log.yml");
         BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
@@ -248,8 +229,8 @@ public class PythonCalls {
                     if (output.id.equals(report)) {
                         for (BiosimulationLog.DataSetLog dataSet : output.dataSets) {
                             if (dataSet.id.equals(dataset)) {
-                                dataSet.status = toLogStatus(simStatus);
-                                if (simStatus == Status.QUEUED || simStatus == Status.SUCCEEDED) {
+                                dataSet.status = simStatus;
+                                if (simStatus == BiosimulationLog.Status.QUEUED || simStatus == BiosimulationLog.Status.SUCCEEDED) {
                                     output.status = BiosimulationLog.Status.SUCCEEDED;
                                 } else {
                                     output.status = BiosimulationLog.Status.FAILED;
@@ -264,7 +245,7 @@ public class PythonCalls {
         mapper.writeValue(yamlFile, log);
     }
 
-    public static void updatePlotStatusYml(String sedmlName, String plotId, Status simStatus, String outDir) throws IOException {
+    public static void updatePlotStatusYml(String sedmlName, String plotId, BiosimulationLog.Status simStatus, String outDir) throws IOException {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         File yamlFile = new File(outDir, "log.yml");
         BiosimulationLog.ArchiveLog log = mapper.readValue(yamlFile, BiosimulationLog.ArchiveLog.class);
@@ -274,8 +255,8 @@ public class PythonCalls {
                 for (BiosimulationLog.OutputLog output : sedDocument.outputs) {
                     if (output.id.equals(plotId)) {
                         for (BiosimulationLog.CurveLog curveLog : output.curves) {
-                            curveLog.status = toLogStatus(simStatus);
-                            if (simStatus == Status.QUEUED || simStatus == Status.SUCCEEDED) {
+                            curveLog.status = simStatus;
+                            if (simStatus == BiosimulationLog.Status.QUEUED || simStatus == BiosimulationLog.Status.SUCCEEDED) {
                                 output.status = BiosimulationLog.Status.SUCCEEDED;
                             } else {
                                 output.status = BiosimulationLog.Status.FAILED;

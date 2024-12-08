@@ -10,9 +10,9 @@ import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.run.PythonCalls;
-import org.vcell.cli.run.Status;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
+import org.vcell.sedml.log.BiosimulationLog;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -139,7 +139,7 @@ public class NonspatialResultsConverter {
                 }
 
                 dataSetValues.put(dataset, synthesizedResults);
-                PythonCalls.updateDatasetStatusYml(sedmlLocation, report.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
+                PythonCalls.updateDatasetStatusYml(sedmlLocation, report.getId(), dataset.getId(), BiosimulationLog.Status.SUCCEEDED, outDir);
             } // end of current dataset processing
 
             if (dataSetValues.isEmpty()) {

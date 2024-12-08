@@ -39,6 +39,7 @@ import org.jlibsedml.XPathTarget;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jmathml.ASTNode;
 import org.vcell.cli.CLIRecordable;
+import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
 import org.vcell.sbml.vcell.SBMLImportException;
@@ -357,7 +358,7 @@ public class SolverHandler {
 				docName = bioModel.getName();
 				tempSims = Arrays.stream(bioModel.getSimulations()).map(s -> origSimulationToTempSimulationMap.get(s)).collect(Collectors.toList());
 
-				Map<TempSimulation, Status> simStatusMap = new LinkedHashMap<>();
+				Map<TempSimulation, BiosimulationLog.Status> simStatusMap = new LinkedHashMap<>();
 				Map<TempSimulation, Integer> simDurationMap = new LinkedHashMap<>();
 				List<TempSimulationJob> simJobsList = new ArrayList<>();
 				for (TempSimulation tempSimulation : tempSims) {
@@ -366,8 +367,8 @@ public class SolverHandler {
 					}
 
 					AbstractTask task = tempSimulationToTaskMap.get(tempSimulation);
-					simStatusMap.put(tempSimulation, Status.RUNNING);
-					PythonCalls.updateTaskStatusYml(sedmlLocation, task.getId(), Status.RUNNING, outDir,
+					simStatusMap.put(tempSimulation, BiosimulationLog.Status.RUNNING);
+					PythonCalls.updateTaskStatusYml(sedmlLocation, task.getId(), BiosimulationLog.Status.RUNNING, outDir,
 							"0", tempSimulation.getSolverTaskDescription().getSolverDescription().getKisao());
 					simDurationMap.put(tempSimulation, 0);
 
@@ -488,8 +489,8 @@ public class SolverHandler {
 							String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime + " ms";
 							logger.info(msg);
 							countSuccessfulSimulationRuns++;    // we only count the number of simulations (tasks) that succeeded
-							if (simStatusMap.get(originalSim) != Status.ABORTED && simStatusMap.get(originalSim) != Status.FAILED) {
-								simStatusMap.put(originalSim, Status.SUCCEEDED);
+							if (simStatusMap.get(originalSim) != BiosimulationLog.Status.ABORTED && simStatusMap.get(originalSim) != BiosimulationLog.Status.FAILED) {
+								simStatusMap.put(originalSim, BiosimulationLog.Status.SUCCEEDED);
 							}
 							PythonCalls.setOutputMessage(sedmlLocation, sim.getImportedTaskID(), outDir, "task", logTaskMessage);
 							RunUtils.drawBreakLine("-", 100);
@@ -519,9 +520,9 @@ public class SolverHandler {
 						} else {
 							TempSimulation originalSim = tempSimulationJob.getSimulation();
 							if (solverStatus == SolverStatus.SOLVER_ABORTED) {
-								simStatusMap.put(originalSim, Status.ABORTED);
+								simStatusMap.put(originalSim, BiosimulationLog.Status.ABORTED);
 							} else {
-								simStatusMap.put(originalSim, Status.FAILED);
+								simStatusMap.put(originalSim, BiosimulationLog.Status.FAILED);
 							}
 						}
 	//                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
@@ -583,11 +584,11 @@ public class SolverHandler {
 					}
 					simulationJobCount++;
 				}
-				for (Map.Entry<TempSimulation, Status> entry : simStatusMap.entrySet()) {
+				for (Map.Entry<TempSimulation, BiosimulationLog.Status> entry : simStatusMap.entrySet()) {
 
 					TempSimulation tempSimulation = entry.getKey();
-					Status status = entry.getValue();
-					if (status == Status.RUNNING) {
+					BiosimulationLog.Status status = entry.getValue();
+					if (status == BiosimulationLog.Status.RUNNING) {
 						continue;    // if this happens somehow, we just don't write anything
 					}
 					AbstractTask task = tempSimulationToTaskMap.get(tempSimulation);
