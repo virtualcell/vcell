@@ -116,7 +116,7 @@ public class BiosimulationLog {
                     if (taskItem.id.equals(taskName)) {
                         taskItem.status = taskStatus;
                         taskItem.duration = new BigDecimal(duration);
-                        taskItem.algorithm = algorithm;
+                        taskItem.algorithm = algorithm != null ? algorithm.replace("KISAO:","KISAO_") : null;
 //                        // update individual task status
 //                        if ( taskItem.status == BiosimulationLog.Status.QUEUED || taskItem.status == BiosimulationLog.Status.SUCCEEDED){
 //                            sedDocument.status = BiosimulationLog.Status.SUCCEEDED;
@@ -227,7 +227,7 @@ public class BiosimulationLog {
             SedML sedmlModel = sedmlDoc.getSedMLModel();
 
             SedDocumentLog sedDocumentLog = new SedDocumentLog();
-            sedDocumentLog.location = sedmlModel.getPathForURI();
+            sedDocumentLog.location = sedmlModel.getFileName();
             sedDocumentLog.status = Status.QUEUED;
 
             List<AbstractTask> tasks = sedmlModel.getTasks();
