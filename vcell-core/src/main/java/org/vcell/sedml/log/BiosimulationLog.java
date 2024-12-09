@@ -4,12 +4,18 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,7 +24,45 @@ import java.util.List;
 
 public class BiosimulationLog {
 
+    public static class LogValidationException extends RuntimeException {
+        public LogValidationException(String message) {
+            super(message);
+        }
+    }
+
+    public static final Logger lg = LogManager.getLogger(BiosimulationLog.class);
     public static final String LOG_YML = "log.yml";
+    public static final boolean VALIDATE_LOG = true;
+
+    public static void validate(String sedmlLocation) throws LogValidationException {
+        if (!VALIDATE_LOG) {
+            lg.debug("Skipping log validation");
+            return;
+        }
+        try {
+            // prepare HTTP POST to https://api.biosimulations.org/logs/validate with content type application/json
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            File yamlFile = new File(sedmlLocation, LOG_YML);
+            ArchiveLog log = mapper.readValue(yamlFile, ArchiveLog.class);
+            String jsonText = writeArchiveLogToJson(log);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.biosimulations.org/logs/validate"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonText))
+                    .build();
+
+            // send the request and verify return status of 204
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 204) {
+                throw new LogValidationException("Failed to validate log file");
+            }else{
+                lg.info("Biosimulation Log file validated successfully to remote API, consider disabling");
+            }
+        } catch (IOException | InterruptedException e) {
+            lg.error("Failed to validate log file", e);
+        }
+    }
 
     public enum Status {
         QUEUED,

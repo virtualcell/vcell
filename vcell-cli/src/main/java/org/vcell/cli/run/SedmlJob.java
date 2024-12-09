@@ -201,6 +201,7 @@ public class SedmlJob {
             this.reportProblem(e);
             this.somethingFailed = somethingDidFail();
             BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED, this.RESULTS_DIRECTORY_PATH);
+            BiosimulationLog.validate(this.RESULTS_DIRECTORY_PATH);
             return false;
         } finally {
             if (span != null) {
@@ -348,6 +349,7 @@ public class SedmlJob {
         // Declare success!
         BiosimulationLog.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", this.logDocumentMessage);
         BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
+        BiosimulationLog.validate(this.RESULTS_DIRECTORY_PATH);
         logger.info("SED-ML : " + this.sedmlName + " successfully completed");
         return true;
     }
@@ -469,6 +471,7 @@ public class SedmlJob {
         BiosimulationLog.setExceptionMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", type, this.logDocumentError);
         this.CLI_RECORDER.writeDetailedErrorList(e, this.BIOMODEL_BASE_NAME + ",  doc:    " + type + ": " + this.logDocumentError);
         BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED, this.RESULTS_DIRECTORY_PATH);
+        BiosimulationLog.validate(this.RESULTS_DIRECTORY_PATH);
     }
 
     private void recordRunDetails(SolverHandler solverHandler) throws IOException {
