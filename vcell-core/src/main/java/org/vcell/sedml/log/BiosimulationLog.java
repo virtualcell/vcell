@@ -3,20 +3,73 @@ package org.vcell.sedml.log;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jlibsedml.*;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BiosimulationLog {
 
+    public static class LogValidationException extends RuntimeException {
+        public LogValidationException(String message) {
+            super(message);
+        }
+    }
+
+    public static final Logger lg = LogManager.getLogger(BiosimulationLog.class);
+    public static final String LOG_YML = "log.yml";
+    public static final boolean VALIDATE_LOG = true;
+
+    public static void validate(String sedmlLocation) throws LogValidationException {
+        if (!VALIDATE_LOG) {
+            lg.debug("Skipping log validation");
+            return;
+        }
+        try {
+            // prepare HTTP POST to https://api.biosimulations.org/logs/validate with content type application/json
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            File yamlFile = new File(sedmlLocation, LOG_YML);
+            ArchiveLog log = mapper.readValue(yamlFile, ArchiveLog.class);
+            String jsonText = writeArchiveLogToJson(log);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.biosimulations.org/logs/validate"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonText))
+                    .build();
+
+            // send the request and verify return status of 204
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 204) {
+                throw new LogValidationException("Failed to validate log file");
+            }else{
+                lg.info("Biosimulation Log file validated successfully to remote API, consider disabling");
+            }
+        } catch (IOException | InterruptedException e) {
+            lg.error("Failed to validate log file", e);
+        }
+    }
+
     public enum Status {
         QUEUED,
+        RUNNING,
         SUCCEEDED,
         FAILED,
+        ABORTED,
         SKIPPED
     }
     public static class ExceptionLog {
@@ -94,5 +147,231 @@ public class BiosimulationLog {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         return objectMapper.writeValueAsString(archiveLog);
+    }
+
+    public static void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, String outDir, String duration, String algorithm) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, LOG_YML);
+        ArchiveLog log = mapper.readValue(yamlFile, ArchiveLog.class);
+
+        for (SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlName.endsWith(sedDocument.location)) {
+                for (TaskLog taskItem : sedDocument.tasks) {
+                    if (taskItem.id.equals(taskName)) {
+                        taskItem.status = taskStatus;
+                        taskItem.duration = new BigDecimal(duration);
+                        taskItem.algorithm = algorithm != null ? algorithm.replace("KISAO:","KISAO_") : null;
+//                        // update individual task status
+//                        if ( taskItem.status == BiosimulationLog.Status.QUEUED || taskItem.status == BiosimulationLog.Status.SUCCEEDED){
+//                            sedDocument.status = BiosimulationLog.Status.SUCCEEDED;
+//                        } else {
+//                            sedDocument.status = BiosimulationLog.Status.FAILED;
+//                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
+    }
+
+    public static void updateSedmlDocStatusYml(String sedmlName, Status sedmlDocStatus, String outDir) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, LOG_YML);
+        ArchiveLog log = mapper.readValue(yamlFile, ArchiveLog.class);
+
+        for (SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlName.endsWith(sedDocument.location)) {
+                sedDocument.status = sedmlDocStatus;
+            }
+        }
+        mapper.writeValue(yamlFile, log);
+    }
+
+    public static void updateOmexStatusYml(Status simStatus, String outDir, String duration) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, LOG_YML);
+        ArchiveLog log = mapper.readValue(yamlFile, ArchiveLog.class);
+
+        log.status = simStatus;
+        log.duration = new BigDecimal(duration);
+
+        mapper.writeValue(yamlFile, log);
+    }
+
+    // sedmlAbsolutePath - full path to location of the actual sedml file (document) used as input
+    // entityId          - ex: task_0_0 for task, or biomodel_20754836.sedml for a sedml document
+    // outDir            - path to directory where the log files will be placed
+    // entityType        - string describing the entity type ex "task" for a task, or "sedml" for sedml document
+    // message           - useful info about the execution of the entity (ex: task), could be human readable or concatenation of stdout and stderr
+    public static void setOutputMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String message) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, LOG_YML);
+        ArchiveLog log = mapper.readValue(yamlFile, ArchiveLog.class);
+
+        if (entityType.equals("omex")) {
+            log.output = message;
+        } else {
+            for (SedDocumentLog sedDocument : log.sedDocuments) {
+                if (sedmlAbsolutePath.endsWith(sedDocument.location)) {
+                    if (entityType.equals("sedml") && sedDocument.location.equals(entityId)) {
+                        sedDocument.output = message;
+                    } else if (entityType.equals("task")) {
+                        for (TaskLog task : sedDocument.tasks) {
+                            if (task.id.equals(entityId)) {
+                                task.output = message;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
+    }
+
+    // type - exception class, ex RuntimeException
+    // message  - exception message
+    public static void setExceptionMessage(String sedmlAbsolutePath, String entityId, String outDir, String entityType, String type, String message) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, LOG_YML);
+        ArchiveLog log = mapper.readValue(yamlFile, ArchiveLog.class);
+
+        for (SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlAbsolutePath.endsWith(sedDocument.location)) {
+                if (entityType.equals("sedml") && sedDocument.location.equals(entityId)) {
+                    ExceptionLog exceptionLog = new ExceptionLog();
+                    exceptionLog.type = type;
+                    exceptionLog.message = message;
+                    sedDocument.exception = exceptionLog;
+                } else if (entityType.equals("task")) {
+                    for (TaskLog task : sedDocument.tasks) {
+                        if (task.id.equals(entityId)) {
+                            ExceptionLog exceptionLog = new ExceptionLog();
+                            exceptionLog.type = type;
+                            exceptionLog.message = message;
+                            task.exception = exceptionLog;
+                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
+        System.out.println("Success!");
+    }
+
+    public static void generateStatusYaml(String omexFile, String outDir) throws IOException, XMLException {
+        List<SedDocumentLog> sedDocumentLogs = new ArrayList<>();
+        // read sedml file
+        ArchiveComponents ac = Libsedml.readSEDMLArchive(new FileInputStream(omexFile));
+        List<SEDMLDocument> sedmlDocs = ac.getSedmlDocuments();
+
+        for (SEDMLDocument sedmlDoc : sedmlDocs) {
+            SedML sedmlModel = sedmlDoc.getSedMLModel();
+
+            SedDocumentLog sedDocumentLog = new SedDocumentLog();
+            sedDocumentLog.location = sedmlModel.getFileName();
+            sedDocumentLog.status = Status.QUEUED;
+
+            List<AbstractTask> tasks = sedmlModel.getTasks();
+            for (AbstractTask task : tasks) {
+                TaskLog taskItem = new TaskLog();
+                taskItem.id = task.getId();
+                taskItem.status = Status.QUEUED;
+                sedDocumentLog.tasks.add(taskItem);
+            }
+
+            List<Output> outputs = sedmlModel.getOutputs();
+            for (Output output : outputs) {
+                OutputLog outputItem = new OutputLog();
+                outputItem.id = output.getId();
+                outputItem.status = Status.QUEUED;
+
+                if (output instanceof Plot2D) {
+                    for (Curve curve : ((Plot2D) output).getListOfCurves()) {
+                        CurveLog curveItem = new CurveLog();
+                        curveItem.id = curve.getId();
+                        curveItem.status = Status.QUEUED;
+                        if (outputItem.curves == null) {
+                            outputItem.curves = new ArrayList<>();
+                        }
+                        outputItem.curves.add(curveItem);
+                    }
+                } else if (output instanceof Report) {
+                    for (DataSet dataSet : ((Report) output).getListOfDataSets()) {
+                        DataSetLog dataSetItem = new DataSetLog();
+                        dataSetItem.id = dataSet.getId();
+                        dataSetItem.status = Status.QUEUED;
+                        if (outputItem.dataSets == null) {
+                            outputItem.dataSets = new ArrayList<>();
+                        }
+                        outputItem.dataSets.add(dataSetItem);
+                    }
+                }
+                sedDocumentLog.outputs.add(outputItem);
+            }
+            sedDocumentLogs.add(sedDocumentLog);
+        }
+
+        ArchiveLog archiveLog = new ArchiveLog();
+        archiveLog.sedDocuments = sedDocumentLogs;
+        archiveLog.status = Status.QUEUED;
+
+        String statusYamlPath = Paths.get(outDir, LOG_YML).toString();
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.writeValue(new File(statusYamlPath), archiveLog);
+    }
+
+    public static void updateDatasetStatusYml(String sedmlName, String report, String dataset, Status simStatus, String outDir) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, LOG_YML);
+        ArchiveLog log = mapper.readValue(yamlFile, ArchiveLog.class);
+
+        for (SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlName.endsWith(sedDocument.location)) {
+                for (OutputLog output : sedDocument.outputs) {
+                    if (output.id.equals(report)) {
+                        for (DataSetLog dataSet : output.dataSets) {
+                            if (dataSet.id.equals(dataset)) {
+                                dataSet.status = simStatus;
+                                if (simStatus == Status.QUEUED || simStatus == Status.SUCCEEDED) {
+                                    output.status = Status.SUCCEEDED;
+                                } else {
+                                    output.status = Status.FAILED;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
+    }
+
+    public static void updatePlotStatusYml(String sedmlName, String plotId, Status simStatus, String outDir) throws IOException {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        File yamlFile = new File(outDir, LOG_YML);
+        ArchiveLog log = mapper.readValue(yamlFile, ArchiveLog.class);
+
+        for (SedDocumentLog sedDocument : log.sedDocuments) {
+            if (sedmlName.endsWith(sedDocument.location)) {
+                for (OutputLog output : sedDocument.outputs) {
+                    if (output.id.equals(plotId)) {
+                        for (CurveLog curveLog : output.curves) {
+                            curveLog.status = simStatus;
+                            if (simStatus == Status.QUEUED || simStatus == Status.SUCCEEDED) {
+                                output.status = Status.SUCCEEDED;
+                            } else {
+                                output.status = Status.FAILED;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        mapper.writeValue(yamlFile, log);
     }
 }

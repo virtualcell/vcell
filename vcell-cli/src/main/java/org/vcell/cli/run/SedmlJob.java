@@ -13,6 +13,7 @@ import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
 import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.cli.run.hdf5.Hdf5DataExtractor;
+import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
 import org.vcell.util.DataAccessException;
@@ -123,7 +124,7 @@ public class SedmlJob {
             this.sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
             this.LOG_OMEX_MESSAGE.append("Processing ").append(this.sedmlName).append(". ");
             logger.info("Processing SED-ML: " + this.sedmlName);
-            PythonCalls.updateSedmlDocStatusYml(this.SEDML_LOCATION, Status.RUNNING, this.RESULTS_DIRECTORY_PATH);
+            BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.RUNNING, this.RESULTS_DIRECTORY_PATH);
 
             this.DOC_STATISTICS.setNumModels(sedmlFromOmex.getModels().size());
             for(Model m : sedmlFromOmex.getModels()) {
@@ -199,7 +200,8 @@ public class SedmlJob {
             Tracer.failure(e, prefix);
             this.reportProblem(e);
             this.somethingFailed = somethingDidFail();
-            PythonCalls.updateSedmlDocStatusYml(this.SEDML_LOCATION, Status.FAILED, this.RESULTS_DIRECTORY_PATH);
+            BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED, this.RESULTS_DIRECTORY_PATH);
+            BiosimulationLog.validate(this.RESULTS_DIRECTORY_PATH);
             return false;
         } finally {
             if (span != null) {
@@ -345,8 +347,9 @@ public class SedmlJob {
         org.apache.commons.io.FileUtils.deleteDirectory(this.PLOTS_DIRECTORY);    // removing sedml dir which stages results.
 
         // Declare success!
-        PythonCalls.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", this.logDocumentMessage);
-        PythonCalls.updateSedmlDocStatusYml(this.SEDML_LOCATION, Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
+        BiosimulationLog.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", this.logDocumentMessage);
+        BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
+        BiosimulationLog.validate(this.RESULTS_DIRECTORY_PATH);
         logger.info("SED-ML : " + this.sedmlName + " successfully completed");
         return true;
     }
@@ -382,7 +385,7 @@ public class SedmlJob {
         // We assume if no exception is returned that the plots pass
         for (Output output : this.sedml.getOutputs()){
             if (!(output instanceof Plot2D plot)) continue;
-            PythonCalls.updatePlotStatusYml(this.SEDML_LOCATION, plot.getId(), Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
+            BiosimulationLog.updatePlotStatusYml(this.SEDML_LOCATION, plot.getId(), BiosimulationLog.Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
         }
     }
 
@@ -464,10 +467,11 @@ public class SedmlJob {
     private void reportProblem(Exception e) throws PythonStreamException, InterruptedException, IOException{
         logger.error(e.getMessage(), e);
         String type = e.getClass().getSimpleName();
-        PythonCalls.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", this.logDocumentMessage);
-        PythonCalls.setExceptionMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", type, this.logDocumentError);
+        BiosimulationLog.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", this.logDocumentMessage);
+        BiosimulationLog.setExceptionMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", type, this.logDocumentError);
         this.CLI_RECORDER.writeDetailedErrorList(e, this.BIOMODEL_BASE_NAME + ",  doc:    " + type + ": " + this.logDocumentError);
-        PythonCalls.updateSedmlDocStatusYml(this.SEDML_LOCATION, Status.FAILED, this.RESULTS_DIRECTORY_PATH);
+        BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED, this.RESULTS_DIRECTORY_PATH);
+        BiosimulationLog.validate(this.RESULTS_DIRECTORY_PATH);
     }
 
     private void recordRunDetails(SolverHandler solverHandler) throws IOException {
