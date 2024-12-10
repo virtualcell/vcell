@@ -239,7 +239,15 @@ jobs:
         # Do the execution
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-        run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
+        run: |
+          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"; do
+            if [ -f "$file" ]; then
+              basename="$(file%.*)"
+              mkdir "$GITHUB_WORKSPACE/set_${{ matrix.sets }}/${basename}_output"
+              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root/${file}" -o "/root/${basename}_output" --writeLogFiles
+            fi
+          done
+        #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
   
       - name: Check For Success
         run: |
