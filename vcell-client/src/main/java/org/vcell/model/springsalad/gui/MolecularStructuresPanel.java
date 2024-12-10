@@ -772,7 +772,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	 * Here we refresh the links table when we add or delete a link
 	 */
 	private void refreshSiteLinksList() {
-		System.out.println("refreshSiteLinksList");
 		linkSpecsTableModel.refreshData();
 	}
 
@@ -786,7 +785,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 
 	private void changePosition(JTextField source) {
-		System.out.println("Site coordinates changed");
 		SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
 		String text = source.getText();
 		if(sas == null || text == null) {
@@ -799,29 +797,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		} catch(NumberFormatException e) {
 			return;
 		}
-		recalculateLinkLengths();
 	}
-	private void changeLinkLength() {
-		throw new UnsupportedOperationException("At this time the LinkLength is an uneditable derived value.");
-//		Double linkLength = Double.parseDouble(linkLengthField.getText());
-//		MolecularInternalLinkSpec selectedValue = siteLinksList.getSelectedValue();
-//		int selectedIndex = siteLinksList.getSelectedIndex();
-//		System.out.println("changeLinkLength(): selected index '" + selectedIndex + "' being set to " + linkLength);
-//		// TODO: set x,y,z for sites, link length will be always calculated from xyz
-//		recalculatePositions();
-	}
-	
-	// we only display the link length in the UI as a courtesy, this field doesn't exist in MolecularInternalLinkSpec
-	// when we need it, we compute it
-	private void recalculateLinkLengths() {
-		
-//		MolecularInternalLinkSpec mils = siteLinksList.getSelectedValue();
-		System.out.println("recalculateLinkLengths");
-		// TODO: we need to update the table row (maybe??)
-//		showLinkLength(mils);
-	}
-	private void recalculatePositions() {
-	}
+
 
 	private void addLinkActionPerformed() {
 		AddLinkPanel panel = new AddLinkPanel(this);
@@ -838,7 +815,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			MolecularComponentPattern secondMcp = panel.getSecondSiteList().getSelectedValue();
 			MolecularInternalLinkSpec mils = new MolecularInternalLinkSpec(fieldSpeciesContextSpec, firstMcp, secondMcp);
 			fieldSpeciesContextSpec.getInternalLinkSet().add(mils);
-			System.out.println("addLinkActionPerformed");
+//			System.out.println("addLinkActionPerformed");
 			return;
 		} else {
 			return;
@@ -850,7 +827,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		MolecularInternalLinkSpec selectedValue = linkSpecsTableModel.getValueAt(row);
 		if(selectedValue != null) {
 			fieldSpeciesContextSpec.getInternalLinkSet().remove(selectedValue);
-			System.out.println("deleteLinkActionPerformed");
+//			System.out.println("deleteLinkActionPerformed");
 		}
 		return;
 	}

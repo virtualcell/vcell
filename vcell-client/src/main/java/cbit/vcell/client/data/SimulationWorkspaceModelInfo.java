@@ -524,9 +524,6 @@ for (SymbolTableEntry bioSymbol : sortedBioSymbols){
 	mappings.add(var.getName()+"   "+mathInfo+"    ==>    "+bioInfo+", tooltipString="+tooltipString);
 }
 tooltipString+="</html>";
-						if(filterCategory == BioModelCategoryType.GeneratedSpecies) {
-							System.out.println("var.getName");
-						}
 						metadataMap.put(var.getName(), new DataSymbolMetadata(filterCategory, unit, tooltipString, displayName));
 					}else{
 						isSymbolsNotFound = true;
