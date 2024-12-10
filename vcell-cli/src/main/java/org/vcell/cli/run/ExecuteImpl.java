@@ -134,7 +134,7 @@ public class ExecuteImpl {
 
         logger.info("Preparing output directory...");
         // we don't want to accidentally delete the input...
-        // if the output is a subset of the input file's housing directory, we shouldn't delete!!
+        // if the output directory is a subset of the input file's housing directory, we shouldn't delete!!
         if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
             RunUtils.removeAndMakeDirs(adjustedOutputDir);
 
