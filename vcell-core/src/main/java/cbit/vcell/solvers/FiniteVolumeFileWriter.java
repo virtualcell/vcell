@@ -1675,7 +1675,7 @@ lg.error(e);
         for(int i = 0; i < scanCount; i++){
             for(int j = 0; j < scanParameters.length; j++){
                 String scanParameter = scanParameters[j];
-                Expression exp = simulation.getMathOverrides().getActualExpression(scanParameter, i);
+                Expression exp = simulation.getMathOverrides().getActualExpression(scanParameter, new MathOverrides.ScanIndex(i));
                 double value = exp.evaluateConstant();
                 printWriter.print(value + " ");
             }

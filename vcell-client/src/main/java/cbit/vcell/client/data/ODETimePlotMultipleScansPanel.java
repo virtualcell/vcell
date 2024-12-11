@@ -24,6 +24,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableColumn;
 
+import cbit.vcell.solver.*;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.Plot2D;
@@ -39,10 +40,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.ODEDataManager;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
 /**
@@ -88,6 +85,7 @@ private void initialize()  {
 
 	setLayout(new BorderLayout());
 	int scanCount = simulation.getScanCount();
+	int trialCount = simulation.getNumTrials();
 	
 	plotPane = new PlotPane();
 	plotPane.getPlot2DDataPanel1().setXVarName(xVarColumnName);
@@ -129,7 +127,7 @@ private void initialize()  {
 
 		public Object getValueAt(int row, int col) { 
 			if (col == 0) {
-				return new Integer(row);
+				return row;
 			}
 			return rowData[row][col - 1]; 
 		}
@@ -145,12 +143,11 @@ private void initialize()  {
 	
 	values = new Double[scanCount][scanParams.length];
 	for (int i = 0; i < scanCount; i ++) {
+		MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(i);
 		for (int j = 0; j < scanParams.length; j ++){
-		Expression scanConstantExp = simulation.getMathOverrides().getActualExpression(scanParams[j], i);
+		Expression scanConstantExp = simulation.getMathOverrides().getActualExpression(scanParams[j], scanIndex);
 			try {
 				values[i][j] = scanConstantExp.evaluateConstantWithSubstitution();
-			} catch (DivideByZeroException e1) {
-				e1.printStackTrace();
 			} catch (ExpressionException e1) {
 				e1.printStackTrace();
 			}

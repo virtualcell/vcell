@@ -3,6 +3,7 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.TempSimulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -135,7 +136,7 @@ public class SpatialResultsConverter {
                         String nameKey = convertedData.scanParameterNames[nameIndex];
                         scanValues[nameIndex] = new double[eachBound[nameIndex] + 1];
                         for (int scanIndex = 0; scanIndex < eachBound[nameIndex] + 1; scanIndex++){
-                            Expression overrideExp = vcellSimulation.getMathOverrides().getActualExpression(nameKey, scanIndex);
+                            Expression overrideExp = vcellSimulation.getMathOverrides().getActualExpression(nameKey, new MathOverrides.ScanIndex(scanIndex));
                             try { scanValues[nameIndex][scanIndex] = overrideExp.evaluateConstant(); }
                             catch (ExpressionException e){ throw new RuntimeException(e); }
                         }
