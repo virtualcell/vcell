@@ -9,45 +9,26 @@
  */
 
 package cbit.vcell.solver;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.util.*;
-import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.document.Identifiable;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.PropertyConstants;
-import org.vcell.util.document.SimulationVersion;
-import org.vcell.util.document.Version;
-import org.vcell.util.document.Versionable;
-
-import cbit.vcell.mapping.SimulationContext.Application;
-import cbit.vcell.mapping.SimulationContext.Kind;
-import cbit.vcell.mapping.ReactionContext;
-import cbit.vcell.mapping.ReactionRuleSpec;
-import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
-import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.SimulationContextEntity;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import org.vcell.util.*;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.Issue.IssueSource;
+import org.vcell.util.document.*;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
@@ -111,120 +92,7 @@ public class Simulation implements Versionable, Matchable, java.beans.VetoableCh
 	private boolean fieldIsDirty = false;
 	private String fieldImportedTaskID;
 
-	public static class Counters {		// SpringSaLaD post processing counters, structure to be determined, will be moved appropriately
 
-		public static void writeMoleculeCounters(SimulationContext simContext, StringBuilder sb) {
-			if(simContext == null) {
-				sb.append("\n");
-				return;
-			}
-			if(simContext.getApplicationType() != Application.SPRINGSALAD) {
-				sb.append("\n");
-				return;
-			}
-			Model model = simContext.getBioModel().getModel();
-			SpeciesContext[] speciesContexts = model.getSpeciesContexts();
-			for(SpeciesContext sc : speciesContexts) {
-				if(SpeciesContextSpec.SourceMoleculeString.equals(sc.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(sc.getName())) {
-					continue;	// skip the Source and the Sink molecules (use in Creation / Destruction reactions)
-				}
-				SpeciesPattern sp = sc.getSpeciesPattern();
-				if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
-					continue;
-				}
-				// Each MolecularType can be used for only one SpeciesContext
-				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
-				sb.append("'").append(mt.getName()).append("' : ")
-						.append("Measure Total Free Bound");
-				sb.append("\n");
-			}
-		}
-
-		public static void writeStateCounters(SimulationContext simContext, StringBuilder sb) {
-			if(simContext == null) {
-				sb.append("\n");
-				return;
-			}
-			if(simContext.getApplicationType() != Application.SPRINGSALAD) {
-				sb.append("\n");
-				return;
-			}
-			Model model = simContext.getBioModel().getModel();
-			SpeciesContext[] speciesContexts = model.getSpeciesContexts();
-			for(SpeciesContext sc : speciesContexts) {
-				SpeciesPattern sp = sc.getSpeciesPattern();
-				if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
-					continue;
-				}
-				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
-				List<MolecularComponent> mcList = mt.getComponentList();
-				for(MolecularComponent mc : mcList) {
-					List<ComponentStateDefinition> csdList = mc.getComponentStateDefinitions();
-					for(ComponentStateDefinition csd : csdList) {
-						sb.append("'").append(mt.getName()).append("' : ")
-							.append("'").append(mc.getName()).append("' : ")
-							.append("'").append(csd.getName()).append("' : ")
-							.append("Measure Total Free Bound");
-						sb.append("\n");
-					}
-				}
-			}
-		}
-
-		public static void writeBondCounters(SimulationContext simContext, StringBuilder sb) {
-			if(simContext == null) {
-				sb.append("\n");
-				return;
-			}
-			if(simContext.getApplicationType() != Application.SPRINGSALAD) {
-				sb.append("\n");
-				return;
-			}
-			ReactionContext reactionContext = simContext.getReactionContext();
-			ReactionRuleSpec[] reactionRuleSpecs = reactionContext.getReactionRuleSpecs();
-			for(ReactionRuleSpec rrs : reactionRuleSpecs) {
-				if(rrs.isExcluded()) {
-					continue;
-				}
-				Map<String, Object> analysisResults = new LinkedHashMap<> ();
-				rrs.analizeReaction(analysisResults);
-				Subtype subtype = rrs.getSubtype(analysisResults);
-				if(subtype == ReactionRuleSpec.Subtype.BINDING) {
-					sb.append("'").append(rrs.getReactionRule().getName()).append("' : ") // was ("' : '")
-						.append("Counted");
-					sb.append("\n");
-				}
-			}
-		}
-		
-		public static void writeSitePropertyCounters(SimulationContext simContext, StringBuilder sb) {
-			if(simContext == null) {
-				sb.append("\n");
-				return;
-			}
-			if(simContext.getApplicationType() != Application.SPRINGSALAD) {
-				sb.append("\n");
-				return;
-			}
-			Model model = simContext.getBioModel().getModel();
-			SpeciesContext[] speciesContexts = model.getSpeciesContexts();
-			for(SpeciesContext sc : speciesContexts) {
-				SpeciesPattern sp = sc.getSpeciesPattern();
-				if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
-					continue;
-				}
-				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
-				List<MolecularComponent> mcList = mt.getComponentList();
-				for(MolecularComponent mc : mcList) {
-					sb.append("'").append(mt.getName()).append("' ")
-						.append("Site " + (mc.getIndex()-1)).append(" : ")
-						.append("Track Properties true");
-					sb.append("\n");
-				}
-			}
-		}
-	}
-	
 private Simulation( ) {
 }
 /**
