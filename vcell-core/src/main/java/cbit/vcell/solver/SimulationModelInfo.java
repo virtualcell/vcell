@@ -51,4 +51,6 @@ public interface SimulationModelInfo {
 	String getVolumeNameGeometry(int subVolumeID);
 
 	DataSymbolMetadataResolver getDataSymbolMetadataResolver();
+
+	boolean isSpringSaLad();
 }

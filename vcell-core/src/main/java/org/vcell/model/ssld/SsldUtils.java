@@ -9,25 +9,64 @@ import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.*;
 import org.vcell.model.rbm.*;
-import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
-import org.vcell.util.ISize;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
 
-import java.awt.*;
 import java.util.*;
 import java.io.BufferedReader;
 import java.io.*;
 import java.util.List;
-import java.util.prefs.Preferences;
 
-import static org.vcell.model.ssld.TransitionReaction.ANY_STATE;
 import static org.vcell.model.ssld.TransitionReaction.ANY_STATE_STRING;
 import static org.vcell.solver.langevin.LangevinLngvWriter.*;
 
 public class SsldUtils {
+
+    // result entry from langevin output
+    public static class LangevinResult {
+        public final String qualifier;
+        public final String molecule;
+        public final String site;
+        public final String state;
+
+        public static LangevinResult fromString(String str) {
+            if(str == null || str.length() == 0) {
+                throw new RuntimeException("Langevin generated molecules name must contain some text");
+            }
+            String qualifier = "";
+            String molecule = "";
+            String site = "";
+            String state = "";
+
+            String[] tokens = str.split("_{1,2}");
+            if(tokens.length <1 || tokens.length > 4) {
+                throw new RuntimeException("Langevin generated molecules name must have between one and 4 tokens");
+            }
+            for (int i=0; i<tokens.length; i++) {
+                String token = tokens[i];
+                if(i == 0) {
+                    qualifier = token;
+                } else if(i == 1) {
+                    molecule = token;
+                } else if(i == 2) {
+                    site = token;
+                } else if(i == 3) {
+                    state = token;
+                }
+            }
+           LangevinResult lr = new LangevinResult(qualifier, molecule, site, state);
+            return lr;
+        }
+
+        public LangevinResult(String qualifier, String molecule, String site, String state) {
+            this.qualifier = qualifier;
+            this.molecule = molecule;
+            this.site = site;
+            this.state = state;
+        }
+    }
 
     private class Mapping {
 

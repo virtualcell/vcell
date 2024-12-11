@@ -10,14 +10,14 @@
 
 package cbit.vcell.client.data;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
+import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.units.VCUnitSystem;
+import cbit.vcell.units.parser.UnitSymbol;
+import cbit.vcell.util.ColumnDescription;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.VCellThreadChecker;
 
 import cbit.vcell.geometry.GeometryClass;
@@ -306,15 +306,27 @@ public class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRes
 		//
 		// if called before the map is populated, it will indicate an empty list of FilterCategoryTypes (not yet processed).
 		//
-		HashSet<ModelCategoryType> filters = new HashSet<ModelCategoryType>();
+		LinkedHashSet<ModelCategoryType> filters = new LinkedHashSet<ModelCategoryType>();
+		if(simulationOwner instanceof SimulationContext simContext) {
+			if(simContext.getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+				filters.add(BioModelCategoryType.Molecules);
+				filters.add(BioModelCategoryType.BoundSites);
+				filters.add(BioModelCategoryType.FreeSites);
+				filters.add(BioModelCategoryType.TotalSites);
+				ModelCategoryType[] ret = filters.toArray(new BioModelCategoryType[0]);
+				return ret;
+			}
+		}
 		if (savedMetadataMap != null){
 			for (DataSymbolMetadata dsm : savedMetadataMap.values()){
 				if (dsm.filterCategory != null){
-					filters.add(dsm.filterCategory);
+					ModelCategoryType mct = dsm.filterCategory;
+					filters.add(mct);
 				}
 			}
-		}	
-		return filters.toArray(new BioModelCategoryType[0]);
+		}
+		ModelCategoryType[] ret = filters.toArray(new BioModelCategoryType[0]);
+		return ret;
 	}
 	
 	private SymbolTableEntry[] getSortedBiologicalSymbols(SymbolTableEntry[] bioSymbols){
@@ -350,7 +362,48 @@ public class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRes
 			return 10;
 		}
 	}
-	
+
+	public void populateDataSymbolMetadata(ColumnDescription[] cdArray) {
+
+		VCellThreadChecker.checkCpuIntensiveInvocation();	// must be explicitly called from a non-swing thread
+		if(!(simulationOwner instanceof SimulationContext)) {
+			return;
+		}
+
+		String tooltipString = "Solver generated";
+		HashMap<String, DataSymbolMetadata> metadataMap = new HashMap<>();
+
+		for(ColumnDescription cd : cdArray) {
+			DataSymbolMetadata metaData = getDataSymbolMetadata(cd.getName());
+			if(metaData == null) {
+				String columnName = cd.getName();
+				ModelCategoryType filterCategory = null;	// parse name to find the filter category
+				SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
+				if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
+					System.out.println("Ignoring LangevinResult token: " + columnName);
+					continue;
+				}
+				if(!lr.molecule.isEmpty() && lr.site.isEmpty() && lr.state.isEmpty()) {
+					filterCategory = BioModelCategoryType.Molecules;
+				} else if(lr.qualifier.equals("FREE") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
+					filterCategory = BioModelCategoryType.FreeSites;
+				} else if(lr.qualifier.equals("BOUND") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
+					filterCategory = BioModelCategoryType.BoundSites;
+				} else if(lr.qualifier.equals("TOTAL") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
+					filterCategory = BioModelCategoryType.TotalSites;
+				}
+				VCUnitDefinition unit = null;
+				metaData = new DataSymbolMetadata(filterCategory, unit, tooltipString, columnName);
+				metadataMap.put(cd.getName(), metaData);
+			}
+		}
+		if(savedMetadataMap == null) {
+			savedMetadataMap = metadataMap;
+		} else {
+			savedMetadataMap.putAll(metadataMap);
+		}
+	}
+
 	@Override
 	public void populateDataSymbolMetadata(HashMap<String, DataSymbolMetadata> auxMap) {
 		VCellThreadChecker.checkCpuIntensiveInvocation();	// must be explicitly called from a non-swing thread
@@ -523,7 +576,11 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	GeneratedSpecies,
 	ReservedXYZT(true,false),
 	Other,
-	Sensitivity;
+	Sensitivity,
+	Molecules(true, true),
+	FreeSites(false, true, "Free Sites"),
+	BoundSites(false, true, "Bound Sites"),
+	TotalSites(false, true, "Total Sites");
 	/**
 	 * should this be selected initially on GUI?
 	 */
@@ -532,6 +589,9 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	 * should this be enabled so user can select / deselect?
 	 */
 	private final boolean enabled;
+
+	// we provide a default, which is the name exactly as spelled in the enum
+	private final String displayName;
 	
 	/**
 	 * initialSelect is false, enabled is true
@@ -539,6 +599,7 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	private BioModelCategoryType( ) {
 		initialSelect = false;
 		enabled = true;
+		displayName = name();
 	}
 	/**
 	 * @param initialSelect display checked initially?
@@ -547,13 +608,18 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	private BioModelCategoryType(boolean initialSelect, boolean enabled) {
 		this.initialSelect = initialSelect;
 		this.enabled = enabled;
+		displayName = name();
 	}
-	
+	private BioModelCategoryType(boolean initialSelect, boolean enabled, String displayName) {
+		this.initialSelect = initialSelect;
+		this.enabled = enabled;
+		this.displayName = displayName;
+	}
+
 	@Override
-	public String getName(){
+	public String getName() {
 		return name();
 	}
-	
 	@Override
 	public boolean isInitialSelect() {
 		return initialSelect;
@@ -562,14 +628,36 @@ public static enum BioModelCategoryType implements ModelCategoryType {
 	public boolean isEnabled() {
 		return enabled;
 	}
-};
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	// Static method to get enum by label
+	public static BioModelCategoryType fromLabel(String label) {
+		for (BioModelCategoryType value : BioModelCategoryType.values()) {
+			if (value.getDisplayName().equals(label)) {
+				return value;
+			}
+		} throw new IllegalArgumentException("No enum constant with label " + label);
+	}
+}
 
 @Override
 public DataSymbolMetadataResolver getDataSymbolMetadataResolver() {
 	return dataSymbolMetadataResolver;
 }
 
-private static void addOutputFunctionsToMetaData(SimulationContext simulationContext,HashMap<String, DataSymbolMetadata> metaDataMap){
+@Override
+public boolean isSpringSaLad() {
+	if(simulationOwner != null && simulationOwner instanceof SimulationContext simContext) {
+		if(simContext.getApplicationType() == SimulationContext.Application.SPRINGSALAD) {
+			return true;
+		}
+	}
+	return false;
+}
+
+	private static void addOutputFunctionsToMetaData(SimulationContext simulationContext,HashMap<String, DataSymbolMetadata> metaDataMap){
 	if(metaDataMap != null &&
 		simulationContext.getOutputFunctionContext() != null &&
 		simulationContext.getOutputFunctionContext().getOutputFunctionsList() != null){

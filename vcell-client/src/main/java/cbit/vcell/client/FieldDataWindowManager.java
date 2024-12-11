@@ -290,6 +290,11 @@ private static class OutputFunctionViewer extends JPanel{
 			public DataSymbolMetadataResolver getDataSymbolMetadataResolver(){
 				return pdeDataViewer.getSimulationModelInfo().getDataSymbolMetadataResolver();
 			}
+
+			@Override
+			public boolean isSpringSaLad() {
+				return false;
+			}
 		});
 		
 		SimulationOwner simulationOwner = new SimulationOwner.FieldDataSimOwner() {

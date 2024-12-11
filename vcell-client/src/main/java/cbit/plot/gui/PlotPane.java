@@ -31,6 +31,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 
+import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import org.vcell.util.Range;
 import org.vcell.util.gui.ButtonGroupCivilized;
 import org.vcell.util.gui.EnhancedJLabel;
@@ -482,7 +483,6 @@ private void connPtoP4SetTarget() {
 /**
  * Insert the method's description here.
  * Creation date: (12/16/2004 3:00:42 PM)
- * @param range cbit.util.Range
  */
 public void forceXYRange(Range xRange, Range yRange) {
 
@@ -1207,7 +1207,7 @@ public void setBCompact(boolean bCompact) {
 	getJLabelRight().setVisible(!bCompact);
 	boolean oldValue = fieldBCompact;
 	fieldBCompact = bCompact;
-	firePropertyChange("bCompact", new Boolean(oldValue), new Boolean(bCompact));
+	firePropertyChange("bCompact", oldValue, bCompact);
 }
 
 public void setHDF5DescriptionText(String descr) {
@@ -1365,6 +1365,13 @@ private void updateLegend() {
 				VCUnitDefinition ud = metaData.unit;
 				if(ud != null) {
 					unitSymbol += ud.getSymbolUnicode();
+				}
+			} else if(metaData != null && metaData.unit == null) {	// metadata for langevin-generated entities
+				if(metaData.filterCategory == SimulationWorkspaceModelInfo.BioModelCategoryType.Molecules ||
+						metaData.filterCategory == SimulationWorkspaceModelInfo.BioModelCategoryType.BoundSites ||
+						metaData.filterCategory == SimulationWorkspaceModelInfo.BioModelCategoryType.FreeSites ||
+						metaData.filterCategory == SimulationWorkspaceModelInfo.BioModelCategoryType.TotalSites) {
+					unitSymbol = "molecules";
 				}
 			}
 			if (metaData != null && metaData.tooltipString != null){

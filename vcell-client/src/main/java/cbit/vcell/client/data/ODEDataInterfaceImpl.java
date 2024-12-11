@@ -1,6 +1,7 @@
 package cbit.vcell.client.data;
 
 import cbit.vcell.math.FunctionColumnDescription;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.MultiTrialNonspatialStochSimDataReader;
 import cbit.vcell.simdata.SummaryStatisticType;
@@ -11,6 +12,8 @@ import cbit.vcell.solver.SimulationModelInfo.ModelCategoryType;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
+import org.vcell.model.ssld.MoleculeCounter;
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.VCDataIdentifier;
 
@@ -128,8 +131,9 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 			return getOdeSolverResultSet().getColumnDescriptions();
 		}else{
 			ArrayList<ColumnDescription> selectedColumnDescriptions = new ArrayList<ColumnDescription>();
-			for (int i = 0; i < getOdeSolverResultSet().getColumnDescriptions().length; i++) {
-				String name = getOdeSolverResultSet().getColumnDescriptions()[i].getName();
+			ColumnDescription[] columnDescriptions = getOdeSolverResultSet().getColumnDescriptions();
+			for (int i = 0; i < columnDescriptions.length; i++) {
+				String name = columnDescriptions[i].getName();
 				DataSymbolMetadataResolver dataSymbolMetadataResolver = simulationModelInfo.getDataSymbolMetadataResolver();
 				DataSymbolMetadata dataSymbolMetadata = dataSymbolMetadataResolver.getDataSymbolMetadata(name);
 				ModelCategoryType selectedFilterCategory = null;
@@ -137,17 +141,27 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 					selectedFilterCategory = dataSymbolMetadata.filterCategory;
 				}
 
+				// for Langevin generated Molecules, the selectedFilterCategory is null because
+				// dataSymbolMetadata.filterCategory is null
 				for (int j = 0; j < selectedFilters.length; j++) {
 					if(selectedFilters[j].equals(selectedFilterCategory)){
-						selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
+						selectedColumnDescriptions.add(columnDescriptions[i]);
 						break;
 					}
 					// Langevin values just shown as species
-					if(selectedFilters[j].getName().equals("Species") && selectedFilterCategory == null) {
-						selectedColumnDescriptions.add(getOdeSolverResultSet().getColumnDescriptions()[i]);
+					if(selectedFilters[j].getName().equals("Molecules") && selectedFilterCategory == SimulationWorkspaceModelInfo.BioModelCategoryType.Molecules) {
+						selectedColumnDescriptions.add(columnDescriptions[i]);
+						break;
+					} else if(selectedFilters[j].getName().equals("FreeSites") && selectedFilterCategory == SimulationWorkspaceModelInfo.BioModelCategoryType.FreeSites) {
+						selectedColumnDescriptions.add(columnDescriptions[i]);
+						break;
+					} else if(selectedFilters[j].getName().equals("BoundSites") && selectedFilterCategory == SimulationWorkspaceModelInfo.BioModelCategoryType.BoundSites) {
+						selectedColumnDescriptions.add(columnDescriptions[i]);
+						break;
+					} else if(selectedFilters[j].getName().equals("TotalSites") && selectedFilterCategory == SimulationWorkspaceModelInfo.BioModelCategoryType.TotalSites) {
+						selectedColumnDescriptions.add(columnDescriptions[i]);
 						break;
 					}
-
 				}
 			}
 			return selectedColumnDescriptions.toArray(new ColumnDescription[0]);
@@ -161,6 +175,44 @@ class ODEDataInterfaceImpl implements ODEDataInterface {
 	@Override
 	public DataSymbolMetadataResolver getDataSymbolMetadataResolver() {
 		return (simulationModelInfo!=null?simulationModelInfo.getDataSymbolMetadataResolver():null);
+	}
+
+	@Override
+	public boolean isSpringSaLaD() {
+		if(simulationModelInfo != null && simulationModelInfo.isSpringSaLad()) {
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void checkTrivial(ArrayList<ColumnDescription> columnDescriptions) {
+		for(ColumnDescription columnDedcription : columnDescriptions) {
+			if(columnDedcription instanceof ODESolverResultSetColumnDescription cd) {
+
+				double[] data = null;
+				int index = odeSolverResultSet.findColumn(cd.getName());
+				try {
+					data = odeSolverResultSet.extractColumn(index);
+				} catch (ExpressionException e) {
+					System.out.println("Failed to extract column: " + e.getMessage());
+					continue;
+				}
+				if(data == null || data.length == 0) {
+					continue;
+				}
+				double initial = data[0];
+				boolean isTrivial = true;
+				for(double d : data) {
+					if(initial != d) {
+						isTrivial = false;
+						break;	// one mismatch is enough to know it's not trivial
+					}
+				}
+				cd.setIsTrivial(isTrivial);
+			}
+		}
+
 	}
 
 }

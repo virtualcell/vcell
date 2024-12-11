@@ -141,13 +141,14 @@ public class RowColumnResultSet implements java.io.Serializable {
     /**
      * getVariableNames method comment.
      */
-    public synchronized void addRow(double[] values){
+    public synchronized void addRow(double[] values) {
         // cbit.util.Assertion.assert(values.length == getDataColumnCount());
-        double[] v = new double[getDataColumnCount()];
-        if(values.length != getDataColumnCount()){
+        int dataColumnCount = getDataColumnCount();
+        double[] v = new double[dataColumnCount];
+        if(values.length != dataColumnCount) {
             throw new RuntimeException("number of values in row is not equal to number of columns");
         }
-        System.arraycopy(values, 0, v, 0, getDataColumnCount());
+        System.arraycopy(values, 0, v, 0, dataColumnCount);
         fieldValues.add(v);
     }
 
