@@ -39,6 +39,9 @@ public class ExecuteCommand implements Callable<Integer> {
     @Option(names = "--keepFlushingLogs", defaultValue = "false")
     private boolean bKeepFlushingLogs = false;
 
+    @Option(names = "--guaranteeGoodReturnCode", defaultValue = "false", description = "Even on failure, return error code 0 for script purposes.")
+    private boolean bGuaranteeGoodReturnCode = false;
+
     @Option(names = "--small-mesh", defaultValue = "false", description = "force spatial simulations to have a very small mesh to make execution faster")
     private boolean bSmallMeshOverride = false;
 
@@ -135,7 +138,7 @@ public class ExecuteCommand implements Callable<Integer> {
             return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
             org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
-            return 1;
+            return bGuaranteeGoodReturnCode ? 0 : 1;
         } finally {
             logger.debug("Completed all execution");
         }

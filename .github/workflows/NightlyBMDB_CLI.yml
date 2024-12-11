@@ -171,7 +171,7 @@ jobs:
             echo "Running \"$file\" in output folder \"${base_name}_output\""
             sim_input="/root/$(basename ${file})"
             sim_output="/root/$(basename ${base_name})_output"
-            docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles
+            docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles --guaranteeGoodReturnCode
           fi
           done
         #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
@@ -262,7 +262,7 @@ jobs:
               echo "Running \"$file\" in output folder \"${base_name}_output\""
               sim_input="/root/$(basename ${file})"
               sim_output="/root/$(basename ${base_name})_output"
-              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles
+              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles --guaranteeGoodReturnCode
             fi
           done
         #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
