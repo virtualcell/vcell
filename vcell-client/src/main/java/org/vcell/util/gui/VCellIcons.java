@@ -30,6 +30,9 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 public abstract class VCellIcons {
+
+
+
     public static HashMap<String, URL> imagePaths = new HashMap<String, URL>();
 
     private static URL getResourceUrl(String resourcePath){
