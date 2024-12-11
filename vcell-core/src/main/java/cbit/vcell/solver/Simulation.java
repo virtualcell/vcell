@@ -124,13 +124,13 @@ public Simulation(SimulationVersion argSimulationVersion, MathDescription mathDe
 	if (mathDescription.getGeometry().getDimension()>0){
 		fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());
 	}
-	fieldMathOverrides = new MathOverrides(this);
-	fieldSolverTaskDescription = new SolverTaskDescription(this);
-	refreshDependencies();
-}
+		fieldMathOverrides = new MathOverrides(this);
+		fieldSolverTaskDescription = new SolverTaskDescription(this);
+		refreshDependencies();
+	}
 
 
-/**
+	/**
  * One of three ways to construct a Simulation.  This constructor
  * is used when creating a Simulation from the database.
  */
@@ -153,12 +153,12 @@ public Simulation(SimulationVersion simulationVersion, MathDescription mathDescr
 		if (mathDescription.getGeometry().getDimension()>0){
 			fieldMeshSpecification = new MeshSpecification(mathDescription.getGeometry());
 		}
+		}
+		//  Must set the MathDescription before constructing these...
+		fieldMathOverrides = new MathOverrides(this, mathOverridesTokenizer);
+		fieldSolverTaskDescription = new SolverTaskDescription(this, solverTaskDescriptionTokenizer);
+		refreshDependencies();
 	}
-	//  Must set the MathDescription before constructing these...
-	fieldMathOverrides = new MathOverrides(this, mathOverridesTokenizer);
-	fieldSolverTaskDescription = new SolverTaskDescription(this, solverTaskDescriptionTokenizer);
-	refreshDependencies();
-}
 
 
 /**
@@ -192,14 +192,14 @@ public Simulation(MathDescription mathDescription, SimulationOwner simulationOwn
 //				}
 //			}
 //		}
+		}
+		fieldMathOverrides = new MathOverrides(this);
+		fieldSolverTaskDescription = new SolverTaskDescription(this);
 	}
-	fieldMathOverrides = new MathOverrides(this);
-	fieldSolverTaskDescription = new SolverTaskDescription(this);
-}
 
 
-/**
- * One of three ways to construct a Simulation.  This constructor
+	/**
+	 * One of three ways to construct a Simulation.  This constructor
  * is used when copying a Simulation from an existing one.
  */
 public Simulation(Simulation simulation) {
@@ -241,46 +241,46 @@ public Simulation(Simulation simulation, boolean bCloneMath) {
 }
 
 
-public SimulationOwner getSimulationOwner() {
-	return simulationOwner;
-}
-
-
-public void setSimulationOwner(SimulationOwner simulationOwner) {
-	this.simulationOwner = simulationOwner;
-}
-
-
-/**
- * The addPropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().addPropertyChangeListener(listener);
-}
-
-/**
- * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().addVetoableChangeListener(listener);
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (4/24/2003 3:33:12 PM)
- */
-public void clearVersion() {
-	fieldSimulationVersion = null;
-}
-
-
-/**
- * compareEqual method comment.
- */
-public boolean compareEqual(Matchable object) {
-	if (this == object) {
-		return (true);
+	public SimulationOwner getSimulationOwner() {
+		return simulationOwner;
 	}
+
+
+	public void setSimulationOwner(SimulationOwner simulationOwner) {
+		this.simulationOwner = simulationOwner;
+	}
+
+
+	/**
+	 * The addPropertyChangeListener method was generated to support the propertyChange field.
+	 */
+	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+		getPropertyChange().addPropertyChangeListener(listener);
+	}
+
+	/**
+	 * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
+	 */
+	public synchronized void addVetoableChangeListener(java.beans.VetoableChangeListener listener) {
+		getVetoPropertyChange().addVetoableChangeListener(listener);
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (4/24/2003 3:33:12 PM)
+	 */
+	public void clearVersion() {
+		fieldSimulationVersion = null;
+	}
+
+
+	/**
+	 * compareEqual method comment.
+	 */
+	public boolean compareEqual(Matchable object) {
+		if (this == object) {
+			return (true);
+		}
 	if (object != null && object instanceof Simulation) {
 		Simulation simulation = (Simulation) object;
 		//
@@ -323,41 +323,41 @@ private boolean compareEqualMathematically(Simulation simulation) {
 
 public static String createSimulationID(KeyValue simKey) {
 	return "SimID_"+simKey;
-}
-
-
-/**
- * The firePropertyChange method was generated to support the propertyChange field.
- */
-public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
-	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
-}
-
-
-/**
- * The fireVetoableChange method was generated to support the vetoPropertyChange field.
- */
-public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
-}
-
-
-public void forceNewVersionAnnotation(SimulationVersion newSimulationVersion) throws PropertyVetoException {
-	if (getVersion().getVersionKey().equals(newSimulationVersion.getVersionKey())) {
-		setVersion(newSimulationVersion);
-	} else {
-		throw new RuntimeException("Simulation.forceNewVersionAnnotation failed : version keys not equal");
 	}
-}
 
 
-public java.lang.String getDescription() {
-	return fieldDescription;
-}
+	/**
+	 * The firePropertyChange method was generated to support the propertyChange field.
+	 */
+	public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
+		getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
+	}
 
 
-public boolean getIsDirty() {
-	return fieldIsDirty;
+	/**
+	 * The fireVetoableChange method was generated to support the vetoPropertyChange field.
+	 */
+	public void fireVetoableChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) throws java.beans.PropertyVetoException {
+		getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
+	}
+
+
+	public void forceNewVersionAnnotation(SimulationVersion newSimulationVersion) throws PropertyVetoException {
+		if (getVersion().getVersionKey().equals(newSimulationVersion.getVersionKey())) {
+			setVersion(newSimulationVersion);
+		} else {
+			throw new RuntimeException("Simulation.forceNewVersionAnnotation failed : version keys not equal");
+		}
+	}
+
+
+	public java.lang.String getDescription() {
+		return fieldDescription;
+	}
+
+
+	public boolean getIsDirty() {
+		return fieldIsDirty;
 }
 
 /**
@@ -420,62 +420,62 @@ public boolean isSpatial() {
 //	}
 //}
 
-// this doesn't seem to be called anywhere, we deprecate it (also, it doesn't know about Feature_Springs)
+	// this doesn't seem to be called anywhere, we deprecate it (also, it doesn't know about Feature_Springs)
 // jul 2023 danv
-@Deprecated
-public Set<SolverFeature> getRequiredFeatures() {
-	Set<SolverFeature> requiredFeatures = new HashSet<SolverFeature>();
-	final MathDescription md = getMathDescription();
-	if (isSpatial()) {
-		requiredFeatures.add(SolverFeature.Feature_Spatial);
-	} else {
-		requiredFeatures.add(SolverFeature.Feature_NonSpatial);
-	}
+	@Deprecated
+	public Set<SolverFeature> getRequiredFeatures() {
+		Set<SolverFeature> requiredFeatures = new HashSet<SolverFeature>();
+		final MathDescription md = getMathDescription();
+		if (isSpatial()) {
+			requiredFeatures.add(SolverFeature.Feature_Spatial);
+		} else {
+			requiredFeatures.add(SolverFeature.Feature_NonSpatial);
+		}
 
-	final boolean hybrid = md.isSpatialHybrid();
-	final boolean stoch = md.isNonSpatialStoch() || md.isSpatialStoch();
-	final boolean ruleBased = md.isRuleBased();
-	if (hybrid) {
-		requiredFeatures.add(SolverFeature.Feature_Hybrid);
-	}
-	if (stoch && !hybrid) {
-		requiredFeatures.add(SolverFeature.Feature_Stochastic);
-	}
-	if (!stoch && !ruleBased) {
-		requiredFeatures.add(SolverFeature.Feature_Deterministic);
-	}
-	if (md.hasFastSystems()) {
-		requiredFeatures.add(SolverFeature.Feature_FastSystem);
-	}
-	if (md.hasPeriodicBoundaryCondition()) {
-		requiredFeatures.add(SolverFeature.Feature_PeriodicBoundaryCondition);
-	}
-	if (md.hasEvents()) {
-		requiredFeatures.add(SolverFeature.Feature_Events);
-	}
-	if (md.hasRandomVariables()) {
-		requiredFeatures.add(SolverFeature.Feature_RandomVariables);
-	}
-	if (getSolverTaskDescription().getStopAtSpatiallyUniformErrorTolerance() != null) {
-		requiredFeatures.add(SolverFeature.Feature_StopAtSpatiallyUniform);
-	}
-	if (getDataProcessingInstructions() != null) {
-		requiredFeatures.add(SolverFeature.Feature_DataProcessingInstructions);
-	}
-	if (md.getVariable(PSF_FUNCTION_NAME) != null) {
-		requiredFeatures.add(SolverFeature.Feature_PSF);
-	}
-	if (isSerialParameterScan()) {
-		requiredFeatures.add(SolverFeature.Feature_SerialParameterScans);
-	}
-	if (md.hasVolumeRegionEquations()) {
-		requiredFeatures.add(SolverFeature.Feature_VolumeRegionEquations);
-	}
-	if (md.hasRegionSizeFunctions()) {
-		requiredFeatures.add(SolverFeature.Feature_RegionSizeFunctions);
-	}
-	if (md.hasGradient()) {
-		requiredFeatures.add(SolverFeature.Feature_GradientSourceTerm);
+		final boolean hybrid = md.isSpatialHybrid();
+		final boolean stoch = md.isNonSpatialStoch() || md.isSpatialStoch();
+		final boolean ruleBased = md.isRuleBased();
+		if (hybrid) {
+			requiredFeatures.add(SolverFeature.Feature_Hybrid);
+		}
+		if (stoch && !hybrid) {
+			requiredFeatures.add(SolverFeature.Feature_Stochastic);
+		}
+		if (!stoch && !ruleBased) {
+			requiredFeatures.add(SolverFeature.Feature_Deterministic);
+		}
+		if (md.hasFastSystems()) {
+			requiredFeatures.add(SolverFeature.Feature_FastSystem);
+		}
+		if (md.hasPeriodicBoundaryCondition()) {
+			requiredFeatures.add(SolverFeature.Feature_PeriodicBoundaryCondition);
+		}
+		if (md.hasEvents()) {
+			requiredFeatures.add(SolverFeature.Feature_Events);
+		}
+		if (md.hasRandomVariables()) {
+			requiredFeatures.add(SolverFeature.Feature_RandomVariables);
+		}
+		if (getSolverTaskDescription().getStopAtSpatiallyUniformErrorTolerance() != null) {
+			requiredFeatures.add(SolverFeature.Feature_StopAtSpatiallyUniform);
+		}
+		if (getDataProcessingInstructions() != null) {
+			requiredFeatures.add(SolverFeature.Feature_DataProcessingInstructions);
+		}
+		if (md.getVariable(PSF_FUNCTION_NAME) != null) {
+			requiredFeatures.add(SolverFeature.Feature_PSF);
+		}
+		if (isSerialParameterScan()) {
+			requiredFeatures.add(SolverFeature.Feature_SerialParameterScans);
+		}
+		if (md.hasVolumeRegionEquations()) {
+			requiredFeatures.add(SolverFeature.Feature_VolumeRegionEquations);
+		}
+		if (md.hasRegionSizeFunctions()) {
+			requiredFeatures.add(SolverFeature.Feature_RegionSizeFunctions);
+		}
+		if (md.hasGradient()) {
+			requiredFeatures.add(SolverFeature.Feature_GradientSourceTerm);
 	}
 	if (md.getPostProcessingBlock().getNumDataGenerators() > 0) {
 		requiredFeatures.add(SolverFeature.Feature_PostProcessingBlock);
@@ -528,9 +528,9 @@ public MeshSpecification getMeshSpecification() {
  * @return The name property value.
  * @see #setName
  */
-public java.lang.String getName() {
-	return fieldName;
-}
+	public java.lang.String getName() {
+		return fieldName;
+	}
 
 
 /**
@@ -634,8 +634,8 @@ public String getVCML() throws MathException {
 	}
 
 	buffer.append("}\n");
-	return buffer.toString();
-}
+		return buffer.toString();
+	}
 
 
 /**
@@ -676,27 +676,27 @@ public void refreshDependencies() {
 	if (getMeshSpecification()!=null){
 		getMeshSpecification().refreshDependencies();
 	}
-	getSolverTaskDescription().refreshDependencies();
-	getMathOverrides().refreshDependencies();
+		getSolverTaskDescription().refreshDependencies();
+		getMathOverrides().refreshDependencies();
 
-	getMathDescription().removePropertyChangeListener(this);
-	getMathDescription().addPropertyChangeListener(this);
+		getMathDescription().removePropertyChangeListener(this);
+		getMathDescription().addPropertyChangeListener(this);
 
-}
+	}
 
-/**
- * The removePropertyChangeListener method was generated to support the propertyChange field.
- */
-public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-	getPropertyChange().removePropertyChangeListener(listener);
-}
+	/**
+	 * The removePropertyChangeListener method was generated to support the propertyChange field.
+	 */
+	public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+		getPropertyChange().removePropertyChangeListener(listener);
+	}
 
-/**
- * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
- */
-public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
-	getVetoPropertyChange().removeVetoableChangeListener(listener);
-}
+	/**
+	 * The removeVetoableChangeListener method was generated to support the vetoPropertyChange field.
+	 */
+	public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeListener listener) {
+		getVetoPropertyChange().removeVetoableChangeListener(listener);
+	}
 
 /**
  * Sets the description property (java.lang.String) value.
@@ -783,13 +783,13 @@ public void setMeshSpecification(MeshSpecification meshSpecification) throws jav
  * Sets the name property (java.lang.String) value.
  * @param name The new value for the property.
  * @see #setName
- */
-public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
-	java.lang.String oldValue = fieldName;
-	fireVetoableChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
-	fieldName = name;
-	firePropertyChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
-}
+	 */
+	public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
+		java.lang.String oldValue = fieldName;
+		fireVetoableChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
+		fieldName = name;
+		firePropertyChange(PropertyConstants.PROPERTY_NAME_NAME, oldValue, name);
+	}
 
 
 /**
@@ -877,7 +877,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		DataProcessingInstructions oldValue = this.dataProcessingInstructions;
 		this.dataProcessingInstructions = dataProcessingInstructions;
 		firePropertyChange("dataProcessingInstructions", oldValue, dataProcessingInstructions);
-}
+	}
 
 	public boolean isSerialParameterScan() {
 		if (getSolverTaskDescription().isSerialParameterScan() && getScanCount() > 1) {
@@ -962,5 +962,59 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	@Override
 	public String getDisplayType() {
 		return typeName;
+	}
+
+	public int getNumTrials() {
+		return fieldSolverTaskDescription.getNumTrials();
+	}
+
+	public int getJobIndex(MathOverrides.ScanIndex scanIndex, SolverTaskDescription.TrialIndex trialIndex) {
+		if (trialIndex.index >= getNumTrials()) {
+			throw new IllegalArgumentException("trialIndex must be less than numTrials");
+		}
+		if (scanIndex.index >= getScanCount()) {
+			throw new IllegalArgumentException("scanIndex must be less than scanCount");
+		}
+		return getJobIndex(scanIndex, trialIndex, getScanCount());
+	}
+
+	public MathOverrides.ScanIndex getScanIndex(int jobIndex) {
+		return getScanIndex(jobIndex, getScanCount());
+	}
+
+	public SolverTaskDescription.TrialIndex getTrialIndex(int jobIndex) {
+		return getTrialIndex(jobIndex, getScanCount());
+	}
+
+	public int getNumJobs() {
+		return getNumTrials() * getScanCount();
+	}
+
+	public static int getJobIndex(MathOverrides.ScanIndex scanIndex, SolverTaskDescription.TrialIndex trialIndex, int scanCount) {
+		if (scanCount <= 0) {
+			throw new IllegalArgumentException("scanCount must be positive");
+		}
+		if (scanIndex.index >= scanCount) {
+			throw new IllegalArgumentException("scanIndex must be less than scanCount");
+		}
+		return trialIndex.index * scanCount + scanIndex.index;
+	}
+
+	public static MathOverrides.ScanIndex getScanIndex(int jobIndex, int scanCount) {
+		if (scanCount <= 0) {
+			throw new IllegalArgumentException("scanCount must be positive");
+		}
+		return new MathOverrides.ScanIndex(jobIndex % scanCount);
+	}
+
+	public static SolverTaskDescription.TrialIndex getTrialIndex(int jobIndex, int scanCount) {
+		if (scanCount <= 0) {
+			throw new IllegalArgumentException("scanCount must be positive");
+		}
+		return new SolverTaskDescription.TrialIndex(jobIndex / scanCount);
+	}
+
+	public static int getNumJobs(int numTrials, int scanCount) {
+		return numTrials * scanCount;
 	}
 }
