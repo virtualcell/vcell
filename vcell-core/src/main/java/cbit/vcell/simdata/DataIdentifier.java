@@ -28,6 +28,11 @@ public class DataIdentifier implements java.io.Serializable {
 	private Domain domain = null;
 	private boolean bFunction = false;
 
+	public static DataIdentifier dtoToDataIdentifier(org.vcell.restclient.model.DataIdentifier dto) {
+		return new DataIdentifier(dto.getName(), VariableType.dtoToVariableType(dto.getVariableType()),
+				Domain.dtoToDomain(dto.getDomain()), dto.getbFunction(), dto.getDisplayName());
+	}
+
 
 /**
  * DataIdentifier constructor comment.
