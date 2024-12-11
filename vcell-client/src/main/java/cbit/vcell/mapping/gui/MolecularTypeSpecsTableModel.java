@@ -61,7 +61,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		COLUMN_SITE("Site"),
 //		COLUMN_MOLECULE("Molecule"),
 		COLUMN_STRUCTURE("Location"),
-		COLUMN_STATE("State"),
+//		COLUMN_STATE("State"),
 		COLUMN_X(" X "),
 		COLUMN_Y(" Y "),
 		COLUMN_Z(" Z "),
@@ -94,8 +94,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 //				return MolecularType.class;
 		case COLUMN_STRUCTURE:
 				return Structure.class;
-		case COLUMN_STATE:
-			return ComponentStatePattern.class;
+//		case COLUMN_STATE:
+//			return ComponentStatePattern.class;
 		case COLUMN_X:
 		case COLUMN_Y:
 		case COLUMN_Z:
@@ -140,16 +140,16 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 					return null;
 				}
 				return sas.getLocation();
-			case COLUMN_STATE:
-				ComponentStatePattern csp = mcp.getComponentStatePattern();
-				if(csp == null) {
-					return ComponentStatePattern.strNone;
-				}
-				if(csp.isAny()) {
-					return ComponentStatePattern.strAny;
-				}
-				String name = csp.getComponentStateDefinition().getName();
-				return name;
+//			case COLUMN_STATE:
+//				ComponentStatePattern csp = mcp.getComponentStatePattern();
+//				if(csp == null) {
+//					return ComponentStatePattern.strNone;
+//				}
+//				if(csp.isAny()) {
+//					return ComponentStatePattern.strAny;
+//				}
+//				String name = csp.getComponentStateDefinition().getName();
+//				return name;
 			case COLUMN_X:
 				if(sas == null) {
 					return null;
@@ -200,8 +200,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		switch (columnType) {
 		case COLUMN_SITE:
 //		case COLUMN_MOLECULE:
-		case COLUMN_STATE:
-			return;
+//		case COLUMN_STATE:
+//			return;
 		case COLUMN_STRUCTURE:
 			if(aValue instanceof Structure structure) {
 				if(sas == null) {
@@ -352,8 +352,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		switch (columnType) {
 		case COLUMN_SITE:
 //		case COLUMN_MOLECULE:
-		case COLUMN_STATE:
-			return false;
+//		case COLUMN_STATE:
+//			return false;
 		case COLUMN_STRUCTURE:
 		case COLUMN_X:
 		case COLUMN_Y:
@@ -382,7 +382,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				case COLUMN_SITE:
 //				case COLUMN_MOLECULE:
 				case COLUMN_STRUCTURE:
-				case COLUMN_STATE:
+//				case COLUMN_STATE:
 				case COLUMN_X:
 				case COLUMN_Y:
 				case COLUMN_Z:
@@ -522,8 +522,6 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		updateColorComboBox();
 	}
 
-
-
 	private void updateColorComboBox() {
 		if(fieldSimulationContext == null) {
 			return;
@@ -570,7 +568,6 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 				setHorizontalTextPosition(SwingConstants.LEFT);
 				if (value instanceof Structure structure) {
 					setText(structure.getName());
-
 				}
 				return this;
 			}
@@ -621,7 +618,6 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		if (evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")) {
 			fireTableRowsUpdated(0,getRowCount()-1);
 		}
-
 		if (evt.getSource() instanceof SpeciesContextSpec) {
 			fireTableRowsUpdated(0,getRowCount()-1);
 		}
@@ -632,8 +628,6 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			refreshColumns();
 			fireTableStructureChanged();
 		}
-
 	}
-	
 
 }

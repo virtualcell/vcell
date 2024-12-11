@@ -29,11 +29,8 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Coordinate;
-import org.vcell.util.gui.ColorIcon;
-import org.vcell.util.gui.DefaultScrollTableCellRenderer;
-import org.vcell.util.gui.EditorScrollTable;
+import org.vcell.util.gui.*;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
-import org.vcell.util.gui.VCellIcons;
 import org.vcell.util.gui.sorttable.SortTableModel;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
@@ -52,6 +49,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Map;
 
 
 @SuppressWarnings("serial")
@@ -598,9 +596,20 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 							MolecularComponentPattern firstMcp = mils.getMolecularComponentPatternOne();
 							MolecularComponentPattern secondtMcp = mils.getMolecularComponentPatternTwo();
 							setText(firstMcp.getMolecularComponent().getName() + " :: " + secondtMcp.getMolecularComponent().getName());
-//							Icon icon = new ColorIcon(10,10,namedColor.getColor(), true);	// small square icon with subdomain color
+							SpeciesContextSpec scs = mils.getSpeciesContextSpec();
+							if(fieldSpeciesContextSpec != scs) {
+								throw new RuntimeException("SpeciesContextSpec inconsistent.");
+							}
+							Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
+							SiteAttributesSpec sasFirst = siteAttributesMap.get(firstMcp);
+							SiteAttributesSpec sasSecond = siteAttributesMap.get(secondtMcp);
+							NamedColor ncFirst = sasFirst.getColor();
+							NamedColor ncSecond = sasSecond.getColor();
+							Icon iconFirst = new ColorIcon(10,10,ncFirst.getColor(), true);
+							Icon iconSecond = new ColorIcon(10,10,ncSecond.getColor(), true);
+							Icon compositeIcon = new CompositeIcon(iconFirst, iconSecond);
 //							setHorizontalTextPosition(SwingConstants.RIGHT);
-//							setIcon(icon);
+							setIcon(compositeIcon);
 						}
 					}
 					return this;
