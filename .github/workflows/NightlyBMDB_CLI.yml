@@ -162,7 +162,8 @@ jobs:
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: |
-          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"; do
+          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
+            echo "\"$file\""
             if [ -f "$file" ]; then
             basename="$(file%.*)"
             mkdir "$GITHUB_WORKSPACE/set_${{ matrix.sets }}/${basename}_output"
@@ -249,7 +250,7 @@ jobs:
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: |
-          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"; do
+          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}/*"; do
             echo "\"$file\""
             if [ -f "$file" ]; then
               basename="$(file%.*)"
