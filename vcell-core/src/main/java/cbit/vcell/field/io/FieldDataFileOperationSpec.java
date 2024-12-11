@@ -10,6 +10,7 @@
 
 package cbit.vcell.field.io;
 
+import org.vcell.restclient.model.FieldDataFileOperationResults;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -57,6 +58,28 @@ public class FieldDataFileOperationSpec implements java.io.Serializable{
  * Creation date: (1/22/2007 9:32:49 AM)
  */
 public FieldDataFileOperationSpec() {
+}
+
+public FieldDataFileOperationSpec(short[][][] shortSpecData, double[][][] doubleSpecData, CartesianMesh cartesianMesh,
+								  ExternalDataIdentifier specEDI, String[] varNames, VariableType[] variableTypes,
+								  double[] times, User owner, Origin origin, Extent extent, ISize isize,
+								  String annotation, int sourceSimParamScanJobIndex, KeyValue sourceSimDataKey,
+								  User sourceOwner){
+    this.shortSpecData = shortSpecData;
+	this.doubleSpecData = doubleSpecData;
+	this.cartesianMesh = cartesianMesh;
+	this.specEDI = specEDI;
+	this.varNames = varNames;
+	this.variableTypes = variableTypes;
+	this.times = times;
+	this.owner = owner;
+	this.origin = origin;
+	this.extent = extent;
+	this.isize = isize;
+	this.annotation = annotation;
+	this.sourceSimParamScanJobIndex = sourceSimParamScanJobIndex;
+	this.sourceSimDataKey = sourceSimDataKey;
+	this.sourceOwner = sourceOwner;
 }
 
 public static FieldDataFileOperationSpec createCopySimFieldDataFileOperationSpec(

@@ -20,6 +20,16 @@ import org.vcell.util.Matchable;
 public class KeyValue implements java.io.Serializable, Matchable {
 	private java.math.BigDecimal value = null;
 
+	public static org.vcell.restclient.model.KeyValue keyValueToDTO(KeyValue kv) {
+		org.vcell.restclient.model.KeyValue k = new org.vcell.restclient.model.KeyValue();
+		k.setValue(kv.value);
+		return k;
+	}
+	public static KeyValue dtoToKeyValue(org.vcell.restclient.model.KeyValue dto){
+		return new KeyValue(dto.getValue());
+	}
+
+
 public KeyValue(String value) throws NumberFormatException {
 	this.value = new java.math.BigDecimal(value);
 }

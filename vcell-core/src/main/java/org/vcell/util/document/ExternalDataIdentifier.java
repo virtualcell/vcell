@@ -25,9 +25,22 @@ public class ExternalDataIdentifier implements SimResampleInfoProvider,java.io.S
 	private org.vcell.util.document.User owner;
 	private String name;
 
+	public static org.vcell.restclient.model.ExternalDataIdentifier externalDataIdentifierToDTO(ExternalDataIdentifier externalDataIdentifier) {
+		org.vcell.restclient.model.ExternalDataIdentifier dto = new org.vcell.restclient.model.ExternalDataIdentifier();
+		dto.key(KeyValue.keyValueToDTO(externalDataIdentifier.getKey()));
+		dto.owner(User.userToDTO(externalDataIdentifier.getOwner()));
+		dto.name(externalDataIdentifier.getName());
+		return dto;
+	}
+
 /**
  * FieldDataIdentifier constructor comment.
  */
+
+public ExternalDataIdentifier(){
+	super();
+}
+
 public ExternalDataIdentifier(KeyValue arg_key, org.vcell.util.document.User argOwner,String argName) {
 	super();
 	key = arg_key;
