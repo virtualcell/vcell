@@ -313,6 +313,8 @@ public abstract class VCellIcons {
         return new ImageIcon(image);
     }
 
+    // see also CompositeIcon
+    // Icon compositeIcon = new CompositeIcon(colorIconFirst, colorIconSecond);
     public static Icon addIcon(Icon icon1, Icon icon2){
         int separatorWidth = 3;
         Image image1 = ((ImageIcon) icon1).getImage();
