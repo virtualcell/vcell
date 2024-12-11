@@ -13,6 +13,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import cbit.vcell.solver.*;
 import org.vcell.util.*;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
@@ -34,13 +35,7 @@ import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.DataProcessingInstructions;
-import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverDescription;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -71,8 +66,9 @@ public class RunSims extends AsynchClientTask {
 	}
 
 	private boolean isSmoldynTimeStepOK(Simulation sim) {
-		for (int jobIndex = 0; jobIndex < sim.getScanCount(); jobIndex ++) {
-			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, jobIndex);
+		for (int scan = 0; scan < sim.getScanCount(); scan ++) {
+			MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(scan);
+			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, scanIndex);
 			double Dmax = 0;
 			MathDescription mathDesc = sim.getMathDescription();
 			

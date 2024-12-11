@@ -222,7 +222,7 @@ public class OptXmlWriter {
 			objectiveFunctionElement.addContent(modelElement);
 			
 			Simulation tempSim = new Simulation(pdeObjectiveFunction.getMathDescription(), null);
-			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(tempSim, 0); 
+			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(tempSim, MathOverrides.ScanIndex.ZERO);
 			//
 			// write data/model variable mappings
 			//

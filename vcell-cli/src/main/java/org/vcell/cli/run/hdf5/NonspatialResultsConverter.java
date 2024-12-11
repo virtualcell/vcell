@@ -2,6 +2,7 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TempSimulation;
 import org.apache.logging.log4j.LogManager;
@@ -168,7 +169,7 @@ public class NonspatialResultsConverter {
                     String nameKey = dataSourceNonspatial.scanParameterNames[nameIndex];
                     scanValues[nameIndex] = new double[dataSourceNonspatial.scanBounds[nameIndex] + 1];
                     for (int scanIndex = 0; scanIndex < dataSourceNonspatial.scanBounds[nameIndex] + 1; scanIndex++){
-                        Expression overrideExp = dataSetValuesSource.vcSimulation.getMathOverrides().getActualExpression(nameKey, scanIndex);
+                        Expression overrideExp = dataSetValuesSource.vcSimulation.getMathOverrides().getActualExpression(nameKey, new MathOverrides.ScanIndex(scanIndex));
                         try { scanValues[nameIndex][scanIndex] = overrideExp.evaluateConstant(); }
                         catch (ExpressionException e){ throw new RuntimeException(e); }
                     }

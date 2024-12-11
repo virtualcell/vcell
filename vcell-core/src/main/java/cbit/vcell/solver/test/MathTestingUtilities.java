@@ -14,6 +14,7 @@ package cbit.vcell.solver.test;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.SimulationOwner;
 import org.vcell.util.*;
 import org.vcell.util.document.VCDocument;
@@ -1342,7 +1343,7 @@ public class MathTestingUtilities {
             throw new RuntimeException("can only handle non-spatial simulations.");
         }
         Simulation sim = new Simulation(mathDesc, null);
-        SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
+        SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, MathOverrides.ScanIndex.ZERO);
         ODESolverResultSet resultSet = new ODESolverResultSet();
         resultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
         for(int i = 0; i < time.length; i++){
@@ -1379,7 +1380,7 @@ public class MathTestingUtilities {
             throw new RuntimeException("can only handle non-spatial simulations.");
         }
         Simulation sim = new Simulation(mathDesc, (SimulationOwner) null);
-        SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, 0);
+        SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, MathOverrides.ScanIndex.ZERO);
         ODESolverResultSet resultSet = new ODESolverResultSet();
         resultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
         for(int i = 0; i < time.length; i++){

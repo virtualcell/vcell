@@ -30,6 +30,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
+import cbit.vcell.solver.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWNamespace;
@@ -130,16 +131,7 @@ import cbit.vcell.simdata.ODEDataManager;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.SensVariable;
 import cbit.vcell.solver.test.MathTestingUtilities;
@@ -1189,7 +1181,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
         if (testSim.getScanCount() != 1) {
             throw new RuntimeException("paramater scan is not supported in Math Testing Framework");
         }
-        SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(testSim, 0);
+        SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(testSim, MathOverrides.ScanIndex.ZERO);
 
         String simReportStatus = null;
         String simReportStatusMessage = null;
@@ -1321,7 +1313,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
                             if (refSim.getScanCount() != 1) {
                                 throw new RuntimeException("paramater scan is not supported in Math Testing Framework");
                             }
-                            SimulationSymbolTable refSimSymbolTable = new SimulationSymbolTable(refSim, 0);
+                            SimulationSymbolTable refSimSymbolTable = new SimulationSymbolTable(refSim, MathOverrides.ScanIndex.ZERO);
 
                             String varsToCompare[] = getVariableNamesToCompare(simSymbolTable, refSimSymbolTable);
                             SimulationComparisonSummary simCompSummary =
@@ -1418,7 +1410,7 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
                             if (refSim.getScanCount() != 1) {
                                 throw new RuntimeException("paramater scan is not supported in Math Testing Framework");
                             }
-                            SimulationSymbolTable refSimSymbolTable = new SimulationSymbolTable(refSim, 0);
+                            SimulationSymbolTable refSimSymbolTable = new SimulationSymbolTable(refSim, MathOverrides.ScanIndex.ZERO);
 
                             String varsToTest[] = getVariableNamesToCompare(simSymbolTable, refSimSymbolTable);
 

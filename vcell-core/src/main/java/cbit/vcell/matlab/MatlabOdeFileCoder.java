@@ -13,6 +13,7 @@ package cbit.vcell.matlab;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import cbit.vcell.solver.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.ArrayUtils;
@@ -30,10 +31,6 @@ import cbit.vcell.matrix.RationalMatrix;
 import cbit.vcell.matrix.RationalNumberMatrix;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.OutputFunctionContext;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
 
 /**
  * Insert the type's description here.
@@ -61,7 +58,7 @@ public class MatlabOdeFileCoder {
     public MatlabOdeFileCoder(Simulation argSimulation, RationalNumberMatrix argStoichMatrix){
         this.simulation = argSimulation;
         this.stoichMatrix = argStoichMatrix;
-        simulationSymbolTable = new SimulationSymbolTable(simulation, 0);
+        simulationSymbolTable = new SimulationSymbolTable(simulation, MathOverrides.ScanIndex.ZERO);
     }
 
     /**

@@ -4541,7 +4541,7 @@ private Element getXML(MathOverrides param) {
 			constant.setAttribute(XMLTags.ConstantArraySpec, Integer.toString(cas.getType()));
 			constant.addContent(mangle(cas.toString()));
 		} else {
-			constant.addContent(mangleExpression(param.getActualExpression(constantNames[i], 0)) );
+			constant.addContent(mangleExpression(param.getActualExpression(constantNames[i], MathOverrides.ScanIndex.ZERO)) );
 		}
 		//and add it to the mathOverrides Element
 		overrides.addContent( constant );

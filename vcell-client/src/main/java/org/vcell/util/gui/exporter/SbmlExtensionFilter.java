@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import cbit.vcell.biomodel.BioModelTransforms;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.xml.XMLSource;
 import org.apache.commons.io.FilenameUtils;
 import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
@@ -255,11 +256,12 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 			clonedBM.refreshDependencies();
 			String originalExportFilename = exportFile.getPath();
 			Files.deleteIfExists(Paths.get(originalExportFilename));
-			for (int jobIndex = 0; jobIndex < selectedSimWOSBE.getScanCount(); jobIndex++) {
-				BioModelTransforms.applyMathOverrides(selectedSimWOSBE, jobIndex, clonedBM);
+			for (int scan = 0; scan < selectedSimWOSBE.getScanCount(); scan++) {
+				MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(scan);
+				BioModelTransforms.applyMathOverrides(selectedSimWOSBE, scanIndex, clonedBM);
 				String resultString = XmlHelper.exportSBML(clonedBM, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, bRoundTripValidation);
 				// Need to export each parameter scan into a separate file
-				String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + jobIndex + ".xml";
+				String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + scanIndex.index + ".xml";
 				Files.deleteIfExists(Paths.get(newExportFileName));
 				XmlUtil.writeXMLStringToFile(resultString, exportFile.getAbsolutePath(), true);
 				exportFile.renameTo(new File(newExportFileName));

@@ -218,7 +218,7 @@ public static void chooseApplyPaste(Component requester,
 		Object newValue = newMathOverridesValuesV.elementAt(i);
 		if(newValue instanceof Expression){
 			bEnableDisplay[i] = !Compare.isEqualOrNull(
-					mathOverrides.getActualExpression(changingMathOverridesNames[i],0),
+					mathOverrides.getActualExpression(changingMathOverridesNames[i],MathOverrides.ScanIndex.ZERO),
 					((Expression)newValue));
 		}else if(newValue instanceof ConstantArraySpec){
 			bEnableDisplay[i] =	!Compare.isEqualOrNull(
@@ -282,7 +282,7 @@ public static void chooseApplyPaste_NOT_USED(Component requester,
 	boolean[] bEnableDisplay = new boolean[changingMathOverridesNames.length];
 	for(int i=0;i<changingMathOverridesNames.length;i+= 1){
 		//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-		bEnableDisplay[i] = !Compare.isEqualOrNull(mathOverrides.getActualExpression(changingMathOverridesNames[i],0),newMathOverridesValues[i].getExpression());
+		bEnableDisplay[i] = !Compare.isEqualOrNull(mathOverrides.getActualExpression(changingMathOverridesNames[i],MathOverrides.ScanIndex.ZERO),newMathOverridesValues[i].getExpression());
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 

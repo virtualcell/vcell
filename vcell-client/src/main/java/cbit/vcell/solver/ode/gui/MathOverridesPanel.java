@@ -320,7 +320,7 @@ public class MathOverridesPanel extends JPanel {
                 for (int row : rows) {
                     String rowName = (String) getJTableFixed().getValueAt(row, MathOverridesTableModel.COLUMN_PARAMETER);
                     primarySymbolTableEntriesV.add(getMathOverrides().getConstant(rowName));
-                    resolvedValuesV.add(getMathOverrides().getActualExpression(rowName, 0));
+                    resolvedValuesV.add(getMathOverrides().getActualExpression(rowName, MathOverrides.ScanIndex.ZERO));
 
                 }
                 VCellTransferable.ResolvedValuesSelection rvs =
@@ -761,8 +761,8 @@ public class MathOverridesPanel extends JPanel {
                                 String originalValueDescription = null;
                                 if (getMathOverrides().getConstantArraySpec(rowName) != null) {
                                     originalValueDescription = getMathOverrides().getConstantArraySpec(rowName).toString();
-                                } else if (getMathOverrides().getActualExpression(rowName, 0) != null) {
-                                    originalValueDescription = getMathOverrides().getActualExpression(rowName, 0).infix();
+                                } else if (getMathOverrides().getActualExpression(rowName, MathOverrides.ScanIndex.ZERO) != null) {
+                                    originalValueDescription = getMathOverrides().getActualExpression(rowName, MathOverrides.ScanIndex.ZERO).infix();
                                 } else {
                                     throw new Exception("MathOverridesPanel can't find value for '" + rowName + "'");
                                 }

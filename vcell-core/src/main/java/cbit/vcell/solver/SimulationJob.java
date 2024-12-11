@@ -20,12 +20,7 @@ public class SimulationJob implements java.io.Serializable, Matchable {
 	private FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = null;
 	private transient SimulationSymbolTable simulationSymbolTable = null;
 	
-/**
- * Insert the method's description here.
- * Creation date: (10/7/2005 4:50:05 PM)
- * @param masterSim cbit.vcell.solver.Simulation
- * @param jobIndex int
- */
+
 public SimulationJob(Simulation argSim, int jobIndex, FieldDataIdentifierSpec[] argFDIS) {
 	if (jobIndex<0){
 		throw new RuntimeException("unexpected simulation jobIndex < 0");
@@ -102,7 +97,7 @@ public Simulation getSimulation() {
 
 public final SimulationSymbolTable getSimulationSymbolTable() {
 	if (simulationSymbolTable == null) {
-		simulationSymbolTable = new SimulationSymbolTable(sim, jobIndex);
+		simulationSymbolTable = new SimulationSymbolTable(sim, getScanIndex());
 	}
 	return simulationSymbolTable;
 }
@@ -135,4 +130,12 @@ public boolean compareEqual(Matchable obj) {
 public int numProcessors( ) {
 	return sim.getSolverTaskDescription().getNumProcessors(); //CBN?
 }
+
+	public MathOverrides.ScanIndex getScanIndex() {
+		return sim.getScanIndex(jobIndex);
+	}
+
+	public SolverTaskDescription.TrialIndex getTrialIndex() {
+		return sim.getTrialIndex(jobIndex);
+	}
 }

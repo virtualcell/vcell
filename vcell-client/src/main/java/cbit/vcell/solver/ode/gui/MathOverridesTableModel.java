@@ -233,7 +233,7 @@ public Object getValueAt(int row, int column) {
 				if (getMathOverrides().isScan(fieldKeys[row])) {
 					return getMathOverrides().getConstantArraySpec(fieldKeys[row]);
 				} else {
-					Expression actualExpression = getMathOverrides().getActualExpression(fieldKeys[row], 0);
+					Expression actualExpression = getMathOverrides().getActualExpression(fieldKeys[row], MathOverrides.ScanIndex.ZERO);
 					if(actualExpression == null) {
 						return null;
 					}
@@ -387,7 +387,7 @@ private void updateKeys(MathOverrides mathOverrides) {
 			fieldKeys = mathOverrides.getOverridenConstantNames();
 		}
 		Arrays.sort(fieldKeys);
-		simSymbolTable = new SimulationSymbolTable(getMathOverrides().getSimulation(), 0);
+		simSymbolTable = new SimulationSymbolTable(getMathOverrides().getSimulation(), MathOverrides.ScanIndex.ZERO);
 	}
 }
 

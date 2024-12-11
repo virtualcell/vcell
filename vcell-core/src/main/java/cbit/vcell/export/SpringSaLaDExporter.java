@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.solver.langevin.LangevinLngvWriter;
@@ -38,15 +39,12 @@ import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.LangevinSimulationOptions;
 import cbit.vcell.solver.Simulation;
 
 public class SpringSaLaDExporter {
@@ -280,7 +278,7 @@ public class SpringSaLaDExporter {
 //			for(Molecule molecule: molecules) {
 //				molecule.getMoleculeCounter().writeMoleculeCounter(sb);
 //			}
-			Simulation.Counters.writeMoleculeCounters(simContext, sb);	// everything here is initialized with default
+			Counters.writeMoleculeCounters(simContext, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* ******  WRITE THE STATE COUNTERS *************/
@@ -294,7 +292,7 @@ public class SpringSaLaDExporter {
 //					}
 //				}
 //			}
-			Simulation.Counters.writeStateCounters(simContext, sb);	// everything here is initialized with default
+			Counters.writeStateCounters(simContext, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* ***** WRITE THE BOND COUNTERS ***************/
@@ -304,7 +302,7 @@ public class SpringSaLaDExporter {
 //			for(BindingReaction reaction: bindingReactions) {
 //				reaction.getBondCounter().writeBondCounter(sb);
 //			}
-			Simulation.Counters.writeBondCounters(simContext, sb);	// everything here is initialized with default
+			Counters.writeBondCounters(simContext, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* ********  WRITE THE SITE PROPERTY COUNTERS ************/
@@ -317,7 +315,7 @@ public class SpringSaLaDExporter {
 //					site.getPropertyCounter().writeSitePropertyCounter(sb);
 //				}
 //			}
-			Simulation.Counters.writeSitePropertyCounters(simContext, sb);	// everything here is initialized with default
+			Counters.writeSitePropertyCounters(simContext, sb);	// everything here is initialized with default
 			sb.append("\n");
 
 			/* *************** WRITE THE TRACK CLUSTERS BOOLEAN ***********/
@@ -396,6 +394,120 @@ public class SpringSaLaDExporter {
 		fileOSWriter.write(string);
 		fileOSWriter.flush();
 		fileOSWriter.close();
+	}
+
+	public static class Counters {		// SpringSaLaD post processing counters, structure to be determined, will be moved appropriately
+
+		public static void writeMoleculeCounters(SimulationContext simContext, StringBuilder sb) {
+			if(simContext == null) {
+				sb.append("\n");
+				return;
+			}
+			if(simContext.getApplicationType() != SimulationContext.Application.SPRINGSALAD) {
+				sb.append("\n");
+				return;
+			}
+			Model model = simContext.getBioModel().getModel();
+			SpeciesContext[] speciesContexts = model.getSpeciesContexts();
+			for(SpeciesContext sc : speciesContexts) {
+				if(SpeciesContextSpec.SourceMoleculeString.equals(sc.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(sc.getName())) {
+					continue;	// skip the Source and the Sink molecules (use in Creation / Destruction reactions)
+				}
+				SpeciesPattern sp = sc.getSpeciesPattern();
+				if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
+					continue;
+				}
+				// Each MolecularType can be used for only one SpeciesContext
+				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
+				sb.append("'").append(mt.getName()).append("' : ")
+						.append("Measure Total Free Bound");
+				sb.append("\n");
+			}
+		}
+
+		public static void writeStateCounters(SimulationContext simContext, StringBuilder sb) {
+			if(simContext == null) {
+				sb.append("\n");
+				return;
+			}
+			if(simContext.getApplicationType() != SimulationContext.Application.SPRINGSALAD) {
+				sb.append("\n");
+				return;
+			}
+			Model model = simContext.getBioModel().getModel();
+			SpeciesContext[] speciesContexts = model.getSpeciesContexts();
+			for(SpeciesContext sc : speciesContexts) {
+				SpeciesPattern sp = sc.getSpeciesPattern();
+				if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
+					continue;
+				}
+				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
+				List<MolecularComponent> mcList = mt.getComponentList();
+				for(MolecularComponent mc : mcList) {
+					List<ComponentStateDefinition> csdList = mc.getComponentStateDefinitions();
+					for(ComponentStateDefinition csd : csdList) {
+						sb.append("'").append(mt.getName()).append("' : ")
+							.append("'").append(mc.getName()).append("' : ")
+							.append("'").append(csd.getName()).append("' : ")
+							.append("Measure Total Free Bound");
+						sb.append("\n");
+					}
+				}
+			}
+		}
+
+		public static void writeBondCounters(SimulationContext simContext, StringBuilder sb) {
+			if(simContext == null) {
+				sb.append("\n");
+				return;
+			}
+			if(simContext.getApplicationType() != SimulationContext.Application.SPRINGSALAD) {
+				sb.append("\n");
+				return;
+			}
+			ReactionContext reactionContext = simContext.getReactionContext();
+			ReactionRuleSpec[] reactionRuleSpecs = reactionContext.getReactionRuleSpecs();
+			for(ReactionRuleSpec rrs : reactionRuleSpecs) {
+				if(rrs.isExcluded()) {
+					continue;
+				}
+				Map<String, Object> analysisResults = new LinkedHashMap<> ();
+				rrs.analizeReaction(analysisResults);
+				ReactionRuleSpec.Subtype subtype = rrs.getSubtype(analysisResults);
+				if(subtype == ReactionRuleSpec.Subtype.BINDING) {
+					sb.append("'").append(rrs.getReactionRule().getName()).append("' : ") // was ("' : '")
+						.append("Counted");
+					sb.append("\n");
+				}
+			}
+		}
+
+		public static void writeSitePropertyCounters(SimulationContext simContext, StringBuilder sb) {
+			if(simContext == null) {
+				sb.append("\n");
+				return;
+			}
+			if(simContext.getApplicationType() != SimulationContext.Application.SPRINGSALAD) {
+				sb.append("\n");
+				return;
+			}
+			Model model = simContext.getBioModel().getModel();
+			SpeciesContext[] speciesContexts = model.getSpeciesContexts();
+			for(SpeciesContext sc : speciesContexts) {
+				SpeciesPattern sp = sc.getSpeciesPattern();
+				if(sp == null || sp.getMolecularTypePatterns() == null || sp.getMolecularTypePatterns().isEmpty()) {
+					continue;
+				}
+				MolecularType mt = sp.getMolecularTypePatterns().get(0).getMolecularType();
+				List<MolecularComponent> mcList = mt.getComponentList();
+				for(MolecularComponent mc : mcList) {
+					sb.append("'").append(mt.getName()).append("' ")
+						.append("Site " + (mc.getIndex()-1)).append(" : ")
+						.append("Track Properties true");
+					sb.append("\n");
+				}
+			}
+		}
 	}
 
 /*

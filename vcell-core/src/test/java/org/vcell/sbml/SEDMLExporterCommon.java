@@ -8,6 +8,7 @@ import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.SolverDescription;
@@ -256,9 +257,10 @@ public abstract class SEDMLExporterCommon {
 					if (!oldOverrideNames.equals(newOverrideNames) && (simToExport.getScanCount() == simRoundTripped.getScanCount())){
 						// simulation scan counts are the same, but overridden constants have different names, try substituting them into the math and compare the maths.
 						System.out.println("old names: "+oldOverrideNames+", new names: "+newOverrideNames);
-						for (int simJobIndex=0; simJobIndex < simToExport.getScanCount(); simJobIndex++){
-							MathDescription oldMathDescription = new SimulationSymbolTable(simToExport, simJobIndex).getMathDescription();
-							MathDescription newMathDescription = new SimulationSymbolTable(simRoundTripped, simJobIndex).getMathDescription();
+						for (int scan=0; scan < simToExport.getScanCount(); scan++){
+							MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(scan);
+							MathDescription oldMathDescription = new SimulationSymbolTable(simToExport, scanIndex).getMathDescription();
+							MathDescription newMathDescription = new SimulationSymbolTable(simRoundTripped, scanIndex).getMathDescription();
 							MathCompareResults subCompareResults = MathDescription.testEquivalency(
 									SimulationSymbolTable.createMathSymbolTableFactory(), oldMathDescription, newMathDescription);
                             assertTrue(subCompareResults.isEquivalent(), "math overrides names not equivalent for simulation '" + simName + "' " +

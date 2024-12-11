@@ -656,7 +656,9 @@ private ExportSpecs getExportSpecs() {
 	if (vcDataIdentifier instanceof VCSimulationDataIdentifier){
         for (String filteredConstant : filteredConstants) {
 			String defaultValue = mathOverrides.getDefaultExpression(filteredConstant).infix();
-			String setValue = mathOverrides.getActualExpression(filteredConstant, ((VCSimulationDataIdentifier) vcDataIdentifier).getJobIndex()).infix();
+			int jobIndex = ((VCSimulationDataIdentifier) vcDataIdentifier).getJobIndex();
+			MathOverrides.ScanIndex scanIndex = simulation.getScanIndex(jobIndex);
+			String setValue = mathOverrides.getActualExpression(filteredConstant, scanIndex).infix();
 			if(!defaultValue.equals(setValue)){
 				differentParameterValues.add(filteredConstant + ":" +defaultValue + ":" + setValue);
 			}

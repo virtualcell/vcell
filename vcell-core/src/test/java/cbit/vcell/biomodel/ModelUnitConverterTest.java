@@ -128,8 +128,8 @@ public class ModelUnitConverterTest {
         assertEquals("(" + Kr_value_sbmlUnits + " * KMOLE)", Kr_const_sbmlUnits.getExpression().infix(), "Kr_const_sbmlUnits value doesn't match");
 
         // test unit transform on math overrides
-        Expression Kf_override_sbmlUnits = sim_sbmlUnits.getMathOverrides().getActualExpression("Kf", 0);
-        Expression Kr_override_sbmlUnits = sim_sbmlUnits.getMathOverrides().getActualExpression("Kr", 0);
+        Expression Kf_override_sbmlUnits = sim_sbmlUnits.getMathOverrides().getActualExpression("Kf", MathOverrides.ScanIndex.ZERO);
+        Expression Kr_override_sbmlUnits = sim_sbmlUnits.getMathOverrides().getActualExpression("Kr", MathOverrides.ScanIndex.ZERO);
         assertEquals("" + Kf_value_override_sbmlUnits, Kf_override_sbmlUnits.infix(), "Kf_override_sbmlUnits value doesn't match");
         assertEquals("(" + Kr_value_override_sbmlUnits + " * KMOLE)", Kr_override_sbmlUnits.infix(), "Kr_override_sbmlUnits value doesn't match");
 
@@ -137,8 +137,8 @@ public class ModelUnitConverterTest {
         // test that math overrides for copied model are unchanged
         //
         Simulation copied_sim = bioModel_sbmlUnits.getSimulationContext(0).copySimulation(sim_sbmlUnits);
-        Expression Kf_override_sbmlUnits_copy = copied_sim.getMathOverrides().getActualExpression("Kf", 0);
-        Expression Kr_override_sbmlUnits_copy = copied_sim.getMathOverrides().getActualExpression("Kr", 0);
+        Expression Kf_override_sbmlUnits_copy = copied_sim.getMathOverrides().getActualExpression("Kf", MathOverrides.ScanIndex.ZERO);
+        Expression Kr_override_sbmlUnits_copy = copied_sim.getMathOverrides().getActualExpression("Kr", MathOverrides.ScanIndex.ZERO);
         assertEquals("" + Kf_value_override_sbmlUnits, Kf_override_sbmlUnits_copy.infix(), "Kf_override_sbmlUnits value doesn't match");
         assertEquals("(" + Kr_value_override_sbmlUnits + " * KMOLE)", Kr_override_sbmlUnits_copy.infix(), "Kr_override_sbmlUnits value doesn't match");
     }

@@ -134,7 +134,7 @@ public static String checkCompatibility(SimulationOwner simOwner, Simulation sim
  * @param simulation cbit.vcell.solver.Simulation
  */
 private static boolean checkSimulationParameters(Simulation simulation, Component parent,boolean bCheckLimits) {
-	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
+	SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, MathOverrides.ScanIndex.ZERO);
 	
 	String errorMessage = null;
 	long maxTimepoints = Simulation.MAX_LIMIT_NON_SPATIAL_TIMEPOINTS;

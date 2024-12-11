@@ -3,6 +3,7 @@ package cbit.vcell.biomodel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -170,8 +171,8 @@ public class MathOverrideApplyTest {
 			transformed_biomodel.refreshDependencies();
 			Simulation sim = transformed_biomodel.getSimulation(simNameWithOverride);
 			try {
-				for (int jobIndex = 0; jobIndex < sim.getScanCount(); jobIndex++) {
-					BioModelTransforms.applyMathOverrides(sim, jobIndex, transformed_biomodel);
+				for (int scanIndex = 0; scanIndex < sim.getScanCount(); scanIndex++) {
+					BioModelTransforms.applyMathOverrides(sim, new MathOverrides.ScanIndex(scanIndex), transformed_biomodel);
 				}
 				// for now, if it doesn't throw an exception, then it passes
 				if (knownFaults().contains(filename)){
