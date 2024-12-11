@@ -164,11 +164,11 @@ public class MathOverridesTest {
     public void testExampleMappings() {
         int[] scanBounds = {2, 3, 5};
         int[] scanCoordinates = {1, 2, 3};
-        int expectedJobIndex = 39;
+        MathOverrides.ScanIndex expectedScanIndex = new MathOverrides.ScanIndex(39);
 
         // check that index is as expected for scan coordinates
         MathOverrides.ScanIndex index = MathOverrides.parameterScanCoordinateToScanIndex(scanCoordinates, scanBounds);
-        assertEquals(expectedJobIndex, index);
+        assertEquals(expectedScanIndex, index);
 
         // Convert index back to coordinates and verify that they match the original coordinates
         int[] resultCoordinates = MathOverrides.scanIndexToScanParameterCoordinate(index, scanBounds);
