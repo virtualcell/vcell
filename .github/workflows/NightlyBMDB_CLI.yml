@@ -162,13 +162,16 @@ jobs:
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: |
+          # The /* goes on the outside, otherwise bash just interprets a string!
           for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
             echo "\"$file\""
             if [ -f "$file" ]; then
-            basename="$(file%.*)"
-            mkdir "$GITHUB_WORKSPACE/set_${{ matrix.sets }}/${basename}_output"
-            echo "Running \"$file\" in output folder \"${basename}_output\""
-            docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root/${file}" -o "/root/${basename}_output" --writeLogFiles
+            base_name="${file%.*}"
+            mkdir "${base_name}_output"
+            echo "Running \"$file\" in output folder \"${base_name}_output\""
+            sim_input="/root/$(basename ${file})"
+            sim_output="/root/$(basename ${base_name})_output"
+            docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles
           fi
           done
         #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
@@ -250,13 +253,16 @@ jobs:
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: |
-          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}/*"; do
+          # The /* goes on the outside, otherwise bash just interprets a string!
+          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
             echo "\"$file\""
             if [ -f "$file" ]; then
-              basename="$(file%.*)"
-              mkdir "$GITHUB_WORKSPACE/set_${{ matrix.sets }}/${basename}_output"
-              echo "Running \"$file\" in output folder \"${basename}_output\""
-              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root/${file}" -o "/root/${basename}_output" --writeLogFiles
+              base_name="${file%.*}"
+              mkdir "${base_name}_output"
+              echo "Running \"$file\" in output folder \"${base_name}_output\""
+              sim_input="/root/$(basename ${file})"
+              sim_output="/root/$(basename ${base_name})_output"
+              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles
             fi
           done
         #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
