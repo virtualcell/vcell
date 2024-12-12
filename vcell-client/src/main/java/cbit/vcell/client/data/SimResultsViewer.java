@@ -21,11 +21,12 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.simdata.*;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.VCDataIdentifier;
@@ -37,6 +38,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Hashtable;
+
+import static cbit.vcell.solver.MathOverrides.parameterScanCoordinateToScanIndex;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/17/2005 11:22:58 PM)
@@ -387,7 +391,12 @@ private int getSelectedParamScanJobIndex(){
 	}
 	int selectedJobIndex = -1;
 	try {
-		selectedJobIndex = BeanUtils.parameterScanCoordinateToJobIndex(indices, bounds);
+		MathOverrides.ScanIndex scanIndex = MathOverrides.parameterScanCoordinateToScanIndex(indices, bounds);
+		SolverTaskDescription.TrialIndex trialIndex = SolverTaskDescription.TrialIndex.ZERO;
+		if (getSimulation().getNumTrials() > 1) {
+			System.err.println("SimResultsViewer.getSelectedParamScanJobIndex: multiple trials not supported yet");
+		}
+		selectedJobIndex = getSimulation().getJobIndex(scanIndex, trialIndex);
 	} catch (RuntimeException exc) {
 		exc.printStackTrace();
 	}

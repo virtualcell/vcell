@@ -12,6 +12,7 @@ package cbit.vcell.export.server;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
@@ -51,7 +52,7 @@ public class ExportSpecs implements Serializable {
 		for (int i = 0; i < scanCount; i++) {
 			paramScanJobIndexes[i] = i;
 			for (int j = 0; j < scanConstantNames.length; j++) {
-				String paramScanValue = simulation.getMathOverrides().getActualExpression(scanConstantNames[j], i).infix();
+				String paramScanValue = simulation.getMathOverrides().getActualExpression(scanConstantNames[j], new MathOverrides.ScanIndex(i)).infix();
 	//			System.out.println("ScanIndex="+i+" ScanConstName='"+scanConstantNames[j]+"' paramScanValue="+paramScanValue);
 				scanConstValues[i][j] = paramScanValue;
 			}

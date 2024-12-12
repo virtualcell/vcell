@@ -1990,7 +1990,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 				if (mo.isScan(constants[i])) {
 					actualStr = mo.getConstantArraySpec(constants[i]).toString();
 				} else {
-					tempExp = mo.getActualExpression(constants[i], 0);
+					tempExp = mo.getActualExpression(constants[i], MathOverrides.ScanIndex.ZERO);
 					if (tempExp != null) {
 						actualStr = tempExp.infix();
 					}

@@ -20,6 +20,7 @@ import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.IssueContext.ContextType;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,6 +35,68 @@ import java.util.stream.Stream;
  * @author: John Wagner
  */
 public class MathOverrides implements Matchable, java.io.Serializable {
+
+    static int[] scanIndexToScanParameterCoordinate(ScanIndex scanIndex, int[] scanBounds){
+        // Used to look up MathOverrides parameter scan indices from simulation Job indices
+        // see also parameterScanCoordinateToJobIndex()
+        //     Note 1: scanBounds is the highest zero-based index in each dimension (e.g. 4,5,6 for 3D matrix of size 5x6x7)
+        //     Note 2: PLEASE DO NOT CHANGE MAPPING - it is immortalized by stored simulation job datasets
+        int index = scanIndex.index;
+        int[] parameterScanCoordinates = new int[scanBounds.length];
+        for(int i = 0; i < scanBounds.length; i++){
+            int offset = 1;
+            for(int j = i + 1; j < scanBounds.length; j++){
+                offset *= scanBounds[j] + 1;
+            }
+            parameterScanCoordinates[i] = index / offset;
+            if(parameterScanCoordinates[i] > scanBounds[i]) throw new RuntimeException("invalid index, number too large");
+            index -= offset * parameterScanCoordinates[i];
+        }
+        return parameterScanCoordinates;
+    }
+
+    public static ScanIndex parameterScanCoordinateToScanIndex(int[] parameterScanCoordinate, int[] scanBounds){
+        // Used to look up simulation job index from parameter scans in MathOverrides
+        // see also jobIndexToScanParameterCoordinate()
+        //     Note 1: scanBounds is the highest zero-based index in each dimension (e.g. 4,5,6 for 3D matrix of size 5x6x7)
+        //     Note 2: PLEASE DO NOT CHANGE MAPPING - it is immortalized by stored simulation job datasets
+        if(parameterScanCoordinate.length != scanBounds.length)
+            throw new RuntimeException("coordinates and bounds arrays have different lengths");
+        int index = 0;
+        for(int i = 0; i < scanBounds.length; i++){
+            if(parameterScanCoordinate[i] < 0 || scanBounds[i] < parameterScanCoordinate[i]) throw new RuntimeException("invalid coordinate");
+            int offset = 1;
+            for(int j = i + 1; j < scanBounds.length; j++){
+                offset *= scanBounds[j] + 1;
+            }
+            index += parameterScanCoordinate[i] * offset;
+        }
+        return new ScanIndex(index);
+    }
+
+    public static class ScanIndex implements Serializable {
+        public final static ScanIndex ZERO = new ScanIndex(0);
+        public final int index;
+        public ScanIndex(int index) {
+            this.index = index;
+            if (index < 0) throw new IllegalArgumentException("index must be non-negative");
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof ScanIndex) {
+                return ((ScanIndex) obj).index == index;
+            }
+            return false;
+        }
+        @Override
+        public int hashCode() {
+            return index;
+        }
+        @Override
+        public String toString() {
+            return "ScanIndex(" + index + ")";
+        }
+    }
 
     private final static Logger logger = LogManager.getLogger(MathOverrides.class);
     private Simulation simulation = null;
@@ -335,7 +398,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
      * <code>null</code> if the key is not mapped to any value in
      * this hashtable.
      */
-    public Expression getActualExpression(String key, int index){
+    public Expression getActualExpression(String key, ScanIndex parameterIndex){
         MathOverrides.Element element = getOverridesElement(key);
         if(element == null){
             // not overriden
@@ -351,7 +414,7 @@ public class MathOverrides implements Matchable, java.io.Serializable {
             for(int i = 0; i < names.length; i++){
                 bounds[i] = getConstantArraySpec(names[i]).getNumValues() - 1;
             }
-            int[] coordinates = BeanUtils.jobIndexToScanParameterCoordinate(index, bounds);
+            int[] coordinates = scanIndexToScanParameterCoordinate(parameterIndex, bounds);
             int localIndex = coordinates[java.util.Arrays.binarySearch(names, key)];
             return getConstantArraySpec(key).getConstants()[localIndex].getExpression();
         }

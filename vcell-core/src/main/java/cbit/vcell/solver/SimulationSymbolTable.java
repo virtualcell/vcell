@@ -75,7 +75,8 @@ public class SimulationSymbolTable implements ScopedSymbolTable, MathSymbolTable
      * Field for multiplexing and spawning job arrays
      * Working sims created when necessarry with appropriate index
      */
-    private int index = 0;
+    private MathOverrides.ScanIndex scanIndex = MathOverrides.ScanIndex.ZERO;
+
     private NameScope nameScope = new SimulationNameScope();
 
     @SuppressWarnings("serial")
@@ -110,10 +111,10 @@ public class SimulationSymbolTable implements ScopedSymbolTable, MathSymbolTable
      * One of three ways to construct a Simulation.  This constructor
      * is used when creating a new Simulation.
      */
-    public SimulationSymbolTable(Simulation arg_simulation, int arg_index){
+    public SimulationSymbolTable(Simulation arg_simulation, MathOverrides.ScanIndex scanIndex){
         super();
-        simulation = arg_simulation;
-        index = arg_index;
+        this.simulation = arg_simulation;
+        this.scanIndex = scanIndex;
         rebindAll();  // especially needed to bind Constants so that .substitute() will eliminate Constants that are functions of other Constants.
     }
 
@@ -200,7 +201,7 @@ public class SimulationSymbolTable implements ScopedSymbolTable, MathSymbolTable
             //
             // make sure expression for localConstant is still up to date with MathOverrides table
             //
-            Expression exp = simulation.getMathOverrides().getActualExpression(referenceConstant.getName(), index);
+            Expression exp = simulation.getMathOverrides().getActualExpression(referenceConstant.getName(), scanIndex);
             if(exp.compareEqual(localConstant.getExpression())){
                 //localConstant.bind(this); // update bindings to latest mathOverrides
                 return localConstant;
@@ -217,7 +218,7 @@ public class SimulationSymbolTable implements ScopedSymbolTable, MathSymbolTable
         // if local Constant not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
         //
         String name = referenceConstant.getName();
-        Constant newLocalConstant = new Constant(name, simulation.getMathOverrides().getActualExpression(name, index));
+        Constant newLocalConstant = new Constant(name, simulation.getMathOverrides().getActualExpression(name, scanIndex));
         //newLocalConstant.bind(this);
         localVariableHash.put(newLocalConstant.getName(), newLocalConstant);
         return newLocalConstant;
@@ -695,7 +696,7 @@ public class SimulationSymbolTable implements ScopedSymbolTable, MathSymbolTable
     public static MathSymbolTableFactory createMathSymbolTableFactory(){
         return new MathSymbolTableFactory() {
             public MathSymbolTable createMathSymbolTable(MathDescription newMath){
-                return new SimulationSymbolTable(new Simulation(newMath, null), 0);
+                return new SimulationSymbolTable(new Simulation(newMath, null), MathOverrides.ScanIndex.ZERO);
             }
         };
     }
