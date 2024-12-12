@@ -172,19 +172,24 @@ jobs:
             sim_input="/root/$(basename ${file})"
             sim_output="/root/$(basename ${base_name})_output"
             docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles --guaranteeGoodReturnCode
+          
+            # Check for individual Success
+            if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -ne 0 ]
+            then 
+              # Copy error log to github workspace
+              touch ${{ github.workspace }}/errors.report
+              cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+            fi
           fi
           done
         #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
   
       - name: Check For Success
         run: |
-          errorSearch=$(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt)
-          if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -eq 0 ]
-          then 
+          # If the error file exists, then we have failures to report and upload; else, we can just end here; the next job will process results
+          if [ $(find ${{ github.workspace }} -name errors.report | wc -l) -eq 0 ]
+          then
             exit 0
-          else
-            # Copy error log to github workspace
-            cp $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) ${{ github.workspace }}/errors.report
           fi
 
       - name: Upload failures
@@ -263,19 +268,24 @@ jobs:
               sim_input="/root/$(basename ${file})"
               sim_output="/root/$(basename ${base_name})_output"
               docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles --guaranteeGoodReturnCode
+          
+              # Check for individual Success
+              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -ne 0 ]
+              then 
+                # Copy error log to github workspace
+                touch ${{ github.workspace }}/errors.report
+                cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+              fi
             fi
           done
         #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
-  
+
       - name: Check For Success
         run: |
-          errorSearch=$(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt)
-          if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -eq 0 ]
+          # If the error file exists, then we have failures to report and upload; else, we can just end here; the next job will process results
+          if [ $(find ${{ github.workspace }} -name errors.report | wc -l) -eq 0 ]
           then
             exit 0
-          else
-            # Copy error log to github workspace
-            cp $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) ${{ github.workspace }}/errors.report
           fi
 
       - name: Upload failures
