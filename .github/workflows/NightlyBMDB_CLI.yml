@@ -212,7 +212,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        sets: ["2", "4"]
+        sets: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
     steps:
       - name: Create Docker Image Dir
         run: mkdir /tmp/docker
@@ -258,26 +258,29 @@ jobs:
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: |
-          # The /* goes on the outside, otherwise bash just interprets a string!
-          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
-            echo "\"$file\""
-            if [ -f "$file" ]; then
-              base_name="${file%.*}"
-              mkdir "${base_name}_output"
-              echo "Running \"$file\" in output folder \"${base_name}_output\""
-              sim_input="/root/$(basename ${file})"
-              sim_output="/root/$(basename ${base_name})_output"
-              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles --guaranteeGoodReturnCode
-          
-              # Check for individual Success
-              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -ne 0 ]
-              then 
-                # Copy error log to github workspace
-                touch ${{ github.workspace }}/errors.report
-                cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+          if [ ${{ matrix.sets }} -eq 4 ] || [ ${{ matrix.sets }} -eq 2 ]; then
+            # The /* goes on the outside, otherwise bash just interprets a string!
+            for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
+              echo "\"$file\""
+              if [ -f "$file" ]; then
+                base_name="${file%.*}"
+                mkdir "${base_name}_output"
+                echo "Running \"$file\" in output folder \"${base_name}_output\""
+                sim_input="/root/$(basename ${file})"
+                sim_output="/root/$(basename ${base_name})_output"
+                docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles --guaranteeGoodReturnCode
+            
+                # Check for individual Success
+                if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -ne 0 ]
+                then
+                  # Copy error log to github workspace
+                  touch ${{ github.workspace }}/errors.report
+                  cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+                fi
               fi
-            fi
-          done
+            done
+          fi
+
         #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
 
       - name: Check For Success
