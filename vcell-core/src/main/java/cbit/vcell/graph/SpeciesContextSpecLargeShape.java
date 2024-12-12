@@ -55,13 +55,20 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     private double maxX = 0;            // coordinate of the rightmost site
     private double maxY = 0;            // coordinate of the bottommost site
 
-    public SpeciesContextSpecLargeShape(SpeciesContextSpec scs, LargeShapeCanvas shapePanel,
-                                        Displayable owner, IssueListProvider issueListProvider) {
+    private MolecularComponentPattern mcpSelected = null;   // any or both of these may be selected in their tables
+    private MolecularInternalLinkSpec milsSelected = null;
+
+    public SpeciesContextSpecLargeShape(SpeciesContextSpec scs, LargeShapeCanvas shapePanel, Displayable owner,
+                                        MolecularComponentPattern mcpSelected, MolecularInternalLinkSpec milsSelected,
+                                        IssueListProvider issueListProvider) {
         super(issueListProvider);
 
         this.owner = owner;
         this.scs = scs;
         this.shapePanel = shapePanel;
+
+        this.mcpSelected = mcpSelected;
+        this.milsSelected = milsSelected;
 
         if(scs != null) {
             this.sc = scs.getSpeciesContext();
@@ -291,10 +298,12 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         g2.setColor(colorOld);
     }
 
-    public void drawCenteredCircle(Graphics g, NamedColor namedColor, double xd, double yd, double rd) {
+    public void drawCenteredCircle(Graphics g, NamedColor namedColor, double xd, double yd, double rd,
+                                   boolean isSelected, boolean is3D) {
 
         Graphics2D g2 = (Graphics2D)g;
         Color oldColor = g.getColor();
+        Stroke strokeOld = g2.getStroke();
         RenderingHints hintsOld = g2.getRenderingHints();
 
         int z = shapePanel.getZoomFactor();
@@ -308,18 +317,33 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         int y = (int)(nmToPixelRatio * yd);
         int r = (int)(nmToPixelRatio * rd);
 
-//        g.setColor(namedColor.darker(0.9));
         g.setColor(namedColor.getColor());
         g.fillOval(x,y,r,r);        // colored circle
 
-        g.setColor(Color.black);
+
+        if(isSelected) {
+            g2.setStroke(new BasicStroke(3.6f));
+            if(is3D) {
+                g.setColor(Color.red.darker());
+            } else {
+                g.setColor(Color.darkGray);
+            }
+        } else {
+            g2.setStroke(new BasicStroke(1.4f));
+            if(is3D) {
+                g.setColor(Color.red.darker());
+            } else {
+                g.setColor(Color.black);
+            }
+        }
         g.drawOval(x, y, r, r);     // black contour
 
+        g2.setStroke(strokeOld);
         g2.setRenderingHints(hintsOld);
         g.setColor(oldColor);
     }
 
-    public void drawLink(Graphics g, double x1d, double y1d, double x2d, double y2d) {
+    public void drawLink(Graphics g, double x1d, double y1d, double x2d, double y2d, boolean isSelected) {
 
         Graphics2D g2 = (Graphics2D)g;
         Color oldColor = g.getColor();
@@ -335,9 +359,12 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         int x2 = (int)(nmToPixelRatio * x2d);
         int y2 = (int)(nmToPixelRatio * y2d);
 
-        g.setColor(Color.gray);
-        float thickness = 1.4f;
-        g2.setStroke(new BasicStroke(thickness));
+        g.setColor(Color.darkGray);
+        if(isSelected) {
+            g2.setStroke(new BasicStroke(3.6f));
+        } else {
+            g2.setStroke(new BasicStroke(1.4f));
+        }
         g2.drawLine(x1, y1, x2, y2);
 
         g2.setStroke(strokeOld);
@@ -346,9 +373,10 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     }
 
     public void paintSelf(Graphics g, boolean bPaintContour) {
-        if(isPlanarYZ() == false) {
-            return;
-        }
+        // activate the following 3 lines to prevent display if the object is 3D (x coordinates differ from each other)
+//        if(isPlanarYZ() == false) {
+//            return;
+//        }
         paintCompartments(g);
         paintAxes(g);
         if(mtp == null || mtp.getComponentPatternList().size() == 0) {		// paint empty dummy
@@ -365,7 +393,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             double x2 = x_offset + sas2.getCoordinate().getZ();
             double y1 = y_offset + sas1.getCoordinate().getY();
             double y2 = y_offset + sas2.getCoordinate().getY();
-            drawLink(g, x1, y1, x2, y2);
+            boolean isSelected = mils == milsSelected ? true : false;
+            drawLink(g, x1, y1, x2, y2, isSelected);
         }
         for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
             SiteAttributesSpec sas = sasMap.get(mcp);
@@ -374,7 +403,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             NamedColor color = sas.getColor();
             double x = x_offset + coord.getZ();
             double y = y_offset + coord.getY();
-            drawCenteredCircle(g, color, x, y, radius);
+            boolean isSelected = mcp == mcpSelected ? true : false;
+            boolean is3D = coord.getX() != 0 ? true : false;
+            drawCenteredCircle(g, color, x, y, radius, isSelected, is3D);
         }
     }
 

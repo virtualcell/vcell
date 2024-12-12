@@ -42,6 +42,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -739,12 +740,16 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	void setMolecularComponentPattern(MolecularComponentPattern mcp) {
 		fieldMolecularComponentPattern = mcp;
-		//TODO: stuff
+		if(fieldSpeciesContextSpec != null) {		// mcp may be null
+			fieldSpeciesContextSpec.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED, null, mcp);
+		}
 		updateInterface();
 	}
 	void setMolecularInternalLinkSpec(MolecularInternalLinkSpec mils) {
 		fieldMolecularInternalLinkSpec = mils;
-		//TODO: stuff
+		if(fieldSpeciesContextSpec != null) {		// mils may be null
+			fieldSpeciesContextSpec.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_LINK_SELECTED, null, mils);
+		}
 		updateInterface();
 	}
 
