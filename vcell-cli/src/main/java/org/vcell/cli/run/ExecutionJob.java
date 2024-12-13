@@ -111,7 +111,7 @@ public class ExecutionJob {
         } 
         
         // Update Status
-        BiosimulationLog.instance().updateOmexStatusYml(BiosimulationLog.Status.RUNNING, BigDecimal.valueOf(0));
+        BiosimulationLog.instance().updateOmexStatusYml(BiosimulationLog.Status.RUNNING, 0.0);
     }
 
     /**
@@ -174,7 +174,7 @@ public class ExecutionJob {
 
         this.endTime_ms = System.currentTimeMillis();
         long elapsedTime_ms = this.endTime_ms - this.startTime_ms;
-        BigDecimal duration_s = BigDecimal.valueOf(Math.ceil(elapsedTime_ms / 1000.0));
+        double duration_s = elapsedTime_ms / 1000.0;
         logger.info("Omex " + inputFile.getName() + " processing completed (" + duration_s + "s)");
         //
         // failure if at least one of the documents in the omex archive fails

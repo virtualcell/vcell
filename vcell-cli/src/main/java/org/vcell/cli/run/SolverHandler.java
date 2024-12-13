@@ -370,7 +370,7 @@ public class SolverHandler {
 					AbstractTask task = tempSimulationToTaskMap.get(tempSimulation);
 					simStatusMap.put(tempSimulation, BiosimulationLog.Status.RUNNING);
 					BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, task.getId(), BiosimulationLog.Status.RUNNING,
-							BigDecimal.valueOf(0), tempSimulation.getSolverTaskDescription().getSolverDescription().getKisao());
+							0.0, tempSimulation.getSolverTaskDescription().getSolverDescription().getKisao());
 					simDurationMap_ms.put(tempSimulation, 0);
 
 					if (bSmallMeshOverride && tempSimulation.getMeshSpecification() != null) {
@@ -593,7 +593,7 @@ public class SolverHandler {
 					}
 					AbstractTask task = tempSimulationToTaskMap.get(tempSimulation);
 	//	        	assert task != null;
-					BigDecimal duration_s = BigDecimal.valueOf(Math.ceil(simDurationMap_ms.get(tempSimulation)/1000.0));
+					double duration_s = simDurationMap_ms.get(tempSimulation)/1000.0;
 					SolverTaskDescription std = tempSimulation.getSolverTaskDescription();
 					SolverDescription sd = std.getSolverDescription();
 					String kisao = sd.getKisao();

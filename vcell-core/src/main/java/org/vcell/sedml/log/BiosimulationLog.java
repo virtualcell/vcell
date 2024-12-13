@@ -185,13 +185,13 @@ public class BiosimulationLog {
         }
     }
 
-    public void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, BigDecimal duration_s, String algorithm) {
+    public void updateTaskStatusYml(String sedmlName, String taskName, Status taskStatus, double duration_s, String algorithm) {
         for (SedDocumentLog sedDocument : this.archiveLog.sedDocuments) {
             if (sedmlName.endsWith(sedDocument.location)) {
                 for (TaskLog taskItem : sedDocument.tasks) {
                     if (taskItem.id.equals(taskName)) {
                         taskItem.status = taskStatus;
-                        taskItem.duration = duration_s;
+                        taskItem.duration = BigDecimal.valueOf(duration_s);
                         taskItem.algorithm = algorithm != null ? algorithm.replace("KISAO:","KISAO_") : null;
 //                        // update individual task status
 //                        if ( taskItem.status == BiosimulationLog.Status.QUEUED || taskItem.status == BiosimulationLog.Status.SUCCEEDED){
@@ -215,9 +215,9 @@ public class BiosimulationLog {
         setDirty();
     }
 
-    public void updateOmexStatusYml(Status simStatus, BigDecimal duration_s) {
+    public void updateOmexStatusYml(Status simStatus, double duration_s) {
         this.archiveLog.status = simStatus;
-        this.archiveLog.duration = duration_s;
+        this.archiveLog.duration = BigDecimal.valueOf(duration_s);
         setDirty();
     }
 
