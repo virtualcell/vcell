@@ -39,7 +39,7 @@ public class SedmlJob {
     private final String SEDML_LOCATION, BIOMODEL_BASE_NAME, RESULTS_DIRECTORY_PATH;
     private final StringBuilder LOG_OMEX_MESSAGE;
     private final SedmlStatistics DOC_STATISTICS;
-    private final File MASTER_OMEX_ARCHIVE, ROOT_OUTPUT_DIR, PLOTS_DIRECTORY, OUTPUT_DIRECTORY_FOR_CURRENT_SEDML;
+    private final File MASTER_OMEX_ARCHIVE, PLOTS_DIRECTORY, OUTPUT_DIRECTORY_FOR_CURRENT_SEDML;
     private final CLIRecordable CLI_RECORDER;
     private boolean somethingFailed, hasScans, hasOverrides;
     private String logDocumentMessage, logDocumentError, sedmlName;
@@ -55,7 +55,6 @@ public class SedmlJob {
      * @param sedmlLocation location of the sedml document with the model to process
      * @param omexHandler object to deal with omex archive related utilities
      * @param masterOmexArchive the archive containing the sedml file
-     * @param rootOutputDir the top-level directory for all the output of omex execution
      * @param resultsDirPath path to where the results should be placed
      * @param sedmlPath2d3dString path to where 2D and 3D plots are stored
      * @param cliRecorder recorder object used for CLI applications
@@ -64,7 +63,7 @@ public class SedmlJob {
      * @param bSmallMeshOverride whether to use small meshes or standard meshes.
      * @param logOmexMessage a string-builder to contain progress updates of omex execution
      */
-    public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive, File rootOutputDir,
+    public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive,
                     String resultsDirPath, String sedmlPath2d3dString, CLIRecordable cliRecorder,
                     boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride,
                     StringBuilder logOmexMessage){
@@ -73,7 +72,6 @@ public class SedmlJob {
         this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
         this.DOC_STATISTICS = new SedmlStatistics();
         this.BIOMODEL_BASE_NAME = FileUtils.getBaseName(masterOmexArchive.getName());
-        this.ROOT_OUTPUT_DIR = rootOutputDir;
         this.RESULTS_DIRECTORY_PATH = resultsDirPath;
         this.LOG_OMEX_MESSAGE = logOmexMessage;
         this.PLOTS_DIRECTORY = new File(sedmlPath2d3dString);
@@ -109,6 +107,7 @@ public class SedmlJob {
         final String SAFE_WINDOWS_FILE_SEPARATOR = "\\\\";
         final String SAFE_UNIX_FILE_SEPARATOR = "/";
         logger.info("Initializing SED-ML document...");
+        var biosimLog = BiosimulationLog.instance();
 
         Span span = null;
         try {
@@ -124,7 +123,7 @@ public class SedmlJob {
             this.sedmlName = sedmlNameSplit[sedmlNameSplit.length - 1];
             this.LOG_OMEX_MESSAGE.append("Processing ").append(this.sedmlName).append(". ");
             logger.info("Processing SED-ML: " + this.sedmlName);
-            BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.RUNNING, this.RESULTS_DIRECTORY_PATH);
+            biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.RUNNING);
 
             this.DOC_STATISTICS.setNumModels(sedmlFromOmex.getModels().size());
             for(Model m : sedmlFromOmex.getModels()) {
@@ -200,8 +199,7 @@ public class SedmlJob {
             Tracer.failure(e, prefix);
             this.reportProblem(e);
             this.somethingFailed = somethingDidFail();
-            BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED, this.RESULTS_DIRECTORY_PATH);
-            BiosimulationLog.validate(this.RESULTS_DIRECTORY_PATH);
+            biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED);
             return false;
         } finally {
             if (span != null) {
@@ -264,7 +262,7 @@ public class SedmlJob {
             this.logDocumentMessage += str;
             solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
                     this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH,
-                    this.ROOT_OUTPUT_DIR.getAbsolutePath(), this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES,
+                    this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES,
                     this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
         } catch (Exception e) {
             Throwable currentTierOfException = e;
@@ -347,9 +345,9 @@ public class SedmlJob {
         org.apache.commons.io.FileUtils.deleteDirectory(this.PLOTS_DIRECTORY);    // removing sedml dir which stages results.
 
         // Declare success!
-        BiosimulationLog.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", this.logDocumentMessage);
-        BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
-        BiosimulationLog.validate(this.RESULTS_DIRECTORY_PATH);
+        var biosimLog = BiosimulationLog.instance();
+        biosimLog.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, "sedml", this.logDocumentMessage);
+        biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.SUCCEEDED);
         logger.info("SED-ML : " + this.sedmlName + " successfully completed");
         return true;
     }
@@ -385,7 +383,7 @@ public class SedmlJob {
         // We assume if no exception is returned that the plots pass
         for (Output output : this.sedml.getOutputs()){
             if (!(output instanceof Plot2D plot)) continue;
-            BiosimulationLog.updatePlotStatusYml(this.SEDML_LOCATION, plot.getId(), BiosimulationLog.Status.SUCCEEDED, this.RESULTS_DIRECTORY_PATH);
+            BiosimulationLog.instance().updatePlotStatusYml(this.SEDML_LOCATION, plot.getId(), BiosimulationLog.Status.SUCCEEDED);
         }
     }
 
@@ -393,7 +391,7 @@ public class SedmlJob {
         this.logDocumentMessage += "Generating HDF5 file... ";
         logger.info("Generating HDF5 file... ");
 
-        Hdf5DataExtractor hdf5Extractor = new Hdf5DataExtractor(this.sedml, solverHandler.taskToTempSimulationMap, this.RESULTS_DIRECTORY_PATH);
+        Hdf5DataExtractor hdf5Extractor = new Hdf5DataExtractor(this.sedml, solverHandler.taskToTempSimulationMap);
 
         Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(solverHandler.nonSpatialResults, solverHandler.spatialResults, masterHdf5File.isBioSimHdf5);
         masterHdf5File.addResults(this.sedml, partialHdf5File);
@@ -467,11 +465,11 @@ public class SedmlJob {
     private void reportProblem(Exception e) throws PythonStreamException, InterruptedException, IOException{
         logger.error(e.getMessage(), e);
         String type = e.getClass().getSimpleName();
-        BiosimulationLog.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", this.logDocumentMessage);
-        BiosimulationLog.setExceptionMessage(this.SEDML_LOCATION, this.sedmlName, this.RESULTS_DIRECTORY_PATH, "sedml", type, this.logDocumentError);
+        var biosimLog = BiosimulationLog.instance();
+        biosimLog.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, "sedml", this.logDocumentMessage);
+        biosimLog.setExceptionMessage(this.SEDML_LOCATION, this.sedmlName, "sedml", type, this.logDocumentError);
         this.CLI_RECORDER.writeDetailedErrorList(e, this.BIOMODEL_BASE_NAME + ",  doc:    " + type + ": " + this.logDocumentError);
-        BiosimulationLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED, this.RESULTS_DIRECTORY_PATH);
-        BiosimulationLog.validate(this.RESULTS_DIRECTORY_PATH);
+        biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED);
     }
 
     private void recordRunDetails(SolverHandler solverHandler) throws IOException {

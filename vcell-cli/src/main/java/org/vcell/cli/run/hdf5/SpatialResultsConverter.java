@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 public class SpatialResultsConverter {
     private final static Logger lg = LogManager.getLogger(SpatialResultsConverter.class);
 
-    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws IOException {
+    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
         if (spatialResultsHash.isEmpty()) return results;
         ReorganizedSpatialResults sourceOfTruth = new ReorganizedSpatialResults(spatialResultsHash, taskToSimulationMap);
@@ -40,7 +40,7 @@ public class SpatialResultsConverter {
                 if (!returnedGoodResult) continue;
                 if (!dataGenToDataSets.containsKey(dataGen)) dataGenToDataSets.put(dataGen, new ArrayList<>());
                 dataGenToDataSets.get(dataGen).add(dataSet);
-                BiosimulationLog.updateDatasetStatusYml(sedmlLocation, report.getId(), dataSet.getId(), BiosimulationLog.Status.SUCCEEDED, outDir);
+                BiosimulationLog.instance().updateDatasetStatusYml(sedmlLocation, report.getId(), dataSet.getId(), BiosimulationLog.Status.SUCCEEDED);
             } // end of dataset
 
             // Fill out DatasetWrapper Values

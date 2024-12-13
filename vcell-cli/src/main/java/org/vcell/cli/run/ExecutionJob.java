@@ -12,6 +12,7 @@ import org.vcell.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -25,10 +26,12 @@ public class ExecutionJob {
 
     private final static Logger logger = LogManager.getLogger(ExecutionJob.class);
 
-    private long startTime, endTime; 
+    private long startTime_ms, endTime_ms;
     private boolean bExactMatchOnly, bSmallMeshOverride, bKeepTempFiles;
     private StringBuilder logOmexMessage;
-    private String inputFilePath, bioModelBaseName, outputBaseDir, outputDir;
+    private String inputFilePath;
+    private String bioModelBaseName;
+    private String outputDir;
     private boolean anySedmlDocumentHasSucceeded = false;    // set to true if at least one sedml document run is successful
     private boolean anySedmlDocumentHasFailed = false;       // set to true if at least one sedml document run fails
     
@@ -58,7 +61,7 @@ public class ExecutionJob {
         
         this.inputFilePath = inputFile.getAbsolutePath();
         this.bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // input file without the path
-        this.outputBaseDir = rootOutputDir.getAbsolutePath();
+        String outputBaseDir = rootOutputDir.getAbsolutePath();
         this.outputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
         this.bKeepTempFiles = bKeepTempFiles;
         this.bExactMatchOnly = bExactMatchOnly;
@@ -78,7 +81,7 @@ public class ExecutionJob {
      */
     public void preprocessArchive() throws PythonStreamException, IOException {
         // Start the clock
-        this.startTime = System.currentTimeMillis();
+        this.startTime_ms = System.currentTimeMillis();
 
         // Beginning of Execution
         logger.info("Executing OMEX archive `{}`", this.inputFile.getName());
@@ -108,7 +111,7 @@ public class ExecutionJob {
         } 
         
         // Update Status
-        BiosimulationLog.updateOmexStatusYml(BiosimulationLog.Status.RUNNING, outputDir, "0");
+        BiosimulationLog.instance().updateOmexStatusYml(BiosimulationLog.Status.RUNNING, BigDecimal.valueOf(0));
     }
 
     /**
@@ -128,7 +131,7 @@ public class ExecutionJob {
             this.queueAllSedml();
 
             for (String sedmlLocation : this.sedmlLocations){
-                SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, new File(this.outputBaseDir),
+                SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile,
                         this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder,
                         this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
                 if (!job.preProcessDoc()){
@@ -166,13 +169,13 @@ public class ExecutionJob {
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues
      */
-    public void postProcessessArchive() throws InterruptedException, PythonStreamException, IOException {
+    public void postProcessessArchive() throws IOException {
         omexHandler.deleteExtractedOmex();
 
-        this.endTime = System.currentTimeMillis();
-        long elapsedTime = this.endTime - this.startTime;
-        int duration = (int) Math.ceil(elapsedTime / 1000.0);
-        logger.info("Omex " + inputFile.getName() + " processing completed (" + Integer.toString(duration) + "s)");
+        this.endTime_ms = System.currentTimeMillis();
+        long elapsedTime_ms = this.endTime_ms - this.startTime_ms;
+        BigDecimal duration_s = BigDecimal.valueOf(Math.ceil(elapsedTime_ms / 1000.0));
+        logger.info("Omex " + inputFile.getName() + " processing completed (" + duration_s + "s)");
         //
         // failure if at least one of the documents in the omex archive fails
         //
@@ -181,24 +184,24 @@ public class ExecutionJob {
             if (anySedmlDocumentHasSucceeded) {        // some succeeded, some failed
                 error = " At least one document in this archive failed to execute";
             }
-            BiosimulationLog.updateOmexStatusYml(BiosimulationLog.Status.FAILED, outputDir, duration + "");
+            BiosimulationLog.instance().updateOmexStatusYml(BiosimulationLog.Status.FAILED, duration_s);
             logger.error(error);
             logOmexMessage.append(error);
             cliRecorder.writeErrorList(new Exception("exception not recorded"), bioModelBaseName);
         } else {
-            BiosimulationLog.updateOmexStatusYml(BiosimulationLog.Status.SUCCEEDED, outputDir, duration + "");
+            BiosimulationLog.instance().updateOmexStatusYml(BiosimulationLog.Status.SUCCEEDED, duration_s);
             cliRecorder.writeFullSuccessList(bioModelBaseName);
             logOmexMessage.append(" Done");
             
         }
-        BiosimulationLog.setOutputMessage("null", "null", outputDir, "omex", logOmexMessage.toString());
+        BiosimulationLog.instance().setOutputMessage("null", "null", "omex", logOmexMessage.toString());
 
         logger.debug("Finished Execution of Archive: " + bioModelBaseName);
     }
 
     private void queueAllSedml() throws PythonStreamException, InterruptedException, IOException {
         for (String sedmlLocation: sedmlLocations){
-            BiosimulationLog.updateSedmlDocStatusYml(sedmlLocation, BiosimulationLog.Status.QUEUED, outputDir);
+            BiosimulationLog.instance().updateSedmlDocStatusYml(sedmlLocation, BiosimulationLog.Status.QUEUED);
         }
     }
 

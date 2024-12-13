@@ -23,7 +23,7 @@ import java.util.Map;
 public class Hdf5DataExtractor {
     private SedML sedml;
     private Map<AbstractTask, TempSimulation> taskToSimulationMap;
-    private String sedmlLocation, sedmlRoot, outputDirectory;
+    private String sedmlLocation, sedmlRoot;
 
     private final static Logger logger = LogManager.getLogger(Hdf5DataExtractor.class);
 
@@ -32,14 +32,12 @@ public class Hdf5DataExtractor {
      * 
      * @param sedml the sedml object to get outputs, datasets, and data generators from.
      * @param taskToSimulationMap mapping of task to its simulation data
-     * @param outputDirectory path to where the outputs should go
      */
-    public Hdf5DataExtractor(SedML sedml, Map<AbstractTask, TempSimulation> taskToSimulationMap, String outputDirectory){
+    public Hdf5DataExtractor(SedML sedml, Map<AbstractTask, TempSimulation> taskToSimulationMap){
         this.sedml = sedml;
         this.taskToSimulationMap = taskToSimulationMap;
         this.sedmlRoot = Paths.get(sedml.getPathForURI()).toString();
         this.sedmlLocation = Paths.get(this.sedmlRoot, this.sedml.getFileName()).toString();
-        this.outputDirectory = outputDirectory;
     }
 
     /**
@@ -57,7 +55,7 @@ public class Hdf5DataExtractor {
 
         try {
             Map<Report, List<Hdf5SedmlResults>> nonspatialWrappers = NonspatialResultsConverter.convertNonspatialResultsToSedmlFormat(
-                    this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation, this.outputDirectory);
+                    this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation);
             Hdf5DataExtractor.addWrappers(wrappers, nonspatialWrappers);
         } catch (Exception e){
             logger.warn("Collection of nonspatial datasets failed for " + this.sedml.getFileName(), e);
@@ -66,7 +64,7 @@ public class Hdf5DataExtractor {
 
         try {
             Map<Report, List<Hdf5SedmlResults>> spatialWrappers = SpatialResultsConverter.convertSpatialResultsToSedmlFormat(
-                    this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation, this.outputDirectory);
+                    this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation);
             Hdf5DataExtractor.addWrappers(wrappers, spatialWrappers);
 
         } catch (Exception e){
