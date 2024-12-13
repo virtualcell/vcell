@@ -107,7 +107,7 @@ public class SedmlJob {
         final String SAFE_WINDOWS_FILE_SEPARATOR = "\\\\";
         final String SAFE_UNIX_FILE_SEPARATOR = "/";
         logger.info("Initializing SED-ML document...");
-        var biosimLog = BiosimulationLog.instance();
+        BiosimulationLog biosimLog = BiosimulationLog.instance();
 
         Span span = null;
         try {
@@ -345,7 +345,7 @@ public class SedmlJob {
         org.apache.commons.io.FileUtils.deleteDirectory(this.PLOTS_DIRECTORY);    // removing sedml dir which stages results.
 
         // Declare success!
-        var biosimLog = BiosimulationLog.instance();
+        BiosimulationLog biosimLog = BiosimulationLog.instance();
         biosimLog.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, "sedml", this.logDocumentMessage);
         biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.SUCCEEDED);
         logger.info("SED-ML : " + this.sedmlName + " successfully completed");
@@ -465,7 +465,7 @@ public class SedmlJob {
     private void reportProblem(Exception e) throws PythonStreamException, InterruptedException, IOException{
         logger.error(e.getMessage(), e);
         String type = e.getClass().getSimpleName();
-        var biosimLog = BiosimulationLog.instance();
+        BiosimulationLog biosimLog = BiosimulationLog.instance();
         biosimLog.setOutputMessage(this.SEDML_LOCATION, this.sedmlName, "sedml", this.logDocumentMessage);
         biosimLog.setExceptionMessage(this.SEDML_LOCATION, this.sedmlName, "sedml", type, this.logDocumentError);
         this.CLI_RECORDER.writeDetailedErrorList(e, this.BIOMODEL_BASE_NAME + ",  doc:    " + type + ": " + this.logDocumentError);
