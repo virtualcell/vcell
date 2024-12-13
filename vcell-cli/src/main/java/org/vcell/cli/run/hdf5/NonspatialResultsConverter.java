@@ -21,7 +21,7 @@ public class NonspatialResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonspatialResultsConverter.class);
 
 
-    public static Map<Report, List<Hdf5SedmlResults>> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws ExpressionException, IOException {
+    public static Map<Report, List<Hdf5SedmlResults>> convertNonspatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonspatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) throws ExpressionException {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
 
         for (Report report : NonspatialResultsConverter.getReports(sedml.getOutputs())){
@@ -139,7 +139,7 @@ public class NonspatialResultsConverter {
                 }
 
                 dataSetValues.put(dataset, synthesizedResults);
-                BiosimulationLog.updateDatasetStatusYml(sedmlLocation, report.getId(), dataset.getId(), BiosimulationLog.Status.SUCCEEDED, outDir);
+                BiosimulationLog.instance().updateDatasetStatusYml(sedmlLocation, report.getId(), dataset.getId(), BiosimulationLog.Status.SUCCEEDED);
             } // end of current dataset processing
 
             if (dataSetValues.isEmpty()) {

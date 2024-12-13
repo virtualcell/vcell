@@ -40,38 +40,39 @@ public class ExecuteImpl {
         for (File inputFile : inputFiles){
             String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
             String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
-            String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
-            File adjustedOutputDir = new File(targetOutputDir);
-
+            File targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toFile();
             logger.info("Preparing output directory...");
             // we don't want to accidentally delete the input...
             // if the output is a subset of the input file's housing directory, we shouldn't delete!!
-            if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
-                RunUtils.removeAndMakeDirs(adjustedOutputDir);
-            try {
-                BiosimulationLog.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
-            } catch (XMLException e){
-                throw new RuntimeException("Python call did not process correctly:", e);
+            if (!inputFile.getParentFile().getCanonicalPath().contains(targetOutputDir.getCanonicalPath())) {
+                RunUtils.removeAndMakeDirs(targetOutputDir);
             }
         }
         try {
             for (File inputFile : inputFiles) {
                 String inputFileName = inputFile.getName();
-                System.out.println("\n\n");
-                logger.info("Processing " + inputFileName + "(" + inputFile + ")");
+                String bioModelBaseName = FileUtils.getBaseName(inputFile.getName());
+                String outputBaseDir = outputDir.getAbsolutePath(); // bioModelBaseName = input file without the path
+                String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
+
                 Span span = null;
                 try {
                     span = Tracer.startSpan(Span.ContextType.OMEX_EXECUTE, inputFileName, Map.of("filename", inputFileName));
-                    if (inputFileName.endsWith("vcml"))
+                    BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+
+                    System.out.println("\n\n");
+                    logger.info("Processing " + inputFileName + "(" + inputFile + ")");
+
+                    if (inputFileName.endsWith("vcml")) {
                         singleExecVcml(inputFile, outputDir, cliLogger);
-                    if (inputFileName.endsWith("omex"))
-                        runSingleExecOmex(inputFile, outputDir, cliLogger,
-                                bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
-                } catch (ExecutionException e){
+                    } else if (inputFileName.endsWith("omex")) {
+                        runSingleExecOmex(inputFile, outputDir, cliLogger, bKeepTempFiles, bExactMatchOnly, bSmallMeshOverride);
+                    }
+                } catch (ExecutionException e) {
                     logger.error("Error caught executing batch mode", e);
                     Tracer.failure(e, "Error caught executing batch mode");
                     failedFiles.add(inputFileName);
-                } catch (Exception e){
+                } catch (Exception e) {
                     Tracer.failure(e, "Error caught executing batch mode");
                     failedFiles.add(inputFileName);
                     throw e;
@@ -79,6 +80,7 @@ public class ExecuteImpl {
                     if (span != null) {
                         span.close();
                     }
+                    BiosimulationLog.instance().close();
                 }
             }
             if (failedFiles.isEmpty()){
@@ -138,10 +140,14 @@ public class ExecuteImpl {
         if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
             RunUtils.removeAndMakeDirs(adjustedOutputDir);
 
-        BiosimulationLog.generateStatusYaml(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
+        try {
+            BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
-        ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
-                bEncapsulateOutput, bSmallMeshOverride, bBioSimMode);
+            ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
+                    bEncapsulateOutput, bSmallMeshOverride, bBioSimMode);
+        } finally {
+            BiosimulationLog.instance().close();
+        }
     }
 
     public static void singleMode(File inputFile, File outputDir, CLIRecordable cliLogger) throws Exception {
@@ -232,7 +238,7 @@ public class ExecuteImpl {
 
     private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride, boolean bBioSimMode)
-            throws ExecutionException, PythonStreamException, IOException, InterruptedException, BiosimulationsHdfWriterException {
+            throws ExecutionException, PythonStreamException, IOException, BiosimulationsHdfWriterException {
 
         ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder,
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);
