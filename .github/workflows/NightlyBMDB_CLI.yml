@@ -246,20 +246,20 @@ jobs:
           
           for file in $SOURCE_DIR/*; do
               # Is the file of the correct form?
-              base_name=$(basename $file)
-              if ! [[ $base_name =~ ^BIOMD[0-9]+\.omex$ ]]; then
-                echo "Input is invalid. Expecting `BIOMD##########.omex` format, got `${base_name}`."
+              file_name=$(basename $file)
+              if ! [[ $file_name =~ ^BIOMD[0-9]+\.omex$ ]]; then
+                echo "Input is invalid. Expecting 'BIOMD##########.omex format, got '${file_name}'."
                 continue
               fi
               # ...is it the infamous BioModel 1008?
-              if [[ $base_name == *1008* ]]; then
+              if [[ $file_name == *1008* ]]; then
                   echo -n 'skipping '
-                  echo $base_name
+                  echo $file_name
                   continue
               fi
-              number=$(echo "$base_name" | sed -n 's/^BIOMD\([0-9]\+\)\.omex$/\1/p' | sed 's/^0*//')
+              number=$(echo "$file_name" | sed -n 's/^BIOMD\([0-9]\+\)\.omex$/\1/p' | sed 's/^0*//')
               if [ $((number % ${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
-                  echo "Accepting ${base_name}"
+                  echo "Accepting ${file_name}"
                   cp ${file} $TARGET_DIR/
               fi
           done
@@ -268,24 +268,29 @@ jobs:
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: |
-          if [ ${{ matrix.sets }} -eq 4 ] || [ ${{ matrix.sets }} -eq 2 ]; then
+          if [ ${{ matrix.sets }} -eq 4 ] || [ ${{ matrix.sets }} -eq 6 ]; then
             # The /* goes on the outside, otherwise bash just interprets a string!
             for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
               echo "\"$file\""
               if [ -f "$file" ]; then
-                base_name="${file%.*}"
-                mkdir "${base_name}_output"
-                echo "Running \"$file\" in output folder \"${base_name}_output\""
-                sim_input="/root/$(basename ${file})"
-                sim_output="/root/$(basename ${base_name})_output"
-                docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles --guaranteeGoodReturnCode
+                extensionless_name="${file%.*}"
+                base_name="$(basename ${file})"
+                base_extless_name="$(basename ${extensionless_name})"
+                mkdir "${extensionless_name}_output"
+                echo "Running \"${file}\" in output folder \"${base_extless_name}_output\""
+                sim_input="/root/${base_name}"
+                sim_output="/root/${base_extless_name}_output"
+                docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i ${sim_input} -o ${sim_output} --writeLogFiles --guaranteeGoodReturnCode
+                
                 echo -e "\n\n\n\n\n" # give ourselves some line separation
                 # Check for individual Success
-                if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -ne 0 ]
+                if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt | wc -l) -ne 0 ]
                 then
                   # Copy error log to github workspace
                   touch ${{ github.workspace }}/errors.report
-                  cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+                  cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+                else
+                  echo "No errors found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
                 fi
               fi
             done
