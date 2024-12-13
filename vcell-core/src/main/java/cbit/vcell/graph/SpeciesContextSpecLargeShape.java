@@ -12,10 +12,26 @@ import org.vcell.util.Pair;
 import org.vcell.util.springsalad.NamedColor;
 
 import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.util.*;
 import java.util.List;
 
 public class SpeciesContextSpecLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
+
+    public class CustomLine2D extends Line2D.Double {
+
+        private static final double TOLERANCE = 3.0;    // tolerance for detecting clicks near the line
+        public CustomLine2D(double x1, double y1, double x2, double y2) {
+            super(x1, y1, x2, y2);
+        }
+
+        @Override
+        public boolean contains(double x, double y) {
+            double distance = ptSegDist(x, y);          // calculate distance to the line segment
+            return distance <= TOLERANCE;
+        }
+    }
 
     private static final double NmToPixelRatio = 25;
     private static final double DEFAULT_UPPER_CORNER = 3;       // default screen coordinates where we want to display the first site
@@ -54,6 +70,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     private MolecularComponentPattern topmostSite = null;   // if more sites qualify we just keep the first we find
     private double maxX = 0;            // coordinate of the rightmost site
     private double maxY = 0;            // coordinate of the bottommost site
+
+    Map<Ellipse2D, SiteAttributesSpec> ellipseToSasMap = new LinkedHashMap<>();         // site oval to site attributes map
+    Map<CustomLine2D, MolecularInternalLinkSpec> lineToMilsMap = new LinkedHashMap<>(); // link line to link spec
 
     private MolecularComponentPattern mcpSelected = null;   // any or both of these may be selected in their tables
     private MolecularInternalLinkSpec milsSelected = null;
@@ -291,6 +310,21 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         g2.setStroke(strokeOld);
         g2.drawString("1 nm", endX+10, startY+offset);
 
+        if(isPlanarYZ() == false) {
+            startX = 15;                                // coordinates for the arrow line (Y-axis)
+            startY = 130;
+            g2.setColor(Color.red.darker());
+            g2.setStroke(strokeOld);
+            g2.setFont(fontOld);
+            FontMetrics fm = g2.getFontMetrics();
+            String regularText = "The molecule is ";
+            g2.drawString(regularText, startX, startY);
+            int regularTextWidth = fm.stringWidth(regularText);
+            font = fontOld.deriveFont(Font.BOLD);
+            g2.setFont(font);
+            g2.drawString("3D", startX + regularTextWidth, startY);
+        }
+
         g2.setStroke(strokeOld);
         g2.setRenderingHints(hintsOld);
         g2.setFont(fontOld);
@@ -298,9 +332,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         g2.setColor(colorOld);
     }
 
-    public void drawCenteredCircle(Graphics g, NamedColor namedColor, double xd, double yd, double rd,
-                                   boolean isSelected, boolean is3D) {
-
+    public Ellipse2D drawCenteredCircle(Graphics g, NamedColor namedColor, double xd, double yd, double rd,
+                                        boolean isSelected) {
         Graphics2D g2 = (Graphics2D)g;
         Color oldColor = g.getColor();
         Stroke strokeOld = g2.getStroke();
@@ -317,33 +350,27 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         int y = (int)(nmToPixelRatio * yd);
         int r = (int)(nmToPixelRatio * rd);
 
-        g.setColor(namedColor.getColor());
-        g.fillOval(x,y,r,r);        // colored circle
-
+        Ellipse2D oval = new Ellipse2D.Double(x, y, r, r);
+        g2.setColor(namedColor.getColor());
+        g2.fill(oval);
 
         if(isSelected) {
             g2.setStroke(new BasicStroke(3.6f));
-            if(is3D) {
-                g.setColor(Color.red.darker());
-            } else {
-                g.setColor(Color.darkGray);
-            }
+            g2.setColor(Color.darkGray);
         } else {
             g2.setStroke(new BasicStroke(1.4f));
-            if(is3D) {
-                g.setColor(Color.red.darker());
-            } else {
-                g.setColor(Color.black);
-            }
+            g2.setColor(Color.black);
         }
-        g.drawOval(x, y, r, r);     // black contour
+        g2.draw(oval);     // black contour
 
         g2.setStroke(strokeOld);
         g2.setRenderingHints(hintsOld);
         g.setColor(oldColor);
+
+        return oval;
     }
 
-    public void drawLink(Graphics g, double x1d, double y1d, double x2d, double y2d, boolean isSelected) {
+    public CustomLine2D drawLink(Graphics g, double x1d, double y1d, double x2d, double y2d, boolean isSelected) {
 
         Graphics2D g2 = (Graphics2D)g;
         Color oldColor = g.getColor();
@@ -365,11 +392,15 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         } else {
             g2.setStroke(new BasicStroke(1.4f));
         }
-        g2.drawLine(x1, y1, x2, y2);
+
+        CustomLine2D line = new CustomLine2D(x1, y1, x2, y2);
+        g2.draw(line);
 
         g2.setStroke(strokeOld);
         g2.setRenderingHints(hintsOld);
         g.setColor(oldColor);
+
+        return line;
     }
 
     public void paintSelf(Graphics g, boolean bPaintContour) {
@@ -394,7 +425,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             double y1 = y_offset + sas1.getCoordinate().getY();
             double y2 = y_offset + sas2.getCoordinate().getY();
             boolean isSelected = mils == milsSelected ? true : false;
-            drawLink(g, x1, y1, x2, y2, isSelected);
+            CustomLine2D line = drawLink(g, x1, y1, x2, y2, isSelected);
+            lineToMilsMap.put(line, mils);
         }
         for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
             SiteAttributesSpec sas = sasMap.get(mcp);
@@ -404,9 +436,30 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             double x = x_offset + coord.getZ();
             double y = y_offset + coord.getY();
             boolean isSelected = mcp == mcpSelected ? true : false;
-            boolean is3D = coord.getX() != 0 ? true : false;
-            drawCenteredCircle(g, color, x, y, radius, isSelected, is3D);
+            Ellipse2D oval = drawCenteredCircle(g, color, x, y, radius, isSelected);
+            ellipseToSasMap.put(oval, sas);
         }
+    }
+
+
+
+    public Object contains(Point point) {
+
+        for (Map.Entry<Ellipse2D, SiteAttributesSpec> entry : ellipseToSasMap.entrySet()) {
+            Ellipse2D oval = entry.getKey();
+            SiteAttributesSpec sas = entry.getValue();
+            if(oval.contains(point)) {
+                return sas;
+            }
+        }
+        for (Map.Entry<CustomLine2D, MolecularInternalLinkSpec> entry : lineToMilsMap.entrySet()) {
+            CustomLine2D line = entry.getKey();
+            MolecularInternalLinkSpec mils = entry.getValue();
+            if(line.contains(point.getX(), point.getY())) {
+                return mils;
+            }
+        }
+        return null;
     }
 
     @Override

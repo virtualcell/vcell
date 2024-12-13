@@ -73,8 +73,11 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     // springsalad group
     public static final String PROPERTY_NAME_SITE_ATTRIBUTE = "SiteAttributes";
     public static final String PROPERTY_NAME_LINK_LENGTH = "LinkLength";
-    public static final String PROPERTY_NAME_SITE_SELECTED = "SiteSelected";
-    public static final String PROPERTY_NAME_LINK_SELECTED = "LinkSelected";
+    public static final String PROPERTY_NAME_SITE_SELECTED_IN_TABLE = "SiteSelectedInTable";
+    public static final String PROPERTY_NAME_LINK_SELECTED_IN_TABLE = "LinkSelectedInTable";
+    public static final String PROPERTY_NAME_SITE_SELECTED_IN_SHAPE = "SiteSelectedInShape";
+    public static final String PROPERTY_NAME_LINK_SELECTED_IN_SHAPE = "LinkSelectedInShape";
+
     private static final int INITIAL_YZ_SITE_OFFSET = 4;
 
     public static final boolean TrackClusters = true;            // SpringSaLaD specific

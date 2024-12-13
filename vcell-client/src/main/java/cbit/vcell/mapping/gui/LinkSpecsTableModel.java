@@ -149,12 +149,6 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
              * to, or greater than the second.<p>
              */
             public int compare(MolecularInternalLinkSpec mils1, MolecularInternalLinkSpec mils2) {
-
-
-
-
-
-
                 ColumnType columnType = columns.get(col);
                 switch (columnType) {
                     case COLUMN_LINK:

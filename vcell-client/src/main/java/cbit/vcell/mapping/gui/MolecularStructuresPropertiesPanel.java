@@ -10,6 +10,7 @@ import cbit.vcell.graph.gui.LargeShapePanel;
 import cbit.vcell.graph.gui.SsldLargeShapePanel;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
+import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.Model;
@@ -23,10 +24,15 @@ import org.vcell.model.rbm.SpeciesPattern;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.geom.Ellipse2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
+import static cbit.vcell.mapping.SpeciesContextSpec.PROPERTY_NAME_LINK_SELECTED_IN_SHAPE;
+import static cbit.vcell.mapping.SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED_IN_SHAPE;
 
 public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 
@@ -70,18 +76,18 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                 updateShape();
             } else if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_LINK_LENGTH)) {
                 updateShape();
-            } else if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED)) {
+            } else if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED_IN_TABLE)) {
                 Object o = evt.getNewValue();
-                if(o != null) {
-                    mcpSelected = (MolecularComponentPattern)o;
+                if(o instanceof MolecularComponentPattern mcp) {
+                    mcpSelected = mcp;
                 } else {
                     mcpSelected = null;
                 }
                 updateShape();
-            } else if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_LINK_SELECTED)) {
+            } else if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_LINK_SELECTED_IN_TABLE)) {
                 Object o = evt.getNewValue();
-                if(o != null) {
-                    milsSelected = (MolecularInternalLinkSpec)o;
+                if(o instanceof MolecularInternalLinkSpec mils) {
+                    milsSelected = mils;
                 } else {
                     milsSelected = null;
                 }
@@ -160,11 +166,39 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                 }
             };
             shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
                 public void mouseMoved(MouseEvent e) {
+                    // this will fire if the mouse moves over the panel, we may need it for drag and drop
+                    super.mouseMoved(e);
+//                    Point overWhat = e.getPoint();
+//                    Object overObject = scsls.contains(overWhat);
+//                    if(overObject != null) {
+//                        System.out.println("MouseMotionAdapter: over something");
+//                    }
+                }
+            });
+            shapePanel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    super.mouseClicked(e);
+                    if(speciesContextSpec == null) {
+                        throw new RuntimeException("speciesContextSpec is null");
+                    }
                     Point overWhat = e.getPoint();
-//                    PointLocationInShapeContext locationContext = new PointLocationInShapeContext(overWhat);
-//                    spls.contains(locationContext);
-//                    shapePanel.setToolTipText("View-Only panel");
+                    Object overObject = scsls.contains(overWhat);   // check if we clicked inside a site oval or link line
+                    if(overObject instanceof MolecularInternalLinkSpec mils) {
+                        milsSelected = mils;
+                        // redraw the whole shape to highlight the selected site oval
+                        updateShape();
+                        // we tell the table in the upper panel to update the selected row
+                        speciesContextSpec.firePropertyChange(PROPERTY_NAME_LINK_SELECTED_IN_SHAPE, null, milsSelected);
+                    } else if(overObject instanceof SiteAttributesSpec sas) {
+                        mcpSelected = sas.getMolecularComponentPattern();
+                        // redraw the whole shape to highlight the selected link line
+                        updateShape();
+                        // we tell the table in the upper panel to update the selected row
+                        speciesContextSpec.firePropertyChange(PROPERTY_NAME_SITE_SELECTED_IN_SHAPE, null, mcpSelected);
+                    }
                 }
             });
             shapePanel.setPreferredSize(new Dimension(2000, 800));
