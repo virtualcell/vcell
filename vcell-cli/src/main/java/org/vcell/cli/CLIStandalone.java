@@ -2,6 +2,7 @@ package org.vcell.cli;
 
 import org.vcell.cli.biosimulation.BiosimulationsCommand;
 import org.vcell.cli.run.ExecuteCommand;
+import org.vcell.cli.run.ExecuteOmexCommand;
 import org.vcell.cli.sbml.ModelCommand;
 import org.vcell.cli.vcml.*;
 
@@ -22,6 +23,7 @@ import picocli.CommandLine.Command;
         ExportOmexBatchCommand.class,
         ImportOmexCommand.class,
         ImportOmexBatchCommand.class,
+        ExecuteOmexCommand.class,
         ExecuteCommand.class,
         VersionCommand.class,
         ModelCommand.class,
