@@ -40,7 +40,6 @@ import org.vcell.pathway.persistence.PathwayReaderBiopax3;
 import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.persistence.RelationshipReader;
-import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.Coordinate;
@@ -261,7 +260,6 @@ import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ParserException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
@@ -6700,7 +6698,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         String temp = null;
         temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numOfTrials, vcNamespace);
         if(temp != null){
-            lo.setNumOfTrials(Integer.parseInt(temp));
+            lo.setNumTrials(Integer.parseInt(temp));
         }
         temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_intervalSpring, vcNamespace);
         if(temp != null){

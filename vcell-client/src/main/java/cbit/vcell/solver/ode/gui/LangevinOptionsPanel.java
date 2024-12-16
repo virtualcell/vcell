@@ -1,21 +1,17 @@
 package cbit.vcell.solver.ode.gui;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
+import javax.swing.border.Border;
 
+import cbit.vcell.solver.NFsimSimulationOptions;
 import org.vcell.util.gui.CollapsiblePanel;
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.solver.LangevinSimulationOptions;
-import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SolverTaskDescription;
+import org.vcell.util.gui.DialogUtils;
 
 @SuppressWarnings("serial")
 public class LangevinOptionsPanel  extends CollapsiblePanel {
@@ -38,6 +34,11 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 	private JLabel numPartitionsYLabel = null;
 	private JLabel numPartitionsZLabel = null;
 	private JLabel numPartitionsLabel = null;
+
+	private JCheckBox randomSeedCheckBox;
+	private JTextField randomSeedTextField;
+	private JButton randomSeedHelpButton = null;
+
 
 //	private int[] npart = {LangevinSimulationOptions.DefaultNPart[0], LangevinSimulationOptions.DefaultNPart[1], LangevinSimulationOptions.DefaultNPart[2]};	// number of partitions on each axis
 
@@ -72,6 +73,21 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				getJTextFieldNumOfTrials().setEnabled(true);
 				getJTextFieldNumOfParallelLocalRuns().setEnabled(true);
 				setNewOptions();
+			} else if(e.getSource() == randomSeedCheckBox) {
+				randomSeedTextField.setEditable(randomSeedCheckBox.isSelected());
+				if(randomSeedCheckBox.isSelected()) {
+
+					Integer rs = solverTaskDescription.getLangevinSimulationOptions().getRandomSeed();
+					if(rs == null) {
+						rs = LangevinSimulationOptions.DefaultRandomSeed;
+						solverTaskDescription.getLangevinSimulationOptions().setRandomSeed(rs);
+					}
+					randomSeedTextField.setText(rs.toString());
+				} else {
+					solverTaskDescription.getLangevinSimulationOptions().setRandomSeed(null);
+					randomSeedTextField.setText("");
+				}
+
 			}
 		}
 		
@@ -189,7 +205,6 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.insets = new Insets(0,5,3,1);
 			trialPanel.add(getJTextFieldNumOfParallelLocalRuns(), gbc);
 
-			// ----- aici
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
 			gbc.gridy = 3;
@@ -245,6 +260,14 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,5,3,1);
 			trialPanel.add(getNumPartitionsZTextField(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 6;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(5,5,3,1);
+			trialPanel.add(getRandomSeedCheckBox(), gbc);
 
 
 //			gbc = new GridBagConstraints();		// --- empty panel (filler)
@@ -310,6 +333,24 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.weightx = 1.0;
 			gbc.weighty = 1.0;
 			centerPanel.add(new JLabel(""), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 3;
+			gbc.weightx = 1;
+			gbc.gridwidth = 2;
+			gbc.insets = new Insets(0, 0, 6, 6);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			centerPanel.add(getRandomSeedTextField(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 2;
+			gbc.gridy = 3;
+			gbc.anchor = GridBagConstraints.LINE_END;
+			gbc.insets = new Insets(0, 0, 6, 6);
+			centerPanel.add(getRandomSeedHelpButton(), gbc);
+
 
 			// ----- rightPanel ----------------------------------------------------
 			gbc = new GridBagConstraints();
@@ -397,6 +438,34 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			}
 		}
 		return numOfTrialsLabel;
+	}
+	private JCheckBox getRandomSeedCheckBox() {
+		if(randomSeedCheckBox == null) {
+			randomSeedCheckBox = new JCheckBox();
+			randomSeedCheckBox.setName("RandomSeedCheckBox");
+			randomSeedCheckBox.setText("Set a seed to Langevin random number generator.");
+		}
+		return randomSeedCheckBox;
+	}
+	private JTextField getRandomSeedTextField() {
+		if(randomSeedTextField == null) {
+			randomSeedTextField = new JTextField();
+			randomSeedTextField.setName("RandomSeedTextField");
+			randomSeedTextField.setText("");
+		}
+		return randomSeedTextField;
+	}
+	private JButton getRandomSeedHelpButton() {
+		if(randomSeedHelpButton == null) {
+			Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+			randomSeedHelpButton = new JButton();
+			Font font = randomSeedHelpButton.getFont().deriveFont(Font.BOLD);
+			randomSeedHelpButton.setName("RandomSeedHelpButton");
+			randomSeedHelpButton.setBorder(border);
+			randomSeedHelpButton.setFont(font);
+			randomSeedHelpButton.setText(" ? ");
+		}
+		return randomSeedHelpButton;
 	}
 
 // ======================================================================= Number of Partitions
@@ -590,7 +659,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		setVisible(true);
 		
 		LangevinSimulationOptions lso = solverTaskDescription.getLangevinSimulationOptions();
-		int numTrials = lso.getNumOfTrials();
+		int numTrials = lso.getNumTrials();
 		int numOfParallelLocalRuns = lso.getNumOfParallelLocalRuns();
 		if(numTrials == 1) {
 			getTrajectoryButton().setSelected(true);
@@ -635,11 +704,22 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 
 		if(getMultiRunButton().isSelected()) {
 			numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
-			sso.setNumOfTrials(numTrials);
 			numOfParallelLocalRuns = Integer.parseInt(getJTextFieldNumOfParallelLocalRuns().getText());
-			sso.setNumOfParallelLocalRuns(numOfParallelLocalRuns);
 		}
-		
+
+		Integer randomSeed = null;
+		if (randomSeedCheckBox.isSelected()) {
+			try {
+				randomSeed = Integer.valueOf(randomSeedTextField.getText());
+			} catch (NumberFormatException ex) {
+				randomSeed = solverTaskDescription.getLangevinSimulationOptions().getRandomSeed();
+				if(randomSeed == null) {
+					randomSeed = LangevinSimulationOptions.DefaultRandomSeed;
+				}
+				randomSeedTextField.setText(randomSeed.toString());
+			}
+		}
+
 		intervalImage = Double.parseDouble(getJTextFieldIntervalImage().getText());
 		intervalSpring = Double.parseDouble(getJTextFieldIntervalSpring().getText());
 
@@ -649,6 +729,9 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 
 		// make a copy
 		LangevinSimulationOptions lso = new LangevinSimulationOptions(sso);
+		lso.setNumTrials(numTrials);
+		lso.setNumOfParallelLocalRuns(numOfParallelLocalRuns);
+		lso.setRandomSeed(randomSeed);
 		lso.setIntervalImage(intervalImage);
 		lso.setIntervalSpring(intervalSpring);
 		lso.setNPart(npart);

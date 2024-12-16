@@ -4807,7 +4807,7 @@ private Element getXML(LangevinSimulationOptions lso) {
 	Element lsoe = new Element(XMLTags.LangevinSimulationOptions);
 
 	e = new Element(XMLTags.LangevinSO_numOfTrials);
-	e.setText(String.valueOf(lso.getNumOfTrials()));
+	e.setText(String.valueOf(lso.getNumTrials()));
 	lsoe.addContent(e);
 	
 	e = new Element(XMLTags.LangevinSO_intervalSpring);

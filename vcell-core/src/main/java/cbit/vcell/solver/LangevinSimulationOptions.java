@@ -19,7 +19,6 @@ import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
 
 import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Matchable;
 
@@ -42,9 +41,13 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 
 	public final static int[] DefaultNPart = { 10, 10, 10 };
 
-	protected int numOfTrials = 1;				// how many runs of the solver for this simulation
+	public final static int DefaultRandomSeed = 1;
+	public final static int DefaultNumTrials = 1;
+
+	protected int numTrials = DefaultNumTrials;	// how many runs of the solver for this simulation
 	protected int numOfParallelLocalRuns = 1;	// how many instances of the solver run in parallel
 	protected int runIndex = 0;					// run index, will result in Run0 (followed by Run1, 2,...)
+	protected Integer randomSeed = DefaultRandomSeed;
 
 	protected double intervalSpring = 1.00E-9;	// default: dtspring: 1.00E-9	- from advanced
 	protected double intervalImage = 1.00E-4;	// default: dtimage: 1.00E-4	- from advanced
@@ -62,7 +65,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		this();				// TODO: properly implement copy constructor
 		intervalSpring = langevinSimulationOptions.intervalSpring;
 		intervalImage = langevinSimulationOptions.intervalImage;
-		numOfTrials = langevinSimulationOptions.numOfTrials;
+		numTrials = langevinSimulationOptions.numTrials;
 		runIndex = langevinSimulationOptions.runIndex;
 		npart[0] = langevinSimulationOptions.npart[0];
 		npart[1] = langevinSimulationOptions.npart[1];
@@ -79,7 +82,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 			return false;
 		}
 		LangevinSimulationOptions langevinSimulationOptions = (LangevinSimulationOptions)obj;
-		if(numOfTrials != langevinSimulationOptions.numOfTrials) {
+		if(numTrials != langevinSimulationOptions.numTrials) {
 			return false;
 		}
 		if(runIndex != langevinSimulationOptions.runIndex) {
@@ -102,15 +105,15 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 
 	// can be between 0 and numOfTrials-1
 	public int getRunIndex() {	// for multiple trials the runIndex must be incremented for each run, dynamically
-		if(runIndex > numOfTrials-1) {
+		if(runIndex > numTrials -1) {
 			throw new RuntimeException("Max run index must be smaller than the number of trials.");
 		}
 		int currentRunIndex = runIndex;
 		runIndex++;
 		return currentRunIndex;
 	}
-	public int getNumOfTrials() {
-		return numOfTrials;
+	public int getNumTrials() {
+		return numTrials;
 	}
 	public int getNumOfParallelLocalRuns() {
 		return numOfParallelLocalRuns;
@@ -127,12 +130,15 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public int[] getNPart() {
 		return npart;
 	}
+	public Integer getRandomSeed() {
+		return randomSeed;
+	}
 
 	public final void setRunIndex(int newValue) {
 		this.runIndex = newValue;
 	}
-	public final void setNumOfTrials(int newValue) {
-		this.numOfTrials = newValue;
+	public final void setNumTrials(int newValue) {
+		this.numTrials = newValue;
 	}
 	public final void setNumOfParallelLocalRuns(int newValue) {
 		this.numOfParallelLocalRuns = newValue;
@@ -151,6 +157,11 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public final void setNPart(int index, int npart) {
 		this.npart[index] = npart;
 	}
+	public void setRandomSeed(Integer randomSeed) {
+		this.randomSeed = randomSeed;
+	}
+
+	// ------------------------------------------------------------------------------------------
 
 	public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 		getPropertyChange().addPropertyChangeListener(listener);
@@ -186,7 +197,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public String getVCML() {		
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\t" + VCML.LangevinSimulationOptions + " " + VCML.BeginBlock + "\n");
-		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numOfTrials + " " + numOfTrials + "\n");			
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numOfTrials + " " + numTrials + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_runIndex + " " + runIndex + "\n");			
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalSpring + " " + intervalSpring + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalImage + " " + intervalImage + "\n");
@@ -239,7 +250,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 				if(val2 < 1 ) {
 					throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be at least 1. ");
 				} else {
-					numOfTrials = val2;
+					numTrials = val2;
 				}
 			} else { 
 				throw new DataAccessException("unexpected identifier " + token);
@@ -262,4 +273,5 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		removeVetoableChangeListener(this);
 		addVetoableChangeListener(this);
 	}
+
 }
