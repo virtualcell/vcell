@@ -14,6 +14,8 @@ import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.testsupport.FailureType;
+import org.vcell.cli.testsupport.OmexTestCase;
+import org.vcell.cli.testsupport.OmexTestingDatabase;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.trace.Span;
 import org.vcell.trace.TraceEvent;
@@ -34,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("BSTS_IT")
 public class BSTSBasedOmexExecTest {
+	static List<OmexTestCase> omexTestCases;
 
 	@BeforeAll
 	public static void setup() throws PythonStreamException, IOException {
@@ -44,6 +47,7 @@ public class BSTSBasedOmexExecTest {
 		VCMongoMessage.enabled = false;
 
 		CLIPythonManager.getInstance().instantiatePythonProcess();
+		omexTestCases = OmexTestingDatabase.loadOmexTestCases();
 	}
 
 	@AfterAll
@@ -52,129 +56,9 @@ public class BSTSBasedOmexExecTest {
 		VCellUtilityHub.shutdown();
 	}
 
-	//	@SuppressWarnings("unused")
-//	static Set<String> needToCurateModels(){
-//		// These models are skipped by BSTS, and we need to look to see if that was because we don't have a KISAO exact match
-//		HashSet<String> skippedModels = new HashSet<>();
-//		skippedModels.add("sbml-core/Edelstein-Biol-Cybern-1996-Nicotinic-excitation.omex");
-//		skippedModels.add("sbml-core/Szymanska-J-Theor-Biol-2009-HSP-synthesis.omex");
-//		skippedModels.add("sbml-core/Tomida-EMBO-J-2003-NFAT-translocation.omex");
-//		skippedModels.add("sbml-core/Varusai-Sci-Rep-2018-mTOR-signaling-LSODA-LSODAR-SBML.omex");
-//		skippedModels.add("sbml-core/Vilar-PNAS-2002-minimal-circardian-clock-discrete-SSA.omex");
-//		return skippedModels;
-//	}
-
-	static Set<String> blacklistedModels(){
-		HashSet<String> blacklistSet = new HashSet<>();
-		// We don't support the following tests because they require a model change for SBML Level
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithChanges/2.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsComputeModelChanges/1.execute-should-fail.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsComputeModelChanges/2.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsModelAttributeChanges/2.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithFunctionalRangeVariables/1.execute-should-fail.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithFunctionalRangeVariables/2.execution-should-succeed.omex");
-		blacklistSet.add("synths/sedml/SimulatorSupportsRepeatedTasksWithChanges/1.execute-should-fail.omex");
-		return blacklistSet;
-	}
-
-	static Map<String, FailureType> knownFaults() {
-		HashMap<String, FailureType> faults = new HashMap<>();
-		faults.put("synths/sedml/SimulatorSupportsModelAttributeChanges/1.execute-should-fail.omex",
-				FailureType.SEDML_ERRONEOUS_UNIT_SYSTEM);
-		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/1.execute-should-fail.omex",
-				FailureType.SEDML_ERRONEOUS_UNIT_SYSTEM);
-		faults.put("synths/sedml/SimulatorSupportsAddReplaceRemoveModelElementChanges/3.execute-should-fail.omex",
-				FailureType.SEDML_ERRONEOUS_UNIT_SYSTEM);
-
-
-		//faults.put("misc-projects/BIOMD0000000005.omex", null); // works
-		faults.put("misc-projects/BIOMD0000000175.omex", FailureType.MATH_GENERATION_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_6652012719407098827omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Unable to initialize bioModel for the given selection: MappingException occurred: failed to generate math: Unable to sort, unknown identifier I_Net_E44PPI3K_binding
-		faults.put("misc-projects/BIOMD0000000302.omex", FailureType.MATH_GENERATION_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_8639905465728503850omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Unable to initialize bioModel for the given selection: MappingException occurred: failed to generate math: generated an invalid mathDescription: Initial condition for variable 'h_post' references variable 'V_post'. Initial conditions cannot reference variables.
-		//faults.put("misc-projects/BIOMD0000000520.omex", null); // works!!
-		faults.put("misc-projects/BIOMD0000000561.omex", FailureType.UNCATETORIZED_FAULT); // (not a dynamic system - can't solve) | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_4023640363466179720omex) | SIMULATIONS_RUN(runSimulations) | BioModel(BSTS_OmexFile_4023640363466179720omex_Martins2013.sedml_model) | SIMULATION_RUN(task1_task1) | **** Error: Failed execution: Model 'BSTS_OmexFile_4023640363466179720omex_Martins2013.sedml_model' Task 'task1'.
-		//faults.put("misc-projects/BIOMD0000000569.omex", null); // works!!
-		faults.put("misc-projects/BIOMD0000000618.omex", FailureType.SBML_IMPORT_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_13012177097014737572omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Error processing model: model2 - couldn't find SBase with sid=null in SBMLSymbolMapping
-		//faults.put("misc-projects/BIOMD0000000651.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000668.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000669.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000676.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000718.omex", null); // works!!
-		faults.put("misc-projects/BIOMD0000000731.omex", FailureType.SBML_IMPORT_FAILURE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_7811157837075929926omex) | SIMULATIONS_RUN(runSimulations) | **** Error: Unable to initialize bioModel for the given selection: Failed to translate SBML model into BioModel: Error binding global parameter 'Treg_origin_fraction_CD4' to model: 'func_TRegs_Production_from_CD4' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the correct and full name (e.g. Ca_Cytosol).
-		//faults.put("misc-projects/BIOMD0000000842.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000843.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000932.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000944.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000951.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000957.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000968.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000972.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000973.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000983.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000985.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000989.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000991.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000000997.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000001010.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000001014.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000001018.omex", null); // works!!
-		faults.put("misc-projects/BIOMD0000001061.omex", FailureType.SEDML_NO_SEDMLS_TO_EXECUTE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_6151950245083004772omex) | **** Error: writeErrorList(): BSTS_OmexFile_6151950245083004772omex | java.lang.RuntimeException: There are no SED-MLs in the archive to execute
-		faults.put("misc-projects/BIOMD0000001064.omex", FailureType.SEDML_NO_SEDMLS_TO_EXECUTE); // | Root(root) | OMEX_EXECUTE(BSTS_OmexFile_855930052238018769omex) | **** Error: writeErrorList(): BSTS_OmexFile_855930052238018769omex | java.lang.RuntimeException: There are no SED-MLs in the archive to execute
-		//faults.put("misc-projects/BIOMD0000001072.omex", null); // works!!
-		//faults.put("misc-projects/BIOMD0000001077.omex", null); // works!!
-
-		return faults;
-	}
-
-	public static Collection<String> testCases() {
-		Set<String> modelsToFilter = new HashSet<>();
-		Predicate<String> filter;
-
-//		modelsToFilter.addAll(needToCurateModels()); // Comment out if checking that current version will satisfy BSTS
-		modelsToFilter.addAll(blacklistedModels());
-		filter = (t) -> !modelsToFilter.contains(t);
-
+	public static Collection<OmexTestCase> testCases() throws IOException {
+		Predicate<OmexTestCase> filter = (t) -> !OmexTestCase.Status.SKIP.equals(t.known_status);
 		return Arrays.stream(BSTSBasedTestSuiteFiles.getBSTSTestCases()).filter(filter).collect(Collectors.toList());
-//		return Arrays.asList(
-//				"misc-projects/BIOMD0000000561.omex",
-//				"misc-projects/BIOMD0000000679.omex",
-//				"misc-projects/BIOMD0000000680.omex",
-//				"misc-projects/BIOMD0000000681.omex",
-//				"misc-projects/BIOMD0000000684.omex",
-//				"misc-projects/BIOMD0000000724.omex",
-//				"misc-projects/BIOMD0000000915.omex"
-//				"misc-projects/BIOMD0000000302.omex",
-//				"misc-projects/BIOMD0000000175.omex",
-//				"misc-projects/BIOMD0000000618.omex",
-//				"misc-projects/BIOMD0000000569.omex",
-//				"misc-projects/BIOMD0000000973.omex",
-//				"misc-projects/BIOMD0000000520.omex",
-//				"misc-projects/BIOMD0000000731.omex",
-//				"misc-projects/BIOMD0000001061.omex",
-//				"misc-projects/BIOMD0000001064.omex",
-//				"misc-projects/BIOMD0000000651.omex",
-//				"misc-projects/BIOMD0000000668.omex",
-//				"misc-projects/BIOMD0000000669.omex",
-//				"misc-projects/BIOMD0000000676.omex",
-//				"misc-projects/BIOMD0000000718.omex",
-//				"misc-projects/BIOMD0000000842.omex",
-//				"misc-projects/BIOMD0000000843.omex",
-//				"misc-projects/BIOMD0000000932.omex",
-//				"misc-projects/BIOMD0000000944.omex",
-//				"misc-projects/BIOMD0000000951.omex",
-//				"misc-projects/BIOMD0000000957.omex",
-//				"misc-projects/BIOMD0000000968.omex",
-//				"misc-projects/BIOMD0000000972.omex",
-//				"misc-projects/BIOMD0000000983.omex",
-//				"misc-projects/BIOMD0000000985.omex",
-//				"misc-projects/BIOMD0000000989.omex",
-//				"misc-projects/BIOMD0000000991.omex",
-//				"misc-projects/BIOMD0000000997.omex",
-//				"misc-projects/BIOMD0000001010.omex",
-//				"misc-projects/BIOMD0000001014.omex",
-//				"misc-projects/BIOMD0000001018.omex",
-//				"misc-projects/BIOMD0000001072.omex",
-//				"misc-projects/BIOMD0000001077.omex"
-//				);
 	}
 
 	static class TestRecorder implements CLIRecordable {
@@ -217,13 +101,13 @@ public class BSTSBasedOmexExecTest {
 
 	@ParameterizedTest
 	@MethodSource("testCases")
-	public void testBSTSBasedOmex(String testCaseFilename) throws Exception {
-		FailureType knownFault = knownFaults().get(testCaseFilename);
+	public void testBSTSBasedOmex(OmexTestCase testCase) throws Exception {
+		FailureType knownFault = testCase.known_failure_type;
 		try {
-			System.out.println("running test " + testCaseFilename);
+			System.out.println("running testCase " + testCase.test_collection + " " + testCase.file_path);
 
 			Path outdirPath = Files.createTempDirectory("BSTS_OmexExecTest");
-			InputStream omexInputStream = BSTSBasedTestSuiteFiles.getBSTSTestCase(testCaseFilename);
+			InputStream omexInputStream = BSTSBasedTestSuiteFiles.getBSTSTestCase(testCase);
 			Path omexFile = Files.createTempFile("BSTS_OmexFile_", "omex");
 			FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
 
@@ -251,10 +135,10 @@ public class BSTSBasedOmexExecTest {
 					return;
 				}
 			} else {
-				fail("unexpected error, add FAULT." + fault.name() + " to " + testCaseFilename);
+				fail("unexpected error, add FAULT." + fault.name() + " to " + testCase.test_collection + " in knownFaults()");
 			}
 		
-			throw new Exception("Test error: " + testCaseFilename + " failed improperly", e);
+			throw new Exception("Test error: " + testCase + " failed improperly", e);
 		}
 	}
 

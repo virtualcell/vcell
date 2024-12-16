@@ -1,60 +1,56 @@
 package org.vcell.cli.testsupport;
 
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.NoSuchElementException;
 
 public class OmexTestingDatabase {
 
+    public enum TestDataRepo {
+        vcell, sysbio
+    }
+    public enum TestCollection {
+        VCELL_BIOMD(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/misc-projects"),
+        VCELL_BSTS_VCML(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/vcml"),
+        VCELL_BSTS_SBML_CORE(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/sbml-core"),
+        VCELL_BSTS_SYNTHS(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/synths"),
+        SYSBIO_BIOMD(TestDataRepo.sysbio, "omex_files");
+
+        public final TestDataRepo repo;
+        public final String pathPrefix;
+
+        TestCollection(TestDataRepo repo, String pathPrefix) {
+            this.repo = repo;
+            this.pathPrefix = pathPrefix;
+        }
+    }
+
+    public static OmexTestCase queryOmexTestCase(List<OmexTestCase> omexTestCases, String path) throws NoSuchElementException {
+        return omexTestCases.stream().filter(tc -> tc.matchFileSuffix(path)).findFirst().orElseThrow();
+    }
+
     // read a newline-delimited json file into a list of OmexTextCase objects
-    public static List<OmexTestCase> readOmexTestCasesFromNdjson(String path) throws IOException {
+    public static List<OmexTestCase> loadOmexTestCases() throws IOException {
         List<OmexTestCase> testCases = new ArrayList<>();
+        String fileName = "test_cases.ndjson";
         ObjectMapper objectMapper = new ObjectMapper();
-        try (BufferedReader reader = new BufferedReader(new FileReader(path));) {
-            String line = reader.readLine();
-            while (line != null) {
-                // use jackson objectmapper to read an OmexTestCase object from a json string
-                OmexTestCase testCase = objectMapper.readValue(line, OmexTestCase.class);
-                testCases.add(testCase);
+        try (InputStream inputStream = OmexTestingDatabase.class.getResourceAsStream("/"+fileName);){
+            if (inputStream == null) {
+                throw new FileNotFoundException("file not found! " + fileName);
+            }
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+                try (MappingIterator<OmexTestCase> it = objectMapper.readerFor(OmexTestCase.class).readValues(reader)) {
+                    while (it.hasNext()) {
+                        testCases.add(it.next());
+                    }
+                }
             }
         }
         return testCases;
     }
 
-    // read a csv file into a list of OmexTextCase objects
-    public static List<OmexTestCase> readOmexTestCasesFromCsv(String path) throws IOException{
-        List<OmexTestCase> testCases = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(path));) {
-            String line = reader.readLine(); // read header
-            line = reader.readLine(); // read first line
-            while (line != null) {
-                line = line + " "; // add a space to the end of the line to handle empty fields at the end
-                line = line.replace(",,",", ,"); // replace empty fields with ", ,"
-                String[] fields = line.split(",");
-                testCases.add(new OmexTestCase(fields));
-                line = reader.readLine();
-            }
-        }
-        return testCases;
-    }
-
-    public static void main(String[] args) {
-        try {
-            List<OmexTestCase> testCases = readOmexTestCasesFromCsv("/Users/jimschaff/Documents/workspace/vcell/vcell-cli/src/main/resources/known_problems.csv");
-            ObjectMapper objectMapper = new ObjectMapper();
-            for (OmexTestCase testCase : testCases) {
-                System.out.println(Arrays.stream(testCase.toCsvLine()).collect(Collectors.joining(",")));
-                System.out.println(testCase);
-                System.out.println(objectMapper.writeValueAsString(testCase));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
