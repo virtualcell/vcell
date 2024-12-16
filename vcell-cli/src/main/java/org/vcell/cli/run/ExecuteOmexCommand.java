@@ -22,7 +22,7 @@ import java.nio.file.Files;
 import java.util.Date;
 import java.util.concurrent.Callable;
 
-@Command(name = "execute-omex", description = "run .vcml or .omex files via Python API")
+@Command(name = "execute-omex", description = "run a single .omex file and log into exec_summary.json and tracer.json")
 public class ExecuteOmexCommand implements Callable<Integer> {
 
     private final static Logger logger = LogManager.getLogger(ExecuteOmexCommand.class);
