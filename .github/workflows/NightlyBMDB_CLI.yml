@@ -116,96 +116,103 @@ jobs:
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
-#  published:
-#    runs-on: ubuntu-20.04
-#    needs: build
-#    strategy:
-#      matrix:
-#        sets: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
-#    steps:
-#      - name: Create Docker Image Dir
-#        run: mkdir /tmp/docker
-#
-#      - name: Download Docker Image from `build` Job
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: docker-image
-#          path: /tmp/docker
-#
-#      - name: Load Downloaded Docker Image
-#        run: docker load --input /tmp/docker/$(ls /tmp/docker)
-#
-#        # Get files from BMDB
-#      - name: Checkout Input Files
-#        uses: actions/checkout@v4
-#        with:
-#          repository: virtualcell/vcdb
-#
-#      - name: Prepare sub directory
-#        run: |
-#          SOURCE_DIR="$GITHUB_WORKSPACE/published/biomodel/omex/sbml"
-#          TARGET_DIR="$GITHUB_WORKSPACE/set_${{ matrix.sets }}"
-#          MOD_VALUE=${{ matrix.sets }}
-#          file_index=0
-#
-#          # make target dir
-#          mkdir $TARGET_DIR
-#          # loop through files in directory, increment indexing and separating files
-#          for file in $SOURCE_DIR/*; do
-#              file_index=$((file_index+1))
-#              if [ $((file_index%${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
-#                  cp ${file} $TARGET_DIR/
-#              fi
-#          done
-#
-#        # Do the execution
-#      - name: Begin Execution
-#        #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
-#        run: |
-#          # The /* goes on the outside, otherwise bash just interprets a string!
-#          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
-#            echo "\"$file\""
-#            if [ -f "$file" ]; then
-#            base_name="${file%.*}"
-#            mkdir "${base_name}_output"
-#            echo "Running \"$file\" in output folder \"${base_name}_output\""
-#            sim_input="/root/$(basename ${file})"
-#            sim_output="/root/$(basename ${base_name})_output"
-#            docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i $sim_input -o $sim_output --writeLogFiles --guaranteeGoodReturnCode
-#
-#            # Check for individual Success
-#            if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt | wc -l) -ne 0 ]
-#            then
-#              # Copy error log to github workspace
-#              touch ${{ github.workspace }}/errors.report
-#              cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }} -name errorLog.txt) >> ${{ github.workspace }}/errors.report
-#            fi
-#          fi
-#          done
-#        #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
-#
-#      - name: Check For Success
-#        run: |
-#          # If the error file exists, then we have failures to report and upload; else, we can just end here; the next job will process results
-#          if [ $(find ${{ github.workspace }} -name errors.report | wc -l) -eq 0 ]
-#          then
-#            exit 0
-#          fi
-#
-#      - name: Upload failures
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: set_${{ matrix.sets }}.report
-#          path: ${{ github.workspace }}/errors.report
-#
-#      # Report a Problem to Slack
-#      - name: Report Problem to Slack
-#        if: ${{ failure() }}
-#        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *Published Step* of set ${{ matrix.sets }} in Nightly **Execution** Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
-#
-#      - name: Setup tmate session 3
-#        uses: mxschmitt/action-tmate@v3
-#        if: ${{ failure() }}
+
+  published:
+    runs-on: ubuntu-20.04
+    needs: build
+    strategy:
+      matrix:
+        sets: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
+    steps:
+      - name: Create Docker Image Dir
+        run: mkdir /tmp/docker
+
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+          path: /tmp/docker
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/docker/$(ls /tmp/docker)
+
+        # Get files from BMDB
+      - name: Checkout Input Files
+        uses: actions/checkout@v4
+        with:
+          repository: virtualcell/vcdb
+
+      - name: Prepare sub directory
+        run: |
+          SOURCE_DIR="$GITHUB_WORKSPACE/published/biomodel/omex/sbml"
+          TARGET_DIR="$GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+          MOD_VALUE=${{ matrix.sets }}
+          file_index=0
+
+          # make target dir
+          mkdir $TARGET_DIR
+          # loop through files in directory, increment indexing and separating files
+          for file in $SOURCE_DIR/*; do
+              file_index=$((file_index+1))
+              if [ $((file_index%${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
+                  cp ${file} $TARGET_DIR/
+              fi
+          done
+
+        # Do the execution
+      - name: Begin Execution
+        #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
+        run: |
+          # The /* goes on the outside, otherwise bash just interprets a string!
+          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
+            echo "\"$file\""
+            if [ -f "$file" ]; then
+              extensionless_name="${file%.*}"
+              base_name="$(basename ${file})"
+              base_extless_name="$(basename ${extensionless_name})"
+              mkdir "${extensionless_name}_output"
+              echo "Running \"${file}\" in output folder \"${base_extless_name}_output\""
+              sim_input="/root/${base_name}"
+              sim_output="/root/${base_extless_name}_output"
+              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i ${sim_input} -o ${sim_output} --writeLogFiles --guaranteeGoodReturnCode
+          
+              echo -e "\n\n\n\n\n" # give ourselves some line separation
+              # Check for individual Success
+              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt | wc -l) -ne 0 ]
+              then
+                # Copy error log to github workspace
+                touch ${{ github.workspace }}/errors.report
+                cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+              else
+                echo "No errors found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+              fi
+            fi
+          done
+
+      - name: Check For Success
+        run: |
+          # If the error file exists, then we have failures to report and upload; else, we can just end here; the next job will process results
+          if [ $(find ${{ github.workspace }} -name errors.report | wc -l) -eq 0 ]
+          then
+            exit 0
+          fi
+          echo "Models that failed:"
+          cat ${{ github.workspace }}/errors.report
+
+      - name: Upload failures
+        uses: actions/upload-artifact@v3
+        with:
+          name: set_${{ matrix.sets }}.report
+          path: ${{ github.workspace }}/errors.report
+
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *Published Step* of set ${{ matrix.sets }} in Nightly **Execution** Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
+
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
 
   bmdb:
     runs-on: ubuntu-20.04
@@ -268,33 +275,31 @@ jobs:
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: |
-          if [ ${{ matrix.sets }} -eq 4 ] || [ ${{ matrix.sets }} -eq 6 ]; then
-            # The /* goes on the outside, otherwise bash just interprets a string!
-            for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
-              echo "\"$file\""
-              if [ -f "$file" ]; then
-                extensionless_name="${file%.*}"
-                base_name="$(basename ${file})"
-                base_extless_name="$(basename ${extensionless_name})"
-                mkdir "${extensionless_name}_output"
-                echo "Running \"${file}\" in output folder \"${base_extless_name}_output\""
-                sim_input="/root/${base_name}"
-                sim_output="/root/${base_extless_name}_output"
-                docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i ${sim_input} -o ${sim_output} --writeLogFiles --guaranteeGoodReturnCode
-                
-                echo -e "\n\n\n\n\n" # give ourselves some line separation
-                # Check for individual Success
-                if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt | wc -l) -ne 0 ]
-                then
-                  # Copy error log to github workspace
-                  touch ${{ github.workspace }}/errors.report
-                  cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt) >> ${{ github.workspace }}/errors.report
-                else
-                  echo "No errors found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
-                fi
+          # The /* goes on the outside, otherwise bash just interprets a string!
+          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
+            echo "\"$file\""
+            if [ -f "$file" ]; then
+              extensionless_name="${file%.*}"
+              base_name="$(basename ${file})"
+              base_extless_name="$(basename ${extensionless_name})"
+              mkdir "${extensionless_name}_output"
+              echo "Running \"${file}\" in output folder \"${base_extless_name}_output\""
+              sim_input="/root/${base_name}"
+              sim_output="/root/${base_extless_name}_output"
+              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i ${sim_input} -o ${sim_output} --writeLogFiles --guaranteeGoodReturnCode
+        
+              echo -e "\n\n\n\n\n" # give ourselves some line separation
+              # Check for individual Success
+              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt | wc -l) -ne 0 ]
+              then
+                # Copy error log to github workspace
+                touch ${{ github.workspace }}/errors.report
+                cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+              else
+                echo "No errors found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
               fi
-            done
-          fi
+            fi
+          done
 
         #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
 
@@ -323,24 +328,24 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
 
-#  published_results:
-#    runs-on: ubuntu-20.04
-#    needs: published
-#
-#    steps:
-#      - name: Gather Artifacts
-#        uses: actions/download-artifact@v3
-#        with:
-#          path: ${{ github.workspace }}/published-results
-#
-#      - name: Combine .report artifacts into one file
-#        run: cat $(find $GITHUB_WORKSPACE/published-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
-#
-#      - name: Post results to slack part 1
-#        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the $(cat ${GITHUB_WORKSPACE}/combined.txt | wc -l) published models that didn't pass:" https://slack.com/api/chat.postMessage
-#
-#      - name: Post results to slack part 2
-#        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
+  published_results:
+    runs-on: ubuntu-20.04
+    needs: published
+
+    steps:
+      - name: Gather Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ${{ github.workspace }}/published-results
+
+      - name: Combine .report artifacts into one file
+        run: cat $(find $GITHUB_WORKSPACE/published-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
+
+      - name: Post results to slack part 1
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the $(cat ${GITHUB_WORKSPACE}/combined.txt | wc -l) published models that didn't pass:" https://slack.com/api/chat.postMessage
+
+      - name: Post results to slack part 2
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(sort ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
 
 
   bmdb_results:
@@ -360,4 +365,4 @@ jobs:
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the $(cat ${GITHUB_WORKSPACE}/combined.txt | wc -l) BMDB models that didn't pass:" https://slack.com/api/chat.postMessage
 
       - name: Post results to slack part 2
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(sort ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
