@@ -6,18 +6,16 @@ import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer;
+import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-
-import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 
 /**
  * Contains the code necessary to execute an Omex archive in VCell
