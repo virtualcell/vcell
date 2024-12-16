@@ -82,7 +82,7 @@ public class OmexTestingDatabase {
     public static OmexExecSummary summarize(File inputFilePath, Exception exception, List<TraceEvent> errorEvents) {
         OmexExecSummary execSummary = new OmexExecSummary();
         execSummary.file_path = inputFilePath.toString();
-        execSummary.status = OmexExecSummary.ActualStatus.PASSED;
+        execSummary.status = OmexExecSummary.ActualStatus.FAILED;
         if (exception != null || !errorEvents.isEmpty()) {
             execSummary.failure_type = determineFault(exception, errorEvents);
             execSummary.failure_desc = null;

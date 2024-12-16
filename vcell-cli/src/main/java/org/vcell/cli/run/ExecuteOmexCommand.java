@@ -104,18 +104,23 @@ public class ExecuteOmexCommand implements Callable<Integer> {
             CLIPythonManager.getInstance().closePythonProcess();
             // WARNING: Python needs re-instantiation once the above line is called!
             FileUtils.copyDirectoryContents(tmpDir, outputFilePath, true, null);
-            OmexExecSummary omexExecSummary = new OmexExecSummary();
-            omexExecSummary.file_path = String.valueOf(inputFilePath);
-            omexExecSummary.status = OmexExecSummary.ActualStatus.PASSED;
+            final OmexExecSummary omexExecSummary;
+            if (Tracer.hasErrors()){
+                omexExecSummary = OmexTestingDatabase.summarize(inputFilePath,(Exception)null,Tracer.getErrors());
+            } else {
+                omexExecSummary = new OmexExecSummary();
+                omexExecSummary.file_path = String.valueOf(inputFilePath);
+                omexExecSummary.status = OmexExecSummary.ActualStatus.PASSED;
+            }
             new ObjectMapper().writeValue(new File(outputFilePath, "exec_summary.json"), omexExecSummary);
-            new ObjectMapper().writeValue(new File(outputFilePath, "logs.json"), Tracer.getTraceEvents());
+            new ObjectMapper().writeValue(new File(outputFilePath, "tracer.json"), Tracer.getTraceEvents());
             return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
             LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
             OmexExecSummary omexExecSummary = OmexTestingDatabase.summarize(inputFilePath,e,Tracer.getErrors());
             try {
                 new ObjectMapper().writeValue(new File(outputFilePath, "exec_summary.json"), omexExecSummary);
-                new ObjectMapper().writeValue(new File(outputFilePath, "logs.json"), Tracer.getTraceEvents());
+                new ObjectMapper().writeValue(new File(outputFilePath, "tracer.json"), Tracer.getTraceEvents());
             } catch (IOException ex) {
                 logger.error("Failed to write exec summary and structured logs", ex);
             }
