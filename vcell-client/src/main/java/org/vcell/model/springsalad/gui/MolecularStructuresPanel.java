@@ -42,6 +42,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -136,6 +137,36 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		public void propertyChange(java.beans.PropertyChangeEvent e) {
 			if(e.getSource() instanceof Model && e.getPropertyName().equals(RbmModelContainer.PROPERTY_NAME_MOLECULAR_TYPE_LIST)) {
 				updateInterface();
+			} else if(e.getSource() instanceof SpeciesContextSpec && e.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED_IN_SHAPE)) {
+				// notified that the user clicked in a site oval shape or link line shape
+				// we need to update the selected row in the corresponding table
+				for(int row=0 ; row < molecularTypeSpecsTableModel.getRowCount(); row++) {
+					MolecularComponentPattern mcp = molecularTypeSpecsTableModel.getValueAt(row);
+					if(e.getNewValue() instanceof MolecularComponentPattern mcpSelected) {
+						if(mcpSelected == mcp) {
+							// select the table row
+							getMolecularTypeSpecsTable().setRowSelectionInterval(row, row);
+							// bring the row into view if it's not visible
+							Rectangle rect = getMolecularTypeSpecsTable().getCellRect(row, 0, true);
+							getMolecularTypeSpecsTable().scrollRectToVisible(rect);
+							break;
+						}
+					}
+				}
+			} else if(e.getSource() instanceof SpeciesContextSpec && e.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_LINK_SELECTED_IN_SHAPE)) {
+				for(int row=0 ; row < linkSpecsTableModel.getRowCount(); row++) {
+					MolecularInternalLinkSpec mils = linkSpecsTableModel.getValueAt(row);
+					if(e.getNewValue() instanceof MolecularInternalLinkSpec milsSelected) {
+						if(milsSelected == mils) {
+							// select the table row
+							getLinkSpecsTable().setRowSelectionInterval(row, row);
+							// bring the row into view if it's not visible
+							Rectangle rect = getLinkSpecsTable().getCellRect(row, 0, true);
+							getLinkSpecsTable().scrollRectToVisible(rect);
+							break;
+						}
+					}
+				}
 			}
 //			if (e.getSource() == selectionManager) {
 //				System.out.println(e.getPropertyName());
@@ -739,12 +770,16 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	void setMolecularComponentPattern(MolecularComponentPattern mcp) {
 		fieldMolecularComponentPattern = mcp;
-		//TODO: stuff
+		if(fieldSpeciesContextSpec != null) {		// mcp may be null
+			fieldSpeciesContextSpec.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED_IN_TABLE, null, mcp);
+		}
 		updateInterface();
 	}
 	void setMolecularInternalLinkSpec(MolecularInternalLinkSpec mils) {
 		fieldMolecularInternalLinkSpec = mils;
-		//TODO: stuff
+		if(fieldSpeciesContextSpec != null) {		// mils may be null
+			fieldSpeciesContextSpec.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_LINK_SELECTED_IN_TABLE, null, mils);
+		}
 		updateInterface();
 	}
 
