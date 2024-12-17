@@ -47,7 +47,7 @@ public abstract class Variable extends CommentedObject implements SymbolTableEnt
 		private String name = null;
 
 		public static Domain dtoToDomain(org.vcell.restclient.model.Domain dto){
-			return new Domain(dto.getName());
+			return dto != null ? new Domain(dto.getName()) : null;
 		}
 		
 		public Domain(String argName){
