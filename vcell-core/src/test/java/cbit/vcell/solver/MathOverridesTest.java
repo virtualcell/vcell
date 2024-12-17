@@ -11,8 +11,8 @@ import java.util.List;
 
 import static cbit.vcell.solver.ConstantArraySpec.TYPE_INTERVAL;
 import static cbit.vcell.solver.ConstantArraySpec.TYPE_LIST;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 @Tag("Fast")
 public class MathOverridesTest {
@@ -160,4 +160,59 @@ public class MathOverridesTest {
         assertEquals(database_string, generated_database_string);
     }
 
- }
+    @Test
+    public void testExampleMappings() {
+        int[] scanBounds = {2, 3, 5};
+        int[] scanCoordinates = {1, 2, 3};
+        MathOverrides.ScanIndex expectedScanIndex = new MathOverrides.ScanIndex(39);
+
+        // check that index is as expected for scan coordinates
+        MathOverrides.ScanIndex index = MathOverrides.parameterScanCoordinateToScanIndex(scanCoordinates, scanBounds);
+        assertEquals(expectedScanIndex, index);
+
+        // Convert index back to coordinates and verify that they match the original coordinates
+        int[] resultCoordinates = MathOverrides.scanIndexToScanParameterCoordinate(index, scanBounds);
+        assertArrayEquals(scanCoordinates, resultCoordinates);
+    }
+
+    @Test
+    public void testAllScanCoordinatesWithinBounds() {
+        int[] scanBounds = {4, 5, 6};
+
+        for (int x = 0; x <= scanBounds[0]; x++) {
+            for (int y = 0; y <= scanBounds[1]; y++) {
+                for (int z = 0; z <= scanBounds[2]; z++) {
+                    int[] coordinates = {x, y, z};
+
+                    // Convert coordinates to index
+                    MathOverrides.ScanIndex index = MathOverrides.parameterScanCoordinateToScanIndex(coordinates, scanBounds);
+
+                    // Convert index back to coordinates
+                    int[] resultCoordinates = MathOverrides.scanIndexToScanParameterCoordinate(index, scanBounds);
+
+                    // Assert that the original coordinates match the result coordinates
+                    assertArrayEquals(coordinates, resultCoordinates);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testAllScanIndicesWithinScanBounds() {
+        int[] scanBounds = {4, 5, 6};
+        int numScanIndices = (scanBounds[0] + 1) * (scanBounds[1] + 1) * (scanBounds[2] + 1);
+
+        for (int i = 0; i < numScanIndices; i++) {
+            // Convert index to coordinates
+            MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(i);
+            int[] scanCoordinates = MathOverrides.scanIndexToScanParameterCoordinate(scanIndex, scanBounds);
+            // Convert coordinates back to index
+            MathOverrides.ScanIndex resultIndex = MathOverrides.parameterScanCoordinateToScanIndex(scanCoordinates, scanBounds);
+
+            // Assert that the original index matches the result index
+            assertEquals(scanIndex, resultIndex);
+        }
+    }
+
+
+}

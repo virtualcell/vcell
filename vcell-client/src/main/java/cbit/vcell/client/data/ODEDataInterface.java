@@ -1,6 +1,7 @@
 package cbit.vcell.client.data;
 
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 
 import cbit.vcell.simdata.SummaryStatisticType;
 import org.vcell.util.ObjectNotFoundException;
@@ -42,4 +43,8 @@ public interface ODEDataInterface {
 	void selectCategory(ModelCategoryType[] filterCategories);
 	
 	DataSymbolMetadataResolver getDataSymbolMetadataResolver();
+
+	boolean isSpringSaLaD();
+
+	void checkTrivial(ArrayList<ColumnDescription> columnAedcriptions);
 }

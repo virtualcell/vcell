@@ -70,8 +70,14 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public static final String PARAMETER_NAME_PROXY_PARAMETERS = "proxyParameters";
     private static final String PROPERTY_NAME_WELL_MIXED = "wellMixed";
     private static final String PROPERTY_NAME_FORCECONTINUOUS = "forceContinuous";
-    public static final String PROPERTY_NAME_SITE_ATTRIBUTE = "SiteAttributes";     // springsalad
-    public static final String PROPERTY_NAME_LINK_LENGTH = "LinkLength";            // springsalad
+    // springsalad group
+    public static final String PROPERTY_NAME_SITE_ATTRIBUTE = "SiteAttributes";
+    public static final String PROPERTY_NAME_LINK_LENGTH = "LinkLength";
+    public static final String PROPERTY_NAME_SITE_SELECTED_IN_TABLE = "SiteSelectedInTable";
+    public static final String PROPERTY_NAME_LINK_SELECTED_IN_TABLE = "LinkSelectedInTable";
+    public static final String PROPERTY_NAME_SITE_SELECTED_IN_SHAPE = "SiteSelectedInShape";
+    public static final String PROPERTY_NAME_LINK_SELECTED_IN_SHAPE = "LinkSelectedInShape";
+
     private static final int INITIAL_YZ_SITE_OFFSET = 4;
 
     public static final boolean TrackClusters = true;            // SpringSaLaD specific
@@ -1295,8 +1301,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 }
                 for(MolecularInternalLinkSpec mils : getInternalLinkSet()){
                     if(mils.getMolecularComponentPatternOne() == mils.getMolecularComponentPatternTwo()){
-                        String msg = "Both sites of the Link are identical.";
-                        String tip = "A site cannot be linked to itself.";
+                        String msg = "Both sites of the Link are identical. A site cannot be linked to itself.";
+                        String tip = msg;
                         issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                         return;
                     }
@@ -1315,8 +1321,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         graph.addEdge(one, two);
                     }
                     if(!graph.isConnected(GraphContinuity.Algorithm.DFS)) {     // let's use DFS!
-                        String msg = "Link chain within the molecule has at least one discontinuity.";
-                        String tip = "One or more links are missing";
+                        String msg = "Link chain within the molecule has at least one discontinuity. One or more links are missing.";
+                        String tip = msg;
                         issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                         return;
                     }
@@ -1382,8 +1388,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         } else {    // all the other sites of a membrane species must not be on the membrane
                             SiteAttributesSpec sas = getSiteAttributesMap().get(mcp);
                             if(sas.getLocation() instanceof Membrane) {
-                                String msg = "All the Sites of a Membrane species, other than the 'Anchor', must NOT be located on a Membrane.";
-                                String tip = "Relocate the site '" + mc.getName() + "' inside a compartment, or rename it to 'Anchor'";
+                                String tip = "All the Sites of a Membrane species, other than the 'Anchor', must NOT be located on a Membrane.";
+                                String msg = "Relocate the site '" + mc.getName() + "' inside a compartment, or rename it to 'Anchor'";
                                 issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                                 return;
                             }
@@ -1440,15 +1446,15 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                             double zCandidate = sasCandidate.getCoordinate().getZ();
                             if(sasCandidate.getLocation().getName().equals(Structure.SpringStructureEnum.Extracellular.columnName)) {
                                 if(!(zCandidate < zAnchor)) {
-                                    String msg = "Sites located in the 'Extracellular' structure must have their z-coordinate smaller that the one of the 'Anchor' site";
-                                    String tip = "Relocate the site '" + mc.getName() + "' inside 'Intracellular', or decrease its 'z' coordinate to less than " + zAnchor;
+                                    String tip = "Sites located in the 'Extracellular' structure must have their z-coordinate smaller that the one of the 'Anchor' site";
+                                    String msg = "Relocate the site '" + mc.getName() + "' inside 'Intracellular', or decrease its 'z' coordinate to less than " + zAnchor;
                                     issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                                     foundSomething = true;
                                 }
                             } else if(sasCandidate.getLocation().getName().equals(Structure.SpringStructureEnum.Intracellular.columnName)){
                                 if(!(zCandidate > zAnchor)) {
-                                    String msg = "Sites located in the 'Intracellular' structure must have their z-coordinate larger that the one of the 'Anchor' site";
-                                    String tip = "Relocate the site '" + mc.getName() + "' inside 'Extracellular', or increase its 'z' coordinate to more than " + zAnchor;
+                                    String tip = "Sites located in the 'Intracellular' structure must have their z-coordinate larger that the one of the 'Anchor' site";
+                                    String msg = "Relocate the site '" + mc.getName() + "' inside 'Extracellular', or increase its 'z' coordinate to more than " + zAnchor;
                                     issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                                     foundSomething = true;
                                 }

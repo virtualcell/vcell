@@ -106,7 +106,7 @@ public class ParameterEstimationTaskSimulatorIDA {
 			//
 			MathDescription mathDesc = parameterEstimationTask.getSimulationContext().getMathDescription();
 			Simulation simulation = new Simulation(mathDesc, parameterEstimationTask.getSimulationContext());
-			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, 0);
+			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(simulation, MathOverrides.ScanIndex.ZERO);
 			//
 			// set math overrides with initial guess
 			//

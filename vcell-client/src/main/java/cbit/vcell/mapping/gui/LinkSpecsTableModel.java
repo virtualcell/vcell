@@ -149,7 +149,6 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
              * to, or greater than the second.<p>
              */
             public int compare(MolecularInternalLinkSpec mils1, MolecularInternalLinkSpec mils2) {
-
                 ColumnType columnType = columns.get(col);
                 switch (columnType) {
                     case COLUMN_LINK:
@@ -260,6 +259,24 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
         } else {
             return null;
         }
+
+        Collections.sort(allParameterList, new Comparator<MolecularInternalLinkSpec>() {
+            @Override
+            public int compare(MolecularInternalLinkSpec mils1, MolecularInternalLinkSpec mils2) {
+                SpeciesContextSpec scs = mils1.getSpeciesContextSpec();
+                if(fieldSpeciesContextSpec != scs) {
+                    throw new RuntimeException("SpeciesContextSpec inconsistent.");
+                }
+                MolecularComponentPattern mcp1 = mils1.getLink().one;
+                MolecularComponentPattern mcp2 = mils2.getLink().one;
+                Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
+                SiteAttributesSpec sas1 = siteAttributesMap.get(mcp1);
+                SiteAttributesSpec sas2 = siteAttributesMap.get(mcp2);
+                Double z1 = sas1.getCoordinate().getZ();
+                Double z2 = sas2.getCoordinate().getZ();
+                return z1.compareTo(z2);
+            }
+        });
         return allParameterList;
     }
 

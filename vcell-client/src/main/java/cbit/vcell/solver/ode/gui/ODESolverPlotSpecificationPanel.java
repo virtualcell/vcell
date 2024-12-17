@@ -19,6 +19,7 @@ import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FunctionColumnDescription;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -62,6 +63,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JPanel speciesOptionsPanel = null;
 	JCheckBox concentrationCheckBox = null;
 	JCheckBox countCheckBox = null;
+	JCheckBox trivialCheckBox = null;		// springsalad specific: filters out trivial result sets (where nothing happens)
 	private JLabel ivjCurLabel = null;
 	private JSlider ivjSensitivityParameterSlider = null;
 	private JScrollPane ivjJScrollPaneYAxis = null;
@@ -76,7 +78,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private ODEDataInterface oDEDataInterface = null;
 	
 	private static ImageIcon function_icon = null;
-	
+
 	public static final String ODE_DATA_CHANGED = "ODE_DATA_CHANGED";
 	public static final String ODE_FILTER_CHANGED = "ODE_FILTER_CHANGED";
 	public static final String ODESOLVERRESULTSET_CHANGED = "ODESOLVERRESULTSET_CHANGED";
@@ -92,7 +94,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 				firePropertyChange(ODE_DATA_CHANGED, false, true);
 			}else if(filterSettings != null && filterSettings.containsKey(e.getSource())){
 				processFilterSelection();
-			} else if(e.getSource() == concentrationCheckBox || e.getSource() == countCheckBox) {
+			} else if(e.getSource() == concentrationCheckBox || e.getSource() == countCheckBox || e.getSource() == trivialCheckBox) {
 				try {
 					updateChoices(getMyDataInterface());
 				}catch(Exception exc){
@@ -493,7 +495,6 @@ private javax.swing.JLabel getMinLabel() {
 /**
  * Gets the odeSolverResultSet property (cbit.vcell.solver.ode.ODESolverResultSet) value.
  * @return The odeSolverResultSet property value.
- * @see #setOdeSolverResultSet
  */
 public ODEDataInterface getMyDataInterface() {
 	return oDEDataInterface;
@@ -794,6 +795,14 @@ private void initConnections() throws java.lang.Exception {
 					tooltipString = varName;
 				}
 				setToolTipText(tooltipString);
+				if (cd instanceof ODESolverResultSetColumnDescription odeSolverResultSetColumnDescription) {
+					if (odeSolverResultSetColumnDescription.isTrivial()) {
+						setForeground(Color.gray);
+					} else {
+						setForeground(Color.black);
+					}
+				}
+//			setOpaque(true);
 			}
 			return this;
 		}
@@ -1172,10 +1181,8 @@ private void regeneratePlot2D() throws ExpressionException,ObjectNotFoundExcepti
 
 
 /**
- * Sets the odeSolverResultSet property (cbit.vcell.solver.ode.ODESolverResultSet) value.
- * @param odeSolverResultSet The new value for the property.
- * @see #getOdeSolverResultSet
- */
+ * Sets the oDEDataInterface property
+*/
 public void setMyDataInterface(ODEDataInterface newMyDataInterface) {
 	ODEDataInterface oldValue = oDEDataInterface;
 	/* Stop listening for events from the current object */
@@ -1203,7 +1210,6 @@ public void setSymbolTable(SymbolTable symbolTable) {
 /**
  * Insert the method's description here.
  * Creation date: (2/8/2001 4:56:15 PM)
- * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
 private void sortColumnDescriptions(ArrayList<ColumnDescription> columnDescriptions) {
 	Collections.sort(columnDescriptions, new Comparator<ColumnDescription>() {
@@ -1217,7 +1223,6 @@ private void sortColumnDescriptions(ArrayList<ColumnDescription> columnDescripti
 /**
  * Insert the method's description here.
  * Creation date: (2/8/2001 4:56:15 PM)
- * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
 private synchronized void updateChoices(ODEDataInterface odedi) throws ExpressionException,ObjectNotFoundException {
 	if (odedi == null) {
@@ -1247,11 +1252,8 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
         //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
         if (cd.getParameterName() == null) {
         	String name = cd.getName();
-			DataSymbolMetadata damd = null;
-			if (damdr != null) {
-				damd = damdr.getDataSymbolMetadata(name);
-			}
-        	
+			DataSymbolMetadata damd = damdr.getDataSymbolMetadata(name);
+
         	// filter entities measured as count vs concentration, based on the checkbox settings
 			ModelCategoryType filterCategory = null;
 			if (damd != null) {
@@ -1262,6 +1264,15 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
 					continue;
 				} else if(filterCategory instanceof BioModelCategoryType && filterCategory == BioModelCategoryType.Species && !cd.getName().endsWith(AbstractMathMapping.MATH_VAR_SUFFIX_SPECIES_COUNT) && !concentrationCheckBox.isSelected()) {
 					continue;
+				}
+			}
+
+			if(trivialCheckBox != null) {
+				if(trivialCheckBox.isSelected()) {
+					// TODO: implement filtration based on trivial results or not
+					//  access the RowColumnResultSet and find out if data is trivial or not for this ColumnDescription
+					double[] values = odedi.extractColumn(name);
+
 				}
 			}
 			
@@ -1277,6 +1288,11 @@ private synchronized void updateChoices(ODEDataInterface odedi) throws Expressio
         	sensitivityColumnDescriptions.add(cd);
         }
     }
+
+	if(odedi.isSpringSaLaD()) {
+		odedi.checkTrivial(variableColumnDescriptions);
+	}
+
     sortColumnDescriptions(variableColumnDescriptions);
     sortColumnDescriptions(sensitivityColumnDescriptions); 
     
@@ -1385,12 +1401,12 @@ public static Point2D[] generateHistogram(double[] rawData)
 	for(int i=0;i<rawData.length;i++)
 	{
 		int val = ((int)Math.round(rawData[i]));
-		if(temp.get(new Integer(val))!= null)
+		if(temp.get(val)!= null)
 		{
-			int v = temp.get(new Integer(val)).intValue();
-			temp.put(new Integer(val), new Integer(v+1));
+			int v = temp.get(val).intValue();
+			temp.put(val, v+1);
 		}
-		else temp.put(new Integer(val), new Integer(1));
+		else temp.put(val, 1);
 	}
 	//sort the hashtable ascendantly and also calculate the frequency in terms of percentage.
 	Vector<Integer> keys = new Vector<Integer>(temp.keySet());
@@ -1399,7 +1415,7 @@ public static Point2D[] generateHistogram(double[] rawData)
 	for (int i=0; i<keys.size(); i++)
 	{
         Integer key = keys.elementAt(i);
-        Double valperc = new Double(((double)temp.get(key).intValue())/((double)rawData.length));
+        Double valperc = (double)temp.get(key).intValue() / ((double)rawData.length);
         result[i] = new Point2D.Double(key,valperc);
     }
 	return result;
@@ -1432,11 +1448,11 @@ private JPanel getPanel() {
 	return panel;
 }
 
-private HashMap<JCheckBox, ModelCategoryType> filterSettings;
+private LinkedHashMap<JCheckBox, ModelCategoryType> filterSettings;
 private JLabel yAxisJLabel;
 private JCheckBox getFilterSetting(ModelCategoryType filterCategory){
 	if(filterSettings == null){
-		filterSettings = new HashMap<JCheckBox, ModelCategoryType>();
+		filterSettings = new LinkedHashMap<>();
 	}
 	for(JCheckBox jCheckBox:filterSettings.keySet()){
 		if(filterSettings.get(jCheckBox).equals(filterCategory)){
@@ -1462,16 +1478,18 @@ private JCheckBox getFilterSetting(ModelCategoryType filterCategory){
 	return newJCheckBox;		
 }
 private void showFilterSettings() {
-	if(getMyDataInterface() != null &&
-		getMyDataInterface().getSupportedFilterCategories() != null &&
-		getMyDataInterface().getSupportedFilterCategories().length > 0){
-		
+	ODEDataInterface di = getMyDataInterface();
+	if(di == null) {
+		return;
+	}
+	ModelCategoryType[] filterCategories = di.getSupportedFilterCategories();
+	if(filterCategories != null && filterCategories.length > 0) {
+
 		getFilterPanel().getContentPanel().removeAll();
 		getFilterPanel().getContentPanel().setLayout(null);
 		HashMap<JCheckBox, ModelCategoryType> oldFilterSettings = filterSettings;
 		filterSettings = null;
 
-		ModelCategoryType[] filterCategories = getMyDataInterface().getSupportedFilterCategories();
 		for (int i = 0; i < filterCategories.length; i++) {
 			JCheckBox newFiltersJCheckBox = getFilterSetting(filterCategories[i]);//generate filter set
 			if(oldFilterSettings != null){
@@ -1503,13 +1521,15 @@ private void showFilterSettings() {
 	
 //	filterPanel.setBorder(new LineBorder(Color.black));
 	JCheckBox[] sortedJCheckBoxes = filterSettings.keySet().toArray(new JCheckBox[0]);
-	Arrays.sort(sortedJCheckBoxes, new Comparator<JCheckBox>() {
-		@Override
-		public int compare(JCheckBox o1, JCheckBox o2) {
-			// TODO Auto-generated method stub
-			return o1.getText().compareToIgnoreCase(o2.getText());
-		}
-	});
+	if(!getMyDataInterface().isSpringSaLaD()) {
+		Arrays.sort(sortedJCheckBoxes, new Comparator<JCheckBox>() {
+			@Override
+			public int compare(JCheckBox o1, JCheckBox o2) {
+				// TODO Auto-generated method stub
+				return o1.getText().compareToIgnoreCase(o2.getText());
+			}
+		});
+	}
 	for (int i = 0; i < sortedJCheckBoxes.length; i++) {
 		sortedJCheckBoxes[i].removeItemListener(ivjEventHandler);
 		sortedJCheckBoxes[i].addItemListener(ivjEventHandler);
@@ -1541,6 +1561,7 @@ private void showFilterSettings() {
 		gbc.insets = new Insets(1, 10, 3, 0);
 		gbc.anchor = GridBagConstraints.WEST;
 		filterContentPanel.add(getSpeciesOptionsPanel(), gbc);
+		gridy++;
 	}
 }
 
@@ -1594,7 +1615,11 @@ private void processFilterSelection(){
 				selectedFilterCategories.add(filterSettings.get(jCheckBox));
 			}
 		}
-		getMyDataInterface().selectCategory(selectedFilterCategories.toArray(new ModelCategoryType[0]));
+		if(getMyDataInterface().isSpringSaLaD()) {
+			getMyDataInterface().selectCategory(selectedFilterCategories.toArray(new ModelCategoryType[0]));
+		} else {
+			getMyDataInterface().selectCategory(selectedFilterCategories.toArray(new ModelCategoryType[0]));
+		}
 	}else{
 		getMyDataInterface().selectCategory(null);
 		

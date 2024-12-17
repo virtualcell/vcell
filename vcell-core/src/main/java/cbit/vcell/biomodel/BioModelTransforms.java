@@ -413,7 +413,7 @@ public class BioModelTransforms {
         }
     }
 
-    public static void applyMathOverrides(Simulation simulation, int jobIndex, BioModel bioModel) throws MappingException, ExpressionException {
+    public static void applyMathOverrides(Simulation simulation, MathOverrides.ScanIndex scanIndex, BioModel bioModel) throws MappingException, ExpressionException {
         if (simulation == null) {
             throw new RuntimeException("simulation was null");
         }
@@ -443,7 +443,7 @@ public class BioModelTransforms {
                 throw new RuntimeException("biological symbol table entry for variable '"+overriddenConstantName+"'");
             }
             Expression defaultExpression = mathOverrides.getDefaultExpression(overriddenConstantName);
-            SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simulation, jobIndex);
+            SimulationSymbolTable simulationSymbolTable = new SimulationSymbolTable(simulation, scanIndex);
             Expression actualExpression = simulationSymbolTable.getLocalConstant((Constant)var).getExpression().flatten();
             if (!actualExpression.isNumeric()){
                 throw new RuntimeException("applying non-numeric overrides to a biomodel not yet supported: "+overriddenConstantName+": default = "+defaultExpression.infix()+", actual = "+actualExpression.infix());

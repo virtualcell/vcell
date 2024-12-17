@@ -19,6 +19,7 @@ public class ODESolverResultSetColumnDescription implements cbit.vcell.util.Colu
 	private java.lang.String fieldDisplayName = new String();
 	private java.lang.String fieldVariableName = new String();
 	private java.lang.String fieldParameterName = null;
+	private transient boolean fieldIsTrivial = false;
 /**
  * ODESolverResultSetColDescription constructor comment.
  */
@@ -27,6 +28,7 @@ public ODESolverResultSetColumnDescription(ODESolverResultSetColumnDescription o
 	fieldVariableName = odeColumnDescription.fieldVariableName;
 	fieldParameterName = odeColumnDescription.fieldParameterName;
 	fieldDisplayName = odeColumnDescription.fieldDisplayName;
+	fieldIsTrivial = odeColumnDescription.fieldIsTrivial;
 }
 /**
  * ODESolverResultSetColDescription constructor comment.
@@ -54,7 +56,6 @@ public ODESolverResultSetColumnDescription(String variableName, String parameter
 /**
  * Gets the displayName property (java.lang.String) value.
  * @return The displayName property value.
- * @see #setDisplayName
  */
 public java.lang.String getDisplayName() {
 	return fieldDisplayName;
@@ -62,7 +63,6 @@ public java.lang.String getDisplayName() {
 /**
  * Gets the variableName property (java.lang.String) value.
  * @return The variableName property value.
- * @see #setVariableName
  */
 public java.lang.String getName() {
 	return (getVariableName());
@@ -70,7 +70,6 @@ public java.lang.String getName() {
 /**
  * Gets the parameterName property (java.lang.String) value.
  * @return The name of the sensitivity parameter, may be null.
- * @see #setParameterName
  */
 public java.lang.String getParameterName() {
 	return fieldParameterName;
@@ -78,7 +77,6 @@ public java.lang.String getParameterName() {
 /**
  * Gets the variableName property (java.lang.String) value.
  * @return The variableName property value.
- * @see #setVariableName
  */
 public java.lang.String getVariableName() {
 	return fieldVariableName;
@@ -95,6 +93,12 @@ public int hashCode() {
 	// This implementation forwards the message to super.  You may replace or supplement this.
 	// NOTE: if two objects are equal (equals(Object) returns true) they must have the same hash code
 	return getDisplayName().hashCode();
+}
+public boolean isTrivial() {
+	return fieldIsTrivial;
+}
+public void setIsTrivial(boolean isTrivial) {
+	fieldIsTrivial = isTrivial;
 }
 /**
  * Starts the application.

@@ -669,7 +669,7 @@ public class SEDMLExporter {
 			{
 				final ArrayList<Constant> overrides = new ArrayList<>();
 				for (String constantName : constantNames) {
-					overrides.add(new Constant(constantName, new Expression(mathOverrides.getActualExpression(constantName, 0))));
+					overrides.add(new Constant(constantName, new Expression(mathOverrides.getActualExpression(constantName, MathOverrides.ScanIndex.ZERO))));
 				}
 				for (Constant override : overrides) {
 					 varST.addVar(override);
@@ -721,7 +721,7 @@ public class SEDMLExporter {
 				int variableCount = 0;
 				for (String unscannedParamName : unscannedParamHash.values()) {
 					SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
-					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
+					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, MathOverrides.ScanIndex.ZERO);
 					unscannedParamExpr = adjustIfRateParam(vcSimulation, ste, unscannedParamExpr);
 					if(unscannedParamExpr.isNumeric()) {
 						// if expression is numeric, add ChangeAttribute to model created above
@@ -824,7 +824,7 @@ public class SEDMLExporter {
 				// for unscanned parameter overrides
 				for (String unscannedParamName : unscannedParamHash.values()) {
 					SymbolTableEntry ste = getSymbolTableEntryForModelEntity(mathSymbolMapping, unscannedParamName);
-					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, 0);
+					Expression unscannedParamExpr = mathOverrides.getActualExpression(unscannedParamName, MathOverrides.ScanIndex.ZERO);
 					unscannedParamExpr = adjustIfRateParam(vcSimulation, ste, unscannedParamExpr);
 					if(unscannedParamExpr.isNumeric()) {
 						// if expression is numeric, add ChangeAttribute to model created above

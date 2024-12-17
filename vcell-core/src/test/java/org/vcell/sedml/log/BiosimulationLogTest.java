@@ -279,10 +279,10 @@ public class BiosimulationLogTest {
     @MethodSource("testCases")
     public void testArchiveLogRead(String expectedJson) throws IOException {
         // create ArchiveLog from given JSON
-        BiosimulationLog.ArchiveLog archiveLog = BiosimulationLog.readArchiveLogFromJson(expectedJson);
+        BiosimulationLog.ArchiveLog archiveLog = BiosimulationLog.ArchiveLog.fromJson(expectedJson);
 
         // generate new JSON string from ArchiveLog
-        String newJson = BiosimulationLog.writeArchiveLogToJson(archiveLog);
+        String newJson = archiveLog.writeToJson();
 
         // compare the original JSON string with the new JSON string - normalize by pretty printing
         assertEquals(prettyPrintJson(expectedJson), prettyPrintJson(newJson));

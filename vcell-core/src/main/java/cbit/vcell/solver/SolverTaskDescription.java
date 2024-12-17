@@ -57,7 +57,49 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
     public static final int TASK_STEADY = 1;
 
     private static Logger lg = LogManager.getLogger(SolverTaskDescription.class);
-    //
+
+    public static class TrialIndex {
+        public final static TrialIndex ZERO = new TrialIndex(0);
+        public final int index;
+        public TrialIndex(int index){
+            this.index = index;
+            if (index < 0) {
+                throw new IllegalArgumentException("index must be non-negative");
+            }
+        }
+        @Override
+        public boolean equals(Object obj){
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            TrialIndex that = (TrialIndex) obj;
+            return index == that.index;
+        }
+        @Override
+        public int hashCode(){
+            return Objects.hash(index);
+        }
+        @Override
+        public String toString(){
+            return "TrialIndex{" + "index=" + index + '}';
+        }
+    }
+
+    private int numTrials = 1; // must have at least one trial (trivial case is numTrials=1)
+
+    public void setNumTrials(int i) {
+        if (i < 1) {
+            throw new IllegalArgumentException("numTrials must be positive");
+        }
+        numTrials = i;
+    }
+    public int getNumTrials() {
+        return numTrials;
+    }
+
     private int fieldTaskType = TASK_UNSTEADY;
     private Constant fieldSensitivityParameter = null;
     private Simulation fieldSimulation = null;

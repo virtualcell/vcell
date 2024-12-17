@@ -292,7 +292,7 @@ public class ComsolModelBuilder {
 			surfaceclassNameFeatureMap.put(surfaceClass.getName(), intersect_subvolumes);
 		}
 	    
-	    SimulationSymbolTable symbolTable = new SimulationSymbolTable(vcellSimJob.getSimulation(), vcellSimJob.getJobIndex());
+	    SimulationSymbolTable symbolTable = new SimulationSymbolTable(vcellSimJob.getSimulation(), vcellSimJob.getScanIndex());
 	    	    
 	    //
 	    // process variables and equations in outside domain
