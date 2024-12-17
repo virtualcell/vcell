@@ -14,6 +14,7 @@ import org.vcell.restclient.model.FieldDataReferenceInfo;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.simdata.DataIdentifier;
@@ -54,6 +55,7 @@ public class FieldDataFileOperationResults implements java.io.Serializable{
 
 	
 	public DataIdentifier[] dataIdentifierArr;
+	public ExternalDataIdentifier externalDataIdentifier;
 	public ISize iSize;
 	public Origin origin;
 	public Extent extent;
@@ -67,7 +69,8 @@ public class FieldDataFileOperationResults implements java.io.Serializable{
 		fieldDataFileOperationResults.origin = Origin.dtoToOrigin(dto.getOrigin());
 		fieldDataFileOperationResults.dataIdentifierArr = dto.getDataIdentifierArr().stream().map(DataIdentifier::dtoToDataIdentifier).toArray(DataIdentifier[]::new);
         fieldDataFileOperationResults.times = dto.getTimes().stream().mapToDouble(Double::doubleValue).toArray();
-		fieldDataFileOperationResults.dependantFunctionInfo = dto.getDependantFunctionInfo().stream().map(FieldDataReferenceInfo::dtoToFielddataFileOperationResults).toArray(FieldDataReferenceInfo[]::new);
+		fieldDataFileOperationResults.dependantFunctionInfo = dto.getDependantFunctionInfo() == null ? null : dto.getDependantFunctionInfo().stream().map(FieldDataReferenceInfo::dtoToFielddataFileOperationResults).toArray(FieldDataReferenceInfo[]::new);
+		fieldDataFileOperationResults.externalDataIdentifier = ExternalDataIdentifier.dtoToExternalDataIdentifier(dto.getExternalDataIdentifier());
 		return fieldDataFileOperationResults;
 	}
 	

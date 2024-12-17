@@ -33,6 +33,7 @@ import org.vcell.api.common.events.EventWrapper;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomApiClientCode;
+import org.vcell.restclient.api.FieldDataResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
@@ -512,6 +513,10 @@ public class VCellApiClient implements AutoCloseable {
 				throw new RuntimeException(e);
 			}
 		}
+	}
+
+	public FieldDataResourceApi getFieldDataApi(){
+		return new FieldDataResourceApi(apiClient);
 	}
 
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {

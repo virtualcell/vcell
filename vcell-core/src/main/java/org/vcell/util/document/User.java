@@ -32,6 +32,10 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 		return userDTO;
 	}
 
+	public static User dtoToUser(org.vcell.restclient.model.User dto){
+		return new User(dto.getUserName(), KeyValue.dtoToKeyValue(dto.getKey()));
+	}
+
 	public enum SPECIAL_CLAIM {
 		admins/*special0*/,
 		powerUsers/*special1*/,
