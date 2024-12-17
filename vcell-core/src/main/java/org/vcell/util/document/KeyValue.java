@@ -26,7 +26,7 @@ public class KeyValue implements java.io.Serializable, Matchable {
 		return k;
 	}
 	public static KeyValue dtoToKeyValue(org.vcell.restclient.model.KeyValue dto){
-		return new KeyValue(dto.getValue());
+		return dto == null ? null : new KeyValue(dto.getValue());
 	}
 
 

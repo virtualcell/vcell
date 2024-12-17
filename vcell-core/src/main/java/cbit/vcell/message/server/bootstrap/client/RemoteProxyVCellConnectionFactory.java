@@ -103,6 +103,8 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 			return vcellApiClient.sendRpcMessage(rpcDestination,apiRpcRequest,returnRequired,timeoutMS,specialProperties,specialValues);
 		}
 
+
+
 		@Override
 		public MessageEvent[] getMessageEvents() throws IOException {
 			long previousTimestamp = lastProcessedEventTimestamp.get();
@@ -204,7 +206,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 				this.getVCellApiClient().getGuestLegacyToken()
 				:this.getVCellApiClient().getLegacyToken();
 			userLoginInfo.setUser(new User(accessTokenRep.getUserId(), new KeyValue(accessTokenRep.getUserKey())));
-			return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender);
+			return new LocalVCellConnectionMessaging(userLoginInfo,rpcSender, vcellApiClient);
 		} catch (ApiException apiException){
 			throw new RuntimeException(apiException);
 		}
