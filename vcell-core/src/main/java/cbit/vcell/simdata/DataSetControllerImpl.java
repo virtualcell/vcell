@@ -1180,541 +1180,470 @@ private SimDataBlock evaluateFunction(
 	return new SimDataBlock(pdeDataInfo, data, variableType);
 }
 
-
-
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec)
-	throws ObjectNotFoundException{
-
-	if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_COPYSIM){
-		Vector<File> removeFilesIfErrorV = new Vector<File>();
-		try{
-			int simJobIndex = fieldDataFileOperationSpec.sourceSimParamScanJobIndex;
-			//Determine style so file names can be constructed properly
-			VCSimulationDataIdentifier sourceSimDataID =
+private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpec fieldDataFileOperationSpec){
+	Vector<File> removeFilesIfErrorV = new Vector<File>();
+	try{
+		int simJobIndex = fieldDataFileOperationSpec.sourceSimParamScanJobIndex;
+		//Determine style so file names can be constructed properly
+		VCSimulationDataIdentifier sourceSimDataID =
 				new VCSimulationDataIdentifier(
 						new VCSimulationIdentifier(
 								fieldDataFileOperationSpec.sourceSimDataKey,
 								fieldDataFileOperationSpec.sourceOwner),
 						simJobIndex);
-			
-			SimulationData simulationData = (SimulationData)getVCData(sourceSimDataID);
-			boolean isOldStyle = (simulationData.getResultsInfoObject() instanceof VCSimulationDataIdentifierOldStyle);
-			//
-			//log,mesh,zip,func
-			//
-			KeyValue origSimKey = fieldDataFileOperationSpec.sourceSimDataKey;
-			File meshFile_orig = simulationData.getMeshFile(false);
-			File funcFile_orig = simulationData.getFunctionsFile(false);
-			File subdomainFile_orig = simulationData.getSubdomainFile();
-			File fdLogFile_orig = simulationData.getLogFile();
-			File zipFile_orig = simulationData.getZipFile(false, 0);
-			boolean bCopySubdomainFile = subdomainFile_orig.exists();
-			//Dont' check subdomainFile_orig
-			if(!(meshFile_orig.exists() && funcFile_orig.exists() && fdLogFile_orig.exists() && zipFile_orig.exists())){
-				throw new RuntimeException("Couldn't find all of the files required to copy sim");
-			}
-	
-			File userDir = getPrimaryUserDir(fieldDataFileOperationSpec.owner, true);
-			File meshFile_new = new File(userDir,SimulationData.createCanonicalMeshFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-			File funcFile_new = new File(userDir,SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-			File subdomainFile_new = new File(userDir,SimulationData.createCanonicalSubdomainFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-			File fdLogFile_new = new File(userDir,SimulationData.createCanonicalSimLogFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-			File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,0,false,false));
-			if(meshFile_new.exists() || funcFile_new.exists() || fdLogFile_new.exists() || zipFile_new.exists() || (bCopySubdomainFile && subdomainFile_new.exists())){
-				throw new RuntimeException("File names required for new Field Data already exist on server");
-			}
 
-			removeFilesIfErrorV.add(funcFile_new);
-			removeFilesIfErrorV.add(meshFile_new);
-			removeFilesIfErrorV.add(fdLogFile_new);
-			//Simple copy of mesh and funcfile because they do not have to be changed
-			FileUtils.copyFile(meshFile_orig, meshFile_new, false, false, 8*1024);
-			FileUtils.copyFile(funcFile_orig, funcFile_new, false, false, 8*1024);
-			if(bCopySubdomainFile){
-				FileUtils.copyFile(subdomainFile_orig, subdomainFile_new, false, false, 8*1024);
-			}
-			
-			//Copy Log file and replace original simID with ExternalDataIdentifier id
-	        BufferedWriter writer = null;
-	        try{
-		        String origLog = FileUtils.readFileToString(fdLogFile_orig);
-		        String newLogStr;
-	        	String replace_new =
-	        		SimulationData.createSimIDWithJobIndex(
-	        				fieldDataFileOperationSpec.specEDI.getKey(),
-	        				FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
-		        if(isOldStyle){
-		        	String replace_orig =
-		        		SimulationData.createSimIDWithJobIndex(origSimKey, 0, true);
-			        newLogStr = origLog.replaceAll(replace_orig, replace_new);	        	
-		        }else{
-		        	String replace_orig =
-		        		SimulationData.createSimIDWithJobIndex(
-		        				origSimKey,
-		        				fieldDataFileOperationSpec.sourceSimParamScanJobIndex, false);
-			        newLogStr= origLog.replaceAll(replace_orig, replace_new);	        	
-		        }
-		        writer = new BufferedWriter(new FileWriter(fdLogFile_new));
-		        writer.write(newLogStr);
-		        writer.close();
-	        }finally{
-		        try{if(writer != null){writer.close();}}catch(Exception e){/*ignore*/};
-	        }
-	        
-	        //
-	        //Copy zip file and rename entries
-	        //
-	        int zipIndex = 0;
-	        while(true){//Loop because there might be more than 1 zip file for large datasets
-				zipFile_orig = simulationData.getZipFile(false, zipIndex);
-				if(!zipFile_orig.exists()){
-					//done
-					break;
-				}
-				zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),zipIndex,0,false,false));
-				if(zipFile_new.exists()){
-					throw new DataAccessException("new zipfile name "+zipFile_new.getAbsolutePath()+" already exists");
-				}
-				removeFilesIfErrorV.add(zipFile_new);
-				
-				ZipFile inZipFile = null;
-		        InputStream zis = null;
-		        ZipOutputStream zos = null;
-		        try{
-		        	inZipFile = new ZipFile(zipFile_orig);;
-			        zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile_new)));
-			        Enumeration<? extends ZipEntry> zipEntryEnum = inZipFile.getEntries();
-			        while(zipEntryEnum.hasMoreElements()){
-			        	ZipEntry zeIN = zipEntryEnum.nextElement();
-			        	byte[] zdataIN = new byte[(int)zeIN.getSize()];
-			        	int num = 0;
-			        	int numTotal = 0;
-			        	zis = new BufferedInputStream(inZipFile.getInputStream((ZipArchiveEntry) zeIN));
-			    //long startTime = System.currentTimeMillis();
-			        	while((num = zis.read(zdataIN, numTotal, zdataIN.length-numTotal)) != -1 && numTotal != zdataIN.length){
-			        		numTotal+= num;
-			        	}
-			    //System.out.println("zipread time="+((System.currentTimeMillis()-startTime)/1000.0));
-			        	zis.close();
-			        	String newName;
-			        	String replace_new =
-			        		SimulationData.createSimIDWithJobIndex(
-			        				fieldDataFileOperationSpec.specEDI.getKey(),
-			        				FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
-				        if(isOldStyle){
-				        	String replace_orig =
-				        		SimulationData.createSimIDWithJobIndex(origSimKey, 0, true);
-				        	newName = zeIN.getName().replaceAll(replace_orig, replace_new);	        	
-				        }else{
-				        	String replace_orig =
-				        		SimulationData.createSimIDWithJobIndex(
-				        				origSimKey,
-				        				fieldDataFileOperationSpec.sourceSimParamScanJobIndex, false);
-				        	newName = zeIN.getName().replaceAll(replace_orig, replace_new);	        	
-				        }
-			        	ZipEntry zeOUT = new ZipEntry(newName);
-			        	zeOUT.setComment(zeIN.getComment());
-			        	zeOUT.setCompressedSize(zeIN.getCompressedSize());
-			        	zeOUT.setCrc(zeIN.getCrc());
-			        	zeOUT.setExtra(zeIN.getExtra());
-			        	zeOUT.setMethod(zeIN.getMethod());
-			        	zeOUT.setSize(zeIN.getSize());
-			        	zeOUT.setTime(zeIN.getTime());
-//			    startTime = System.currentTimeMillis();
-			        	zos.putNextEntry(zeOUT);
-			        	zos.write(zdataIN, 0, zdataIN.length);
-//				System.out.println("zipwrite time="+((System.currentTimeMillis()-startTime)/1000.0)+"\n");
-			        }
-		        }finally{
-		        	try{if(zis != null){zis.close();}}catch(Exception e){/*ignore*/};
-			        try{if(zos != null){zos.close();}}catch(Exception e){/*ignore*/};
-		        }
-		        zipIndex+= 1;
-	        }
-	        //Now see if we can read what we just wrote
-			return fieldDataFileOperation(
-					FieldDataFileOperationSpec.
-						createInfoFieldDataFileOperationSpec(
-							fieldDataFileOperationSpec.specEDI.getKey(),
-							fieldDataFileOperationSpec.owner,
-							FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
-		}catch(Exception e){
-			lg.error(e.getMessage(), e);
-			try{
-				for(int i=0;i<removeFilesIfErrorV.size();i+= 1){
-					removeFilesIfErrorV.elementAt(i).delete();
-				}
-			}catch(Throwable e2){
-				//ignore, we tried to cleanup
-			}
-			throw new RuntimeException("Error copying sim data to new Field Data\n"+e.getMessage(), e);
+		SimulationData simulationData = (SimulationData)getVCData(sourceSimDataID);
+		boolean isOldStyle = (simulationData.getResultsInfoObject() instanceof VCSimulationDataIdentifierOldStyle);
+		//
+		//log,mesh,zip,func
+		//
+		KeyValue origSimKey = fieldDataFileOperationSpec.sourceSimDataKey;
+		File meshFile_orig = simulationData.getMeshFile(false);
+		File funcFile_orig = simulationData.getFunctionsFile(false);
+		File subdomainFile_orig = simulationData.getSubdomainFile();
+		File fdLogFile_orig = simulationData.getLogFile();
+		File zipFile_orig = simulationData.getZipFile(false, 0);
+		boolean bCopySubdomainFile = subdomainFile_orig.exists();
+		//Dont' check subdomainFile_orig
+		if(!(meshFile_orig.exists() && funcFile_orig.exists() && fdLogFile_orig.exists() && zipFile_orig.exists())){
+			throw new RuntimeException("Couldn't find all of the files required to copy sim");
 		}
 
-	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
-		if(fieldDataFileOperationSpec.cartesianMesh == null){
-			throw new RuntimeException("Field Data Operation 'ADD' cartesianMesh cannot be null");
-		}
-		if(fieldDataFileOperationSpec.times == null || fieldDataFileOperationSpec.times.length == 0){
-			throw new RuntimeException("Field Data Operation 'ADD' times cannot be null");
-		}
-		if(fieldDataFileOperationSpec.times[0] != 0){
-			throw new RuntimeException("Field Data Operation 'ADD' first time must be 0.0");
-		}
-		if(fieldDataFileOperationSpec.varNames == null || fieldDataFileOperationSpec.varNames.length == 0){
-			throw new RuntimeException("Field Data Operation 'ADD' variable names cannot be null");
-		}
-		if((fieldDataFileOperationSpec.shortSpecData != null && fieldDataFileOperationSpec.doubleSpecData != null) ||
-			(fieldDataFileOperationSpec.shortSpecData == null && fieldDataFileOperationSpec.doubleSpecData == null)){
-			throw new RuntimeException("Field Data Operation 'ADD' must have ONLY 1 data specifier, short or double");			
-		}
-		if(fieldDataFileOperationSpec.shortSpecData != null && (
-				fieldDataFileOperationSpec.shortSpecData.length != fieldDataFileOperationSpec.times.length ||
-				fieldDataFileOperationSpec.shortSpecData[0].length != fieldDataFileOperationSpec.varNames.length
-				)){
-			throw new RuntimeException(
-					"Field Data Operation 'ADD' 'short' data dimension does not match\n"+
-					"times and variable names array lengths");
-		}
-		if(fieldDataFileOperationSpec.doubleSpecData != null && (
-				fieldDataFileOperationSpec.doubleSpecData.length != fieldDataFileOperationSpec.times.length ||
-				fieldDataFileOperationSpec.doubleSpecData[0].length != fieldDataFileOperationSpec.varNames.length
-				)){
-			throw new RuntimeException(
-					"Field Data Operation 'ADD' 'double' data dimension does not match\n"+
-					"times and variable names array lengths");
-		}
-		if(fieldDataFileOperationSpec.variableTypes == null || fieldDataFileOperationSpec.variableTypes.length == 0){
-			throw new RuntimeException("Field Data Operation 'ADD' variable types cannot be null");
-		}
-		if(fieldDataFileOperationSpec.variableTypes.length != fieldDataFileOperationSpec.varNames.length){
-			throw new RuntimeException("Field Data Operation 'ADD' variable types count does not match variable names count");
+		File userDir = getPrimaryUserDir(fieldDataFileOperationSpec.owner, true);
+		File meshFile_new = new File(userDir,SimulationData.createCanonicalMeshFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		File funcFile_new = new File(userDir,SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		File subdomainFile_new = new File(userDir,SimulationData.createCanonicalSubdomainFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		File fdLogFile_new = new File(userDir,SimulationData.createCanonicalSimLogFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,0,false,false));
+		if(meshFile_new.exists() || funcFile_new.exists() || fdLogFile_new.exists() || zipFile_new.exists() || (bCopySubdomainFile && subdomainFile_new.exists())){
+			throw new RuntimeException("File names required for new Field Data already exist on server");
 		}
 
-		//byte[][][] allData = fieldDataFileOperationSpec.specData;
-		double[] times = fieldDataFileOperationSpec.times;
-		ExternalDataIdentifier dataset = fieldDataFileOperationSpec.specEDI;
-		String[] vars = fieldDataFileOperationSpec.varNames;
-		VariableType[] varTypes = fieldDataFileOperationSpec.variableTypes;
-		File userDir = null;
+		removeFilesIfErrorV.add(funcFile_new);
+		removeFilesIfErrorV.add(meshFile_new);
+		removeFilesIfErrorV.add(fdLogFile_new);
+		//Simple copy of mesh and funcfile because they do not have to be changed
+		FileUtils.copyFile(meshFile_orig, meshFile_new, false, false, 8*1024);
+		FileUtils.copyFile(funcFile_orig, funcFile_new, false, false, 8*1024);
+		if(bCopySubdomainFile){
+			FileUtils.copyFile(subdomainFile_orig, subdomainFile_new, false, false, 8*1024);
+		}
+
+		//Copy Log file and replace original simID with ExternalDataIdentifier id
+		BufferedWriter writer = null;
 		try{
-			userDir = getPrimaryUserDir(fieldDataFileOperationSpec.owner, true);
-		}catch(FileNotFoundException e){
-			throw new RuntimeException("Couldn't create new user directory on server");
+			String origLog = FileUtils.readFileToString(fdLogFile_orig);
+			String newLogStr;
+			String replace_new =
+					SimulationData.createSimIDWithJobIndex(
+							fieldDataFileOperationSpec.specEDI.getKey(),
+							FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+			if(isOldStyle){
+				String replace_orig =
+						SimulationData.createSimIDWithJobIndex(origSimKey, 0, true);
+				newLogStr = origLog.replaceAll(replace_orig, replace_new);
+			}else{
+				String replace_orig =
+						SimulationData.createSimIDWithJobIndex(
+								origSimKey,
+								fieldDataFileOperationSpec.sourceSimParamScanJobIndex, false);
+				newLogStr= origLog.replaceAll(replace_orig, replace_new);
+			}
+			writer = new BufferedWriter(new FileWriter(fdLogFile_new));
+			writer.write(newLogStr);
+			writer.close();
+		}finally{
+			try{if(writer != null){writer.close();}}catch(Exception e){/*ignore*/};
 		}
-		
-		double[][][] convertedData = null;
-		if(fieldDataFileOperationSpec.doubleSpecData != null){
-			convertedData = fieldDataFileOperationSpec.doubleSpecData;
-		}else{
-			//convert short to double
-			convertedData = new double[times.length][vars.length][];
-			for(int i=0;i<times.length;i+= 1){
-				for(int j=0;j<vars.length;j+= 1){
-					if (fieldDataFileOperationSpec.shortSpecData!=null){
-						convertedData[i][j] = new double[fieldDataFileOperationSpec.shortSpecData[i][j].length];
-						for (int k = 0; k < fieldDataFileOperationSpec.shortSpecData[i][j].length; k += 1) {
-							convertedData[i][j][k] = (double) (((int)fieldDataFileOperationSpec.shortSpecData[i][j][k]) & 0x0000FFFF);
-						}
-					}else{
-						throw new RuntimeException("no pixel data found");
+
+		//
+		//Copy zip file and rename entries
+		//
+		int zipIndex = 0;
+		while(true){//Loop because there might be more than 1 zip file for large datasets
+			zipFile_orig = simulationData.getZipFile(false, zipIndex);
+			if(!zipFile_orig.exists()){
+				//done
+				break;
+			}
+			zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),zipIndex,0,false,false));
+			if(zipFile_new.exists()){
+				throw new DataAccessException("new zipfile name "+zipFile_new.getAbsolutePath()+" already exists");
+			}
+			removeFilesIfErrorV.add(zipFile_new);
+
+			ZipFile inZipFile = null;
+			InputStream zis = null;
+			ZipOutputStream zos = null;
+			try{
+				inZipFile = new ZipFile(zipFile_orig);;
+				zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile_new)));
+				Enumeration<? extends ZipEntry> zipEntryEnum = inZipFile.getEntries();
+				while(zipEntryEnum.hasMoreElements()){
+					ZipEntry zeIN = zipEntryEnum.nextElement();
+					byte[] zdataIN = new byte[(int)zeIN.getSize()];
+					int num = 0;
+					int numTotal = 0;
+					zis = new BufferedInputStream(inZipFile.getInputStream((ZipArchiveEntry) zeIN));
+					//long startTime = System.currentTimeMillis();
+					while((num = zis.read(zdataIN, numTotal, zdataIN.length-numTotal)) != -1 && numTotal != zdataIN.length){
+						numTotal+= num;
 					}
+					//System.out.println("zipread time="+((System.currentTimeMillis()-startTime)/1000.0));
+					zis.close();
+					String newName;
+					String replace_new =
+							SimulationData.createSimIDWithJobIndex(
+									fieldDataFileOperationSpec.specEDI.getKey(),
+									FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+					if(isOldStyle){
+						String replace_orig =
+								SimulationData.createSimIDWithJobIndex(origSimKey, 0, true);
+						newName = zeIN.getName().replaceAll(replace_orig, replace_new);
+					}else{
+						String replace_orig =
+								SimulationData.createSimIDWithJobIndex(
+										origSimKey,
+										fieldDataFileOperationSpec.sourceSimParamScanJobIndex, false);
+						newName = zeIN.getName().replaceAll(replace_orig, replace_new);
+					}
+					ZipEntry zeOUT = new ZipEntry(newName);
+					zeOUT.setComment(zeIN.getComment());
+					zeOUT.setCompressedSize(zeIN.getCompressedSize());
+					zeOUT.setCrc(zeIN.getCrc());
+					zeOUT.setExtra(zeIN.getExtra());
+					zeOUT.setMethod(zeIN.getMethod());
+					zeOUT.setSize(zeIN.getSize());
+					zeOUT.setTime(zeIN.getTime());
+//			    startTime = System.currentTimeMillis();
+					zos.putNextEntry(zeOUT);
+					zos.write(zdataIN, 0, zdataIN.length);
+//				System.out.println("zipwrite time="+((System.currentTimeMillis()-startTime)/1000.0)+"\n");
+				}
+			}finally{
+				try{if(zis != null){zis.close();}}catch(Exception e){/*ignore*/};
+				try{if(zos != null){zos.close();}}catch(Exception e){/*ignore*/};
+			}
+			zipIndex+= 1;
+		}
+		//Now see if we can read what we just wrote
+		return fieldDataFileOperation(
+				FieldDataFileOperationSpec.
+						createInfoFieldDataFileOperationSpec(
+								fieldDataFileOperationSpec.specEDI.getKey(),
+								fieldDataFileOperationSpec.owner,
+								FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
+	}catch(Exception e){
+		lg.error(e.getMessage(), e);
+		try{
+			for(int i=0;i<removeFilesIfErrorV.size();i+= 1){
+				removeFilesIfErrorV.elementAt(i).delete();
+			}
+		}catch(Throwable e2){
+			//ignore, we tried to cleanup
+		}
+		throw new RuntimeException("Error copying sim data to new Field Data\n"+e.getMessage(), e);
+	}
+}
+
+private FieldDataFileOperationResults fieldDataAdd(FieldDataFileOperationSpec fieldDataFileOperationSpec){
+	if(fieldDataFileOperationSpec.cartesianMesh == null){
+		throw new RuntimeException("Field Data Operation 'ADD' cartesianMesh cannot be null");
+	}
+	if(fieldDataFileOperationSpec.times == null || fieldDataFileOperationSpec.times.length == 0){
+		throw new RuntimeException("Field Data Operation 'ADD' times cannot be null");
+	}
+	if(fieldDataFileOperationSpec.times[0] != 0){
+		throw new RuntimeException("Field Data Operation 'ADD' first time must be 0.0");
+	}
+	if(fieldDataFileOperationSpec.varNames == null || fieldDataFileOperationSpec.varNames.length == 0){
+		throw new RuntimeException("Field Data Operation 'ADD' variable names cannot be null");
+	}
+	if((fieldDataFileOperationSpec.shortSpecData != null && fieldDataFileOperationSpec.doubleSpecData != null) ||
+			(fieldDataFileOperationSpec.shortSpecData == null && fieldDataFileOperationSpec.doubleSpecData == null)){
+		throw new RuntimeException("Field Data Operation 'ADD' must have ONLY 1 data specifier, short or double");
+	}
+	if(fieldDataFileOperationSpec.shortSpecData != null && (
+			fieldDataFileOperationSpec.shortSpecData.length != fieldDataFileOperationSpec.times.length ||
+					fieldDataFileOperationSpec.shortSpecData[0].length != fieldDataFileOperationSpec.varNames.length
+	)){
+		throw new RuntimeException(
+				"Field Data Operation 'ADD' 'short' data dimension does not match\n"+
+						"times and variable names array lengths");
+	}
+	if(fieldDataFileOperationSpec.doubleSpecData != null && (
+			fieldDataFileOperationSpec.doubleSpecData.length != fieldDataFileOperationSpec.times.length ||
+					fieldDataFileOperationSpec.doubleSpecData[0].length != fieldDataFileOperationSpec.varNames.length
+	)){
+		throw new RuntimeException(
+				"Field Data Operation 'ADD' 'double' data dimension does not match\n"+
+						"times and variable names array lengths");
+	}
+	if(fieldDataFileOperationSpec.variableTypes == null || fieldDataFileOperationSpec.variableTypes.length == 0){
+		throw new RuntimeException("Field Data Operation 'ADD' variable types cannot be null");
+	}
+	if(fieldDataFileOperationSpec.variableTypes.length != fieldDataFileOperationSpec.varNames.length){
+		throw new RuntimeException("Field Data Operation 'ADD' variable types count does not match variable names count");
+	}
+
+	//byte[][][] allData = fieldDataFileOperationSpec.specData;
+	double[] times = fieldDataFileOperationSpec.times;
+	ExternalDataIdentifier dataset = fieldDataFileOperationSpec.specEDI;
+	String[] vars = fieldDataFileOperationSpec.varNames;
+	VariableType[] varTypes = fieldDataFileOperationSpec.variableTypes;
+	File userDir = null;
+	try{
+		userDir = getPrimaryUserDir(fieldDataFileOperationSpec.owner, true);
+	}catch(FileNotFoundException e){
+		throw new RuntimeException("Couldn't create new user directory on server");
+	}
+
+	double[][][] convertedData = null;
+	if(fieldDataFileOperationSpec.doubleSpecData != null){
+		convertedData = fieldDataFileOperationSpec.doubleSpecData;
+	}else{
+		//convert short to double
+		convertedData = new double[times.length][vars.length][];
+		for(int i=0;i<times.length;i+= 1){
+			for(int j=0;j<vars.length;j+= 1){
+				if (fieldDataFileOperationSpec.shortSpecData!=null){
+					convertedData[i][j] = new double[fieldDataFileOperationSpec.shortSpecData[i][j].length];
+					for (int k = 0; k < fieldDataFileOperationSpec.shortSpecData[i][j].length; k += 1) {
+						convertedData[i][j][k] = (double) (((int)fieldDataFileOperationSpec.shortSpecData[i][j][k]) & 0x0000FFFF);
+					}
+				}else{
+					throw new RuntimeException("no pixel data found");
 				}
 			}
 		}
+	}
 
-		//Write Log file
-		File fdLogFile =
+	//Write Log file
+	File fdLogFile =
 			new File(userDir,
 					SimulationData.createCanonicalSimLogFileName(
 							dataset.getKey(),0,false));
-		PrintStream ps = null;
-		File zipFile =
+	PrintStream ps = null;
+	File zipFile =
 			new File(userDir,
 					SimulationData.createCanonicalSimZipFileName(
 							dataset.getKey(),0,0,false,false));
-		Vector<String> simFileNamesV = new Vector<String>();
-		try{
-			if(!fdLogFile.createNewFile()){
-				throw new Exception("File.createNewFile() returned null");
-			}
-			ps = new PrintStream(fdLogFile);
-			for(int i=0;i<times.length;i+= 1){
-				String simFilename =
+	Vector<String> simFileNamesV = new Vector<String>();
+	try{
+		if(!fdLogFile.createNewFile()){
+			throw new Exception("File.createNewFile() returned null");
+		}
+		ps = new PrintStream(fdLogFile);
+		for(int i=0;i<times.length;i+= 1){
+			String simFilename =
 					SimulationData.createCanonicalSimFilePathName(
 							dataset.getKey(), i,0,false);
-				simFileNamesV.add(simFilename);
-				ps.println(i+"\t"+simFilename+"\t"+zipFile.getName()+"\t"+times[i]+"");
-			}
-			ps.flush();
-		}catch(Exception e){
-			throw new RuntimeException("Couldn't create log file "+fdLogFile.getAbsolutePath()+"\n"+e.getMessage());
-		}finally{
-			if(ps != null){ps.close();}
+			simFileNamesV.add(simFilename);
+			ps.println(i+"\t"+simFilename+"\t"+zipFile.getName()+"\t"+times[i]+"");
 		}
+		ps.flush();
+	}catch(Exception e){
+		throw new RuntimeException("Couldn't create log file "+fdLogFile.getAbsolutePath()+"\n"+e.getMessage());
+	}finally{
+		if(ps != null){ps.close();}
+	}
 
-		//Write zipFile
-		java.util.zip.ZipOutputStream zipOut = null;
-		try{
-			java.io.BufferedOutputStream bout = new java.io.BufferedOutputStream(new java.io.FileOutputStream(zipFile));
-			zipOut = new java.util.zip.ZipOutputStream(bout);
-		    for(int t=0;t<times.length;t+= 1){
-				java.io.File temp = java.io.File.createTempFile("temp",null);
-				DataSet.writeNew(temp,vars,varTypes,fieldDataFileOperationSpec.isize,convertedData[t]);
-				java.util.zip.ZipEntry zipEntry = new java.util.zip.ZipEntry(simFileNamesV.get(t));
-				zipOut.putNextEntry(zipEntry);
-				//----------------------------
-				java.io.BufferedInputStream in = new java.io.BufferedInputStream(new java.io.FileInputStream(temp));
-				byte[] bytes = new byte[65536];
-				try {
-					int b = in.read(bytes);
-					while (b != -1) {
-						zipOut.write(bytes, 0, b);
-						b = in.read(bytes);
-					}
-				}catch(IOException e){
-					throw new Exception("Error writing zip file bytes");
-				}finally {
-					//cleanup
-					in.close();
-					temp.delete();
-				}
-				//----------------------------
-		    }
-		}catch(Exception e){
-			throw new RuntimeException("Couldn't create zip file "+zipFile.getAbsolutePath()+"\n"+e.getMessage());
-		}finally{
-			try{
-				zipOut.close();
-			}catch(IOException e){
-				lg.error(e);
-				//ignore
-			}
-		}
-		//Write Mesh file
-		FileOutputStream fos = null;
-		File meshFile = null;
-		try {
-			CartesianMesh mesh = fieldDataFileOperationSpec.cartesianMesh;
-			 meshFile = new File(userDir,SimulationData.createCanonicalMeshFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-			fos = new FileOutputStream(meshFile);
-			mesh.write(new PrintStream(fos));
-		} catch (IOException e) {
-			throw new RuntimeException("Error writing mesh file "+meshFile.getAbsolutePath()+"\n"+e.getMessage(), e);
-		}finally{
+	//Write zipFile
+	java.util.zip.ZipOutputStream zipOut = null;
+	try{
+		java.io.BufferedOutputStream bout = new java.io.BufferedOutputStream(new java.io.FileOutputStream(zipFile));
+		zipOut = new java.util.zip.ZipOutputStream(bout);
+		for(int t=0;t<times.length;t+= 1){
+			java.io.File temp = java.io.File.createTempFile("temp",null);
+			DataSet.writeNew(temp,vars,varTypes,fieldDataFileOperationSpec.isize,convertedData[t]);
+			java.util.zip.ZipEntry zipEntry = new java.util.zip.ZipEntry(simFileNamesV.get(t));
+			zipOut.putNextEntry(zipEntry);
+			//----------------------------
+			java.io.BufferedInputStream in = new java.io.BufferedInputStream(new java.io.FileInputStream(temp));
+			byte[] bytes = new byte[65536];
 			try {
-				if(fos != null){
-					fos.close();
+				int b = in.read(bytes);
+				while (b != -1) {
+					zipOut.write(bytes, 0, b);
+					b = in.read(bytes);
 				}
-			} catch (IOException e) {
-				lg.error(e);
-				//ignore
+			}catch(IOException e){
+				throw new Exception("Error writing zip file bytes");
+			}finally {
+				//cleanup
+				in.close();
+				temp.delete();
 			}
+			//----------------------------
 		}
-		
-		//Write Functionfile file
-		PrintStream ps2 = null;
-		File funcFile = null;
-		try {
-			funcFile = new File(userDir,SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-			FileOutputStream fos2 = new FileOutputStream(funcFile);
-			ps2 =new PrintStream(fos2);
-			ps2.println(
-					"##---------------------------------------------"+"\n"+
-					"##  "+funcFile.getAbsolutePath()+"\n"+
-					"##---------------------------------------------"+"\n"
-					);
-			ps2.flush();
-			ps2.close();
-		} catch (IOException e) {
-			throw new RuntimeException("Error writing function file "+funcFile.getAbsolutePath()+"\n"+e.getMessage(), e);
-		}finally{
-			if(ps2 != null){
-				ps2.close();
-			}
-		}
-		
+	}catch(Exception e){
+		throw new RuntimeException("Couldn't create zip file "+zipFile.getAbsolutePath()+"\n"+e.getMessage());
+	}finally{
 		try{
-			//return Info
-			return fieldDataFileOperation(
-					FieldDataFileOperationSpec.
-						createInfoFieldDataFileOperationSpec(
-							fieldDataFileOperationSpec.specEDI.getKey(),
-							fieldDataFileOperationSpec.owner,
-							FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
-		}catch(Exception e){
-			lg.error(e.getMessage(), e);
+			zipOut.close();
+		}catch(IOException e){
+			lg.error(e);
 			//ignore
 		}
-		
-	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DEPENDANTFUNCS){
-		throw new RuntimeException("This function is not currently used");
-//		//
-//		//Check for references to FieldData from users User Defined Functions
-//		//
-//		HashMap<String, KeyValue> dbFuncFileNamesAndSimKeys = null;
-//		try{
-//			dbFuncFileNamesAndSimKeys =
-//				FieldDataDBOperationDriver.getFunctionFileNamesAndSimKeys(
-//					fieldDataFileOperationSpec.specEDI.getOwner());
-//		}catch(Exception e){
-//			lg.error(e);
-//			throw new RuntimeException("couldn't get Function File names from Database\n"+e.getMessage());
-//		}
-//		//String regex = "^.*"+MathMLTags.FIELD+"\\s*\\(\\s*"+fieldDataFileOperationSpec.specEDI.getName()+"\\s*,.*$";
-//		String regex = "^.*?field\\s*\\(\\s*"+fieldDataFileOperationSpec.specEDI.getName()+"\\s*,.*?$";
-//		java.util.regex.Pattern pattern =
-//			java.util.regex.Pattern.compile(regex);//,java.util.regex.Pattern.MULTILINE|java.util.regex.Pattern.DOTALL);
-//		Matcher matcher = pattern.matcher("");
-//		Set<Map.Entry<String,KeyValue>> funcAndSimsES = dbFuncFileNamesAndSimKeys.entrySet();
-//		Vector<FieldDataFileOperationResults.FieldDataReferenceInfo> referencingFuncFileDescription = 
-//			new Vector<FieldDataFileOperationResults.FieldDataReferenceInfo>();
-//		boolean bSearchSecondary =
-//			secondaryRootDirectory != null &&
-//			!primaryRootDirectory.equals(secondaryRootDirectory);
-//		TreeSet<String> searchedFuncFilesTS = new TreeSet<String>();
-//		Iterator<Map.Entry<String,KeyValue>> iter = funcAndSimsES.iterator();
-//		FunctionFileGenerator.FuncFileLineInfo funcfileInfo = null;
-//		while(iter.hasNext()){
-//			Map.Entry<String,KeyValue> currentEntry = iter.next();
-//			File currentFile = null;
-//			for (int i = 0; i < (bSearchSecondary?2:1); i++) {
-//				if(searchedFuncFilesTS.contains(currentEntry.getKey())){
-//					continue;
-//				}
-//				currentFile = new File(
-//					getUserDirectoryName(
-//						(i==0?primaryRootDirectory:secondaryRootDirectory),
-//						fieldDataFileOperationSpec.specEDI.getOwner()),currentEntry.getKey());
-//				if(!currentFile.exists()){
-//					continue;
-//				}
-//				searchedFuncFilesTS.add(currentEntry.getKey());
-//				LineNumberReader lineNumberReader = null;
-//				Vector<String> referringFieldfunctionNamesV = new Vector<String>();
-//				try{
-//					lineNumberReader = new LineNumberReader(new FileReader(currentFile));
-//					String funcFileLine = null;
-//					while((funcFileLine = lineNumberReader.readLine()) != null){
-//						funcfileInfo = FunctionFileGenerator.readFunctionLine(funcFileLine);
-//						if(funcfileInfo != null && funcfileInfo.functionExpr != null){
-//							matcher.reset(funcfileInfo.functionExpr);
-//							if(matcher.matches()){
-//								referringFieldfunctionNamesV.add(funcfileInfo.functionName);
-//							}
-//						}
-//					}
-//					lineNumberReader.close();
-//					if(referringFieldfunctionNamesV.size() > 0){
-//						FieldDataFileOperationResults.FieldDataReferenceInfo fieldDataReferenceInfo =
-//							FieldDataDBOperationDriver.getModelDescriptionForSimulation(
-//								fieldDataFileOperationSpec.specEDI.getOwner(), currentEntry.getValue());
-//						fieldDataReferenceInfo.funcNames = referringFieldfunctionNamesV.toArray(new String[0]);
-//						referencingFuncFileDescription.add(fieldDataReferenceInfo);
-////						for (int j = 0; j < referringFieldfunctionNamesV.size(); j++) {
-////							referencingFuncFileDescription.add(new String[][] {
-////								referringFieldfunctionNamesV.elementAt(j),modelDescription});							
-////						}
-//					}
-//				}catch(Exception e){
-//					lg.error(e);
-//					throw new RuntimeException(e.getMessage(),e);
-//				}finally{
-//					if(lineNumberReader != null){try{lineNumberReader.close();}catch(Exception e){lg.error(e);}}
-//				}
-//			}
-//		}
-//		if(referencingFuncFileDescription.size() > 0){
-//			FieldDataFileOperationResults fdfor = new FieldDataFileOperationResults();
-//			fdfor.dependantFunctionInfo =
-//				referencingFuncFileDescription.toArray(new FieldDataFileOperationResults.FieldDataReferenceInfo[0]);
-//			return fdfor;
-//		}
-//		return null;
-	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE){
-//		if(fieldDataFileOperation(
+	}
+	//Write Mesh file
+	FileOutputStream fos = null;
+	File meshFile = null;
+	try {
+		CartesianMesh mesh = fieldDataFileOperationSpec.cartesianMesh;
+		meshFile = new File(userDir,SimulationData.createCanonicalMeshFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		fos = new FileOutputStream(meshFile);
+		mesh.write(new PrintStream(fos));
+	} catch (IOException e) {
+		throw new RuntimeException("Error writing mesh file "+meshFile.getAbsolutePath()+"\n"+e.getMessage(), e);
+	}finally{
+		try {
+			if(fos != null){
+				fos.close();
+			}
+		} catch (IOException e) {
+			lg.error(e);
+			//ignore
+		}
+	}
+
+	//Write Functionfile file
+	PrintStream ps2 = null;
+	File funcFile = null;
+	try {
+		funcFile = new File(userDir,SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		FileOutputStream fos2 = new FileOutputStream(funcFile);
+		ps2 =new PrintStream(fos2);
+		ps2.println(
+				"##---------------------------------------------"+"\n"+
+						"##  "+funcFile.getAbsolutePath()+"\n"+
+						"##---------------------------------------------"+"\n"
+		);
+		ps2.flush();
+		ps2.close();
+	} catch (IOException e) {
+		throw new RuntimeException("Error writing function file "+funcFile.getAbsolutePath()+"\n"+e.getMessage(), e);
+	}finally{
+		if(ps2 != null){
+			ps2.close();
+		}
+	}
+
+	try{
+		//return Info
+		return fieldDataFileOperation(
+				FieldDataFileOperationSpec.
+						createInfoFieldDataFileOperationSpec(
+								fieldDataFileOperationSpec.specEDI.getKey(),
+								fieldDataFileOperationSpec.owner,
+								FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
+	}catch(Exception e){
+		lg.error(e.getMessage(), e);
+		throw new RuntimeException(e);
+	}
+}
+
+private FieldDataFileOperationResults fieldDataDelete(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws ObjectNotFoundException {
+	//		if(fieldDataFileOperation(
 //			FieldDataFileOperationSpec.
 //				createDependantFuncsFieldDataFileOperationSpec(
 //					fieldDataFileOperationSpec.specEDI)) != null){
 //			throw new RuntimeException("Error: Delete failed, reference to FieldData '"+fieldDataFileOperationSpec.specEDI.getName()+"' found in Simulation Data function");
 //		}
-		//
-		//Remove FieldData from caches
-		//
-		if(cacheTable0 != null){
-			VCSimulationIdentifier vcSimID =
+	//
+	//Remove FieldData from caches
+	//
+	if(cacheTable0 != null){
+		VCSimulationIdentifier vcSimID =
 				new VCSimulationIdentifier(
-					fieldDataFileOperationSpec.specEDI.getKey(),
-					fieldDataFileOperationSpec.specEDI.getOwner());
-			VCSimulationDataIdentifier simDataID =
+						fieldDataFileOperationSpec.specEDI.getKey(),
+						fieldDataFileOperationSpec.specEDI.getOwner());
+		VCSimulationDataIdentifier simDataID =
 				new VCSimulationDataIdentifier(
 						vcSimID,
 						FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
-			cacheTable0.removeAll(simDataID);
-			cacheTable0.removeAll(fieldDataFileOperationSpec.specEDI);
-		}
-		if(userExtDataIDH != null){
-			userExtDataIDH.remove(fieldDataFileOperationSpec.specEDI.getOwner());
-		}
-		
-		SimulationData simulationData = null;
-		try{
-			simulationData = (SimulationData)getVCData(fieldDataFileOperationSpec.specEDI);
-		}catch(Exception e){
-			throw new ObjectNotFoundException(e.getMessage(),e);
-		}
-		File fdLogFile = simulationData.getLogFile();
-		File fdMeshFile = simulationData.getMeshFile(false);
-		File fdFunctionFile = simulationData.getFunctionsFile(true);
-		File fdSubdomainFile = simulationData.getSubdomainFile();
-		if(!fdLogFile.delete()){
-			System.out.println("Couldn't delete log file "+fdLogFile.getAbsolutePath());
-		}
-		if(!fdMeshFile.delete()){
-			System.out.println("Couldn't delete Mesh file "+fdMeshFile.getAbsolutePath());
-		}
-		if(!fdFunctionFile.delete()){
-			System.out.println("Couldn't delete Functions file "+fdFunctionFile.getAbsolutePath());
-		}
-		if(fdSubdomainFile.exists() && fdSubdomainFile.delete()){
-			System.out.println("Couldn't delete Subdomains file "+fdSubdomainFile.getAbsolutePath());
-		}
-
-		int index = 0;
-		while(true){
-			File fdZipFile = simulationData.getZipFile(false, index);
-			if(index != 0 && !fdZipFile.exists()){
-				break;
-			}
-			if(!fdZipFile.delete()){
-				System.out.println("Couldn't delete zip file "+fdZipFile.getAbsolutePath());
-			}
-			index+= 1;
-		}
-		return null;
-	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO){
-		try{
-			FieldDataFileOperationResults fdor = new FieldDataFileOperationResults();
-			VCDataIdentifier sourceSimDataID =
-				new VCSimulationDataIdentifier(
-					new VCSimulationIdentifier(
-							fieldDataFileOperationSpec.sourceSimDataKey,
-							fieldDataFileOperationSpec.sourceOwner),
-				fieldDataFileOperationSpec.sourceSimParamScanJobIndex);
-			fdor.dataIdentifierArr =
-				getDataIdentifiers(null,sourceSimDataID);
-			CartesianMesh mesh = getMesh(sourceSimDataID);
-			fdor.extent = mesh.getExtent();
-			fdor.origin = mesh.getOrigin();
-			fdor.iSize = new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
-			fdor.times = getDataSetTimes(sourceSimDataID);
-			return fdor;
-		}catch(FileNotFoundException e){
-			throw new ObjectNotFoundException("Error FieldDataOp get INFO",e);
-		}catch(Exception e){
-			throw new RuntimeException("Error FieldDataFileOperationSpec INFO Operation\n"+e.getMessage());
-		}
+		cacheTable0.removeAll(simDataID);
+		cacheTable0.removeAll(fieldDataFileOperationSpec.specEDI);
 	}
-	
+	if(userExtDataIDH != null){
+		userExtDataIDH.remove(fieldDataFileOperationSpec.specEDI.getOwner());
+	}
+
+	SimulationData simulationData = null;
+	try{
+		simulationData = (SimulationData)getVCData(fieldDataFileOperationSpec.specEDI);
+	}catch(Exception e){
+		throw new ObjectNotFoundException(e.getMessage(),e);
+	}
+	File fdLogFile = simulationData.getLogFile();
+	File fdMeshFile = simulationData.getMeshFile(false);
+	File fdFunctionFile = simulationData.getFunctionsFile(true);
+	File fdSubdomainFile = simulationData.getSubdomainFile();
+	if(!fdLogFile.delete()){
+		System.out.println("Couldn't delete log file "+fdLogFile.getAbsolutePath());
+	}
+	if(!fdMeshFile.delete()){
+		System.out.println("Couldn't delete Mesh file "+fdMeshFile.getAbsolutePath());
+	}
+	if(!fdFunctionFile.delete()){
+		System.out.println("Couldn't delete Functions file "+fdFunctionFile.getAbsolutePath());
+	}
+	if(fdSubdomainFile.exists() && fdSubdomainFile.delete()){
+		System.out.println("Couldn't delete Subdomains file "+fdSubdomainFile.getAbsolutePath());
+	}
+
+	int index = 0;
+	while(true){
+		File fdZipFile = simulationData.getZipFile(false, index);
+		if(index != 0 && !fdZipFile.exists()){
+			break;
+		}
+		if(!fdZipFile.delete()){
+			System.out.println("Couldn't delete zip file "+fdZipFile.getAbsolutePath());
+		}
+		index+= 1;
+	}
+	return null;
+}
+
+private FieldDataFileOperationResults fieldDataInfo(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws ObjectNotFoundException {
+	try{
+		FieldDataFileOperationResults fdor = new FieldDataFileOperationResults();
+		VCDataIdentifier sourceSimDataID =
+				new VCSimulationDataIdentifier(
+						new VCSimulationIdentifier(
+								fieldDataFileOperationSpec.sourceSimDataKey,
+								fieldDataFileOperationSpec.sourceOwner),
+						fieldDataFileOperationSpec.sourceSimParamScanJobIndex);
+		fdor.dataIdentifierArr =
+				getDataIdentifiers(null,sourceSimDataID);
+		CartesianMesh mesh = getMesh(sourceSimDataID);
+		fdor.extent = mesh.getExtent();
+		fdor.origin = mesh.getOrigin();
+		fdor.iSize = new ISize(mesh.getSizeX(),mesh.getSizeY(),mesh.getSizeZ());
+		fdor.times = getDataSetTimes(sourceSimDataID);
+		return fdor;
+	}catch(FileNotFoundException e){
+		throw new ObjectNotFoundException("Error FieldDataOp get INFO",e);
+	}catch(Exception e){
+		throw new RuntimeException("Error FieldDataFileOperationSpec INFO Operation\n"+e.getMessage());
+	}
+}
+
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec)
+	throws ObjectNotFoundException{
+
+	if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_COPYSIM){
+		return fieldDataCopySim(fieldDataFileOperationSpec);
+	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
+		return fieldDataAdd(fieldDataFileOperationSpec);
+	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DEPENDANTFUNCS){
+		throw new RuntimeException("This function is not currently used");
+	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE){
+		return fieldDataDelete(fieldDataFileOperationSpec);
+	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO){
+		return fieldDataInfo(fieldDataFileOperationSpec);
+	}
 	throw new RuntimeException("Field data operation "+fieldDataFileOperationSpec.opType+" unknown.");
 }
 
