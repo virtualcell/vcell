@@ -30,7 +30,7 @@ public class DataIdentifier implements java.io.Serializable {
 
 	public static DataIdentifier dtoToDataIdentifier(org.vcell.restclient.model.DataIdentifier dto) {
 		return new DataIdentifier(dto.getName(), VariableType.dtoToVariableType(dto.getVariableType()),
-				Domain.dtoToDomain(dto.getDomain()), dto.getbFunction(), dto.getDisplayName());
+				Domain.dtoToDomain(dto.getDomain()),dto.getbFunction() != null && dto.getbFunction(), dto.getDisplayName());
 	}
 
 

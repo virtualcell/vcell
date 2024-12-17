@@ -46,6 +46,7 @@ public class FieldDataFileOperationSpec implements java.io.Serializable{
 	public int sourceSimParamScanJobIndex = -1;
 	public KeyValue sourceSimDataKey;
 	public User sourceOwner;
+	public String fieldDataName;
 
 	public static final int FDOS_ADD = 0;
 	public static final int FDOS_DELETE = 1;
