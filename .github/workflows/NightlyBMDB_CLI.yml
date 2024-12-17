@@ -163,6 +163,9 @@ jobs:
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: |
+          # Prepare files
+          echo "[]" > ${{ github.workspace }}/total_exec_summary.json
+          echo "[]" > ${{ github.workspace }}/full_tracer.json
           # The /* goes on the outside, otherwise bash just interprets a string!
           for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
             echo "\"$file\""
@@ -174,17 +177,41 @@ jobs:
               echo "Running \"${file}\" in output folder \"${base_extless_name}_output\""
               sim_input="/root/${base_name}"
               sim_output="/root/${base_extless_name}_output"
-              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i ${sim_input} -o ${sim_output} --writeLogFiles --guaranteeGoodReturnCode
-          
+              vcell_result=$(docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute-omex -d -i ${sim_input} -o ${sim_output} --timeout_ms=300000)
+
               echo -e "\n\n\n\n\n" # give ourselves some line separation
-              # Check for individual Success
-              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt | wc -l) -ne 0 ]
+
+              # Grab Summary
+              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json | wc -l) -ne 0 ]
+              then
+                # Append to master summary in github workspace
+                jq '. + [inputs]' ${{ github.workspace }}/total_exec_summary.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) > temp.json
+                mv temp.json ${{ github.workspace }}/total_exec_summary.json
+              else
+                echo "No summary found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+              fi
+
+              # Check for individual Failure (a.k.a. if we failed early)
+              status=$(cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) | jq -r '.status')
+              if [[ "$status" == "FAILED" ]] || [ ${vcell_result} -ne 0 ]
               then
                 # Copy error log to github workspace
+                echo "${base_extless_name}" >> $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output/errorLog.txt
                 touch ${{ github.workspace }}/errors.report
-                cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+                cat $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output/errorLog.txt >> ${{ github.workspace }}/errors.report
               else
-                echo "No errors found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+                echo "Run of ${base_extless_name} succeeded (set_${{ matrix.sets }})"
+              fi
+
+              # Grab Trace
+              # Check for individual Success
+              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name tracer.json | wc -l) -ne 0 ]
+              then
+                # Append to master trace in github workspace
+                jq '. + inputs' ${{ github.workspace }}/full_tracer.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name tracer.json) > temp_2.json
+                mv temp_2.json ${{ github.workspace }}/full_tracer.json
+              else
+                echo "No trace found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
               fi
             fi
           done
@@ -271,10 +298,16 @@ jobs:
               fi
           done
 
+      - name: Install JQ
+        run: sudo apt update && sudo apt install jq -y
+
         # Do the execution
       - name: Begin Execution
         #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
         run: |
+          # Prepare files
+          echo "[]" > ${{ github.workspace }}/total_exec_summary.json
+          echo "[]" > ${{ github.workspace }}/full_tracer.json
           # The /* goes on the outside, otherwise bash just interprets a string!
           for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
             echo "\"$file\""
@@ -286,22 +319,45 @@ jobs:
               echo "Running \"${file}\" in output folder \"${base_extless_name}_output\""
               sim_input="/root/${base_name}"
               sim_output="/root/${base_extless_name}_output"
-              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i ${sim_input} -o ${sim_output} --writeLogFiles --guaranteeGoodReturnCode
+              vcell_result=$(docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute-omex -d -i ${sim_input} -o ${sim_output} --timeout_ms=300000)
         
               echo -e "\n\n\n\n\n" # give ourselves some line separation
-              # Check for individual Success
-              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt | wc -l) -ne 0 ]
+          
+              # Grab Summary
+              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json | wc -l) -ne 0 ]
+              then
+                # Append to master summary in github workspace
+                jq '. + [inputs]' ${{ github.workspace }}/total_exec_summary.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) > temp.json
+                mv temp.json ${{ github.workspace }}/total_exec_summary.json
+              else
+                echo "No summary found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+              fi
+          
+              # Check for individual Failure (a.k.a. if we failed early)
+              status=$(cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) | jq -r '.status')
+              if [[ "$status" == "FAILED" ]] || [ ${vcell_result} -ne 0 ]
               then
                 # Copy error log to github workspace
+                echo "${base_extless_name}" >> $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output/errorLog.txt
                 touch ${{ github.workspace }}/errors.report
-                cat $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name errorLog.txt) >> ${{ github.workspace }}/errors.report
+                cat $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output/errorLog.txt >> ${{ github.workspace }}/errors.report
               else
-                echo "No errors found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+                echo "Run of ${base_extless_name} succeeded (set_${{ matrix.sets }})"
+              fi
+          
+              # Grab Trace
+              # Check for individual Success
+              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name tracer.json | wc -l) -ne 0 ]
+              then
+                # Append to master trace in github workspace
+                jq '. + inputs' ${{ github.workspace }}/full_tracer.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name tracer.json) > temp_2.json
+                mv temp_2.json ${{ github.workspace }}/full_tracer.json
+              else
+                echo "No trace found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
               fi
             fi
           done
 
-        #run: docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute -d -i "/root" -o "/root/output" --writeLogFiles # grabs image and runs
 
       - name: Check For Success
         run: |
@@ -318,6 +374,18 @@ jobs:
         with:
           name: set_${{ matrix.sets }}.report
           path: ${{ github.workspace }}/errors.report
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: set_${{ matrix.sets }}.summary
+          path: ${{ github.workspace }}/total_exec_summary.json
+
+      - name: Upload tracer
+        uses: actions/upload-artifact@v3
+        with:
+          name: set_${{ matrix.sets }}.tracer
+          path: ${{ github.workspace }}/full_tracer.json
 
       # Report a Problem to Slack
       - name: Report Problem to Slack
@@ -358,11 +426,26 @@ jobs:
         with:
           path: ${{ github.workspace }}/bmdb-results
 
+      - name: Install JQ
+        run: sudo apt update && sudo apt install jq -y
+
       - name: Combine .report artifacts into one file
         run: cat $(find $GITHUB_WORKSPACE/bmdb-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
+
+      - name: Combine .summary artifacts into one file
+        run: jq -s 'add' $(find $GITHUB_WORKSPACE/bmdb-results -name 'total_exec_summary.json') > $GITHUB_WORKSPACE/summary.json
+
+      - name: Combine .summary artifacts into one file
+        run: jq -s 'add' $(find $GITHUB_WORKSPACE/bmdb-results -name 'full_tracer.json') > $GITHUB_WORKSPACE/tracer.json
 
       - name: Post results to slack part 1
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the $(cat ${GITHUB_WORKSPACE}/combined.txt | wc -l) BMDB models that didn't pass:" https://slack.com/api/chat.postMessage
 
       - name: Post results to slack part 2
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(sort ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
+
+      - name: Post results to slack part 3
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F file=$GITHUB_WORKSPACE/summary.json https://slack.com/api/files.upload
+
+      - name: Post results to slack part 4
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F file=$GITHUB_WORKSPACE/tracer.json https://slack.com/api/files.upload
