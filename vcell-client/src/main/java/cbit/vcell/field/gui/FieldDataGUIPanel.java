@@ -41,6 +41,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import cbit.vcell.field.FieldDataFileConversion;
+import org.vcell.api.client.VCellApiClient;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -48,7 +50,6 @@ import org.vcell.util.Origin;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
@@ -80,309 +81,106 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.field.gui.FieldDataGUIDataTransferObjects.*;
 
 public class FieldDataGUIPanel extends JPanel {
 
     private static final String FIELD_DATA_INFO = "Field Data Info";
     public static final String FIELD_NAME = "fieldName";
     public static final String USER_DEFINED_FDOS = "userDefinedFDOS";
-    //
-    public static final String LIST_NODE_VAR_LABEL = "Variables";
-    //
+
     private final JPopupMenu jPopupMenu = new JPopupMenu();
     private static final int COPY_CSV = 0;
     private static final int COPY_NL = 1;
     private static final int COPY_CRNL = 2;
     private static final int COPY_SPACE = 3;
 
-    //
-    private static class InitializedRootNode {
-        private final String rootNodeString;
-
-        public InitializedRootNode(String argRNS) {
-            rootNodeString = argRNS;
-        }
-
-        public String toString() {
-            return rootNodeString;
-        }
-    }
-
-    private static class FieldDataMainList {
-        public ExternalDataIdentifier externalDataIdentifier;
-        public String extDataAnnot;
-
-        public FieldDataMainList(ExternalDataIdentifier argExternalDataIdentifier, String argExtDataAnnot) {
-            externalDataIdentifier = argExternalDataIdentifier;
-            extDataAnnot = argExtDataAnnot;
-        }
-
-        public String toString() {
-            return externalDataIdentifier.getName();
-        }
-    }
-
-    private static class FieldDataVarMainList {
-        public FieldDataVarMainList() {
-        }
-
-        public String toString() {
-            return LIST_NODE_VAR_LABEL;
-        }
-    }
-
-    private static class FieldDataVarList {
-        public DataIdentifier dataIdentifier;
-        private final String descr;
-
-        public FieldDataVarList(DataIdentifier argDataIdentifier) {
-            dataIdentifier = argDataIdentifier;
-            if (dataIdentifier.getVariableType().compareEqual(VariableType.VOLUME) ||
-                    dataIdentifier.getVariableType().compareEqual(VariableType.VOLUME_REGION)) {
-                descr = "(Vol" + (dataIdentifier.isFunction() ? "Fnc" : "") + ") " + dataIdentifier.getName();
-            } else if (dataIdentifier.getVariableType().compareEqual(VariableType.MEMBRANE) ||
-                    dataIdentifier.getVariableType().compareEqual(VariableType.MEMBRANE_REGION)) {
-                descr = "(Mem" + (dataIdentifier.isFunction() ? "Fnc" : "") + ") " + dataIdentifier.getName();
-            } else {
-                descr = "(---" + (dataIdentifier.isFunction() ? "Fnc" : "") + ") " + dataIdentifier.getName();
-            }
-        }
-
-        public String toString() {
-            return descr;
-        }
-    }
-
-    private static class FieldDataTimeList {
-        public double[] times;
-        private final String descr;
-
-        public FieldDataTimeList(double[] argTimes) {
-            times = argTimes;
-            descr =
-                    "Times ( " + times.length + " )   Begin=" + times[0] +
-                            "   End=" + times[times.length - 1];
-        }
-
-        public String toString() {
-            return descr;
-        }
-    }
-
-    private static class FieldDataIDList {
-        //		public KeyValue key = null;
-        private final String descr;
-
-        public FieldDataIDList(KeyValue k) {
-//			this.key = k;
-            this.descr = "Key (" + k + ")";
-        }
-
-        public String toString() {
-            return descr;
-        }
-    }
-
-    private static class FieldDataISizeList {
-        public ISize isize;
-        private final String descr;
-
-        public FieldDataISizeList(ISize arg) {
-            isize = arg;
-            descr = "Size ( " +
-                    isize.getX() + " , " +
-                    isize.getY() + " , " +
-                    isize.getZ() + " )";
-        }
-
-        public String toString() {
-            return descr;
-        }
-    }
-
-    private static class FieldDataOriginList {
-        public Origin origin;
-        private final String descr;
-
-        public FieldDataOriginList(Origin arg) {
-            origin = arg;
-            descr = "Origin ( " +
-                    origin.getX() + " , " +
-                    origin.getY() + " , " +
-                    origin.getZ() + " )";
-        }
-
-        public String toString() {
-            return descr;
-        }
-    }
-
-    private static class FieldDataExtentList {
-        public Extent extent;
-        private final String descr;
-
-        public FieldDataExtentList(Extent arg) {
-            extent = arg;
-            descr = "Extent ( " +
-                    extent.getX() + " , " +
-                    extent.getY() + " , " +
-                    extent.getZ() + " )";
-        }
-
-        public String toString() {
-            return descr;
-        }
-    }
-
 
     private FieldDataWindowManager fieldDataWindowManager;
-    //
-    private javax.swing.JButton ivjJButtonFDDelete = null;
+    private javax.swing.JButton fdDeleteButton = null;
     private javax.swing.JPanel ivjJPanel1 = null;
     private javax.swing.JPanel normalTopPanel = null;
-    private javax.swing.JButton ivjJButtonFDView = null;
+    private javax.swing.JButton fdViewButton = null;
     private javax.swing.JTree ivjJTree1 = null;
     IvjEventHandler ivjEventHandler = new IvjEventHandler();
     private javax.swing.JScrollPane ivjJScrollPane1 = null;
-    private javax.swing.JButton ivjJButtonFDCopyRef = null;
+    private javax.swing.JButton fdCopyReferenceButton = null;
     private JButton jButtonFindRefModel = null;
     private JPanel jPanel = null;
-    private JButton jButtonCreateGeom = null;
+    private JButton createGeomButton = null;
     private JPanel jPanel1 = null;
-    private JButton jButtonViewAnnot = null;
+    private JButton viewAnnotButton = null;
+    private JButton fdCreateButton;
+
+    private JComboBox<String> jComboBoxCreate;
+    private static final String FROM_FILE = "from File";
+    private static final String FROM_SIM = "from Simulation";
+
 
     class IvjEventHandler implements ActionListener, TreeExpansionListener, javax.swing.event.TreeSelectionListener {
         public void actionPerformed(java.awt.event.ActionEvent e) {
             if (e.getSource() == FieldDataGUIPanel.this.getJButtonFDDelete())
-                connEtoC7(e);
+                fdDelete(e);
             if (e.getSource() == FieldDataGUIPanel.this.getJButtonFDCopyRef())
-                connEtoC8(e);
+                fdCopyRef(e);
             if (e.getSource() == FieldDataGUIPanel.this.getJButtonFDView())
-                connEtoC10(e);
+                viewFieldData(e);
             if (e.getSource() == FieldDataGUIPanel.this.getJButtonFDCreate())
                 if (getCreateJComboBox().getSelectedItem().equals(FROM_SIM)) {
-                    jButtonFDFromSim_ActionPerformed(e);
+                    fdFromSim(e);
                 } else if (getCreateJComboBox().getSelectedItem().equals(FROM_FILE)) {
-                    jButtonFDFromFile_ActionPerformed(e);
+                    fdFromFile();
                 }
-//			else if(getCreateJComboBox().getSelectedItem().equals(FROM_IMAGEJ)){
-//				fromImageJ();
-//			}
         }
 
-        ;
 
         public void treeCollapsed(javax.swing.event.TreeExpansionEvent event) {
         }
 
-        ;
 
         public void treeExpanded(javax.swing.event.TreeExpansionEvent event) {
             if (event.getSource() == FieldDataGUIPanel.this.getFieldDataTree())
-                connEtoC6(event);
+                FieldDataGUIPanel.this.treeExpanded(event);
         }
-
-        ;
 
         public void valueChanged(javax.swing.event.TreeSelectionEvent e) {
             if (e.getSource() == FieldDataGUIPanel.this.getFieldDataTree())
-                connEtoC2(e);
+                FieldDataGUIPanel.this.treeValueChanged(e);
         }
 
-        ;
     }
 
-    ;
 
-    /**
-     * FieldDataGUIPanel constructor comment.
-     */
     public FieldDataGUIPanel() {
         super();
-        initialize();
+        setName("FieldDataGUIPanel");
+        setLayout(new GridBagLayout());
+        setSize(676, 430);
+
+        GridBagConstraints gbc_normalTopPanel = new GridBagConstraints();
+        gbc_normalTopPanel.gridx = 0;
+        gbc_normalTopPanel.gridy = 0;
+        gbc_normalTopPanel.fill = GridBagConstraints.BOTH;
+        gbc_normalTopPanel.insets = new Insets(4, 4, 4, 4);
+        add(getNormalTopPanel(), gbc_normalTopPanel);
+
+        GridBagConstraints constraintsJScrollPane1 = new GridBagConstraints();
+        constraintsJScrollPane1.gridx = 0;
+        constraintsJScrollPane1.gridy = 1;
+        constraintsJScrollPane1.fill = GridBagConstraints.BOTH;
+        constraintsJScrollPane1.weightx = 1.0;
+        constraintsJScrollPane1.weighty = 1.0;
+        constraintsJScrollPane1.insets = new Insets(4, 4, 4, 4);
+        add(getMainScrollPanel(), constraintsJScrollPane1);
+        getFieldDataTree().addTreeSelectionListener(ivjEventHandler);
+        getFieldDataTree().addTreeExpansionListener(ivjEventHandler);
+        getJButtonFDDelete().addActionListener(ivjEventHandler);
+        getJButtonFDCopyRef().addActionListener(ivjEventHandler);
+        getJButtonFDCreate().addActionListener(ivjEventHandler);
+        getJButtonFDView().addActionListener(ivjEventHandler);
+        this.fieldDataGUIPanel_Initialize();
     }
 
-    /**
-     * connEtoC1:  (FieldDataGUIPanel.initialize() --> FieldDataGUIPanel.fieldDataGUIPanel_Initialize()V)
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC1() {
-        try {
-            // user code begin {1}
-            // user code end
-            this.fieldDataGUIPanel_Initialize();
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    /**
-     * connEtoC2:  (JTree1.treeSelection.valueChanged(javax.swing.event.TreeSelectionEvent) --> FieldDataGUIPanel.jTree1_ValueChanged(Ljavax.swing.event.TreeSelectionEvent;)V)
-     *
-     * @param arg1 javax.swing.event.TreeSelectionEvent
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
-    private void connEtoC2(javax.swing.event.TreeSelectionEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.jTree1_ValueChanged(arg1);
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-
-    private void connEtoC6(javax.swing.event.TreeExpansionEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.jTree1_TreeExpanded(arg1);
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-    private void connEtoC7(java.awt.event.ActionEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.jButtonFDDelete_ActionPerformed(arg1);
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
-
-    private void connEtoC8(java.awt.event.ActionEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.jButtonFDCopyRef_ActionPerformed(arg1);
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
 
     private void copyMethod(int copyMode) {
         String delimiter = "";
@@ -449,23 +247,7 @@ public class FieldDataGUIPanel extends JPanel {
         }
     }
 
-    private void connEtoC10(java.awt.event.ActionEvent arg1) {
-        try {
-            // user code begin {1}
-            // user code end
-            this.jButtonFDView_ActionPerformed(arg1);
-            // user code begin {2}
-            // user code end
-        } catch (java.lang.Throwable ivjExc) {
-            // user code begin {3}
-            // user code end
-            handleException(ivjExc);
-        }
-    }
 
-    /**
-     * Comment
-     */
     private void fieldDataGUIPanel_Initialize() {
 
         getFieldDataTree().getSelectionModel().setSelectionMode(javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -565,75 +347,37 @@ public class FieldDataGUIPanel extends JPanel {
      */
     /* WARNING: THIS METHOD WILL BE REGENERATED. */
     private javax.swing.JButton getJButtonFDCopyRef() {
-        if (ivjJButtonFDCopyRef == null) {
-            try {
-                ivjJButtonFDCopyRef = new javax.swing.JButton();
-                ivjJButtonFDCopyRef.setName("JButtonFDCopyRef");
-                ivjJButtonFDCopyRef.setText("Copy Func");
-                ivjJButtonFDCopyRef.setEnabled(false);
-                // user code begin {1}
-                // user code end
-            } catch (java.lang.Throwable ivjExc) {
-                // user code begin {2}
-                // user code end
-                handleException(ivjExc);
-            }
+        if (fdCopyReferenceButton == null) {
+            fdCopyReferenceButton = new javax.swing.JButton();
+            fdCopyReferenceButton.setName("JButtonFDCopyRef");
+            fdCopyReferenceButton.setText("Copy Func");
+            fdCopyReferenceButton.setEnabled(false);
         }
-        return ivjJButtonFDCopyRef;
+        return fdCopyReferenceButton;
     }
 
-    /**
-     * Return the JButtonFDDelete property value.
-     *
-     * @return javax.swing.JButton
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+
     private javax.swing.JButton getJButtonFDDelete() {
-        if (ivjJButtonFDDelete == null) {
-            try {
-                ivjJButtonFDDelete = new javax.swing.JButton();
-                ivjJButtonFDDelete.setName("JButtonFDDelete");
-                ivjJButtonFDDelete.setText("Delete");
-                ivjJButtonFDDelete.setEnabled(false);
-                // user code begin {1}
-                // user code end
-            } catch (java.lang.Throwable ivjExc) {
-                // user code begin {2}
-                // user code end
-                handleException(ivjExc);
-            }
+        if (fdDeleteButton == null) {
+            fdDeleteButton = new javax.swing.JButton();
+            fdDeleteButton.setName("JButtonFDDelete");
+            fdDeleteButton.setText("Delete");
+            fdDeleteButton.setEnabled(false);
         }
-        return ivjJButtonFDDelete;
+        return fdDeleteButton;
     }
 
-    private JButton ivjJButtonFDCreate;
 
-    /**
-     * Return the JButtonFDFromFile property value.
-     *
-     * @return javax.swing.JButton
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
     private JButton getJButtonFDCreate() {
-        if (ivjJButtonFDCreate == null) {
-            try {
-                ivjJButtonFDCreate = new javax.swing.JButton();
-                ivjJButtonFDCreate.setName("JButtonFDFromCreate");
-                ivjJButtonFDCreate.setText("Create...");
-                // user code begin {1}
-                // user code end
-            } catch (java.lang.Throwable ivjExc) {
-                // user code begin {2}
-                // user code end
-                handleException(ivjExc);
-            }
+        if (fdCreateButton == null) {
+            fdCreateButton = new javax.swing.JButton();
+            fdCreateButton.setName("JButtonFDFromCreate");
+            fdCreateButton.setText("Create...");
         }
-        return ivjJButtonFDCreate;
+        return fdCreateButton;
     }
 
-    private JComboBox<String> jComboBoxCreate;
-    private static final String FROM_FILE = "from File";
-    private static final String FROM_SIM = "from Simulation";
+
 
     //private static final String FROM_IMAGEJ = "from ImageJ";
     private JComboBox<String> getCreateJComboBox() {
@@ -643,124 +387,86 @@ public class FieldDataGUIPanel extends JPanel {
         return jComboBoxCreate;
     }
 
-    /**
-     * Return the JButtonFDView property value.
-     *
-     * @return javax.swing.JButton
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
     private javax.swing.JButton getJButtonFDView() {
-        if (ivjJButtonFDView == null) {
-            try {
-                ivjJButtonFDView = new javax.swing.JButton();
-                ivjJButtonFDView.setName("JButtonFDView");
-                ivjJButtonFDView.setText("View...");
-                ivjJButtonFDView.setEnabled(false);
-                // user code begin {1}
-                // user code end
-            } catch (java.lang.Throwable ivjExc) {
-                // user code begin {2}
-                // user code end
-                handleException(ivjExc);
-            }
+        if (fdViewButton == null) {
+            fdViewButton = new javax.swing.JButton();
+            fdViewButton.setName("JButtonFDView");
+            fdViewButton.setText("View...");
+            fdViewButton.setEnabled(false);
         }
-        return ivjJButtonFDView;
+        return fdViewButton;
     }
 
-    /**
-     * Return the JPanel1 property value.
-     *
-     * @return javax.swing.JPanel
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
+
     private javax.swing.JPanel getJPanel1() {
         if (ivjJPanel1 == null) {
-            try {
-                org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
-                ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
-                ivjLocalBorder.setTitleFont(new java.awt.Font("Arial", 1, 14));
-                ivjLocalBorder.setTitle("Create New Field Data");
-                ivjJPanel1 = new javax.swing.JPanel();
-                ivjJPanel1.setName("JPanel1");
-                ivjJPanel1.setBorder(ivjLocalBorder);
-                final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
-                gridBagLayout.rowHeights = new int[]{0, 0, 7};
-                ivjJPanel1.setLayout(gridBagLayout);
+            org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+            ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
+            ivjLocalBorder.setTitleFont(new java.awt.Font("Arial", 1, 14));
+            ivjLocalBorder.setTitle("Create New Field Data");
+            ivjJPanel1 = new javax.swing.JPanel();
+            ivjJPanel1.setName("JPanel1");
+            ivjJPanel1.setBorder(ivjLocalBorder);
+            final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
+            gridBagLayout.rowHeights = new int[]{0, 0, 7};
+            ivjJPanel1.setLayout(gridBagLayout);
 
-                java.awt.GridBagConstraints constraintsJButtonFDFromFile = new java.awt.GridBagConstraints();
-                constraintsJButtonFDFromFile.gridx = 1;
-                constraintsJButtonFDFromFile.gridy = 1;
-                constraintsJButtonFDFromFile.fill = java.awt.GridBagConstraints.HORIZONTAL;
-                constraintsJButtonFDFromFile.weightx = 1.0;
-                constraintsJButtonFDFromFile.insets = new java.awt.Insets(4, 4, 4, 4);
-                getJPanel1().add(getJButtonFDCreate(), constraintsJButtonFDFromFile);
+            java.awt.GridBagConstraints constraintsJButtonFDFromFile = new java.awt.GridBagConstraints();
+            constraintsJButtonFDFromFile.gridx = 1;
+            constraintsJButtonFDFromFile.gridy = 1;
+            constraintsJButtonFDFromFile.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            constraintsJButtonFDFromFile.weightx = 1.0;
+            constraintsJButtonFDFromFile.insets = new java.awt.Insets(4, 4, 4, 4);
+            getJPanel1().add(getJButtonFDCreate(), constraintsJButtonFDFromFile);
 
-                java.awt.GridBagConstraints constraintsJButtonFDFromSim = new java.awt.GridBagConstraints();
-                constraintsJButtonFDFromSim.gridx = 2;
-                constraintsJButtonFDFromSim.gridy = 1;
-                constraintsJButtonFDFromSim.fill = java.awt.GridBagConstraints.HORIZONTAL;
-                constraintsJButtonFDFromSim.weightx = 1.0;
-                constraintsJButtonFDFromSim.insets = new java.awt.Insets(4, 4, 4, 4);
-                getJPanel1().add(getCreateJComboBox(), constraintsJButtonFDFromSim);
-
-                // user code begin {1}
-                // user code end
-            } catch (java.lang.Throwable ivjExc) {
-                // user code begin {2}
-                // user code end
-                handleException(ivjExc);
-            }
+            java.awt.GridBagConstraints constraintsJButtonFDFromSim = new java.awt.GridBagConstraints();
+            constraintsJButtonFDFromSim.gridx = 2;
+            constraintsJButtonFDFromSim.gridy = 1;
+            constraintsJButtonFDFromSim.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            constraintsJButtonFDFromSim.weightx = 1.0;
+            constraintsJButtonFDFromSim.insets = new java.awt.Insets(4, 4, 4, 4);
+            getJPanel1().add(getCreateJComboBox(), constraintsJButtonFDFromSim);
         }
         return ivjJPanel1;
     }
 
 
-    /**
-     * Return the JPanel2 property value.
-     *
-     * @return javax.swing.JPanel
-     */
-    /* WARNING: THIS METHOD WILL BE REGENERATED. */
     private javax.swing.JPanel getNormalTopPanel() {
         if (normalTopPanel == null) {
-            try {
-                GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
-                gridBagConstraints4.gridx = 2;
-                gridBagConstraints4.gridy = 1;
-                GridBagConstraints gridBagConstraints21 = new GridBagConstraints();
-                gridBagConstraints21.gridx = 2;
-                gridBagConstraints21.gridy = 0;
-                normalTopPanel = new javax.swing.JPanel();
-                normalTopPanel.setName("normalTopPanel");
-                normalTopPanel.setLayout(new java.awt.GridBagLayout());
+            GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
+            gridBagConstraints4.gridx = 2;
+            gridBagConstraints4.gridy = 1;
+            GridBagConstraints gridBagConstraints21 = new GridBagConstraints();
+            gridBagConstraints21.gridx = 2;
+            gridBagConstraints21.gridy = 0;
+            normalTopPanel = new javax.swing.JPanel();
+            normalTopPanel.setName("normalTopPanel");
+            normalTopPanel.setLayout(new java.awt.GridBagLayout());
 
-                java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-                constraintsJPanel1.gridx = 0;
-                constraintsJPanel1.gridy = 0;
-                constraintsJPanel1.gridheight = 2;
-                constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
-                constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-                getNormalTopPanel().add(getJPanel1(), constraintsJPanel1);
+            java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
+            constraintsJPanel1.gridx = 0;
+            constraintsJPanel1.gridy = 0;
+            constraintsJPanel1.gridheight = 2;
+            constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
+            constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
+            getNormalTopPanel().add(getJPanel1(), constraintsJPanel1);
 
-                java.awt.GridBagConstraints constraintsJButtonFDDelete = new java.awt.GridBagConstraints();
-                constraintsJButtonFDDelete.gridx = 1;
-                constraintsJButtonFDDelete.gridy = 0;
-                constraintsJButtonFDDelete.fill = java.awt.GridBagConstraints.HORIZONTAL;
-                constraintsJButtonFDDelete.weightx = 0.0;
-                constraintsJButtonFDDelete.insets = new java.awt.Insets(4, 4, 4, 4);
-                java.awt.GridBagConstraints constraintsJButtonFDView = new java.awt.GridBagConstraints();
-                constraintsJButtonFDView.gridx = 1;
-                constraintsJButtonFDView.gridy = 1;
-                constraintsJButtonFDView.gridwidth = 1;
-                constraintsJButtonFDView.fill = java.awt.GridBagConstraints.HORIZONTAL;
-                constraintsJButtonFDView.insets = new java.awt.Insets(4, 4, 4, 4);
-                normalTopPanel.add(getJButtonFDDelete(), constraintsJButtonFDDelete);
-                normalTopPanel.add(getJButtonFDView(), constraintsJButtonFDView);
-                normalTopPanel.add(getJPanel(), gridBagConstraints21);
-                normalTopPanel.add(getJPanel12(), gridBagConstraints4);
-            } catch (java.lang.Throwable ivjExc) {
-                handleException(ivjExc);
-            }
+            java.awt.GridBagConstraints constraintsJButtonFDDelete = new java.awt.GridBagConstraints();
+            constraintsJButtonFDDelete.gridx = 1;
+            constraintsJButtonFDDelete.gridy = 0;
+            constraintsJButtonFDDelete.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            constraintsJButtonFDDelete.weightx = 0.0;
+            constraintsJButtonFDDelete.insets = new java.awt.Insets(4, 4, 4, 4);
+            java.awt.GridBagConstraints constraintsJButtonFDView = new java.awt.GridBagConstraints();
+            constraintsJButtonFDView.gridx = 1;
+            constraintsJButtonFDView.gridy = 1;
+            constraintsJButtonFDView.gridwidth = 1;
+            constraintsJButtonFDView.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            constraintsJButtonFDView.insets = new java.awt.Insets(4, 4, 4, 4);
+            normalTopPanel.add(getJButtonFDDelete(), constraintsJButtonFDDelete);
+            normalTopPanel.add(getJButtonFDView(), constraintsJButtonFDView);
+            normalTopPanel.add(getJPanel(), gridBagConstraints21);
+            normalTopPanel.add(getJPanel12(), gridBagConstraints4);
         }
         return normalTopPanel;
     }
@@ -769,9 +475,9 @@ public class FieldDataGUIPanel extends JPanel {
     public static final int DISPLAY_DATASYMBOLS = 1;
     private int displayMode = DISPLAY_NORMAL;
     private JPanel dataSymbolsJPanel = null;
-    private JButton dsAnnotButton = new JButton();
-    private JButton dsViewButton = new JButton();
-    private JButton dsDataSymbolButton = new JButton();
+    private final JButton dsAnnotButton = new JButton();
+    private final JButton dsViewButton = new JButton();
+    private final JButton dsDataSymbolButton = new JButton();
 
     public int getDisplayMode() {
         return displayMode;
@@ -796,7 +502,7 @@ public class FieldDataGUIPanel extends JPanel {
                 dsViewButton.setText("View...");
                 dsViewButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        jButtonFDView_ActionPerformed(e);
+                        viewFieldData(e);
                     }
                 });
                 dsViewButton.setEnabled(false);
@@ -812,7 +518,7 @@ public class FieldDataGUIPanel extends JPanel {
                 dsDataSymbolButton.setText("Create Data Symbol...");
                 dsDataSymbolButton.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        jButtonFDCopyRef_ActionPerformed(e);
+                        fdCopyRef(e);
                     }
                 });
                 dsDataSymbolButton.setEnabled(false);
@@ -853,13 +559,9 @@ public class FieldDataGUIPanel extends JPanel {
 
     private javax.swing.JScrollPane getMainScrollPanel() {
         if (ivjJScrollPane1 == null) {
-            try {
-                ivjJScrollPane1 = new javax.swing.JScrollPane();
-                ivjJScrollPane1.setName("JScrollPane1");
-                getMainScrollPanel().setViewportView(getFieldDataTree());
-            } catch (java.lang.Throwable ivjExc) {
-                handleException(ivjExc);
-            }
+            ivjJScrollPane1 = new javax.swing.JScrollPane();
+            ivjJScrollPane1.setName("JScrollPane1");
+            getMainScrollPanel().setViewportView(getFieldDataTree());
         }
         return ivjJScrollPane1;
     }
@@ -871,7 +573,6 @@ public class FieldDataGUIPanel extends JPanel {
                 ivjJTree1.setName("JTree1");
                 ivjJTree1.setBounds(0, 0, 516, 346);
             } catch (java.lang.Throwable ivjExc) {
-                handleException(ivjExc);
                 ivjJTree1.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mousePressed(MouseEvent e) {
                         maybeShowPopup(e);
@@ -893,54 +594,6 @@ public class FieldDataGUIPanel extends JPanel {
         return ivjJTree1;
     }
 
-    private void handleException(java.lang.Throwable exception) {
-
-        /* Uncomment the following lines to print uncaught exceptions to stdout */
-        System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-        exception.printStackTrace(System.out);
-    }
-
-
-    private void initConnections() throws java.lang.Exception {
-        getFieldDataTree().addTreeSelectionListener(ivjEventHandler);
-        getFieldDataTree().addTreeExpansionListener(ivjEventHandler);
-        getJButtonFDDelete().addActionListener(ivjEventHandler);
-        getJButtonFDCopyRef().addActionListener(ivjEventHandler);
-        getJButtonFDCreate().addActionListener(ivjEventHandler);
-        getJButtonFDView().addActionListener(ivjEventHandler);
-    }
-
-
-    private void initialize() {
-        try {
-            // user code begin {1}
-            // user code end
-            setName("FieldDataGUIPanel");
-            setLayout(new java.awt.GridBagLayout());
-            setSize(676, 430);
-
-            java.awt.GridBagConstraints gbc_normalTopPanel = new java.awt.GridBagConstraints();
-            gbc_normalTopPanel.gridx = 0;
-            gbc_normalTopPanel.gridy = 0;
-            gbc_normalTopPanel.fill = java.awt.GridBagConstraints.BOTH;
-            gbc_normalTopPanel.insets = new java.awt.Insets(4, 4, 4, 4);
-            add(getNormalTopPanel(), gbc_normalTopPanel);
-
-            java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-            constraintsJScrollPane1.gridx = 0;
-            constraintsJScrollPane1.gridy = 1;
-            constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
-            constraintsJScrollPane1.weightx = 1.0;
-            constraintsJScrollPane1.weighty = 1.0;
-            constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-            add(getMainScrollPanel(), constraintsJScrollPane1);
-            initConnections();
-            connEtoC1();
-        } catch (java.lang.Throwable ivjExc) {
-            handleException(ivjExc);
-        }
-    }
-
 
     public boolean isInitialized() {
         DefaultMutableTreeNode rootNode =
@@ -952,7 +605,7 @@ public class FieldDataGUIPanel extends JPanel {
     }
 
 
-    private void jTree1_ValueChanged(javax.swing.event.TreeSelectionEvent treeSelectionEvent) {
+    private void treeValueChanged(javax.swing.event.TreeSelectionEvent treeSelectionEvent) {
         getJButtonFDDelete().setEnabled(false);
         getJButtonFDView().setEnabled(false);
         dsViewButton.setEnabled(false);
@@ -981,7 +634,7 @@ public class FieldDataGUIPanel extends JPanel {
         }
     }
 
-    private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+    private void fdFromSim(java.awt.event.ActionEvent actionEvent) {
         try {
             final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
 
@@ -1047,7 +700,7 @@ public class FieldDataGUIPanel extends JPanel {
         }
     }
 
-    private void jButtonFDView_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+    private void viewFieldData(java.awt.event.ActionEvent actionEvent) {
         if (fieldDataWindowManager == null) {
             System.out.println("No FieldDataViewManager available for View action");
             return;
@@ -1062,18 +715,10 @@ public class FieldDataGUIPanel extends JPanel {
         }
     }
 
-
-    private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
-        Hashtable<String, Object> hash = new Hashtable<String, Object>();
-
-        AsynchClientTask[] tasks = fdFromFile();
-        ClientTaskDispatcher.dispatch(this, hash, tasks, false, true, null);
-
-    }
-
     String IMAGE_FILE_KEY = "imageFile";
 
-    private AsynchClientTask[] fdFromFile() {
+    // Add New Data is called from within this function.
+    public void fdFromFile() {
         final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
         AsynchClientTask[] addTasks = addNewExternalData(this, this, false);
         AsynchClientTask[] taskArray = new AsynchClientTask[2 + addTasks.length];
@@ -1090,44 +735,27 @@ public class FieldDataGUIPanel extends JPanel {
                 }
             }
         };
-        taskArray[1] = new AsynchClientTask("Import image", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+        taskArray[1] = new AsynchClientTask("Generate field data from file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                FieldDataFileOperationSpec fdos = null;
-                String initFDName = null;
-
-                FieldDataFileOperationSpec argfdos = (FieldDataFileOperationSpec) hashTable.get("argfdos");
-                String arginitFDName = (String) hashTable.get("arginitFDName");
-                if (argfdos == null) {
-                    File imageFile = (File) hashTable.get(IMAGE_FILE_KEY);
-                    if (imageFile == null) {
-                        return;
-                    }
-                    initFDName = imageFile.getName();
-                    if (initFDName.indexOf(".vfrap") > -1) {
-                    } else //not a .vfrap file
-                    {
-                        try {
-                            fdos = ClientRequestManager.createFDOSFromImageFile(imageFile, false, null);
-                        } catch (DataFormatException ex) {
-                            throw new Exception("Cannot read image " + imageFile.getAbsolutePath() + "\n" + ex.getMessage());
-                        }
-                    }
+                FieldDataFileOperationSpec generatedFieldData ;
+                File imageFile = (File) hashTable.get(IMAGE_FILE_KEY);
+                if (imageFile == null || imageFile.getName().contains(".vfrap")){
+                    return;
                 } else {
-                    fdos = argfdos;
-                    initFDName = arginitFDName;
+                    generatedFieldData = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
                 }
 
-                fdos.owner = clientRequestManager.getDocumentManager().getUser();
-                fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-                hashTable.put("fdos", fdos);
-                hashTable.put("initFDName", initFDName);
-                //addNewExternalData(clientRequestManager, fdos, initFDName, false);
+                generatedFieldData.owner = clientRequestManager.getDocumentManager().getUser();
+                generatedFieldData.opType = FieldDataFileOperationSpec.FDOS_ADD;
+                hashTable.put("fdos", generatedFieldData);
+                hashTable.put("initFDName", imageFile.getName());
             }
         };
-        return taskArray;
+        Hashtable<String, Object> hash = new Hashtable<>();
+        ClientTaskDispatcher.dispatch(this, hash, taskArray, false, true, null);
     }
 
-    private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+    private void fdDelete(java.awt.event.ActionEvent actionEvent) {
 
         final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
 
@@ -1233,7 +861,7 @@ public class FieldDataGUIPanel extends JPanel {
         return new SelectedTimes(new double[]{0.0}, 0);
     }
 
-    private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+    private void fdCopyRef(java.awt.event.ActionEvent actionEvent) {
         if (actionEvent.getSource() == getJButtonCreateGeom()) {
             DocumentWindow.showGeometryCreationWarning(FieldDataGUIPanel.this);
             return;
@@ -1268,7 +896,7 @@ public class FieldDataGUIPanel extends JPanel {
 
     }
 
-    private void jTree1_TreeExpanded(final javax.swing.event.TreeExpansionEvent treeExpansionEvent) {
+    private void treeExpanded(final javax.swing.event.TreeExpansionEvent treeExpansionEvent) {
         if (fieldDataWindowManager == null) {
             return;
         }
@@ -1457,66 +1085,71 @@ public class FieldDataGUIPanel extends JPanel {
         }
     }
 
+    // creation and saving of file is separate act from saving file info into DB
+
     public static AsynchClientTask[] addNewExternalData(final Component requester, final FieldDataGUIPanel fieldDataGUIPanel, final boolean isFromSimulation) {
 
         final RequestManager clientRequestManager = fieldDataGUIPanel.fieldDataWindowManager.getLocalRequestManager();
 
-        AsynchClientTask task1 = new AsynchClientTask("creating field data", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+        AsynchClientTask task1 = new AsynchClientTask("review field data", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                //Check if this is ImageJ op, if so, this task unnecessary
-                if (hashTable.get(USER_DEFINED_FDOS) != null && hashTable.get(FIELD_NAME) != null) {
-                    return;
-                }
                 //Allow user to review/change info about fielddata
-                FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec) hashTable.get("fdos");
+                FieldDataFileOperationSpec generatedFieldDataOpSpec = (FieldDataFileOperationSpec) hashTable.get("fdos");
                 String initialExtDataName = (String) hashTable.get("initFDName");
 
-                fdos.specEDI = null;
+                generatedFieldDataOpSpec.specEDI = null;
 
-                FieldDataInfoPanel fdip = new FieldDataInfoPanel();
-                fdip.setSimulationMode(isFromSimulation);
-                fdip.initISize(fdos.isize);
-                fdip.initIOrigin(fdos.origin);
-                fdip.initIExtent(fdos.extent);
-                fdip.initTimes(fdos.times);
-                fdip.initNames(TokenMangler.fixTokenStrict(initialExtDataName), fdos.varNames);
-                fdip.setAnnotation(fdos.annotation);
+                FieldDataInfoPanel fieldDataInfoPanel = new FieldDataInfoPanel();
+                fieldDataInfoPanel.setSimulationMode(isFromSimulation);
+                fieldDataInfoPanel.initISize(generatedFieldDataOpSpec.isize);
+                fieldDataInfoPanel.initIOrigin(generatedFieldDataOpSpec.origin);
+                fieldDataInfoPanel.initIExtent(generatedFieldDataOpSpec.extent);
+                fieldDataInfoPanel.initTimes(generatedFieldDataOpSpec.times);
+                fieldDataInfoPanel.initNames(TokenMangler.fixTokenStrict(initialExtDataName), generatedFieldDataOpSpec.varNames);
+                fieldDataInfoPanel.setAnnotation(generatedFieldDataOpSpec.annotation);
 
                 FieldDataFileOperationSpec userDefinedFDOS = new FieldDataFileOperationSpec();
                 while (true) {
-                    int choice = PopupGenerator.showComponentOKCancelDialog(requester, fdip, "Create new field data");
+                    int choice = PopupGenerator.showComponentOKCancelDialog(requester, fieldDataInfoPanel, "Create new field data");
                     if (choice == JOptionPane.OK_OPTION) {
                         //Check values
                         try {
-                            userDefinedFDOS.extent = fdip.getExtent();
+                            userDefinedFDOS.extent = fieldDataInfoPanel.getExtent();
                         } catch (Exception e) {
                             PopupGenerator.showErrorDialog(requester, "Problem with Extent values. Please re-enter.\n" + e.getMessage() + "\nTry Again.", e);
                             continue;
                         }
                         try {
-                            userDefinedFDOS.origin = fdip.getOrigin();
+                            userDefinedFDOS.origin = fieldDataInfoPanel.getOrigin();
                         } catch (Exception e) {
                             PopupGenerator.showErrorDialog(requester, "Problem with Origin values. Please re-enter.\n" + e.getMessage() + "\nTry Again.", e);
                             continue;
                         }
                         try {
-                            userDefinedFDOS.varNames = fdip.getVariableNames();
+                            userDefinedFDOS.varNames = fieldDataInfoPanel.getVariableNames();
                         } catch (Exception e) {
                             PopupGenerator.showErrorDialog(requester, "Problem with Variable names. Please re-enter.\n" + e.getMessage() + "\nTry Again.", e);
                             continue;
                         }
-                        userDefinedFDOS.annotation = fdip.getAnnotation();
-                        userDefinedFDOS.times = fdip.getTimes();
+                        userDefinedFDOS.annotation = fieldDataInfoPanel.getAnnotation();
+                        userDefinedFDOS.times = fieldDataInfoPanel.getTimes();
                         try {
-                            fieldDataGUIPanel.checkFieldDataName(fdip.getFieldName());
+                            fieldDataGUIPanel.checkFieldDataName(fieldDataInfoPanel.getFieldName());
                         } catch (Exception e) {
                             PopupGenerator.showErrorDialog(requester, "Error saving Field Data Name to Database. Try again.\n" + e.getMessage(), e);
                             continue;
                         }
+                        if (!isFromSimulation){
+                            generatedFieldDataOpSpec.extent = userDefinedFDOS.extent;
+                            generatedFieldDataOpSpec.origin = userDefinedFDOS.origin;
+                            generatedFieldDataOpSpec.varNames = userDefinedFDOS.varNames;
+                            generatedFieldDataOpSpec.times = userDefinedFDOS.times;
+                        }
+                        generatedFieldDataOpSpec.annotation = userDefinedFDOS.annotation;
                         hashTable.put(USER_DEFINED_FDOS, userDefinedFDOS);
-                        hashTable.put(FIELD_NAME, fdip.getFieldName());
+                        hashTable.put(FIELD_NAME, fieldDataInfoPanel.getFieldName());
                         break;
                     } else {
                         throw UserCancelException.CANCEL_GENERIC;
@@ -1530,41 +1163,23 @@ public class FieldDataGUIPanel extends JPanel {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 //Add to Server Disk
                 //save Database
-                FieldDataFileOperationSpec tempFDOS = (FieldDataFileOperationSpec) hashTable.get(USER_DEFINED_FDOS);
                 String fieldName = (String) hashTable.get(FIELD_NAME);
-
-                FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec) hashTable.get("fdos");
+                FieldDataFileOperationSpec generatedFieldDataOpSpec
+                        = (FieldDataFileOperationSpec) hashTable.get("fdos");
                 DocumentManager documentManager = clientRequestManager.getDocumentManager();
-                FieldDataDBOperationSpec newExtDataIDSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(documentManager.getUser(), fieldName, tempFDOS.annotation);
-                tempFDOS.specEDI = documentManager.fieldDataDBOperation(newExtDataIDSpec).extDataID;
-                fdos.specEDI = tempFDOS.specEDI;
-                fdos.annotation = tempFDOS.annotation;
-
+                generatedFieldDataOpSpec.fieldDataName = fieldName;
                 try {
-                    if (!isFromSimulation) {
-                        fdos.extent = tempFDOS.extent;
-                        fdos.origin = tempFDOS.origin;
-                        fdos.varNames = tempFDOS.varNames;
-                        fdos.times = tempFDOS.times;
-                        //
-                        //Subvolumes and Regions NOT implemented now
-                        //
-                        fdos.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(fdos.origin, fdos.extent, fdos.isize,
-                                new RegionImage(new VCImageUncompressed(null, new byte[fdos.isize.getXYZ()],//empty regions
-                                        fdos.extent, fdos.isize.getX(), fdos.isize.getY(), fdos.isize.getZ()),
-                                        0, null, null, RegionImage.NO_SMOOTHING));
-                    }
-
                     //Add to Server Disk
-                    documentManager.fieldDataFileOperation(fdos);
+                    FieldDataFileOperationResults results = documentManager.fieldDataFileOperation(generatedFieldDataOpSpec);
+                    generatedFieldDataOpSpec.specEDI = results.externalDataIdentifier;
                 } catch (Exception e) {
                     try {
                         //try to cleanup new ExtDataID
-                        documentManager.fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdos.specEDI));
+                        documentManager.fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(generatedFieldDataOpSpec.specEDI));
                     } catch (Exception e2) {
                         //ignore
                     }
-                    fdos.specEDI = null;
+                    generatedFieldDataOpSpec.specEDI = null;
                     throw e;
                 }
             }
@@ -1663,11 +1278,11 @@ public class FieldDataGUIPanel extends JPanel {
      * @return javax.swing.JButton
      */
     private JButton getJButtonCreateGeom() {
-        if (jButtonCreateGeom == null) {
-            jButtonCreateGeom = new JButton();
-            jButtonCreateGeom.setEnabled(false);
-            jButtonCreateGeom.setText("Create Geom");
-            jButtonCreateGeom.addActionListener(new java.awt.event.ActionListener() {
+        if (createGeomButton == null) {
+            createGeomButton = new JButton();
+            createGeomButton.setEnabled(false);
+            createGeomButton.setText("Create Geom");
+            createGeomButton.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent e) {
                     try {
                         RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
@@ -1745,7 +1360,7 @@ public class FieldDataGUIPanel extends JPanel {
                 }
             });
         }
-        return jButtonCreateGeom;
+        return createGeomButton;
     }
 
     /**
@@ -1794,13 +1409,13 @@ public class FieldDataGUIPanel extends JPanel {
     };
 
     private JButton getJButtonViewAnnot() {
-        if (jButtonViewAnnot == null) {
-            jButtonViewAnnot = new JButton();
-            jButtonViewAnnot.setText("View Annot...");
-            jButtonViewAnnot.setEnabled(false);
-            jButtonViewAnnot.addActionListener(viewAnnotAction);
+        if (viewAnnotButton == null) {
+            viewAnnotButton = new JButton();
+            viewAnnotButton.setText("View Annot...");
+            viewAnnotButton.setEnabled(false);
+            viewAnnotButton.addActionListener(viewAnnotAction);
         }
-        return jButtonViewAnnot;
+        return viewAnnotButton;
     }
 
 }
