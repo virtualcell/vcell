@@ -82,32 +82,33 @@ public class FieldDataResource {
     }
 
     @POST
-    @Path("/generateFieldDataEstimate")
+    @Path("/createFieldDataFromFile")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Operation(operationId = "generateFieldDataEstimate")
-    public FieldDataFileOperationSpec generateFieldDataEstimate(SubmittedFieldDataFile spec){
+    public FieldDataFileOperationSpec generateFieldDataEstimate(FieldDataFile fieldDataFile){
         try{
-            return fieldDataDB.generateFieldDataFromFile(spec.file, spec.fileName);
+            return fieldDataDB.generateFieldDataFromFile(fieldDataFile.file, fieldDataFile.fileName);
         } catch (ImageException | DataFormatException | DataAccessException e) {
             throw new WebApplicationException("Can't create new field data file", 500);
         }
     }
 
     @POST
-    @Path("/createFieldDataFromFile")
+    @Path("/createFieldDataFromFileAlreadyAnalyzed")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "createNewFieldDataFromFile")
-    public FieldDataFileOperationResults createNewFieldDataFromFile(SaveFieldDataFromFile saveFieldData){
-        FieldDataFileOperationResults fileResults = null;
+    @Operation(operationId = "createNewFieldDataFromFileAlreadyAnalyzed")
+    public FieldDataSaveResults createNewFieldDataFromFile(AnalyzedResultsFromFieldData saveFieldData){
+        FieldDataSaveResults fieldDataSaveResults;
         try{
             User user = userRestDB.getUserFromIdentity(securityIdentity);
-            fileResults = fieldDataDB.saveNewFieldDataFromFile(saveFieldData, user);
+            FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(saveFieldData, user);
+            fieldDataSaveResults = new FieldDataSaveResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
         }
-        return fileResults;
+        return fieldDataSaveResults;
     }
 
     @POST
@@ -126,12 +127,10 @@ public class FieldDataResource {
     }
 
     @DELETE
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "deleteFieldData", summary = "Delete the selected field data.")
-    public void deleteFieldData(FieldDataDBOperationSpec fieldDataDBOperationSpec){
+    public void deleteFieldData(String fieldDataID){
         try{
-            fieldDataDB.deleteFieldData(userRestDB.getUserFromIdentity(securityIdentity), fieldDataDBOperationSpec);
+            fieldDataDB.deleteFieldData(userRestDB.getUserFromIdentity(securityIdentity), fieldDataID);
         } catch (DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), 500);
         }
@@ -149,7 +148,7 @@ public class FieldDataResource {
             HashMap<ExternalDataIdentifier, Vector<KeyValue>> externalDataIDSimRefs
     ) { }
 
-    public record SaveFieldDataFromFile(
+    public record AnalyzedResultsFromFieldData(
             short[][][] shortSpecData,  //[time][var][data]
             String[] varNames,
             double[] times,
@@ -160,7 +159,12 @@ public class FieldDataResource {
             String name
     ){ }
 
-    public static class SubmittedFieldDataFile {
+    public record FieldDataSaveResults(
+            String fieldDataName,
+            String fieldDataID
+    ){ }
+
+    public static class FieldDataFile {
         @FormParam("file")
         @PartType(MediaType.APPLICATION_OCTET_STREAM)
         public InputStream file;
