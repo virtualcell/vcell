@@ -122,6 +122,9 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.fieldDataDBOperation(...)");
+		if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
+			throw new RuntimeException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
+		}
 		return dbServerProxy.fieldDataDBOperation(fieldDataDBOperationSpec);
 	} catch (DataAccessException e) {
 		lg.error(e.getMessage(),e);

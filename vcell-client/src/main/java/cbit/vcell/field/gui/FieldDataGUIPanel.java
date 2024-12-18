@@ -798,8 +798,6 @@ public class FieldDataGUIPanel extends JPanel {
                 FieldDataFileOperationSpec fdos = FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
                         fieldDataMainList.externalDataIdentifier);
                 clientRequestManager.getDocumentManager().fieldDataFileOperation(fdos);
-                //Remove from DB
-                fieldDataWindowManager.deleteExternalDataIdentifier(fieldDataMainList.externalDataIdentifier);
             }
         };
         //
@@ -1173,12 +1171,6 @@ public class FieldDataGUIPanel extends JPanel {
                     FieldDataFileOperationResults results = documentManager.fieldDataFileOperation(generatedFieldDataOpSpec);
                     generatedFieldDataOpSpec.specEDI = results.externalDataIdentifier;
                 } catch (Exception e) {
-                    try {
-                        //try to cleanup new ExtDataID
-                        documentManager.fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(generatedFieldDataOpSpec.specEDI));
-                    } catch (Exception e2) {
-                        //ignore
-                    }
                     generatedFieldDataOpSpec.specEDI = null;
                     throw e;
                 }

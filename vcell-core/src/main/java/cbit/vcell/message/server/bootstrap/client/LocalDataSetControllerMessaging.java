@@ -13,14 +13,14 @@ package cbit.vcell.message.server.bootstrap.client;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
-import org.vcell.restclient.model.SaveFieldDataFromFile;
-import org.vcell.restclient.model.VariableType;
+import org.vcell.restclient.model.*;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
@@ -72,25 +72,18 @@ public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, RpcSender r
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.fieldDataFileOperationSpec(...)");
 	try {
-		if (fieldDataFileOperationSpec.opType != FieldDataFileOperationSpec.FDOS_ADD){
+		if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
+			AnalyzedResultsFromFieldData analyzedResultsFromFieldData = FieldDataFileOperationSpec.fieldDataSpecToAnalyzedResultsDTO(fieldDataFileOperationSpec);
+			FieldDataSaveResults results = vCellApiClient.getFieldDataApi().createNewFieldDataFromFileAlreadyAnalyzed(analyzedResultsFromFieldData);
+			FieldDataFileOperationResults fieldDataFileOperationResults = new FieldDataFileOperationResults();
+			fieldDataFileOperationResults.externalDataIdentifier = new ExternalDataIdentifier(new KeyValue(results.getFieldDataID()), fieldDataFileOperationSpec.owner, results.getFieldDataName());
+			return fieldDataFileOperationResults;
+		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE) {
+			vCellApiClient.getFieldDataApi().deleteFieldData(fieldDataFileOperationSpec.specEDI.getKey().toString());
+			return null;
+		}
+		else {
 			return dataServerProxy.fieldDataFileOperation(fieldDataFileOperationSpec);
-		} else {
-			List<List<List<Integer>>> listVersion = Arrays.stream(fieldDataFileOperationSpec.shortSpecData) // Stream of short[][]
-					.map(twoDArray -> Arrays.stream(twoDArray) // Stream of short[]
-							.map(oneDArray -> {
-								List<Integer> list = new ArrayList<>();
-								for (short j : oneDArray) {
-									list.add((int) j);
-								}
-								return list;
-							}).collect(Collectors.toList())).collect(Collectors.toList());
-			SaveFieldDataFromFile saveFieldDataFromFile = new SaveFieldDataFromFile();
-			saveFieldDataFromFile.annotation(fieldDataFileOperationSpec.annotation); saveFieldDataFromFile.isize(ISize.iSizeToDTO(fieldDataFileOperationSpec.isize));
-			saveFieldDataFromFile.extent(Extent.extentToDTO(fieldDataFileOperationSpec.extent)); saveFieldDataFromFile.origin(Origin.originToDTO(fieldDataFileOperationSpec.origin));
-			saveFieldDataFromFile.times(Arrays.stream(fieldDataFileOperationSpec.times).boxed().toList()); saveFieldDataFromFile.setName(fieldDataFileOperationSpec.fieldDataName);
-			saveFieldDataFromFile.varNames(Arrays.stream(fieldDataFileOperationSpec.varNames).toList()); saveFieldDataFromFile.shortSpecData(listVersion);
-			org.vcell.restclient.model.FieldDataFileOperationResults results = vCellApiClient.getFieldDataApi().createNewFieldDataFromFile(saveFieldDataFromFile);
-			return FieldDataFileOperationResults.dtoToFieldDataFileOperationResults(results);
 		}
 	} catch (DataAccessException e){
 		lg.error(e.getMessage(),e);
