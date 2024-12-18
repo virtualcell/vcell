@@ -10,7 +10,6 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solvers.CartesianMesh;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -67,7 +66,7 @@ public class FieldDataDB {
     }
 
 
-    public FieldDataFileOperationResults saveNewFieldDataFromFile(FieldDataResource.SaveFieldDataFromFile saveFieldData, User user) throws DataAccessException, ImageException, DataFormatException {
+    public FieldDataFileOperationResults saveNewFieldDataFromFile(FieldDataResource.AnalyzedResultsFromFieldData saveFieldData, User user) throws DataAccessException, ImageException, DataFormatException {
 
 
         VariableType[] varTypes = new VariableType[saveFieldData.varNames().length];
@@ -102,8 +101,10 @@ public class FieldDataDB {
         return databaseServer.fieldDataDBOperation(user, spec);
     }
 
-    public void deleteFieldData(User user, FieldDataDBOperationSpec spec) throws DataAccessException {
-        databaseServer.fieldDataDBOperation(user, spec);
+    public void deleteFieldData(User user, String fieldDataID) throws DataAccessException {
+        ExternalDataIdentifier edi = new ExternalDataIdentifier(new KeyValue(fieldDataID), user, null);
+        databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createDeleteExtDataIDSpec(edi)); // remove from DB
+        dataSetController.fieldDataFileOperation(FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(edi)); // remove from File System
     }
 
 }
