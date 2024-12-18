@@ -88,6 +88,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         }
     }
 
+    public final static int DefaultNumTrials = 20;
     private int numTrials = 1; // must have at least one trial (trivial case is numTrials=1)
 
     public void setNumTrials(int i) {
@@ -190,6 +191,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         bSerialParameterScan = solverTaskDescription.bSerialParameterScan;
         bTimeoutDisabled = solverTaskDescription.bTimeoutDisabled;
         bBorderExtrapolationDisabled = solverTaskDescription.bBorderExtrapolationDisabled;
+        numTrials = solverTaskDescription.numTrials;
 
         if(simulation.getMathDescription().isNonSpatialStoch() && (solverTaskDescription.getStochOpt() != null)){
             setStochOpt(solverTaskDescription.getStochOpt());
@@ -344,7 +346,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
             if(bBorderExtrapolationDisabled != solverTaskDescription.bBorderExtrapolationDisabled){
                 return false;
             }
-
+            if(numTrials != solverTaskDescription.numTrials) {
+                return false;
+            }
             if(!Compare.isEqualOrNull(smoldynSimulationOptions, solverTaskDescription.smoldynSimulationOptions)){
                 return false;
             }

@@ -4806,10 +4806,6 @@ private Element getXML(LangevinSimulationOptions lso) {
 	Element e = null;
 	Element lsoe = new Element(XMLTags.LangevinSimulationOptions);
 
-	e = new Element(XMLTags.LangevinSO_numOfTrials);
-	e.setText(String.valueOf(lso.getNumTrials()));
-	lsoe.addContent(e);
-	
 	e = new Element(XMLTags.LangevinSO_intervalSpring);
 	e.setText(String.valueOf(lso.getIntervalSpring()));
 	lsoe.addContent(e);
@@ -4834,6 +4830,11 @@ private Element getXML(LangevinSimulationOptions lso) {
 	e.setText(String.valueOf(lso.getNumOfParallelLocalRuns()));
 	lsoe.addContent(e);
 
+	if(lso.getRandomSeed() != null) {
+		e = new Element(XMLTags.LangevinSO_randomSeed);
+		e.setText(String.valueOf(lso.getRandomSeed()));
+		lsoe.addContent(e);
+	}
 
 //	if (lso.getSomethingOptional() != null) {
 //		e = new Element(XMLTags.NFSimSimulationOptions_moleculeDistance);

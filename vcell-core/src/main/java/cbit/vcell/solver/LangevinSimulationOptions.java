@@ -17,6 +17,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.io.Serializable;
+import java.math.BigInteger;
 
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
@@ -41,13 +42,11 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 
 	public final static int[] DefaultNPart = { 10, 10, 10 };
 
-	public final static int DefaultRandomSeed = 1;
-	public final static int DefaultNumTrials = 1;
+	public final static BigInteger DefaultRandomSeed = new BigInteger("164200191287356961681");
+	// randomSeed may be null, in which case the solver will generate its own randomSeed as it already does
+	protected BigInteger randomSeed = null;
 
-	protected int numTrials = DefaultNumTrials;	// how many runs of the solver for this simulation
 	protected int numOfParallelLocalRuns = 1;	// how many instances of the solver run in parallel
-	protected int runIndex = 0;					// run index, will result in Run0 (followed by Run1, 2,...)
-	protected Integer randomSeed = DefaultRandomSeed;
 
 	protected double intervalSpring = 1.00E-9;	// default: dtspring: 1.00E-9	- from advanced
 	protected double intervalImage = 1.00E-4;	// default: dtimage: 1.00E-4	- from advanced
@@ -62,11 +61,11 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 	
 	public LangevinSimulationOptions(LangevinSimulationOptions langevinSimulationOptions) {
-		this();				// TODO: properly implement copy constructor
+		this();
+		randomSeed = langevinSimulationOptions.randomSeed;
+		numOfParallelLocalRuns = langevinSimulationOptions.numOfParallelLocalRuns;
 		intervalSpring = langevinSimulationOptions.intervalSpring;
 		intervalImage = langevinSimulationOptions.intervalImage;
-		numTrials = langevinSimulationOptions.numTrials;
-		runIndex = langevinSimulationOptions.runIndex;
 		npart[0] = langevinSimulationOptions.npart[0];
 		npart[1] = langevinSimulationOptions.npart[1];
 		npart[2] = langevinSimulationOptions.npart[2];
@@ -82,10 +81,10 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 			return false;
 		}
 		LangevinSimulationOptions langevinSimulationOptions = (LangevinSimulationOptions)obj;
-		if(numTrials != langevinSimulationOptions.numTrials) {
+		if(randomSeed != langevinSimulationOptions.randomSeed) {
 			return false;
 		}
-		if(runIndex != langevinSimulationOptions.runIndex) {
+		if(numOfParallelLocalRuns != langevinSimulationOptions.numOfParallelLocalRuns) {
 			return false;
 		}
 		if(intervalSpring != langevinSimulationOptions.intervalSpring) {
@@ -104,17 +103,6 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 // -----------------------------------------------------------------------------------
 
 	// can be between 0 and numOfTrials-1
-	public int getRunIndex() {	// for multiple trials the runIndex must be incremented for each run, dynamically
-		if(runIndex > numTrials -1) {
-			throw new RuntimeException("Max run index must be smaller than the number of trials.");
-		}
-		int currentRunIndex = runIndex;
-		runIndex++;
-		return currentRunIndex;
-	}
-	public int getNumTrials() {
-		return numTrials;
-	}
 	public int getNumOfParallelLocalRuns() {
 		return numOfParallelLocalRuns;
 	}
@@ -130,16 +118,10 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public int[] getNPart() {
 		return npart;
 	}
-	public Integer getRandomSeed() {
+	public BigInteger getRandomSeed() {
 		return randomSeed;
 	}
 
-	public final void setRunIndex(int newValue) {
-		this.runIndex = newValue;
-	}
-	public final void setNumTrials(int newValue) {
-		this.numTrials = newValue;
-	}
 	public final void setNumOfParallelLocalRuns(int newValue) {
 		this.numOfParallelLocalRuns = newValue;
 	}
@@ -157,7 +139,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public final void setNPart(int index, int npart) {
 		this.npart[index] = npart;
 	}
-	public void setRandomSeed(Integer randomSeed) {
+	public void setRandomSeed(BigInteger randomSeed) {
 		this.randomSeed = randomSeed;
 	}
 
@@ -197,8 +179,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public String getVCML() {		
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\t" + VCML.LangevinSimulationOptions + " " + VCML.BeginBlock + "\n");
-		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numOfTrials + " " + numTrials + "\n");
-		buffer.append("\t\t" + VCML.LangevinSimulationOptions_runIndex + " " + runIndex + "\n");			
+		if(randomSeed != null) {
+			buffer.append("\t\t" + VCML.LangevinSimulationOptions_randomSeed + " " + randomSeed + "\n");
+		}
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalSpring + " " + intervalSpring + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_intervalImage + " " + intervalImage + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nx + " " + npart[0] + "\n");
@@ -223,9 +206,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 			if (token.equalsIgnoreCase(VCML.EndBlock)) {
 				break;
 			}
-			if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_runIndex)) {
+			if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_randomSeed)) {
 				token = tokens.nextToken();
-				runIndex = Integer.parseInt(token);
+				randomSeed = new BigInteger(token);
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numOfParallelLocalRuns)) {
 				token = tokens.nextToken();
 				numOfParallelLocalRuns = Integer.parseInt(token);
@@ -244,15 +227,7 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_Partition_Nz)) {
 				token = tokens.nextToken();
 				npart[2] = Integer.parseInt(token);
-			} else if (token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numOfTrials)) {
-				token = tokens.nextToken();
-				int val2 = Integer.parseInt(token);
-				if(val2 < 1 ) {
-					throw new DataAccessException("unexpected token " + token + ", num of trials is requied to be at least 1. ");
-				} else {
-					numTrials = val2;
-				}
-			} else { 
+			} else {
 				throw new DataAccessException("unexpected identifier " + token);
 			}
 		}

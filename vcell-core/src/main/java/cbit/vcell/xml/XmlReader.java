@@ -11,6 +11,7 @@
 package cbit.vcell.xml;
 
 import java.beans.PropertyVetoException;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Consumer;
@@ -6696,10 +6697,6 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
     private LangevinSimulationOptions getLangevinSimulationOptions(Element langevinSimulationOptionsElement) throws XmlParseException{
         LangevinSimulationOptions lo = new LangevinSimulationOptions();
         String temp = null;
-        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numOfTrials, vcNamespace);
-        if(temp != null){
-            lo.setNumTrials(Integer.parseInt(temp));
-        }
         temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_intervalSpring, vcNamespace);
         if(temp != null){
             lo.setIntervalSpring(Double.parseDouble(temp));
@@ -6723,6 +6720,10 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numOfParallelLocalRuns, vcNamespace);
         if(temp != null) {
             lo.setNumOfParallelLocalRuns(Integer.parseInt(temp));
+        }
+        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_randomSeed, vcNamespace);
+        if(temp != null) {
+            lo.setRandomSeed(new BigInteger(temp));
         }
         return lo;
     }

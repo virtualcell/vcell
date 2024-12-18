@@ -244,8 +244,7 @@ public class VCML {
 	public final static String VolumeParticleSpeciesPatterns     = "VolumeParticleSpeciesPatterns";
 	
 	public final static String LangevinSimulationOptions	= "LangevinSimulationOptions";
-	public final static String LangevinSimulationOptions_numOfTrials	= "NumOfTrials";
-	public final static String LangevinSimulationOptions_runIndex	= "RunIndex";
+	public final static String LangevinSimulationOptions_randomSeed	= "RandomSeed";
 	public final static String LangevinSimulationOptions_intervalSpring	= "IntervalSpring";
 	public final static String LangevinSimulationOptions_intervalImage	= "IntervalImage";
 	public final static String LangevinSimulationOptions_Partition_Nx = "PartitionNx";

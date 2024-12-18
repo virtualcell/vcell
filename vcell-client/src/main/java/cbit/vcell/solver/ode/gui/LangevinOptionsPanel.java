@@ -1,11 +1,13 @@
 package cbit.vcell.solver.ode.gui;
 
 import java.awt.*;
+import java.math.BigInteger;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 
 import cbit.vcell.solver.NFsimSimulationOptions;
+import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import cbit.vcell.client.PopupGenerator;
@@ -68,16 +70,25 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			if (e.getSource() == getTrajectoryButton()) {
 				getJTextFieldNumOfTrials().setEnabled(false);
 				getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
-				setNewOptions();
+				getJTextFieldNumOfParallelLocalRuns().setText("");
+				solverTaskDescription.setNumTrials(1);
+				getJTextFieldNumOfTrials().setText("");
 			} else if (e.getSource() == getMultiRunButton()) {
 				getJTextFieldNumOfTrials().setEnabled(true);
-				getJTextFieldNumOfParallelLocalRuns().setEnabled(true);
-				setNewOptions();
+				getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
+				getJTextFieldNumOfParallelLocalRuns().setText(solverTaskDescription.getLangevinSimulationOptions().getNumOfParallelLocalRuns()+"");
+				int numTrials = solverTaskDescription.getNumTrials();
+				if(numTrials > 1) {		// a multi-trial number is already set
+					getJTextFieldNumOfTrials().setText(numTrials+"");
+				} else {
+					solverTaskDescription.setNumTrials(SolverTaskDescription.DefaultNumTrials);
+					getJTextFieldNumOfTrials().setText(SolverTaskDescription.DefaultNumTrials+"");
+				}
 			} else if(e.getSource() == randomSeedCheckBox) {
 				randomSeedTextField.setEditable(randomSeedCheckBox.isSelected());
 				if(randomSeedCheckBox.isSelected()) {
 
-					Integer rs = solverTaskDescription.getLangevinSimulationOptions().getRandomSeed();
+					BigInteger rs = solverTaskDescription.getLangevinSimulationOptions().getRandomSeed();
 					if(rs == null) {
 						rs = LangevinSimulationOptions.DefaultRandomSeed;
 						solverTaskDescription.getLangevinSimulationOptions().setRandomSeed(rs);
@@ -87,7 +98,11 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 					solverTaskDescription.getLangevinSimulationOptions().setRandomSeed(null);
 					randomSeedTextField.setText("");
 				}
-
+			} else if(e.getSource() == randomSeedHelpButton) {
+				DialogUtils.showInfoDialogAndResize(LangevinOptionsPanel.this, "Set specific seed",
+					"<html>Provide a seed to the Langevin solver's random number generator so exact "
+							+ "trajectories can be reproduced. If this value is not entered, the solver will "
+							+ "generate different sequences for each run.</html>");
 			}
 		}
 		
@@ -98,14 +113,29 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			if (e.isTemporary()) {
 				return;
 			}
-			if (e.getSource() == getJTextFieldNumOfTrials() ||
-				e.getSource() == getJTextFieldNumOfParallelLocalRuns() ||
+			if (e.getSource() == getJTextFieldNumOfParallelLocalRuns() ||
 				e.getSource() == getJTextFieldIntervalImage() ||
 				e.getSource() == getJTextFieldIntervalSpring() ||
 				e.getSource() == getNumPartitionsXTextField() ||
 				e.getSource() == getNumPartitionsYTextField() ||
-				e.getSource() == getNumPartitionsXTextField()) {
+				e.getSource() == getNumPartitionsXTextField() ||
+				e.getSource() == getRandomSeedTextField() ) {
 				setNewOptions();
+			} else if(e.getSource() == getJTextFieldNumOfTrials()) {
+				int numTrials;
+				try {
+					numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
+					if(numTrials < 2) {
+						numTrials = SolverTaskDescription.DefaultNumTrials;
+					}
+				} catch(NumberFormatException ex) {
+					numTrials = solverTaskDescription.getNumTrials();
+					if(numTrials < 2) {
+						numTrials = SolverTaskDescription.DefaultNumTrials;
+					}
+				}
+				solverTaskDescription.setNumTrials(numTrials);
+				getJTextFieldNumOfTrials().setText(numTrials+"");
 			}
 		}
 	}
@@ -127,6 +157,8 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			centerPanel.setLayout(new GridBagLayout());
 			JPanel rightPanel = new JPanel(new GridBagLayout());		// fake panel, for looks
 			rightPanel.setLayout(new GridBagLayout());
+			JPanel bottomPanel = new JPanel(new GridBagLayout());
+			bottomPanel.setLayout(new GridBagLayout());
 
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -154,6 +186,16 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.weighty = 1.0;
 			gbc.insets = new Insets(1,1,1,1);
 			getContentPanel().add(rightPanel, gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridwidth = 3;
+//			gbc.weightx = 1.0;
+//			gbc.weighty = 1.0;
+			gbc.insets = new Insets(1,1,1,1);
+			getContentPanel().add(bottomPanel, gbc);
 
 			// ----- trialPanel --------------------------------------------------------------
 			gbc = new GridBagConstraints();
@@ -261,15 +303,6 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.insets = new Insets(0,5,3,1);
 			trialPanel.add(getNumPartitionsZTextField(), gbc);
 
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 6;
-			gbc.anchor = GridBagConstraints.WEST;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.insets = new Insets(5,5,3,1);
-			trialPanel.add(getRandomSeedCheckBox(), gbc);
-
-
 //			gbc = new GridBagConstraints();		// --- empty panel (filler)
 //			gbc.gridx = 3;
 //			gbc.gridy = 1;
@@ -334,24 +367,6 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.weighty = 1.0;
 			centerPanel.add(new JLabel(""), gbc);
 
-			gbc = new GridBagConstraints();
-			gbc.gridx = 0;
-			gbc.gridy = 3;
-			gbc.weightx = 1;
-			gbc.gridwidth = 2;
-			gbc.insets = new Insets(0, 0, 6, 6);
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			gbc.anchor = GridBagConstraints.LINE_START;
-			centerPanel.add(getRandomSeedTextField(), gbc);
-
-			gbc = new GridBagConstraints();
-			gbc.gridx = 2;
-			gbc.gridy = 3;
-			gbc.anchor = GridBagConstraints.LINE_END;
-			gbc.insets = new Insets(0, 0, 6, 6);
-			centerPanel.add(getRandomSeedHelpButton(), gbc);
-
-
 			// ----- rightPanel ----------------------------------------------------
 			gbc = new GridBagConstraints();
 			gbc.gridx = 3;
@@ -362,6 +377,32 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.weighty = 1.0;
 			gbc.insets = new Insets(0,22,1,6);
 			rightPanel.add(new JLabel(""), gbc);	// fake, just for looks
+
+			// ----- bottomPanel ------------------------------------------------------
+			gbc = new GridBagConstraints();
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(5,2,6,5);
+			bottomPanel.add(getRandomSeedCheckBox(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 1;
+			gbc.gridy = 0;
+			gbc.weightx = 1;
+			gbc.gridwidth = 2;
+			gbc.insets = new Insets(2, 2, 6, 6);
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.anchor = GridBagConstraints.LINE_START;
+			bottomPanel.add(getRandomSeedTextField(), gbc);
+
+			gbc = new GridBagConstraints();
+			gbc.gridx = 3;
+			gbc.gridy = 0;
+			gbc.anchor = GridBagConstraints.WEST;
+			gbc.insets = new Insets(2, 2, 6, 6);
+			bottomPanel.add(getRandomSeedHelpButton(), gbc);
 
 			// ----------------------------------------------------------------------
 			getButtonGroupTrials().add(getTrajectoryButton());
@@ -420,7 +461,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				ivjJTextFieldNumOfTrials = new javax.swing.JTextField();
 				ivjJTextFieldNumOfTrials.setName("JTextFieldNumOfTrials");
 				ivjJTextFieldNumOfTrials.setColumns(9);
-				ivjJTextFieldNumOfTrials.setText("100");
+				ivjJTextFieldNumOfTrials.setText("");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -451,7 +492,6 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		if(randomSeedTextField == null) {
 			randomSeedTextField = new JTextField();
 			randomSeedTextField.setName("RandomSeedTextField");
-			randomSeedTextField.setText("");
 		}
 		return randomSeedTextField;
 	}
@@ -463,7 +503,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			randomSeedHelpButton.setName("RandomSeedHelpButton");
 			randomSeedHelpButton.setBorder(border);
 			randomSeedHelpButton.setFont(font);
-			randomSeedHelpButton.setText(" ? ");
+			randomSeedHelpButton.setText("<html><b>&nbsp;&nbsp;?&nbsp;&nbsp;</b></html>");
 		}
 		return randomSeedHelpButton;
 	}
@@ -563,7 +603,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				ivjJTextFieldNumOfParallelLocalRuns = new javax.swing.JTextField();
 				ivjJTextFieldNumOfParallelLocalRuns.setName("JTextFieldNumOfParallelLocalRuns");
 				ivjJTextFieldNumOfParallelLocalRuns.setColumns(3);
-				ivjJTextFieldNumOfParallelLocalRuns.setText("1");
+				ivjJTextFieldNumOfParallelLocalRuns.setText("");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
@@ -638,7 +678,9 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 	private void initConnections() {		
 		getTrajectoryButton().addActionListener(ivjEventHandler);
 		getMultiRunButton().addActionListener(ivjEventHandler);
-		
+		getRandomSeedCheckBox().addActionListener(ivjEventHandler);
+		getRandomSeedHelpButton().addActionListener(ivjEventHandler);
+
 		getJTextFieldNumOfTrials().addFocusListener(ivjEventHandler);
 		getJTextFieldNumOfParallelLocalRuns().addFocusListener(ivjEventHandler);
 		getJTextFieldIntervalImage().addFocusListener(ivjEventHandler);
@@ -646,6 +688,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		getNumPartitionsXTextField().addFocusListener(ivjEventHandler);
 		getNumPartitionsYTextField().addFocusListener(ivjEventHandler);
 		getNumPartitionsZTextField().addFocusListener(ivjEventHandler);
+		getRandomSeedTextField().addFocusListener(ivjEventHandler);
 	}
 	
 	private void refresh() {
@@ -657,19 +700,23 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			return;
 		}
 		setVisible(true);
-		
+
+		getMultiRunButton().setEnabled(true);
+
 		LangevinSimulationOptions lso = solverTaskDescription.getLangevinSimulationOptions();
-		int numTrials = lso.getNumTrials();
+		int numTrials = solverTaskDescription.getNumTrials();
 		int numOfParallelLocalRuns = lso.getNumOfParallelLocalRuns();
 		if(numTrials == 1) {
 			getTrajectoryButton().setSelected(true);
 			getJTextFieldNumOfTrials().setEnabled(false);
+			getJTextFieldNumOfTrials().setText("");
 			getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
+			getJTextFieldNumOfParallelLocalRuns().setText("");
 		} else {
 			getMultiRunButton().setSelected(true);
 			getJTextFieldNumOfTrials().setEnabled(true);
 			getJTextFieldNumOfTrials().setText(numTrials+"");
-			getJTextFieldNumOfParallelLocalRuns().setEnabled(true);
+			getJTextFieldNumOfParallelLocalRuns().setEnabled(false);
 			getJTextFieldNumOfParallelLocalRuns().setText(numOfParallelLocalRuns + "");
 		}
 
@@ -680,14 +727,16 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		getJTextFieldIntervalImage().setText(lso.getIntervalImage()+"");
 		getJTextFieldIntervalSpring().setText(lso.getIntervalSpring()+"");
 
-		// TODO: temporarily disable the button
-		// UNDO THIS WHEN DEVELOPMENT IS COMPLETE
-		if(solverTaskDescription.getSolverDescription().isLangevinSolver()) {
-			getMultiRunButton().setEnabled(false);
-			return;
+		BigInteger randomSeed = lso.getRandomSeed();
+		if (randomSeed == null) {
+			randomSeedTextField.setEditable(false);
+			randomSeedCheckBox.setSelected(false);
+			randomSeedTextField.setText("");
+		} else {
+			randomSeedTextField.setEditable(true);
+			randomSeedCheckBox.setSelected(true);
+			randomSeedTextField.setText(randomSeed.toString());
 		}
-
-		
 	}
 
 	private void setNewOptions() {
@@ -696,27 +745,29 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		}
 		try {
 			LangevinSimulationOptions sso = solverTaskDescription.getLangevinSimulationOptions();
-		int numTrials = 1;
 		int numOfParallelLocalRuns = 1;
 		double intervalImage = solverTaskDescription.getLangevinSimulationOptions().getIntervalImage();
 		double intervalSpring = solverTaskDescription.getLangevinSimulationOptions().getIntervalSpring();
 		int[] npart = solverTaskDescription.getLangevinSimulationOptions().getNPart();
 
-		if(getMultiRunButton().isSelected()) {
-			numTrials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
-			numOfParallelLocalRuns = Integer.parseInt(getJTextFieldNumOfParallelLocalRuns().getText());
+		if(getMultiRunButton().isSelected()) {	// we can get here only on FocusLost event in the numOfTrials text field
+			try {
+				numOfParallelLocalRuns = Integer.parseInt(getJTextFieldNumOfParallelLocalRuns().getText());
+			} catch (NumberFormatException ex) {
+				numOfParallelLocalRuns = sso.getNumOfParallelLocalRuns();
+			}
 		}
 
-		Integer randomSeed = null;
+		BigInteger randomSeed = null;
 		if (randomSeedCheckBox.isSelected()) {
 			try {
-				randomSeed = Integer.valueOf(randomSeedTextField.getText());
+				randomSeed = new BigInteger(randomSeedTextField.getText());
 			} catch (NumberFormatException ex) {
 				randomSeed = solverTaskDescription.getLangevinSimulationOptions().getRandomSeed();
 				if(randomSeed == null) {
 					randomSeed = LangevinSimulationOptions.DefaultRandomSeed;
 				}
-				randomSeedTextField.setText(randomSeed.toString());
+//				randomSeedTextField.setText(randomSeed.toString());
 			}
 		}
 
@@ -729,7 +780,6 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 
 		// make a copy
 		LangevinSimulationOptions lso = new LangevinSimulationOptions(sso);
-		lso.setNumTrials(numTrials);
 		lso.setNumOfParallelLocalRuns(numOfParallelLocalRuns);
 		lso.setRandomSeed(randomSeed);
 		lso.setIntervalImage(intervalImage);

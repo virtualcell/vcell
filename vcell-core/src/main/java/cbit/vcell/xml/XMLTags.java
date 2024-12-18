@@ -800,13 +800,13 @@ public class XMLTags {
 
 	// langevin (springsalad) solver simulation options
 	public final static String LangevinSimulationOptions	= "LangevinSimulationOptions";
-	public final static String LangevinSO_numOfTrials		= "NumOfTrials";
 	public final static String LangevinSO_intervalSpring	= "IntervalSpring";
 	public final static String LangevinSO_intervalImage		= "IntervalImage";
     public final static String LangevinSO_Partition_Nx      = "PartitionNx";
     public final static String LangevinSO_Partition_Ny      = "PartitionNy";
     public final static String LangevinSO_Partition_Nz      = "PartitionNz";
     public final static String LangevinSO_numOfParallelLocalRuns	= "NumOfParallelLocalRuns";
+    public final static String LangevinSO_randomSeed        = "RandomSeed";
 
 	public final static String ParticleInitialConcentrationTag			= "ParticleInitialConcentration"; // particle
 	public final static String ParticleDistributionTag			= "ParticleDistribution"; // particle
