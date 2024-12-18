@@ -10,6 +10,7 @@
 
 package cbit.vcell.field.io;
 
+import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
 import org.vcell.restclient.model.FieldDataFileOperationResults;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -20,6 +21,11 @@ import org.vcell.util.document.User;
 
 import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Insert the type's description here.
@@ -83,6 +89,26 @@ public FieldDataFileOperationSpec(short[][][] shortSpecData, double[][][] double
 	this.sourceOwner = sourceOwner;
 }
 
+public static AnalyzedResultsFromFieldData fieldDataSpecToAnalyzedResultsDTO(FieldDataFileOperationSpec fieldDataFileOperationSpec){
+	List<List<List<Integer>>> listVersion = Arrays.stream(fieldDataFileOperationSpec.shortSpecData) // Stream of short[][]
+			.map(twoDArray -> Arrays.stream(twoDArray) // Stream of short[]
+					.map(oneDArray -> {
+						List<Integer> list = new ArrayList<>();
+						for (short j : oneDArray) {
+							list.add((int) j);
+						}
+						return list;
+					}).collect(Collectors.toList())).collect(Collectors.toList());
+	AnalyzedResultsFromFieldData analyzedResultsFromFieldData = new AnalyzedResultsFromFieldData();
+	analyzedResultsFromFieldData.annotation(fieldDataFileOperationSpec.annotation); analyzedResultsFromFieldData.isize(ISize.iSizeToDTO(fieldDataFileOperationSpec.isize));
+	analyzedResultsFromFieldData.extent(Extent.extentToDTO(fieldDataFileOperationSpec.extent)); analyzedResultsFromFieldData.origin(Origin.originToDTO(fieldDataFileOperationSpec.origin));
+	analyzedResultsFromFieldData.times(Arrays.stream(fieldDataFileOperationSpec.times).boxed().toList()); analyzedResultsFromFieldData.setName(fieldDataFileOperationSpec.fieldDataName);
+	analyzedResultsFromFieldData.varNames(Arrays.stream(fieldDataFileOperationSpec.varNames).toList()); analyzedResultsFromFieldData.shortSpecData(listVersion);
+	return analyzedResultsFromFieldData;
+}
+
+
+@Deprecated
 public static FieldDataFileOperationSpec createCopySimFieldDataFileOperationSpec(
 		ExternalDataIdentifier newExtDataID,
 		KeyValue argSourceSimDataKey,
@@ -99,6 +125,8 @@ public static FieldDataFileOperationSpec createCopySimFieldDataFileOperationSpec
 	fieldDataFileOperationSpec.owner = destinationOwner;
 	return fieldDataFileOperationSpec;
 }
+
+@Deprecated
 public static FieldDataFileOperationSpec createInfoFieldDataFileOperationSpec(
 		KeyValue argSourceSimDataKey,User argSourceOwner,int argSimParamScanJobIndex){
 	FieldDataFileOperationSpec fieldDataFileOperationSpec =
@@ -109,6 +137,8 @@ public static FieldDataFileOperationSpec createInfoFieldDataFileOperationSpec(
 	fieldDataFileOperationSpec.sourceSimParamScanJobIndex = argSimParamScanJobIndex;
 	return fieldDataFileOperationSpec;
 }
+
+@Deprecated
 public static FieldDataFileOperationSpec createDeleteFieldDataFileOperationSpec(
 		ExternalDataIdentifier deleteExtDataID){
 	FieldDataFileOperationSpec fieldDataFileOperationSpec =
