@@ -690,6 +690,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         if(movingBoundarySolverOptions != null){
             buffer.append(movingBoundarySolverOptions.getVCML() + "\n");
         }
+
+        buffer.append(VCML.SolverTaskDescriptionNumTrials + " " + getNumTrials() + "\n");
+
         buffer.append(VCML.EndBlock + "\n");
 
         return buffer.toString();
@@ -1195,9 +1198,13 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
                     setSundialsPdeSolverOptions(new SundialsPdeSolverOptions(tokens));
                 } else if(token.equalsIgnoreCase(VCML.ChomboSolverSpec)){
                     chomboSolverSpec = new ChomboSolverSpec(tokens);
-                } else if(token.equalsIgnoreCase(VCML.NUM_PROCESSORS)){
+                } else if(token.equalsIgnoreCase(VCML.NUM_PROCESSORS)) {
                     token = tokens.nextToken();
                     numProcessors = Integer.parseInt(token);
+                } else if(token.equalsIgnoreCase(VCML.SolverTaskDescriptionNumTrials)) {
+                    token = tokens.nextToken();
+                    int numTrials = Integer.parseInt(token);
+                    setNumTrials(numTrials);
                 } else if(token.equalsIgnoreCase(VCML.TimeoutSimulationDisabled)){
                     token = tokens.nextToken();
                     setTimeoutDisabled(Boolean.parseBoolean(token));

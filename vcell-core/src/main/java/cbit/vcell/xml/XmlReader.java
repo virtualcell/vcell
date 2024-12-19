@@ -6562,9 +6562,11 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             throw new XmlParseException("A PropertyVetoException was fired when setting the taskType: " + taskType, e);
         }
         int numProcessors = parseIntWithDefault(param, XMLTags.NUM_PROCESSORS, 1);
+        int numTrials = parseIntWithDefault(param, XMLTags.SolverTaskDescriptionNumTrials, 1);
 
         try {
             solverTaskDesc.setNumProcessors(numProcessors);
+            solverTaskDesc.setNumTrials(numTrials);
             solverTaskDesc.setUseSymbolicJacobian(useSymJacob);
             //get TimeBound
             solverTaskDesc.setTimeBounds(getTimeBounds(param.getChild(XMLTags.TimeBoundTag, vcNamespace)));
@@ -6724,6 +6726,8 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_randomSeed, vcNamespace);
         if(temp != null) {
             lo.setRandomSeed(new BigInteger(temp));
+        } else {
+            lo.setRandomSeed(null);
         }
         return lo;
     }

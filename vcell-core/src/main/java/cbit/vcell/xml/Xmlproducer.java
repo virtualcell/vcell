@@ -4757,6 +4757,11 @@ private Element getXML(SolverTaskDescription param) {
 	Element numProcessors= new Element(XMLTags.NUM_PROCESSORS);
 	numProcessors.setText(Integer.toString(param.getNumProcessors()));
 	solvertask.addContent(numProcessors);
+
+	Element numTrials = new Element(XMLTags.SolverTaskDescriptionNumTrials);
+	numTrials.setText(Integer.toString(param.getNumTrials()));
+	solvertask.addContent(numTrials);
+
 	return solvertask;
 }
 private Element getXML(NFsimSimulationOptions sso) {			// we know that sso is not null, no need to check again

@@ -227,7 +227,10 @@ public class VCML {
 	public final static String ParticleComponentLocation	= "Location";	// particle Langevin / SpringSaLaD
 	public final static String ParticleComponentCoordinate	= "Coordinate";	// particle Langevin / SpringSaLaD
 	public final static String ParticleComponentColor		= "NamedColor";	// particle Langevin / SpringSaLaD
-	
+	// 12/19/2024 Dan - SolverTaskDescription.numTrials that we'll use in Langevin / SpringSaLaD
+	// will generalize the use for anything stochastic (Gibson, NFSim, etc) that will imply parallel runs
+	public final static String SolverTaskDescriptionNumTrials	= "SolverTaskDescriptionNumTrials";	// scan for generated random seed series
+
 	public final static String ParticleMolecularComponent	= "Component";
 	public final static String ParticleComponentAllowableState	= "AllowableState";
 	public final static String ParticleMolecularTypePattern	= "MolecularType";
@@ -244,7 +247,7 @@ public class VCML {
 	public final static String VolumeParticleSpeciesPatterns     = "VolumeParticleSpeciesPatterns";
 	
 	public final static String LangevinSimulationOptions	= "LangevinSimulationOptions";
-	public final static String LangevinSimulationOptions_randomSeed	= "RandomSeed";
+	public final static String LangevinSimulationOptions_randomSeed	= "LangevinRandomSeed";
 	public final static String LangevinSimulationOptions_intervalSpring	= "IntervalSpring";
 	public final static String LangevinSimulationOptions_intervalImage	= "IntervalImage";
 	public final static String LangevinSimulationOptions_Partition_Nx = "PartitionNx";
