@@ -197,12 +197,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		String messagingConfigOption = "--vc-send-status-config=" + getMessagingConfigFilename();
 		String localMessagingOption = "--vc-print-status";
 		
-		int trialIndex;		// run index
-		try {
-			trialIndex = simTask.getSimulationJob().getTrialIndex().index;
-		} catch(NumberFormatException e) {
-			trialIndex = 0;
-		}
+		int trialIndex = simTask.getSimulationJob().getTrialIndex().index;	// run index
 
 		ArrayList<String> cmds = new ArrayList<>();
 		cmds.add(executableName);	// executable
