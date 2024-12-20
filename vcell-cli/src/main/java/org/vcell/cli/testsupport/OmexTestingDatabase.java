@@ -6,13 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.trace.Span;
 import org.vcell.trace.TraceEvent;
-import org.vcell.trace.Tracer;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class OmexTestingDatabase {
 
@@ -35,16 +36,19 @@ public class OmexTestingDatabase {
         }
     }
 
-    public static List<OmexTestCase> queryOmexTestCase(List<OmexTestCase> omexTestCases, String path) {
-        return omexTestCases.stream().filter(tc -> tc.matchFileSuffix(path)).toList();
+    public static List<OmexTestCase> queryOmexTestCase(List<OmexTestCase> omexTestCases, Path path, Path commonPrefix) {
+        if (commonPrefix != null){
+            path = path.subpath(commonPrefix.getNameCount(), path.getNameCount());
+        }
+        final Path finalPath = path;
+        return omexTestCases.stream().filter(tc -> {
+            Path fullPath = Paths.get(tc.test_collection.pathPrefix, tc.file_path);
+            return fullPath.endsWith(finalPath);
+        }).toList();
     }
 
-    public String generateReport(List<OmexTestCase> omexTestCases, List<OmexExecSummary> execSummaries) {
-        StringBuilder report = new StringBuilder();
-        for (OmexTestCase testCase : omexTestCases) {
-            report.append(testCase.toString()).append("\n");
-        }
-        return report.toString();
+    public static OmexTestReport generateReport(List<OmexTestCase> omexTestCases, List<OmexExecSummary> execSummaries) {
+        return new OmexTestReport(omexTestCases, execSummaries);
     }
 
     public static List<OmexExecSummary> loadOmexExecSummaries(String execSummariesNdjson) throws IOException {
@@ -61,19 +65,20 @@ public class OmexTestingDatabase {
 
     // read a newline-delimited json file into a list of OmexTextCase objects
     public static List<OmexTestCase> loadOmexTestCases() throws IOException {
-        List<OmexTestCase> testCases = new ArrayList<>();
         String fileName = "test_cases.ndjson";
+        try (InputStream inputStream = OmexTestingDatabase.class.getResourceAsStream("/"+fileName);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))){
+            String testCasesNdjson = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+            return parseOmexTestCases(testCasesNdjson);
+        }
+    }
+
+    public static List<OmexTestCase> parseOmexTestCases(String testCasesNdjson) throws IOException {
+        List<OmexTestCase> testCases = new ArrayList<>();
         ObjectMapper objectMapper = new ObjectMapper();
-        try (InputStream inputStream = OmexTestingDatabase.class.getResourceAsStream("/"+fileName);){
-            if (inputStream == null) {
-                throw new FileNotFoundException("file not found! " + fileName);
-            }
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-                try (MappingIterator<OmexTestCase> it = objectMapper.readerFor(OmexTestCase.class).readValues(reader)) {
-                    while (it.hasNext()) {
-                        testCases.add(it.next());
-                    }
-                }
+        try (MappingIterator<OmexTestCase> it = objectMapper.readerFor(OmexTestCase.class).readValues(testCasesNdjson)) {
+            while (it.hasNext()) {
+                testCases.add(it.next());
             }
         }
         return testCases;

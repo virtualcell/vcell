@@ -15,6 +15,18 @@ public class OmexTestCase {
     public FailureType known_failure_type;
     public String known_failure_desc;
 
+    public OmexTestCase(OmexTestingDatabase.TestCollection testCollection, String filePath, Boolean shouldFail, Status status, FailureType failureType, String failureDesc) {
+        this.test_collection = testCollection;
+        this.file_path = filePath;
+        this.should_fail = shouldFail;
+        this.known_status = status;
+        this.known_failure_type = failureType;
+        this.known_failure_desc = failureDesc;
+    }
+
+    public OmexTestCase() {
+    }
+
     @Override
     public String toString() {
         return "OmexTestCase{" +
@@ -27,8 +39,4 @@ public class OmexTestCase {
                 '}';
     }
 
-    public boolean matchFileSuffix(String path) {
-        String fullPath = test_collection.pathPrefix + "/" + file_path;
-        return fullPath.endsWith(path);
-    }
 }
