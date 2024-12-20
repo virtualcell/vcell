@@ -202,7 +202,8 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | OK |  -  |
+| **200** | return BioModel information in JSON format |  -  |
+| **404** | BioModel not found |  -  |
 
 ## getBiomodelByIdWithHttpInfo
 
@@ -268,7 +269,8 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | OK |  -  |
+| **200** | return BioModel information in JSON format |  -  |
+| **404** | BioModel not found |  -  |
 
 
 ## uploadBioModel

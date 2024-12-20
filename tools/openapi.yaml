@@ -158,11 +158,13 @@ paths:
           type: string
       responses:
         "200":
-          description: OK
+          description: return BioModel information in JSON format
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModel'
+        "404":
+          description: BioModel not found
     delete:
       tags:
       - Bio Model Resource
@@ -177,6 +179,107 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/fieldData:
+    get:
+      tags:
+      - Field Data Resource
+      summary: Get all of the field data for that user.
+      operationId: getAllFieldData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldDataDBOperationSpec'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataExternalDataIDs'
+    delete:
+      tags:
+      - Field Data Resource
+      summary: Delete the selected field data.
+      operationId: deleteFieldData
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        "204":
+          description: No Content
+  /api/v1/fieldData/copy:
+    post:
+      tags:
+      - Field Data Resource
+      summary: Copy an existing field data entry.
+      operationId: copyFieldData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldDataDBOperationSpec'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataNoCopyConflict'
+  /api/v1/fieldData/createFieldDataFromFile:
+    post:
+      tags:
+      - Field Data Resource
+      operationId: generateFieldDataEstimate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FieldDataFile'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataFileOperationSpec'
+  /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed:
+    post:
+      tags:
+      - Field Data Resource
+      operationId: createNewFieldDataFromFileAlreadyAnalyzed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSaveResults'
+  /api/v1/fieldData/createFieldDataFromSimulation:
+    post:
+      tags:
+      - Field Data Resource
+      summary: Create new field data from a simulation.
+      operationId: createNewFieldDataFromSimulation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldDataDBOperationSpec'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalDataIdentifier'
   /api/v1/helloworld:
     get:
       tags:
@@ -449,10 +552,10 @@ paths:
           description: magic link sent in email if appropriate
         "400":
           description: unable to process request
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -498,6 +601,36 @@ components:
         userId:
           type: string
         userKey:
+          type: string
+    AnalyzedResultsFromFieldData:
+      type: object
+      properties:
+        shortSpecData:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+        varNames:
+          type: array
+          items:
+            type: string
+        times:
+          type: array
+          items:
+            format: double
+            type: number
+        origin:
+          $ref: '#/components/schemas/Origin'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        annotation:
+          type: string
+        name:
           type: string
     Application:
       type: object
@@ -558,6 +691,67 @@ components:
         versionFlag:
           format: int32
           type: integer
+    CartesianMesh:
+      type: object
+      properties:
+        compressedBytes:
+          format: binary
+          type: string
+        uCDInfo:
+          $ref: '#/components/schemas/UCDInfo'
+        geometryDimension:
+          format: int32
+          type: integer
+        volumeRegionMapSubvolume:
+          type: object
+          additionalProperties:
+            format: int32
+            type: integer
+        membraneRegionMapSubvolumesInOut:
+          type: object
+          additionalProperties: {}
+        numMembraneElements:
+          format: int32
+          type: integer
+        numMembraneRegions:
+          format: int32
+          type: integer
+        numVolumeElements:
+          format: int32
+          type: integer
+        numVolumeRegions:
+          format: int32
+          type: integer
+        iSize:
+          $ref: '#/components/schemas/ISize'
+        sizeX:
+          format: int32
+          type: integer
+        sizeY:
+          format: int32
+          type: integer
+        sizeZ:
+          format: int32
+          type: integer
+        membraneConnectivityOK:
+          type: boolean
+        outputFields:
+          type: array
+          items: {}
+        chomboMesh:
+          type: boolean
+    Coordinate:
+      type: object
+      properties:
+        x:
+          format: double
+          type: number
+        "y":
+          format: double
+          type: number
+        z:
+          format: double
+          type: number
     Date:
       format: date
       type: string
@@ -615,6 +809,175 @@ components:
       - WORKEREVENT_FAILURE
       - JOB_FAILED
       type: string
+    Extent:
+      type: object
+      properties:
+        x:
+          format: double
+          type: number
+          xml:
+            attribute: true
+        "y":
+          format: double
+          type: number
+          xml:
+            attribute: true
+        z:
+          format: double
+          type: number
+          xml:
+            attribute: true
+    ExternalDataIdentifier:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/KeyValue'
+        owner:
+          $ref: '#/components/schemas/User'
+        name:
+          type: string
+        iD:
+          type: string
+        jobIndex:
+          format: int32
+          type: integer
+        simulationKey:
+          $ref: '#/components/schemas/KeyValue'
+        parameterScanType:
+          type: boolean
+        dataKey:
+          $ref: '#/components/schemas/KeyValue'
+    FieldDataDBOperationSpec:
+      type: object
+      properties:
+        opType:
+          format: int32
+          type: integer
+        specEDI:
+          $ref: '#/components/schemas/ExternalDataIdentifier'
+        owner:
+          $ref: '#/components/schemas/User'
+        newExtDataIDName:
+          type: string
+        annotation:
+          type: string
+        sourceNames:
+          type: array
+          items:
+            type: string
+        sourceOwner:
+          $ref: '#/components/schemas/VersionableTypeVersion'
+        bIncludeSimRefs:
+          type: boolean
+    FieldDataExternalDataIDs:
+      type: object
+      properties:
+        externalDataIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalDataIdentifier'
+        externalDataAnnotations:
+          type: array
+          items:
+            type: string
+        externalDataIDSimRefs:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/KeyValue'
+    FieldDataFile:
+      type: object
+      properties:
+        file:
+          format: binary
+          type: string
+        fileName:
+          type: string
+    FieldDataFileOperationSpec:
+      type: object
+      properties:
+        opType:
+          format: int32
+          type: integer
+        shortSpecData:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+        doubleSpecData:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                format: double
+                type: number
+        cartesianMesh:
+          $ref: '#/components/schemas/CartesianMesh'
+        specEDI:
+          $ref: '#/components/schemas/ExternalDataIdentifier'
+        varNames:
+          type: array
+          items:
+            type: string
+        variableTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariableType'
+        times:
+          type: array
+          items:
+            format: double
+            type: number
+        owner:
+          $ref: '#/components/schemas/User'
+        origin:
+          $ref: '#/components/schemas/Origin'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        annotation:
+          type: string
+        sourceSimParamScanJobIndex:
+          format: int32
+          type: integer
+        sourceSimDataKey:
+          $ref: '#/components/schemas/KeyValue'
+        sourceOwner:
+          $ref: '#/components/schemas/User'
+        fieldDataName:
+          type: string
+    FieldDataNoCopyConflict:
+      type: object
+      properties:
+        oldNameNewIDHash:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ExternalDataIdentifier'
+        oldNameOldExtDataIDKeyHash:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/KeyValue'
+    FieldDataSaveResults:
+      type: object
+      properties:
+        fieldDataName:
+          type: string
+        fieldDataID:
+          type: string
+    GroupAccess:
+      type: object
+      properties:
+        groupid:
+          type: number
+        description:
+          type: string
     HelloWorldMessage:
       type: object
       properties:
@@ -630,6 +993,21 @@ components:
           type: string
         batchSystemType:
           $ref: '#/components/schemas/BatchSystemType'
+    ISize:
+      type: object
+      properties:
+        x:
+          format: int32
+          type: integer
+        "y":
+          format: int32
+          type: integer
+        z:
+          format: int32
+          type: integer
+        xYZ:
+          format: int32
+          type: integer
     Identity:
       type: object
       properties:
@@ -672,6 +1050,24 @@ components:
         versionFlag:
           format: int32
           type: integer
+    Origin:
+      type: object
+      properties:
+        x:
+          format: double
+          type: number
+          xml:
+            attribute: true
+        "y":
+          format: double
+          type: number
+          xml:
+            attribute: true
+        z:
+          format: double
+          type: number
+          xml:
+            attribute: true
     Publication:
       type: object
       properties:
@@ -825,6 +1221,64 @@ components:
         timepoint:
           format: double
           type: number
+    UCDInfo:
+      type: object
+      properties:
+        ucdGridNodes:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Coordinate'
+        ucdMembraneQuads:
+          type: array
+          items:
+            type: array
+            items:
+              format: int32
+              type: integer
+        reducedUCDGridNodesV:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinate'
+        uCDGridNodes:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Coordinate'
+        uCDMembraneQuads:
+          type: array
+          items:
+            type: array
+            items:
+              format: int32
+              type: integer
+        numVolumeNodesX:
+          format: int32
+          type: integer
+        numVolumeNodesY:
+          format: int32
+          type: integer
+        numVolumeNodesZ:
+          format: int32
+          type: integer
+        numPointsXYZ:
+          format: int32
+          type: integer
+        numVolumeNodesXY:
+          format: int32
+          type: integer
+        numVolumeCells:
+          format: int32
+          type: integer
+        numMembraneCells:
+          format: int32
+          type: integer
     User:
       type: object
       properties:
@@ -880,6 +1334,118 @@ components:
           $ref: '#/components/schemas/User'
         iD:
           type: string
+    VariableDomain:
+      enum:
+      - VARIABLEDOMAIN_POSTPROCESSING
+      - VARIABLEDOMAIN_UNKNOWN
+      - VARIABLEDOMAIN_VOLUME
+      - VARIABLEDOMAIN_MEMBRANE
+      - VARIABLEDOMAIN_CONTOUR
+      - VARIABLEDOMAIN_NONSPATIAL
+      - VARIABLEDOMAIN_POINT
+      type: string
+    VariableType:
+      type: object
+      properties:
+        type:
+          format: int32
+          type: integer
+        variableDomain:
+          $ref: '#/components/schemas/VariableDomain'
+        name:
+          type: string
+        units:
+          type: string
+        label:
+          type: string
+        legacyWarn:
+          type: boolean
+        defaultLabel:
+          type: string
+        defaultUnits:
+          type: string
+        typeName:
+          type: string
+    Version:
+      type: object
+      properties:
+        versionKey:
+          $ref: '#/components/schemas/KeyValue'
+        versionName:
+          type: string
+        versionOwner:
+          $ref: '#/components/schemas/User'
+        versionGroupAccess:
+          $ref: '#/components/schemas/GroupAccess'
+        versionBranchPointRef:
+          $ref: '#/components/schemas/KeyValue'
+        versionBranchID:
+          type: number
+        versionDate:
+          $ref: '#/components/schemas/Date'
+        versionFlag:
+          $ref: '#/components/schemas/VersionFlag'
+        versionAnnot:
+          type: string
+        annot:
+          type: string
+        branchID:
+          type: number
+        branchPointRefKey:
+          $ref: '#/components/schemas/KeyValue'
+        date:
+          $ref: '#/components/schemas/Date'
+        flag:
+          $ref: '#/components/schemas/VersionFlag'
+        groupAccess:
+          $ref: '#/components/schemas/GroupAccess'
+        name:
+          type: string
+        owner:
+          $ref: '#/components/schemas/User'
+    VersionFlag:
+      type: object
+      properties:
+        versionFlag:
+          format: int32
+          type: integer
+        intValue:
+          format: int32
+          type: integer
+        archived:
+          type: boolean
+        current:
+          type: boolean
+        published:
+          type: boolean
+    VersionableType:
+      type: object
+      properties:
+        vType:
+          format: int32
+          type: integer
+        name:
+          type: string
+        vClass:
+          type: object
+        bTopLevel:
+          type: boolean
+        code:
+          format: int32
+          type: integer
+        isTopLevel:
+          type: boolean
+        typeName:
+          type: string
+        versionClass:
+          type: object
+    VersionableTypeVersion:
+      type: object
+      properties:
+        vType:
+          $ref: '#/components/schemas/VersionableType'
+        version:
+          $ref: '#/components/schemas/Version'
   securitySchemes:
     openId:
       type: openIdConnect
