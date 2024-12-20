@@ -266,6 +266,14 @@
             <version>${httpclient.version}</version>
             <scope>compile</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>${httpclient.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
 
     </dependencies>
 
