@@ -197,9 +197,13 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		String messagingConfigOption = "--vc-send-status-config=" + getMessagingConfigFilename();
 		String localMessagingOption = "--vc-print-status";
 		
-		// TODO: we'll probably eliminate this as command line argument, or set it correctly at some later time
-		// TODO: the correct value is the SolverTaskDescription TrialIndex variable
-		int trialIndex = 0;		// run index
+		int trialIndex;		// run index
+		String simJobId = simTask.getSimulationJobID();
+		try {
+			trialIndex = Integer.parseInt(simJobId);
+		} catch(NumberFormatException e) {
+			trialIndex = 0;
+		}
 
 		ArrayList<String> cmds = new ArrayList<>();
 		cmds.add(executableName);	// executable
