@@ -89,6 +89,12 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
 *BioModelResourceApi* | [**get_biomodel_by_id**](docs/BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
 *BioModelResourceApi* | [**upload_bio_model**](docs/BioModelResourceApi.md#upload_bio_model) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
+*FieldDataResourceApi* | [**copy_field_data**](docs/FieldDataResourceApi.md#copy_field_data) | **POST** /api/v1/fieldData/copy | Copy an existing field data entry.
+*FieldDataResourceApi* | [**create_new_field_data_from_file_already_analyzed**](docs/FieldDataResourceApi.md#create_new_field_data_from_file_already_analyzed) | **POST** /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed | 
+*FieldDataResourceApi* | [**create_new_field_data_from_simulation**](docs/FieldDataResourceApi.md#create_new_field_data_from_simulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation.
+*FieldDataResourceApi* | [**delete_field_data**](docs/FieldDataResourceApi.md#delete_field_data) | **DELETE** /api/v1/fieldData | Delete the selected field data.
+*FieldDataResourceApi* | [**generate_field_data_estimate**](docs/FieldDataResourceApi.md#generate_field_data_estimate) | **POST** /api/v1/fieldData/createFieldDataFromFile | 
+*FieldDataResourceApi* | [**get_all_field_data**](docs/FieldDataResourceApi.md#get_all_field_data) | **GET** /api/v1/fieldData | Get all of the field data for that user.
 *HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
 *PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
@@ -113,15 +119,28 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
+ - [AnalyzedResultsFromFieldData](docs/AnalyzedResultsFromFieldData.md)
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
+ - [CartesianMesh](docs/CartesianMesh.md)
+ - [Coordinate](docs/Coordinate.md)
  - [DetailedState](docs/DetailedState.md)
+ - [Extent](docs/Extent.md)
+ - [ExternalDataIdentifier](docs/ExternalDataIdentifier.md)
+ - [FieldDataDBOperationSpec](docs/FieldDataDBOperationSpec.md)
+ - [FieldDataExternalDataIDs](docs/FieldDataExternalDataIDs.md)
+ - [FieldDataFileOperationSpec](docs/FieldDataFileOperationSpec.md)
+ - [FieldDataNoCopyConflict](docs/FieldDataNoCopyConflict.md)
+ - [FieldDataSaveResults](docs/FieldDataSaveResults.md)
+ - [GroupAccess](docs/GroupAccess.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
  - [HtcJobID](docs/HtcJobID.md)
+ - [ISize](docs/ISize.md)
  - [Identity](docs/Identity.md)
  - [KeyValue](docs/KeyValue.md)
  - [MathmodelRef](docs/MathmodelRef.md)
+ - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)
  - [SimulationExecutionStatusRecord](docs/SimulationExecutionStatusRecord.md)
@@ -132,11 +151,18 @@ Class | Method | HTTP request | Description
  - [SimulationStatusPersistentRecord](docs/SimulationStatusPersistentRecord.md)
  - [Status](docs/Status.md)
  - [StatusMessage](docs/StatusMessage.md)
+ - [UCDInfo](docs/UCDInfo.md)
  - [User](docs/User.md)
  - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
+ - [VariableDomain](docs/VariableDomain.md)
+ - [VariableType](docs/VariableType.md)
+ - [Version](docs/Version.md)
+ - [VersionFlag](docs/VersionFlag.md)
+ - [VersionableType](docs/VersionableType.md)
+ - [VersionableTypeVersion](docs/VersionableTypeVersion.md)
 
 
 <a id="documentation-for-authorization"></a>
