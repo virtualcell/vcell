@@ -198,9 +198,8 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		String localMessagingOption = "--vc-print-status";
 		
 		int trialIndex;		// run index
-		String simJobId = simTask.getSimulationJobID();
 		try {
-			trialIndex = Integer.parseInt(simJobId);
+			trialIndex = simTask.getSimulationJob().getTrialIndex().index;
 		} catch(NumberFormatException e) {
 			trialIndex = 0;
 		}
