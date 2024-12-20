@@ -341,13 +341,11 @@ jobs:
               # Note: `cat`ing "$vcell_result" will be the runting logging! 
               if [[ "${status}" == "FAILED" ]]; then
                 # Copy error log to github workspace
-                echo -n "Copying Summary..."
+                echo -n "Copying Failure Report..."
                 echo "${base_extless_name}" >> $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output/errorLog.txt
                 touch ${{ github.workspace }}/errors.report
                 cat $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output/errorLog.txt >> ${{ github.workspace }}/errors.report
                 echo "Done!"
-              else
-                echo "Run of ${base_extless_name} succeeded (set_${{ matrix.sets }})"
               fi
           
               # Grab Trace
