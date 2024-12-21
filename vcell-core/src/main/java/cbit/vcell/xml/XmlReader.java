@@ -11,6 +11,7 @@
 package cbit.vcell.xml;
 
 import java.beans.PropertyVetoException;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Consumer;
@@ -40,7 +41,6 @@ import org.vcell.pathway.persistence.PathwayReaderBiopax3;
 import org.vcell.pathway.persistence.RDFXMLContext;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.persistence.RelationshipReader;
-import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Commented;
 import org.vcell.util.Coordinate;
@@ -261,7 +261,6 @@ import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ParserException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
@@ -6563,9 +6562,11 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             throw new XmlParseException("A PropertyVetoException was fired when setting the taskType: " + taskType, e);
         }
         int numProcessors = parseIntWithDefault(param, XMLTags.NUM_PROCESSORS, 1);
+        int numTrials = parseIntWithDefault(param, XMLTags.SolverTaskDescriptionNumTrials, 1);
 
         try {
             solverTaskDesc.setNumProcessors(numProcessors);
+            solverTaskDesc.setNumTrials(numTrials);
             solverTaskDesc.setUseSymbolicJacobian(useSymJacob);
             //get TimeBound
             solverTaskDesc.setTimeBounds(getTimeBounds(param.getChild(XMLTags.TimeBoundTag, vcNamespace)));
@@ -6698,10 +6699,6 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
     private LangevinSimulationOptions getLangevinSimulationOptions(Element langevinSimulationOptionsElement) throws XmlParseException{
         LangevinSimulationOptions lo = new LangevinSimulationOptions();
         String temp = null;
-        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numOfTrials, vcNamespace);
-        if(temp != null){
-            lo.setNumOfTrials(Integer.parseInt(temp));
-        }
         temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_intervalSpring, vcNamespace);
         if(temp != null){
             lo.setIntervalSpring(Double.parseDouble(temp));
@@ -6725,6 +6722,12 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numOfParallelLocalRuns, vcNamespace);
         if(temp != null) {
             lo.setNumOfParallelLocalRuns(Integer.parseInt(temp));
+        }
+        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_randomSeed, vcNamespace);
+        if(temp != null) {
+            lo.setRandomSeed(new BigInteger(temp));
+        } else {
+            lo.setRandomSeed(null);
         }
         return lo;
     }

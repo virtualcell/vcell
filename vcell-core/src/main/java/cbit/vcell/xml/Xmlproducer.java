@@ -4757,6 +4757,11 @@ private Element getXML(SolverTaskDescription param) {
 	Element numProcessors= new Element(XMLTags.NUM_PROCESSORS);
 	numProcessors.setText(Integer.toString(param.getNumProcessors()));
 	solvertask.addContent(numProcessors);
+
+	Element numTrials = new Element(XMLTags.SolverTaskDescriptionNumTrials);
+	numTrials.setText(Integer.toString(param.getNumTrials()));
+	solvertask.addContent(numTrials);
+
 	return solvertask;
 }
 private Element getXML(NFsimSimulationOptions sso) {			// we know that sso is not null, no need to check again
@@ -4806,10 +4811,6 @@ private Element getXML(LangevinSimulationOptions lso) {
 	Element e = null;
 	Element lsoe = new Element(XMLTags.LangevinSimulationOptions);
 
-	e = new Element(XMLTags.LangevinSO_numOfTrials);
-	e.setText(String.valueOf(lso.getNumOfTrials()));
-	lsoe.addContent(e);
-	
 	e = new Element(XMLTags.LangevinSO_intervalSpring);
 	e.setText(String.valueOf(lso.getIntervalSpring()));
 	lsoe.addContent(e);
@@ -4834,6 +4835,11 @@ private Element getXML(LangevinSimulationOptions lso) {
 	e.setText(String.valueOf(lso.getNumOfParallelLocalRuns()));
 	lsoe.addContent(e);
 
+	if(lso.getRandomSeed() != null) {
+		e = new Element(XMLTags.LangevinSO_randomSeed);
+		e.setText(String.valueOf(lso.getRandomSeed()));
+		lsoe.addContent(e);
+	}
 
 //	if (lso.getSomethingOptional() != null) {
 //		e = new Element(XMLTags.NFSimSimulationOptions_moleculeDistance);

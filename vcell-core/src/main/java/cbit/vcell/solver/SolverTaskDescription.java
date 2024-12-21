@@ -88,6 +88,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         }
     }
 
+    public final static int DefaultNumTrials = 20;
     private int numTrials = 1; // must have at least one trial (trivial case is numTrials=1)
 
     public void setNumTrials(int i) {
@@ -190,6 +191,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         bSerialParameterScan = solverTaskDescription.bSerialParameterScan;
         bTimeoutDisabled = solverTaskDescription.bTimeoutDisabled;
         bBorderExtrapolationDisabled = solverTaskDescription.bBorderExtrapolationDisabled;
+        numTrials = solverTaskDescription.numTrials;
 
         if(simulation.getMathDescription().isNonSpatialStoch() && (solverTaskDescription.getStochOpt() != null)){
             setStochOpt(solverTaskDescription.getStochOpt());
@@ -344,7 +346,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
             if(bBorderExtrapolationDisabled != solverTaskDescription.bBorderExtrapolationDisabled){
                 return false;
             }
-
+            if(numTrials != solverTaskDescription.numTrials) {
+                return false;
+            }
             if(!Compare.isEqualOrNull(smoldynSimulationOptions, solverTaskDescription.smoldynSimulationOptions)){
                 return false;
             }
@@ -686,6 +690,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         if(movingBoundarySolverOptions != null){
             buffer.append(movingBoundarySolverOptions.getVCML() + "\n");
         }
+
+        buffer.append(VCML.SolverTaskDescriptionNumTrials + " " + getNumTrials() + "\n");
+
         buffer.append(VCML.EndBlock + "\n");
 
         return buffer.toString();
@@ -1191,9 +1198,13 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
                     setSundialsPdeSolverOptions(new SundialsPdeSolverOptions(tokens));
                 } else if(token.equalsIgnoreCase(VCML.ChomboSolverSpec)){
                     chomboSolverSpec = new ChomboSolverSpec(tokens);
-                } else if(token.equalsIgnoreCase(VCML.NUM_PROCESSORS)){
+                } else if(token.equalsIgnoreCase(VCML.NUM_PROCESSORS)) {
                     token = tokens.nextToken();
                     numProcessors = Integer.parseInt(token);
+                } else if(token.equalsIgnoreCase(VCML.SolverTaskDescriptionNumTrials)) {
+                    token = tokens.nextToken();
+                    int numTrials = Integer.parseInt(token);
+                    setNumTrials(numTrials);
                 } else if(token.equalsIgnoreCase(VCML.TimeoutSimulationDisabled)){
                     token = tokens.nextToken();
                     setTimeoutDisabled(Boolean.parseBoolean(token));
