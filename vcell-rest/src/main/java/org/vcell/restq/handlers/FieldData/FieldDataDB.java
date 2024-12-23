@@ -17,12 +17,16 @@ import jakarta.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.*;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 import java.util.zip.DataFormatException;
 
 @ApplicationScoped
@@ -41,8 +45,20 @@ public class FieldDataDB {
         return databaseServer.fieldDataDBOperation(user, spec);
     }
 
-    public FieldDataDBOperationResults getAllFieldData(User user, FieldDataDBOperationSpec spec) throws SQLException, DataAccessException {
-        return databaseServer.fieldDataDBOperation(user, spec);
+    public FieldDataResource.FieldDataReferences getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
+        FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createGetExtDataIDsSpec(user));
+        HashMap<String, Vector<KeyValue>> extdataIDToSimRef = new HashMap<>();
+        if (results.extdataIDAndSimRefH == null){ // there can be no simulation references, only file based field data
+            return new FieldDataResource.FieldDataReferences(results.extDataIDArr, results.extDataAnnotArr, extdataIDToSimRef);
+        }
+        for (Map.Entry<ExternalDataIdentifier, Vector<KeyValue>> entry: results.extdataIDAndSimRefH.entrySet()){
+            extdataIDToSimRef.put(entry.getKey().getKey().toString(), entry.getValue());
+        }
+        return new FieldDataResource.FieldDataReferences(results.extDataIDArr, results.extDataAnnotArr, extdataIDToSimRef);
+    }
+
+    public FieldDataFileOperationResults getFieldDataFromID(User user, String id, int jobParameter) throws ObjectNotFoundException {
+        return dataSetController.fieldDataFileOperation(FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(new KeyValue(id), user, jobParameter));
     }
 
     public FieldDataFileOperationSpec generateFieldDataFromFile(InputStream imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {

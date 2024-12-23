@@ -20,63 +20,51 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.vcell.restclient.model.ExternalDataIdentifier;
+import org.vcell.restclient.model.KeyValue;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for OverrideRepresentation
+ * Model tests for FieldDataReferences
  */
-public class OverrideRepresentationTest {
-    private final OverrideRepresentation model = new OverrideRepresentation();
+public class FieldDataReferencesTest {
+    private final FieldDataReferences model = new FieldDataReferences();
 
     /**
-     * Model tests for OverrideRepresentation
+     * Model tests for FieldDataReferences
      */
     @Test
-    public void testOverrideRepresentation() {
-        // TODO: test OverrideRepresentation
+    public void testFieldDataReferences() {
+        // TODO: test FieldDataReferences
     }
 
     /**
-     * Test the property 'name'
+     * Test the property 'externalDataIdentifiers'
      */
     @Test
-    public void nameTest() {
-        // TODO: test name
+    public void externalDataIdentifiersTest() {
+        // TODO: test externalDataIdentifiers
     }
 
     /**
-     * Test the property 'type'
+     * Test the property 'externalDataAnnotations'
      */
     @Test
-    public void typeTest() {
-        // TODO: test type
+    public void externalDataAnnotationsTest() {
+        // TODO: test externalDataAnnotations
     }
 
     /**
-     * Test the property 'expression'
+     * Test the property 'externalDataIDSimRefs'
      */
     @Test
-    public void expressionTest() {
-        // TODO: test expression
-    }
-
-    /**
-     * Test the property 'values'
-     */
-    @Test
-    public void valuesTest() {
-        // TODO: test values
-    }
-
-    /**
-     * Test the property 'cardinality'
-     */
-    @Test
-    public void cardinalityTest() {
-        // TODO: test cardinality
+    public void externalDataIDSimRefsTest() {
+        // TODO: test externalDataIDSimRefs
     }
 
 }

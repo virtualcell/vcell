@@ -8,8 +8,9 @@ Method | HTTP request | Description
 [**create_new_field_data_from_file_already_analyzed**](FieldDataResourceApi.md#create_new_field_data_from_file_already_analyzed) | **POST** /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed | 
 [**create_new_field_data_from_simulation**](FieldDataResourceApi.md#create_new_field_data_from_simulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation.
 [**delete_field_data**](FieldDataResourceApi.md#delete_field_data) | **DELETE** /api/v1/fieldData | Delete the selected field data.
-[**generate_field_data_estimate**](FieldDataResourceApi.md#generate_field_data_estimate) | **POST** /api/v1/fieldData/createFieldDataFromFile | 
-[**get_all_field_data**](FieldDataResourceApi.md#get_all_field_data) | **GET** /api/v1/fieldData | Get all of the field data for that user.
+[**generate_field_data_estimate**](FieldDataResourceApi.md#generate_field_data_estimate) | **POST** /api/v1/fieldData/analyzeFieldDataFromFile | 
+[**get_all_field_data_ids**](FieldDataResourceApi.md#get_all_field_data_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
+[**get_field_data_from_id**](FieldDataResourceApi.md#get_field_data_from_id) | **GET** /api/v1/fieldData | Get the field data from the selected field data ID.
 
 
 # **copy_field_data**
@@ -337,10 +338,10 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **get_all_field_data**
-> FieldDataExternalDataIDs get_all_field_data(field_data_db_operation_spec=field_data_db_operation_spec)
+# **get_all_field_data_ids**
+> FieldDataReferences get_all_field_data_ids()
 
-Get all of the field data for that user.
+Get all of the ids used to identify, and retrieve field data.
 
 ### Example
 
@@ -348,8 +349,7 @@ Get all of the field data for that user.
 import time
 import os
 import vcell_client
-from vcell_client.models.field_data_db_operation_spec import FieldDataDBOperationSpec
-from vcell_client.models.field_data_external_data_ids import FieldDataExternalDataIDs
+from vcell_client.models.field_data_references import FieldDataReferences
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -364,15 +364,76 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.FieldDataResourceApi(api_client)
-    field_data_db_operation_spec = vcell_client.FieldDataDBOperationSpec() # FieldDataDBOperationSpec |  (optional)
 
     try:
-        # Get all of the field data for that user.
-        api_response = api_instance.get_all_field_data(field_data_db_operation_spec=field_data_db_operation_spec)
-        print("The response of FieldDataResourceApi->get_all_field_data:\n")
+        # Get all of the ids used to identify, and retrieve field data.
+        api_response = api_instance.get_all_field_data_ids()
+        print("The response of FieldDataResourceApi->get_all_field_data_ids:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling FieldDataResourceApi->get_all_field_data: %s\n" % e)
+        print("Exception when calling FieldDataResourceApi->get_all_field_data_ids: %s\n" % e)
+```
+
+
+
+### Parameters
+This endpoint does not need any parameter.
+
+### Return type
+
+[**FieldDataReferences**](FieldDataReferences.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_field_data_from_id**
+> FieldDataInfo get_field_data_from_id(body=body)
+
+Get the field data from the selected field data ID.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.field_data_info import FieldDataInfo
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell-dev.cam.uchc.edu"
+)
+
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.FieldDataResourceApi(api_client)
+    body = 'body_example' # str |  (optional)
+
+    try:
+        # Get the field data from the selected field data ID.
+        api_response = api_instance.get_field_data_from_id(body=body)
+        print("The response of FieldDataResourceApi->get_field_data_from_id:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling FieldDataResourceApi->get_field_data_from_id: %s\n" % e)
 ```
 
 
@@ -381,11 +442,11 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **field_data_db_operation_spec** | [**FieldDataDBOperationSpec**](FieldDataDBOperationSpec.md)|  | [optional] 
+ **body** | **str**|  | [optional] 
 
 ### Return type
 
-[**FieldDataExternalDataIDs**](FieldDataExternalDataIDs.md)
+[**FieldDataInfo**](FieldDataInfo.md)
 
 ### Authorization
 
@@ -393,7 +454,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: text/plain
  - **Accept**: application/json
 
 ### HTTP response details

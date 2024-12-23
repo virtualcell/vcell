@@ -46,10 +46,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -77,10 +77,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -108,10 +108,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -149,10 +149,10 @@ paths:
               schema:
                 type: string
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -219,23 +219,56 @@ paths:
       x-content-type: text/plain
       x-accepts: application/json
     get:
-      operationId: getAllFieldData
+      operationId: getFieldDataFromID
       requestBody:
         content:
-          application/json:
+          text/plain:
             schema:
-              $ref: '#/components/schemas/FieldDataDBOperationSpec'
+              type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataExternalDataIDs'
+                $ref: '#/components/schemas/FieldDataInfo'
           description: OK
-      summary: Get all of the field data for that user.
+      summary: Get the field data from the selected field data ID.
       tags:
       - Field Data Resource
-      x-content-type: application/json
+      x-content-type: text/plain
+      x-accepts: application/json
+  /api/v1/fieldData/IDs:
+    get:
+      operationId: getAllFieldDataIDs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataReferences'
+          description: OK
+      summary: "Get all of the ids used to identify, and retrieve field data."
+      tags:
+      - Field Data Resource
+      x-accepts: application/json
+  /api/v1/fieldData/analyzeFieldDataFromFile:
+    post:
+      operationId: generateFieldDataEstimate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FieldDataFile'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataFileOperationSpec'
+          description: OK
+      tags:
+      - Field Data Resource
+      x-content-type: multipart/form-data
       x-accepts: application/json
   /api/v1/fieldData/copy:
     post:
@@ -256,25 +289,6 @@ paths:
       tags:
       - Field Data Resource
       x-content-type: application/json
-      x-accepts: application/json
-  /api/v1/fieldData/createFieldDataFromFile:
-    post:
-      operationId: generateFieldDataEstimate
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/FieldDataFile'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataFileOperationSpec'
-          description: OK
-      tags:
-      - Field Data Resource
-      x-content-type: multipart/form-data
       x-accepts: application/json
   /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed:
     post:
@@ -435,10 +449,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -503,10 +517,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -525,10 +539,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
           description: "Successful, returning the identity"
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -563,10 +577,10 @@ paths:
           description: "Successful, returning the identity"
         "409":
           description: "VCell Identity not mapped, userid already exists"
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -618,10 +632,10 @@ paths:
           description: magic link sent in email if appropriate
         "400":
           description: unable to process request
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -647,10 +661,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -684,22 +698,22 @@ components:
     AnalyzedResultsFromFieldData:
       example:
         extent:
-          x: 6.704019297950036
-          "y": 3.353193347011243
-          z: 3.0937452626664474
+          x: 0.8008281904610115
+          "y": 6.027456183070403
+          z: 1.4658129805029452
         annotation: annotation
         times:
         - 6.027456183070403
         - 6.027456183070403
         origin:
-          x: 6.778324963048013
-          "y": 6.878052220127876
-          z: 5.944895607614016
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
         isize:
-          x: 9
-          xYZ: 9
-          "y": 6
-          z: 8
+          x: 7
+          xYZ: 2
+          "y": 9
+          z: 3
         name: name
         varNames:
         - varNames
@@ -829,10 +843,10 @@ components:
     CartesianMesh:
       example:
         iSize:
-          x: 9
-          xYZ: 9
-          "y": 6
-          z: 8
+          x: 7
+          xYZ: 2
+          "y": 9
+          z: 3
         chomboMesh: true
         uCDInfo:
           numPointsXYZ: 7
@@ -914,7 +928,7 @@ components:
         outputFields:
         - ""
         - ""
-        sizeX: 6
+        sizeX: 9
         membraneRegionMapSubvolumesInOut:
           key: ""
         numVolumeRegions: 9
@@ -924,8 +938,8 @@ components:
         compressedBytes: ""
         volumeRegionMapSubvolume:
           key: 7
-        sizeY: 3
-        sizeZ: 6
+        sizeY: 6
+        sizeZ: 8
       properties:
         compressedBytes:
           format: binary
@@ -990,6 +1004,41 @@ components:
           format: double
           type: number
       type: object
+    DataIdentifier:
+      example:
+        variableType:
+          defaultUnits: defaultUnits
+          name: name
+          typeName: typeName
+          defaultLabel: defaultLabel
+          units: units
+          label: label
+          type: 4
+          variableDomain: null
+          legacyWarn: true
+        visible: true
+        displayName: displayName
+        bFunction: true
+        domain:
+          name: name
+        function: true
+        name: name
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        variableType:
+          $ref: '#/components/schemas/VariableType'
+        domain:
+          $ref: '#/components/schemas/Domain'
+        bFunction:
+          type: boolean
+        function:
+          type: boolean
+        visible:
+          type: boolean
+      type: object
     Date:
       example: 2022-03-10
       format: date
@@ -1047,11 +1096,18 @@ components:
       - WORKEREVENT_FAILURE
       - JOB_FAILED
       type: string
+    Domain:
+      example:
+        name: name
+      properties:
+        name:
+          type: string
+      type: object
     Extent:
       example:
-        x: 6.704019297950036
-        "y": 3.353193347011243
-        z: 3.0937452626664474
+        x: 0.8008281904610115
+        "y": 6.027456183070403
+        z: 1.4658129805029452
       properties:
         x:
           format: double
@@ -1224,68 +1280,6 @@ components:
         bIncludeSimRefs:
           type: boolean
       type: object
-    FieldDataExternalDataIDs:
-      example:
-        externalDataIdentifiers:
-        - owner:
-            testAccount: true
-            name: name
-            iD:
-              value: 0.8008281904610115
-            userName: userName
-            key:
-              value: 0.8008281904610115
-          dataKey:
-            value: 0.8008281904610115
-          simulationKey:
-            value: 0.8008281904610115
-          jobIndex: 0
-          name: name
-          iD: iD
-          key:
-            value: 0.8008281904610115
-          parameterScanType: true
-        - owner:
-            testAccount: true
-            name: name
-            iD:
-              value: 0.8008281904610115
-            userName: userName
-            key:
-              value: 0.8008281904610115
-          dataKey:
-            value: 0.8008281904610115
-          simulationKey:
-            value: 0.8008281904610115
-          jobIndex: 0
-          name: name
-          iD: iD
-          key:
-            value: 0.8008281904610115
-          parameterScanType: true
-        externalDataAnnotations:
-        - externalDataAnnotations
-        - externalDataAnnotations
-        externalDataIDSimRefs:
-          key:
-          - value: 0.8008281904610115
-          - value: 0.8008281904610115
-      properties:
-        externalDataIdentifiers:
-          items:
-            $ref: '#/components/schemas/ExternalDataIdentifier'
-          type: array
-        externalDataAnnotations:
-          items:
-            type: string
-          type: array
-        externalDataIDSimRefs:
-          additionalProperties:
-            items:
-              $ref: '#/components/schemas/KeyValue'
-            type: array
-          type: object
-      type: object
     FieldDataFile:
       properties:
         file:
@@ -1305,9 +1299,9 @@ components:
           key:
             value: 0.8008281904610115
         extent:
-          x: 6.704019297950036
-          "y": 3.353193347011243
-          z: 3.0937452626664474
+          x: 0.8008281904610115
+          "y": 6.027456183070403
+          z: 1.4658129805029452
         annotation: annotation
         variableTypes:
         - defaultUnits: defaultUnits
@@ -1316,7 +1310,7 @@ components:
           defaultLabel: defaultLabel
           units: units
           label: label
-          type: 1
+          type: 4
           variableDomain: null
           legacyWarn: true
         - defaultUnits: defaultUnits
@@ -1325,7 +1319,7 @@ components:
           defaultLabel: defaultLabel
           units: units
           label: label
-          type: 1
+          type: 4
           variableDomain: null
           legacyWarn: true
         doubleSpecData:
@@ -1358,9 +1352,9 @@ components:
             value: 0.8008281904610115
           parameterScanType: true
         origin:
-          x: 6.778324963048013
-          "y": 6.878052220127876
-          z: 5.944895607614016
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
         varNames:
         - varNames
         - varNames
@@ -1381,24 +1375,24 @@ components:
             - 6
           - - 6
             - 6
-        sourceSimParamScanJobIndex: 7
+        sourceSimParamScanJobIndex: 6
         times:
-        - 2.8841621266687802
-        - 2.8841621266687802
+        - 9.018348186070783
+        - 9.018348186070783
         fieldDataName: fieldDataName
         sourceSimDataKey:
           value: 0.8008281904610115
         isize:
-          x: 9
-          xYZ: 9
-          "y": 6
-          z: 8
+          x: 7
+          xYZ: 2
+          "y": 9
+          z: 3
         cartesianMesh:
           iSize:
-            x: 9
-            xYZ: 9
-            "y": 6
-            z: 8
+            x: 7
+            xYZ: 2
+            "y": 9
+            z: 3
           chomboMesh: true
           uCDInfo:
             numPointsXYZ: 7
@@ -1480,7 +1474,7 @@ components:
           outputFields:
           - ""
           - ""
-          sizeX: 6
+          sizeX: 9
           membraneRegionMapSubvolumesInOut:
             key: ""
           numVolumeRegions: 9
@@ -1490,8 +1484,8 @@ components:
           compressedBytes: ""
           volumeRegionMapSubvolume:
             key: 7
-          sizeY: 3
-          sizeZ: 6
+          sizeY: 6
+          sizeZ: 8
       properties:
         opType:
           format: int32
@@ -1550,6 +1544,76 @@ components:
         fieldDataName:
           type: string
       type: object
+    FieldDataInfo:
+      example:
+        extent:
+          x: 0.8008281904610115
+          "y": 6.027456183070403
+          z: 1.4658129805029452
+        times:
+        - 7.386281948385884
+        - 7.386281948385884
+        origin:
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
+        isize:
+          x: 7
+          xYZ: 2
+          "y": 9
+          z: 3
+        dataIdentifier:
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 4
+            variableDomain: null
+            legacyWarn: true
+          visible: true
+          displayName: displayName
+          bFunction: true
+          domain:
+            name: name
+          function: true
+          name: name
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 4
+            variableDomain: null
+            legacyWarn: true
+          visible: true
+          displayName: displayName
+          bFunction: true
+          domain:
+            name: name
+          function: true
+          name: name
+      properties:
+        extent:
+          $ref: '#/components/schemas/Extent'
+        origin:
+          $ref: '#/components/schemas/Origin'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        dataIdentifier:
+          items:
+            $ref: '#/components/schemas/DataIdentifier'
+          type: array
+        times:
+          items:
+            format: double
+            type: number
+          type: array
+      type: object
     FieldDataNoCopyConflict:
       example:
         oldNameOldExtDataIDKeyHash:
@@ -1583,6 +1647,68 @@ components:
         oldNameOldExtDataIDKeyHash:
           additionalProperties:
             $ref: '#/components/schemas/KeyValue'
+          type: object
+      type: object
+    FieldDataReferences:
+      example:
+        externalDataIdentifiers:
+        - owner:
+            testAccount: true
+            name: name
+            iD:
+              value: 0.8008281904610115
+            userName: userName
+            key:
+              value: 0.8008281904610115
+          dataKey:
+            value: 0.8008281904610115
+          simulationKey:
+            value: 0.8008281904610115
+          jobIndex: 0
+          name: name
+          iD: iD
+          key:
+            value: 0.8008281904610115
+          parameterScanType: true
+        - owner:
+            testAccount: true
+            name: name
+            iD:
+              value: 0.8008281904610115
+            userName: userName
+            key:
+              value: 0.8008281904610115
+          dataKey:
+            value: 0.8008281904610115
+          simulationKey:
+            value: 0.8008281904610115
+          jobIndex: 0
+          name: name
+          iD: iD
+          key:
+            value: 0.8008281904610115
+          parameterScanType: true
+        externalDataAnnotations:
+        - externalDataAnnotations
+        - externalDataAnnotations
+        externalDataIDSimRefs:
+          key:
+          - value: 0.8008281904610115
+          - value: 0.8008281904610115
+      properties:
+        externalDataIdentifiers:
+          items:
+            $ref: '#/components/schemas/ExternalDataIdentifier'
+          type: array
+        externalDataAnnotations:
+          items:
+            type: string
+          type: array
+        externalDataIDSimRefs:
+          additionalProperties:
+            items:
+              $ref: '#/components/schemas/KeyValue'
+            type: array
           type: object
       type: object
     FieldDataSaveResults:
@@ -1628,10 +1754,10 @@ components:
       type: object
     ISize:
       example:
-        x: 9
-        xYZ: 9
-        "y": 6
-        z: 8
+        x: 7
+        xYZ: 2
+        "y": 9
+        z: 3
       properties:
         x:
           format: int32
@@ -1709,9 +1835,9 @@ components:
       type: object
     Origin:
       example:
-        x: 6.778324963048013
-        "y": 6.878052220127876
-        z: 5.944895607614016
+        x: 5.962133916683182
+        "y": 5.637376656633329
+        z: 2.3021358869347655
       properties:
         x:
           format: double
@@ -2285,7 +2411,7 @@ components:
         defaultLabel: defaultLabel
         units: units
         label: label
-        type: 1
+        type: 4
         variableDomain: null
         legacyWarn: true
       properties:

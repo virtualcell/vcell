@@ -39,6 +39,14 @@ public class UserIdentityJSONSafeTest {
     }
 
     /**
+     * Test the property 'mapped'
+     */
+    @Test
+    public void mappedTest() {
+        // TODO: test mapped
+    }
+
+    /**
      * Test the property 'userName'
      */
     @Test
