@@ -17,9 +17,9 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
 import org.vcell.restclient.model.ExternalDataIdentifier;
 import org.vcell.restclient.model.FieldDataDBOperationSpec;
-import org.vcell.restclient.model.FieldDataExternalDataIDs;
 import org.vcell.restclient.model.FieldDataFileOperationSpec;
 import org.vcell.restclient.model.FieldDataNoCopyConflict;
+import org.vcell.restclient.model.FieldDataReferences;
 import org.vcell.restclient.model.FieldDataSaveResults;
 import java.io.File;
 import org.junit.Test;
@@ -128,7 +128,7 @@ public class FieldDataResourceApiTest {
     }
     
     /**
-     * Get all of the field data for that user.
+     * Get all of the ids used to identify, and retrieve field data.
      *
      * 
      *
@@ -136,10 +136,9 @@ public class FieldDataResourceApiTest {
      *          if the Api call fails
      */
     @Test
-    public void getAllFieldDataTest() throws ApiException {
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = null;
-        FieldDataExternalDataIDs response = 
-        api.getAllFieldData(fieldDataDBOperationSpec);
+    public void getAllFieldDataIDsTest() throws ApiException {
+        FieldDataReferences response = 
+        api.getAllFieldDataIDs();
         
         // TODO: test validations
     }

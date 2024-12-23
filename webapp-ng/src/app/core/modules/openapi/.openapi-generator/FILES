@@ -27,13 +27,16 @@ model/bio-model.ts
 model/biomodel-ref.ts
 model/cartesian-mesh.ts
 model/coordinate.ts
+model/data-identifier.ts
 model/detailed-state.ts
+model/domain.ts
 model/extent.ts
 model/external-data-identifier.ts
 model/field-data-db-operation-spec.ts
-model/field-data-external-data-ids.ts
 model/field-data-file-operation-spec.ts
+model/field-data-info.ts
 model/field-data-no-copy-conflict.ts
+model/field-data-references.ts
 model/field-data-save-results.ts
 model/group-access.ts
 model/hello-world-message.ts

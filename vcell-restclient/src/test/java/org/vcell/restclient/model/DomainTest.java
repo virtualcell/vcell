@@ -24,17 +24,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for Simulation
+ * Model tests for Domain
  */
-public class SimulationTest {
-    private final Simulation model = new Simulation();
+public class DomainTest {
+    private final Domain model = new Domain();
 
     /**
-     * Model tests for Simulation
+     * Model tests for Domain
      */
     @Test
-    public void testSimulation() {
-        // TODO: test Simulation
+    public void testDomain() {
+        // TODO: test Domain
     }
 
     /**

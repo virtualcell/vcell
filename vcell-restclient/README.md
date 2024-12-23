@@ -121,10 +121,12 @@ Class | Method | HTTP request | Description
 *FieldDataResourceApi* | [**createNewFieldDataFromSimulationWithHttpInfo**](docs/FieldDataResourceApi.md#createNewFieldDataFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation.
 *FieldDataResourceApi* | [**deleteFieldData**](docs/FieldDataResourceApi.md#deleteFieldData) | **DELETE** /api/v1/fieldData | Delete the selected field data.
 *FieldDataResourceApi* | [**deleteFieldDataWithHttpInfo**](docs/FieldDataResourceApi.md#deleteFieldDataWithHttpInfo) | **DELETE** /api/v1/fieldData | Delete the selected field data.
-*FieldDataResourceApi* | [**generateFieldDataEstimate**](docs/FieldDataResourceApi.md#generateFieldDataEstimate) | **POST** /api/v1/fieldData/createFieldDataFromFile | 
-*FieldDataResourceApi* | [**generateFieldDataEstimateWithHttpInfo**](docs/FieldDataResourceApi.md#generateFieldDataEstimateWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromFile | 
-*FieldDataResourceApi* | [**getAllFieldData**](docs/FieldDataResourceApi.md#getAllFieldData) | **GET** /api/v1/fieldData | Get all of the field data for that user.
-*FieldDataResourceApi* | [**getAllFieldDataWithHttpInfo**](docs/FieldDataResourceApi.md#getAllFieldDataWithHttpInfo) | **GET** /api/v1/fieldData | Get all of the field data for that user.
+*FieldDataResourceApi* | [**generateFieldDataEstimate**](docs/FieldDataResourceApi.md#generateFieldDataEstimate) | **POST** /api/v1/fieldData/analyzeFieldDataFromFile | 
+*FieldDataResourceApi* | [**generateFieldDataEstimateWithHttpInfo**](docs/FieldDataResourceApi.md#generateFieldDataEstimateWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFieldDataFromFile | 
+*FieldDataResourceApi* | [**getAllFieldDataIDs**](docs/FieldDataResourceApi.md#getAllFieldDataIDs) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
+*FieldDataResourceApi* | [**getAllFieldDataIDsWithHttpInfo**](docs/FieldDataResourceApi.md#getAllFieldDataIDsWithHttpInfo) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
+*FieldDataResourceApi* | [**getFieldDataFromID**](docs/FieldDataResourceApi.md#getFieldDataFromID) | **GET** /api/v1/fieldData | Get the field data from the selected field data ID.
+*FieldDataResourceApi* | [**getFieldDataFromIDWithHttpInfo**](docs/FieldDataResourceApi.md#getFieldDataFromIDWithHttpInfo) | **GET** /api/v1/fieldData | Get the field data from the selected field data ID.
 *HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message.
 *HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message.
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication
@@ -174,13 +176,16 @@ Class | Method | HTTP request | Description
  - [BiomodelRef](docs/BiomodelRef.md)
  - [CartesianMesh](docs/CartesianMesh.md)
  - [Coordinate](docs/Coordinate.md)
+ - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)
+ - [Domain](docs/Domain.md)
  - [Extent](docs/Extent.md)
  - [ExternalDataIdentifier](docs/ExternalDataIdentifier.md)
  - [FieldDataDBOperationSpec](docs/FieldDataDBOperationSpec.md)
- - [FieldDataExternalDataIDs](docs/FieldDataExternalDataIDs.md)
  - [FieldDataFileOperationSpec](docs/FieldDataFileOperationSpec.md)
+ - [FieldDataInfo](docs/FieldDataInfo.md)
  - [FieldDataNoCopyConflict](docs/FieldDataNoCopyConflict.md)
+ - [FieldDataReferences](docs/FieldDataReferences.md)
  - [FieldDataSaveResults](docs/FieldDataSaveResults.md)
  - [GroupAccess](docs/GroupAccess.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)

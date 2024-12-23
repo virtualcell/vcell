@@ -29,20 +29,20 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * Simulation
+ * Domain
  */
 @JsonPropertyOrder({
-  Simulation.JSON_PROPERTY_NAME
+  Domain.JSON_PROPERTY_NAME
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class Simulation {
+public class Domain {
   public static final String JSON_PROPERTY_NAME = "name";
   private String name;
 
-  public Simulation() { 
+  public Domain() { 
   }
 
-  public Simulation name(String name) {
+  public Domain name(String name) {
     this.name = name;
     return this;
   }
@@ -68,7 +68,7 @@ public class Simulation {
 
 
   /**
-   * Return true if this Simulation object is equal to o.
+   * Return true if this Domain object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -78,8 +78,8 @@ public class Simulation {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Simulation simulation = (Simulation) o;
-    return Objects.equals(this.name, simulation.name);
+    Domain domain = (Domain) o;
+    return Objects.equals(this.name, domain.name);
   }
 
   @Override
@@ -90,7 +90,7 @@ public class Simulation {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Simulation {\n");
+    sb.append("class Domain {\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("}");
     return sb.toString();

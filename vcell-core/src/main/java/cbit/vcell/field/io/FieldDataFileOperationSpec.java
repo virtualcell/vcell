@@ -11,7 +11,7 @@
 package cbit.vcell.field.io;
 
 import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
-import org.vcell.restclient.model.FieldDataFileOperationResults;
+import org.vcell.restclient.model.FieldDataInfo;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;

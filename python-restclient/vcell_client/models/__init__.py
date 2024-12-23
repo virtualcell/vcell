@@ -22,13 +22,16 @@ from vcell_client.models.bio_model import BioModel
 from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.cartesian_mesh import CartesianMesh
 from vcell_client.models.coordinate import Coordinate
+from vcell_client.models.data_identifier import DataIdentifier
 from vcell_client.models.detailed_state import DetailedState
+from vcell_client.models.domain import Domain
 from vcell_client.models.extent import Extent
 from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.field_data_db_operation_spec import FieldDataDBOperationSpec
-from vcell_client.models.field_data_external_data_ids import FieldDataExternalDataIDs
 from vcell_client.models.field_data_file_operation_spec import FieldDataFileOperationSpec
+from vcell_client.models.field_data_info import FieldDataInfo
 from vcell_client.models.field_data_no_copy_conflict import FieldDataNoCopyConflict
+from vcell_client.models.field_data_references import FieldDataReferences
 from vcell_client.models.field_data_save_results import FieldDataSaveResults
 from vcell_client.models.group_access import GroupAccess
 from vcell_client.models.hello_world_message import HelloWorldMessage

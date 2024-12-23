@@ -16,9 +16,10 @@ import { Observable }                                        from 'rxjs';
 import { AnalyzedResultsFromFieldData } from '../model/models';
 import { ExternalDataIdentifier } from '../model/models';
 import { FieldDataDBOperationSpec } from '../model/models';
-import { FieldDataExternalDataIDs } from '../model/models';
 import { FieldDataFileOperationSpec } from '../model/models';
+import { FieldDataInfo } from '../model/models';
 import { FieldDataNoCopyConflict } from '../model/models';
+import { FieldDataReferences } from '../model/models';
 import { FieldDataSaveResults } from '../model/models';
 
 
@@ -67,10 +68,16 @@ export interface FieldDataResourceServiceInterface {
     generateFieldDataEstimate(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<FieldDataFileOperationSpec>;
 
     /**
-     * Get all of the field data for that user.
+     * Get all of the ids used to identify, and retrieve field data.
      * 
-     * @param fieldDataDBOperationSpec 
      */
-    getAllFieldData(fieldDataDBOperationSpec?: FieldDataDBOperationSpec, extraHttpRequestParams?: any): Observable<FieldDataExternalDataIDs>;
+    getAllFieldDataIDs(extraHttpRequestParams?: any): Observable<FieldDataReferences>;
+
+    /**
+     * Get the field data from the selected field data ID.
+     * 
+     * @param body 
+     */
+    getFieldDataFromID(body?: string, extraHttpRequestParams?: any): Observable<FieldDataInfo>;
 
 }

@@ -15,6 +15,8 @@ import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.client.VCellApiClient;
+import org.vcell.restclient.model.FieldDataReferences;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -44,13 +46,15 @@ import cbit.vcell.server.UserRegistrationResults;
  */
 public class LocalUserMetaDbServerMessaging implements UserMetaDbServer {
 	private RpcDbServerProxy dbServerProxy = null;
+	private final VCellApiClient vCellApiClient;
 	private static Logger lg = LogManager.getLogger(LocalUserMetaDbServerMessaging.class);
 
 /**
  * This method was created in VisualAge.
  */
-public LocalUserMetaDbServerMessaging(UserLoginInfo userLoginInfo, RpcSender rpcSender) {
+public LocalUserMetaDbServerMessaging(UserLoginInfo userLoginInfo, RpcSender rpcSender, VCellApiClient vCellApiClient) {
 	this.dbServerProxy = new RpcDbServerProxy(userLoginInfo, rpcSender);
+	this.vCellApiClient = vCellApiClient;
 }
 
 public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
@@ -124,8 +128,12 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.fieldDataDBOperation(...)");
 		if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
 			throw new RuntimeException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
+		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS) {
+			FieldDataReferences fieldDataReferences = vCellApiClient.getFieldDataApi().getAllFieldDataIDs();
+			return FieldDataDBOperationResults.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
+		} else{
+			return dbServerProxy.fieldDataDBOperation(fieldDataDBOperationSpec);
 		}
-		return dbServerProxy.fieldDataDBOperation(fieldDataDBOperationSpec);
 	} catch (DataAccessException e) {
 		lg.error(e.getMessage(),e);
 		throw e;

@@ -81,8 +81,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## getSimulationStatusWithHttpInfo
 
@@ -155,8 +155,8 @@ ApiResponse<[**SimulationStatusPersistentRecord**](SimulationStatusPersistentRec
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## startSimulation
@@ -223,8 +223,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## startSimulationWithHttpInfo
 
@@ -293,8 +293,8 @@ ApiResponse<[**List&lt;StatusMessage&gt;**](StatusMessage.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 
 ## stopSimulation
@@ -361,8 +361,8 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 
 ## stopSimulationWithHttpInfo
 
@@ -431,6 +431,6 @@ ApiResponse<[**List&lt;StatusMessage&gt;**](StatusMessage.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **401** | Not Authorized |  -  |
 

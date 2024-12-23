@@ -10,16 +10,15 @@
 
 package cbit.vcell.field.io;
 
-import org.vcell.restclient.model.FieldDataReferenceInfo;
+import cbit.vcell.simdata.DataIdentifier;
+import org.vcell.restclient.model.FieldDataInfo;
+import org.vcell.restclient.model.FieldDataSaveResults;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
-
-import cbit.vcell.simdata.DataIdentifier;
-
-import java.util.Arrays;
+import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.
@@ -39,18 +38,6 @@ public class FieldDataFileOperationResults implements java.io.Serializable{
 		public String refSourceVersionDate;
 		public String[] funcNames;
 		public KeyValue refSourceVersionKey;
-
-		public static FieldDataReferenceInfo dtoToFielddataFileOperationResults(org.vcell.restclient.model.FieldDataReferenceInfo dto){
-			FieldDataReferenceInfo fieldDataReferenceInfo = new FieldDataReferenceInfo();
-			fieldDataReferenceInfo.referenceSourceType = dto.getReferenceSourceType();
-			fieldDataReferenceInfo.referenceSourceName = dto.getReferenceSourceName();
-			fieldDataReferenceInfo.simulationName = dto.getSimulationName();
-			fieldDataReferenceInfo.applicationName = dto.getApplicationName();
-			fieldDataReferenceInfo.refSourceVersionDate = dto.getRefSourceVersionDate();
-			fieldDataReferenceInfo.funcNames = dto.getFuncNames().toArray(new String[0]);
-			fieldDataReferenceInfo.refSourceVersionKey = KeyValue.dtoToKeyValue(dto.getRefSourceVersionKey());
-			return fieldDataReferenceInfo;
-		}
 	};
 
 	
@@ -61,20 +48,25 @@ public class FieldDataFileOperationResults implements java.io.Serializable{
 	public Extent extent;
 	public double[] times;
 	public FieldDataFileOperationResults.FieldDataReferenceInfo[] dependantFunctionInfo;
-
-	public static FieldDataFileOperationResults dtoToFieldDataFileOperationResults(org.vcell.restclient.model.FieldDataFileOperationResults dto){
-		FieldDataFileOperationResults fieldDataFileOperationResults = new FieldDataFileOperationResults();
-		fieldDataFileOperationResults.extent = Extent.dtoToExtent(dto.getExtent());
-		fieldDataFileOperationResults.iSize = ISize.dtoToISize(dto.getiSize());
-		fieldDataFileOperationResults.origin = Origin.dtoToOrigin(dto.getOrigin());
-		fieldDataFileOperationResults.dataIdentifierArr = dto.getDataIdentifierArr().stream().map(DataIdentifier::dtoToDataIdentifier).toArray(DataIdentifier[]::new);
-        fieldDataFileOperationResults.times = dto.getTimes().stream().mapToDouble(Double::doubleValue).toArray();
-		fieldDataFileOperationResults.dependantFunctionInfo = dto.getDependantFunctionInfo() == null ? null : dto.getDependantFunctionInfo().stream().map(FieldDataReferenceInfo::dtoToFielddataFileOperationResults).toArray(FieldDataReferenceInfo[]::new);
-		fieldDataFileOperationResults.externalDataIdentifier = ExternalDataIdentifier.dtoToExternalDataIdentifier(dto.getExternalDataIdentifier());
-		return fieldDataFileOperationResults;
-	}
 	
 public FieldDataFileOperationResults() {
 	super();
 }
+
+	public static FieldDataFileOperationResults fieldDataInfoDTOToFileOperationResults(FieldDataInfo dto){
+		FieldDataFileOperationResults results = new FieldDataFileOperationResults();
+		results.extent = Extent.dtoToExtent(dto.getExtent());
+		results.origin = Origin.dtoToOrigin(dto.getOrigin());
+		results.iSize = ISize.dtoToISize(dto.getIsize());
+		results.times = dto.getTimes().stream().mapToDouble(Double::doubleValue).toArray();
+		results.dataIdentifierArr = dto.getDataIdentifier().stream().map(DataIdentifier::dtoToDataIdentifier).toArray(DataIdentifier[]::new);
+		return results;
+	}
+
+	public static FieldDataFileOperationResults fieldDataSaveResultsDTOToFileOperationResults(FieldDataSaveResults dto, User owner){
+		FieldDataFileOperationResults fieldDataFileOperationResults = new FieldDataFileOperationResults();
+		fieldDataFileOperationResults.externalDataIdentifier = new ExternalDataIdentifier(new KeyValue(dto.getFieldDataID()), owner, dto.getFieldDataName());
+		return fieldDataFileOperationResults;
+	}
+
 }

@@ -5,6 +5,8 @@ import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.simdata.DataIdentifier;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -28,6 +30,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 
@@ -51,48 +54,56 @@ public class FieldDataResource {
 
 
     @GET
-    @Operation(operationId = "getAllFieldData", summary = "Get all of the field data for that user.")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public FieldDataExternalDataIDs getAllFieldData(FieldDataDBOperationSpec fieldDataDBOperationSpec){
-        FieldDataDBOperationResults results = null;
+    @Path("IDs")
+    @Operation(operationId = "getAllFieldDataIDs", summary = "Get all of the ids used to identify, and retrieve field data.")
+    public FieldDataReferences getAllFieldData(){
         try {
-            results = fieldDataDB.getAllFieldData(userRestDB.getUserFromIdentity(securityIdentity), fieldDataDBOperationSpec);
+            return fieldDataDB.getAllFieldDataIDs(userRestDB.getUserFromIdentity(securityIdentity));
         } catch (SQLException e) {
-            throw new WebApplicationException("Can't retrieve field data.", 500);
+            throw new WebApplicationException("Can't retrieve field data ID's.", 500);
         } catch (DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), 500);
         }
-        return new FieldDataResource.FieldDataExternalDataIDs(results.extDataIDArr, results.extDataAnnotArr, results.extdataIDAndSimRefH);
     }
 
-    @POST
-    @Path("/createFieldDataFromSimulation")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "createNewFieldDataFromSimulation", summary = "Create new field data from a simulation.")
-    public ExternalDataIdentifier submitNewFieldDataToDB(FieldDataDBOperationSpec fieldDataDBOperationSpec){
-        FieldDataDBOperationResults results = null;
+    @GET
+    @Operation(operationId = "getFieldDataFromID", summary = "Get the field data from the selected field data ID.")
+    public FieldDataInfo getFieldDataFromID(String fieldDataID){
         try {
-            results = fieldDataDB.saveNewFieldDataIntoDB(userRestDB.getUserFromIdentity(securityIdentity), fieldDataDBOperationSpec);
+            FieldDataFileOperationResults results = fieldDataDB.getFieldDataFromID(userRestDB.getUserFromIdentity(securityIdentity), fieldDataID, 0);
+            return new FieldDataInfo(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
         } catch (DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), 500);
         }
-        return results.extDataID;
     }
 
-    @POST
-    @Path("/createFieldDataFromFile")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "generateFieldDataEstimate")
-    public FieldDataFileOperationSpec generateFieldDataEstimate(FieldDataFile fieldDataFile){
-        try{
-            return fieldDataDB.generateFieldDataFromFile(fieldDataFile.file, fieldDataFile.fileName);
-        } catch (ImageException | DataFormatException | DataAccessException e) {
-            throw new WebApplicationException("Can't create new field data file", 500);
-        }
-    }
+//    @POST
+//    @Path("/createFieldDataFromSimulation")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Operation(operationId = "createNewFieldDataFromSimulation", summary = "Create new field data from a simulation.")
+//    public ExternalDataIdentifier submitNewFieldDataToDB(FieldDataDBOperationSpec fieldDataDBOperationSpec){
+//        FieldDataDBOperationResults results = null;
+//        try {
+//            results = fieldDataDB.saveNewFieldDataIntoDB(userRestDB.getUserFromIdentity(securityIdentity), fieldDataDBOperationSpec);
+//        } catch (DataAccessException e) {
+//            throw new WebApplicationException(e.getMessage(), 500);
+//        }
+//        return results.extDataID;
+//    }
+
+//    @POST
+//    @Path("/analyzeFieldDataFromFile")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Consumes(MediaType.MULTIPART_FORM_DATA)
+//    @Operation(operationId = "generateFieldDataEstimate")
+//    public FieldDataFileOperationSpec generateFieldDataEstimate(FieldDataFile fieldDataFile){
+//        try{
+//            return fieldDataDB.generateFieldDataFromFile(fieldDataFile.file, fieldDataFile.fileName);
+//        } catch (ImageException | DataFormatException | DataAccessException e) {
+//            throw new WebApplicationException("Can't create new field data file", 500);
+//        }
+//    }
 
     @POST
     @Path("/createFieldDataFromFileAlreadyAnalyzed")
@@ -111,20 +122,20 @@ public class FieldDataResource {
         return fieldDataSaveResults;
     }
 
-    @POST
-    @Path("/copy")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "copyFieldData", summary = "Copy an existing field data entry.")
-    public FieldDataNoCopyConflict copyFieldData(FieldDataDBOperationSpec fieldDataDBOperationSpec){
-        FieldDataDBOperationResults results = null;
-        try {
-            results = fieldDataDB.copyNoConflict(userRestDB.getUserFromIdentity(securityIdentity), fieldDataDBOperationSpec);
-        } catch (DataAccessException e) {
-            throw new WebApplicationException(e.getMessage(), 500);
-        }
-        return new FieldDataNoCopyConflict(results.oldNameNewIDHash, results.oldNameOldExtDataIDKeyHash);
-    }
+//    @POST
+//    @Path("/copy")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Operation(operationId = "copyFieldData", summary = "Copy an existing field data entry.")
+//    public FieldDataNoCopyConflict copyFieldData(FieldDataDBOperationSpec fieldDataDBOperationSpec){
+//        FieldDataDBOperationResults results = null;
+//        try {
+//            results = fieldDataDB.copyNoConflict(userRestDB.getUserFromIdentity(securityIdentity), fieldDataDBOperationSpec);
+//        } catch (DataAccessException e) {
+//            throw new WebApplicationException(e.getMessage(), 500);
+//        }
+//        return new FieldDataNoCopyConflict(results.oldNameNewIDHash, results.oldNameOldExtDataIDKeyHash);
+//    }
 
     @DELETE
     @Operation(operationId = "deleteFieldData", summary = "Delete the selected field data.")
@@ -136,16 +147,31 @@ public class FieldDataResource {
         }
     }
 
+    public record FieldDataInfo(
+            Extent extent,
+            Origin origin,
+            ISize isize,
+            DataIdentifier[] dataIdentifier,
+            double[] times
+    ){ }
+
+    public record DataID(
+            String name,
+            String displayName,
+            VariableType variableType,
+            String domainName,
+            boolean bFunction
+    ){ }
 
     public record FieldDataNoCopyConflict(
             Hashtable<String, ExternalDataIdentifier> oldNameNewIDHash,
             Hashtable<String, KeyValue> oldNameOldExtDataIDKeyHash
     ) { }
 
-    public record FieldDataExternalDataIDs(
+    public record FieldDataReferences(
             ExternalDataIdentifier[] externalDataIdentifiers,
             String[] externalDataAnnotations,
-            HashMap<ExternalDataIdentifier, Vector<KeyValue>> externalDataIDSimRefs
+            Map<String, Vector<KeyValue>> externalDataIDSimRefs
     ) { }
 
     public record AnalyzedResultsFromFieldData(
