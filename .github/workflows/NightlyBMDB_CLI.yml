@@ -297,8 +297,8 @@ jobs:
         run: cat $(find $GITHUB_WORKSPACE/bmdb-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
 
       - name: Combine .summary artifacts into one file
-        run: jq -s 'add' $(find $GITHUB_WORKSPACE/bmdb-results -name 'total_exec_summary.json') > $GITHUB_WORKSPACE/summary.json
-
+        run: jq -s 'add | sort_by(.file_path)' $(find "$GITHUB_WORKSPACE/bmdb-results" -name 'total_exec_summary.json') > $GITHUB_WORKSPACE/summary.json
+        
       - name: Combine .summary artifacts into one file
         run: jq -s 'add' $(find $GITHUB_WORKSPACE/bmdb-results -name 'full_tracer.json') > $GITHUB_WORKSPACE/tracer.json
 
