@@ -1,4 +1,4 @@
-name: Nightly CLI Execution Tests (Published + BMDB)
+name: Nightly CLI Execution Tests (BMDB)
 on:
   schedule:
     - cron: "0 7 * * *"
