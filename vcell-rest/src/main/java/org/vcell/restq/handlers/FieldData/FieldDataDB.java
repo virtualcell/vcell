@@ -10,6 +10,7 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solvers.CartesianMesh;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -38,7 +39,11 @@ public class FieldDataDB {
     @Inject
     public FieldDataDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, FileNotFoundException {
         databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
-        dataSetController = new DataSetControllerImpl(null, new File("/simdata"), new File("/simdata"));
+        String primarySimDataDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, "/simdata");
+        String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, "/simdata");
+        dataSetController = new DataSetControllerImpl(null,
+                new File(primarySimDataDir),
+                new File(secondarySimDataDir));
     }
 
     public FieldDataDBOperationResults copyNoConflict(User user, FieldDataDBOperationSpec spec) throws DataAccessException {

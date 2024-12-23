@@ -26,6 +26,7 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -73,7 +74,10 @@ public class FieldDataResource {
             FieldDataFileOperationResults results = fieldDataDB.getFieldDataFromID(userRestDB.getUserFromIdentity(securityIdentity), fieldDataID, 0);
             return new FieldDataInfo(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
         } catch (DataAccessException e) {
-            throw new WebApplicationException(e.getMessage(), 500);
+            if (e.getCause() instanceof FileNotFoundException){
+                throw new WebApplicationException("Field data not found.", 404);
+            }
+            throw new WebApplicationException("Problem retrieving file.", 500);
         }
     }
 
