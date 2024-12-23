@@ -28,11 +28,6 @@ public class DataIdentifier implements java.io.Serializable {
 	private Domain domain = null;
 	private boolean bFunction = false;
 
-	public static DataIdentifier dtoToDataIdentifier(org.vcell.restclient.model.DataIdentifier dto) {
-		return new DataIdentifier(dto.getName(), VariableType.dtoToVariableType(dto.getVariableType()),
-				Domain.dtoToDomain(dto.getDomain()),dto.getbFunction() != null && dto.getbFunction(), dto.getDisplayName());
-	}
-
 
 /**
  * DataIdentifier constructor comment.
@@ -44,6 +39,12 @@ public DataIdentifier(String argName, VariableType argVariableType, Domain argDo
 	domain = argDomain;
 	bFunction = arg_bFunction;
 	displayName = argDisplayName;
+}
+
+public static DataIdentifier dtoToDataIdentifier(org.vcell.restclient.model.DataIdentifier dto){
+	return new DataIdentifier(dto.getName(), VariableType.dtoToVariableType(dto.getVariableType()),
+			dto.getDomain() == null ? null : Domain.dtoToDomain(dto.getDomain()),
+			dto.getbFunction() == null ? false : dto.getbFunction(), dto.getDisplayName());
 }
 
 

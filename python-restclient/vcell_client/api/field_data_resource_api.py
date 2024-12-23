@@ -31,9 +31,10 @@ from typing import Optional, Union
 from vcell_client.models.analyzed_results_from_field_data import AnalyzedResultsFromFieldData
 from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.field_data_db_operation_spec import FieldDataDBOperationSpec
-from vcell_client.models.field_data_external_data_ids import FieldDataExternalDataIDs
 from vcell_client.models.field_data_file_operation_spec import FieldDataFileOperationSpec
+from vcell_client.models.field_data_info import FieldDataInfo
 from vcell_client.models.field_data_no_copy_conflict import FieldDataNoCopyConflict
+from vcell_client.models.field_data_references import FieldDataReferences
 from vcell_client.models.field_data_save_results import FieldDataSaveResults
 
 from vcell_client.api_client import ApiClient
@@ -1399,7 +1400,7 @@ class FieldDataResourceApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/fieldData/createFieldDataFromFile',
+            resource_path='/api/v1/fieldData/analyzeFieldDataFromFile',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1416,9 +1417,8 @@ class FieldDataResourceApi:
 
 
     @validate_call
-    def get_all_field_data(
+    def get_all_field_data_ids(
         self,
-        field_data_db_operation_spec: Optional[FieldDataDBOperationSpec] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1431,12 +1431,10 @@ class FieldDataResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> FieldDataExternalDataIDs:
-        """Get all of the field data for that user.
+    ) -> FieldDataReferences:
+        """Get all of the ids used to identify, and retrieve field data.
 
 
-        :param field_data_db_operation_spec:
-        :type field_data_db_operation_spec: FieldDataDBOperationSpec
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1459,8 +1457,7 @@ class FieldDataResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_all_field_data_serialize(
-            field_data_db_operation_spec=field_data_db_operation_spec,
+        _param = self._get_all_field_data_ids_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1468,7 +1465,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FieldDataExternalDataIDs"
+            '200': "FieldDataReferences"
             
         }
         response_data = self.api_client.call_api(
@@ -1483,9 +1480,8 @@ class FieldDataResourceApi:
 
 
     @validate_call
-    def get_all_field_data_with_http_info(
+    def get_all_field_data_ids_with_http_info(
         self,
-        field_data_db_operation_spec: Optional[FieldDataDBOperationSpec] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1498,12 +1494,10 @@ class FieldDataResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[FieldDataExternalDataIDs]:
-        """Get all of the field data for that user.
+    ) -> ApiResponse[FieldDataReferences]:
+        """Get all of the ids used to identify, and retrieve field data.
 
 
-        :param field_data_db_operation_spec:
-        :type field_data_db_operation_spec: FieldDataDBOperationSpec
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1526,8 +1520,7 @@ class FieldDataResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_all_field_data_serialize(
-            field_data_db_operation_spec=field_data_db_operation_spec,
+        _param = self._get_all_field_data_ids_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1535,7 +1528,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FieldDataExternalDataIDs"
+            '200': "FieldDataReferences"
             
         }
         response_data = self.api_client.call_api(
@@ -1550,9 +1543,8 @@ class FieldDataResourceApi:
 
 
     @validate_call
-    def get_all_field_data_without_preload_content(
+    def get_all_field_data_ids_without_preload_content(
         self,
-        field_data_db_operation_spec: Optional[FieldDataDBOperationSpec] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1566,11 +1558,9 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Get all of the field data for that user.
+        """Get all of the ids used to identify, and retrieve field data.
 
 
-        :param field_data_db_operation_spec:
-        :type field_data_db_operation_spec: FieldDataDBOperationSpec
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1593,8 +1583,7 @@ class FieldDataResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_all_field_data_serialize(
-            field_data_db_operation_spec=field_data_db_operation_spec,
+        _param = self._get_all_field_data_ids_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1602,7 +1591,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FieldDataExternalDataIDs"
+            '200': "FieldDataReferences"
             
         }
         response_data = self.api_client.call_api(
@@ -1612,9 +1601,8 @@ class FieldDataResourceApi:
         return response_data.response
 
 
-    def _get_all_field_data_serialize(
+    def _get_all_field_data_ids_serialize(
         self,
-        field_data_db_operation_spec,
         _request_auth,
         _content_type,
         _headers,
@@ -1639,8 +1627,264 @@ class FieldDataResourceApi:
         # process the header parameters
         # process the form parameters
         # process the body parameter
-        if field_data_db_operation_spec is not None:
-            _body_params = field_data_db_operation_spec
+
+
+        # set the HTTP header `Accept`
+        _header_params['Accept'] = self.api_client.select_header_accept(
+            [
+                'application/json'
+            ]
+        )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/fieldData/IDs',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def get_field_data_from_id(
+        self,
+        body: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> FieldDataInfo:
+        """Get the field data from the selected field data ID.
+
+
+        :param body:
+        :type body: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_field_data_from_id_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "FieldDataInfo"
+            
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def get_field_data_from_id_with_http_info(
+        self,
+        body: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[FieldDataInfo]:
+        """Get the field data from the selected field data ID.
+
+
+        :param body:
+        :type body: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_field_data_from_id_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "FieldDataInfo"
+            
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def get_field_data_from_id_without_preload_content(
+        self,
+        body: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Get the field data from the selected field data ID.
+
+
+        :param body:
+        :type body: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_field_data_from_id_serialize(
+            body=body,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "FieldDataInfo"
+            
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _get_field_data_from_id_serialize(
+        self,
+        body,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> Tuple:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+            
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[str, str] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+        if body is not None:
+            _body_params = body
 
 
         # set the HTTP header `Accept`
@@ -1657,7 +1901,7 @@ class FieldDataResourceApi:
             _default_content_type = (
                 self.api_client.select_header_content_type(
                     [
-                        'application/json'
+                        'text/plain'
                     ]
                 )
             )

@@ -78,7 +78,7 @@ public UserLoginInfo getUserLoginInfo() {
 public UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServerMessaging == null) {
-		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), rpcSender);
+		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), rpcSender, vCellApiClient);
 	}
 	return userMetaDbServerMessaging;
 }

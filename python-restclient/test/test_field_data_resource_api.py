@@ -34,8 +34,8 @@ class TestFieldDataResourceApi(unittest.TestCase):
         """
         pass
 
-    def test_create_new_field_data_from_file_already_analyzed(self) -> None:
-        """Test case for create_new_field_data_from_file_already_analyzed
+    def test_create_new_field_data_file(self) -> None:
+        """Test case for create_new_field_data_file
 
         """
         pass
@@ -51,12 +51,6 @@ class TestFieldDataResourceApi(unittest.TestCase):
         """Test case for delete_field_data
 
         Delete the selected field data.
-        """
-        pass
-
-    def test_generate_field_data_estimate(self) -> None:
-        """Test case for generate_field_data_estimate
-
         """
         pass
 

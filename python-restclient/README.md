@@ -93,8 +93,9 @@ Class | Method | HTTP request | Description
 *FieldDataResourceApi* | [**create_new_field_data_from_file_already_analyzed**](docs/FieldDataResourceApi.md#create_new_field_data_from_file_already_analyzed) | **POST** /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed | 
 *FieldDataResourceApi* | [**create_new_field_data_from_simulation**](docs/FieldDataResourceApi.md#create_new_field_data_from_simulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation.
 *FieldDataResourceApi* | [**delete_field_data**](docs/FieldDataResourceApi.md#delete_field_data) | **DELETE** /api/v1/fieldData | Delete the selected field data.
-*FieldDataResourceApi* | [**generate_field_data_estimate**](docs/FieldDataResourceApi.md#generate_field_data_estimate) | **POST** /api/v1/fieldData/createFieldDataFromFile | 
-*FieldDataResourceApi* | [**get_all_field_data**](docs/FieldDataResourceApi.md#get_all_field_data) | **GET** /api/v1/fieldData | Get all of the field data for that user.
+*FieldDataResourceApi* | [**generate_field_data_estimate**](docs/FieldDataResourceApi.md#generate_field_data_estimate) | **POST** /api/v1/fieldData/analyzeFieldDataFromFile | 
+*FieldDataResourceApi* | [**get_all_field_data_ids**](docs/FieldDataResourceApi.md#get_all_field_data_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
+*FieldDataResourceApi* | [**get_field_data_from_id**](docs/FieldDataResourceApi.md#get_field_data_from_id) | **GET** /api/v1/fieldData | Get the field data from the selected field data ID.
 *HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
 *PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
@@ -125,13 +126,16 @@ Class | Method | HTTP request | Description
  - [BiomodelRef](docs/BiomodelRef.md)
  - [CartesianMesh](docs/CartesianMesh.md)
  - [Coordinate](docs/Coordinate.md)
+ - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)
+ - [Domain](docs/Domain.md)
  - [Extent](docs/Extent.md)
  - [ExternalDataIdentifier](docs/ExternalDataIdentifier.md)
  - [FieldDataDBOperationSpec](docs/FieldDataDBOperationSpec.md)
- - [FieldDataExternalDataIDs](docs/FieldDataExternalDataIDs.md)
  - [FieldDataFileOperationSpec](docs/FieldDataFileOperationSpec.md)
+ - [FieldDataInfo](docs/FieldDataInfo.md)
  - [FieldDataNoCopyConflict](docs/FieldDataNoCopyConflict.md)
+ - [FieldDataReferences](docs/FieldDataReferences.md)
  - [FieldDataSaveResults](docs/FieldDataSaveResults.md)
  - [GroupAccess](docs/GroupAccess.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)

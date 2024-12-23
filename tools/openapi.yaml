@@ -42,10 +42,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -70,10 +70,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StatusMessage'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -98,10 +98,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StatusMessage'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -137,10 +137,10 @@ paths:
             text/plain:
               schema:
                 type: string
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -183,20 +183,20 @@ paths:
     get:
       tags:
       - Field Data Resource
-      summary: Get all of the field data for that user.
-      operationId: getAllFieldData
+      summary: Get the field data from the selected field data ID.
+      operationId: getFieldDataFromID
       requestBody:
         content:
-          application/json:
+          text/plain:
             schema:
-              $ref: '#/components/schemas/FieldDataDBOperationSpec'
+              type: string
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataExternalDataIDs'
+                $ref: '#/components/schemas/FieldDataInfo'
     delete:
       tags:
       - Field Data Resource
@@ -210,6 +210,36 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/fieldData/IDs:
+    get:
+      tags:
+      - Field Data Resource
+      summary: "Get all of the ids used to identify, and retrieve field data."
+      operationId: getAllFieldDataIDs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataReferences'
+  /api/v1/fieldData/analyzeFieldDataFromFile:
+    post:
+      tags:
+      - Field Data Resource
+      operationId: generateFieldDataEstimate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FieldDataFile'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataFileOperationSpec'
   /api/v1/fieldData/copy:
     post:
       tags:
@@ -228,23 +258,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FieldDataNoCopyConflict'
-  /api/v1/fieldData/createFieldDataFromFile:
-    post:
-      tags:
-      - Field Data Resource
-      operationId: generateFieldDataEstimate
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/FieldDataFile'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataFileOperationSpec'
   /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed:
     post:
       tags:
@@ -391,10 +404,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -453,10 +466,10 @@ paths:
             application/json:
               schema:
                 type: boolean
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -473,10 +486,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -509,10 +522,10 @@ paths:
           description: "Successful, returning the identity"
         "409":
           description: "VCell Identity not mapped, userid already exists"
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -552,10 +565,10 @@ paths:
           description: magic link sent in email if appropriate
         "400":
           description: unable to process request
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -578,10 +591,10 @@ paths:
             application/json:
               schema:
                 type: boolean
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -752,6 +765,23 @@ components:
         z:
           format: double
           type: number
+    DataIdentifier:
+      type: object
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        variableType:
+          $ref: '#/components/schemas/VariableType'
+        domain:
+          $ref: '#/components/schemas/Domain'
+        bFunction:
+          type: boolean
+        function:
+          type: boolean
+        visible:
+          type: boolean
     Date:
       format: date
       type: string
@@ -809,6 +839,11 @@ components:
       - WORKEREVENT_FAILURE
       - JOB_FAILED
       type: string
+    Domain:
+      type: object
+      properties:
+        name:
+          type: string
     Extent:
       type: object
       properties:
@@ -869,23 +904,6 @@ components:
           $ref: '#/components/schemas/VersionableTypeVersion'
         bIncludeSimRefs:
           type: boolean
-    FieldDataExternalDataIDs:
-      type: object
-      properties:
-        externalDataIdentifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExternalDataIdentifier'
-        externalDataAnnotations:
-          type: array
-          items:
-            type: string
-        externalDataIDSimRefs:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/KeyValue'
     FieldDataFile:
       type: object
       properties:
@@ -953,6 +971,24 @@ components:
           $ref: '#/components/schemas/User'
         fieldDataName:
           type: string
+    FieldDataInfo:
+      type: object
+      properties:
+        extent:
+          $ref: '#/components/schemas/Extent'
+        origin:
+          $ref: '#/components/schemas/Origin'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        dataIdentifier:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataIdentifier'
+        times:
+          type: array
+          items:
+            format: double
+            type: number
     FieldDataNoCopyConflict:
       type: object
       properties:
@@ -964,6 +1000,23 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/KeyValue'
+    FieldDataReferences:
+      type: object
+      properties:
+        externalDataIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalDataIdentifier'
+        externalDataAnnotations:
+          type: array
+          items:
+            type: string
+        externalDataIDSimRefs:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/KeyValue'
     FieldDataSaveResults:
       type: object
       properties:

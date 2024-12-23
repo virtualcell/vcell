@@ -111,8 +111,8 @@ class SimulationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "SimulationStatusPersistentRecord",
-            '401': None,
-            '403': None
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -188,8 +188,8 @@ class SimulationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "SimulationStatusPersistentRecord",
-            '401': None,
-            '403': None
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -265,8 +265,8 @@ class SimulationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "SimulationStatusPersistentRecord",
-            '401': None,
-            '403': None
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -402,8 +402,8 @@ class SimulationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[StatusMessage]",
-            '401': None,
-            '403': None
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -471,8 +471,8 @@ class SimulationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[StatusMessage]",
-            '401': None,
-            '403': None
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -540,8 +540,8 @@ class SimulationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[StatusMessage]",
-            '401': None,
-            '403': None
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -667,8 +667,8 @@ class SimulationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[StatusMessage]",
-            '401': None,
-            '403': None
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -736,8 +736,8 @@ class SimulationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[StatusMessage]",
-            '401': None,
-            '403': None
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(
@@ -805,8 +805,8 @@ class SimulationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[StatusMessage]",
-            '401': None,
-            '403': None
+            '403': None,
+            '401': None
             
         }
         response_data = self.api_client.call_api(

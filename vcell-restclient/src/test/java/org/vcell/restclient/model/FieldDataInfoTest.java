@@ -18,72 +18,60 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.ArrayList;
 import java.util.Arrays;
-import org.vcell.restclient.model.KeyValue;
+import java.util.List;
+import org.vcell.restclient.model.Extent;
+import org.vcell.restclient.model.ISize;
+import org.vcell.restclient.model.Origin;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for User1
+ * Model tests for FieldDataInfo
  */
-public class User1Test {
-    private final User1 model = new User1();
+public class FieldDataInfoTest {
+    private final FieldDataInfo model = new FieldDataInfo();
 
     /**
-     * Model tests for User1
+     * Model tests for FieldDataInfo
      */
     @Test
-    public void testUser1() {
-        // TODO: test User1
+    public void testFieldDataInfo() {
+        // TODO: test FieldDataInfo
     }
 
     /**
-     * Test the property 'userName'
+     * Test the property 'extent'
      */
     @Test
-    public void userNameTest() {
-        // TODO: test userName
+    public void extentTest() {
+        // TODO: test extent
     }
 
     /**
-     * Test the property 'key'
+     * Test the property 'origin'
      */
     @Test
-    public void keyTest() {
-        // TODO: test key
+    public void originTest() {
+        // TODO: test origin
     }
 
     /**
-     * Test the property 'iD'
+     * Test the property 'isize'
      */
     @Test
-    public void iDTest() {
-        // TODO: test iD
+    public void isizeTest() {
+        // TODO: test isize
     }
 
     /**
-     * Test the property 'name'
+     * Test the property 'times'
      */
     @Test
-    public void nameTest() {
-        // TODO: test name
-    }
-
-    /**
-     * Test the property 'publisher'
-     */
-    @Test
-    public void publisherTest() {
-        // TODO: test publisher
-    }
-
-    /**
-     * Test the property 'testAccount'
-     */
-    @Test
-    public void testAccountTest() {
-        // TODO: test testAccount
+    public void timesTest() {
+        // TODO: test times
     }
 
 }

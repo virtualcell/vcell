@@ -184,8 +184,7 @@ class TestFieldDataFileOperationSpec(unittest.TestCase):
                     i_d = vcell_client.models.key_value.KeyValue(
                         value = 1.337, ), 
                     name = '', 
-                    test_account = True, ),
-                field_data_name = ''
+                    test_account = True, )
             )
         else:
             return FieldDataFileOperationSpec(
