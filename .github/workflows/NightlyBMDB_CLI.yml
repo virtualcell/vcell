@@ -302,6 +302,18 @@ jobs:
       - name: Combine .summary artifacts into one file
         run: jq -s 'add' $(find $GITHUB_WORKSPACE/bmdb-results -name 'full_tracer.json') > $GITHUB_WORKSPACE/tracer.json
 
+      - name: Upload complete, compiled summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: complete_summary.json
+          path: ${{ github.workspace }}/summary.json
+
+      - name: Upload  complete, compiled tracer
+        uses: actions/upload-artifact@v3
+        with:
+          name: complete_tracer.json
+          path: ${{ github.workspace }}/tracer.json
+
       - name: Post results to slack part 1
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the $(cat ${GITHUB_WORKSPACE}/combined.txt | wc -l) BMDB models that didn't pass:" https://slack.com/api/chat.postMessage
 
