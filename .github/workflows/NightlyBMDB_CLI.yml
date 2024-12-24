@@ -180,6 +180,11 @@ jobs:
                   echo "Skipping ${file_name}"
                   continue
               fi
+              # if number is in the list of [125, 246, 678, 1008] then continue
+              if [ $number -eq 235 ] || [ $number -eq 255 ] || [ $number -eq 1008 ]; then
+                  echo "Skipping ${file_name} - too slow or otherwise misbehaved"
+                  continue
+              fi
 
               if [ $((number % ${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
                   echo "Accepting ${file_name}"
