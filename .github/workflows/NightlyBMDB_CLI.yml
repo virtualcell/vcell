@@ -287,6 +287,18 @@ jobs:
     needs: bmdb
 
     steps:
+      - name: Create Docker Image Dir
+        run: mkdir /tmp/docker
+
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+          path: /tmp/docker
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/docker/$(ls /tmp/docker)
+
       - name: Gather Artifacts
         uses: actions/download-artifact@v3
         with:
