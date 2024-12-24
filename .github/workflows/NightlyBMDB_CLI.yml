@@ -170,7 +170,7 @@ jobs:
               number=$(echo "$file_name" | sed -n 's/^BIOMD\([0-9]\+\)\.omex$/\1/p' | sed 's/^0*//')
 
               # TODO: remove later - if number is greater than MAX_TEST_NUMBER or less than MIN_TEST_NUMBER then continue
-              MIN_TEST_NUMBER=100
+              MIN_TEST_NUMBER=0
               MAX_TEST_NUMBER=200
               if [ $number -lt $MIN_TEST_NUMBER ]; then
                   echo "Skipping ${file_name}"
@@ -197,6 +197,7 @@ jobs:
           # Prepare files
           set +e
           echo "[]" > ${{ github.workspace }}/total_exec_summary.json
+          touch ${{ github.workspace }}/total_exec_summary.ndjson
           echo "[]" > ${{ github.workspace }}/full_tracer.json
           # The /* goes on the outside, otherwise bash just interprets a string!
           for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
@@ -219,7 +220,8 @@ jobs:
                 jq '. + [inputs]' ${{ github.workspace }}/total_exec_summary.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) > temp.json
                 mv temp.json ${{ github.workspace }}/total_exec_summary.json
                 # note that the exec_summary.json file is already only a single line of json text, so simple concatenation is fine
-                find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json -exec cat {} + | sort > ${{ github.workspace }}/total_exec_summary.ndjson
+                find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json -exec cat {} + | sort > temp.ndjson
+                cat temp.ndjson >> ${{ github.workspace }}/total_exec_summary.ndjson
                 echo "Done!"
               else
                 echo "No summary found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
