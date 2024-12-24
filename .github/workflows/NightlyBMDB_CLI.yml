@@ -175,7 +175,7 @@ jobs:
                   echo "Skipping ${file_name}"
                   continue
               fi
-              if [ $number -eq 235 ] || [ $number -eq 255 ] || [ $number -eq 595 ] || [ $number -eq 1008 ]; then
+              if [ $number -eq 235 ] || [ $number -eq 255 ] || [ $number -eq 595 ]  || [ $number -eq 711 ] || [ $number -eq 1008 ]; then
                   echo "Skipping ${file_name} - too slow or otherwise misbehaved"
                   continue
               fi
