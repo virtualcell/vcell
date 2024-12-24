@@ -205,7 +205,8 @@ jobs:
                 # Append to master summary in github workspace
                 jq '. + [inputs]' ${{ github.workspace }}/total_exec_summary.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) > temp.json
                 mv temp.json ${{ github.workspace }}/total_exec_summary.json
-                echo $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) >> ${{ github.workspace }}/exec_summary.ndjson
+                # note that the exec_summary.json file is already only a single line of json text, so simple concatenation is fine
+                find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json -exec cat {} + | sort > ${{ github.workspace }}/total_exec_summary.ndjson
                 echo "Done!"
               else
                 echo "No summary found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
@@ -260,11 +261,17 @@ jobs:
           name: set_${{ matrix.sets }}.report
           path: ${{ github.workspace }}/errors.report
 
-      - name: Upload summary
+      - name: Upload summary as json
         uses: actions/upload-artifact@v3
         with:
           name: set_${{ matrix.sets }}.summary
           path: ${{ github.workspace }}/total_exec_summary.json
+
+      - name: Upload summary as ndjson
+        uses: actions/upload-artifact@v3
+        with:
+          name: set_${{ matrix.sets }}.summary_ndjson
+          path: ${{ github.workspace }}/total_exec_summary.ndjson
 
       - name: Upload tracer
         uses: actions/upload-artifact@v3
@@ -312,8 +319,9 @@ jobs:
       - name: Combine .summary artifacts into one file
         run: jq -s 'add | sort_by(.file_path)' $(find "$GITHUB_WORKSPACE/bmdb-results" -name 'total_exec_summary.json') > $GITHUB_WORKSPACE/summary.json
         
-      - name: Combine all exec_summary.ndjson files (from each of the matrix jobs) into one exec_summary.ndjson file
-        run: echo $(find $GITHUB_WORKSPACE/bmdb-results -name 'total_exec_summary.ndjson') > $GITHUB_WORKSPACE/exec_summary.ndjson
+      - name: Combine all .summary_ndjson artifacts into one file
+        # note that the total_exec_summary.ndjson files are already line delimited json text, so simple concatenation is fine
+        run: find $GITHUB_WORKSPACE/bmdb-results -name total_exec_summary.ndjson -exec cat {} + | sort > $GITHUB_WORKSPACE/exec_summary.ndjson
 
       - name: Upload combined exec_summary.ndjson file
         uses: actions/upload-artifact@v3
