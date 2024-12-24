@@ -170,8 +170,8 @@ jobs:
               number=$(echo "$file_name" | sed -n 's/^BIOMD\([0-9]\+\)\.omex$/\1/p' | sed 's/^0*//')
 
               # TODO: remove later - if number is greater than MAX_TEST_NUMBER or less than MIN_TEST_NUMBER then continue
-              MIN_TEST_NUMBER=0
-              MAX_TEST_NUMBER=200
+              MIN_TEST_NUMBER=200
+              MAX_TEST_NUMBER=400
               if [ $number -lt $MIN_TEST_NUMBER ]; then
                   echo "Skipping ${file_name}"
                   continue

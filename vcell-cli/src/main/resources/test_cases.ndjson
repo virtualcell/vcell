@@ -125,8 +125,8 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000021.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000022.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000023.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000024.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000025.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000024.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: unsupported SBML element 'delay' in expression"}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000025.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: unsupported SBML element 'delay' in expression"}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000026.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000027.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000028.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -135,13 +135,13 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000031.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000032.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000033.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000034.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000034.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: unsupported SBML element 'delay' in expression"}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000035.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000036.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000037.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000038.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000039.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000040.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000039.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: Non-integer stoichiometry ('0.25' for reactant 'CaER' in reaction 'v1') not handled in VCell at this time"}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000040.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: Non-numeric stoichiometry ('f' for product 'Br' in reaction 'Reaction5') not handled in VCell at this time."}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000041.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000042.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000043.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -155,16 +155,16 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000051.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000052.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000053.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000054.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000054.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"UNCATETORIZED_FAULT","known_failure_desc":"Failed execution: Model 'BIOMD0000000054_BIOMD0000000054_url.sedml_BIOMD0000000054_url' Task 'task1'.  java.lang.RuntimeException: CVODE solver could not generate input file: infinite loop in eliminating function nesting "}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000055.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000056.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000057.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000058.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000059.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000059.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: Non-integer stoichiometry ('0.01' for reactant 'Ca_cyt' in reaction 'Calcium_cyt_Jerp') not handled in VCell at this time."}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000060.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000061.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000062.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000063.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000063.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: Non-integer stoichiometry ('0.5' for reactant 'FDP' in reaction 'Vgol') not handled in VCell at this time."}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000064.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000065.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000066.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -182,7 +182,7 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000078.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000079.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000080.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000081.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000081.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: Non-integer stoichiometry ('9.967E-4' for reactant 'ATP_C' in reaction 'PIP5kinase') not handled in VCell at this time."}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000082.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000083.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000084.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -213,7 +213,7 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000109.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000110.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000111.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000112.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000112.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: Failed to translate SBML model into BioModel: Cannot invoke \"org.sbml.jsbml.SBase.getAnnotation()\" because \"sbase\" is null"}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000113.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000114.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000115.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -238,7 +238,7 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000134.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000135.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000136.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000137.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000137.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"UNCATETORIZED_FAULT","known_failure_desc":"Failed execution: Model 'BIOMD0000000137_BIOMD0000000137_url.sedml_BIOMD0000000137_url' Task 'task1'.  java.lang.RuntimeException: Could not execute code: CVODE solver failed : at time 0.01, discontinuity ((x6 + x7 + x8) > 100) evaluated to TRUE, solver assumed FALSE"}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000138.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000139.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000140.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -246,17 +246,17 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000142.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000143.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000144.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000145.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000145.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: Non-integer stoichiometry ('0.001' for reactant 'Ca_ER' in reaction 'R9') not handled in VCell at this time."}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000146.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000147.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000148.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000149.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000150.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000151.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000151.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: Non-integer stoichiometry ('0.5' for product 'x13' in reaction 'R23') not handled in VCell at this time."}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000152.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000153.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000154.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000155.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000154.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: unsupported SBML element 'delay' in expression"}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000155.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: unsupported SBML element 'delay' in expression"}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000156.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000157.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000158.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -276,7 +276,7 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000172.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000173.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000174.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000175.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000175.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"MATH_GENERATION_FAILURE","known_failure_desc":"failed to generate math: Unable to sort, unknown identifier I_Net_E44PPI3K_binding"}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000176.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000177.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000178.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -297,10 +297,10 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000193.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000194.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000195.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000196.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000196.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: unsupported SBML element 'delay' in expression"}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000197.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000198.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000199.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000199.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SBML_IMPORT_FAILURE","known_failure_desc":"org.vcell.sbml.vcell.SBMLImportException: Non-integer stoichiometry ('0.5' for reactant 'NADPH' in reaction 'r4') not handled in VCell at this time"}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000200.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000201.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000202.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
