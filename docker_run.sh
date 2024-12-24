@@ -47,6 +47,11 @@ case "$rawCommand" in
     command="execute"
     shift
     ;;
+  "execute-omex")
+      echo 'special testing execution mode requested'
+      command="execute-omex"
+      shift
+      ;;
   "validate")
     echo 'validate mode requested'
     command="validate"
