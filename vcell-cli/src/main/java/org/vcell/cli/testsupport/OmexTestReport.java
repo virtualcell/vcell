@@ -1,6 +1,7 @@
 package org.vcell.cli.testsupport;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
@@ -19,10 +20,13 @@ public class OmexTestReport {
             this.original = original;
             this.updated = updated;
         }
+
     }
 
     public static class OmexTestStatistics {
         public int testCaseCount;
+        public int testCaseFailCount;
+        public int testCasePassCount;
         public int testCaseChangeCount;
         public int unmatchedTestCaseCount;
         public int unmatchedExecutionsCount;
@@ -86,6 +90,8 @@ public class OmexTestReport {
             }
         }
         statistics.testCaseCount = testCases.size();
+        statistics.testCasePassCount = (int) testCases.stream().filter(tc -> tc.known_status == OmexTestCase.Status.PASS).count();
+        statistics.testCaseFailCount = (int) testCases.stream().filter(tc -> tc.known_status == OmexTestCase.Status.FAIL).count();
         statistics.totalExecutions = execSummaries.size();
         statistics.failedExecutionsCount = (int) execSummaries.stream().filter(s -> s.status == OmexExecSummary.ActualStatus.FAILED).count();
         statistics.passedExecutionsCount = (int) execSummaries.stream().filter(s -> s.status == OmexExecSummary.ActualStatus.PASSED).count();
@@ -129,6 +135,47 @@ public class OmexTestReport {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String toMarkdown() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        StringBuilder sb = new StringBuilder();
+        sb.append("# Test Report\n");
+        int testCasesFailed = statistics.testCaseFailCount;
+        int testCasesPassed = statistics.testCasePassCount;
+        int testCasesUnknown = statistics.testCaseCount - testCasesFailed - testCasesPassed;
+        sb.append("## Historical Test Case Records: "+statistics.testCaseCount+" (KNOWN PASSES = "+statistics.testCasePassCount+", KNOWN FAILURES = "+statistics.testCaseFailCount+", STATUS NOT RECORDED = "+testCasesUnknown).append(")\n");
+        sb.append("## New Test Executions: "+statistics.totalExecutions+" (PASSES = "+statistics.passedExecutionsCount+", FAILURES = "+statistics.failedExecutionsCount).append(")\n");
+
+        if (statistics.unmatchedTestCaseCount > 0) {
+            sb.append("## Historical Test Case Records without matching Test Executions: ").append(statistics.unmatchedTestCaseCount).append("\n");
+            for (OmexTestCase testCase : unmatchedTestCases) {
+                sb.append(" - ").append(testCase.test_collection).append(" : ").append(testCase.file_path).append("\n");
+            }
+        } else {
+            sb.append("## All Historical Test Case Records have matching Test Executions\n");
+        }
+
+        if (statistics.unmatchedExecutionsCount > 0) {
+            sb.append("## New Test Executions without matching Historical Test Case Records: ").append(statistics.unmatchedExecutionsCount).append("\n");
+            for (OmexExecSummary execSummary : unmatchedExecSummaries) {
+                sb.append(" - ").append(execSummary.file_path).append("\n");
+            }
+        } else {
+            sb.append("## All New Test Executions have matching Historical Test Case Records\n");
+        }
+
+        if (!testCaseChanges.isEmpty()) {
+            sb.append("## New Test Executions which differ from Historical Test Case Records: ").append(statistics.testCaseChangeCount).append("\n");
+            for (OmexTestCaseChange testCaseChange : testCaseChanges) {
+                String diff = "(" + testCaseChange.original.known_status + ":" + testCaseChange.original.known_failure_type + ") -> (" + testCaseChange.updated.known_status + ":" + testCaseChange.updated.known_failure_type + ")";
+                sb.append(" - ").append(testCaseChange.original.file_path).append(": " + diff + " ===New==> ").append(objectMapper.writeValueAsString(testCaseChange.updated)).append("`\n");
+            }
+        } else {
+            sb.append("## No New Test Executions differ from Historical Test Case Records\n");
+        }
+
+        return sb.toString();
     }
 
 }
