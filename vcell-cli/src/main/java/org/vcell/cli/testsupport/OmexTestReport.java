@@ -8,7 +8,9 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OmexTestReport {
 
@@ -39,12 +41,22 @@ public class OmexTestReport {
     public final List<OmexExecSummary> unmatchedExecSummaries = new ArrayList<>();
     public final List<OmexTestCase> unmatchedTestCases = new ArrayList<>();
     public final OmexTestStatistics statistics = new OmexTestStatistics();
+    public final Map<FailureType,Integer> failureTypeCounts = new HashMap<>();
 
     public OmexTestReport(List<OmexTestCase> testCases, List<OmexExecSummary> execSummaries) {
         // find common path prefix of list of Path objects
         Path commonPrefix = PathUtils.findCommonPrefix(execSummaries.stream().map(tc -> Paths.get(tc.file_path)).toList());
 
         unmatchedTestCases.addAll(testCases);
+
+        for (OmexTestCase testCase : testCases) {
+            if (testCase.known_status != OmexTestCase.Status.FAIL) {
+                continue;
+            }
+            FailureType failureType = (testCase.known_failure_type != null) ? testCase.known_failure_type : FailureType.UNCATETORIZED_FAULT;
+            failureTypeCounts.put(failureType, failureTypeCounts.getOrDefault(failureType, 0) + 1);
+        }
+
         for (OmexExecSummary execSummary : execSummaries) {
             List<OmexTestCase> matchingTestCases = OmexTestingDatabase.queryOmexTestCase(testCases, Paths.get(execSummary.file_path), commonPrefix);
             if (matchingTestCases.isEmpty()) {
@@ -145,6 +157,10 @@ public class OmexTestReport {
         int testCasesPassed = statistics.testCasePassCount;
         int testCasesUnknown = statistics.testCaseCount - testCasesFailed - testCasesPassed;
         sb.append("## Historical Test Case Records: "+statistics.testCaseCount+" (KNOWN PASSES = "+statistics.testCasePassCount+", KNOWN FAILURES = "+statistics.testCaseFailCount+", STATUS NOT RECORDED = "+testCasesUnknown).append(")\n");
+        // print failure type counts
+        for (Map.Entry<FailureType,Integer> entry : failureTypeCounts.entrySet()) {
+            sb.append(" - ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
         sb.append("## New Test Executions: "+statistics.totalExecutions+" (PASSES = "+statistics.passedExecutionsCount+", FAILURES = "+statistics.failedExecutionsCount).append(")\n");
 
         if (statistics.unmatchedTestCaseCount > 0) {
