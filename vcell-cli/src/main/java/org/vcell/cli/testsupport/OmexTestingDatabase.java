@@ -84,10 +84,11 @@ public class OmexTestingDatabase {
         return testCases;
     }
 
-    public static OmexExecSummary summarize(File inputFilePath, Exception exception, List<TraceEvent> errorEvents) {
+    public static OmexExecSummary summarize(File inputFilePath, Exception exception, List<TraceEvent> errorEvents, long elapsedTime_ms) {
         OmexExecSummary execSummary = new OmexExecSummary();
         execSummary.file_path = inputFilePath.toString();
         execSummary.status = OmexExecSummary.ActualStatus.FAILED;
+        execSummary.elapsed_time_ms = elapsedTime_ms;
         if (exception != null || !errorEvents.isEmpty()) {
             execSummary.failure_type = determineFault(exception, errorEvents);
             execSummary.failure_desc = null;

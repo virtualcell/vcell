@@ -1,50 +1,50 @@
-{  "file_path": "/root/BIOMD0000000020.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000040.omex",  "status": "FAILED",  "failure_type": "SBML_IMPORT_FAILURE",  "failure_desc": "Unable to initialize bioModel for the given selection: Failed to translate SBML model into BioModel: org.vcell.sbml.vcell.SBMLImportException: Non-numeric stoichiometry ('f' for product 'Br' in reaction 'Reaction5') not handled in VCell at this time. org.vcell.sbml.vcell.SBMLImportException: Failed to translate SBML model into BioModel: org.vcell.sbml.vcell.SBMLImportException: Non-numeric stoichiometry ('f' for product 'Br' in reaction 'Reaction5') not handled in VCell at this time." }
-{  "file_path": "/root/BIOMD0000000060.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000080.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000100.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000120.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000140.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000240.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000260.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000280.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000300.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000320.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000340.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000360.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000380.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000400.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000420.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000440.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000460.omex",  "status": "FAILED",  "failure_type": "SBML_IMPORT_FAILURE",  "failure_desc": "Unable to initialize bioModel for the given selection: couldn't find SBase with sid=null in SBMLSymbolMapping org.vcell.sbml.vcell.SBMLImportException: couldn't find SBase with sid=null in SBMLSymbolMapping" }
-{  "file_path": "/root/BIOMD0000000480.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000500.omex",  "status": "FAILED",  "failure_type": "UNCATETORIZED_FAULT",  "failure_desc": "Unable to initialize bioModel for the given selection: Cannot invoke \"cbit.vcell.solver.Simulation.getImportedTaskID()\" because \"simulation\" is null java.lang.NullPointerException: Cannot invoke \"cbit.vcell.solver.Simulation.getImportedTaskID()\" because \"simulation\" is null" }
-{  "file_path": "/root/BIOMD0000000520.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000540.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000560.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000580.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000600.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000620.omex",  "status": "FAILED",  "failure_type": "UNCATETORIZED_FAULT",  "failure_desc": "Failed execution: Model 'BIOMD0000000620_BIOMD0000000620_url.sedml_BIOMD0000000620_url' Task 'task1'. java.lang.RuntimeException: Could not execute code: CVODE solver failed : at time 5.5, discontinuity (t == Anakinra_dose_counter) evaluated to TRUE, solver assumed FALSE\n\n\n\n(/usr/local/app/vcell/installDir/localsolvers/linux64/SundialsSolverStandalone_x64 /tmp/VCell_CLI_193e0a5db7a967308657490923326/BIOMD0000000620/BIOMD0000000620_url.sedml/SimID_411786192_0_.cvodeInput /tmp/VCell_CLI_193e0a5db7a967308657490923326/BIOMD0000000620/BIOMD0000000620_url.sedml/SimID_411786192_0_.ida) " }
-{  "file_path": "/root/BIOMD0000000640.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000660.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000680.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000700.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000720.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000740.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000760.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000780.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000800.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000820.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000840.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000860.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000880.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000900.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000920.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000940.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000960.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000000980.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000001000.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000001020.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000001040.omex",  "status": "FAILED",  "failure_type": "SBML_IMPORT_FAILURE",  "failure_desc": "Unable to initialize bioModel for the given selection: Failed to translate SBML model into BioModel: Error binding global parameter 'Summary_flux_to_RBC' to model: 'Vin' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the correct and full name (e.g. Ca_Cytosol). org.vcell.sbml.vcell.SBMLImportException: Failed to translate SBML model into BioModel: Error binding global parameter 'Summary_flux_to_RBC' to model: 'Vin' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the correct and full name (e.g. Ca_Cytosol)." }
-{  "file_path": "/root/BIOMD0000001060.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
-{  "file_path": "/root/BIOMD0000001080.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null }
+{  "file_path": "/root/BIOMD0000000020.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000040.omex",  "status": "FAILED",  "failure_type": "SBML_IMPORT_FAILURE",  "failure_desc": "Unable to initialize bioModel for the given selection: Failed to translate SBML model into BioModel: org.vcell.sbml.vcell.SBMLImportException: Non-numeric stoichiometry ('f' for product 'Br' in reaction 'Reaction5') not handled in VCell at this time. org.vcell.sbml.vcell.SBMLImportException: Failed to translate SBML model into BioModel: org.vcell.sbml.vcell.SBMLImportException: Non-numeric stoichiometry ('f' for product 'Br' in reaction 'Reaction5') not handled in VCell at this time.", "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000060.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000080.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000100.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000120.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000140.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000240.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000260.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000280.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000300.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000320.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000340.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000360.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000380.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000400.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000420.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000440.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000460.omex",  "status": "FAILED",  "failure_type": "SBML_IMPORT_FAILURE",  "failure_desc": "Unable to initialize bioModel for the given selection: couldn't find SBase with sid=null in SBMLSymbolMapping org.vcell.sbml.vcell.SBMLImportException: couldn't find SBase with sid=null in SBMLSymbolMapping", "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000480.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000500.omex",  "status": "FAILED",  "failure_type": "UNCATETORIZED_FAULT",  "failure_desc": "Unable to initialize bioModel for the given selection: Cannot invoke \"cbit.vcell.solver.Simulation.getImportedTaskID()\" because \"simulation\" is null java.lang.NullPointerException: Cannot invoke \"cbit.vcell.solver.Simulation.getImportedTaskID()\" because \"simulation\" is null", "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000520.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000540.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000560.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000580.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000600.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000620.omex",  "status": "FAILED",  "failure_type": "UNCATETORIZED_FAULT",  "failure_desc": "Failed execution: Model 'BIOMD0000000620_BIOMD0000000620_url.sedml_BIOMD0000000620_url' Task 'task1'. java.lang.RuntimeException: Could not execute code: CVODE solver failed : at time 5.5, discontinuity (t == Anakinra_dose_counter) evaluated to TRUE, solver assumed FALSE\n\n\n\n(/usr/local/app/vcell/installDir/localsolvers/linux64/SundialsSolverStandalone_x64 /tmp/VCell_CLI_193e0a5db7a967308657490923326/BIOMD0000000620/BIOMD0000000620_url.sedml/SimID_411786192_0_.cvodeInput /tmp/VCell_CLI_193e0a5db7a967308657490923326/BIOMD0000000620/BIOMD0000000620_url.sedml/SimID_411786192_0_.ida) ", "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000640.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000660.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000680.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000700.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000720.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000740.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000760.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000780.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000800.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000820.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000840.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000860.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000880.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000900.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000920.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000940.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000960.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000000980.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000001000.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000001020.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000001040.omex",  "status": "FAILED",  "failure_type": "SBML_IMPORT_FAILURE",  "failure_desc": "Unable to initialize bioModel for the given selection: Failed to translate SBML model into BioModel: Error binding global parameter 'Summary_flux_to_RBC' to model: 'Vin' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the correct and full name (e.g. Ca_Cytosol). org.vcell.sbml.vcell.SBMLImportException: Failed to translate SBML model into BioModel: Error binding global parameter 'Summary_flux_to_RBC' to model: 'Vin' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the correct and full name (e.g. Ca_Cytosol).", "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000001060.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
+{  "file_path": "/root/BIOMD0000001080.omex",  "status": "PASSED",  "failure_type": null,  "failure_desc": null, "elapsed_time_ms": 1234 }
