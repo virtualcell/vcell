@@ -122,7 +122,8 @@ jobs:
     needs: build
     strategy:
       matrix:
-        sets: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
+        # sets: [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19" ]
+        sets: [ "98", "99" ]
     steps:
       - name: Create Docker Image Dir
         run: mkdir /tmp/docker
@@ -205,6 +206,7 @@ jobs:
                 # Append to master summary in github workspace
                 jq '. + [inputs]' ${{ github.workspace }}/total_exec_summary.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) > temp.json
                 mv temp.json ${{ github.workspace }}/total_exec_summary.json
+                echo $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) >> ${{ github.workspace }}/exec_summary.ndjson
                 echo "Done!"
               else
                 echo "No summary found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
@@ -299,8 +301,27 @@ jobs:
       - name: Combine .summary artifacts into one file
         run: jq -s 'add | sort_by(.file_path)' $(find "$GITHUB_WORKSPACE/bmdb-results" -name 'total_exec_summary.json') > $GITHUB_WORKSPACE/summary.json
         
+      - name: Combine all exec_summary.ndjson files (from each of the matrix jobs) into one exec_summary.ndjson file
+        run: echo $(find $GITHUB_WORKSPACE/bmdb-results -name 'total_exec_summary.ndjson') > $GITHUB_WORKSPACE/exec_summary.ndjson
+
+      - name: Upload combined exec_summary.ndjson file
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ github.workspace }}/exec_summary.ndjson
+          name: exec_summary.ndjson
+
       - name: Combine .summary artifacts into one file
         run: jq -s 'add' $(find $GITHUB_WORKSPACE/bmdb-results -name 'full_tracer.json') > $GITHUB_WORKSPACE/tracer.json
+
+      # run exec-report CLI command via docker to generate report using the exec_summary.ndjson file and the embedded test_cases.ndjson file
+      - name: Run Docker test-report command
+        run: docker run -v ${{ github.workspace }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') test-report -c SYSBIO_BIOMD --exec-summaries /root/exec_summary.ndjson --report-md /root/report.md
+
+      - name: Upload generated report.md
+        uses: actions/upload-artifact@v3
+        with:
+          name: report.md
+          path: ${{ github.workspace }}/report.md
 
       - name: Upload complete, compiled summary
         uses: actions/upload-artifact@v3
@@ -320,5 +341,8 @@ jobs:
       - name: Post results to slack part 2
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(sort ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
 
-      - name: Post results to slack part 3
+      - name: Post results to slack part 3 (report.md from exec-report CLI command)
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/report.md)" https://slack.com/api/chat.postMessage
+
+      - name: Post results to slack part 4
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="To see detailed logs of the BMDB results, see - ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. Go see what happened!" https://slack.com/api/chat.postMessage
