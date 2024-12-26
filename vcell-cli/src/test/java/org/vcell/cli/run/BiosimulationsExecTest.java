@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
+import org.vcell.sedml.testsupport.FailureType;
 import org.vcell.trace.Tracer;
 import org.vcell.util.VCellUtilityHub;
 import org.vcell.util.exe.Executable;
@@ -50,45 +51,45 @@ public class BiosimulationsExecTest {
 		VCellUtilityHub.shutdown();
 	}
 
-	@SuppressWarnings("unused")
-	public enum FAULT {
-		ARRAY_INDEX_OUT_OF_BOUNDS,
-		BAD_EULER_FORWARD,
-		DIVIDE_BY_ZERO,
-		EXPRESSIONS_DIFFERENT,
-		EXPRESSION_BINDING,
-		GEOMETRY_SPEC_DIFFERENT,
-		HDF5_FILE_ALREADY_EXISTS, // reports.h5 file already exists, so action is blocked. Fixed in branch to be merged in.
-		MATHOVERRIDES_SurfToVol,
-		MATH_GENERATION_FAILURE,
-		MATH_OVERRIDES_A_FUNCTION,
-		MATH_OVERRIDES_INVALID,
-		NULL_POINTER_EXCEPTION,
-		OPERATION_NOT_SUPPORTED, // VCell simply doesn't have the necessary features to run this archive.
-		SBML_IMPORT_FAILURE,
-		SEDML_DIFF_NUMBER_OF_BIOMODELS,
-		SEDML_ERRONEOUS_UNIT_SYSTEM,
-		SEDML_ERROR_CONSTRUCTING_SIMCONTEXT,
-		SEDML_MATH_OVERRIDE_NAMES_DIFFERENT,
-		SEDML_MATH_OVERRIDE_NOT_EQUIVALENT,
-		SEDML_NONSPATIAL_STOCH_HISTOGRAM,
-		SEDML_NO_MODELS_IN_OMEX,
-		SEDML_SIMCONTEXT_NOT_FOUND_BY_NAME,
-		SEDML_SIMULATION_NOT_FOUND_BY_NAME,
-		SEDML_UNSUPPORTED_ENTITY,
-		SEDML_UNSUPPORTED_MODEL_REFERENCE, // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
-		TOO_SLOW,
-		UNCATETORIZED_FAULT,
-		UNITS_EXCEPTION,
-		UNKNOWN_IDENTIFIER,
-		UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM
+//	@SuppressWarnings("unused")
+//	public enum FailureType {
+//		ARRAY_INDEX_OUT_OF_BOUNDS,
+//		BAD_EULER_FORWARD,
+//		DIVIDE_BY_ZERO,
+//		EXPRESSIONS_DIFFERENT,
+//		EXPRESSION_BINDING,
+//		GEOMETRY_SPEC_DIFFERENT,
+//		HDF5_FILE_ALREADY_EXISTS, // reports.h5 file already exists, so action is blocked. Fixed in branch to be merged in.
+//		MATHOVERRIDES_SurfToVol,
+//		MATH_GENERATION_FAILURE,
+//		MATH_OVERRIDES_A_FUNCTION,
+//		MATH_OVERRIDES_INVALID,
+//		NULL_POINTER_EXCEPTION,
+//		OPERATION_NOT_SUPPORTED, // VCell simply doesn't have the necessary features to run this archive.
+//		SBML_IMPORT_FAILURE,
+//		SEDML_DIFF_NUMBER_OF_BIOMODELS,
+//		SEDML_ERRONEOUS_UNIT_SYSTEM,
+//		SEDML_ERROR_CONSTRUCTING_SIMCONTEXT,
+//		SEDML_MATH_OVERRIDE_NAMES_DIFFERENT,
+//		SEDML_MATH_OVERRIDE_NOT_EQUIVALENT,
+//		SEDML_NONSPATIAL_STOCH_HISTOGRAM,
+//		SEDML_NO_MODELS_IN_OMEX,
+//		SEDML_SIMCONTEXT_NOT_FOUND_BY_NAME,
+//		SEDML_SIMULATION_NOT_FOUND_BY_NAME,
+//		SEDML_UNSUPPORTED_ENTITY,
+//		SEDML_UNSUPPORTED_MODEL_REFERENCE, // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
+//		TOO_SLOW,
+//		UNCATETORIZED_FailureType,
+//		UNITS_EXCEPTION,
+//		UNKNOWN_IDENTIFIER,
+//		UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM
+//
+//	}
 
-	}
-
 	@SuppressWarnings("unused")
-	static Map<String, FAULT> knownFaults() {
-		HashMap<String, FAULT> faults = new HashMap<>();
-		return faults;
+	static Map<String, FailureType> knownFailureTypes() {
+		HashMap<String, FailureType> FailureTypes = new HashMap<>();
+		return FailureTypes;
 	}
 
 	public static Collection<String> testCases() {
@@ -138,7 +139,7 @@ public class BiosimulationsExecTest {
 	@ParameterizedTest
 	@MethodSource("testCases")
 	public void testBiosimulationsProject(String testCaseProjectID) throws Exception {
-		FAULT knownFault = knownFaults().get(testCaseProjectID);
+		FailureType knownFailureType = knownFailureTypes().get(testCaseProjectID);
 		try {
 			System.out.println("running test " + testCaseProjectID);
 
@@ -153,9 +154,9 @@ public class BiosimulationsExecTest {
 
 			String errorMessage = (Tracer.hasErrors()) ? "failure: '" + Tracer.getErrors().get(0).message.replace("\n", " | ") : "";
 			assertFalse(Tracer.hasErrors(), errorMessage);
-			if (knownFault != null){
-				throw new RuntimeException("test case passed, but expected " + knownFault.name() + ", remove "
-						+ testCaseProjectID + " from known faults");
+			if (knownFailureType != null){
+				throw new RuntimeException("test case passed, but expected " + knownFailureType.name() + ", remove "
+						+ testCaseProjectID + " from known FailureTypes");
 			}
 
 //			// verify log file has status of 'SUCCEEDED'
@@ -179,18 +180,18 @@ public class BiosimulationsExecTest {
 					stdOutString.substring(0, Math.min(300, stdOutString.length())));
 
 		} catch (Exception | AssertionError e){
-			FAULT fault = this.determineFault(e);
-			if (knownFault == fault) {
+			FailureType FailureType = this.determineFailureType(e);
+			if (knownFailureType == FailureType) {
 				System.err.println("Expected error: " + e.getMessage());
 				return;
 			}
 
-			System.err.println("add FAULT." + fault.name() + " to " + testCaseProjectID);
+			System.err.println("add FailureType." + FailureType.name() + " to " + testCaseProjectID);
 			throw new Exception("Test error: " + testCaseProjectID + " failed improperly", e);
 		}
 	}
 
-	private FAULT determineFault(Throwable caughtException){ // Throwable because Assertion Error
+	private FailureType determineFailureType(Throwable caughtException){ // Throwable because Assertion Error
 		String errorMessage = caughtException.getMessage();
 		if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
 
@@ -198,24 +199,24 @@ public class BiosimulationsExecTest {
 			errorMessage = caughtException.getCause().getMessage();
 
 		if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
-			return FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE;
+			return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
 		} else if (errorMessage.contains("System IO encountered a fatal error")){
 			Throwable subException = caughtException.getCause();
 			//String subMessage = (subException == null) ? "" : subException.getMessage();
 			if (subException instanceof FileAlreadyExistsException){
-				return FAULT.HDF5_FILE_ALREADY_EXISTS;
+				return FailureType.HDF5_FILE_ALREADY_EXISTS;
 			}
 		} else if (errorMessage.contains("error while processing outputs: null")){
 			Throwable subException = caughtException.getCause();
 			if (subException instanceof ArrayIndexOutOfBoundsException){
-				return FAULT.ARRAY_INDEX_OUT_OF_BOUNDS;
+				return FailureType.ARRAY_INDEX_OUT_OF_BOUNDS;
 			}
 		} else if (errorMessage.contains("nconsistent unit system in SBML model") ||
 				errorMessage.contains("ust be of type")){
-			return FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM;
+			return FailureType.SEDML_ERRONEOUS_UNIT_SYSTEM;
 		}
 
-		return FAULT.UNCATETORIZED_FAULT;
+		return FailureType.UNCATETORIZED_FAULT;
 	}
 
 }
