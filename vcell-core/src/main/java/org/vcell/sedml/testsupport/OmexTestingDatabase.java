@@ -1,4 +1,4 @@
-package org.vcell.cli.testsupport;
+package org.vcell.sedml.testsupport;
 
 import cbit.vcell.mapping.MappingException;
 import com.fasterxml.jackson.databind.MappingIterator;

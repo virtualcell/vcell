@@ -6,7 +6,6 @@ import cbit.vcell.biomodel.ModelUnitConverter;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;

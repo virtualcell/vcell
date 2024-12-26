@@ -3,8 +3,8 @@ package org.vcell.cli.run;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.vcell.cli.testsupport.OmexTestCase;
-import org.vcell.cli.testsupport.OmexTestingDatabase;
+import org.vcell.sedml.testsupport.OmexTestCase;
+import org.vcell.sedml.testsupport.OmexTestingDatabase;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
