@@ -181,12 +181,11 @@ jobs:
               sim_input="/root/${base_name}"
               sim_output="/root/${base_extless_name}_output"
               echo -n "Running \"${file}\" in output folder \"${base_extless_name}_output\"..."
-              vcell_result=$(docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute-omex -d -i ${sim_input} -o ${sim_output} --timeout_ms=300000)
+              vcell_result=$(docker run -m 5g -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute-omex -d -i ${sim_input} -o ${sim_output} --timeout_ms=300000)
               echo "Done!"
               # Grab Summary
               echo -n "Obtaining Summary..."
-              if [ -f "${GITHUB_WORKSPACE}/set_${{ matrix.sets }}/${base_extless_name}_output/exec_summary.json" ]
-              then
+              if [ -f "${GITHUB_WORKSPACE}/set_${{ matrix.sets }}/${base_extless_name}_output/exec_summary.json" ]; then
                 # Append to master summary in github workspace
                 jq '. + [inputs]' ${{ github.workspace }}/total_exec_summary.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) > temp.json
                 mv temp.json ${{ github.workspace }}/total_exec_summary.json
@@ -197,7 +196,11 @@ jobs:
           
               # Check for individual Failure (a.k.a. if we failed early)
               echo -n "Obtaining Execution Result..."
-              status=$(cat "${GITHUB_WORKSPACE}/set_${{ matrix.sets }}/${base_extless_name}_output/exec_summary.json" | jq -r '.status')
+              if [ -f "${GITHUB_WORKSPACE}/set_${{ matrix.sets }}/${base_extless_name}_output/exec_summary.json" ]; then
+                status=$(cat "${GITHUB_WORKSPACE}/set_${{ matrix.sets }}/${base_extless_name}_output/exec_summary.json" | jq -r '.status')
+              else
+                status="FAILED" # If we didn't get an exec_summary.json, the container probably ran out of resources!
+              fi
               echo "${status}"
               # Note: `cat`ing "$vcell_result" will be the runting logging! 
               if [[ "${status}" == "FAILED" ]]; then
