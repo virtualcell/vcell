@@ -190,9 +190,12 @@ public class FieldDataDBOperationDriver {
     }
 
     private static FieldDataDBOperationResults getExternalDataIDs(Connection con, KeyFactory keyFactory, User user,
-                                                                  FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException {
+                                                                  FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
         String sql;
         ResultSet rset;
+        if (!user.compareEqual(fieldDataDBOperationSpec.owner)){
+            throw new DataAccessException("User mismatch");
+        }
         if (fieldDataDBOperationSpec.bIncludeSimRefs) {
             sql = "SELECT " +
                     ExternalDataTable.table.id.getQualifiedColName() + "," +
