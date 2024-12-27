@@ -1,7 +1,6 @@
 package org.vcell.cli.run;
 
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -13,7 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
-import org.vcell.trace.TraceEvent;
+import org.vcell.sedml.testsupport.FailureType;
 import org.vcell.trace.Tracer;
 import org.vcell.util.VCellUtilityHub;
 
@@ -48,40 +47,39 @@ public class SpatialExecTest {
         VCellUtilityHub.shutdown();
     }
 
-    @SuppressWarnings("unused")
-    public enum FAULT {
-        ARRAY_INDEX_OUT_OF_BOUNDS,
-        BAD_EULER_FORWARD,
-        DIVIDE_BY_ZERO,
-        EXPRESSIONS_DIFFERENT,
-        EXPRESSION_BINDING,
-        GEOMETRY_SPEC_DIFFERENT,
-        HDF5_FILE_ALREADY_EXISTS, // reports.h5 file already exists, so action is blocked. Fixed in branch to be merged in.
-        MATHOVERRIDES_SurfToVol,
-        MATH_GENERATION_FAILURE,
-        MATH_OVERRIDES_A_FUNCTION,
-        MATH_OVERRIDES_INVALID,
-        NULL_POINTER_EXCEPTION,
-        OPERATION_NOT_SUPPORTED, // VCell simply doesn't have the necessary features to run this archive.
-        SBML_IMPORT_FAILURE,
-        SEDML_DIFF_NUMBER_OF_BIOMODELS,
-        SEDML_ERRONEOUS_UNIT_SYSTEM,
-        SEDML_ERROR_CONSTRUCTING_SIMCONTEXT,
-        SEDML_MATH_OVERRIDE_NAMES_DIFFERENT,
-        SEDML_MATH_OVERRIDE_NOT_EQUIVALENT,
-        SEDML_NONSPATIAL_STOCH_HISTOGRAM,
-        SEDML_NO_MODELS_IN_OMEX,
-        SEDML_SIMCONTEXT_NOT_FOUND_BY_NAME,
-        SEDML_SIMULATION_NOT_FOUND_BY_NAME,
-        SEDML_UNSUPPORTED_ENTITY,
-        SEDML_UNSUPPORTED_MODEL_REFERENCE, // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
-        TOO_SLOW,
-        UNCATETORIZED_FAULT,
-        UNITS_EXCEPTION,
-        UNKNOWN_IDENTIFIER,
-        UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM
-
-    }
+//    public enum FAULT {
+//        ARRAY_INDEX_OUT_OF_BOUNDS,
+//        BAD_EULER_FORWARD,
+//        DIVIDE_BY_ZERO,
+//        EXPRESSIONS_DIFFERENT,
+//        EXPRESSION_BINDING,
+//        GEOMETRY_SPEC_DIFFERENT,
+//        HDF5_FILE_ALREADY_EXISTS, // reports.h5 file already exists, so action is blocked. Fixed in branch to be merged in.
+//        MATHOVERRIDES_SurfToVol,
+//        MATH_GENERATION_FAILURE,
+//        MATH_OVERRIDES_A_FUNCTION,
+//        MATH_OVERRIDES_INVALID,
+//        NULL_POINTER_EXCEPTION,
+//        OPERATION_NOT_SUPPORTED, // VCell simply doesn't have the necessary features to run this archive.
+//        SBML_IMPORT_FAILURE,
+//        SEDML_DIFF_NUMBER_OF_BIOMODELS,
+//        SEDML_ERRONEOUS_UNIT_SYSTEM,
+//        SEDML_ERROR_CONSTRUCTING_SIMCONTEXT,
+//        SEDML_MATH_OVERRIDE_NAMES_DIFFERENT,
+//        SEDML_MATH_OVERRIDE_NOT_EQUIVALENT,
+//        SEDML_NONSPATIAL_STOCH_HISTOGRAM,
+//        SEDML_NO_MODELS_IN_OMEX,
+//        SEDML_SIMCONTEXT_NOT_FOUND_BY_NAME,
+//        SEDML_SIMULATION_NOT_FOUND_BY_NAME,
+//        SEDML_UNSUPPORTED_ENTITY,
+//        SEDML_UNSUPPORTED_MODEL_REFERENCE, // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
+//        TOO_SLOW,
+//        UNCATETORIZED_FAULT,
+//        UNITS_EXCEPTION,
+//        UNKNOWN_IDENTIFIER,
+//        UNSUPPORTED_NONSPATIAL_STOCH_HISTOGRAM
+//
+//    }
 
     static Set<String> blacklistedModels(){
         HashSet<String> blacklistSet = new HashSet<>();
@@ -89,8 +87,8 @@ public class SpatialExecTest {
         return blacklistSet;
     }
 
-    static Map<String, SpatialExecTest.FAULT> knownFaults() {
-        HashMap<String, SpatialExecTest.FAULT> faults = new HashMap<>();
+    static Map<String, FailureType> knownFaults() {
+        HashMap<String, FailureType> faults = new HashMap<>();
         // Hooray! no known faults yet!
         return faults;
     }
@@ -105,14 +103,7 @@ public class SpatialExecTest {
     @ParameterizedTest
     @MethodSource("testCases")
     public void testSpatialOmex(String testCaseFilename) throws Exception {
-        String osName = System.getProperty("os.name").toLowerCase();
-        String osArch = System.getProperty("os.arch").toLowerCase();
-
-        // Skip test if running on macOS ARM64
-        Assumptions.assumeFalse(osName.contains("mac") && osArch.equals("aarch64"),
-                "Test skipped on macOS ARM64");
-
-        SpatialExecTest.FAULT knownFault = knownFaults().get(testCaseFilename);
+        FailureType knownFault = knownFaults().get(testCaseFilename);
         Tracer.clearTraceEvents();
         try {
             System.out.println("running test " + testCaseFilename);
@@ -155,14 +146,14 @@ public class SpatialExecTest {
             FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
             ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
 
-            assertFalse(Tracer.hasErrors(), "no exception, but trace errors found: error[0] = "+Tracer.getErrors().get(0).message.replace("\n"," | "));
+            assertFalse(Tracer.hasErrors(), "no exception, but trace errors found: error[0] = "+(Tracer.hasErrors()?(Tracer.getErrors().get(0).message.replace("\n"," | ")):null));
             if (knownFault != null){
                 throw new RuntimeException("test case passed, but expected " + knownFault.name() + ", remove "
                         + testCaseFilename + " from known faults");
             }
 
         } catch (Exception | AssertionError e){
-            SpatialExecTest.FAULT fault = this.determineFault(e);
+            FailureType fault = this.determineFault(e);
             if (knownFault == fault) {
                 System.err.println("Expected error: " + e.getMessage());
                 return;
@@ -173,7 +164,7 @@ public class SpatialExecTest {
         }
     }
 
-    private SpatialExecTest.FAULT determineFault(Throwable caughtException){ // Throwable because Assertion Error
+    private FailureType determineFault(Throwable caughtException){ // Throwable because Assertion Error
         String errorMessage = caughtException.getMessage();
         if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
 
@@ -181,23 +172,23 @@ public class SpatialExecTest {
             errorMessage = caughtException.getCause().getMessage();
 
         if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
-            return SpatialExecTest.FAULT.SEDML_UNSUPPORTED_MODEL_REFERENCE;
+            return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
         } else if (errorMessage.contains("System IO encountered a fatal error")){
             Throwable subException = caughtException.getCause();
             //String subMessage = (subException == null) ? "" : subException.getMessage();
             if (subException instanceof FileAlreadyExistsException){
-                return SpatialExecTest.FAULT.HDF5_FILE_ALREADY_EXISTS;
+                return FailureType.HDF5_FILE_ALREADY_EXISTS;
             }
         } else if (errorMessage.contains("error while processing outputs: null")){
             Throwable subException = caughtException.getCause();
             if (subException instanceof ArrayIndexOutOfBoundsException){
-                return SpatialExecTest.FAULT.ARRAY_INDEX_OUT_OF_BOUNDS;
+                return FailureType.ARRAY_INDEX_OUT_OF_BOUNDS;
             }
         } else if (errorMessage.contains("nconsistent unit system in SBML model") ||
                 errorMessage.contains("ust be of type")){
-            return SpatialExecTest.FAULT.SEDML_ERRONEOUS_UNIT_SYSTEM;
+            return FailureType.SEDML_ERRONEOUS_UNIT_SYSTEM;
         }
 
-        return SpatialExecTest.FAULT.UNCATETORIZED_FAULT;
+        return FailureType.UNCATETORIZED_FAULT;
     }
 }

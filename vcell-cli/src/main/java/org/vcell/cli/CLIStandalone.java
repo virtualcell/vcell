@@ -4,7 +4,7 @@ import org.vcell.cli.biosimulation.BiosimulationsCommand;
 import org.vcell.cli.run.ExecuteCommand;
 import org.vcell.cli.run.ExecuteOmexCommand;
 import org.vcell.cli.sbml.ModelCommand;
-import org.vcell.cli.testsupport.TestReportCommand;
+import org.vcell.cli.testing.TestReportCommand;
 import org.vcell.cli.vcml.*;
 
 import org.apache.logging.log4j.LogManager;

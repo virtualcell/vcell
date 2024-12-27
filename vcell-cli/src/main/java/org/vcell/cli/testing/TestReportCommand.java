@@ -1,9 +1,13 @@
-package org.vcell.cli.testsupport;
+package org.vcell.cli.testing;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.vcell.sedml.testsupport.OmexExecSummary;
+import org.vcell.sedml.testsupport.OmexTestCase;
+import org.vcell.sedml.testsupport.OmexTestReport;
+import org.vcell.sedml.testsupport.OmexTestingDatabase;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

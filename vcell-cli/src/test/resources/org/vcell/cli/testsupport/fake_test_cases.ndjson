@@ -49,6 +49,6 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000980.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000001000.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000001020.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000001040.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"UNCATETORIZED_FAULT","known_failure_desc":null}
+{"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000001040.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"DIVIDE_BY_ZERO","known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000001060.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000001080.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}

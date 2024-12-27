@@ -1,4 +1,4 @@
-package org.vcell.cli.testsupport;
+package org.vcell.sedml.testsupport;
 
 import java.nio.file.Path;
 import java.util.List;
