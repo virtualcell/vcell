@@ -1,3 +1,7 @@
+{"test_collection":"VCELL_QUANT_OMEX","file_path":"BIOMD0000000003_tellurium_A_minimal_cascade_model_for_th","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_QUANT_OMEX","file_path":"BIOMD0000000006_tellurium_Modeling_the_cell_division_cyc","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_QUANT_OMEX","file_path":"BIOMD0000000036_tellurium_A_simple_model_of_circadian_rh","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_QUANT_OMEX","file_path":"BIOMD0000000300","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_BIOMD","file_path":"BIOMD0000000005.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_BIOMD","file_path":"BIOMD0000000175.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"MATH_GENERATION_FAILURE","known_failure_desc":"unknown identifier I_Net_E44PPI3K_binding"}
 {"test_collection":"VCELL_BIOMD","file_path":"BIOMD0000000302.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"MATH_GENERATION_FAILURE","known_failure_desc":"Initial condition for variable 'h_post' references variable 'V_post'"}

@@ -21,6 +21,7 @@ public class OmexTestingDatabase {
         vcell, sysbio
     }
     public enum TestCollection {
+        VCELL_QUANT_OMEX(TestDataRepo.vcell, "vcell-cli/src/test/resources/OmexWithThirdPartyResults"),
         VCELL_BIOMD(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/misc-projects"),
         VCELL_BSTS_VCML(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/vcml"),
         VCELL_BSTS_SBML_CORE(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/sbml-core"),
@@ -145,5 +146,35 @@ public class OmexTestingDatabase {
 
         return FailureType.UNCATETORIZED_FAULT;
     }
+
+
+    private FailureType determineFailureType_FROM_QUANT_OMEX_EXEC(Throwable caughtException){ // Throwable because Assertion Error
+        String errorMessage = caughtException.getMessage();
+        if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
+
+        if (caughtException instanceof Error && caughtException.getCause() != null)
+            errorMessage = caughtException.getCause().getMessage();
+
+        if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
+            return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
+        } else if (errorMessage.contains("System IO encountered a fatal error")){
+            Throwable subException = caughtException.getCause();
+            //String subMessage = (subException == null) ? "" : subException.getMessage();
+            if (subException instanceof FileAlreadyExistsException){
+                return FailureType.HDF5_FILE_ALREADY_EXISTS;
+            }
+        } else if (errorMessage.contains("error while processing outputs: null")){
+            Throwable subException = caughtException.getCause();
+            if (subException instanceof ArrayIndexOutOfBoundsException){
+                return FailureType.ARRAY_INDEX_OUT_OF_BOUNDS;
+            }
+        } else if (errorMessage.contains("nconsistent unit system in SBML model") ||
+                errorMessage.contains("ust be of type")){
+            return FailureType.SEDML_ERRONEOUS_UNIT_SYSTEM;
+        }
+
+        return FailureType.UNCATETORIZED_FAULT;
+    }
+
 
 }

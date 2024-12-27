@@ -1,7 +1,6 @@
 package org.vcell.cli.run;
 
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -13,6 +12,9 @@ import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.sedml.testsupport.FailureType;
+import org.vcell.sedml.testsupport.OmexTestCase;
+import org.vcell.sedml.testsupport.OmexTestingDatabase;
+import org.vcell.trace.TraceEvent;
 import org.vcell.trace.Tracer;
 import org.vcell.util.VCellUtilityHub;
 import org.vcell.util.exe.Executable;
@@ -20,20 +22,16 @@ import org.vcell.util.exe.Executable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @Tag("BSTS_IT")
-public class BiosimulationsExecTest {
+public class QuantOmexExecTest {
 	@BeforeAll
 	public static void setup() throws PythonStreamException, IOException {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
@@ -92,10 +90,10 @@ public class BiosimulationsExecTest {
 		return FailureTypes;
 	}
 
-	public static Collection<String> testCases() {
-		Predicate<String> projectFilter;
+	public static Collection<OmexTestCase> testCases() throws IOException {
+		Predicate<OmexTestCase> projectFilter;
 		projectFilter = (t) -> true; // don't skip any for now.
-		return Arrays.stream(BiosimulationsFiles.getProjectIDs()).filter(projectFilter).collect(Collectors.toList());
+		return Arrays.stream(QuantOmexExecFiles.getTestCases()).filter(projectFilter).collect(Collectors.toList());
 	}
 
     static class TestRecorder implements CLIRecordable {
@@ -138,13 +136,13 @@ public class BiosimulationsExecTest {
 
 	@ParameterizedTest
 	@MethodSource("testCases")
-	public void testBiosimulationsProject(String testCaseProjectID) throws Exception {
-		FailureType knownFailureType = knownFailureTypes().get(testCaseProjectID);
+	public void testBiosimulationsProject(OmexTestCase testCase) throws Exception {
+		FailureType knownFailureType = testCase.known_failure_type;
 		try {
-			System.out.println("running test " + testCaseProjectID);
+			System.out.println("running testCase " + testCase.test_collection + " " + testCase.file_path);
 
 			Path outdirPath = Files.createTempDirectory("BiosimulationsExecTest");
-			InputStream omexInputStream = BiosimulationsFiles.getOmex(testCaseProjectID);
+			InputStream omexInputStream = QuantOmexExecFiles.getOmex(testCase);
             Path omexFile = Files.createTempFile("BiosimulationsExec_", "omex");
 			FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
 
@@ -153,21 +151,17 @@ public class BiosimulationsExecTest {
 			Path computedH5File = outdirPath.resolve("report.h5");
 
 			String errorMessage = (Tracer.hasErrors()) ? "failure: '" + Tracer.getErrors().get(0).message.replace("\n", " | ") : "";
-			assertFalse(Tracer.hasErrors(), errorMessage);
+			if (Tracer.hasErrors()) {
+				throw new RuntimeException(errorMessage);
+			}
 			if (knownFailureType != null){
 				throw new RuntimeException("test case passed, but expected " + knownFailureType.name() + ", remove "
-						+ testCaseProjectID + " from known FailureTypes");
+						+ testCase.file_path + " from known FailureTypes");
 			}
-
-//			// verify log file has status of 'SUCCEEDED'
-//			Gson gson = new Gson();
-//			try (Reader jsonReader = new )
-//			}
-//			gson.newJsonReader(new )
 
 			// compare hdf5 files to within absolute tolerance of 1e-9
 			double absTolerance = 1e-9;
-			InputStream h5fileStream = BiosimulationsFiles.getH5(testCaseProjectID);
+			InputStream h5fileStream = QuantOmexExecFiles.getH5(testCase);
 			Path expectedH5File = Files.createTempFile("BiosimulationsExec_", "h5");
 			FileUtils.copyInputStreamToFile(h5fileStream, expectedH5File.toFile());
 			Executable command = new Executable(new String[]{ "sh", "-c", "h5diff", "-r", "--delta", Double.toString(absTolerance),
@@ -176,47 +170,19 @@ public class BiosimulationsExecTest {
 			});
 			command.start(new int[] { 0, 1 });
 			String stdOutString = command.getStdoutString();
-			assertFalse(stdOutString.contains("position"), "H5 files have significant differences: " +
-					stdOutString.substring(0, Math.min(300, stdOutString.length())));
-
-		} catch (Exception | AssertionError e){
-			FailureType FailureType = this.determineFailureType(e);
-			if (knownFailureType == FailureType) {
+			if (stdOutString.contains("position")){
+				throw new RuntimeException("H5 files have significant differences: " + stdOutString.substring(0, Math.min(300, stdOutString.length())));
+			}
+		} catch (Exception e){
+			List<TraceEvent> errorEvents = Tracer.getErrors();
+			FailureType observedFailure = OmexTestingDatabase.determineFault(e, errorEvents);
+			if (knownFailureType == observedFailure) {
 				System.err.println("Expected error: " + e.getMessage());
 				return;
 			}
 
-			System.err.println("add FailureType." + FailureType.name() + " to " + testCaseProjectID);
-			throw new Exception("Test error: " + testCaseProjectID + " failed improperly", e);
+			System.err.println("add FailureType." + observedFailure.name() + " to " + testCase.file_path);
+			throw new Exception("Test error: " + testCase.file_path + " failed improperly", e);
 		}
 	}
-
-	private FailureType determineFailureType(Throwable caughtException){ // Throwable because Assertion Error
-		String errorMessage = caughtException.getMessage();
-		if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
-
-		if (caughtException instanceof Error && caughtException.getCause() != null)
-			errorMessage = caughtException.getCause().getMessage();
-
-		if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
-			return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
-		} else if (errorMessage.contains("System IO encountered a fatal error")){
-			Throwable subException = caughtException.getCause();
-			//String subMessage = (subException == null) ? "" : subException.getMessage();
-			if (subException instanceof FileAlreadyExistsException){
-				return FailureType.HDF5_FILE_ALREADY_EXISTS;
-			}
-		} else if (errorMessage.contains("error while processing outputs: null")){
-			Throwable subException = caughtException.getCause();
-			if (subException instanceof ArrayIndexOutOfBoundsException){
-				return FailureType.ARRAY_INDEX_OUT_OF_BOUNDS;
-			}
-		} else if (errorMessage.contains("nconsistent unit system in SBML model") ||
-				errorMessage.contains("ust be of type")){
-			return FailureType.SEDML_ERRONEOUS_UNIT_SYSTEM;
-		}
-
-		return FailureType.UNCATETORIZED_FAULT;
-	}
-
 }
