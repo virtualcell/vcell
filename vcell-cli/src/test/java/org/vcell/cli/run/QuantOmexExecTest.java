@@ -86,8 +86,8 @@ public class QuantOmexExecTest {
 
 	@SuppressWarnings("unused")
 	static Map<String, FailureType> knownFailureTypes() {
-		HashMap<String, FailureType> FailureTypes = new HashMap<>();
-		return FailureTypes;
+		HashMap<String, FailureType> failureTypes = new HashMap<>();
+		return failureTypes;
 	}
 
 	public static Collection<OmexTestCase> testCases() throws IOException {
