@@ -106,6 +106,8 @@
 {"test_collection":"VCELL_BSTS_SYNTHS","file_path":"sedml/SimulatorSupportsSubstitutingAlgorithms/4.execution-should-succeed.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_BSTS_SYNTHS","file_path":"sedml/SimulatorSupportsSubstitutingAlgorithms/1.execute-should-fail.omex","should_fail":true,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_BSTS_SYNTHS","file_path":"sedml/SimulatorSupportsSubstitutingAlgorithms/2.execution-should-succeed.omex","should_fail":false,"known_status":null,"known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_SPATIAL","file_path":"TinySpatialProject","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_SPATIAL","file_path":"SimpleSpatialModel","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000001.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000002.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000000003.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}

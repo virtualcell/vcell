@@ -3,8 +3,10 @@ package org.vcell.cli.run;
 import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,6 +15,9 @@ import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.sedml.testsupport.FailureType;
+import org.vcell.sedml.testsupport.OmexTestCase;
+import org.vcell.sedml.testsupport.OmexTestingDatabase;
+import org.vcell.trace.TraceEvent;
 import org.vcell.trace.Tracer;
 import org.vcell.util.VCellUtilityHub;
 
@@ -37,6 +42,13 @@ public class SpatialExecTest {
 
         PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
         VCMongoMessage.enabled = false;
+
+        LoggerContext config = (LoggerContext)(LogManager.getContext(false));
+        config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(Level.DEBUG);
+        config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(Level.DEBUG);
+        config.updateLoggers();
+        config.getConfiguration().getLoggerConfig(LogManager.getLogger("io.jhdf").getName()).setLevel(Level.WARN);
+        config.updateLoggers();
 
         CLIPythonManager.getInstance().instantiatePythonProcess();
     }
@@ -81,114 +93,90 @@ public class SpatialExecTest {
 //
 //    }
 
-    static Set<String> blacklistedModels(){
-        HashSet<String> blacklistSet = new HashSet<>();
-        // Hooray! Nothing unsupported yet!
-        return blacklistSet;
+    static Map<String, FailureType> knownFailureTypes() {
+        HashMap<String, FailureType> failureTypes = new HashMap<>();
+        return failureTypes; // Hooray! no accepted failures yet!
     }
 
-    static Map<String, FailureType> knownFaults() {
-        HashMap<String, FailureType> faults = new HashMap<>();
-        // Hooray! no known faults yet!
-        return faults;
+    public static Collection<OmexTestCase> testCases() throws IOException {
+        Predicate<OmexTestCase> projectFilter;
+        projectFilter = (t) -> true; // don't skip any for now.
+
+        return Arrays.stream(SpatialArchiveFiles.getSpatialTestCases()).filter(projectFilter).collect(Collectors.toList());
     }
 
-    public static Collection<String> testCases() {
-        Set<String> modelsToFilter = new HashSet<>(blacklistedModels());
-        Predicate<String> filter = (t) -> !modelsToFilter.contains(t);
+    static class TestRecorder implements CLIRecordable {
 
-        return Arrays.stream(SpatialArchiveFiles.getSpatialTestCases()).filter(filter).collect(Collectors.toList());
+        public TestRecorder() {
+            Tracer.clearTraceEvents();
+        }
+
+        @Override
+        public void writeDetailedErrorList(Exception e, String message) {
+            System.err.println("writeDetailedErrorList(): " + message);
+            Tracer.failure(e, "writeDetailedErrorList(): "+message);
+        }
+        @Override
+        public void writeFullSuccessList(String message) {
+            System.out.println("writeFullSuccessList(): " + message);
+            Tracer.success("writeFullSuccessList(): " + message);
+        }
+        @Override
+        public void writeErrorList(Exception e, String message) {
+            System.err.println("writeErrorList(): " + message);
+            Tracer.failure(e, "writeErrorList(): " + message);
+        }
+        @Override
+        public void writeDetailedResultList(String message) {
+            System.out.println("writeDetailedResultList(): " + message);
+            Tracer.log("writeDetailedResultList(): "+message);
+        }
+        @Override
+        public void writeSpatialList(String message) {
+            System.out.println("writeSpatialList(): " + message);
+            Tracer.log("writeSpatialList(): "+message);
+        }
+        @Override
+        public void writeImportErrorList(Exception e, String message) {
+            System.err.println("writeImportErrorList(): " + message);
+            Tracer.failure(e, "writeImportErrorList(): " + message);
+        }
     }
 
     @ParameterizedTest
     @MethodSource("testCases")
-    public void testSpatialOmex(String testCaseFilename) throws Exception {
-        FailureType knownFault = knownFaults().get(testCaseFilename);
+    public void testSpatialOmex(OmexTestCase testCase) throws Exception {
+        FailureType knownFailureType = testCase.known_failure_type;
         Tracer.clearTraceEvents();
         try {
-            System.out.println("running test " + testCaseFilename);
+            System.out.println("running testCase " + testCase.test_collection + " " + testCase.file_path);
 
             Path outdirPath = Files.createTempDirectory("Spatial_OmexExecTest");
-            CLIRecordable cliRecorder = new CLIRecordable() {
-                @Override
-                public void writeDetailedErrorList(Exception e, String message) {
-                    System.err.println("writeDetailedErrorList(): " + message);
-                    Tracer.failure(e, "detailedErrorList: " + message);
-                }
-                @Override
-                public void writeFullSuccessList(String message) {
-                    System.out.println("writeFullSuccessList(): " + message);
-                    Tracer.success("fullSuccessList: " + message);
-                }
-                @Override
-                public void writeErrorList(Exception e, String message) {
-                    System.err.println("writeErrorList(): " + message);
-                    Tracer.failure(e, "errorList: " + message);
-                }
-                @Override
-                public void writeDetailedResultList(String message) {
-                    System.out.println("writeDetailedResultList(): " + message);
-                    Tracer.log("detailedResultList: " + message);
-                }
-                @Override
-                public void writeSpatialList(String message) {
-                    System.out.println("writeSpatialList(): " + message);
-                    Tracer.log("spatialList: " + message);
-                }
-                @Override
-                public void writeImportErrorList(Exception e, String message) {
-                    System.err.println("writeImportErrorList(): " + message);
-                    Tracer.failure(e, "importErrorList: " + message);
-                }
-            };
-            InputStream omexInputStream = SpatialArchiveFiles.getSpatialTestCase(testCaseFilename);
+            InputStream omexInputStream = SpatialArchiveFiles.getOmex(testCase);
             Path omexFile = Files.createTempFile("Spatial_OmexFile_", "omex");
             FileUtils.copyInputStreamToFile(omexInputStream, omexFile.toFile());
+
+            CLIRecordable cliRecorder = new TestRecorder();
             ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
 
-            assertFalse(Tracer.hasErrors(), "no exception, but trace errors found: error[0] = "+(Tracer.hasErrors()?(Tracer.getErrors().get(0).message.replace("\n"," | ")):null));
-            if (knownFault != null){
-                throw new RuntimeException("test case passed, but expected " + knownFault.name() + ", remove "
-                        + testCaseFilename + " from known faults");
+            String errorMessage = (Tracer.hasErrors()) ? "failure: '" + Tracer.getErrors().get(0).message.replace("\n", " | ") : "";
+            if (Tracer.hasErrors()) {
+                throw new RuntimeException(errorMessage);
+            }
+            if (knownFailureType != null){
+                throw new RuntimeException("test case passed, but expected " + knownFailureType.name() + ", remove " + testCase.file_path + " from known FailureTypes");
             }
 
-        } catch (Exception | AssertionError e){
-            FailureType fault = this.determineFault(e);
-            if (knownFault == fault) {
+        } catch (Exception e){
+            List<TraceEvent> errorEvents = Tracer.getErrors();
+            FailureType observedFailure = OmexTestingDatabase.determineFault(e, errorEvents);
+            if (knownFailureType == observedFailure) {
                 System.err.println("Expected error: " + e.getMessage());
                 return;
             }
 
-            System.err.println("add FAULT." + fault.name() + " to " + testCaseFilename);
-            throw new Exception("Test error: " + testCaseFilename + " failed improperly", e);
+            System.err.println("add FailureType." + observedFailure.name() + " to " + testCase.file_path);
+            throw new Exception("Test error: " + testCase.file_path + " failed improperly", e);
         }
-    }
-
-    private FailureType determineFault(Throwable caughtException){ // Throwable because Assertion Error
-        String errorMessage = caughtException.getMessage();
-        if (errorMessage == null) errorMessage = ""; // Prevent nullptr exception
-
-        if (caughtException instanceof Error && caughtException.getCause() != null)
-            errorMessage = caughtException.getCause().getMessage();
-
-        if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
-            return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
-        } else if (errorMessage.contains("System IO encountered a fatal error")){
-            Throwable subException = caughtException.getCause();
-            //String subMessage = (subException == null) ? "" : subException.getMessage();
-            if (subException instanceof FileAlreadyExistsException){
-                return FailureType.HDF5_FILE_ALREADY_EXISTS;
-            }
-        } else if (errorMessage.contains("error while processing outputs: null")){
-            Throwable subException = caughtException.getCause();
-            if (subException instanceof ArrayIndexOutOfBoundsException){
-                return FailureType.ARRAY_INDEX_OUT_OF_BOUNDS;
-            }
-        } else if (errorMessage.contains("nconsistent unit system in SBML model") ||
-                errorMessage.contains("ust be of type")){
-            return FailureType.SEDML_ERRONEOUS_UNIT_SYSTEM;
-        }
-
-        return FailureType.UNCATETORIZED_FAULT;
     }
 }
