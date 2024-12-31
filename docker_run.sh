@@ -22,6 +22,11 @@ case "$rawCommand" in
     command="export-omex"
     shift
     ;;
+  "test-report")
+    echo 'test-report mode requested'
+    command="test-report"
+    shift
+    ;;
   "export-omex-batch")
     echo 'export-omex-batch mode requested'
     command="export-omex-batch"
@@ -47,6 +52,11 @@ case "$rawCommand" in
     command="execute"
     shift
     ;;
+  "execute-omex")
+      echo 'special testing execution mode requested'
+      command="execute-omex"
+      shift
+      ;;
   "validate")
     echo 'validate mode requested'
     command="validate"

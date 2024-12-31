@@ -611,10 +611,9 @@ public class SEDMLImporter {
 
 	private void addRepeatedTasks(List<AbstractTask> listOfTasks, Map<String, Simulation> vcSimulations) throws ExpressionException, PropertyVetoException, SEDMLImportException {
 		for (AbstractTask abstractedRepeatedTask : listOfTasks) {
-			if (!(abstractedRepeatedTask instanceof RepeatedTask)) continue;
+			if (!(abstractedRepeatedTask instanceof RepeatedTask repeatedTask)) continue;
 
-			RepeatedTask repeatedTask = (RepeatedTask)abstractedRepeatedTask;
-			if (!repeatedTask.getResetModel() || repeatedTask.getSubTasks().size() != 1) { // if removed, see RunUtils.prepareNonspatialHdf5()
+            if (!repeatedTask.getResetModel() || repeatedTask.getSubTasks().size() != 1) { // if removed, see RunUtils.prepareNonspatialHdf5()
 				logger.error("sequential RepeatedTask not yet supported, task "+SEDMLUtil.getName(abstractedRepeatedTask)+" is being skipped");
 				continue;
 			}
@@ -1097,27 +1096,24 @@ public class SEDMLImporter {
 
 		List<Report> reportList = new LinkedList<>();
 		for (Output output : this.sedml.getOutputs()){
-			if (!(output instanceof Report)) continue;
-			reportList.add((Report)output);
+			if (!(output instanceof Report report)) continue;
+			reportList.add(report);
 		}
 
 		for (Report report : reportList){
 			Set<String> neededTaskReferences = new HashSet<>();
 			for (DataSet ds : report.getListOfDataSets()){
 				for (DataGenerator dataGenerator : this.sedml.getDataGenerators()){
-					if (ds.getDataReference().equals(dataGenerator.getId())){
-						for (org.jlibsedml.Variable var : dataGenerator.getListOfVariables()){
-							neededTaskReferences.add(var.getReference());
-						}
+					if (!ds.getDataReference().equals(dataGenerator.getId())) continue;
+					for (org.jlibsedml.Variable var : dataGenerator.getListOfVariables()){
+						neededTaskReferences.add(var.getReference());
 					}
 				}
 			}
 
 			for (AbstractTask task : this.sedml.getTasks()){
-				if (
-						neededTaskReferences.contains(task.getId()) &&
-						task.getId().equals(sim.getImportedTaskID())
-				) return true;
+				if (neededTaskReferences.contains(task.getId()) && task.getId().equals(sim.getImportedTaskID()))
+					return true;
 			}
 
 		}
