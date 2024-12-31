@@ -3,7 +3,9 @@ package org.vcell.cli.testsupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.vcell.sedml.testsupport.*;
+import org.junit.jupiter.api.Tag;
 
+@Tag("Fast")
 public class TestOmexTestReport {
     @Test
     void checkTableIsMade(){
@@ -28,6 +30,15 @@ public class TestOmexTestReport {
         table.setTableValue(3, 0, 17);
         table.setTableValue(3, 1, 42);
         table.setTableValue(3, 2, 3.14159);
-        System.out.println(table.getMarkdownTable());
+
+        String expectedResult = """
+                |                        | Logan     | Jim         | Alex         |
+                |:----------------------:|:---------:|:-----------:|:------------:|
+                | VCell Developer        | true      | true        | false        |
+                | Favorite Byte          | 0x88      | 0xFF        | 0x00         |
+                | Favorite Pizza Topping | Pepperoni | Feta Cheeze | Extra Cheese |
+                | Favorite Number        | 17        | 42          | 3.14159      |
+                """;
+        Assertions.assertEquals(expectedResult, table.getMarkdownTable());
     }
 }
