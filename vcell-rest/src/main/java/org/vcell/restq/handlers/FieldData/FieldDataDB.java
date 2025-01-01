@@ -25,6 +25,7 @@ import org.vcell.util.document.User;
 
 import java.io.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -68,19 +69,17 @@ public class FieldDataDB {
         return dataSetController.fieldDataFileOperation(FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(new KeyValue(id), user, jobParameter));
     }
 
-    public FieldDataFileOperationSpec generateFieldDataFromFile(InputStream imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
+    public FieldDataResource.AnalyzedResultsFromFieldData generateFieldDataFromFile(File imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
         if (imageFile == null) {
             throw new DataAccessException("No file present");
         }
         if (!fileName.contains(".vfrap")) {
             try {
-                File tmpFile = File.createTempFile("tmp", "file");
-                tmpFile.deleteOnExit();
-                FileOutputStream out = new FileOutputStream(tmpFile);
-                IOUtils.copy(imageFile, out);
-                out.close();
-                return FieldDataFileConversion.createFDOSFromImageFile(tmpFile, false, null);
-            } catch (DataFormatException | IOException ex) {
+                FieldDataFileOperationSpec spec = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
+                return new FieldDataResource.AnalyzedResultsFromFieldData(
+                        spec.shortSpecData, spec.varNames, spec.times, spec.origin, spec.extent, spec.isize, spec.annotation, fileName
+                );
+            } catch (DataFormatException  ex) {
                 throw new RuntimeException("Cannot read image " + fileName + "\n" + ex.getMessage());
             }
         } else {

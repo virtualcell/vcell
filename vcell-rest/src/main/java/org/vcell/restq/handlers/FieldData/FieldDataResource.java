@@ -1,11 +1,8 @@
 package org.vcell.restq.handlers.FieldData;
 
 import cbit.image.ImageException;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.RequestScoped;
@@ -16,7 +13,7 @@ import jakarta.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.jboss.resteasy.reactive.PartType;
+import org.jboss.resteasy.reactive.RestForm;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -26,13 +23,12 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Vector;
+import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
 
 @Path("/api/v1/fieldData")
@@ -68,8 +64,9 @@ public class FieldDataResource {
     }
 
     @GET
-    @Operation(operationId = "getFieldDataFromID", summary = "Get the field data from the selected field data ID.")
-    public FieldDataInfo getFieldDataFromID(String fieldDataID){
+    @Path("/fieldDataShape/{fieldDataID}")
+    @Operation(operationId = "getFieldDataShapeFromID", summary = "Get the shape of the field data. That is it's size, origin, extent, and data identifiers.")
+    public FieldDataInfo getFieldDataShapeFromID(@PathParam("fieldDataID") String fieldDataID){
         try {
             FieldDataFileOperationResults results = fieldDataDB.getFieldDataFromID(userRestDB.getUserFromIdentity(securityIdentity), fieldDataID, 0);
             return new FieldDataInfo(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
@@ -96,24 +93,27 @@ public class FieldDataResource {
 //        return results.extDataID;
 //    }
 
-//    @POST
-//    @Path("/analyzeFieldDataFromFile")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    @Operation(operationId = "generateFieldDataEstimate")
-//    public FieldDataFileOperationSpec generateFieldDataEstimate(FieldDataFile fieldDataFile){
-//        try{
-//            return fieldDataDB.generateFieldDataFromFile(fieldDataFile.file, fieldDataFile.fileName);
-//        } catch (ImageException | DataFormatException | DataAccessException e) {
-//            throw new WebApplicationException("Can't create new field data file", 500);
-//        }
-//    }
+    @POST
+    @Path("/analyzeFieldDataFile")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Operation(operationId = "analyzeFieldDataFile", summary = "Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.")
+    public AnalyzedResultsFromFieldData analyzeFieldData(@RestForm File file, @RestForm String fileName){
+        try{
+            if (!Pattern.matches("^[a-z0-9_]*$", fileName) || fileName.length() > 100 || fileName.isEmpty()){
+                throw new WebApplicationException("Invalid file name.", 400);
+            }
+            return fieldDataDB.generateFieldDataFromFile(file, fileName);
+        } catch (ImageException | DataFormatException | DataAccessException e) {
+            throw new WebApplicationException("Can't create new field data file", 500);
+        }
+    }
 
     @POST
-    @Path("/createFieldDataFromFileAlreadyAnalyzed")
+    @Path("/createFieldDataFromAnalyzedFile")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "createNewFieldDataFromFileAlreadyAnalyzed")
+    @Operation(operationId = "createFieldDataFromAnalyzedFile", summary = "Take the analyzed results of the field data, modify it to your liking, then save it on the server.")
     public FieldDataSaveResults createNewFieldDataFromFile(AnalyzedResultsFromFieldData saveFieldData){
         FieldDataSaveResults fieldDataSaveResults;
         try{
@@ -142,8 +142,9 @@ public class FieldDataResource {
 //    }
 
     @DELETE
+    @Path("/delete/{fieldDataID}")
     @Operation(operationId = "deleteFieldData", summary = "Delete the selected field data.")
-    public void deleteFieldData(String fieldDataID){
+    public void deleteFieldData(@PathParam("fieldDataID") String fieldDataID){
         try{
             fieldDataDB.deleteFieldData(userRestDB.getUserFromIdentity(securityIdentity), fieldDataID);
         } catch (DataAccessException e) {
@@ -159,18 +160,18 @@ public class FieldDataResource {
             double[] times
     ){ }
 
-    public record DataID(
-            String name,
-            String displayName,
-            VariableType variableType,
-            String domainName,
-            boolean bFunction
-    ){ }
+//    public record DataID(
+//            String name,
+//            String displayName,
+//            VariableType variableType,
+//            String domainName,
+//            boolean bFunction
+//    ){ }
 
-    public record FieldDataNoCopyConflict(
-            Hashtable<String, ExternalDataIdentifier> oldNameNewIDHash,
-            Hashtable<String, KeyValue> oldNameOldExtDataIDKeyHash
-    ) { }
+//    public record FieldDataNoCopyConflict(
+//            Hashtable<String, ExternalDataIdentifier> oldNameNewIDHash,
+//            Hashtable<String, KeyValue> oldNameOldExtDataIDKeyHash
+//    ) { }
 
     public record FieldDataReference(
             ExternalDataIdentifier externalDataIdentifier,
@@ -195,12 +196,10 @@ public class FieldDataResource {
     ){ }
 
     public static class FieldDataFile {
-        @FormParam("file")
-        @PartType(MediaType.APPLICATION_OCTET_STREAM)
-        public InputStream file;
+        @RestForm("file")
+        public File file;
 
-        @FormParam("fieldDataName")
-        @PartType(MediaType.TEXT_PLAIN)
+        @RestForm("fileName")
         public String fileName;
     }
 
