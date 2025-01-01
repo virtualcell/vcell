@@ -57,7 +57,7 @@ public class FieldDataResource {
     @GET
     @Path("IDs")
     @Operation(operationId = "getAllFieldDataIDs", summary = "Get all of the ids used to identify, and retrieve field data.")
-    public FieldDataReferences getAllFieldData(){
+    public ArrayList<FieldDataReference> getAllFieldDataIDs(){
         try {
             return fieldDataDB.getAllFieldDataIDs(userRestDB.getUserFromIdentity(securityIdentity));
         } catch (SQLException e) {
@@ -172,10 +172,10 @@ public class FieldDataResource {
             Hashtable<String, KeyValue> oldNameOldExtDataIDKeyHash
     ) { }
 
-    public record FieldDataReferences(
-            ExternalDataIdentifier[] externalDataIdentifiers,
-            String[] externalDataAnnotations,
-            Map<String, Vector<KeyValue>> externalDataIDSimRefs
+    public record FieldDataReference(
+            ExternalDataIdentifier externalDataIdentifier,
+            String externalDataAnnotation,
+            Vector<KeyValue> externalDataIDSimRef
     ) { }
 
     public record AnalyzedResultsFromFieldData(
