@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.vcell.util.Immutable;
 import org.vcell.util.Matchable;
 
@@ -157,6 +158,7 @@ public boolean equals(Object obj) {
  * This method was created in VisualAge.
  * @return long
  */
+@JsonIgnore
 public KeyValue getID() {
 	return key;
 }
