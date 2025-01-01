@@ -50,16 +50,18 @@ public class FieldDataDB {
         return databaseServer.fieldDataDBOperation(user, spec);
     }
 
-    public FieldDataResource.FieldDataReferences getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
+    public ArrayList<FieldDataResource.FieldDataReference> getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
         FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createGetExtDataIDsSpec(user));
-        HashMap<String, Vector<KeyValue>> extdataIDToSimRef = new HashMap<>();
-        if (results.extdataIDAndSimRefH == null){ // there can be no simulation references, only file based field data
-            return new FieldDataResource.FieldDataReferences(results.extDataIDArr, results.extDataAnnotArr, extdataIDToSimRef);
+        ArrayList<FieldDataResource.FieldDataReference> fieldDataReferenceList = new ArrayList<>();
+        for (int i =0; i < results.extDataIDArr.length; i++){
+            Vector<KeyValue> simRefs = new Vector<>();
+            if (results.extdataIDAndSimRefH != null){
+                simRefs = results.extdataIDAndSimRefH.get(results.extDataIDArr[i]);
+            }
+            FieldDataResource.FieldDataReference fieldDataReference = new FieldDataResource.FieldDataReference(results.extDataIDArr[i], results.extDataAnnotArr[i], simRefs);
+            fieldDataReferenceList.add(fieldDataReference);
         }
-        for (Map.Entry<ExternalDataIdentifier, Vector<KeyValue>> entry: results.extdataIDAndSimRefH.entrySet()){
-            extdataIDToSimRef.put(entry.getKey().getKey().toString(), entry.getValue());
-        }
-        return new FieldDataResource.FieldDataReferences(results.extDataIDArr, results.extDataAnnotArr, extdataIDToSimRef);
+        return fieldDataReferenceList;
     }
 
     public FieldDataFileOperationResults getFieldDataFromID(User user, String id, int jobParameter) throws ObjectNotFoundException {

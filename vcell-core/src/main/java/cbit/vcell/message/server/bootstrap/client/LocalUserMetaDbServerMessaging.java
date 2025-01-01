@@ -11,11 +11,14 @@
 package cbit.vcell.message.server.bootstrap.client;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
+import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.model.FieldDataReferences;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
@@ -129,7 +132,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 		if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
 			throw new RuntimeException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
 		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS) {
-			FieldDataReferences fieldDataReferences = vCellApiClient.getFieldDataApi().getAllFieldDataIDs();
+			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllFieldDataIDs();
 			return FieldDataDBOperationResults.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
 		} else{
 			return dbServerProxy.fieldDataDBOperation(fieldDataDBOperationSpec);
