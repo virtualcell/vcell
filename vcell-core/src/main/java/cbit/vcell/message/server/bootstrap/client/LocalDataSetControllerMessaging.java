@@ -65,13 +65,13 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 	try {
 		if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
 			AnalyzedResultsFromFieldData analyzedResultsFromFieldData = FieldDataFileOperationSpec.fieldDataSpecToAnalyzedResultsDTO(fieldDataFileOperationSpec);
-			FieldDataSaveResults results = vCellApiClient.getFieldDataApi().createNewFieldDataFromFileAlreadyAnalyzed(analyzedResultsFromFieldData);
+			FieldDataSaveResults results = vCellApiClient.getFieldDataApi().createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData);
 			return FieldDataFileOperationResults.fieldDataSaveResultsDTOToFileOperationResults(results, fieldDataFileOperationSpec.owner);
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE) {
 			vCellApiClient.getFieldDataApi().deleteFieldData(fieldDataFileOperationSpec.specEDI.getKey().toString());
 			return null;
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO) {
-			FieldDataInfo fieldDataInfo = vCellApiClient.getFieldDataApi().getFieldDataFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
+			FieldDataInfo fieldDataInfo = vCellApiClient.getFieldDataApi().getFieldDataShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
 			return FieldDataFileOperationResults.fieldDataInfoDTOToFileOperationResults(fieldDataInfo);
 		} else {
 			return dataServerProxy.fieldDataFileOperation(fieldDataFileOperationSpec);
