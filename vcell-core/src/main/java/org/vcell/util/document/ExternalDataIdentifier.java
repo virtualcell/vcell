@@ -11,6 +11,7 @@
 package org.vcell.util.document;
 import java.util.StringTokenizer;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.vcell.util.Matchable;
 
 
@@ -67,6 +68,8 @@ public static ExternalDataIdentifier fromTokens(StringTokenizer st){
 public String toCSVString(){
 	return key.toString()+","+owner.getName()+","+owner.getID().toString()+","+name;
 }
+
+@JsonIgnore
 public String getID() {
 	return "SimID_"+getKey().toString()+"_0_";
 }

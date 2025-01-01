@@ -11,6 +11,8 @@
 package org.vcell.util;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * This type was created in VisualAge.
  */
@@ -102,6 +104,7 @@ public int getX() {
  * Creation date: (9/30/2005 10:17:58 AM)
  * @return int
  */
+@JsonIgnore
 public int getXYZ() {
 	return x*y*z;
 }
