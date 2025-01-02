@@ -17,7 +17,6 @@ export interface ExternalDataIdentifier {
     key?: KeyValue;
     owner?: User;
     name?: string;
-    iD?: string;
     jobIndex?: number;
     simulationKey?: KeyValue;
     parameterScanType?: boolean;

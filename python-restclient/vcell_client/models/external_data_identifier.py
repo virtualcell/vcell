@@ -36,12 +36,11 @@ class ExternalDataIdentifier(BaseModel):
     key: Optional[KeyValue] = None
     owner: Optional[User] = None
     name: Optional[StrictStr] = None
-    i_d: Optional[StrictStr] = Field(default=None, alias="iD")
     job_index: Optional[StrictInt] = Field(default=None, alias="jobIndex")
     simulation_key: Optional[KeyValue] = Field(default=None, alias="simulationKey")
     parameter_scan_type: Optional[StrictBool] = Field(default=None, alias="parameterScanType")
     data_key: Optional[KeyValue] = Field(default=None, alias="dataKey")
-    __properties: ClassVar[List[str]] = ["key", "owner", "name", "iD", "jobIndex", "simulationKey", "parameterScanType", "dataKey"]
+    __properties: ClassVar[List[str]] = ["key", "owner", "name", "jobIndex", "simulationKey", "parameterScanType", "dataKey"]
 
     model_config = {
         "populate_by_name": True,
@@ -111,7 +110,6 @@ class ExternalDataIdentifier(BaseModel):
             "key": KeyValue.from_dict(obj.get("key")) if obj.get("key") is not None else None,
             "owner": User.from_dict(obj.get("owner")) if obj.get("owner") is not None else None,
             "name": obj.get("name"),
-            "iD": obj.get("iD"),
             "jobIndex": obj.get("jobIndex"),
             "simulationKey": KeyValue.from_dict(obj.get("simulationKey")) if obj.get("simulationKey") is not None else None,
             "parameterScanType": obj.get("parameterScanType"),

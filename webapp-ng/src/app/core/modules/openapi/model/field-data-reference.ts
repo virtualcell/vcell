@@ -9,11 +9,13 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { KeyValue } from './key-value';
+import { ExternalDataIdentifier } from './external-data-identifier';
 
 
-export interface ISize { 
-    x?: number;
-    y?: number;
-    z?: number;
+export interface FieldDataReference { 
+    externalDataIdentifier?: ExternalDataIdentifier;
+    externalDataAnnotation?: string;
+    externalDataIDSimRef?: Array<KeyValue>;
 }
 

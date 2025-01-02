@@ -20,20 +20,23 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictInt
+from pydantic import BaseModel, StrictStr
+from pydantic import Field
+from vcell_client.models.external_data_identifier import ExternalDataIdentifier
+from vcell_client.models.key_value import KeyValue
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
 
-class ISize(BaseModel):
+class FieldDataReference(BaseModel):
     """
-    ISize
+    FieldDataReference
     """ # noqa: E501
-    x: Optional[StrictInt] = None
-    y: Optional[StrictInt] = None
-    z: Optional[StrictInt] = None
-    __properties: ClassVar[List[str]] = ["x", "y", "z"]
+    external_data_identifier: Optional[ExternalDataIdentifier] = Field(default=None, alias="externalDataIdentifier")
+    external_data_annotation: Optional[StrictStr] = Field(default=None, alias="externalDataAnnotation")
+    external_data_id_sim_ref: Optional[List[KeyValue]] = Field(default=None, alias="externalDataIDSimRef")
+    __properties: ClassVar[List[str]] = ["externalDataIdentifier", "externalDataAnnotation", "externalDataIDSimRef"]
 
     model_config = {
         "populate_by_name": True,
@@ -52,7 +55,7 @@ class ISize(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of ISize from a JSON string"""
+        """Create an instance of FieldDataReference from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -71,11 +74,21 @@ class ISize(BaseModel):
             },
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of external_data_identifier
+        if self.external_data_identifier:
+            _dict['externalDataIdentifier'] = self.external_data_identifier.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of each item in external_data_id_sim_ref (list)
+        _items = []
+        if self.external_data_id_sim_ref:
+            for _item in self.external_data_id_sim_ref:
+                if _item:
+                    _items.append(_item.to_dict())
+            _dict['externalDataIDSimRef'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Dict) -> Self:
-        """Create an instance of ISize from a dict"""
+        """Create an instance of FieldDataReference from a dict"""
         if obj is None:
             return None
 
@@ -85,12 +98,12 @@ class ISize(BaseModel):
         # raise errors for additional fields in the input
         for _key in obj.keys():
             if _key not in cls.__properties:
-                raise ValueError("Error due to additional fields (not defined in ISize) in the input: " + _key)
+                raise ValueError("Error due to additional fields (not defined in FieldDataReference) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "x": obj.get("x"),
-            "y": obj.get("y"),
-            "z": obj.get("z")
+            "externalDataIdentifier": ExternalDataIdentifier.from_dict(obj.get("externalDataIdentifier")) if obj.get("externalDataIdentifier") is not None else None,
+            "externalDataAnnotation": obj.get("externalDataAnnotation"),
+            "externalDataIDSimRef": [KeyValue.from_dict(_item) for _item in obj.get("externalDataIDSimRef")] if obj.get("externalDataIDSimRef") is not None else None
         })
         return _obj
 

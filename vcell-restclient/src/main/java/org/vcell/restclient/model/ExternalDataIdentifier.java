@@ -37,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   ExternalDataIdentifier.JSON_PROPERTY_KEY,
   ExternalDataIdentifier.JSON_PROPERTY_OWNER,
   ExternalDataIdentifier.JSON_PROPERTY_NAME,
-  ExternalDataIdentifier.JSON_PROPERTY_I_D,
   ExternalDataIdentifier.JSON_PROPERTY_JOB_INDEX,
   ExternalDataIdentifier.JSON_PROPERTY_SIMULATION_KEY,
   ExternalDataIdentifier.JSON_PROPERTY_PARAMETER_SCAN_TYPE,
@@ -53,9 +52,6 @@ public class ExternalDataIdentifier {
 
   public static final String JSON_PROPERTY_NAME = "name";
   private String name;
-
-  public static final String JSON_PROPERTY_I_D = "iD";
-  private String iD;
 
   public static final String JSON_PROPERTY_JOB_INDEX = "jobIndex";
   private Integer jobIndex;
@@ -144,31 +140,6 @@ public class ExternalDataIdentifier {
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setName(String name) {
     this.name = name;
-  }
-
-
-  public ExternalDataIdentifier iD(String iD) {
-    this.iD = iD;
-    return this;
-  }
-
-   /**
-   * Get iD
-   * @return iD
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_I_D)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public String getiD() {
-    return iD;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_I_D)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setiD(String iD) {
-    this.iD = iD;
   }
 
 
@@ -287,7 +258,6 @@ public class ExternalDataIdentifier {
     return Objects.equals(this.key, externalDataIdentifier.key) &&
         Objects.equals(this.owner, externalDataIdentifier.owner) &&
         Objects.equals(this.name, externalDataIdentifier.name) &&
-        Objects.equals(this.iD, externalDataIdentifier.iD) &&
         Objects.equals(this.jobIndex, externalDataIdentifier.jobIndex) &&
         Objects.equals(this.simulationKey, externalDataIdentifier.simulationKey) &&
         Objects.equals(this.parameterScanType, externalDataIdentifier.parameterScanType) &&
@@ -296,7 +266,7 @@ public class ExternalDataIdentifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, owner, name, iD, jobIndex, simulationKey, parameterScanType, dataKey);
+    return Objects.hash(key, owner, name, jobIndex, simulationKey, parameterScanType, dataKey);
   }
 
   @Override
@@ -306,7 +276,6 @@ public class ExternalDataIdentifier {
     sb.append("    key: ").append(toIndentedString(key)).append("\n");
     sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    iD: ").append(toIndentedString(iD)).append("\n");
     sb.append("    jobIndex: ").append(toIndentedString(jobIndex)).append("\n");
     sb.append("    simulationKey: ").append(toIndentedString(simulationKey)).append("\n");
     sb.append("    parameterScanType: ").append(toIndentedString(parameterScanType)).append("\n");
@@ -371,11 +340,6 @@ public class ExternalDataIdentifier {
     // add `name` to the URL query string
     if (getName() != null) {
       joiner.add(String.format("%sname%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `iD` to the URL query string
-    if (getiD() != null) {
-      joiner.add(String.format("%siD%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getiD()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `jobIndex` to the URL query string
