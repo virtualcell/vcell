@@ -127,6 +127,12 @@ public class OmexTestingDatabase {
             return FailureType.SEDML_NO_SEDMLS_TO_EXECUTE;
         } else if (errorMessage.contains("MappingException occurred: failed to generate math")) {
             return FailureType.MATH_GENERATION_FAILURE;
+        } else if (errorMessage.contains("Process timed out")) {
+            return FailureType.TOO_SLOW;
+        } else if (errorMessage.contains("are in unnamed module of loader")){
+            return FailureType.SBML_IMPORT_FAILURE;
+        } else if (errorMessage.contains("Could not execute code")){
+            if (errorMessage.contains("CVODE")) return FailureType.SOLVER_FAILURE;
         }
 
         // else check Tracer error events for known faults
