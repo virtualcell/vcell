@@ -42,10 +42,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -70,10 +70,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StatusMessage'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -98,10 +98,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/StatusMessage'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -137,10 +137,10 @@ paths:
             text/plain:
               schema:
                 type: string
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -179,37 +179,6 @@ paths:
       responses:
         "204":
           description: No Content
-  /api/v1/fieldData:
-    get:
-      tags:
-      - Field Data Resource
-      summary: Get the field data from the selected field data ID.
-      operationId: getFieldDataFromID
-      requestBody:
-        content:
-          text/plain:
-            schema:
-              type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataInfo'
-    delete:
-      tags:
-      - Field Data Resource
-      summary: Delete the selected field data.
-      operationId: deleteFieldData
-      requestBody:
-        content:
-          text/plain:
-            schema:
-              type: string
-      responses:
-        "204":
-          description: No Content
   /api/v1/fieldData/IDs:
     get:
       tags:
@@ -222,47 +191,41 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataReferences'
-  /api/v1/fieldData/analyzeFieldDataFromFile:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FieldDataReference'
+  /api/v1/fieldData/analyzeFieldDataFile:
     post:
       tags:
       - Field Data Resource
-      operationId: generateFieldDataEstimate
+      summary: "Analyze the field data from the uploaded file. Filenames must be lowercase\
+        \ alphanumeric, and can contain underscores."
+      operationId: analyzeFieldDataFile
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/FieldDataFile'
+              type: object
+              properties:
+                file:
+                  format: binary
+                  type: string
+                fileName:
+                  type: string
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataFileOperationSpec'
-  /api/v1/fieldData/copy:
+                $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+  /api/v1/fieldData/createFieldDataFromAnalyzedFile:
     post:
       tags:
       - Field Data Resource
-      summary: Copy an existing field data entry.
-      operationId: copyFieldData
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FieldDataDBOperationSpec'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataNoCopyConflict'
-  /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed:
-    post:
-      tags:
-      - Field Data Resource
-      operationId: createNewFieldDataFromFileAlreadyAnalyzed
+      summary: "Take the analyzed results of the field data, modify it to your liking,\
+        \ then save it on the server."
+      operationId: createFieldDataFromAnalyzedFile
       requestBody:
         content:
           application/json:
@@ -275,24 +238,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FieldDataSaveResults'
-  /api/v1/fieldData/createFieldDataFromSimulation:
-    post:
+  /api/v1/fieldData/delete/{fieldDataID}:
+    delete:
       tags:
       - Field Data Resource
-      summary: Create new field data from a simulation.
-      operationId: createNewFieldDataFromSimulation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FieldDataDBOperationSpec'
+      summary: Delete the selected field data.
+      operationId: deleteFieldData
+      parameters:
+      - name: fieldDataID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+  /api/v1/fieldData/fieldDataShape/{fieldDataID}:
+    get:
+      tags:
+      - Field Data Resource
+      summary: "Get the shape of the field data. That is it's size, origin, extent,\
+        \ and data identifiers."
+      operationId: getFieldDataShapeFromID
+      parameters:
+      - name: fieldDataID
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExternalDataIdentifier'
+                $ref: '#/components/schemas/FieldDataShape'
   /api/v1/helloworld:
     get:
       tags:
@@ -404,10 +384,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -466,10 +446,10 @@ paths:
             application/json:
               schema:
                 type: boolean
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -486,10 +466,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -522,10 +502,10 @@ paths:
           description: "Successful, returning the identity"
         "409":
           description: "VCell Identity not mapped, userid already exists"
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -565,10 +545,10 @@ paths:
           description: magic link sent in email if appropriate
         "400":
           description: unable to process request
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -591,10 +571,10 @@ paths:
             application/json:
               schema:
                 type: boolean
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -704,67 +684,6 @@ components:
         versionFlag:
           format: int32
           type: integer
-    CartesianMesh:
-      type: object
-      properties:
-        compressedBytes:
-          format: binary
-          type: string
-        uCDInfo:
-          $ref: '#/components/schemas/UCDInfo'
-        geometryDimension:
-          format: int32
-          type: integer
-        volumeRegionMapSubvolume:
-          type: object
-          additionalProperties:
-            format: int32
-            type: integer
-        membraneRegionMapSubvolumesInOut:
-          type: object
-          additionalProperties: {}
-        numMembraneElements:
-          format: int32
-          type: integer
-        numMembraneRegions:
-          format: int32
-          type: integer
-        numVolumeElements:
-          format: int32
-          type: integer
-        numVolumeRegions:
-          format: int32
-          type: integer
-        iSize:
-          $ref: '#/components/schemas/ISize'
-        sizeX:
-          format: int32
-          type: integer
-        sizeY:
-          format: int32
-          type: integer
-        sizeZ:
-          format: int32
-          type: integer
-        membraneConnectivityOK:
-          type: boolean
-        outputFields:
-          type: array
-          items: {}
-        chomboMesh:
-          type: boolean
-    Coordinate:
-      type: object
-      properties:
-        x:
-          format: double
-          type: number
-        "y":
-          format: double
-          type: number
-        z:
-          format: double
-          type: number
     DataIdentifier:
       type: object
       properties:
@@ -871,8 +790,6 @@ components:
           $ref: '#/components/schemas/User'
         name:
           type: string
-        iD:
-          type: string
         jobIndex:
           format: int32
           type: integer
@@ -882,96 +799,25 @@ components:
           type: boolean
         dataKey:
           $ref: '#/components/schemas/KeyValue'
-    FieldDataDBOperationSpec:
+    FieldDataReference:
       type: object
       properties:
-        opType:
-          format: int32
-          type: integer
-        specEDI:
+        externalDataIdentifier:
           $ref: '#/components/schemas/ExternalDataIdentifier'
-        owner:
-          $ref: '#/components/schemas/User'
-        newExtDataIDName:
+        externalDataAnnotation:
           type: string
-        annotation:
-          type: string
-        sourceNames:
+        externalDataIDSimRef:
           type: array
           items:
-            type: string
-        sourceOwner:
-          $ref: '#/components/schemas/VersionableTypeVersion'
-        bIncludeSimRefs:
-          type: boolean
-    FieldDataFile:
+            $ref: '#/components/schemas/KeyValue'
+    FieldDataSaveResults:
       type: object
       properties:
-        file:
-          format: binary
-          type: string
-        fileName:
-          type: string
-    FieldDataFileOperationSpec:
-      type: object
-      properties:
-        opType:
-          format: int32
-          type: integer
-        shortSpecData:
-          type: array
-          items:
-            type: array
-            items:
-              type: array
-              items:
-                type: integer
-        doubleSpecData:
-          type: array
-          items:
-            type: array
-            items:
-              type: array
-              items:
-                format: double
-                type: number
-        cartesianMesh:
-          $ref: '#/components/schemas/CartesianMesh'
-        specEDI:
-          $ref: '#/components/schemas/ExternalDataIdentifier'
-        varNames:
-          type: array
-          items:
-            type: string
-        variableTypes:
-          type: array
-          items:
-            $ref: '#/components/schemas/VariableType'
-        times:
-          type: array
-          items:
-            format: double
-            type: number
-        owner:
-          $ref: '#/components/schemas/User'
-        origin:
-          $ref: '#/components/schemas/Origin'
-        extent:
-          $ref: '#/components/schemas/Extent'
-        isize:
-          $ref: '#/components/schemas/ISize'
-        annotation:
-          type: string
-        sourceSimParamScanJobIndex:
-          format: int32
-          type: integer
-        sourceSimDataKey:
-          $ref: '#/components/schemas/KeyValue'
-        sourceOwner:
-          $ref: '#/components/schemas/User'
         fieldDataName:
           type: string
-    FieldDataInfo:
+        fieldDataID:
+          type: string
+    FieldDataShape:
       type: object
       properties:
         extent:
@@ -989,48 +835,6 @@ components:
           items:
             format: double
             type: number
-    FieldDataNoCopyConflict:
-      type: object
-      properties:
-        oldNameNewIDHash:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/ExternalDataIdentifier'
-        oldNameOldExtDataIDKeyHash:
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/KeyValue'
-    FieldDataReferences:
-      type: object
-      properties:
-        externalDataIdentifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExternalDataIdentifier'
-        externalDataAnnotations:
-          type: array
-          items:
-            type: string
-        externalDataIDSimRefs:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              $ref: '#/components/schemas/KeyValue'
-    FieldDataSaveResults:
-      type: object
-      properties:
-        fieldDataName:
-          type: string
-        fieldDataID:
-          type: string
-    GroupAccess:
-      type: object
-      properties:
-        groupid:
-          type: number
-        description:
-          type: string
     HelloWorldMessage:
       type: object
       properties:
@@ -1056,9 +860,6 @@ components:
           format: int32
           type: integer
         z:
-          format: int32
-          type: integer
-        xYZ:
           format: int32
           type: integer
     Identity:
@@ -1274,72 +1075,12 @@ components:
         timepoint:
           format: double
           type: number
-    UCDInfo:
-      type: object
-      properties:
-        ucdGridNodes:
-          type: array
-          items:
-            type: array
-            items:
-              type: array
-              items:
-                $ref: '#/components/schemas/Coordinate'
-        ucdMembraneQuads:
-          type: array
-          items:
-            type: array
-            items:
-              format: int32
-              type: integer
-        reducedUCDGridNodesV:
-          type: array
-          items:
-            $ref: '#/components/schemas/Coordinate'
-        uCDGridNodes:
-          type: array
-          items:
-            type: array
-            items:
-              type: array
-              items:
-                $ref: '#/components/schemas/Coordinate'
-        uCDMembraneQuads:
-          type: array
-          items:
-            type: array
-            items:
-              format: int32
-              type: integer
-        numVolumeNodesX:
-          format: int32
-          type: integer
-        numVolumeNodesY:
-          format: int32
-          type: integer
-        numVolumeNodesZ:
-          format: int32
-          type: integer
-        numPointsXYZ:
-          format: int32
-          type: integer
-        numVolumeNodesXY:
-          format: int32
-          type: integer
-        numVolumeCells:
-          format: int32
-          type: integer
-        numMembraneCells:
-          format: int32
-          type: integer
     User:
       type: object
       properties:
         userName:
           type: string
         key:
-          $ref: '#/components/schemas/KeyValue'
-        iD:
           $ref: '#/components/schemas/KeyValue'
         name:
           type: string
@@ -1419,86 +1160,6 @@ components:
           type: string
         typeName:
           type: string
-    Version:
-      type: object
-      properties:
-        versionKey:
-          $ref: '#/components/schemas/KeyValue'
-        versionName:
-          type: string
-        versionOwner:
-          $ref: '#/components/schemas/User'
-        versionGroupAccess:
-          $ref: '#/components/schemas/GroupAccess'
-        versionBranchPointRef:
-          $ref: '#/components/schemas/KeyValue'
-        versionBranchID:
-          type: number
-        versionDate:
-          $ref: '#/components/schemas/Date'
-        versionFlag:
-          $ref: '#/components/schemas/VersionFlag'
-        versionAnnot:
-          type: string
-        annot:
-          type: string
-        branchID:
-          type: number
-        branchPointRefKey:
-          $ref: '#/components/schemas/KeyValue'
-        date:
-          $ref: '#/components/schemas/Date'
-        flag:
-          $ref: '#/components/schemas/VersionFlag'
-        groupAccess:
-          $ref: '#/components/schemas/GroupAccess'
-        name:
-          type: string
-        owner:
-          $ref: '#/components/schemas/User'
-    VersionFlag:
-      type: object
-      properties:
-        versionFlag:
-          format: int32
-          type: integer
-        intValue:
-          format: int32
-          type: integer
-        archived:
-          type: boolean
-        current:
-          type: boolean
-        published:
-          type: boolean
-    VersionableType:
-      type: object
-      properties:
-        vType:
-          format: int32
-          type: integer
-        name:
-          type: string
-        vClass:
-          type: object
-        bTopLevel:
-          type: boolean
-        code:
-          format: int32
-          type: integer
-        isTopLevel:
-          type: boolean
-        typeName:
-          type: string
-        versionClass:
-          type: object
-    VersionableTypeVersion:
-      type: object
-      properties:
-        vType:
-          $ref: '#/components/schemas/VersionableType'
-        version:
-          $ref: '#/components/schemas/Version'
   securitySchemes:
     openId:
       type: openIdConnect
