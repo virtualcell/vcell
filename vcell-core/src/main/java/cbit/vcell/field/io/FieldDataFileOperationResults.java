@@ -13,6 +13,7 @@ package cbit.vcell.field.io;
 import cbit.vcell.simdata.DataIdentifier;
 import org.vcell.restclient.model.FieldDataInfo;
 import org.vcell.restclient.model.FieldDataSaveResults;
+import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
@@ -53,7 +54,7 @@ public FieldDataFileOperationResults() {
 	super();
 }
 
-	public static FieldDataFileOperationResults fieldDataInfoDTOToFileOperationResults(FieldDataInfo dto){
+	public static FieldDataFileOperationResults fieldDataInfoDTOToFileOperationResults(FieldDataShape dto){
 		FieldDataFileOperationResults results = new FieldDataFileOperationResults();
 		results.extent = Extent.dtoToExtent(dto.getExtent());
 		results.origin = Origin.dtoToOrigin(dto.getOrigin());

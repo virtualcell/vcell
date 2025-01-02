@@ -2,7 +2,6 @@ package org.vcell.restq.handlers.FieldData;
 
 import cbit.image.ImageException;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.simdata.DataIdentifier;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.RequestScoped;
@@ -66,10 +65,10 @@ public class FieldDataResource {
     @GET
     @Path("/fieldDataShape/{fieldDataID}")
     @Operation(operationId = "getFieldDataShapeFromID", summary = "Get the shape of the field data. That is it's size, origin, extent, and data identifiers.")
-    public FieldDataInfo getFieldDataShapeFromID(@PathParam("fieldDataID") String fieldDataID){
+    public FieldDataShape getFieldDataShapeFromID(@PathParam("fieldDataID") String fieldDataID){
         try {
             FieldDataFileOperationResults results = fieldDataDB.getFieldDataFromID(userRestDB.getUserFromIdentity(securityIdentity), fieldDataID, 0);
-            return new FieldDataInfo(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
+            return new FieldDataShape(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
         } catch (DataAccessException e) {
             if (e.getCause() instanceof FileNotFoundException){
                 throw new WebApplicationException("Field data not found.", 404);
@@ -152,7 +151,7 @@ public class FieldDataResource {
         }
     }
 
-    public record FieldDataInfo(
+    public record FieldDataShape(
             Extent extent,
             Origin origin,
             ISize isize,
