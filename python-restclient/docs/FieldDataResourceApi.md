@@ -4,19 +4,17 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**copy_field_data**](FieldDataResourceApi.md#copy_field_data) | **POST** /api/v1/fieldData/copy | Copy an existing field data entry.
-[**create_new_field_data_from_file_already_analyzed**](FieldDataResourceApi.md#create_new_field_data_from_file_already_analyzed) | **POST** /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed | 
-[**create_new_field_data_from_simulation**](FieldDataResourceApi.md#create_new_field_data_from_simulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation.
-[**delete_field_data**](FieldDataResourceApi.md#delete_field_data) | **DELETE** /api/v1/fieldData | Delete the selected field data.
-[**generate_field_data_estimate**](FieldDataResourceApi.md#generate_field_data_estimate) | **POST** /api/v1/fieldData/analyzeFieldDataFromFile | 
+[**analyze_field_data_file**](FieldDataResourceApi.md#analyze_field_data_file) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+[**create_field_data_from_analyzed_file**](FieldDataResourceApi.md#create_field_data_from_analyzed_file) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+[**delete_field_data**](FieldDataResourceApi.md#delete_field_data) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
 [**get_all_field_data_ids**](FieldDataResourceApi.md#get_all_field_data_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
-[**get_field_data_from_id**](FieldDataResourceApi.md#get_field_data_from_id) | **GET** /api/v1/fieldData | Get the field data from the selected field data ID.
+[**get_field_data_shape_from_id**](FieldDataResourceApi.md#get_field_data_shape_from_id) | **GET** /api/v1/fieldData/fieldDataShape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
 
 
-# **copy_field_data**
-> FieldDataNoCopyConflict copy_field_data(field_data_db_operation_spec=field_data_db_operation_spec)
+# **analyze_field_data_file**
+> AnalyzedResultsFromFieldData analyze_field_data_file(file=file, file_name=file_name)
 
-Copy an existing field data entry.
+Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -24,8 +22,7 @@ Copy an existing field data entry.
 import time
 import os
 import vcell_client
-from vcell_client.models.field_data_db_operation_spec import FieldDataDBOperationSpec
-from vcell_client.models.field_data_no_copy_conflict import FieldDataNoCopyConflict
+from vcell_client.models.analyzed_results_from_field_data import AnalyzedResultsFromFieldData
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -40,15 +37,16 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.FieldDataResourceApi(api_client)
-    field_data_db_operation_spec = vcell_client.FieldDataDBOperationSpec() # FieldDataDBOperationSpec |  (optional)
+    file = None # bytearray |  (optional)
+    file_name = 'file_name_example' # str |  (optional)
 
     try:
-        # Copy an existing field data entry.
-        api_response = api_instance.copy_field_data(field_data_db_operation_spec=field_data_db_operation_spec)
-        print("The response of FieldDataResourceApi->copy_field_data:\n")
+        # Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+        api_response = api_instance.analyze_field_data_file(file=file, file_name=file_name)
+        print("The response of FieldDataResourceApi->analyze_field_data_file:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling FieldDataResourceApi->copy_field_data: %s\n" % e)
+        print("Exception when calling FieldDataResourceApi->analyze_field_data_file: %s\n" % e)
 ```
 
 
@@ -57,11 +55,12 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **field_data_db_operation_spec** | [**FieldDataDBOperationSpec**](FieldDataDBOperationSpec.md)|  | [optional] 
+ **file** | **bytearray**|  | [optional] 
+ **file_name** | **str**|  | [optional] 
 
 ### Return type
 
-[**FieldDataNoCopyConflict**](FieldDataNoCopyConflict.md)
+[**AnalyzedResultsFromFieldData**](AnalyzedResultsFromFieldData.md)
 
 ### Authorization
 
@@ -69,7 +68,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: multipart/form-data
  - **Accept**: application/json
 
 ### HTTP response details
@@ -79,10 +78,10 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **create_new_field_data_from_file_already_analyzed**
-> FieldDataSaveResults create_new_field_data_from_file_already_analyzed(analyzed_results_from_field_data=analyzed_results_from_field_data)
+# **create_field_data_from_analyzed_file**
+> FieldDataSaveResults create_field_data_from_analyzed_file(analyzed_results_from_field_data=analyzed_results_from_field_data)
 
-
+Take the analyzed results of the field data, modify it to your liking, then save it on the server.
 
 ### Example
 
@@ -109,11 +108,12 @@ with vcell_client.ApiClient(configuration) as api_client:
     analyzed_results_from_field_data = vcell_client.AnalyzedResultsFromFieldData() # AnalyzedResultsFromFieldData |  (optional)
 
     try:
-        api_response = api_instance.create_new_field_data_from_file_already_analyzed(analyzed_results_from_field_data=analyzed_results_from_field_data)
-        print("The response of FieldDataResourceApi->create_new_field_data_from_file_already_analyzed:\n")
+        # Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+        api_response = api_instance.create_field_data_from_analyzed_file(analyzed_results_from_field_data=analyzed_results_from_field_data)
+        print("The response of FieldDataResourceApi->create_field_data_from_analyzed_file:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling FieldDataResourceApi->create_new_field_data_from_file_already_analyzed: %s\n" % e)
+        print("Exception when calling FieldDataResourceApi->create_field_data_from_analyzed_file: %s\n" % e)
 ```
 
 
@@ -144,74 +144,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **create_new_field_data_from_simulation**
-> ExternalDataIdentifier create_new_field_data_from_simulation(field_data_db_operation_spec=field_data_db_operation_spec)
-
-Create new field data from a simulation.
-
-### Example
-
-```python
-import time
-import os
-import vcell_client
-from vcell_client.models.external_data_identifier import ExternalDataIdentifier
-from vcell_client.models.field_data_db_operation_spec import FieldDataDBOperationSpec
-from vcell_client.rest import ApiException
-from pprint import pprint
-
-# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
-# See configuration.py for a list of all supported configuration parameters.
-configuration = vcell_client.Configuration(
-    host = "https://vcell-dev.cam.uchc.edu"
-)
-
-
-# Enter a context with an instance of the API client
-with vcell_client.ApiClient(configuration) as api_client:
-    # Create an instance of the API class
-    api_instance = vcell_client.FieldDataResourceApi(api_client)
-    field_data_db_operation_spec = vcell_client.FieldDataDBOperationSpec() # FieldDataDBOperationSpec |  (optional)
-
-    try:
-        # Create new field data from a simulation.
-        api_response = api_instance.create_new_field_data_from_simulation(field_data_db_operation_spec=field_data_db_operation_spec)
-        print("The response of FieldDataResourceApi->create_new_field_data_from_simulation:\n")
-        pprint(api_response)
-    except Exception as e:
-        print("Exception when calling FieldDataResourceApi->create_new_field_data_from_simulation: %s\n" % e)
-```
-
-
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **field_data_db_operation_spec** | [**FieldDataDBOperationSpec**](FieldDataDBOperationSpec.md)|  | [optional] 
-
-### Return type
-
-[**ExternalDataIdentifier**](ExternalDataIdentifier.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
- - **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **delete_field_data**
-> delete_field_data(body=body)
+> delete_field_data(field_data_id)
 
 Delete the selected field data.
 
@@ -235,11 +169,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.FieldDataResourceApi(api_client)
-    body = 'body_example' # str |  (optional)
+    field_data_id = 'field_data_id_example' # str | 
 
     try:
         # Delete the selected field data.
-        api_instance.delete_field_data(body=body)
+        api_instance.delete_field_data(field_data_id)
     except Exception as e:
         print("Exception when calling FieldDataResourceApi->delete_field_data: %s\n" % e)
 ```
@@ -250,7 +184,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | **str**|  | [optional] 
+ **field_data_id** | **str**|  | 
 
 ### Return type
 
@@ -262,7 +196,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: text/plain
+ - **Content-Type**: Not defined
  - **Accept**: Not defined
 
 ### HTTP response details
@@ -272,74 +206,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **generate_field_data_estimate**
-> FieldDataFileOperationSpec generate_field_data_estimate(file=file, file_name=file_name)
-
-
-
-### Example
-
-```python
-import time
-import os
-import vcell_client
-from vcell_client.models.field_data_file_operation_spec import FieldDataFileOperationSpec
-from vcell_client.rest import ApiException
-from pprint import pprint
-
-# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
-# See configuration.py for a list of all supported configuration parameters.
-configuration = vcell_client.Configuration(
-    host = "https://vcell-dev.cam.uchc.edu"
-)
-
-
-# Enter a context with an instance of the API client
-with vcell_client.ApiClient(configuration) as api_client:
-    # Create an instance of the API class
-    api_instance = vcell_client.FieldDataResourceApi(api_client)
-    file = None # bytearray |  (optional)
-    file_name = 'file_name_example' # str |  (optional)
-
-    try:
-        api_response = api_instance.generate_field_data_estimate(file=file, file_name=file_name)
-        print("The response of FieldDataResourceApi->generate_field_data_estimate:\n")
-        pprint(api_response)
-    except Exception as e:
-        print("Exception when calling FieldDataResourceApi->generate_field_data_estimate: %s\n" % e)
-```
-
-
-
-### Parameters
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **file** | **bytearray**|  | [optional] 
- **file_name** | **str**|  | [optional] 
-
-### Return type
-
-[**FieldDataFileOperationSpec**](FieldDataFileOperationSpec.md)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: multipart/form-data
- - **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **get_all_field_data_ids**
-> FieldDataReferences get_all_field_data_ids()
+> List[FieldDataReference] get_all_field_data_ids()
 
 Get all of the ids used to identify, and retrieve field data.
 
@@ -349,7 +217,7 @@ Get all of the ids used to identify, and retrieve field data.
 import time
 import os
 import vcell_client
-from vcell_client.models.field_data_references import FieldDataReferences
+from vcell_client.models.field_data_reference import FieldDataReference
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -381,7 +249,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**FieldDataReferences**](FieldDataReferences.md)
+[**List[FieldDataReference]**](FieldDataReference.md)
 
 ### Authorization
 
@@ -399,10 +267,10 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **get_field_data_from_id**
-> FieldDataInfo get_field_data_from_id(body=body)
+# **get_field_data_shape_from_id**
+> FieldDataShape get_field_data_shape_from_id(field_data_id)
 
-Get the field data from the selected field data ID.
+Get the shape of the field data. That is it's size, origin, extent, and data identifiers.
 
 ### Example
 
@@ -410,7 +278,7 @@ Get the field data from the selected field data ID.
 import time
 import os
 import vcell_client
-from vcell_client.models.field_data_info import FieldDataInfo
+from vcell_client.models.field_data_shape import FieldDataShape
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -425,15 +293,15 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.FieldDataResourceApi(api_client)
-    body = 'body_example' # str |  (optional)
+    field_data_id = 'field_data_id_example' # str | 
 
     try:
-        # Get the field data from the selected field data ID.
-        api_response = api_instance.get_field_data_from_id(body=body)
-        print("The response of FieldDataResourceApi->get_field_data_from_id:\n")
+        # Get the shape of the field data. That is it's size, origin, extent, and data identifiers.
+        api_response = api_instance.get_field_data_shape_from_id(field_data_id)
+        print("The response of FieldDataResourceApi->get_field_data_shape_from_id:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling FieldDataResourceApi->get_field_data_from_id: %s\n" % e)
+        print("Exception when calling FieldDataResourceApi->get_field_data_shape_from_id: %s\n" % e)
 ```
 
 
@@ -442,11 +310,11 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **body** | **str**|  | [optional] 
+ **field_data_id** | **str**|  | 
 
 ### Return type
 
-[**FieldDataInfo**](FieldDataInfo.md)
+[**FieldDataShape**](FieldDataShape.md)
 
 ### Authorization
 
@@ -454,7 +322,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: text/plain
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 ### HTTP response details

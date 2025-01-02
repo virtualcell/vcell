@@ -6,7 +6,6 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **user_name** | **str** |  | [optional] 
 **key** | [**KeyValue**](KeyValue.md) |  | [optional] 
-**i_d** | [**KeyValue**](KeyValue.md) |  | [optional] 
 **name** | **str** |  | [optional] 
 **test_account** | **bool** |  | [optional] 
 

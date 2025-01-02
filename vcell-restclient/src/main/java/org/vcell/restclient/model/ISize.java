@@ -34,8 +34,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
   ISize.JSON_PROPERTY_X,
   ISize.JSON_PROPERTY_Y,
-  ISize.JSON_PROPERTY_Z,
-  ISize.JSON_PROPERTY_X_Y_Z
+  ISize.JSON_PROPERTY_Z
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class ISize {
@@ -47,9 +46,6 @@ public class ISize {
 
   public static final String JSON_PROPERTY_Z = "z";
   private Integer z;
-
-  public static final String JSON_PROPERTY_X_Y_Z = "xYZ";
-  private Integer xYZ;
 
   public ISize() { 
   }
@@ -129,31 +125,6 @@ public class ISize {
   }
 
 
-  public ISize xYZ(Integer xYZ) {
-    this.xYZ = xYZ;
-    return this;
-  }
-
-   /**
-   * Get xYZ
-   * @return xYZ
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_X_Y_Z)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public Integer getxYZ() {
-    return xYZ;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_X_Y_Z)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setxYZ(Integer xYZ) {
-    this.xYZ = xYZ;
-  }
-
-
   /**
    * Return true if this ISize object is equal to o.
    */
@@ -168,13 +139,12 @@ public class ISize {
     ISize isize = (ISize) o;
     return Objects.equals(this.x, isize.x) &&
         Objects.equals(this.y, isize.y) &&
-        Objects.equals(this.z, isize.z) &&
-        Objects.equals(this.xYZ, isize.xYZ);
+        Objects.equals(this.z, isize.z);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(x, y, z, xYZ);
+    return Objects.hash(x, y, z);
   }
 
   @Override
@@ -184,7 +154,6 @@ public class ISize {
     sb.append("    x: ").append(toIndentedString(x)).append("\n");
     sb.append("    y: ").append(toIndentedString(y)).append("\n");
     sb.append("    z: ").append(toIndentedString(z)).append("\n");
-    sb.append("    xYZ: ").append(toIndentedString(xYZ)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -245,11 +214,6 @@ public class ISize {
     // add `z` to the URL query string
     if (getZ() != null) {
       joiner.add(String.format("%sz%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getZ()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `xYZ` to the URL query string
-    if (getxYZ() != null) {
-      joiner.add(String.format("%sxYZ%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getxYZ()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

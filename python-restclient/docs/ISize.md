@@ -7,7 +7,6 @@ Name | Type | Description | Notes
 **x** | **int** |  | [optional] 
 **y** | **int** |  | [optional] 
 **z** | **int** |  | [optional] 
-**x_yz** | **int** |  | [optional] 
 
 ## Example
 

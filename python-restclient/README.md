@@ -89,13 +89,11 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
 *BioModelResourceApi* | [**get_biomodel_by_id**](docs/BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
 *BioModelResourceApi* | [**upload_bio_model**](docs/BioModelResourceApi.md#upload_bio_model) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
-*FieldDataResourceApi* | [**copy_field_data**](docs/FieldDataResourceApi.md#copy_field_data) | **POST** /api/v1/fieldData/copy | Copy an existing field data entry.
-*FieldDataResourceApi* | [**create_new_field_data_from_file_already_analyzed**](docs/FieldDataResourceApi.md#create_new_field_data_from_file_already_analyzed) | **POST** /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed | 
-*FieldDataResourceApi* | [**create_new_field_data_from_simulation**](docs/FieldDataResourceApi.md#create_new_field_data_from_simulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation.
-*FieldDataResourceApi* | [**delete_field_data**](docs/FieldDataResourceApi.md#delete_field_data) | **DELETE** /api/v1/fieldData | Delete the selected field data.
-*FieldDataResourceApi* | [**generate_field_data_estimate**](docs/FieldDataResourceApi.md#generate_field_data_estimate) | **POST** /api/v1/fieldData/analyzeFieldDataFromFile | 
+*FieldDataResourceApi* | [**analyze_field_data_file**](docs/FieldDataResourceApi.md#analyze_field_data_file) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+*FieldDataResourceApi* | [**create_field_data_from_analyzed_file**](docs/FieldDataResourceApi.md#create_field_data_from_analyzed_file) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+*FieldDataResourceApi* | [**delete_field_data**](docs/FieldDataResourceApi.md#delete_field_data) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
 *FieldDataResourceApi* | [**get_all_field_data_ids**](docs/FieldDataResourceApi.md#get_all_field_data_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
-*FieldDataResourceApi* | [**get_field_data_from_id**](docs/FieldDataResourceApi.md#get_field_data_from_id) | **GET** /api/v1/fieldData | Get the field data from the selected field data ID.
+*FieldDataResourceApi* | [**get_field_data_shape_from_id**](docs/FieldDataResourceApi.md#get_field_data_shape_from_id) | **GET** /api/v1/fieldData/fieldDataShape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
 *HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
 *PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
@@ -124,20 +122,14 @@ Class | Method | HTTP request | Description
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
- - [CartesianMesh](docs/CartesianMesh.md)
- - [Coordinate](docs/Coordinate.md)
  - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)
  - [Domain](docs/Domain.md)
  - [Extent](docs/Extent.md)
  - [ExternalDataIdentifier](docs/ExternalDataIdentifier.md)
- - [FieldDataDBOperationSpec](docs/FieldDataDBOperationSpec.md)
- - [FieldDataFileOperationSpec](docs/FieldDataFileOperationSpec.md)
- - [FieldDataInfo](docs/FieldDataInfo.md)
- - [FieldDataNoCopyConflict](docs/FieldDataNoCopyConflict.md)
- - [FieldDataReferences](docs/FieldDataReferences.md)
+ - [FieldDataReference](docs/FieldDataReference.md)
  - [FieldDataSaveResults](docs/FieldDataSaveResults.md)
- - [GroupAccess](docs/GroupAccess.md)
+ - [FieldDataShape](docs/FieldDataShape.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
  - [HtcJobID](docs/HtcJobID.md)
  - [ISize](docs/ISize.md)
@@ -155,7 +147,6 @@ Class | Method | HTTP request | Description
  - [SimulationStatusPersistentRecord](docs/SimulationStatusPersistentRecord.md)
  - [Status](docs/Status.md)
  - [StatusMessage](docs/StatusMessage.md)
- - [UCDInfo](docs/UCDInfo.md)
  - [User](docs/User.md)
  - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
@@ -163,10 +154,6 @@ Class | Method | HTTP request | Description
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
  - [VariableDomain](docs/VariableDomain.md)
  - [VariableType](docs/VariableType.md)
- - [Version](docs/Version.md)
- - [VersionFlag](docs/VersionFlag.md)
- - [VersionableType](docs/VersionableType.md)
- - [VersionableTypeVersion](docs/VersionableTypeVersion.md)
 
 
 <a id="documentation-for-authorization"></a>

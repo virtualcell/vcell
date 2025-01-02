@@ -35,7 +35,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
   User.JSON_PROPERTY_USER_NAME,
   User.JSON_PROPERTY_KEY,
-  User.JSON_PROPERTY_I_D,
   User.JSON_PROPERTY_NAME,
   User.JSON_PROPERTY_TEST_ACCOUNT
 })
@@ -46,9 +45,6 @@ public class User {
 
   public static final String JSON_PROPERTY_KEY = "key";
   private KeyValue key;
-
-  public static final String JSON_PROPERTY_I_D = "iD";
-  private KeyValue iD;
 
   public static final String JSON_PROPERTY_NAME = "name";
   private String name;
@@ -106,31 +102,6 @@ public class User {
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setKey(KeyValue key) {
     this.key = key;
-  }
-
-
-  public User iD(KeyValue iD) {
-    this.iD = iD;
-    return this;
-  }
-
-   /**
-   * Get iD
-   * @return iD
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_I_D)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public KeyValue getiD() {
-    return iD;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_I_D)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setiD(KeyValue iD) {
-    this.iD = iD;
   }
 
 
@@ -198,14 +169,13 @@ public class User {
     User user = (User) o;
     return Objects.equals(this.userName, user.userName) &&
         Objects.equals(this.key, user.key) &&
-        Objects.equals(this.iD, user.iD) &&
         Objects.equals(this.name, user.name) &&
         Objects.equals(this.testAccount, user.testAccount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(userName, key, iD, name, testAccount);
+    return Objects.hash(userName, key, name, testAccount);
   }
 
   @Override
@@ -214,7 +184,6 @@ public class User {
     sb.append("class User {\n");
     sb.append("    userName: ").append(toIndentedString(userName)).append("\n");
     sb.append("    key: ").append(toIndentedString(key)).append("\n");
-    sb.append("    iD: ").append(toIndentedString(iD)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    testAccount: ").append(toIndentedString(testAccount)).append("\n");
     sb.append("}");
@@ -272,11 +241,6 @@ public class User {
     // add `key` to the URL query string
     if (getKey() != null) {
       joiner.add(getKey().toUrlQueryString(prefix + "key" + suffix));
-    }
-
-    // add `iD` to the URL query string
-    if (getiD() != null) {
-      joiner.add(getiD().toUrlQueryString(prefix + "iD" + suffix));
     }
 
     // add `name` to the URL query string

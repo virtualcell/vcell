@@ -46,10 +46,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -77,10 +77,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -108,10 +108,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -149,10 +149,10 @@ paths:
               schema:
                 type: string
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -202,41 +202,6 @@ paths:
       tags:
       - Bio Model Resource
       x-accepts: application/json
-  /api/v1/fieldData:
-    delete:
-      operationId: deleteFieldData
-      requestBody:
-        content:
-          text/plain:
-            schema:
-              type: string
-      responses:
-        "204":
-          description: No Content
-      summary: Delete the selected field data.
-      tags:
-      - Field Data Resource
-      x-content-type: text/plain
-      x-accepts: application/json
-    get:
-      operationId: getFieldDataFromID
-      requestBody:
-        content:
-          text/plain:
-            schema:
-              type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataInfo'
-          description: OK
-      summary: Get the field data from the selected field data ID.
-      tags:
-      - Field Data Resource
-      x-content-type: text/plain
-      x-accepts: application/json
   /api/v1/fieldData/IDs:
     get:
       operationId: getAllFieldDataIDs
@@ -245,54 +210,38 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataReferences'
+                items:
+                  $ref: '#/components/schemas/FieldDataReference'
+                type: array
           description: OK
       summary: "Get all of the ids used to identify, and retrieve field data."
       tags:
       - Field Data Resource
       x-accepts: application/json
-  /api/v1/fieldData/analyzeFieldDataFromFile:
+  /api/v1/fieldData/analyzeFieldDataFile:
     post:
-      operationId: generateFieldDataEstimate
+      operationId: analyzeFieldDataFile
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/FieldDataFile'
+              $ref: '#/components/schemas/analyzeFieldDataFile_request'
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataFileOperationSpec'
+                $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
           description: OK
+      summary: "Analyze the field data from the uploaded file. Filenames must be lowercase\
+        \ alphanumeric, and can contain underscores."
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data
       x-accepts: application/json
-  /api/v1/fieldData/copy:
+  /api/v1/fieldData/createFieldDataFromAnalyzedFile:
     post:
-      operationId: copyFieldData
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FieldDataDBOperationSpec'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataNoCopyConflict'
-          description: OK
-      summary: Copy an existing field data entry.
-      tags:
-      - Field Data Resource
-      x-content-type: application/json
-      x-accepts: application/json
-  /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed:
-    post:
-      operationId: createNewFieldDataFromFileAlreadyAnalyzed
+      operationId: createFieldDataFromAnalyzedFile
       requestBody:
         content:
           application/json:
@@ -305,29 +254,52 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSaveResults'
           description: OK
+      summary: "Take the analyzed results of the field data, modify it to your liking,\
+        \ then save it on the server."
       tags:
       - Field Data Resource
       x-content-type: application/json
       x-accepts: application/json
-  /api/v1/fieldData/createFieldDataFromSimulation:
-    post:
-      operationId: createNewFieldDataFromSimulation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FieldDataDBOperationSpec'
+  /api/v1/fieldData/delete/{fieldDataID}:
+    delete:
+      operationId: deleteFieldData
+      parameters:
+      - explode: false
+        in: path
+        name: fieldDataID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No Content
+      summary: Delete the selected field data.
+      tags:
+      - Field Data Resource
+      x-accepts: application/json
+  /api/v1/fieldData/fieldDataShape/{fieldDataID}:
+    get:
+      operationId: getFieldDataShapeFromID
+      parameters:
+      - explode: false
+        in: path
+        name: fieldDataID
+        required: true
+        schema:
+          type: string
+        style: simple
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExternalDataIdentifier'
+                $ref: '#/components/schemas/FieldDataShape'
           description: OK
-      summary: Create new field data from a simulation.
+      summary: "Get the shape of the field data. That is it's size, origin, extent,\
+        \ and data identifiers."
       tags:
       - Field Data Resource
-      x-content-type: application/json
       x-accepts: application/json
   /api/v1/helloworld:
     get:
@@ -449,10 +421,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -517,10 +489,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -539,10 +511,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
           description: "Successful, returning the identity"
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -577,10 +549,10 @@ paths:
           description: "Successful, returning the identity"
         "409":
           description: "VCell Identity not mapped, userid already exists"
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -632,10 +604,10 @@ paths:
           description: magic link sent in email if appropriate
         "400":
           description: unable to process request
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -661,10 +633,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -698,22 +670,21 @@ components:
     AnalyzedResultsFromFieldData:
       example:
         extent:
-          x: 0.8008281904610115
-          "y": 6.027456183070403
-          z: 1.4658129805029452
+          x: 2.3021358869347655
+          "y": 7.061401241503109
+          z: 9.301444243932576
         annotation: annotation
         times:
         - 6.027456183070403
         - 6.027456183070403
         origin:
-          x: 5.962133916683182
-          "y": 5.637376656633329
-          z: 2.3021358869347655
+          x: 1.4658129805029452
+          "y": 5.962133916683182
+          z: 5.637376656633329
         isize:
-          x: 7
-          xYZ: 2
-          "y": 9
-          z: 3
+          x: 3
+          "y": 2
+          z: 4
         name: name
         varNames:
         - varNames
@@ -840,170 +811,6 @@ components:
           format: int32
           type: integer
       type: object
-    CartesianMesh:
-      example:
-        iSize:
-          x: 7
-          xYZ: 2
-          "y": 9
-          z: 3
-        chomboMesh: true
-        uCDInfo:
-          numPointsXYZ: 7
-          ucdGridNodes:
-          - - - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-              - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-            - - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-              - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-          - - - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-              - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-            - - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-              - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-          ucdMembraneQuads:
-          - - 7
-            - 7
-          - - 7
-            - 7
-          uCDGridNodes:
-          - - - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-              - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-            - - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-              - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-          - - - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-              - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-            - - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-              - x: 5.962133916683182
-                "y": 5.637376656633329
-                z: 2.3021358869347655
-          numVolumeNodesX: 3
-          numVolumeNodesXY: 1
-          numVolumeCells: 1
-          reducedUCDGridNodesV:
-          - x: 5.962133916683182
-            "y": 5.637376656633329
-            z: 2.3021358869347655
-          - x: 5.962133916683182
-            "y": 5.637376656633329
-            z: 2.3021358869347655
-          uCDMembraneQuads:
-          - - 9
-            - 9
-          - - 9
-            - 9
-          numVolumeNodesY: 2
-          numMembraneCells: 1
-          numVolumeNodesZ: 4
-        numVolumeElements: 5
-        numMembraneRegions: 4
-        outputFields:
-        - ""
-        - ""
-        sizeX: 9
-        membraneRegionMapSubvolumesInOut:
-          key: ""
-        numVolumeRegions: 9
-        membraneConnectivityOK: true
-        geometryDimension: 6
-        numMembraneElements: 1
-        compressedBytes: ""
-        volumeRegionMapSubvolume:
-          key: 7
-        sizeY: 6
-        sizeZ: 8
-      properties:
-        compressedBytes:
-          format: binary
-          type: string
-        uCDInfo:
-          $ref: '#/components/schemas/UCDInfo'
-        geometryDimension:
-          format: int32
-          type: integer
-        volumeRegionMapSubvolume:
-          additionalProperties:
-            format: int32
-            type: integer
-          type: object
-        membraneRegionMapSubvolumesInOut:
-          additionalProperties: {}
-          type: object
-        numMembraneElements:
-          format: int32
-          type: integer
-        numMembraneRegions:
-          format: int32
-          type: integer
-        numVolumeElements:
-          format: int32
-          type: integer
-        numVolumeRegions:
-          format: int32
-          type: integer
-        iSize:
-          $ref: '#/components/schemas/ISize'
-        sizeX:
-          format: int32
-          type: integer
-        sizeY:
-          format: int32
-          type: integer
-        sizeZ:
-          format: int32
-          type: integer
-        membraneConnectivityOK:
-          type: boolean
-        outputFields:
-          items: {}
-          type: array
-        chomboMesh:
-          type: boolean
-      type: object
-    Coordinate:
-      example:
-        x: 5.962133916683182
-        "y": 5.637376656633329
-        z: 2.3021358869347655
-      properties:
-        x:
-          format: double
-          type: number
-        "y":
-          format: double
-          type: number
-        z:
-          format: double
-          type: number
-      type: object
     DataIdentifier:
       example:
         variableType:
@@ -1013,7 +820,7 @@ components:
           defaultLabel: defaultLabel
           units: units
           label: label
-          type: 4
+          type: 0
           variableDomain: null
           legacyWarn: true
         visible: true
@@ -1105,9 +912,9 @@ components:
       type: object
     Extent:
       example:
-        x: 0.8008281904610115
-        "y": 6.027456183070403
-        z: 1.4658129805029452
+        x: 2.3021358869347655
+        "y": 7.061401241503109
+        z: 9.301444243932576
       properties:
         x:
           format: double
@@ -1130,8 +937,6 @@ components:
         owner:
           testAccount: true
           name: name
-          iD:
-            value: 0.8008281904610115
           userName: userName
           key:
             value: 0.8008281904610115
@@ -1141,7 +946,6 @@ components:
           value: 0.8008281904610115
         jobIndex: 0
         name: name
-        iD: iD
         key:
           value: 0.8008281904610115
         parameterScanType: true
@@ -1151,8 +955,6 @@ components:
         owner:
           $ref: '#/components/schemas/User'
         name:
-          type: string
-        iD:
           type: string
         jobIndex:
           format: int32
@@ -1164,28 +966,13 @@ components:
         dataKey:
           $ref: '#/components/schemas/KeyValue'
       type: object
-    FieldDataDBOperationSpec:
+    FieldDataReference:
       example:
-        owner:
-          testAccount: true
-          name: name
-          iD:
-            value: 0.8008281904610115
-          userName: userName
-          key:
-            value: 0.8008281904610115
-        annotation: annotation
-        sourceNames:
-        - sourceNames
-        - sourceNames
-        bIncludeSimRefs: true
-        opType: 0
-        specEDI:
+        externalDataAnnotation: externalDataAnnotation
+        externalDataIdentifier:
           owner:
             testAccount: true
             name: name
-            iD:
-              value: 0.8008281904610115
             userName: userName
             key:
               value: 0.8008281904610115
@@ -1195,373 +982,49 @@ components:
             value: 0.8008281904610115
           jobIndex: 0
           name: name
-          iD: iD
           key:
             value: 0.8008281904610115
           parameterScanType: true
-        newExtDataIDName: newExtDataIDName
-        sourceOwner:
-          vType:
-            code: 1
-            versionClass: "{}"
-            vType: 6
-            bTopLevel: true
-            name: name
-            isTopLevel: true
-            typeName: typeName
-            vClass: "{}"
-          version:
-            date: 2022-03-10T00:00:00.000+00:00
-            owner:
-              testAccount: true
-              name: name
-              iD:
-                value: 0.8008281904610115
-              userName: userName
-              key:
-                value: 0.8008281904610115
-            branchID: 9.301444243932576
-            flag:
-              archived: true
-              current: true
-              intValue: 7
-              versionFlag: 2
-              published: true
-            versionGroupAccess:
-              groupid: 5.962133916683182
-              description: description
-            versionFlag:
-              archived: true
-              current: true
-              intValue: 7
-              versionFlag: 2
-              published: true
-            versionName: versionName
-            annot: annot
-            versionDate: 2022-03-10T00:00:00.000+00:00
-            versionKey:
-              value: 0.8008281904610115
-            versionAnnot: versionAnnot
-            groupAccess:
-              groupid: 5.962133916683182
-              description: description
-            versionBranchID: 5.637376656633329
-            name: name
-            versionBranchPointRef:
-              value: 0.8008281904610115
-            branchPointRefKey:
-              value: 0.8008281904610115
-            versionOwner:
-              testAccount: true
-              name: name
-              iD:
-                value: 0.8008281904610115
-              userName: userName
-              key:
-                value: 0.8008281904610115
+        externalDataIDSimRef:
+        - value: 0.8008281904610115
+        - value: 0.8008281904610115
       properties:
-        opType:
-          format: int32
-          type: integer
-        specEDI:
+        externalDataIdentifier:
           $ref: '#/components/schemas/ExternalDataIdentifier'
-        owner:
-          $ref: '#/components/schemas/User'
-        newExtDataIDName:
+        externalDataAnnotation:
           type: string
-        annotation:
-          type: string
-        sourceNames:
+        externalDataIDSimRef:
           items:
-            type: string
+            $ref: '#/components/schemas/KeyValue'
           type: array
-        sourceOwner:
-          $ref: '#/components/schemas/VersionableTypeVersion'
-        bIncludeSimRefs:
-          type: boolean
       type: object
-    FieldDataFile:
-      properties:
-        file:
-          format: binary
-          type: string
-        fileName:
-          type: string
-      type: object
-    FieldDataFileOperationSpec:
+    FieldDataSaveResults:
       example:
-        owner:
-          testAccount: true
-          name: name
-          iD:
-            value: 0.8008281904610115
-          userName: userName
-          key:
-            value: 0.8008281904610115
-        extent:
-          x: 0.8008281904610115
-          "y": 6.027456183070403
-          z: 1.4658129805029452
-        annotation: annotation
-        variableTypes:
-        - defaultUnits: defaultUnits
-          name: name
-          typeName: typeName
-          defaultLabel: defaultLabel
-          units: units
-          label: label
-          type: 4
-          variableDomain: null
-          legacyWarn: true
-        - defaultUnits: defaultUnits
-          name: name
-          typeName: typeName
-          defaultLabel: defaultLabel
-          units: units
-          label: label
-          type: 4
-          variableDomain: null
-          legacyWarn: true
-        doubleSpecData:
-        - - - 1.4658129805029452
-            - 1.4658129805029452
-          - - 1.4658129805029452
-            - 1.4658129805029452
-        - - - 1.4658129805029452
-            - 1.4658129805029452
-          - - 1.4658129805029452
-            - 1.4658129805029452
-        opType: 0
-        specEDI:
-          owner:
-            testAccount: true
-            name: name
-            iD:
-              value: 0.8008281904610115
-            userName: userName
-            key:
-              value: 0.8008281904610115
-          dataKey:
-            value: 0.8008281904610115
-          simulationKey:
-            value: 0.8008281904610115
-          jobIndex: 0
-          name: name
-          iD: iD
-          key:
-            value: 0.8008281904610115
-          parameterScanType: true
-        origin:
-          x: 5.962133916683182
-          "y": 5.637376656633329
-          z: 2.3021358869347655
-        varNames:
-        - varNames
-        - varNames
-        sourceOwner:
-          testAccount: true
-          name: name
-          iD:
-            value: 0.8008281904610115
-          userName: userName
-          key:
-            value: 0.8008281904610115
-        shortSpecData:
-        - - - 6
-            - 6
-          - - 6
-            - 6
-        - - - 6
-            - 6
-          - - 6
-            - 6
-        sourceSimParamScanJobIndex: 6
-        times:
-        - 9.018348186070783
-        - 9.018348186070783
         fieldDataName: fieldDataName
-        sourceSimDataKey:
-          value: 0.8008281904610115
-        isize:
-          x: 7
-          xYZ: 2
-          "y": 9
-          z: 3
-        cartesianMesh:
-          iSize:
-            x: 7
-            xYZ: 2
-            "y": 9
-            z: 3
-          chomboMesh: true
-          uCDInfo:
-            numPointsXYZ: 7
-            ucdGridNodes:
-            - - - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-                - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-              - - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-                - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-            - - - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-                - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-              - - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-                - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-            ucdMembraneQuads:
-            - - 7
-              - 7
-            - - 7
-              - 7
-            uCDGridNodes:
-            - - - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-                - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-              - - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-                - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-            - - - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-                - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-              - - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-                - x: 5.962133916683182
-                  "y": 5.637376656633329
-                  z: 2.3021358869347655
-            numVolumeNodesX: 3
-            numVolumeNodesXY: 1
-            numVolumeCells: 1
-            reducedUCDGridNodesV:
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            uCDMembraneQuads:
-            - - 9
-              - 9
-            - - 9
-              - 9
-            numVolumeNodesY: 2
-            numMembraneCells: 1
-            numVolumeNodesZ: 4
-          numVolumeElements: 5
-          numMembraneRegions: 4
-          outputFields:
-          - ""
-          - ""
-          sizeX: 9
-          membraneRegionMapSubvolumesInOut:
-            key: ""
-          numVolumeRegions: 9
-          membraneConnectivityOK: true
-          geometryDimension: 6
-          numMembraneElements: 1
-          compressedBytes: ""
-          volumeRegionMapSubvolume:
-            key: 7
-          sizeY: 6
-          sizeZ: 8
+        fieldDataID: fieldDataID
       properties:
-        opType:
-          format: int32
-          type: integer
-        shortSpecData:
-          items:
-            items:
-              items:
-                type: integer
-              type: array
-            type: array
-          type: array
-        doubleSpecData:
-          items:
-            items:
-              items:
-                format: double
-                type: number
-              type: array
-            type: array
-          type: array
-        cartesianMesh:
-          $ref: '#/components/schemas/CartesianMesh'
-        specEDI:
-          $ref: '#/components/schemas/ExternalDataIdentifier'
-        varNames:
-          items:
-            type: string
-          type: array
-        variableTypes:
-          items:
-            $ref: '#/components/schemas/VariableType'
-          type: array
-        times:
-          items:
-            format: double
-            type: number
-          type: array
-        owner:
-          $ref: '#/components/schemas/User'
-        origin:
-          $ref: '#/components/schemas/Origin'
-        extent:
-          $ref: '#/components/schemas/Extent'
-        isize:
-          $ref: '#/components/schemas/ISize'
-        annotation:
-          type: string
-        sourceSimParamScanJobIndex:
-          format: int32
-          type: integer
-        sourceSimDataKey:
-          $ref: '#/components/schemas/KeyValue'
-        sourceOwner:
-          $ref: '#/components/schemas/User'
         fieldDataName:
           type: string
+        fieldDataID:
+          type: string
       type: object
-    FieldDataInfo:
+    FieldDataShape:
       example:
         extent:
-          x: 0.8008281904610115
-          "y": 6.027456183070403
-          z: 1.4658129805029452
+          x: 2.3021358869347655
+          "y": 7.061401241503109
+          z: 9.301444243932576
         times:
-        - 7.386281948385884
-        - 7.386281948385884
+        - 6.027456183070403
+        - 6.027456183070403
         origin:
-          x: 5.962133916683182
-          "y": 5.637376656633329
-          z: 2.3021358869347655
+          x: 1.4658129805029452
+          "y": 5.962133916683182
+          z: 5.637376656633329
         isize:
-          x: 7
-          xYZ: 2
-          "y": 9
-          z: 3
+          x: 3
+          "y": 2
+          z: 4
         dataIdentifier:
         - variableType:
             defaultUnits: defaultUnits
@@ -1570,7 +1033,7 @@ components:
             defaultLabel: defaultLabel
             units: units
             label: label
-            type: 4
+            type: 0
             variableDomain: null
             legacyWarn: true
           visible: true
@@ -1587,7 +1050,7 @@ components:
             defaultLabel: defaultLabel
             units: units
             label: label
-            type: 4
+            type: 0
             variableDomain: null
             legacyWarn: true
           visible: true
@@ -1614,123 +1077,6 @@ components:
             type: number
           type: array
       type: object
-    FieldDataNoCopyConflict:
-      example:
-        oldNameOldExtDataIDKeyHash:
-          key:
-            value: 0.8008281904610115
-        oldNameNewIDHash:
-          key:
-            owner:
-              testAccount: true
-              name: name
-              iD:
-                value: 0.8008281904610115
-              userName: userName
-              key:
-                value: 0.8008281904610115
-            dataKey:
-              value: 0.8008281904610115
-            simulationKey:
-              value: 0.8008281904610115
-            jobIndex: 0
-            name: name
-            iD: iD
-            key:
-              value: 0.8008281904610115
-            parameterScanType: true
-      properties:
-        oldNameNewIDHash:
-          additionalProperties:
-            $ref: '#/components/schemas/ExternalDataIdentifier'
-          type: object
-        oldNameOldExtDataIDKeyHash:
-          additionalProperties:
-            $ref: '#/components/schemas/KeyValue'
-          type: object
-      type: object
-    FieldDataReferences:
-      example:
-        externalDataIdentifiers:
-        - owner:
-            testAccount: true
-            name: name
-            iD:
-              value: 0.8008281904610115
-            userName: userName
-            key:
-              value: 0.8008281904610115
-          dataKey:
-            value: 0.8008281904610115
-          simulationKey:
-            value: 0.8008281904610115
-          jobIndex: 0
-          name: name
-          iD: iD
-          key:
-            value: 0.8008281904610115
-          parameterScanType: true
-        - owner:
-            testAccount: true
-            name: name
-            iD:
-              value: 0.8008281904610115
-            userName: userName
-            key:
-              value: 0.8008281904610115
-          dataKey:
-            value: 0.8008281904610115
-          simulationKey:
-            value: 0.8008281904610115
-          jobIndex: 0
-          name: name
-          iD: iD
-          key:
-            value: 0.8008281904610115
-          parameterScanType: true
-        externalDataAnnotations:
-        - externalDataAnnotations
-        - externalDataAnnotations
-        externalDataIDSimRefs:
-          key:
-          - value: 0.8008281904610115
-          - value: 0.8008281904610115
-      properties:
-        externalDataIdentifiers:
-          items:
-            $ref: '#/components/schemas/ExternalDataIdentifier'
-          type: array
-        externalDataAnnotations:
-          items:
-            type: string
-          type: array
-        externalDataIDSimRefs:
-          additionalProperties:
-            items:
-              $ref: '#/components/schemas/KeyValue'
-            type: array
-          type: object
-      type: object
-    FieldDataSaveResults:
-      example:
-        fieldDataName: fieldDataName
-        fieldDataID: fieldDataID
-      properties:
-        fieldDataName:
-          type: string
-        fieldDataID:
-          type: string
-      type: object
-    GroupAccess:
-      example:
-        groupid: 5.962133916683182
-        description: description
-      properties:
-        groupid:
-          type: number
-        description:
-          type: string
-      type: object
     HelloWorldMessage:
       example:
         message: message
@@ -1754,10 +1100,9 @@ components:
       type: object
     ISize:
       example:
-        x: 7
-        xYZ: 2
-        "y": 9
-        z: 3
+        x: 3
+        "y": 2
+        z: 4
       properties:
         x:
           format: int32
@@ -1766,9 +1111,6 @@ components:
           format: int32
           type: integer
         z:
-          format: int32
-          type: integer
-        xYZ:
           format: int32
           type: integer
       type: object
@@ -1835,9 +1177,9 @@ components:
       type: object
     Origin:
       example:
-        x: 5.962133916683182
-        "y": 5.637376656633329
-        z: 2.3021358869347655
+        x: 1.4658129805029452
+        "y": 5.962133916683182
+        z: 5.637376656633329
       properties:
         x:
           format: double
@@ -1999,8 +1341,6 @@ components:
           owner:
             testAccount: true
             name: name
-            iD:
-              value: 0.8008281904610115
             userName: userName
             key:
               value: 0.8008281904610115
@@ -2139,8 +1479,6 @@ components:
             owner:
               testAccount: true
               name: name
-              iD:
-                value: 0.8008281904610115
               userName: userName
               key:
                 value: 0.8008281904610115
@@ -2170,145 +1508,10 @@ components:
           format: double
           type: number
       type: object
-    UCDInfo:
-      example:
-        numPointsXYZ: 7
-        ucdGridNodes:
-        - - - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-          - - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-        - - - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-          - - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-        ucdMembraneQuads:
-        - - 7
-          - 7
-        - - 7
-          - 7
-        uCDGridNodes:
-        - - - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-          - - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-        - - - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-          - - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-            - x: 5.962133916683182
-              "y": 5.637376656633329
-              z: 2.3021358869347655
-        numVolumeNodesX: 3
-        numVolumeNodesXY: 1
-        numVolumeCells: 1
-        reducedUCDGridNodesV:
-        - x: 5.962133916683182
-          "y": 5.637376656633329
-          z: 2.3021358869347655
-        - x: 5.962133916683182
-          "y": 5.637376656633329
-          z: 2.3021358869347655
-        uCDMembraneQuads:
-        - - 9
-          - 9
-        - - 9
-          - 9
-        numVolumeNodesY: 2
-        numMembraneCells: 1
-        numVolumeNodesZ: 4
-      properties:
-        ucdGridNodes:
-          items:
-            items:
-              items:
-                $ref: '#/components/schemas/Coordinate'
-              type: array
-            type: array
-          type: array
-        ucdMembraneQuads:
-          items:
-            items:
-              format: int32
-              type: integer
-            type: array
-          type: array
-        reducedUCDGridNodesV:
-          items:
-            $ref: '#/components/schemas/Coordinate'
-          type: array
-        uCDGridNodes:
-          items:
-            items:
-              items:
-                $ref: '#/components/schemas/Coordinate'
-              type: array
-            type: array
-          type: array
-        uCDMembraneQuads:
-          items:
-            items:
-              format: int32
-              type: integer
-            type: array
-          type: array
-        numVolumeNodesX:
-          format: int32
-          type: integer
-        numVolumeNodesY:
-          format: int32
-          type: integer
-        numVolumeNodesZ:
-          format: int32
-          type: integer
-        numPointsXYZ:
-          format: int32
-          type: integer
-        numVolumeNodesXY:
-          format: int32
-          type: integer
-        numVolumeCells:
-          format: int32
-          type: integer
-        numMembraneCells:
-          format: int32
-          type: integer
-      type: object
     User:
       example:
         testAccount: true
         name: name
-        iD:
-          value: 0.8008281904610115
         userName: userName
         key:
           value: 0.8008281904610115
@@ -2316,8 +1519,6 @@ components:
         userName:
           type: string
         key:
-          $ref: '#/components/schemas/KeyValue'
-        iD:
           $ref: '#/components/schemas/KeyValue'
         name:
           type: string
@@ -2377,8 +1578,6 @@ components:
         owner:
           testAccount: true
           name: name
-          iD:
-            value: 0.8008281904610115
           userName: userName
           key:
             value: 0.8008281904610115
@@ -2411,7 +1610,7 @@ components:
         defaultLabel: defaultLabel
         units: units
         label: label
-        type: 4
+        type: 0
         variableDomain: null
         legacyWarn: true
       properties:
@@ -2435,212 +1634,13 @@ components:
         typeName:
           type: string
       type: object
-    Version:
-      example:
-        date: 2022-03-10T00:00:00.000+00:00
-        owner:
-          testAccount: true
-          name: name
-          iD:
-            value: 0.8008281904610115
-          userName: userName
-          key:
-            value: 0.8008281904610115
-        branchID: 9.301444243932576
-        flag:
-          archived: true
-          current: true
-          intValue: 7
-          versionFlag: 2
-          published: true
-        versionGroupAccess:
-          groupid: 5.962133916683182
-          description: description
-        versionFlag:
-          archived: true
-          current: true
-          intValue: 7
-          versionFlag: 2
-          published: true
-        versionName: versionName
-        annot: annot
-        versionDate: 2022-03-10T00:00:00.000+00:00
-        versionKey:
-          value: 0.8008281904610115
-        versionAnnot: versionAnnot
-        groupAccess:
-          groupid: 5.962133916683182
-          description: description
-        versionBranchID: 5.637376656633329
-        name: name
-        versionBranchPointRef:
-          value: 0.8008281904610115
-        branchPointRefKey:
-          value: 0.8008281904610115
-        versionOwner:
-          testAccount: true
-          name: name
-          iD:
-            value: 0.8008281904610115
-          userName: userName
-          key:
-            value: 0.8008281904610115
+    analyzeFieldDataFile_request:
       properties:
-        versionKey:
-          $ref: '#/components/schemas/KeyValue'
-        versionName:
+        file:
+          format: binary
           type: string
-        versionOwner:
-          $ref: '#/components/schemas/User'
-        versionGroupAccess:
-          $ref: '#/components/schemas/GroupAccess'
-        versionBranchPointRef:
-          $ref: '#/components/schemas/KeyValue'
-        versionBranchID:
-          type: number
-        versionDate:
-          example: 2022-03-10
-          format: date
+        fileName:
           type: string
-        versionFlag:
-          $ref: '#/components/schemas/VersionFlag'
-        versionAnnot:
-          type: string
-        annot:
-          type: string
-        branchID:
-          type: number
-        branchPointRefKey:
-          $ref: '#/components/schemas/KeyValue'
-        date:
-          example: 2022-03-10
-          format: date
-          type: string
-        flag:
-          $ref: '#/components/schemas/VersionFlag'
-        groupAccess:
-          $ref: '#/components/schemas/GroupAccess'
-        name:
-          type: string
-        owner:
-          $ref: '#/components/schemas/User'
-      type: object
-    VersionFlag:
-      example:
-        archived: true
-        current: true
-        intValue: 7
-        versionFlag: 2
-        published: true
-      properties:
-        versionFlag:
-          format: int32
-          type: integer
-        intValue:
-          format: int32
-          type: integer
-        archived:
-          type: boolean
-        current:
-          type: boolean
-        published:
-          type: boolean
-      type: object
-    VersionableType:
-      example:
-        code: 1
-        versionClass: "{}"
-        vType: 6
-        bTopLevel: true
-        name: name
-        isTopLevel: true
-        typeName: typeName
-        vClass: "{}"
-      properties:
-        vType:
-          format: int32
-          type: integer
-        name:
-          type: string
-        vClass:
-          type: object
-        bTopLevel:
-          type: boolean
-        code:
-          format: int32
-          type: integer
-        isTopLevel:
-          type: boolean
-        typeName:
-          type: string
-        versionClass:
-          type: object
-      type: object
-    VersionableTypeVersion:
-      example:
-        vType:
-          code: 1
-          versionClass: "{}"
-          vType: 6
-          bTopLevel: true
-          name: name
-          isTopLevel: true
-          typeName: typeName
-          vClass: "{}"
-        version:
-          date: 2022-03-10T00:00:00.000+00:00
-          owner:
-            testAccount: true
-            name: name
-            iD:
-              value: 0.8008281904610115
-            userName: userName
-            key:
-              value: 0.8008281904610115
-          branchID: 9.301444243932576
-          flag:
-            archived: true
-            current: true
-            intValue: 7
-            versionFlag: 2
-            published: true
-          versionGroupAccess:
-            groupid: 5.962133916683182
-            description: description
-          versionFlag:
-            archived: true
-            current: true
-            intValue: 7
-            versionFlag: 2
-            published: true
-          versionName: versionName
-          annot: annot
-          versionDate: 2022-03-10T00:00:00.000+00:00
-          versionKey:
-            value: 0.8008281904610115
-          versionAnnot: versionAnnot
-          groupAccess:
-            groupid: 5.962133916683182
-            description: description
-          versionBranchID: 5.637376656633329
-          name: name
-          versionBranchPointRef:
-            value: 0.8008281904610115
-          branchPointRefKey:
-            value: 0.8008281904610115
-          versionOwner:
-            testAccount: true
-            name: name
-            iD:
-              value: 0.8008281904610115
-            userName: userName
-            key:
-              value: 0.8008281904610115
-      properties:
-        vType:
-          $ref: '#/components/schemas/VersionableType'
-        version:
-          $ref: '#/components/schemas/Version'
       type: object
   securitySchemes:
     openId:

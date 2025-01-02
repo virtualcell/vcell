@@ -4,28 +4,24 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**copyFieldData**](FieldDataResourceApi.md#copyFieldData) | **POST** /api/v1/fieldData/copy | Copy an existing field data entry. |
-| [**copyFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copy | Copy an existing field data entry. |
-| [**createNewFieldDataFromFileAlreadyAnalyzed**](FieldDataResourceApi.md#createNewFieldDataFromFileAlreadyAnalyzed) | **POST** /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed |  |
-| [**createNewFieldDataFromFileAlreadyAnalyzedWithHttpInfo**](FieldDataResourceApi.md#createNewFieldDataFromFileAlreadyAnalyzedWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed |  |
-| [**createNewFieldDataFromSimulation**](FieldDataResourceApi.md#createNewFieldDataFromSimulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation. |
-| [**createNewFieldDataFromSimulationWithHttpInfo**](FieldDataResourceApi.md#createNewFieldDataFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation. |
-| [**deleteFieldData**](FieldDataResourceApi.md#deleteFieldData) | **DELETE** /api/v1/fieldData | Delete the selected field data. |
-| [**deleteFieldDataWithHttpInfo**](FieldDataResourceApi.md#deleteFieldDataWithHttpInfo) | **DELETE** /api/v1/fieldData | Delete the selected field data. |
-| [**generateFieldDataEstimate**](FieldDataResourceApi.md#generateFieldDataEstimate) | **POST** /api/v1/fieldData/analyzeFieldDataFromFile |  |
-| [**generateFieldDataEstimateWithHttpInfo**](FieldDataResourceApi.md#generateFieldDataEstimateWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFieldDataFromFile |  |
+| [**analyzeFieldDataFile**](FieldDataResourceApi.md#analyzeFieldDataFile) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**analyzeFieldDataFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFieldDataFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**createFieldDataFromAnalyzedFile**](FieldDataResourceApi.md#createFieldDataFromAnalyzedFile) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
+| [**createFieldDataFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFieldDataFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
+| [**deleteFieldData**](FieldDataResourceApi.md#deleteFieldData) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
+| [**deleteFieldDataWithHttpInfo**](FieldDataResourceApi.md#deleteFieldDataWithHttpInfo) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
 | [**getAllFieldDataIDs**](FieldDataResourceApi.md#getAllFieldDataIDs) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data. |
 | [**getAllFieldDataIDsWithHttpInfo**](FieldDataResourceApi.md#getAllFieldDataIDsWithHttpInfo) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data. |
-| [**getFieldDataFromID**](FieldDataResourceApi.md#getFieldDataFromID) | **GET** /api/v1/fieldData | Get the field data from the selected field data ID. |
-| [**getFieldDataFromIDWithHttpInfo**](FieldDataResourceApi.md#getFieldDataFromIDWithHttpInfo) | **GET** /api/v1/fieldData | Get the field data from the selected field data ID. |
+| [**getFieldDataShapeFromID**](FieldDataResourceApi.md#getFieldDataShapeFromID) | **GET** /api/v1/fieldData/fieldDataShape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers. |
+| [**getFieldDataShapeFromIDWithHttpInfo**](FieldDataResourceApi.md#getFieldDataShapeFromIDWithHttpInfo) | **GET** /api/v1/fieldData/fieldDataShape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers. |
 
 
 
-## copyFieldData
+## analyzeFieldDataFile
 
-> FieldDataNoCopyConflict copyFieldData(fieldDataDBOperationSpec)
+> AnalyzedResultsFromFieldData analyzeFieldDataFile(_file, fileName)
 
-Copy an existing field data entry.
+Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -43,12 +39,13 @@ public class Example {
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = new FieldDataDBOperationSpec(); // FieldDataDBOperationSpec | 
+        File _file = new File("/path/to/file"); // File | 
+        String fileName = "fileName_example"; // String | 
         try {
-            FieldDataNoCopyConflict result = apiInstance.copyFieldData(fieldDataDBOperationSpec);
+            AnalyzedResultsFromFieldData result = apiInstance.analyzeFieldDataFile(_file, fileName);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#copyFieldData");
+            System.err.println("Exception when calling FieldDataResourceApi#analyzeFieldDataFile");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -63,11 +60,12 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **fieldDataDBOperationSpec** | [**FieldDataDBOperationSpec**](FieldDataDBOperationSpec.md)|  | [optional] |
+| **_file** | **File**|  | [optional] |
+| **fileName** | **String**|  | [optional] |
 
 ### Return type
 
-[**FieldDataNoCopyConflict**](FieldDataNoCopyConflict.md)
+[**AnalyzedResultsFromFieldData**](AnalyzedResultsFromFieldData.md)
 
 
 ### Authorization
@@ -76,7 +74,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: multipart/form-data
 - **Accept**: application/json
 
 ### HTTP response details
@@ -84,11 +82,11 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 
-## copyFieldDataWithHttpInfo
+## analyzeFieldDataFileWithHttpInfo
 
-> ApiResponse<FieldDataNoCopyConflict> copyFieldData copyFieldDataWithHttpInfo(fieldDataDBOperationSpec)
+> ApiResponse<AnalyzedResultsFromFieldData> analyzeFieldDataFile analyzeFieldDataFileWithHttpInfo(_file, fileName)
 
-Copy an existing field data entry.
+Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -107,14 +105,15 @@ public class Example {
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = new FieldDataDBOperationSpec(); // FieldDataDBOperationSpec | 
+        File _file = new File("/path/to/file"); // File | 
+        String fileName = "fileName_example"; // String | 
         try {
-            ApiResponse<FieldDataNoCopyConflict> response = apiInstance.copyFieldDataWithHttpInfo(fieldDataDBOperationSpec);
+            ApiResponse<AnalyzedResultsFromFieldData> response = apiInstance.analyzeFieldDataFileWithHttpInfo(_file, fileName);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#copyFieldData");
+            System.err.println("Exception when calling FieldDataResourceApi#analyzeFieldDataFile");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -129,11 +128,12 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **fieldDataDBOperationSpec** | [**FieldDataDBOperationSpec**](FieldDataDBOperationSpec.md)|  | [optional] |
+| **_file** | **File**|  | [optional] |
+| **fileName** | **String**|  | [optional] |
 
 ### Return type
 
-ApiResponse<[**FieldDataNoCopyConflict**](FieldDataNoCopyConflict.md)>
+ApiResponse<[**AnalyzedResultsFromFieldData**](AnalyzedResultsFromFieldData.md)>
 
 
 ### Authorization
@@ -142,7 +142,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: multipart/form-data
 - **Accept**: application/json
 
 ### HTTP response details
@@ -151,11 +151,11 @@ No authorization required
 | **200** | OK |  -  |
 
 
-## createNewFieldDataFromFileAlreadyAnalyzed
+## createFieldDataFromAnalyzedFile
 
-> FieldDataSaveResults createNewFieldDataFromFileAlreadyAnalyzed(analyzedResultsFromFieldData)
+> FieldDataSaveResults createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData)
 
-
+Take the analyzed results of the field data, modify it to your liking, then save it on the server.
 
 ### Example
 
@@ -175,10 +175,10 @@ public class Example {
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         AnalyzedResultsFromFieldData analyzedResultsFromFieldData = new AnalyzedResultsFromFieldData(); // AnalyzedResultsFromFieldData | 
         try {
-            FieldDataSaveResults result = apiInstance.createNewFieldDataFromFileAlreadyAnalyzed(analyzedResultsFromFieldData);
+            FieldDataSaveResults result = apiInstance.createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#createNewFieldDataFromFileAlreadyAnalyzed");
+            System.err.println("Exception when calling FieldDataResourceApi#createFieldDataFromAnalyzedFile");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -214,11 +214,11 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 
-## createNewFieldDataFromFileAlreadyAnalyzedWithHttpInfo
+## createFieldDataFromAnalyzedFileWithHttpInfo
 
-> ApiResponse<FieldDataSaveResults> createNewFieldDataFromFileAlreadyAnalyzed createNewFieldDataFromFileAlreadyAnalyzedWithHttpInfo(analyzedResultsFromFieldData)
+> ApiResponse<FieldDataSaveResults> createFieldDataFromAnalyzedFile createFieldDataFromAnalyzedFileWithHttpInfo(analyzedResultsFromFieldData)
 
-
+Take the analyzed results of the field data, modify it to your liking, then save it on the server.
 
 ### Example
 
@@ -239,12 +239,12 @@ public class Example {
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         AnalyzedResultsFromFieldData analyzedResultsFromFieldData = new AnalyzedResultsFromFieldData(); // AnalyzedResultsFromFieldData | 
         try {
-            ApiResponse<FieldDataSaveResults> response = apiInstance.createNewFieldDataFromFileAlreadyAnalyzedWithHttpInfo(analyzedResultsFromFieldData);
+            ApiResponse<FieldDataSaveResults> response = apiInstance.createFieldDataFromAnalyzedFileWithHttpInfo(analyzedResultsFromFieldData);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#createNewFieldDataFromFileAlreadyAnalyzed");
+            System.err.println("Exception when calling FieldDataResourceApi#createFieldDataFromAnalyzedFile");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -281,139 +281,9 @@ No authorization required
 | **200** | OK |  -  |
 
 
-## createNewFieldDataFromSimulation
-
-> ExternalDataIdentifier createNewFieldDataFromSimulation(fieldDataDBOperationSpec)
-
-Create new field data from a simulation.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.FieldDataResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-
-        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = new FieldDataDBOperationSpec(); // FieldDataDBOperationSpec | 
-        try {
-            ExternalDataIdentifier result = apiInstance.createNewFieldDataFromSimulation(fieldDataDBOperationSpec);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#createNewFieldDataFromSimulation");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **fieldDataDBOperationSpec** | [**FieldDataDBOperationSpec**](FieldDataDBOperationSpec.md)|  | [optional] |
-
-### Return type
-
-[**ExternalDataIdentifier**](ExternalDataIdentifier.md)
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-
-## createNewFieldDataFromSimulationWithHttpInfo
-
-> ApiResponse<ExternalDataIdentifier> createNewFieldDataFromSimulation createNewFieldDataFromSimulationWithHttpInfo(fieldDataDBOperationSpec)
-
-Create new field data from a simulation.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.FieldDataResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-
-        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = new FieldDataDBOperationSpec(); // FieldDataDBOperationSpec | 
-        try {
-            ApiResponse<ExternalDataIdentifier> response = apiInstance.createNewFieldDataFromSimulationWithHttpInfo(fieldDataDBOperationSpec);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#createNewFieldDataFromSimulation");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **fieldDataDBOperationSpec** | [**FieldDataDBOperationSpec**](FieldDataDBOperationSpec.md)|  | [optional] |
-
-### Return type
-
-ApiResponse<[**ExternalDataIdentifier**](ExternalDataIdentifier.md)>
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-
-
 ## deleteFieldData
 
-> void deleteFieldData(body)
+> void deleteFieldData(fieldDataID)
 
 Delete the selected field data.
 
@@ -433,9 +303,9 @@ public class Example {
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        String body = "body_example"; // String | 
+        String fieldDataID = "fieldDataID_example"; // String | 
         try {
-            apiInstance.deleteFieldData(body);
+            apiInstance.deleteFieldData(fieldDataID);
         } catch (ApiException e) {
             System.err.println("Exception when calling FieldDataResourceApi#deleteFieldData");
             System.err.println("Status code: " + e.getCode());
@@ -452,7 +322,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**|  | [optional] |
+| **fieldDataID** | **String**|  | |
 
 ### Return type
 
@@ -465,7 +335,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: text/plain
+- **Content-Type**: Not defined
 - **Accept**: Not defined
 
 ### HTTP response details
@@ -475,7 +345,7 @@ No authorization required
 
 ## deleteFieldDataWithHttpInfo
 
-> ApiResponse<Void> deleteFieldData deleteFieldDataWithHttpInfo(body)
+> ApiResponse<Void> deleteFieldData deleteFieldDataWithHttpInfo(fieldDataID)
 
 Delete the selected field data.
 
@@ -496,9 +366,9 @@ public class Example {
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        String body = "body_example"; // String | 
+        String fieldDataID = "fieldDataID_example"; // String | 
         try {
-            ApiResponse<Void> response = apiInstance.deleteFieldDataWithHttpInfo(body);
+            ApiResponse<Void> response = apiInstance.deleteFieldDataWithHttpInfo(fieldDataID);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
         } catch (ApiException e) {
@@ -517,7 +387,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**|  | [optional] |
+| **fieldDataID** | **String**|  | |
 
 ### Return type
 
@@ -530,7 +400,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: text/plain
+- **Content-Type**: Not defined
 - **Accept**: Not defined
 
 ### HTTP response details
@@ -539,143 +409,9 @@ No authorization required
 | **204** | No Content |  -  |
 
 
-## generateFieldDataEstimate
-
-> FieldDataFileOperationSpec generateFieldDataEstimate(_file, fileName)
-
-
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.FieldDataResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-
-        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        File _file = new File("/path/to/file"); // File | 
-        String fileName = "fileName_example"; // String | 
-        try {
-            FieldDataFileOperationSpec result = apiInstance.generateFieldDataEstimate(_file, fileName);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#generateFieldDataEstimate");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **_file** | **File**|  | [optional] |
-| **fileName** | **String**|  | [optional] |
-
-### Return type
-
-[**FieldDataFileOperationSpec**](FieldDataFileOperationSpec.md)
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: multipart/form-data
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-
-## generateFieldDataEstimateWithHttpInfo
-
-> ApiResponse<FieldDataFileOperationSpec> generateFieldDataEstimate generateFieldDataEstimateWithHttpInfo(_file, fileName)
-
-
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.FieldDataResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-
-        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        File _file = new File("/path/to/file"); // File | 
-        String fileName = "fileName_example"; // String | 
-        try {
-            ApiResponse<FieldDataFileOperationSpec> response = apiInstance.generateFieldDataEstimateWithHttpInfo(_file, fileName);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#generateFieldDataEstimate");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **_file** | **File**|  | [optional] |
-| **fileName** | **String**|  | [optional] |
-
-### Return type
-
-ApiResponse<[**FieldDataFileOperationSpec**](FieldDataFileOperationSpec.md)>
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: multipart/form-data
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-
-
 ## getAllFieldDataIDs
 
-> FieldDataReferences getAllFieldDataIDs()
+> List<FieldDataReference> getAllFieldDataIDs()
 
 Get all of the ids used to identify, and retrieve field data.
 
@@ -696,7 +432,7 @@ public class Example {
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         try {
-            FieldDataReferences result = apiInstance.getAllFieldDataIDs();
+            List<FieldDataReference> result = apiInstance.getAllFieldDataIDs();
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling FieldDataResourceApi#getAllFieldDataIDs");
@@ -715,7 +451,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**FieldDataReferences**](FieldDataReferences.md)
+[**List&lt;FieldDataReference&gt;**](FieldDataReference.md)
 
 
 ### Authorization
@@ -734,7 +470,7 @@ No authorization required
 
 ## getAllFieldDataIDsWithHttpInfo
 
-> ApiResponse<FieldDataReferences> getAllFieldDataIDs getAllFieldDataIDsWithHttpInfo()
+> ApiResponse<List<FieldDataReference>> getAllFieldDataIDs getAllFieldDataIDsWithHttpInfo()
 
 Get all of the ids used to identify, and retrieve field data.
 
@@ -756,7 +492,7 @@ public class Example {
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         try {
-            ApiResponse<FieldDataReferences> response = apiInstance.getAllFieldDataIDsWithHttpInfo();
+            ApiResponse<List<FieldDataReference>> response = apiInstance.getAllFieldDataIDsWithHttpInfo();
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -777,7 +513,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-ApiResponse<[**FieldDataReferences**](FieldDataReferences.md)>
+ApiResponse<[**List&lt;FieldDataReference&gt;**](FieldDataReference.md)>
 
 
 ### Authorization
@@ -795,11 +531,11 @@ No authorization required
 | **200** | OK |  -  |
 
 
-## getFieldDataFromID
+## getFieldDataShapeFromID
 
-> FieldDataInfo getFieldDataFromID(body)
+> FieldDataShape getFieldDataShapeFromID(fieldDataID)
 
-Get the field data from the selected field data ID.
+Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
 
 ### Example
 
@@ -817,12 +553,12 @@ public class Example {
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        String body = "body_example"; // String | 
+        String fieldDataID = "fieldDataID_example"; // String | 
         try {
-            FieldDataInfo result = apiInstance.getFieldDataFromID(body);
+            FieldDataShape result = apiInstance.getFieldDataShapeFromID(fieldDataID);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#getFieldDataFromID");
+            System.err.println("Exception when calling FieldDataResourceApi#getFieldDataShapeFromID");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -837,11 +573,11 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**|  | [optional] |
+| **fieldDataID** | **String**|  | |
 
 ### Return type
 
-[**FieldDataInfo**](FieldDataInfo.md)
+[**FieldDataShape**](FieldDataShape.md)
 
 
 ### Authorization
@@ -850,7 +586,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: text/plain
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 ### HTTP response details
@@ -858,11 +594,11 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 
-## getFieldDataFromIDWithHttpInfo
+## getFieldDataShapeFromIDWithHttpInfo
 
-> ApiResponse<FieldDataInfo> getFieldDataFromID getFieldDataFromIDWithHttpInfo(body)
+> ApiResponse<FieldDataShape> getFieldDataShapeFromID getFieldDataShapeFromIDWithHttpInfo(fieldDataID)
 
-Get the field data from the selected field data ID.
+Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
 
 ### Example
 
@@ -881,14 +617,14 @@ public class Example {
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        String body = "body_example"; // String | 
+        String fieldDataID = "fieldDataID_example"; // String | 
         try {
-            ApiResponse<FieldDataInfo> response = apiInstance.getFieldDataFromIDWithHttpInfo(body);
+            ApiResponse<FieldDataShape> response = apiInstance.getFieldDataShapeFromIDWithHttpInfo(fieldDataID);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#getFieldDataFromID");
+            System.err.println("Exception when calling FieldDataResourceApi#getFieldDataShapeFromID");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -903,11 +639,11 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**|  | [optional] |
+| **fieldDataID** | **String**|  | |
 
 ### Return type
 
-ApiResponse<[**FieldDataInfo**](FieldDataInfo.md)>
+ApiResponse<[**FieldDataShape**](FieldDataShape.md)>
 
 
 ### Authorization
@@ -916,7 +652,7 @@ No authorization required
 
 ### HTTP request headers
 
-- **Content-Type**: text/plain
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 ### HTTP response details

@@ -18,13 +18,9 @@ import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
-import org.vcell.restclient.model.ExternalDataIdentifier;
-import org.vcell.restclient.model.FieldDataDBOperationSpec;
-import org.vcell.restclient.model.FieldDataFileOperationSpec;
-import org.vcell.restclient.model.FieldDataInfo;
-import org.vcell.restclient.model.FieldDataNoCopyConflict;
-import org.vcell.restclient.model.FieldDataReferences;
+import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.model.FieldDataSaveResults;
+import org.vcell.restclient.model.FieldDataShape;
 import java.io.File;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -96,318 +92,28 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Copy an existing field data entry.
-   * 
-   * @param fieldDataDBOperationSpec  (optional)
-   * @return FieldDataNoCopyConflict
-   * @throws ApiException if fails to make API call
-   */
-  public FieldDataNoCopyConflict copyFieldData(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws ApiException {
-    ApiResponse<FieldDataNoCopyConflict> localVarResponse = copyFieldDataWithHttpInfo(fieldDataDBOperationSpec);
-    return localVarResponse.getData();
-  }
-
-  /**
-   * Copy an existing field data entry.
-   * 
-   * @param fieldDataDBOperationSpec  (optional)
-   * @return ApiResponse&lt;FieldDataNoCopyConflict&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<FieldDataNoCopyConflict> copyFieldDataWithHttpInfo(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = copyFieldDataRequestBuilder(fieldDataDBOperationSpec);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("copyFieldData", localVarResponse);
-        }
-        return new ApiResponse<FieldDataNoCopyConflict>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataNoCopyConflict>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder copyFieldDataRequestBuilder(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/v1/fieldData/copy";
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Content-Type", "application/json");
-    localVarRequestBuilder.header("Accept", "application/json");
-
-    try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(fieldDataDBOperationSpec);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
-   * 
-   * 
-   * @param analyzedResultsFromFieldData  (optional)
-   * @return FieldDataSaveResults
-   * @throws ApiException if fails to make API call
-   */
-  public FieldDataSaveResults createNewFieldDataFromFileAlreadyAnalyzed(AnalyzedResultsFromFieldData analyzedResultsFromFieldData) throws ApiException {
-    ApiResponse<FieldDataSaveResults> localVarResponse = createNewFieldDataFromFileAlreadyAnalyzedWithHttpInfo(analyzedResultsFromFieldData);
-    return localVarResponse.getData();
-  }
-
-  /**
-   * 
-   * 
-   * @param analyzedResultsFromFieldData  (optional)
-   * @return ApiResponse&lt;FieldDataSaveResults&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<FieldDataSaveResults> createNewFieldDataFromFileAlreadyAnalyzedWithHttpInfo(AnalyzedResultsFromFieldData analyzedResultsFromFieldData) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = createNewFieldDataFromFileAlreadyAnalyzedRequestBuilder(analyzedResultsFromFieldData);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("createNewFieldDataFromFileAlreadyAnalyzed", localVarResponse);
-        }
-        return new ApiResponse<FieldDataSaveResults>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSaveResults>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder createNewFieldDataFromFileAlreadyAnalyzedRequestBuilder(AnalyzedResultsFromFieldData analyzedResultsFromFieldData) throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/v1/fieldData/createFieldDataFromFileAlreadyAnalyzed";
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Content-Type", "application/json");
-    localVarRequestBuilder.header("Accept", "application/json");
-
-    try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(analyzedResultsFromFieldData);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
-   * Create new field data from a simulation.
-   * 
-   * @param fieldDataDBOperationSpec  (optional)
-   * @return ExternalDataIdentifier
-   * @throws ApiException if fails to make API call
-   */
-  public ExternalDataIdentifier createNewFieldDataFromSimulation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws ApiException {
-    ApiResponse<ExternalDataIdentifier> localVarResponse = createNewFieldDataFromSimulationWithHttpInfo(fieldDataDBOperationSpec);
-    return localVarResponse.getData();
-  }
-
-  /**
-   * Create new field data from a simulation.
-   * 
-   * @param fieldDataDBOperationSpec  (optional)
-   * @return ApiResponse&lt;ExternalDataIdentifier&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<ExternalDataIdentifier> createNewFieldDataFromSimulationWithHttpInfo(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = createNewFieldDataFromSimulationRequestBuilder(fieldDataDBOperationSpec);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("createNewFieldDataFromSimulation", localVarResponse);
-        }
-        return new ApiResponse<ExternalDataIdentifier>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<ExternalDataIdentifier>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder createNewFieldDataFromSimulationRequestBuilder(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/v1/fieldData/createFieldDataFromSimulation";
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Content-Type", "application/json");
-    localVarRequestBuilder.header("Accept", "application/json");
-
-    try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(fieldDataDBOperationSpec);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
-   * Delete the selected field data.
-   * 
-   * @param body  (optional)
-   * @throws ApiException if fails to make API call
-   */
-  public void deleteFieldData(String body) throws ApiException {
-    deleteFieldDataWithHttpInfo(body);
-  }
-
-  /**
-   * Delete the selected field data.
-   * 
-   * @param body  (optional)
-   * @return ApiResponse&lt;Void&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<Void> deleteFieldDataWithHttpInfo(String body) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = deleteFieldDataRequestBuilder(body);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("deleteFieldData", localVarResponse);
-        }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
-        );
-      } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-            // Ignore
-        }
-        localVarResponse.body().close();
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder deleteFieldDataRequestBuilder(String body) throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/v1/fieldData";
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Content-Type", "text/plain");
-    localVarRequestBuilder.header("Accept", "application/json");
-
-    localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.ofString(body));
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
-   * 
+   * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)
-   * @return FieldDataFileOperationSpec
+   * @return AnalyzedResultsFromFieldData
    * @throws ApiException if fails to make API call
    */
-  public FieldDataFileOperationSpec generateFieldDataEstimate(File _file, String fileName) throws ApiException {
-    ApiResponse<FieldDataFileOperationSpec> localVarResponse = generateFieldDataEstimateWithHttpInfo(_file, fileName);
+  public AnalyzedResultsFromFieldData analyzeFieldDataFile(File _file, String fileName) throws ApiException {
+    ApiResponse<AnalyzedResultsFromFieldData> localVarResponse = analyzeFieldDataFileWithHttpInfo(_file, fileName);
     return localVarResponse.getData();
   }
 
   /**
-   * 
+   * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)
-   * @return ApiResponse&lt;FieldDataFileOperationSpec&gt;
+   * @return ApiResponse&lt;AnalyzedResultsFromFieldData&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<FieldDataFileOperationSpec> generateFieldDataEstimateWithHttpInfo(File _file, String fileName) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = generateFieldDataEstimateRequestBuilder(_file, fileName);
+  public ApiResponse<AnalyzedResultsFromFieldData> analyzeFieldDataFileWithHttpInfo(File _file, String fileName) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = analyzeFieldDataFileRequestBuilder(_file, fileName);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -417,12 +123,12 @@ public class FieldDataResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("generateFieldDataEstimate", localVarResponse);
+          throw getApiException("analyzeFieldDataFile", localVarResponse);
         }
-        return new ApiResponse<FieldDataFileOperationSpec>(
+        return new ApiResponse<AnalyzedResultsFromFieldData>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataFileOperationSpec>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<AnalyzedResultsFromFieldData>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -435,11 +141,11 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder generateFieldDataEstimateRequestBuilder(File _file, String fileName) throws ApiException {
+  private HttpRequest.Builder analyzeFieldDataFileRequestBuilder(File _file, String fileName) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/fieldData/analyzeFieldDataFromFile";
+    String localVarPath = "/api/v1/fieldData/analyzeFieldDataFile";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -489,23 +195,171 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Get all of the ids used to identify, and retrieve field data.
+   * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
    * 
-   * @return FieldDataReferences
+   * @param analyzedResultsFromFieldData  (optional)
+   * @return FieldDataSaveResults
    * @throws ApiException if fails to make API call
    */
-  public FieldDataReferences getAllFieldDataIDs() throws ApiException {
-    ApiResponse<FieldDataReferences> localVarResponse = getAllFieldDataIDsWithHttpInfo();
+  public FieldDataSaveResults createFieldDataFromAnalyzedFile(AnalyzedResultsFromFieldData analyzedResultsFromFieldData) throws ApiException {
+    ApiResponse<FieldDataSaveResults> localVarResponse = createFieldDataFromAnalyzedFileWithHttpInfo(analyzedResultsFromFieldData);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+   * 
+   * @param analyzedResultsFromFieldData  (optional)
+   * @return ApiResponse&lt;FieldDataSaveResults&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<FieldDataSaveResults> createFieldDataFromAnalyzedFileWithHttpInfo(AnalyzedResultsFromFieldData analyzedResultsFromFieldData) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = createFieldDataFromAnalyzedFileRequestBuilder(analyzedResultsFromFieldData);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("createFieldDataFromAnalyzedFile", localVarResponse);
+        }
+        return new ApiResponse<FieldDataSaveResults>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSaveResults>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder createFieldDataFromAnalyzedFileRequestBuilder(AnalyzedResultsFromFieldData analyzedResultsFromFieldData) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/fieldData/createFieldDataFromAnalyzedFile";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(analyzedResultsFromFieldData);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Delete the selected field data.
+   * 
+   * @param fieldDataID  (required)
+   * @throws ApiException if fails to make API call
+   */
+  public void deleteFieldData(String fieldDataID) throws ApiException {
+    deleteFieldDataWithHttpInfo(fieldDataID);
+  }
+
+  /**
+   * Delete the selected field data.
+   * 
+   * @param fieldDataID  (required)
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> deleteFieldDataWithHttpInfo(String fieldDataID) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deleteFieldDataRequestBuilder(fieldDataID);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("deleteFieldData", localVarResponse);
+        }
+        return new ApiResponse<Void>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          null
+        );
+      } finally {
+        // Drain the InputStream
+        while (localVarResponse.body().read() != -1) {
+            // Ignore
+        }
+        localVarResponse.body().close();
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder deleteFieldDataRequestBuilder(String fieldDataID) throws ApiException {
+    // verify the required parameter 'fieldDataID' is set
+    if (fieldDataID == null) {
+      throw new ApiException(400, "Missing the required parameter 'fieldDataID' when calling deleteFieldData");
+    }
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/fieldData/delete/{fieldDataID}"
+        .replace("{fieldDataID}", ApiClient.urlEncode(fieldDataID.toString()));
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Get all of the ids used to identify, and retrieve field data.
+   * 
+   * @return List&lt;FieldDataReference&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<FieldDataReference> getAllFieldDataIDs() throws ApiException {
+    ApiResponse<List<FieldDataReference>> localVarResponse = getAllFieldDataIDsWithHttpInfo();
     return localVarResponse.getData();
   }
 
   /**
    * Get all of the ids used to identify, and retrieve field data.
    * 
-   * @return ApiResponse&lt;FieldDataReferences&gt;
+   * @return ApiResponse&lt;List&lt;FieldDataReference&gt;&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<FieldDataReferences> getAllFieldDataIDsWithHttpInfo() throws ApiException {
+  public ApiResponse<List<FieldDataReference>> getAllFieldDataIDsWithHttpInfo() throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = getAllFieldDataIDsRequestBuilder();
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -518,10 +372,10 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getAllFieldDataIDs", localVarResponse);
         }
-        return new ApiResponse<FieldDataReferences>(
+        return new ApiResponse<List<FieldDataReference>>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataReferences>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<FieldDataReference>>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -554,26 +408,26 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Get the field data from the selected field data ID.
+   * Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
    * 
-   * @param body  (optional)
-   * @return FieldDataInfo
+   * @param fieldDataID  (required)
+   * @return FieldDataShape
    * @throws ApiException if fails to make API call
    */
-  public FieldDataInfo getFieldDataFromID(String body) throws ApiException {
-    ApiResponse<FieldDataInfo> localVarResponse = getFieldDataFromIDWithHttpInfo(body);
+  public FieldDataShape getFieldDataShapeFromID(String fieldDataID) throws ApiException {
+    ApiResponse<FieldDataShape> localVarResponse = getFieldDataShapeFromIDWithHttpInfo(fieldDataID);
     return localVarResponse.getData();
   }
 
   /**
-   * Get the field data from the selected field data ID.
+   * Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
    * 
-   * @param body  (optional)
-   * @return ApiResponse&lt;FieldDataInfo&gt;
+   * @param fieldDataID  (required)
+   * @return ApiResponse&lt;FieldDataShape&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<FieldDataInfo> getFieldDataFromIDWithHttpInfo(String body) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getFieldDataFromIDRequestBuilder(body);
+  public ApiResponse<FieldDataShape> getFieldDataShapeFromIDWithHttpInfo(String fieldDataID) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getFieldDataShapeFromIDRequestBuilder(fieldDataID);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -583,12 +437,12 @@ public class FieldDataResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("getFieldDataFromID", localVarResponse);
+          throw getApiException("getFieldDataShapeFromID", localVarResponse);
         }
-        return new ApiResponse<FieldDataInfo>(
+        return new ApiResponse<FieldDataShape>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataInfo>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataShape>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -601,18 +455,22 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder getFieldDataFromIDRequestBuilder(String body) throws ApiException {
+  private HttpRequest.Builder getFieldDataShapeFromIDRequestBuilder(String fieldDataID) throws ApiException {
+    // verify the required parameter 'fieldDataID' is set
+    if (fieldDataID == null) {
+      throw new ApiException(400, "Missing the required parameter 'fieldDataID' when calling getFieldDataShapeFromID");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/fieldData";
+    String localVarPath = "/api/v1/fieldData/fieldDataShape/{fieldDataID}"
+        .replace("{fieldDataID}", ApiClient.urlEncode(fieldDataID.toString()));
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
-    localVarRequestBuilder.header("Content-Type", "text/plain");
     localVarRequestBuilder.header("Accept", "application/json");
 
-    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.ofString(body));
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

@@ -14,13 +14,9 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { AnalyzedResultsFromFieldData } from '../model/models';
-import { ExternalDataIdentifier } from '../model/models';
-import { FieldDataDBOperationSpec } from '../model/models';
-import { FieldDataFileOperationSpec } from '../model/models';
-import { FieldDataInfo } from '../model/models';
-import { FieldDataNoCopyConflict } from '../model/models';
-import { FieldDataReferences } from '../model/models';
+import { FieldDataReference } from '../model/models';
 import { FieldDataSaveResults } from '../model/models';
+import { FieldDataShape } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -32,52 +28,38 @@ export interface FieldDataResourceServiceInterface {
     configuration: Configuration;
 
     /**
-     * Copy an existing field data entry.
-     * 
-     * @param fieldDataDBOperationSpec 
-     */
-    copyFieldData(fieldDataDBOperationSpec?: FieldDataDBOperationSpec, extraHttpRequestParams?: any): Observable<FieldDataNoCopyConflict>;
-
-    /**
-     * 
-     * 
-     * @param analyzedResultsFromFieldData 
-     */
-    createNewFieldDataFromFileAlreadyAnalyzed(analyzedResultsFromFieldData?: AnalyzedResultsFromFieldData, extraHttpRequestParams?: any): Observable<FieldDataSaveResults>;
-
-    /**
-     * Create new field data from a simulation.
-     * 
-     * @param fieldDataDBOperationSpec 
-     */
-    createNewFieldDataFromSimulation(fieldDataDBOperationSpec?: FieldDataDBOperationSpec, extraHttpRequestParams?: any): Observable<ExternalDataIdentifier>;
-
-    /**
-     * Delete the selected field data.
-     * 
-     * @param body 
-     */
-    deleteFieldData(body?: string, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * 
+     * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
      * 
      * @param file 
      * @param fileName 
      */
-    generateFieldDataEstimate(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<FieldDataFileOperationSpec>;
+    analyzeFieldDataFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<AnalyzedResultsFromFieldData>;
+
+    /**
+     * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+     * 
+     * @param analyzedResultsFromFieldData 
+     */
+    createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData?: AnalyzedResultsFromFieldData, extraHttpRequestParams?: any): Observable<FieldDataSaveResults>;
+
+    /**
+     * Delete the selected field data.
+     * 
+     * @param fieldDataID 
+     */
+    deleteFieldData(fieldDataID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * Get all of the ids used to identify, and retrieve field data.
      * 
      */
-    getAllFieldDataIDs(extraHttpRequestParams?: any): Observable<FieldDataReferences>;
+    getAllFieldDataIDs(extraHttpRequestParams?: any): Observable<Array<FieldDataReference>>;
 
     /**
-     * Get the field data from the selected field data ID.
+     * Get the shape of the field data. That is it\&#39;s size, origin, extent, and data identifiers.
      * 
-     * @param body 
+     * @param fieldDataID 
      */
-    getFieldDataFromID(body?: string, extraHttpRequestParams?: any): Observable<FieldDataInfo>;
+    getFieldDataShapeFromID(fieldDataID: string, extraHttpRequestParams?: any): Observable<FieldDataShape>;
 
 }

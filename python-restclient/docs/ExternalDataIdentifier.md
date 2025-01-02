@@ -7,7 +7,6 @@ Name | Type | Description | Notes
 **key** | [**KeyValue**](KeyValue.md) |  | [optional] 
 **owner** | [**User**](User.md) |  | [optional] 
 **name** | **str** |  | [optional] 
-**i_d** | **str** |  | [optional] 
 **job_index** | **int** |  | [optional] 
 **simulation_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
 **parameter_scan_type** | **bool** |  | [optional] 
