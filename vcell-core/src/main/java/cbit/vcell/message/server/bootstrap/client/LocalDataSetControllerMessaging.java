@@ -71,7 +71,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			vCellApiClient.getFieldDataApi().deleteFieldData(fieldDataFileOperationSpec.specEDI.getKey().toString());
 			return null;
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO) {
-			FieldDataInfo fieldDataInfo = vCellApiClient.getFieldDataApi().getFieldDataShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
+			FieldDataShape fieldDataInfo = vCellApiClient.getFieldDataApi().getFieldDataShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
 			return FieldDataFileOperationResults.fieldDataInfoDTOToFileOperationResults(fieldDataInfo);
 		} else {
 			return dataServerProxy.fieldDataFileOperation(fieldDataFileOperationSpec);
