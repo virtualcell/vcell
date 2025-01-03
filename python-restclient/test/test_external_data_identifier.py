@@ -43,12 +43,9 @@ class TestExternalDataIdentifier(unittest.TestCase):
                     user_name = '', 
                     key = vcell_client.models.key_value.KeyValue(
                         value = 1.337, ), 
-                    i_d = vcell_client.models.key_value.KeyValue(
-                        value = 1.337, ), 
                     name = '', 
                     test_account = True, ),
                 name = '',
-                i_d = '',
                 job_index = 56,
                 simulation_key = vcell_client.models.key_value.KeyValue(
                     value = 1.337, ),

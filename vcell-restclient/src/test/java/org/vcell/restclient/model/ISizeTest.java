@@ -61,12 +61,4 @@ public class ISizeTest {
         // TODO: test z
     }
 
-    /**
-     * Test the property 'xYZ'
-     */
-    @Test
-    public void xYZTest() {
-        // TODO: test xYZ
-    }
-
 }

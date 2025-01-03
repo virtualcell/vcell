@@ -27,10 +27,10 @@ class TestSimulationResourceApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_save_simulation(self) -> None:
-        """Test case for save_simulation
+    def test_get_simulation_status(self) -> None:
+        """Test case for get_simulation_status
 
-        Save a simulation.
+        Get the status of simulation running
         """
         pass
 

@@ -39,8 +39,7 @@ class TestISize(unittest.TestCase):
             return ISize(
                 x = 56,
                 y = 56,
-                z = 56,
-                x_yz = 56
+                z = 56
             )
         else:
             return ISize(
