@@ -109,12 +109,23 @@ public class OmexTestingDatabase {
 
         if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
             return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
+        } else if (errorMessage.contains("Non-integer stoichiometry")) {
+            return FailureType.UNSUPPORTED_NON_INT_STOCH;
+        } else if (errorMessage.contains("Non-numeric stoichiometry")) {
+            return FailureType.UNSUPPORTED_NON_NUMERIC_STOCH;
+        } else if (errorMessage.contains("compartment") && errorMessage.contains("has constant attribute set to")) {
+            return FailureType.UNSUPPORTED_NON_CONSTANT_COMPARTMENTS;
+        } else if (errorMessage.contains("XMLNode cannot be cast to")) {
+            return FailureType.SBML_XML_NODE_FAILURE;
         } else if (errorMessage.contains("System IO encountered a fatal error")){
             Throwable subException = caughtException.getCause();
             //String subMessage = (subException == null) ? "" : subException.getMessage();
             if (subException instanceof FileAlreadyExistsException){
                 return FailureType.HDF5_FILE_ALREADY_EXISTS;
             }
+        } else if (errorMessage.contains("Could not execute code")){
+            if (errorMessage.contains("CVODE")) return FailureType.SOLVER_FAILURE;
+            if (errorMessage.contains("SundialsSolverStandalone")) return FailureType.SOLVER_FAILURE;
         } else if (errorMessage.contains("error while processing outputs: null")){
             Throwable subException = caughtException.getCause();
             if (subException instanceof ArrayIndexOutOfBoundsException){
@@ -127,12 +138,12 @@ public class OmexTestingDatabase {
             return FailureType.SEDML_NO_SEDMLS_TO_EXECUTE;
         } else if (errorMessage.contains("MappingException occurred: failed to generate math")) {
             return FailureType.MATH_GENERATION_FAILURE;
-        } else if (errorMessage.contains("Process timed out")) {
-            return FailureType.TOO_SLOW;
+        } else if (errorMessage.contains("delay") && errorMessage.contains("SBML")) {
+            return FailureType.UNSUPPORTED_DELAY_SBML;
         } else if (errorMessage.contains("are in unnamed module of loader")){
             return FailureType.SBML_IMPORT_FAILURE;
-        } else if (errorMessage.contains("Could not execute code")){
-            if (errorMessage.contains("CVODE")) return FailureType.SOLVER_FAILURE;
+        } else if (errorMessage.contains("Process timed out")) {
+            return FailureType.TOO_SLOW;
         }
 
         // else check Tracer error events for known faults
