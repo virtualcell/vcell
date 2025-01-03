@@ -100,5 +100,3 @@ src/main/java/org/vcell/restclient/model/UserRegistrationInfo.java
 src/main/java/org/vcell/restclient/model/VCSimulationIdentifier.java
 src/main/java/org/vcell/restclient/model/VariableDomain.java
 src/main/java/org/vcell/restclient/model/VariableType.java
-src/test/java/org/vcell/restclient/api/FieldDataResourceApiTest.java
-src/test/java/org/vcell/restclient/model/FieldDataShapeTest.java

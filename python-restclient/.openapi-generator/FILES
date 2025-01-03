@@ -47,7 +47,6 @@ docs/VariableDomain.md
 docs/VariableType.md
 pyproject.toml
 test/__init__.py
-test/test_field_data_shape.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py
