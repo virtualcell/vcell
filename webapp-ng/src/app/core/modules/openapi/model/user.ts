@@ -15,7 +15,6 @@ import { KeyValue } from './key-value';
 export interface User { 
     userName?: string;
     key?: KeyValue;
-    iD?: KeyValue;
     name?: string;
     testAccount?: boolean;
 }

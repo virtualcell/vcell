@@ -34,41 +34,6 @@ class TestBioModelResourceApi(unittest.TestCase):
         """
         pass
 
-    def test_get_bio_model_bngl(self) -> None:
-        """Test case for get_bio_model_bngl
-
-        Get the BioModel in BNGL format.
-        """
-        pass
-
-    def test_get_bio_model_diagram(self) -> None:
-        """Test case for get_bio_model_diagram
-
-        Get the BioModels diagram.
-        """
-        pass
-
-    def test_get_bio_model_omex(self) -> None:
-        """Test case for get_bio_model_omex
-
-        Get the BioModel in OMEX format.
-        """
-        pass
-
-    def test_get_bio_model_sbml(self) -> None:
-        """Test case for get_bio_model_sbml
-
-        Get the BioModel in SBML format.
-        """
-        pass
-
-    def test_get_bio_model_vcml(self) -> None:
-        """Test case for get_bio_model_vcml
-
-        Get the BioModel in VCML format.
-        """
-        pass
-
     def test_get_biomodel_by_id(self) -> None:
         """Test case for get_biomodel_by_id
 

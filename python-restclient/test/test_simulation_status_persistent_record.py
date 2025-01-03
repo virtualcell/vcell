@@ -38,9 +38,6 @@ class TestSimulationStatusPersistentRecord(unittest.TestCase):
         if include_optional:
             return SimulationStatusPersistentRecord(
                 status = 'UNKNOWN',
-                progress_hash = {
-                    'key' : 1.337
-                    },
                 details = '',
                 has_data = True
             )

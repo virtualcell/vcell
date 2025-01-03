@@ -11,6 +11,7 @@
 package org.vcell.util.document;
 import java.util.StringTokenizer;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.vcell.util.Matchable;
 
 
@@ -25,9 +26,30 @@ public class ExternalDataIdentifier implements SimResampleInfoProvider,java.io.S
 	private org.vcell.util.document.User owner;
 	private String name;
 
+	public static org.vcell.restclient.model.ExternalDataIdentifier externalDataIdentifierToDTO(ExternalDataIdentifier externalDataIdentifier) {
+		org.vcell.restclient.model.ExternalDataIdentifier dto = new org.vcell.restclient.model.ExternalDataIdentifier();
+		dto.key(KeyValue.keyValueToDTO(externalDataIdentifier.getKey()));
+		dto.owner(User.userToDTO(externalDataIdentifier.getOwner()));
+		dto.name(externalDataIdentifier.getName());
+		return dto;
+	}
+
+	public static ExternalDataIdentifier dtoToExternalDataIdentifier(org.vcell.restclient.model.ExternalDataIdentifier dto){
+		ExternalDataIdentifier externalDataIdentifier = new ExternalDataIdentifier();
+		externalDataIdentifier.key = KeyValue.dtoToKeyValue(dto.getDataKey());
+		externalDataIdentifier.name = dto.getName();
+		externalDataIdentifier.owner = User.dtoToUser(dto.getOwner());
+		return externalDataIdentifier;
+	}
+
 /**
  * FieldDataIdentifier constructor comment.
  */
+
+public ExternalDataIdentifier(){
+	super();
+}
+
 public ExternalDataIdentifier(KeyValue arg_key, org.vcell.util.document.User argOwner,String argName) {
 	super();
 	key = arg_key;
@@ -46,6 +68,8 @@ public static ExternalDataIdentifier fromTokens(StringTokenizer st){
 public String toCSVString(){
 	return key.toString()+","+owner.getName()+","+owner.getID().toString()+","+name;
 }
+
+@JsonIgnore
 public String getID() {
 	return "SimID_"+getKey().toString()+"_0_";
 }

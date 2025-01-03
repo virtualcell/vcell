@@ -13,6 +13,7 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.client.VCellApiClient;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.UserLoginInfo;
 
@@ -42,10 +43,12 @@ public class LocalVCellConnectionMessaging implements VCellConnection {
 	private UserLoginInfo userLoginInfo;
 	
 	private RpcSender rpcSender;
+	private final VCellApiClient vCellApiClient;
 	
-	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, RpcSender rpcSender) {
+	public LocalVCellConnectionMessaging(UserLoginInfo userLoginInfo, RpcSender rpcSender, VCellApiClient vCellApiClient) {
 		this.userLoginInfo = userLoginInfo;
 		this.rpcSender = rpcSender;
+		this.vCellApiClient = vCellApiClient;
 	}	
 
 	
@@ -53,7 +56,7 @@ public class LocalVCellConnectionMessaging implements VCellConnection {
 public DataSetController getDataSetController() throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("LocalVCellConnectionMessaging.getDataSetController()");
 	if (dataSetControllerMessaging == null) {
-		dataSetControllerMessaging = new LocalDataSetControllerMessaging(getUserLoginInfo(), rpcSender);
+		dataSetControllerMessaging = new LocalDataSetControllerMessaging(getUserLoginInfo(), rpcSender, vCellApiClient);
 	}
 	return dataSetControllerMessaging;
 }
@@ -75,7 +78,7 @@ public UserLoginInfo getUserLoginInfo() {
 public UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUserLoginInfo().getUser() + ")");
 	if (userMetaDbServerMessaging == null) {
-		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), rpcSender);
+		userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(getUserLoginInfo(), rpcSender, vCellApiClient);
 	}
 	return userMetaDbServerMessaging;
 }

@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.vcell.restclient.model.SimulationJobStatus;
+import org.vcell.restclient.model.SimulationJobStatusRecord;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;

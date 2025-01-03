@@ -36,13 +36,15 @@ public class FieldDataDBOperationSpec implements Serializable {
 
 	private FieldDataDBOperationSpec(){
 	}
-	
+
 	private static FieldDataDBOperationSpec createOwnedFieldDataDBOperationSpec(User owner){
 		FieldDataDBOperationSpec fieldDataDBOperationSpec =
 			new FieldDataDBOperationSpec();
 		fieldDataDBOperationSpec.owner = owner;
 		return fieldDataDBOperationSpec;
 	}
+
+	@Deprecated
 	public static FieldDataDBOperationSpec createCopyNoConflictExtDataIDsSpec(
 			User argOwner,String[] argSourceNames,VersionableTypeVersion argSourceOwner){
 		FieldDataDBOperationSpec fieldDataDBOperationSpec =
@@ -52,12 +54,16 @@ public class FieldDataDBOperationSpec implements Serializable {
 		fieldDataDBOperationSpec.sourceOwner = argSourceOwner;
 		return fieldDataDBOperationSpec;
 	}
+
+	@Deprecated
 	public static FieldDataDBOperationSpec createGetExtDataIDsSpec(User owner){
 		FieldDataDBOperationSpec fieldDataDBOperationSpec =
 			createOwnedFieldDataDBOperationSpec(owner);
 		fieldDataDBOperationSpec.opType = fieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS;
 		return fieldDataDBOperationSpec;
 	}
+
+	@Deprecated
 	public static FieldDataDBOperationSpec createGetExtDataIDsSpecWithSimRefs(User owner){
 		FieldDataDBOperationSpec fieldDataDBOperationSpec =
 			createOwnedFieldDataDBOperationSpec(owner);
@@ -65,6 +71,8 @@ public class FieldDataDBOperationSpec implements Serializable {
 		fieldDataDBOperationSpec.bIncludeSimRefs = true;
 		return fieldDataDBOperationSpec;
 	}
+
+	@Deprecated
 	public static FieldDataDBOperationSpec createSaveNewExtDataIDSpec(
 			User owner,String newExtDataIDName,String newExtDataAnnot){
 		FieldDataDBOperationSpec fieldDataDBOperationSpec =
@@ -74,6 +82,8 @@ public class FieldDataDBOperationSpec implements Serializable {
 		fieldDataDBOperationSpec.annotation = newExtDataAnnot;
 		return fieldDataDBOperationSpec;
 	}
+
+	@Deprecated
 	public static FieldDataDBOperationSpec createDeleteExtDataIDSpec(ExternalDataIdentifier deleteExtDataID){
 		FieldDataDBOperationSpec fieldDataDBOperationSpec =
 			createOwnedFieldDataDBOperationSpec(deleteExtDataID.getOwner());

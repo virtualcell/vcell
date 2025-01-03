@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (development)
+    VCell API
 
     VCell API
 
@@ -27,21 +27,38 @@ class TestPublicationResourceApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_api_publications_delete(self) -> None:
-        """Test case for api_publications_delete
+    def test_create_publication(self) -> None:
+        """Test case for create_publication
 
+        Create publication
         """
         pass
 
-    def test_api_publications_get(self) -> None:
-        """Test case for api_publications_get
+    def test_delete_publication(self) -> None:
+        """Test case for delete_publication
 
+        Delete publication
         """
         pass
 
-    def test_api_publications_post(self) -> None:
-        """Test case for api_publications_post
+    def test_get_publication_by_id(self) -> None:
+        """Test case for get_publication_by_id
 
+        Get publication by ID
+        """
+        pass
+
+    def test_get_publications(self) -> None:
+        """Test case for get_publications
+
+        Get all publications
+        """
+        pass
+
+    def test_update_publication(self) -> None:
+        """Test case for update_publication
+
+        Create publication
         """
         pass
 

@@ -37,7 +37,7 @@ class TestSimulationJobStatusRecord(unittest.TestCase):
         model = SimulationJobStatusRecord()
         if include_optional:
             return SimulationJobStatusRecord(
-                field_time_data_stamp = 'Thu Mar 10 00:00:00 UTC 2022',
+                field_time_data_stamp = '2022-03-10T16:15:50Z',
                 field_vc_sim_id = vcell_client.models.vc_simulation_identifier.VCSimulationIdentifier(
                     simulation_key = vcell_client.models.key_value.KeyValue(
                         value = 1.337, ), 
@@ -45,11 +45,10 @@ class TestSimulationJobStatusRecord(unittest.TestCase):
                         user_name = '', 
                         key = vcell_client.models.key_value.KeyValue(
                             value = 1.337, ), 
-                        i_d = , 
                         name = '', 
                         test_account = True, ), 
                     i_d = '', ),
-                field_submit_date = 'Thu Mar 10 00:00:00 UTC 2022',
+                field_submit_date = '2022-03-10T16:15:50Z',
                 field_scheduler_status = 'WAITING',
                 field_simulation_message = vcell_client.models.simulation_message.SimulationMessage(
                     detailed_state = 'UNKNOWN', 
@@ -62,30 +61,20 @@ class TestSimulationJobStatusRecord(unittest.TestCase):
                 field_task_id = 56,
                 field_server_id = '',
                 field_job_index = 56,
-                field_simulation_execution_status = vcell_client.models.simulation_execution_status.SimulationExecutionStatus(
-                    field_start_date = 'Thu Mar 10 00:00:00 UTC 2022', 
-                    field_latest_update_date = 'Thu Mar 10 00:00:00 UTC 2022', 
-                    field_end_date = 'Thu Mar 10 00:00:00 UTC 2022', 
+                field_simulation_execution_status = vcell_client.models.simulation_execution_status_record.SimulationExecutionStatusRecord(
+                    field_start_date = '2022-03-10T16:15:50Z', 
+                    field_latest_update_date = '2022-03-10T16:15:50Z', 
+                    field_end_date = '2022-03-10T16:15:50Z', 
                     field_compute_host = '', 
                     field_has_data = True, 
                     field_htc_job_id = vcell_client.models.htc_job_id.HtcJobID(
                         job_number = 56, 
                         server = '', 
-                        batch_system_type = 'PBS', ), 
-                    compute_host = '', 
-                    end_date = 'Thu Mar 10 00:00:00 UTC 2022', 
-                    latest_update_date = 'Thu Mar 10 00:00:00 UTC 2022', 
-                    start_date = 'Thu Mar 10 00:00:00 UTC 2022', 
-                    htc_job_id = vcell_client.models.htc_job_id.HtcJobID(
-                        job_number = 56, 
-                        server = '', ), ),
-                field_simulation_queue_entry_status = vcell_client.models.simulation_queue_entry_status.SimulationQueueEntryStatus(
+                        batch_system_type = 'PBS', ), ),
+                field_simulation_queue_entry_status = vcell_client.models.simulation_queue_entry_status_record.SimulationQueueEntryStatusRecord(
                     field_queue_priority = 56, 
-                    field_queue_date = 'Thu Mar 10 00:00:00 UTC 2022', 
-                    field_queue_id = 'QUEUE_ID_WAITING', 
-                    queue_date = 'Thu Mar 10 00:00:00 UTC 2022', 
-                    queue_id = 'QUEUE_ID_WAITING', 
-                    queue_priority = 56, )
+                    field_queue_date = '2022-03-10T16:15:50Z', 
+                    field_queue_id = 'QUEUE_ID_WAITING', )
             )
         else:
             return SimulationJobStatusRecord(

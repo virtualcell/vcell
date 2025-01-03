@@ -46,12 +46,12 @@ class TestBioModel(unittest.TestCase):
                 saved_date = 56,
                 annot = '',
                 branch_id = '',
-                model_key = '',
+                phys_model_key = '',
                 owner_name = '',
                 owner_key = '',
-                simulations = [
-                    vcell_client.models.simulation.Simulation(
-                        name = '', )
+                simulation_key_list = [
+                    vcell_client.models.key_value.KeyValue(
+                        value = 1.337, )
                     ],
                 applications = [
                     vcell_client.models.application.Application()

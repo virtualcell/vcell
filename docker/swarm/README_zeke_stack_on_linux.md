@@ -14,6 +14,11 @@
        ./build.sh --skip-maven --skip-sudo all localhost:5000/virtualcell dev_zeke
        popd
       ```
+   3. ```bash
+       pushd ../build
+       ./build.sh --skip-maven --skip-sudo rest localhost:5000/virtualcell dev_zeke
+       popd
+      ```
 
 3. Run Quarkus in Terminal
    ``` bash 
