@@ -6,6 +6,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
@@ -13,14 +14,16 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.FieldDataResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
-import org.vcell.restclient.model.FieldDataInfo;
-import org.vcell.restclient.model.FieldDataReferences;
+import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.model.FieldDataSaveResults;
+import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
-import org.vcell.util.*;
-import org.vcell.util.document.KeyValue;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
 
 import java.io.File;
 import java.io.IOException;
@@ -114,10 +117,10 @@ public class FieldDataAPITest {
         saveFieldDataFromFile.setShortSpecData(matrix); saveFieldDataFromFile.varNames(varNames);
         saveFieldDataFromFile.times(times); saveFieldDataFromFile.origin(Origin.originToDTO(origin)); saveFieldDataFromFile.extent(Extent.extentToDTO(extent));
         saveFieldDataFromFile.isize(ISize.iSizeToDTO(iSize)); saveFieldDataFromFile.annotation("test annotation"); saveFieldDataFromFile.name("TestFile");
-        FieldDataSaveResults results = fieldDataResourceApi.createNewFieldDataFromFileAlreadyAnalyzed(saveFieldDataFromFile);
+        FieldDataSaveResults results = fieldDataResourceApi.createFieldDataFromAnalyzedFile(saveFieldDataFromFile);
 
         // File is Saved on File System
-        FieldDataInfo fieldDataInfo = fieldDataResourceApi.getFieldDataFromID(results.getFieldDataID());
+        FieldDataShape fieldDataInfo = fieldDataResourceApi.getFieldDataShapeFromID(results.getFieldDataID());
         Assertions.assertEquals(saveFieldDataFromFile.getName(), results.getFieldDataName());
         Assertions.assertTrue(origin.compareEqual(Origin.dtoToOrigin(fieldDataInfo.getOrigin())));
         Assertions.assertTrue(extent.compareEqual(Extent.dtoToExtent(fieldDataInfo.getExtent())));
@@ -125,10 +128,10 @@ public class FieldDataAPITest {
         Assertions.assertEquals(times, fieldDataInfo.getTimes());
 
         // It's in the DB
-        FieldDataReferences references = fieldDataResourceApi.getAllFieldDataIDs();
-        Assertions.assertEquals(saveFieldDataFromFile.getAnnotation(), references.getExternalDataAnnotations().get(0));
-        Assertions.assertEquals(results.getFieldDataID(), references.getExternalDataIdentifiers().get(0).getKey().getValue().toString());
-        Assertions.assertEquals(0, references.getExternalDataIDSimRefs().size());
+        List<FieldDataReference> references = fieldDataResourceApi.getAllFieldDataIDs();
+        Assertions.assertEquals(saveFieldDataFromFile.getAnnotation(), references.get(0).getExternalDataAnnotation());
+        Assertions.assertEquals(results.getFieldDataID(), references.get(0).getExternalDataIdentifier().getKey().getValue().toString());
+        Assertions.assertEquals(0, references.get(0).getExternalDataIDSimRef().size());
 
         ///////////////////////
         // Delete Field Data //
@@ -137,16 +140,53 @@ public class FieldDataAPITest {
 
         // No Longer on File System
         try{
-            fieldDataResourceApi.getFieldDataFromID(results.getFieldDataID());
+            fieldDataResourceApi.getFieldDataShapeFromID(results.getFieldDataID());
         } catch (ApiException e){
             Assertions.assertEquals(404, e.getCode());
         }
 
         // No Longer in DB
         references = fieldDataResourceApi.getAllFieldDataIDs();
-        Assertions.assertEquals(0, references.getExternalDataIdentifiers().size());
-        Assertions.assertEquals(0, references.getExternalDataAnnotations().size());
-        Assertions.assertEquals(0, references.getExternalDataIDSimRefs().size());
+        Assertions.assertEquals(0, references.size());
+    }
+
+
+    @Test
+    public void testFileUploading() throws ApiException, IOException {
+        FieldDataResourceApi fieldDataResourceApi = new FieldDataResourceApi(aliceAPIClient);
+        File testFile = TestEndpointUtils.getResourceFile("/flybrain-035.tif");
+        try{
+            fieldDataResourceApi.analyzeFieldDataFile(testFile, "invalid N@me #Ezequiel");
+        } catch (ApiException e){
+            Assertions.assertEquals(HttpStatus.BAD_REQUEST_400, e.getCode());
+        }
+
+        AnalyzedResultsFromFieldData results = fieldDataResourceApi.analyzeFieldDataFile(testFile, "bob");
+
+        Assertions.assertNotNull(results);
+        Assertions.assertNotNull(results.getShortSpecData());
+
+        FieldDataSaveResults saveResults = fieldDataResourceApi.createFieldDataFromAnalyzedFile(results);
+        Assertions.assertNotNull(saveResults);
+
+        FieldDataShape fieldDataInfo = fieldDataResourceApi.getFieldDataShapeFromID(saveResults.getFieldDataID());
+        Assertions.assertNotNull(fieldDataInfo);
+        Assertions.assertTrue(Origin.dtoToOrigin(fieldDataInfo.getOrigin()).compareEqual(new Origin(0.0, 0.0, 0.0)));
+        Assertions.assertTrue(Extent.dtoToExtent(fieldDataInfo.getExtent()).compareEqual(new Extent(684.9333393978472, 684.9333393978472, 1)));
+        Assertions.assertTrue(ISize.dtoToISize(fieldDataInfo.getIsize()).compareEqual(new ISize(256, 256, 1)));
+        Assertions.assertEquals(1, fieldDataInfo.getTimes().size());
+
+        fieldDataResourceApi.deleteFieldData(saveResults.getFieldDataID());
+
+        try{
+            fieldDataResourceApi.getFieldDataShapeFromID(saveResults.getFieldDataID());
+        } catch (ApiException e){
+            Assertions.assertEquals(404, e.getCode());
+        }
+
+        // No Longer in DB
+        List<FieldDataReference> references = fieldDataResourceApi.getAllFieldDataIDs();
+        Assertions.assertEquals(0, references.size());
     }
 
 }
