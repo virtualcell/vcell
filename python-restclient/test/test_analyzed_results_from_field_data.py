@@ -61,8 +61,7 @@ class TestAnalyzedResultsFromFieldData(unittest.TestCase):
                 isize = vcell_client.models.i_size.ISize(
                     x = 56, 
                     y = 56, 
-                    z = 56, 
-                    x_yz = 56, ),
+                    z = 56, ),
                 annotation = '',
                 name = ''
             )

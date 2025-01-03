@@ -42,14 +42,12 @@ class TestFieldDataReference(unittest.TestCase):
                         value = 1.337, ), 
                     owner = vcell_client.models.user.User(
                         user_name = '', 
-                        i_d = vcell_client.models.key_value.KeyValue(
-                            value = 1.337, ), 
                         name = '', 
                         test_account = True, ), 
                     name = '', 
-                    i_d = '', 
                     job_index = 56, 
-                    simulation_key = , 
+                    simulation_key = vcell_client.models.key_value.KeyValue(
+                        value = 1.337, ), 
                     parameter_scan_type = True, 
                     data_key = , ),
                 external_data_annotation = '',

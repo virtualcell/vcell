@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (development)
+    VCell API
 
     VCell API
 
@@ -38,7 +38,7 @@ class TestUserLoginInfoForMapping(unittest.TestCase):
         if include_optional:
             return UserLoginInfoForMapping(
                 user_id = '',
-                digested_password = ''
+                password = ''
             )
         else:
             return UserLoginInfoForMapping(

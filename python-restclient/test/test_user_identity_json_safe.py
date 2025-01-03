@@ -37,6 +37,7 @@ class TestUserIdentityJSONSafe(unittest.TestCase):
         model = UserIdentityJSONSafe()
         if include_optional:
             return UserIdentityJSONSafe(
+                mapped = True,
                 user_name = '',
                 id = 1.337,
                 subject = '',

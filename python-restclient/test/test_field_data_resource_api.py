@@ -27,23 +27,17 @@ class TestFieldDataResourceApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_copy_field_data(self) -> None:
-        """Test case for copy_field_data
+    def test_analyze_field_data_file(self) -> None:
+        """Test case for analyze_field_data_file
 
-        Copy an existing field data entry.
+        Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
         """
         pass
 
-    def test_create_new_field_data_file(self) -> None:
-        """Test case for create_new_field_data_file
+    def test_create_field_data_from_analyzed_file(self) -> None:
+        """Test case for create_field_data_from_analyzed_file
 
-        """
-        pass
-
-    def test_create_new_field_data_from_simulation(self) -> None:
-        """Test case for create_new_field_data_from_simulation
-
-        Create new field data from a simulation.
+        Take the analyzed results of the field data, modify it to your liking, then save it on the server.
         """
         pass
 
@@ -54,10 +48,17 @@ class TestFieldDataResourceApi(unittest.TestCase):
         """
         pass
 
-    def test_get_all_field_data(self) -> None:
-        """Test case for get_all_field_data
+    def test_get_all_field_data_ids(self) -> None:
+        """Test case for get_all_field_data_ids
 
-        Get all of the field data for that user.
+        Get all of the ids used to identify, and retrieve field data.
+        """
+        pass
+
+    def test_get_field_data_shape_from_id(self) -> None:
+        """Test case for get_field_data_shape_from_id
+
+        Get the shape of the field data. That is it's size, origin, extent, and data identifiers.
         """
         pass
 

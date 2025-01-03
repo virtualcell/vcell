@@ -55,14 +55,6 @@ public class UserTest {
     }
 
     /**
-     * Test the property 'iD'
-     */
-    @Test
-    public void iDTest() {
-        // TODO: test iD
-    }
-
-    /**
      * Test the property 'name'
      */
     @Test
