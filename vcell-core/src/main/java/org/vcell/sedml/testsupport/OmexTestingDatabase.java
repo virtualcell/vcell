@@ -105,7 +105,31 @@ public class OmexTestingDatabase {
     }
 
     public static FailureType determineFault(Exception caughtException, List<TraceEvent> errorEvents){ // Throwable because Assertion Error
-        String errorMessage = caughtException == null ? "" : caughtException.getMessage();
+        FailureType determinedFailure;
+        if (caughtException != null) if ((determinedFailure = determineFault(caughtException)) != null) return determinedFailure;
+        if (errorEvents == null) return FailureType.UNCATETORIZED_FAULT;
+        for (TraceEvent errorEvent : errorEvents) if ((determinedFailure = determineFault(errorEvent)) != null) return determinedFailure;
+        return FailureType.UNCATETORIZED_FAULT;
+    }
+
+    private static FailureType determineFault(TraceEvent traceEvent){
+        if (traceEvent.hasException(SBMLImportException.class)) {
+            FailureType sbmlFailureType;
+            return (sbmlFailureType = determineFault(traceEvent.exception)) != null ? sbmlFailureType : FailureType.SBML_IMPORT_FAILURE;
+        }
+        if (traceEvent.span.getNestedContextName().contains(Span.ContextType.PROCESSING_SEDML.name()+"(preProcessDoc)")){
+            return FailureType.SEDML_PREPROCESS_FAILURE;
+        }
+        if (traceEvent.hasException(MappingException.class)) {
+            return FailureType.MATH_GENERATION_FAILURE;
+        }
+        // One last check:
+        if (traceEvent.exception != null) return determineFault(traceEvent.exception);
+        return null;
+    }
+
+    private static FailureType determineFault(Exception caughtException){
+        String errorMessage = caughtException.getMessage();
 
         if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
             return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
@@ -145,20 +169,7 @@ public class OmexTestingDatabase {
         } else if (errorMessage.contains("Process timed out")) {
             return FailureType.TOO_SLOW;
         }
-
-        // else check Tracer error events for known faults
-        for (TraceEvent event : errorEvents) {
-            if (event.hasException(SBMLImportException.class)) {
-                return FailureType.SBML_IMPORT_FAILURE;
-            }
-            if (event.span.getNestedContextName().contains(Span.ContextType.PROCESSING_SEDML.name()+"(preProcessDoc)")){
-                return FailureType.SEDML_PREPROCESS_FAILURE;
-            }
-            if (event.hasException(MappingException.class)) {
-                return FailureType.MATH_GENERATION_FAILURE;
-            }
-        }
-
-        return FailureType.UNCATETORIZED_FAULT;
+        return null;
     }
+
 }
