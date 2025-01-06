@@ -269,7 +269,7 @@ public class FieldDataDBOperationDriver{
 	}
 
 	private static FieldDataDBOperationResults saveExtraDataID(Connection con, KeyFactory keyFactory, User user,
-															   FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
+															   FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, SQLException {
 		if(!fieldDataDBOperationSpec.newExtDataIDName.equals(
 					TokenMangler.fixTokenStrict(fieldDataDBOperationSpec.newExtDataIDName))){
 				throw new DataAccessException("Error inserting Field Data name "+
