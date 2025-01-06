@@ -247,23 +247,24 @@ public class LangevinLngvWriter {
 		sb.append("\n");
 
 
-		/* ****** WRITE THE SIMULATION STATE *********************/
+		/* ****** WRITE THE SIMULATION OPTIONS *********************/
 		sb.append("*** " + SIMULATION_OPTIONS + " ***");
 		sb.append("\n");
 		sb.append("\n");
 		writeSimulationOptions(simulation, sb);
 		sb.append("\n");
 
+/*
+		// TODO: SIMULATION STATE produced by the solver, will be used in ClusterAnalyzer to postprocess run results
 
-//		Runs: 6
-//		Parallel: true
-//		SimultaneousRuns: 3
-//		Aborted: false
-//		IsRunning: false
-//		HasResults: false
-//		RunOnCluster: false
+		Runs: 6
+		Parallel: true
+		SimultaneousRuns: 3
+		Aborted: false
+		IsRunning: false
+		HasResults: false
+		RunOnCluster: false
 
-						/*
 		TODO: The following are being produced when the simulation is created, and are being updated as simulations run (I think)
 		 from C:\TEMP\springsalad-new\spring3reactions\spring3reactions_SIMULATIONS\Simulation0_SIM_FOLDER\Simulation0_SIM.txt
 
@@ -986,15 +987,17 @@ public class LangevinLngvWriter {
 		BigInteger randomSeed = lso.getRandomSeed();
 		int simultaneousRuns = lso.getNumOfParallelLocalRuns();
 
-		sb.append("Runs: " + numTrials);	// the SpringSaLaD client parser expects this to be the first line in block
-		sb.append("\n");
-		sb.append("Parallel: " + (simultaneousRuns == 1 ? "true" : "false"));
-		sb.append("\n");
-		sb.append("SimultaneousRuns: " + simultaneousRuns);		// this is always 1 on local and quota dependent on server
-		sb.append("\n");
+		// TODO: do not delete this, until we decide on how much info the solver needs
+		// These are not needed but may be nice to have in the future, makes the solver instance more aware
+//		sb.append("Runs: " + numTrials);	// the SpringSaLaD client parser expects this to be the first line in block
+//		sb.append("\n");
+//		sb.append("Parallel: " + (simultaneousRuns == 1 ? "true" : "false"));
+//		sb.append("\n");
+//		sb.append("SimultaneousRuns: " + simultaneousRuns);		// this is always 1 on local and quota dependent on server
+//		sb.append("\n");
 
-		// we place the (optional) random seed entry at the end of the block
-		if(randomSeed != null) {	// if we don't specify a random seed the solver will do its thing like in the past
+		// if we don't specify a random seed the solver will do its thing like in the past (use system time in ms)
+		if(randomSeed != null) {
 			sb.append("RandomSeed: " + randomSeed);
 			sb.append("\n");
 		}
