@@ -4,6 +4,7 @@ import cbit.vcell.mapping.MappingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.vcell.sbml.vcell.SBMLImportException;
+import org.vcell.sedml.SEDMLImportException;
 import org.vcell.trace.Span;
 import org.vcell.trace.TraceEvent;
 
@@ -116,6 +117,10 @@ public class OmexTestingDatabase {
         if (traceEvent.hasException(SBMLImportException.class)) {
             FailureType sbmlFailureType;
             return (sbmlFailureType = determineFault(traceEvent.exception)) != null ? sbmlFailureType : FailureType.SBML_IMPORT_FAILURE;
+        }
+        if (traceEvent.hasException(SEDMLImportException.class)){
+            String errMsg = traceEvent.exception.getMessage() == null ? "" : traceEvent.exception.getMessage();
+            return (errMsg.contains("expecting vcell var") && errMsg.contains("to be constant valued")) ?  FailureType.BIOMODEL_IMPORT_SEDML_FAILURE : FailureType.SEDML_IMPORT_FAILURE;
         }
         if (traceEvent.span.getNestedContextName().contains(Span.ContextType.PROCESSING_SEDML.name()+"(preProcessDoc)")){
             return FailureType.SEDML_PREPROCESS_FAILURE;
