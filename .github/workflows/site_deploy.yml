@@ -235,5 +235,7 @@ jobs:
 #          --data "@body"
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
+      with:
+          limit-access-to-actors: true
 #      if: ${{ failure() }}
       
