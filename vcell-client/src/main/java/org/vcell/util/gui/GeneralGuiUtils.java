@@ -1,5 +1,7 @@
 package org.vcell.util.gui;
 
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import com.sun.istack.NotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +36,7 @@ import javax.swing.KeyStroke;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 
 public class GeneralGuiUtils {
@@ -344,6 +347,17 @@ public class GeneralGuiUtils {
     public static void setCursorThroughout(final Container container, final Cursor cursor){
         if(container == null) return;
         container.setCursor(cursor);
+    }
+
+    public static void moveToFront(Window targetWindow){
+        AsynchClientTask task = new AsynchClientTask("Align frame to front", AsynchClientTask.TASKTYPE_SWING_NONBLOCKING) {
+            @Override
+            public void run(Hashtable<String, Object> hashTable) {
+                targetWindow.toFront();
+                targetWindow.repaint();
+            }
+        };
+        ClientTaskDispatcher.dispatch(targetWindow, new Hashtable<>(), new AsynchClientTask[]{task});
     }
 }
 

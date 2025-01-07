@@ -51,6 +51,7 @@ import org.vcell.util.document.User;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
 
+import javax.swing.SwingUtilities;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -444,6 +445,7 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 						documentWindowManager.addResultsFrame(newWindow);
 						setFinalWindow(hashTable, viewer); 
 						newWindow.setLocalState(localState);
+						GeneralGuiUtils.moveToFront(SwingUtilities.getWindowAncestor(viewer));
 					}
 				}
 			}
