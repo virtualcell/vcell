@@ -155,7 +155,7 @@ jobs:
   deploy:
     name: Deploy to site
     runs-on: ubuntu-20.04
-    needs: notarize
+#    needs: notarize
     steps:
     - name: checkout tag
       uses: actions/checkout@v4
