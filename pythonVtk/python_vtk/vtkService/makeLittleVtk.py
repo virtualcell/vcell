@@ -1,6 +1,6 @@
 import vtk
 
-import vtkService.vtkService as vtkService
+import python_vtk.vtkService.vtkService as vtkService
 
 x = [1, 2, 3, 4]
 y = [1, 2, 3, 4]

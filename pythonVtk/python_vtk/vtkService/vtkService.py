@@ -9,15 +9,15 @@ from thrift.TSerialization import TBinaryProtocol
 from thrift.TSerialization import deserialize
 from thrift.TSerialization import serialize
 
-from vcellvismesh.ttypes import ChomboIndexData
-from vcellvismesh.ttypes import FiniteVolumeIndexData
-from vcellvismesh.ttypes import MovingBoundaryIndexData
-from vcellvismesh.ttypes import PolyhedronFace
-from vcellvismesh.ttypes import VisIrregularPolyhedron
-from vcellvismesh.ttypes import VisLine
-from vcellvismesh.ttypes import VisMesh
-from vcellvismesh.ttypes import VisPolygon
-from vcellvismesh.ttypes import VisTetrahedron
+from python_vtk.vcellvismesh.ttypes import ChomboIndexData
+from python_vtk.vcellvismesh.ttypes import FiniteVolumeIndexData
+from python_vtk.vcellvismesh.ttypes import MovingBoundaryIndexData
+from python_vtk.vcellvismesh.ttypes import PolyhedronFace
+from python_vtk.vcellvismesh.ttypes import VisIrregularPolyhedron
+from python_vtk.vcellvismesh.ttypes import VisLine
+from python_vtk.vcellvismesh.ttypes import VisMesh
+from python_vtk.vcellvismesh.ttypes import VisPolygon
+from python_vtk.vcellvismesh.ttypes import VisTetrahedron
 
 
 def writeChomboVolumeVtkGridAndIndexData(visMesh: VisMesh, domainname: str, vtkfile, indexfile) -> None:

@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 import vtk
 
-from vtkService.vtkService import writeDataArrayToNewVtkFile
+from python_vtk.vtkService.vtkService import writeDataArrayToNewVtkFile
 
 
 def main():
