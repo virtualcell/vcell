@@ -315,7 +315,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 				case N5:
 					N5Exporter n5Exporter = new N5Exporter(this, user, dataServerImpl,  (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier());
 					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
-					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), exportOutput, exportSpecs, newExportJob, n5Exporter.getN5FilePathSuffix());
+					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileHash(), exportOutput, exportSpecs, newExportJob, n5Exporter.getN5BucketPath());
 				default:
 					throw new DataAccessException("Unknown export format requested");
 			}

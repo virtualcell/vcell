@@ -45,12 +45,12 @@ public class N5Exporter implements ExportConstants {
 
 	private ExportServiceImpl exportServiceImpl = null;
 
-	private DataServerImpl dataServer;
+	private final DataServerImpl dataServer;
 
-	private VCSimulationDataIdentifier vcDataID;
+	private final VCSimulationDataIdentifier vcDataID;
 	public String n5BucketName = "n5Data";
 
-	private User user;
+	private final User user;
 
 	public static final ArrayList<VariableType> unsupportedTypes = new ArrayList<>(Arrays.asList(
 			VariableType.MEMBRANE,
@@ -90,7 +90,7 @@ public class N5Exporter implements ExportConstants {
 		int[] blockSize = {sizeX, sizeY, 1, 1, 1};
 
 		// rewrite so that it still results in a tmp file does not raise File already exists error
-		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileAbsolutePath(), new GsonBuilder());
+		N5FSWriter n5FSWriter = new N5FSWriter(getN5FileSystemPath(), new GsonBuilder());
 		DatasetAttributes datasetAttributes = new DatasetAttributes(dimensions, blockSize, org.janelia.saalfeldlab.n5.DataType.FLOAT64, n5Specs.getCompression());
 		n5FSWriter.createDataset(String.valueOf(jobID), datasetAttributes);
 
@@ -183,7 +183,7 @@ public class N5Exporter implements ExportConstants {
 		exportSpecs.getHumanReadableExportData().numChannels = (int) dimensions[2];
 		exportSpecs.getHumanReadableExportData().zSlices = (int) dimensions[3];
 		exportSpecs.getHumanReadableExportData().tSlices = (int) dimensions[4];
-		ExportOutput exportOutput = new ExportOutput(true, "." + N5Specs.n5Suffix, vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
+		ExportOutput exportOutput = new ExportOutput(true, "." + N5Specs.n5Suffix, vcDataID.getID(), getN5FileHash(), fileDataContainerManager);
 		return exportOutput;
 	}
 
@@ -213,19 +213,20 @@ public class N5Exporter implements ExportConstants {
 		return null;
 	}
 
-	public String getN5FileAbsolutePath(){
-		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + getN5FilePathSuffix());
+	public String getN5FileSystemPath(){
+		File outPutDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.n5DataDir) + "/" + getN5BucketPath());
 		return outPutDir.getAbsolutePath();
 	}
 
-	public String getN5FilePathSuffix(){
-		return n5BucketName + "/" + user.getName() + "/" + this.getN5FileNameHash() + "." + N5Specs.n5Suffix;
+	public String getN5BucketPath(){
+		return n5BucketName + "/" + user.getName() + "/" + this.getN5FileHash() + "." + N5Specs.n5Suffix;
 	}
 
-	public String getN5FileNameHash(){
-		return actualHash(vcDataID.getDataKey().toString(), String.valueOf(vcDataID.getJobIndex()));
+	public String getN5FileHash(){
+		return hashFunction(vcDataID.getDataKey().toString());
 	}
-	private static String actualHash(String simID, String jobID) {
+
+	private static String hashFunction(String simID) {
 		MessageDigest sha256 = DigestUtils.getMd5Digest();
 		sha256.update(simID.getBytes(StandardCharsets.UTF_8));
 		String hashString = Hex.encodeHexString(sha256.digest());

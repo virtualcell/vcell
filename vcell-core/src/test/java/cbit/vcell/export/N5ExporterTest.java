@@ -193,7 +193,7 @@ public class N5ExporterTest {
         if(n5Reader != null){
             n5Reader.close();
         }
-        this.n5Reader = new N5FSReader(n5Exporter.getN5FileAbsolutePath());
+        this.n5Reader = new N5FSReader(n5Exporter.getN5FileSystemPath());
     }
 
     private void setExportTestState(TestModels simModel) throws IOException, DataAccessException, MathException {
