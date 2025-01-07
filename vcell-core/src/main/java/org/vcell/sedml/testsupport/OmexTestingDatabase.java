@@ -4,6 +4,7 @@ import cbit.vcell.mapping.MappingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.vcell.sbml.vcell.SBMLImportException;
+import org.vcell.sedml.SEDMLImportException;
 import org.vcell.trace.Span;
 import org.vcell.trace.TraceEvent;
 
@@ -105,16 +106,55 @@ public class OmexTestingDatabase {
     }
 
     public static FailureType determineFault(Exception caughtException, List<TraceEvent> errorEvents){ // Throwable because Assertion Error
-        String errorMessage = caughtException == null ? "" : caughtException.getMessage();
+        FailureType determinedFailure;
+        if (caughtException != null) if ((determinedFailure = determineFault(caughtException)) != null) return determinedFailure;
+        if (errorEvents == null) return FailureType.UNCATETORIZED_FAULT;
+        for (TraceEvent errorEvent : errorEvents) if ((determinedFailure = determineFault(errorEvent)) != null) return determinedFailure;
+        return FailureType.UNCATETORIZED_FAULT;
+    }
+
+    private static FailureType determineFault(TraceEvent traceEvent){
+        if (traceEvent.hasException(SBMLImportException.class)) {
+            FailureType sbmlFailureType;
+            return (sbmlFailureType = determineFault(traceEvent.exception)) != null ? sbmlFailureType : FailureType.SBML_IMPORT_FAILURE;
+        }
+        if (traceEvent.hasException(SEDMLImportException.class)){
+            String errMsg = traceEvent.exception.getMessage() == null ? "" : traceEvent.exception.getMessage();
+            return (errMsg.contains("expecting vcell var") && errMsg.contains("to be constant valued")) ?  FailureType.BIOMODEL_IMPORT_SEDML_FAILURE : FailureType.SEDML_IMPORT_FAILURE;
+        }
+        if (traceEvent.span.getNestedContextName().contains(Span.ContextType.PROCESSING_SEDML.name()+"(preProcessDoc)")){
+            return FailureType.SEDML_PREPROCESS_FAILURE;
+        }
+        if (traceEvent.hasException(MappingException.class)) {
+            return FailureType.MATH_GENERATION_FAILURE;
+        }
+        // One last check:
+        if (traceEvent.exception != null) return determineFault(traceEvent.exception);
+        return null;
+    }
+
+    private static FailureType determineFault(Exception caughtException){
+        String errorMessage = caughtException.getMessage();
 
         if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
             return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
+        } else if (errorMessage.contains("Non-integer stoichiometry")) {
+            return FailureType.UNSUPPORTED_NON_INT_STOCH;
+        } else if (errorMessage.contains("Non-numeric stoichiometry")) {
+            return FailureType.UNSUPPORTED_NON_NUMERIC_STOCH;
+        } else if (errorMessage.contains("compartment") && errorMessage.contains("has constant attribute set to")) {
+            return FailureType.UNSUPPORTED_NON_CONSTANT_COMPARTMENTS;
+        } else if (errorMessage.contains("XMLNode cannot be cast to")) {
+            return FailureType.SBML_XML_NODE_FAILURE;
         } else if (errorMessage.contains("System IO encountered a fatal error")){
             Throwable subException = caughtException.getCause();
             //String subMessage = (subException == null) ? "" : subException.getMessage();
             if (subException instanceof FileAlreadyExistsException){
                 return FailureType.HDF5_FILE_ALREADY_EXISTS;
             }
+        } else if (errorMessage.contains("Could not execute code")){
+            if (errorMessage.contains("CVODE")) return FailureType.SOLVER_FAILURE;
+            if (errorMessage.contains("SundialsSolverStandalone")) return FailureType.SOLVER_FAILURE;
         } else if (errorMessage.contains("error while processing outputs: null")){
             Throwable subException = caughtException.getCause();
             if (subException instanceof ArrayIndexOutOfBoundsException){
@@ -127,21 +167,14 @@ public class OmexTestingDatabase {
             return FailureType.SEDML_NO_SEDMLS_TO_EXECUTE;
         } else if (errorMessage.contains("MappingException occurred: failed to generate math")) {
             return FailureType.MATH_GENERATION_FAILURE;
+        } else if (errorMessage.contains("delay") && errorMessage.contains("SBML")) {
+            return FailureType.UNSUPPORTED_DELAY_SBML;
+        } else if (errorMessage.contains("are in unnamed module of loader")){
+            return FailureType.SBML_IMPORT_FAILURE;
+        } else if (errorMessage.contains("Process timed out")) {
+            return FailureType.TOO_SLOW;
         }
-
-        // else check Tracer error events for known faults
-        for (TraceEvent event : errorEvents) {
-            if (event.hasException(SBMLImportException.class)) {
-                return FailureType.SBML_IMPORT_FAILURE;
-            }
-            if (event.span.getNestedContextName().contains(Span.ContextType.PROCESSING_SEDML.name()+"(preProcessDoc)")){
-                return FailureType.SEDML_PREPROCESS_FAILURE;
-            }
-            if (event.hasException(MappingException.class)) {
-                return FailureType.MATH_GENERATION_FAILURE;
-            }
-        }
-
-        return FailureType.UNCATETORIZED_FAULT;
+        return null;
     }
+
 }

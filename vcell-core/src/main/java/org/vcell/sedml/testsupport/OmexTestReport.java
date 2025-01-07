@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.Pair;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -55,15 +56,14 @@ public class OmexTestReport {
             if (testCase.known_status != OmexTestCase.Status.FAIL) {
                 continue;
             }
-            FailureType failureType = (testCase.known_failure_type != null) ? testCase.known_failure_type : FailureType.UNCATETORIZED_FAULT;
-            this.historicalFailureTypeCounts.put(failureType, this.historicalFailureTypeCounts.getOrDefault(failureType, 0) + 1);
+
+            this.historicalFailureTypeCounts.put(testCase.known_failure_type, this.historicalFailureTypeCounts.getOrDefault(testCase.known_failure_type, 0) + 1);
         }
 
         for (OmexExecSummary execSummary : execSummaries) {
             // Collect Failure Types
             if (execSummary.status == OmexExecSummary.ActualStatus.FAILED){
-                FailureType failureType = (execSummary.failure_type != null) ? execSummary.failure_type : FailureType.UNCATETORIZED_FAULT;
-                this.currentFailureTypeCounts.put(failureType, this.currentFailureTypeCounts.getOrDefault(failureType, 0) + 1);
+                this.currentFailureTypeCounts.put(execSummary.failure_type , this.currentFailureTypeCounts.getOrDefault(execSummary.failure_type , 0) + 1);
             }
 
             // find matching test case
@@ -210,7 +210,9 @@ public class OmexTestReport {
         errorTypeStatistics.setColumnTitle(1, "Current");
         for (int i = 0; i < failureTypeList.size(); i++){
             Pair<FailureType, Pair<Integer, Integer>> pairing = failureTypeList.get(i);
-            errorTypeStatistics.setRowTitle(i, pairing.one.toString());
+            String failureTypeString = pairing.one == null ? "SKIPPED" : pairing.one.toString();
+            errorTypeStatistics.setRowTitle(i, failureTypeString);
+
             errorTypeStatistics.setTableValue(i, 0, pairing.two.one);
             errorTypeStatistics.setTableValue(i, 1, pairing.two.two);
         }
@@ -246,7 +248,7 @@ public class OmexTestReport {
             nameToIfHistoricalMap.put(testCase.file_path, true);
         }
         if (statistics.unmatchedExecutionsCount > 0) for (OmexExecSummary execSummary : unmatchedExecSummaries){
-            nameToIfHistoricalMap.put(execSummary.file_path, false);
+            nameToIfHistoricalMap.put((new File(execSummary.file_path).getName()), false);
         }
         List<String> unmatchedNames = new ArrayList<>(nameToIfHistoricalMap.keySet());
         unmatchedNames.sort(Comparator.naturalOrder());
@@ -255,8 +257,8 @@ public class OmexTestReport {
             incomparableStatistics.setRowTitle(i, name);
             // We want to put a checkmark in the correct column, based on which actually ran the test
             int matchedColumn = nameToIfHistoricalMap.get(name) ? 0 : 1;
-            incomparableStatistics.setTableValue(i, matchedColumn, "✔");
-            incomparableStatistics.setTableValue(i, 1 - matchedColumn, "❌");
+            incomparableStatistics.setTableValue(i, matchedColumn, "yes");
+            incomparableStatistics.setTableValue(i, 1 - matchedColumn, "no");
         }
         return incomparableStatistics;
     }
@@ -270,7 +272,7 @@ public class OmexTestReport {
             OmexTestCaseChange testCaseChange = testCaseChanges.get(i);
             unmatchedResultStatistics.setRowTitle(i, testCaseChange.original.file_path);
 
-            String historicalResult = switch (testCaseChange.original.known_status){
+            String historicalResult = testCaseChange.original.known_status == null ? "<not run>" : switch (testCaseChange.original.known_status){
                 case PASS:
                     yield "PASSED";
                 case SKIP:
@@ -280,13 +282,13 @@ public class OmexTestReport {
             };
             unmatchedResultStatistics.setTableValue(i, 0, historicalResult);
 
-            String currentResult = switch (testCaseChange.updated.known_status){
+            String currentResult = testCaseChange.updated.known_status == null ? "<not run>" : switch (testCaseChange.updated.known_status){
                 case PASS:
                     yield "PASSED";
                 case SKIP:
                     yield "SKIPPED";
                 case FAIL:
-                    yield String.format("FAILED (%s)", testCaseChange.original.known_failure_type.name());
+                    yield String.format("FAILED (%s)", testCaseChange.updated.known_failure_type.name());
             };
             unmatchedResultStatistics.setTableValue(i, 1, currentResult);
         }
