@@ -201,7 +201,7 @@ jobs:
         if ${{ github.event.inputs.server_only != 'true' }}; then
           # build and install the client installers, and the web help (kubernetes cluster deployments are separate)
           ./deploy-action-kubernetes.sh \
-              --ssh-user ${{ secrets.CD_FULL_USER }} \
+              --ssh-user vcell \
               --webhelp-local-dir ../../vcell-client/target/classes/vcellDoc \
               --webhelp-deploy-dir $VCELL_WEBHELP_REMOTE_DIR \
               ${VCELL_MANAGER_NODE} \
