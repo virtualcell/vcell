@@ -83,74 +83,74 @@ jobs:
         name: variables
         path: docker/swarm/variables
         retention-days: 1
-    - name: build client installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
-      run: |
-        cd docker/swarm
-        echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:$VCELL_TAG
-        ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
-    - name: upload generated installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: installers
-        path: docker/swarm/generated_installers
-        retention-days: 1
+#    - name: build client installers
+#      if: ${{ github.event.inputs.server_only != 'true' }}
+#      run: |
+#        cd docker/swarm
+#        echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+#        sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:$VCELL_TAG
+#        ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
+#    - name: upload generated installers
+#      if: ${{ github.event.inputs.server_only != 'true' }}
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: installers
+#        path: docker/swarm/generated_installers
+#        retention-days: 1
     - name: Setup tmate session
       if: ${{ failure() }}
       uses: mxschmitt/action-tmate@v3
       
-  notarize:
-    name: Notarize the MacOS client
-    runs-on: macos-latest
-    needs: build
-    steps:
-    - name: download generated installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
-      uses: actions/download-artifact@v3
-    - name: notarize mac installer
-      if: ${{ github.event.inputs.server_only != 'true' }}
-      run: |
-        set -x
-        set +e
-        cd installers
-        export MAC_INSTALLER=`ls *dmg`
-        xcrun notarytool submit --output-format normal --no-progress --no-wait --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" $MAC_INSTALLER > submit_output
-        echo "output returned by notarytool submit:"
-        cat submit_output
-        cat submit_output | grep "id:" | cut -d ':' -f2 > UUID
-        for minutes in {1..5}
-        do
-          sleep 60
-          xcrun notarytool info --output-format normal --no-progress --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" `cat UUID` > info_output
-          echo "output returned by notarytool info:"
-          cat info_output
-          grep -q Accepted info_output
-          if [[ $? == 0 ]]; then
-            echo "notarized succesfully"
-            break
-          else
-            echo "wait another minute and check again"
-          fi
-        done
-        grep -q Accepted info_output
-        if [[ $? == 0 ]]; then
-          xcrun stapler staple $MAC_INSTALLER
-        else
-          echo "notarization did not succeed in 5 minutes, giving up"
-          exit 1
-        fi
-    - name: update generated installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: installers
-        path: installers
-        retention-days: 1
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }}
+#  notarize:
+#    name: Notarize the MacOS client
+#    runs-on: macos-latest
+#    needs: build
+#    steps:
+#    - name: download generated installers
+#      if: ${{ github.event.inputs.server_only != 'true' }}
+#      uses: actions/download-artifact@v3
+#    - name: notarize mac installer
+#      if: ${{ github.event.inputs.server_only != 'true' }}
+#      run: |
+#        set -x
+#        set +e
+#        cd installers
+#        export MAC_INSTALLER=`ls *dmg`
+#        xcrun notarytool submit --output-format normal --no-progress --no-wait --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" $MAC_INSTALLER > submit_output
+#        echo "output returned by notarytool submit:"
+#        cat submit_output
+#        cat submit_output | grep "id:" | cut -d ':' -f2 > UUID
+#        for minutes in {1..5}
+#        do
+#          sleep 60
+#          xcrun notarytool info --output-format normal --no-progress --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" `cat UUID` > info_output
+#          echo "output returned by notarytool info:"
+#          cat info_output
+#          grep -q Accepted info_output
+#          if [[ $? == 0 ]]; then
+#            echo "notarized succesfully"
+#            break
+#          else
+#            echo "wait another minute and check again"
+#          fi
+#        done
+#        grep -q Accepted info_output
+#        if [[ $? == 0 ]]; then
+#          xcrun stapler staple $MAC_INSTALLER
+#        else
+#          echo "notarization did not succeed in 5 minutes, giving up"
+#          exit 1
+#        fi
+#    - name: update generated installers
+#      if: ${{ github.event.inputs.server_only != 'true' }}
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: installers
+#        path: installers
+#        retention-days: 1
+#    - name: Setup tmate session
+#      uses: mxschmitt/action-tmate@v3
+#      if: ${{ failure() }}
         
   deploy:
     name: Deploy to site
@@ -166,12 +166,12 @@ jobs:
     - name: setenv
       run: |
         for line in $(cat variables/variables); do echo $line >> $GITHUB_ENV; done
-    - name: stage installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
-      run: |
-        cd installers
-        mkdir ../docker/swarm/generated_installers
-        mv * ../docker/swarm/generated_installers
+#    - name: stage installers
+#      if: ${{ github.event.inputs.server_only != 'true' }}
+#      run: |
+#        cd installers
+#        mkdir ../docker/swarm/generated_installers
+#        mv * ../docker/swarm/generated_installers
     - name: setup ssh-agent
       uses: webfactory/ssh-agent@v0.8.0
       with:
@@ -202,8 +202,6 @@ jobs:
           # build and install the client installers, and the web help (kubernetes cluster deployments are separate)
           ./deploy-action-kubernetes.sh \
               --ssh-user ${{ secrets.CD_FULL_USER }} \
-              --build-installers \
-              --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
               --webhelp-local-dir ../../vcell-client/target/classes/vcellDoc \
               --webhelp-deploy-dir $VCELL_WEBHELP_REMOTE_DIR \
               ${VCELL_MANAGER_NODE} \
@@ -213,28 +211,28 @@ jobs:
             installer_deploy_dir=$VCELL_INSTALLER_REMOTE_DIR vcell_siteCamel=$VCELL_SITE_CAMEL vcell_version=$VCELL_VERSION vcell_build=$VCELL_BUILD \
             'bash -s' < link-installers.sh
         fi
-    - name: Capitalize first character of site name
-      id: capitalize
-      run: |
-        SITE="${{ github.event.inputs.vcell_site }}"
-        SITE_CAPITALIZED="$(tr '[:lower:]' '[:upper:]' <<< ${SITE:0:1})${SITE:1}"
-        VCELL_SWVERSION="${SITE_CAPITALIZED}_Version_${{ github.event.inputs.vcell_version }}_build_${{ github.event.inputs.vcell_build}}"
-        KUSTOMIZE_OVERLAY='not-specified'
-        if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then KUSTOMIZE_OVERLAY="prod"; fi
-        if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then KUSTOMIZE_OVERLAY="dev"; fi
-        if [ "${{ github.event.inputs.vcell_site }}" == "test" ]; then KUSTOMIZE_OVERLAY="stage"; fi
-        CONTAINER_IMAGE_TAG="${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build}}"
-        echo "VCELL_SWVERSION=${VCELL_SWVERSION}" >> $GITHUB_ENV
-        echo "KUSTOMIZE_OVERLAY=${KUSTOMIZE_OVERLAY}" >> $GITHUB_ENV
-        echo "CONTAINER_IMAGE_TAG=${CONTAINER_IMAGE_TAG}" >> $GITHUB_ENV
-    - name: Call webhook to deploy to kubernetes cluster (overlay 'prod', 'dev' or 'stage')
-      run: |
-        git_sha=$(git rev-parse --short "$GITHUB_SHA")
-        echo '{"ref": "main","inputs":{"overlay": "'${KUSTOMIZE_OVERLAY}'","tag":"'${CONTAINER_IMAGE_TAG}'","swversion": "'${VCELL_SWVERSION}'"}}' >body
-        curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yaml/dispatches' \
-          -H 'Authorization: Bearer ${{ secrets.ACTION_TOKEN }}' \
-          -H 'Content-Type: application/json' \
-          --data "@body"
+#    - name: Capitalize first character of site name
+#      id: capitalize
+#      run: |
+#        SITE="${{ github.event.inputs.vcell_site }}"
+#        SITE_CAPITALIZED="$(tr '[:lower:]' '[:upper:]' <<< ${SITE:0:1})${SITE:1}"
+#        VCELL_SWVERSION="${SITE_CAPITALIZED}_Version_${{ github.event.inputs.vcell_version }}_build_${{ github.event.inputs.vcell_build}}"
+#        KUSTOMIZE_OVERLAY='not-specified'
+#        if [ "${{ github.event.inputs.vcell_site }}" == "rel" ]; then KUSTOMIZE_OVERLAY="prod"; fi
+#        if [ "${{ github.event.inputs.vcell_site }}" == "alpha" ]; then KUSTOMIZE_OVERLAY="dev"; fi
+#        if [ "${{ github.event.inputs.vcell_site }}" == "test" ]; then KUSTOMIZE_OVERLAY="stage"; fi
+#        CONTAINER_IMAGE_TAG="${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build}}"
+#        echo "VCELL_SWVERSION=${VCELL_SWVERSION}" >> $GITHUB_ENV
+#        echo "KUSTOMIZE_OVERLAY=${KUSTOMIZE_OVERLAY}" >> $GITHUB_ENV
+#        echo "CONTAINER_IMAGE_TAG=${CONTAINER_IMAGE_TAG}" >> $GITHUB_ENV
+#    - name: Call webhook to deploy to kubernetes cluster (overlay 'prod', 'dev' or 'stage')
+#      run: |
+#        git_sha=$(git rev-parse --short "$GITHUB_SHA")
+#        echo '{"ref": "main","inputs":{"overlay": "'${KUSTOMIZE_OVERLAY}'","tag":"'${CONTAINER_IMAGE_TAG}'","swversion": "'${VCELL_SWVERSION}'"}}' >body
+#        curl -X POST 'https://api.github.com/repos/virtualcell/vcell-fluxcd/actions/workflows/deploy.yaml/dispatches' \
+#          -H 'Authorization: Bearer ${{ secrets.ACTION_TOKEN }}' \
+#          -H 'Content-Type: application/json' \
+#          --data "@body"
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() }}
