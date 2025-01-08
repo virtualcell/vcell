@@ -35,6 +35,7 @@ jobs:
       - name: Deploy Web Help
         run: |
           set -ux
+          ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
           webhelp_local_dir="~/work/vcell/vcell/vcell-client/target/classes/vcellDoc"
           ssh_user=${{ secrets.CD_FULL_USER }}
           webhelp_deploy_dir="${VCELL_WEBHELP_REMOTE_DIR}"
@@ -46,10 +47,12 @@ jobs:
           if ! rsync -a -vvv "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
           then
             echo "failed to copy html files in topic directory to webhelp deploy directory";
+            exit 1;
           fi
           if ! scp "${webhelp_local_dir}/VCellHelpTOC.html" "$ssh_user@$manager_node:${webhelp_deploy_dir}/index.html";
           then
             echo "failed to index.html to webhelp deploy directory";
+             exit 1;
           fi
 
       - name: Setup tmate session 3
