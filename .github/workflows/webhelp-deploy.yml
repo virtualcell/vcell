@@ -6,7 +6,7 @@ jobs:
     name: Deploy Web Help Documentation
     runs-on: ubuntu-20.04
     steps:
-      - name: checkout tag
+      - name: checkout repository
         uses: actions/checkout@v4
 
       - name: setup global environment variables
@@ -36,7 +36,7 @@ jobs:
         run: |
           set -ux
           ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
-          webhelp_local_dir="~/work/vcell/vcell/vcell-client/target/classes/vcellDoc"
+          webhelp_local_dir="vcell-client/target/classes/vcellDoc"
           ssh_user=${{ secrets.CD_FULL_USER }}
           webhelp_deploy_dir="${VCELL_WEBHELP_REMOTE_DIR}"
           manager_node="${VCELL_MANAGER_NODE}"
