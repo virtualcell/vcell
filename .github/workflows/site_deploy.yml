@@ -190,7 +190,7 @@ jobs:
           # build and install the client installers, and the web help (kubernetes cluster deployments are separate)
           ./deploy-action-kubernetes.sh \
               --ssh-user ${{ secrets.CD_FULL_USER }} \
-              --build-installers \
+              --deploy-installers \
               --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
               ${VCELL_MANAGER_NODE} \
               ./${VCELL_CONFIG_FILE_NAME}

@@ -18,7 +18,7 @@ show_help() {
 	echo "    --ssh-user user       user for ssh to node [defaults to current user id using whoami]"
 	echo "                          (user must have passwordless sudo for docker commands on manager-node)"
 	echo ""
-	echo "    --build-installers    optionally build client installers and place in ./generated_installers dir"
+	echo "    --deploy-installers    optionally build client installers and place in ./generated_installers dir"
 	echo ""
 	echo "    --installer-deploy-dir /path/to/installer/dir"
 	echo "                          directory for installers accessible to users"
@@ -30,7 +30,7 @@ show_help() {
 	echo ""
 	echo "deploy-action-kubernetes.sh \\"
 	echo "   --ssh-user vcell \\"
-	echo "   --build_installers --installer_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha \\"
+	echo "   --deploy_installers --installer_deploy_dir /share/apps/vcell3/apache_webroot/htdocs/webstart/Alpha \\"
 	echo "   vcellapi.cam.uchc.edu \\"
 	echo "   ./server.config"
 	exit 1
@@ -42,7 +42,7 @@ fi
 
 ssh_user=$(whoami)
 installer_deploy_dir=
-build_installers=false
+deploy_installers=false
 while :; do
 	case $1 in
 		-h|--help)
@@ -57,8 +57,8 @@ while :; do
 			shift
 			installer_deploy_dir=$1
 			;;
-		--build-installers)
-			build_installers=true
+		--deploy-installers)
+			deploy_installers=true
 			;;
 		-?*)
 			printf 'ERROR: Unknown option: %s\n' "$1" >&2
@@ -84,11 +84,11 @@ vcell_version=$(grep VCELL_VERSION_NUMBER "$local_config_file" | cut -d"=" -f2)
 vcell_build=$(grep VCELL_BUILD_NUMBER "$local_config_file" | cut -d"=" -f2)
 
 #
-# if --build-installers, then generate client installers, placing then in ./generated_installers
+# if --deploy-installers, then generate client installers, placing then in ./generated_installers
 #    if --installer-deploy-dir, then also copy installers to $installer_deploy_dir
 #  *** unimplemented *** (if --link-installers, then also link installers to version independent installer names for each platform)
 #
-if [ "$build_installers" == "true" ]; then
+if [ "$deploy_installers" == "true" ]; then
 	#
 	# if --installer-deploy-dir, then copy the installers from ./generated_installers directory to the installer deploy directory
 	#
