@@ -193,23 +193,44 @@ jobs:
       run: |
         set -ux
         mvn clean install -DskipTests
-    - name: deploy installers and web help to vcell.org
+#    - name: deploy installers and web help to vcell.org
+#      run: |
+#        set -ux
+#        cd docker/swarm
+#        ssh -t vcell@${VCELL_MANAGER_NODE} sudo docker login -u ${{ github.actor }} -p "${{ secrets.GITHUB_TOKEN }}" ghcr.io
+#        if ${{ github.event.inputs.server_only != 'true' }}; then
+#          # build and install the client installers, and the web help (kubernetes cluster deployments are separate)
+#          ./deploy-action-kubernetes.sh \
+#              --ssh-user vcell \
+#              --webhelp-local-dir ../../vcell-client/target/classes/vcellDoc \
+#              --webhelp-deploy-dir $VCELL_WEBHELP_REMOTE_DIR \
+#              ${VCELL_MANAGER_NODE} \
+#              ./${VCELL_CONFIG_FILE_NAME}
+#          export VCELL_SITE_CAMEL=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
+#          ssh vcell@${VCELL_MANAGER_NODE} \
+#            installer_deploy_dir=$VCELL_INSTALLER_REMOTE_DIR vcell_siteCamel=$VCELL_SITE_CAMEL vcell_version=$VCELL_VERSION vcell_build=$VCELL_BUILD \
+#            'bash -s' < link-installers.sh
+#        fi
+    - name: Deploy Web Help
       run: |
         set -ux
-        cd docker/swarm
-        ssh -t vcell@${VCELL_MANAGER_NODE} sudo docker login -u ${{ github.actor }} -p "${{ secrets.GITHUB_TOKEN }}" ghcr.io
-        if ${{ github.event.inputs.server_only != 'true' }}; then
-          # build and install the client installers, and the web help (kubernetes cluster deployments are separate)
-          ./deploy-action-kubernetes.sh \
-              --ssh-user vcell \
-              --webhelp-local-dir ../../vcell-client/target/classes/vcellDoc \
-              --webhelp-deploy-dir $VCELL_WEBHELP_REMOTE_DIR \
-              ${VCELL_MANAGER_NODE} \
-              ./${VCELL_CONFIG_FILE_NAME}
-          export VCELL_SITE_CAMEL=`cat $VCELL_CONFIG_FILE_NAME | grep VCELL_SITE_CAMEL | cut -d"=" -f2`
-          ssh vcell@${VCELL_MANAGER_NODE} \
-            installer_deploy_dir=$VCELL_INSTALLER_REMOTE_DIR vcell_siteCamel=$VCELL_SITE_CAMEL vcell_version=$VCELL_VERSION vcell_build=$VCELL_BUILD \
-            'bash -s' < link-installers.sh
+        webhelp_local_dir="../../vcell-client/target/classes/vcellDoc"
+        ssh_user="vcell"
+        webhelp_deploy_dir="${VCELL_WEBHELP_REMOTE_DIR}"
+        manager_node="${VCELL_MANAGER_NODE}"
+        if [[ -z "${webhelp_deploy_dir}" || -z "${manager_node}" ]]; then
+          echo "Error: VCELL_WEBHELP_REMOTE_DIR or manager_node is not set."
+          exit 1
+        fi
+        if ! rsync -a -vvv "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
+        then
+          echo "failed to copy html files in topic directory to webhelp deploy directory";
+          exit 1;
+        fi
+        if ! scp "${webhelp_local_dir}/VCellHelpTOC.html" "$ssh_user@$manager_node:${webhelp_deploy_dir}/index.html";
+        then
+          echo "failed to index.html to webhelp deploy directory";
+          exit 1;
         fi
 #    - name: Capitalize first character of site name
 #      id: capitalize
@@ -236,6 +257,6 @@ jobs:
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
       with:
-          limit-access-to-actors: true
+          limit-access-to-actor: true
 #      if: ${{ failure() }}
       

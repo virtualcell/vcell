@@ -140,18 +140,6 @@ fi
 #
 # if --webhelp_deploy_dir, then copy the help html files from vcell-client/target/classes/vcellDoc/topics to the webhelp deploy directory
 #
-if [ ! -z "$webhelp_deploy_dir" ]; then
-  if ! rsync -a -vvv "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
-  then
-    echo "failed to copy html files in topic directory to webhelp deploy directory";
-    exit 1;
-  fi
-  if ! scp "${webhelp_local_dir}/VCellHelpTOC.html" "$ssh_user@$manager_node:${webhelp_deploy_dir}/index.html";
-  then
-    echo "failed to index.html to webhelp deploy directory";
-    exit 1;
-  fi
-fi
 
 echo "exited normally"
 
