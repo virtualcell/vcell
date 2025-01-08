@@ -191,9 +191,7 @@ jobs:
     - name: build documentation for web help
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
-        pushd vcell-client
         mvn clean install -DskipTests
-        popd
 #    - name: deploy installers and web help to vcell.org
 #      run: |
 #        set -ux
@@ -219,7 +217,7 @@ jobs:
     - name: Deploy Web Help
       run: |
         set -ux
-        webhelp_local_dir="../../vcell-client/target/classes/vcellDoc"
+        webhelp_local_dir="~/work/vcell/vcell-client/target/classes/vcellDoc"
         ssh_user="vcell"
         webhelp_deploy_dir="${VCELL_WEBHELP_REMOTE_DIR}"
         manager_node="${VCELL_MANAGER_NODE}"
