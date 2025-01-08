@@ -191,7 +191,7 @@ jobs:
     - name: build documentation for web help
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
-        mvn clean install -DskipTests
+        mvn clean install --update-snapshots -DskipTests
 #    - name: deploy installers and web help to vcell.org
 #      run: |
 #        set -ux
@@ -259,7 +259,8 @@ jobs:
 #          --data "@body"
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
-      with:
-          limit-access-to-actor: true
-#      if: ${{ failure() }}
+      
+    - name: Setup tmate session 3
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ failure() }}
       
