@@ -191,6 +191,7 @@ jobs:
     - name: build documentation for web help
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
+        mvn dependency:purge-local-repository -DmanualInclude="groupId:artifactId"
         mvn clean install --update-snapshots -DskipTests
 #    - name: deploy installers and web help to vcell.org
 #      run: |
@@ -217,7 +218,7 @@ jobs:
     - name: Deploy Web Help
       run: |
         set -ux
-        webhelp_local_dir="~/work/vcell/vcell-client/target/classes/vcellDoc"
+        webhelp_local_dir="~/work/vcell/vcell/vcell-client/target/classes/vcellDoc"
         ssh_user="vcell"
         webhelp_deploy_dir="${VCELL_WEBHELP_REMOTE_DIR}"
         manager_node="${VCELL_MANAGER_NODE}"
@@ -259,7 +260,7 @@ jobs:
 #          --data "@body"
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
-      
+
     - name: Setup tmate session 3
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() }}
