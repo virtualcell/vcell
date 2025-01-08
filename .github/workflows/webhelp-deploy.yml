@@ -1,0 +1,60 @@
+name: webhelp-deploy.yml
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    name: Deploy Web Help Documentation
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout tag
+        uses: actions/checkout@v4
+
+      - name: setup global environment variables
+        run: |
+          echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
+          echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
+          echo "VCELL_WEBHELP_REMOTE_DIR=/share/apps/vcell3/apache_webroot/htdocs/webstart/VCell_Tutorials/VCell_Help" >> $GITHUB_ENV
+          echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV
+
+      - name: setup ssh-agent
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.VC_KEY }}
+
+      - name: setup java 17 with maven cache (for documentation build)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: build documentation for web help
+        run: |
+          mvn clean install -DskipTests
+
+      - name: Deploy Web Help
+        run: |
+          set -ux
+          webhelp_local_dir="~/work/vcell/vcell/vcell-client/target/classes/vcellDoc"
+          ssh_user=${{ secrets.CD_FULL_USER }}
+          webhelp_deploy_dir="${VCELL_WEBHELP_REMOTE_DIR}"
+          manager_node="${VCELL_MANAGER_NODE}"
+          if [[ -z "${webhelp_deploy_dir}" || -z "${manager_node}" ]]; then
+            echo "Error: VCELL_WEBHELP_REMOTE_DIR or manager_node is not set."
+            exit 1;
+          fi
+          if ! rsync -a -vvv "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
+          then
+            echo "failed to copy html files in topic directory to webhelp deploy directory";
+          fi
+          if ! scp "${webhelp_local_dir}/VCellHelpTOC.html" "$ssh_user@$manager_node:${webhelp_deploy_dir}/index.html";
+          then
+            echo "failed to index.html to webhelp deploy directory";
+          fi
+
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+        with:
+          limit-access-to-actor: false
+
