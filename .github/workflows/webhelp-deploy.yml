@@ -52,7 +52,6 @@ jobs:
       - name: build documentation for web help
         if: ${{ github.event.inputs.server_only != 'true' }}
         run: |
-          mvn dependency:purge-local-repository -DmanualInclude="net.minidev:json-smart"
           mvn clean install --update-snapshots -DskipTests
 
       - name: Deploy Web Help
