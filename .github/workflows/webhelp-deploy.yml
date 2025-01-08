@@ -1,0 +1,83 @@
+name: webhelp-deploy.yml
+on:
+  workflow_dispatch:
+jobs:
+  env:
+    name: Setup Environment
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout tag
+        uses: actions/checkout@v4
+
+      - name: setup global environment variables
+        run: |
+          echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
+          echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
+          echo "VCELL_WEBHELP_REMOTE_DIR=/share/apps/vcell3/apache_webroot/htdocs/webstart/VCell_Tutorials/VCell_Help" >> $GITHUB_ENV
+          echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV
+
+      - name: setup ssh-agent
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.VC_KEY }}
+      - name: retrieve config file
+        run: |
+          set -ux
+          ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
+          cd docker/swarm
+          scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/${VCELL_CONFIG_FILE_NAME} .
+
+      - name: get installer secrets
+        run: |
+          ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
+          sudo mkdir /usr/local/deploy
+          sudo chmod 777 /usr/local/deploy
+          cd /usr/local/deploy
+          scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2023_07_30.tar .
+          cd ..
+          sudo tar -xvf deploy/deploy_dir_2023_07_30.tar
+          sudo chmod 777 -R deploy
+
+  build:
+    name: Setup Environment
+    runs-on: ubuntu-20.04
+    needs: env
+    steps:
+      - name: setup java 17 with maven cache (for documentation build)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+      - name: build documentation for web help
+        if: ${{ github.event.inputs.server_only != 'true' }}
+        run: |
+          mvn dependency:purge-local-repository -DmanualInclude="net.minidev:json-smart"
+          mvn clean install --update-snapshots -DskipTests
+
+      - name: Deploy Web Help
+        run: |
+          set -ux
+          webhelp_local_dir="~/work/vcell/vcell/vcell-client/target/classes/vcellDoc"
+          ssh_user="vcell"
+          webhelp_deploy_dir="${VCELL_WEBHELP_REMOTE_DIR}"
+          manager_node="${VCELL_MANAGER_NODE}"
+          if [[ -z "${webhelp_deploy_dir}" || -z "${manager_node}" ]]; then
+            echo "Error: VCELL_WEBHELP_REMOTE_DIR or manager_node is not set."
+            exit 1;
+          fi
+          if ! rsync -a -vvv "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
+          then
+            echo "failed to copy html files in topic directory to webhelp deploy directory";
+          fi
+          if ! scp "${webhelp_local_dir}/VCellHelpTOC.html" "$ssh_user@$manager_node:${webhelp_deploy_dir}/index.html";
+          then
+            echo "failed to index.html to webhelp deploy directory";
+          fi
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+
