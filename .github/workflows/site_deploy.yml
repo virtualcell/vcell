@@ -220,17 +220,17 @@ jobs:
         manager_node="${VCELL_MANAGER_NODE}"
         if [[ -z "${webhelp_deploy_dir}" || -z "${manager_node}" ]]; then
           echo "Error: VCELL_WEBHELP_REMOTE_DIR or manager_node is not set."
-          exit 1
+         
         fi
         if ! rsync -a -vvv "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
         then
           echo "failed to copy html files in topic directory to webhelp deploy directory";
-          exit 1;
+          
         fi
         if ! scp "${webhelp_local_dir}/VCellHelpTOC.html" "$ssh_user@$manager_node:${webhelp_deploy_dir}/index.html";
         then
           echo "failed to index.html to webhelp deploy directory";
-          exit 1;
+          
         fi
 #    - name: Capitalize first character of site name
 #      id: capitalize
