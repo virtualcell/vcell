@@ -2,8 +2,8 @@ name: webhelp-deploy.yml
 on:
   workflow_dispatch:
 jobs:
-  env:
-    name: Setup Environment
+  deploy:
+    name: Deploy Web Help Documentation
     runs-on: ubuntu-20.04
     steps:
       - name: checkout tag
@@ -20,39 +20,17 @@ jobs:
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.VC_KEY }}
-      - name: retrieve config file
-        run: |
-          set -ux
-          ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
-          cd docker/swarm
-          scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/${VCELL_CONFIG_FILE_NAME} .
 
-      - name: get installer secrets
-        run: |
-          ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
-          sudo mkdir /usr/local/deploy
-          sudo chmod 777 /usr/local/deploy
-          cd /usr/local/deploy
-          scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2023_07_30.tar .
-          cd ..
-          sudo tar -xvf deploy/deploy_dir_2023_07_30.tar
-          sudo chmod 777 -R deploy
-
-  build:
-    name: Setup Environment
-    runs-on: ubuntu-20.04
-    needs: env
-    steps:
       - name: setup java 17 with maven cache (for documentation build)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
           cache: 'maven'
+
       - name: build documentation for web help
-        if: ${{ github.event.inputs.server_only != 'true' }}
         run: |
-          mvn clean install --update-snapshots -DskipTests
+          mvn clean install -DskipTests
 
       - name: Deploy Web Help
         run: |
@@ -73,10 +51,10 @@ jobs:
           then
             echo "failed to index.html to webhelp deploy directory";
           fi
-      - name: Setup tmate session 3
-        uses: mxschmitt/action-tmate@v3
 
       - name: Setup tmate session 3
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
+        with:
+          limit-access-to-actor: false
 
