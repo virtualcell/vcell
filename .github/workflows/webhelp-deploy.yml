@@ -36,7 +36,7 @@ jobs:
         run: |
           set -ux
           webhelp_local_dir="~/work/vcell/vcell/vcell-client/target/classes/vcellDoc"
-          ssh_user="vcell"
+          ssh_user=${{ secrets.CD_FULL_USER }}
           webhelp_deploy_dir="${VCELL_WEBHELP_REMOTE_DIR}"
           manager_node="${VCELL_MANAGER_NODE}"
           if [[ -z "${webhelp_deploy_dir}" || -z "${manager_node}" ]]; then
