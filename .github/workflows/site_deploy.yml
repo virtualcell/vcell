@@ -181,16 +181,15 @@ jobs:
         ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
         cd docker/swarm
         scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/${VCELL_CONFIG_FILE_NAME} .
-    - name: deploy installers and web help to vcell.org
+    - name: deploy installers to vcell.org
       run: |
         set -ux
         cd docker/swarm
         ssh -t ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE} sudo docker login -u ${{ github.actor }} -p "${{ secrets.GITHUB_TOKEN }}" ghcr.io
         if ${{ github.event.inputs.server_only != 'true' }}; then
-          # build and install the client installers, and the web help (kubernetes cluster deployments are separate)
-          ./deploy-action-kubernetes.sh \
+          # build and install the client installers (kubernetes cluster deployments are separate)
+          ./deploy-installers.sh \
               --ssh-user ${{ secrets.CD_FULL_USER }} \
-              --deploy-installers \
               --installer-deploy-dir $VCELL_INSTALLER_REMOTE_DIR \
               ${VCELL_MANAGER_NODE} \
               ./${VCELL_CONFIG_FILE_NAME}
