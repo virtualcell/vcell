@@ -1659,7 +1659,7 @@ lg.error(e);
             return;
         }
 
-        int scanCount = simulation.getScanCount();
+        int scanCount = simulation.getScanCount_2();
         printWriter.println("# Serial Scan Parameters");
         String[] scanParameters = simulation.getMathOverrides().getOverridenConstantNames();
         printWriter.println("SERIAL_SCAN_PARAMETER_BEGIN " + scanParameters.length);

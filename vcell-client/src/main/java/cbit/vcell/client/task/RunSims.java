@@ -66,7 +66,7 @@ public class RunSims extends AsynchClientTask {
 	}
 
 	private boolean isSmoldynTimeStepOK(Simulation sim) {
-		for (int scan = 0; scan < sim.getScanCount(); scan ++) {
+		for (int scan = 0; scan < sim.getScanCount_2(); scan ++) {
 			MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(scan);
 			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, scanIndex);
 			double Dmax = 0;
@@ -237,7 +237,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					}
 					
 					boolean bGiveWarning = false;
-					for (int i = 0; i < sim.getScanCount(); i ++) {
+					for (int i = 0; i < sim.getJobCount(); i ++) {
 						if (sim.getSolverTaskDescription().getSolverDescription().equals(SolverDescription.SundialsPDE)) {
 							SimulationJob simJob = new SimulationJob(sim, i, null);						
 							if (simJob.getSimulationSymbolTable().hasTimeVaryingDiffusionOrAdvection()) {
@@ -260,7 +260,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					//
 					// translate to common ancestral simulation (oldest mathematically equivalent simulation)
 					//
-					SimulationStatus simulationStatus = jobManager.startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier(),sim.getScanCount());
+					SimulationStatus simulationStatus = jobManager.startSimulation(simInfo.getAuthoritativeVCSimulationIdentifier(),sim.getJobCount());
 					// updateStatus
 					clientSimManager.updateStatusFromStartRequest(sim, simulationStatus);
 				} else {

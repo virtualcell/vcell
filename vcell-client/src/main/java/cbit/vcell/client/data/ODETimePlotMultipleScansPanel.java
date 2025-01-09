@@ -84,8 +84,11 @@ Double[][] values;
 private void initialize()  {
 
 	setLayout(new BorderLayout());
-	int scanCount = simulation.getScanCount();
+	int scanCount = simulation.getScanCount_2();
 	int trialCount = simulation.getNumTrials();
+	if (trialCount > 1){
+		throw new RuntimeException("trials are not yet supported in ODETimePlotMultipleScansPanel");
+	}
 	
 	plotPane = new PlotPane();
 	plotPane.getPlot2DDataPanel1().setXVarName(xVarColumnName);

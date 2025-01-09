@@ -855,10 +855,10 @@ private void handleException(java.lang.Throwable exception) {
 private Object getSimulationStatusDisplay(int row) {
 	Simulation simulation = getSimulationListTableModel1().getValueAt(row);
 	SimulationStatus simStatus = getSimulationWorkspace().getSimulationStatus(simulation);
-	boolean displayProgress = (simStatus.isRunning() || (simStatus.isFailed() && simStatus.numberOfJobsDone() < simulation.getScanCount()))
+	boolean displayProgress = (simStatus.isRunning() || (simStatus.isFailed() && simStatus.numberOfJobsDone() < simulation.getJobCount()))
 							  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
 	if (displayProgress){
-		double progress = simStatus.getProgress().doubleValue() / simulation.getScanCount();
+		double progress = simStatus.getProgress().doubleValue() / simulation.getJobCount();
 		JProgressBar progressBar = new JProgressBar();
 		progressBar.setStringPainted(true);
 		progressBar.setValue((int)(progress * 100));
@@ -1068,7 +1068,7 @@ private boolean canQuickRun(SolverTaskDescription taskDesc) {
 //		quickPythonRunButton.setToolTipText("Not supported by selected solver");
 		quickNativeRunButton.setToolTipText("Not supported by selected solver");
 		return false;
-	}else if(taskDesc.getSimulation().getScanCount() > 1){
+	}else if(taskDesc.getSimulation().getJobCount() > 1){
 //		System.err.println("SimulationListPanel.canQuickRun(): parameter scan, local solver not supported");
 ////		quickPythonRunButton.setToolTipText("Not supported for parameter scans");
 //		quickNativeRunButton.setToolTipText("Not supported for parameter scans");
@@ -1157,7 +1157,7 @@ private void refreshButtonsLax() {
 				bGetResultsBatch = true;
 			}
 			
-			final boolean onlyOne = firstSelection.getScanCount() == 1;
+			final boolean onlyOne = firstSelection.getJobCount() == 1;
 //			bParticleView = onlyOne;
 			bRunnable = onlyOne && simStatus.isRunnable() && canServerRun(firstSelection.getSolverTaskDescription());
 			bQuickRun = canQuickRun( firstSelection.getSolverTaskDescription() );

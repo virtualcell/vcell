@@ -173,17 +173,17 @@ private Simulation getSimulation() {
 }
 
 private JLabel label = new JLabel("<html><b>Choose Parameter Values</b></html>");
-private int localScanProgress;
-public void setLocalScanProgress(int localScanProgress) {
-	this.localScanProgress = localScanProgress;
+private int localJobProgress;
+public void setLocalScanProgress(int localJobProgress) {
+	this.localJobProgress = localJobProgress;
 	SwingUtilities.invokeLater(new Runnable() {
 	@Override
 	public void run() {
-		label.setText("<html><b>Choose Parameter Values progress:("+(localScanProgress)+"/"+getSimulation().getScanCount()+")</b></html>");
+		label.setText("<html><b>Choose Parameter Values/Trials progress:("+(localJobProgress)+"/"+getSimulation().getJobCount()+")</b></html>");
 	}});
 }
-public int getLocalScanProgress() {
-	return localScanProgress;
+public int getLocalJobProgress() {
+	return localJobProgress;
 }
 /**
  * Insert the method's description here.
@@ -216,7 +216,7 @@ private void initialize() throws DataAccessException {
 		
 	
 	// if necessarry, create parameter choices panel and wire it up
-	if (getSimulation().getScanCount() > 1) {
+	if (getSimulation().getScanCount_2() > 1) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(5, 0));
 		panel.setBorder(BorderFactory.createEtchedBorder());
@@ -321,7 +321,7 @@ private void initialize() throws DataAccessException {
 	// put things together
 	setLayout(new java.awt.BorderLayout());
 	add(getMainViewer(), java.awt.BorderLayout.CENTER);
-	if (getSimulation().getScanCount() > 1) {
+	if (getSimulation().getScanCount_2() > 1) {
 		add(getParamChoicesPanel(), java.awt.BorderLayout.SOUTH);
 	}
 }

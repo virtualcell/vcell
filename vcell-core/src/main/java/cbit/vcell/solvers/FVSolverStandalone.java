@@ -260,7 +260,10 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
             Simulation sim = simTask.getSimulation();
             if(sim.isSerialParameterScan()){
                 //write functions file for all the simulations in the scan
-                for(int scan = 0; scan < sim.getScanCount(); scan++){
+                if (sim.getJobCount() != sim.getScanCount_2()){
+                    throw new SolverException("using scanIndex for JobIndex, assuming no trials");
+                }
+                for(int scan = 0; scan < sim.getScanCount_2(); scan++){
                     SimulationJob simJob = new SimulationJob(sim, scan, simTask.getSimulationJob().getFieldDataIdentifierSpecs());
                     // ** Dumping the functions of a simulation into a '.functions' file.
                     String basename = new File(getSaveDirectory(), simJob.getSimulationJobID()).getPath();

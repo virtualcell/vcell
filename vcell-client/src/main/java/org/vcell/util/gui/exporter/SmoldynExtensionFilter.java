@@ -62,7 +62,7 @@ public class SmoldynExtensionFilter extends SelectorExtensionFilter{
 	public void writeBioModel(DocumentManager documentManager, BioModel bioModel, File exportFile, SimulationContext ignored) throws Exception {
 		Objects.requireNonNull(selectedSim);
 		
-			int scanCount = selectedSim.getScanCount();
+			int scanCount = selectedSim.getScanCount_2();
 			if(scanCount > 1) // has parameter scan
 			{
 				String baseExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf("."));

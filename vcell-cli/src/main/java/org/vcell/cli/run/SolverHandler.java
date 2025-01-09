@@ -243,7 +243,7 @@ public class SolverHandler {
 			AbstractTask topTask = entry.getKey();
 			Task actualTask = topTaskToBaseTask.get(topTask.getId());
 			TempSimulation tempSimulation = taskToTempSimulationMap.get(topTask);
-			int scanCount = tempSimulation.getScanCount();
+			int scanCount = tempSimulation.getScanCount_2();
 
 			if(scanCount > 1) {        // we know that topTask is a RepeatedTask
 //				assert task instanceof RepeatedTask;
@@ -383,7 +383,7 @@ public class SolverHandler {
 						tempSimulation.getMeshSpecification().setSamplingSize(newSize);
 					}
 
-					int scanCount = tempSimulation.getScanCount();
+					int scanCount = tempSimulation.getScanCount_2();
 					for (int i = 0; i < scanCount; i++) {
 						TempSimulationJob simJob = new TempSimulationJob(tempSimulation, i, null);
 						simJobsList.add(simJob);

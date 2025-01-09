@@ -188,7 +188,7 @@ public class TestMissingSimData {
 				System.out.println(
 					BeanUtils.forceStringLength(rerunArr[i].getVCSimulationIdentifier().getSimulationKey().toString(), 12, " ", true)+" "+
 					BeanUtils.forceStringLength((rerunArr[i].getSimulation()!=null?"'"+rerunArr[i].getSimulation().getVersion().getOwner().getName()+"'":"null"), 15, " ", false)+" "+
-					BeanUtils.forceStringLength((rerunArr[i].getSimulation()!=null?"scan="+rerunArr[i].getSimulation().getScanCount():"null"), 10, " ", false)+" "+
+					BeanUtils.forceStringLength((rerunArr[i].getSimulation()!=null?"jobs="+rerunArr[i].getSimulation().getJobCount():"null"), 10, " ", false)+" "+
 					rerunArr[i].getLastSimStatus());
 			}
 			System.out.println("-----\n-----");
@@ -202,7 +202,7 @@ public class TestMissingSimData {
 			while(rerunIter.hasNext()){
 				RerunMissing rerunMissing = rerunIter.next();
 				if(rerunMissing.getSimulation() != null){
-					if(rerunMissing.getSimulation().getScanCount() > 1){
+					if(rerunMissing.getSimulation().getJobCount() > 1){
 						//don't proceed until scancounts are done
 						return false;
 					}
@@ -321,7 +321,7 @@ public class TestMissingSimData {
 //					continue;
 //				}
 				
-				int scanCount = simulation.getScanCount();
+				int jobCount = simulation.getJobCount();
 //				if(true){return;}
 				SimulationStatusPersistent simulationStatus = null;
 				SimulationInfo simulationInfo = simulation.getSimulationInfo();
@@ -329,7 +329,7 @@ public class TestMissingSimData {
 					throw new Exception("Unexpected authoritative and sim id are not the same");
 				}
 
-			vcellConnection.getSimulationController().startSimulation(vcSimulationIdentifier, scanCount);
+			vcellConnection.getSimulationController().startSimulation(vcSimulationIdentifier, jobCount);
 			startTime = System.currentTimeMillis();
 //			SimulationStatusPersistent lastSimStatus = simulationStatus;
 			while(simulationStatus == null || simulationStatus.isStopped() || simulationStatus.isCompleted() || simulationStatus.isFailed()){
@@ -1036,8 +1036,8 @@ public class TestMissingSimData {
 //				notCompletedSimIDs.add(simIDAndJobID.simID.toString());
 				return;
 			}
-			int scanCount = sim.getScanCount();
-			vcellConnection.getSimulationController().startSimulation(vcSimulationIdentifier, scanCount);
+			int jobCount = sim.getJobCount();
+			vcellConnection.getSimulationController().startSimulation(vcSimulationIdentifier, jobCount);
 			long startTime = System.currentTimeMillis();
 			while(simulationStatus.isStopped() || simulationStatus.isCompleted() || simulationStatus.isFailed()){
 				Thread.sleep(250);

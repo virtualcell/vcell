@@ -229,12 +229,12 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 		}
 		return false;
 	}
-	public int getScanCount() {
-		if (selectedSimWOSBE != null) {
-			return selectedSimWOSBE.getScanCount();
-		}
-		return 0;
-	}
+//	public int getScanCount() {
+//		if (selectedSimWOSBE != null) {
+//			return selectedSimWOSBE.getScanCount();
+//		}
+//		return 0;
+//	}
 	public String getSimulationOverrideName() {
 		if (selectedSimWOSBE != null) {
 			return selectedSimWOSBE.getName();
@@ -256,7 +256,7 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 			clonedBM.refreshDependencies();
 			String originalExportFilename = exportFile.getPath();
 			Files.deleteIfExists(Paths.get(originalExportFilename));
-			for (int scan = 0; scan < selectedSimWOSBE.getScanCount(); scan++) {
+			for (int scan = 0; scan < selectedSimWOSBE.getScanCount_2(); scan++) {
 				MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(scan);
 				BioModelTransforms.applyMathOverrides(selectedSimWOSBE, scanIndex, clonedBM);
 				String resultString = XmlHelper.exportSBML(clonedBM, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, bRoundTripValidation);

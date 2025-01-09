@@ -549,8 +549,12 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * Creation date: (10/5/2005 1:02:08 PM)
  * @return int
  */
-public int getScanCount() {
+public int getScanCount_2() {
 	return getMathOverrides().getScanCount();
+}
+
+public int getJobCount() {
+	return getScanCount_2() * getNumTrials();
 }
 
 
@@ -880,7 +884,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	}
 
 	public boolean isSerialParameterScan() {
-		if (getSolverTaskDescription().isSerialParameterScan() && getScanCount() > 1) {
+		if (getSolverTaskDescription().isSerialParameterScan() && getScanCount_2() > 1) {
 			return true;
 		}
 		return false;
@@ -972,22 +976,22 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		if (trialIndex.index >= getNumTrials()) {
 			throw new IllegalArgumentException("trialIndex must be less than numTrials");
 		}
-		if (scanIndex.index >= getScanCount()) {
+		if (scanIndex.index >= getScanCount_2()) {
 			throw new IllegalArgumentException("scanIndex must be less than scanCount");
 		}
-		return getJobIndex(scanIndex, trialIndex, getScanCount());
+		return getJobIndex(scanIndex, trialIndex, getScanCount_2());
 	}
 
 	public MathOverrides.ScanIndex getScanIndex(int jobIndex) {
-		return getScanIndex(jobIndex, getScanCount());
+		return getScanIndex(jobIndex, getScanCount_2());
 	}
 
 	public SolverTaskDescription.TrialIndex getTrialIndex(int jobIndex) {
-		return getTrialIndex(jobIndex, getScanCount());
+		return getTrialIndex(jobIndex, getScanCount_2());
 	}
 
 	public int getNumJobs() {
-		return getNumTrials() * getScanCount();
+		return getNumTrials() * getScanCount_2();
 	}
 
 	public static int getJobIndex(MathOverrides.ScanIndex scanIndex, SolverTaskDescription.TrialIndex trialIndex, int scanCount) {

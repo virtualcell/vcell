@@ -9,6 +9,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -171,7 +172,8 @@ public class MathOverrideApplyTest {
 			transformed_biomodel.refreshDependencies();
 			Simulation sim = transformed_biomodel.getSimulation(simNameWithOverride);
 			try {
-				for (int scanIndex = 0; scanIndex < sim.getScanCount(); scanIndex++) {
+				Assertions.assertTrue(sim.getNumTrials()==1);
+				for (int scanIndex = 0; scanIndex < sim.getScanCount_2(); scanIndex++) {
 					BioModelTransforms.applyMathOverrides(sim, new MathOverrides.ScanIndex(scanIndex), transformed_biomodel);
 				}
 				// for now, if it doesn't throw an exception, then it passes

@@ -350,7 +350,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			{ 
 				Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
 				if (selectedSim != null) {
-					int scanCount = selectedSim.getScanCount();
+					int scanCount = selectedSim.getJobCount();
 					//-----
 					String baseExportFileName = (scanCount==1?null:exportFile.getPath().substring(0, exportFile.getPath().indexOf(".")));
 					for(int i=0; i<scanCount; i++){

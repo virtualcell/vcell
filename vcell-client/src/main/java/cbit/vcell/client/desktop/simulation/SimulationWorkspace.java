@@ -201,9 +201,9 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		{
 			errorMessage = null;
 		}
-	} else if (bCheckLimits && simulation.getScanCount() > Simulation.MAX_LIMIT_SCAN_JOBS) {
+	} else if (bCheckLimits && simulation.getScanCount_2() > Simulation.MAX_LIMIT_SCAN_JOBS) {
 		errorMessage =  "Errors in Simulation: '" + simulation.getName() + "'!\n" +
-				        "The simulation generates too many simulations (" + simulation.getScanCount() + ") required for parameter scan, which has exceeded our limit.\n\n" +
+				        "The simulation generates too many simulations (" + simulation.getJobCount() + ") required for parameter scan, which has exceeded our limit.\n\n" +
 						"maximum number of parameter sets is: " + Simulation.MAX_LIMIT_SCAN_JOBS + " \n" + 
 						"suggested limit for number of parameter sets is: " + Simulation.WARNING_SCAN_JOBS + " \n" + 
 						"Try choosing fewer parameters or reducing the size of scan for each parameter.";
@@ -295,9 +295,9 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 							"     "+Simulation.WARNING_PDE_MEGABYTES + " MB for spatial simulations\n" +
 							"     "+Simulation.WARNING_STOCH_MEGABYTES + " MB for compartmental stochastic simulations\n" +
 							"Try saving fewer timepoints or using a coarser mesh if spatial.";
-		} else if (simulation.getScanCount() > Simulation.WARNING_SCAN_JOBS) {
+		} else if (simulation.getScanCount_2() > Simulation.WARNING_SCAN_JOBS) {
 			warningMessage = "Warnings from Simulation: '" + simulation.getName() + "'!\n" + 
-					    "The simulation generates a large number of simulations (" + simulation.getScanCount() + ") required for parameter scan.\n" +
+					    "The simulation generates a large number of simulations (" + simulation.getScanCount_2() + ") required for parameter scan.\n" +
 						"maximum number of parameter sets is: " + Simulation.MAX_LIMIT_SCAN_JOBS + " \n" + 
 						"suggested limit for the number of parameter sets is: " + Simulation.WARNING_SCAN_JOBS + " \n" + 
 						"Try choosing fewer parameters or reducing the size of scan for each parameter.";

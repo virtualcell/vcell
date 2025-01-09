@@ -33,7 +33,7 @@ public class SimulationTest {
     public void testSimulationInstanceIndexing() throws PropertyVetoException {
         final Simulation sim_1_1 = createSimulation(1, 1);
         Assertions.assertEquals(1, sim_1_1.getNumJobs());
-        Assertions.assertEquals(1, sim_1_1.getScanCount());
+        Assertions.assertEquals(1, sim_1_1.getScanCount_2());
         Assertions.assertEquals(1, sim_1_1.getNumTrials());
         Assertions.assertEquals(0, sim_1_1.getJobIndex(ScanIndex.ZERO, TrialIndex.ZERO));
 
@@ -51,7 +51,7 @@ public class SimulationTest {
         Assertions.assertEquals(3, sim_1_3.getNumJobs());
         Assertions.assertEquals(3, sim_1_3.getNumTrials());
         Assertions.assertEquals(3, sim_1_3.getNumJobs());
-        Assertions.assertEquals(1, sim_1_3.getScanCount());
+        Assertions.assertEquals(1, sim_1_3.getScanCount_2());
 
         Assertions.assertEquals(1, sim_1_1.getNumJobs());
         Assertions.assertEquals(3, sim_1_3.getNumJobs());

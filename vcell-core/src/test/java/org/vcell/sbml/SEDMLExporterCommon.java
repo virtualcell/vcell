@@ -248,16 +248,19 @@ public abstract class SEDMLExporterCommon {
 				Simulation simRoundTripped = simContextRoundTripped.getSimulation(simName);
 				assertNotNull(simRoundTripped, "roundtripped simulation not found with name '" + simName + "'");
 				boolean mathOverrideEquiv = simToExport.getMathOverrides().compareEquivalent(simRoundTripped.getMathOverrides());
+				if (simToExport.getNumTrials()>1){
+					throw new SEDMLExporter.SEDMLExportException("trials not suppported for SEDML export");
+				}
 				if (!mathOverrideEquiv){
 					//
 					// math overrides didn't compare as equivalent, if overridden names are different, try substituting into math and comparing math
 					//
 					List<String> oldOverrideNames = Arrays.stream(simToExport.getMathOverrides().getOverridenConstantNames()).sorted().collect(Collectors.toList());
 					List<String> newOverrideNames = Arrays.stream(simRoundTripped.getMathOverrides().getOverridenConstantNames()).sorted().collect(Collectors.toList());
-					if (!oldOverrideNames.equals(newOverrideNames) && (simToExport.getScanCount() == simRoundTripped.getScanCount())){
+					if (!oldOverrideNames.equals(newOverrideNames) && (simToExport.getScanCount_2() == simRoundTripped.getScanCount_2())){
 						// simulation scan counts are the same, but overridden constants have different names, try substituting them into the math and compare the maths.
 						System.out.println("old names: "+oldOverrideNames+", new names: "+newOverrideNames);
-						for (int scan=0; scan < simToExport.getScanCount(); scan++){
+						for (int scan=0; scan < simToExport.getScanCount_2(); scan++){
 							MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(scan);
 							MathDescription oldMathDescription = new SimulationSymbolTable(simToExport, scanIndex).getMathDescription();
 							MathDescription newMathDescription = new SimulationSymbolTable(simRoundTripped, scanIndex).getMathDescription();

@@ -117,7 +117,7 @@ public SimulationStatus getSimulationStatus(Simulation simulation) {
 	SimulationStatus cachedSimStatus = simHash.getSimulationStatus(simulation);
 	if (cachedSimStatus!=null){
 		if (simulation.getIsDirty()) {
-			return SimulationStatus.newNotSaved(simulation.getScanCount());
+			return SimulationStatus.newNotSaved(simulation.getJobCount());
 		} else {
 			return cachedSimStatus;
 		}
@@ -151,7 +151,7 @@ private void initHash(Simulation[] simulations) {
 				if (simStatus != null) {
 					simHash.setSimulationStatus(simulations[i], simStatus);
 				} else {
-					simHash.setSimulationStatus(simulations[i], SimulationStatus.newNeverRan(simulations[i].getScanCount()));
+					simHash.setSimulationStatus(simulations[i], SimulationStatus.newNeverRan(simulations[i].getJobCount()));
 				}
 			}
 		}
@@ -498,7 +498,7 @@ void updateStatusFromServer(Simulation simulation) {
 	SimulationStatus serverStatus = getDocumentWindowManager().getRequestManager().getServerSimulationStatus(simulation.getSimulationInfo());
 
 	SimulationStatus newStatus = null;
-	if (oldStatus.isStopRequested() && serverStatus.numberOfJobsDone() < simulation.getScanCount()) {
+	if (oldStatus.isStopRequested() && serverStatus.numberOfJobsDone() < simulation.getJobCount()) {
 		// if stop requested but still going, get updated server info but adjust status
 		newStatus = SimulationStatus.newStopRequest(serverStatus);
 	} else {
@@ -622,7 +622,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 	}
 	//Let user tell how many simultaneous processes to run if this is local paramscan
 	final int[] simultaneousSimsSetting = new int[] {1};
-	if(originalSimulation.getScanCount() > 1) {
+	if(originalSimulation.getJobCount() > 1) {
 		try {
 			String simultaneousSims = DialogUtils.showInputDialog0(getDocumentWindowManager().getComponent(), "Local multi-scan simulation, enter maximum simulataneous sims to run at once", "1");
 			simultaneousSimsSetting[0] = Integer.parseInt(simultaneousSims);
@@ -741,7 +741,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 		taskList.add(task);
 	}
 
-	AsynchClientTask runOthers = new AsynchClientTask("running scans", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+	AsynchClientTask runOthers = new AsynchClientTask("running scans/trials", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		@Override
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			if (getClientTaskStatusSupport().isInterrupted()) {
@@ -750,7 +750,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			Simulation[] sims = (Simulation[])hashTable.get("simsArray");
 			Simulation simulation = sims[0];
 			//Run param scans to generate data for scansnum > 0
-			if(simulation.getScanCount() > 1) {
+			if(simulation.getJobCount() > 1) {
 				//Start master thread so clientdispatcher modal dialog can end
 				new Thread(new Runnable() {
 					@Override
@@ -772,7 +772,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 						//Counter of how many simultaneous param scan threads are running (decremented when scan thread finishes)
 						final int[] currentlyRunningCountHolder = new int[] {0};
 						//Run other scans starting at 1 (scan 0 is already done if we got here)
-						for (int i = 1; i < simulation.getScanCount(); i++) {
+						for (int i = 1; i < simulation.getJobCount(); i++) {
 							//Check if we can start another new param scan thread
 							while(currentlyRunningCountHolder[0] >= simultaneousSimsSetting[0]) {
 								try {
@@ -785,7 +785,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 									e.printStackTrace();
 								}
 							}
-							final int scanNum = i;
+							final int jobIndex = i;
 							//increment the concurrent running counter
 							currentlyRunningCountHolder[0]+= 1;
 							//Start new param scan thread
@@ -793,7 +793,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 								@Override
 								public void run() {
 									try {
-										SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, scanNum, null), 0);
+										SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, jobIndex, null), 0);
 										Solver solver = createQuickRunSolver(localSimDataDir, simTask);
 										solver.startSolver();
 										while(true) {
@@ -835,8 +835,8 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 										//decrement the concurrent running counter
 										currentlyRunningCountHolder[0]-= 1;
 										//Set progress on dataviewer
-										if(((SimResultsViewer)haveSimulationWindow.getDataViewer()).getLocalScanProgress() < (scanNum+1)) {
-											((SimResultsViewer)haveSimulationWindow.getDataViewer()).setLocalScanProgress(scanNum+1);
+										if(((SimResultsViewer)haveSimulationWindow.getDataViewer()).getLocalJobProgress() < (jobIndex+1)) {
+											((SimResultsViewer)haveSimulationWindow.getDataViewer()).setLocalScanProgress(jobIndex+1);
 										}
 									}
 								}}).start();

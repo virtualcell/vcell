@@ -422,8 +422,8 @@ public class HybridSolverTester {
 		BigString simXML = vcellConnectionHelper.getSimulationXML(vcSimulationIdentifier.getSimulationKey());
 		Simulation sim = XmlHelper.XMLToSim(simXML.toString());
 
-		int scanCount = sim.getScanCount();
-		vcellConnectionHelper.startSimulation(vcSimulationIdentifier, scanCount);
+		int jobCount = sim.getJobCount();
+		vcellConnectionHelper.startSimulation(vcSimulationIdentifier, jobCount);
 		long startTime = System.currentTimeMillis();
 		//wait until sim has stopped running
 		while((simulationStatus = vcellConnectionHelper.getSimulationStatus(vcSimulationIdentifier.getSimulationKey())) == null ||
@@ -579,11 +579,11 @@ public class HybridSolverTester {
 			throw new Exception("getSimulationXML failed after "+numTries+" tries");
 		}
 		//startSimulation(vcSimulationIdentifier, scanCount);
-		public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int scanCount) throws Exception{
+		public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int jobCount) throws Exception{
 			int numTries = 0;
 			while(numTries < 15){
 				try{
-					return getVCellConnection().getSimulationController().startSimulation(vcSimulationIdentifier, scanCount);
+					return getVCellConnection().getSimulationController().startSimulation(vcSimulationIdentifier, jobCount);
 				}catch(Exception e){
 					System.out.println("Error startSimulation, '"+e.getMessage()+"'");
 				}

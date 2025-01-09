@@ -41,7 +41,7 @@ public class ExportSpecs implements Serializable {
 	private HumanReadableExportData humanReadableExportData;
 
 	public static ExportParamScanInfo getParamScanInfo(Simulation simulation, int selectedParamScanJobIndex){
-		int scanCount = simulation.getScanCount();
+		int scanCount = simulation.getScanCount_2();
 		if(scanCount == 1){//no parameter scan
 			return null;
 		}
