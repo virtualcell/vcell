@@ -44,7 +44,7 @@ jobs:
             echo "Error: VCELL_WEBHELP_REMOTE_DIR or manager_node is not set."
             exit 1;
           fi
-          if ! rsync -a "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
+          if ! rsync -r "${webhelp_local_dir}/topics" "$ssh_user@$manager_node:${webhelp_deploy_dir}";
           then
             echo "failed to copy html files in topic directory to webhelp deploy directory";
             exit 1;
