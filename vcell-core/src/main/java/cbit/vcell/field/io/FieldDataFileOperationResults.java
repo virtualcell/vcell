@@ -11,7 +11,6 @@
 package cbit.vcell.field.io;
 
 import cbit.vcell.simdata.DataIdentifier;
-import org.vcell.restclient.model.FieldDataInfo;
 import org.vcell.restclient.model.FieldDataSaveResults;
 import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.util.Extent;
