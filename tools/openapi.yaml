@@ -806,7 +806,7 @@ components:
           $ref: '#/components/schemas/ExternalDataIdentifier'
         externalDataAnnotation:
           type: string
-        externalDataIDSimRef:
+        externalDataIDSimRefs:
           type: array
           items:
             $ref: '#/components/schemas/KeyValue'

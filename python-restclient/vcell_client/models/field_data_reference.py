@@ -35,8 +35,8 @@ class FieldDataReference(BaseModel):
     """ # noqa: E501
     external_data_identifier: Optional[ExternalDataIdentifier] = Field(default=None, alias="externalDataIdentifier")
     external_data_annotation: Optional[StrictStr] = Field(default=None, alias="externalDataAnnotation")
-    external_data_id_sim_ref: Optional[List[KeyValue]] = Field(default=None, alias="externalDataIDSimRef")
-    __properties: ClassVar[List[str]] = ["externalDataIdentifier", "externalDataAnnotation", "externalDataIDSimRef"]
+    external_data_id_sim_refs: Optional[List[KeyValue]] = Field(default=None, alias="externalDataIDSimRefs")
+    __properties: ClassVar[List[str]] = ["externalDataIdentifier", "externalDataAnnotation", "externalDataIDSimRefs"]
 
     model_config = {
         "populate_by_name": True,
@@ -77,13 +77,13 @@ class FieldDataReference(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of external_data_identifier
         if self.external_data_identifier:
             _dict['externalDataIdentifier'] = self.external_data_identifier.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of each item in external_data_id_sim_ref (list)
+        # override the default output from pydantic by calling `to_dict()` of each item in external_data_id_sim_refs (list)
         _items = []
-        if self.external_data_id_sim_ref:
-            for _item in self.external_data_id_sim_ref:
+        if self.external_data_id_sim_refs:
+            for _item in self.external_data_id_sim_refs:
                 if _item:
                     _items.append(_item.to_dict())
-            _dict['externalDataIDSimRef'] = _items
+            _dict['externalDataIDSimRefs'] = _items
         return _dict
 
     @classmethod
@@ -103,7 +103,7 @@ class FieldDataReference(BaseModel):
         _obj = cls.model_validate({
             "externalDataIdentifier": ExternalDataIdentifier.from_dict(obj.get("externalDataIdentifier")) if obj.get("externalDataIdentifier") is not None else None,
             "externalDataAnnotation": obj.get("externalDataAnnotation"),
-            "externalDataIDSimRef": [KeyValue.from_dict(_item) for _item in obj.get("externalDataIDSimRef")] if obj.get("externalDataIDSimRef") is not None else None
+            "externalDataIDSimRefs": [KeyValue.from_dict(_item) for _item in obj.get("externalDataIDSimRefs")] if obj.get("externalDataIDSimRefs") is not None else None
         })
         return _obj
 

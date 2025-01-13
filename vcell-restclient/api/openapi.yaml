@@ -985,7 +985,7 @@ components:
           key:
             value: 0.8008281904610115
           parameterScanType: true
-        externalDataIDSimRef:
+        externalDataIDSimRefs:
         - value: 0.8008281904610115
         - value: 0.8008281904610115
       properties:
@@ -993,7 +993,7 @@ components:
           $ref: '#/components/schemas/ExternalDataIdentifier'
         externalDataAnnotation:
           type: string
-        externalDataIDSimRef:
+        externalDataIDSimRefs:
           items:
             $ref: '#/components/schemas/KeyValue'
           type: array

@@ -131,7 +131,7 @@ public class FieldDataAPITest {
         List<FieldDataReference> references = fieldDataResourceApi.getAllFieldDataIDs();
         Assertions.assertEquals(saveFieldDataFromFile.getAnnotation(), references.get(0).getExternalDataAnnotation());
         Assertions.assertEquals(results.getFieldDataID(), references.get(0).getExternalDataIdentifier().getKey().getValue().toString());
-        Assertions.assertEquals(0, references.get(0).getExternalDataIDSimRef().size());
+        Assertions.assertEquals(0, references.get(0).getExternalDataIDSimRefs().size());
 
         ///////////////////////
         // Delete Field Data //

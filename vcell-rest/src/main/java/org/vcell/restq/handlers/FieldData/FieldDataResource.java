@@ -175,7 +175,7 @@ public class FieldDataResource {
     public record FieldDataReference(
             ExternalDataIdentifier externalDataIdentifier,
             String externalDataAnnotation,
-            Vector<KeyValue> externalDataIDSimRef
+            Vector<KeyValue> externalDataIDSimRefs
     ) { }
 
     public record AnalyzedResultsFromFieldData(

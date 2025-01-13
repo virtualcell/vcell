@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **external_data_identifier** | [**ExternalDataIdentifier**](ExternalDataIdentifier.md) |  | [optional] 
 **external_data_annotation** | **str** |  | [optional] 
-**external_data_id_sim_ref** | [**List[KeyValue]**](KeyValue.md) |  | [optional] 
+**external_data_id_sim_refs** | [**List[KeyValue]**](KeyValue.md) |  | [optional] 
 
 ## Example
 

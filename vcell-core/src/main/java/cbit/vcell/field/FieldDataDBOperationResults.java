@@ -39,7 +39,7 @@ public class FieldDataDBOperationResults implements Serializable {
 			ExternalDataIdentifier externalDataIdentifier = ExternalDataIdentifier.dtoToExternalDataIdentifier(fieldDataReference.getExternalDataIdentifier());
 			externalDataIdentifiers.add(externalDataIdentifier);
 			externalDataAnnotations.add(fieldDataReference.getExternalDataAnnotation());
-			List<KeyValue> keyValues = fieldDataReference.getExternalDataIDSimRef().stream().map(KeyValue::dtoToKeyValue).collect(Collectors.toList());
+			List<KeyValue> keyValues = fieldDataReference.getExternalDataIDSimRefs().stream().map(KeyValue::dtoToKeyValue).collect(Collectors.toList());
 			externalDataIDSimRefs.put(externalDataIdentifier, new Vector<>(keyValues));
 		}
 		fieldDataDBOperationResults.extDataIDArr = externalDataIdentifiers.toArray(new ExternalDataIdentifier[0]);
