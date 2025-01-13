@@ -1,5 +1,5 @@
 /*
- * VCell API (development)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -13,26 +13,98 @@
 
 package org.vcell.restclient.api;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.Identity;
-import org.vcell.restclient.model.User;
+import org.vcell.restclient.model.UserIdentityJSONSafe;
+import org.vcell.restclient.model.UserLoginInfoForMapping;
+import org.vcell.restclient.model.UserRegistrationInfo;
+import org.junit.Test;
+import org.junit.Ignore;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
  * API tests for UsersResourceApi
  */
-@Disabled
-@Tag("Fast")
+@Ignore
 public class UsersResourceApiTest {
 
     private final UsersResourceApi api = new UsersResourceApi();
 
     
     /**
+     * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+     *
      * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void forgotLegacyPasswordTest() throws ApiException {
+        String userID = null;
+        
+        api.forgotLegacyPassword(userID);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Method to get legacy tokens for guest users
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getGuestLegacyApiTokenTest() throws ApiException {
+        AccesTokenRepresentationRecord response = 
+        api.getGuestLegacyApiToken();
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Get token for legacy API
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getLegacyApiTokenTest() throws ApiException {
+        AccesTokenRepresentationRecord response = 
+        api.getLegacyApiToken();
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Get mapped VCell identity
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getMappedUserTest() throws ApiException {
+        UserIdentityJSONSafe response = 
+        api.getMappedUser();
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Get current user
      *
      * 
      *
@@ -41,8 +113,94 @@ public class UsersResourceApiTest {
      */
     @Test
     public void getMeTest() throws ApiException {
-        Identity response =
+        Identity response = 
         api.getMe();
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * create vcell user
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void mapNewUserTest() throws ApiException {
+        UserRegistrationInfo userRegistrationInfo = null;
+        
+        api.mapNewUser(userRegistrationInfo);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * map vcell user
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void mapUserTest() throws ApiException {
+        UserLoginInfoForMapping userLoginInfoForMapping = null;
+        Boolean response = 
+        api.mapUser(userLoginInfoForMapping);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Process the magic link and map the user
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void processMagicLinkTest() throws ApiException {
+        String magic = null;
+        
+        api.processMagicLink(magic);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * request a recovery email to link a VCell account.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void requestRecoveryEmailTest() throws ApiException {
+        String email = null;
+        String userID = null;
+        
+        api.requestRecoveryEmail(email, userID);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * remove vcell identity mapping
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void unmapUserTest() throws ApiException {
+        String userName = null;
+        Boolean response = 
+        api.unmapUser(userName);
         
         // TODO: test validations
     }

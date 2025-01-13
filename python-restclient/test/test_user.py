@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (development)
+    VCell API
 
     VCell API
 
@@ -37,7 +37,11 @@ class TestUser(unittest.TestCase):
         model = User()
         if include_optional:
             return User(
-                user_name = ''
+                user_name = '',
+                key = vcell_client.models.key_value.KeyValue(
+                    value = 1.337, ),
+                name = '',
+                test_account = True
             )
         else:
             return User(

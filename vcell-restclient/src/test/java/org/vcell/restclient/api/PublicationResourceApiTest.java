@@ -1,5 +1,5 @@
 /*
- * VCell API (development)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -13,54 +13,109 @@
 
 package org.vcell.restclient.api;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.Publication;
+import org.junit.Test;
+import org.junit.Ignore;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 /**
  * API tests for PublicationResourceApi
  */
-@Disabled
-@Tag("Fast")
+@Ignore
 public class PublicationResourceApiTest {
 
     private final PublicationResourceApi api = new PublicationResourceApi();
 
     
+    /**
+     * Create publication
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
     @Test
-    public void getPublicationByIdTest() throws ApiException {
-        Long key = null;
-        api.getPublicationById(key);
+    public void createPublicationTest() throws ApiException {
+        Publication publication = null;
+        Long response = 
+        api.createPublication(publication);
         
         // TODO: test validations
     }
     
+    /**
+     * Delete publication
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
     @Test
-    public void getPublicationsTest() throws ApiException {
-        List<Publication> response = api.getPublications();
+    public void deletePublicationTest() throws ApiException {
+        Long id = null;
+        
+        api.deletePublication(id);
         
         // TODO: test validations
     }
-
+    
+    /**
+     * Get publication by ID
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
     @Test
-    public void addPublicationTest() throws ApiException {
+    public void getPublicationByIdTest() throws ApiException {
+        Long id = null;
+        Publication response = 
+        api.getPublicationById(id);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Get all publications
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getPublicationsTest() throws ApiException {
+        List<Publication> response = 
+        api.getPublications();
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Create publication
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void updatePublicationTest() throws ApiException {
         Publication publication = null;
-        api.createPublication(publication);
-
+        Publication response = 
+        api.updatePublication(publication);
+        
         // TODO: test validations
     }
-
-    @Test
-    public void deletePublicationTest() throws ApiException {
-        Long publication_key = null;
-        api.deletePublication(publication_key);
-
-        // TODO: test validations
-    }
-
+    
 }

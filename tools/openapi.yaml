@@ -158,11 +158,13 @@ paths:
           type: string
       responses:
         "200":
-          description: OK
+          description: return BioModel information in JSON format
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModel'
+        "404":
+          description: BioModel not found
     delete:
       tags:
       - Bio Model Resource
@@ -177,6 +179,100 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/fieldData/IDs:
+    get:
+      tags:
+      - Field Data Resource
+      summary: "Get all of the ids used to identify, and retrieve field data."
+      operationId: getAllFieldDataIDs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FieldDataReference'
+  /api/v1/fieldData/analyzeFieldDataFile:
+    post:
+      tags:
+      - Field Data Resource
+      summary: "Analyze the field data from the uploaded file. Filenames must be lowercase\
+        \ alphanumeric, and can contain underscores."
+      operationId: analyzeFieldDataFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  format: binary
+                  type: string
+                fileName:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+  /api/v1/fieldData/createFieldDataFromAnalyzedFile:
+    post:
+      tags:
+      - Field Data Resource
+      summary: "Take the analyzed results of the field data, modify it to your liking,\
+        \ then save it on the server."
+      operationId: createFieldDataFromAnalyzedFile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSaveResults'
+  /api/v1/fieldData/delete/{fieldDataID}:
+    delete:
+      tags:
+      - Field Data Resource
+      summary: Delete the selected field data.
+      operationId: deleteFieldData
+      parameters:
+      - name: fieldDataID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+  /api/v1/fieldData/fieldDataShape/{fieldDataID}:
+    get:
+      tags:
+      - Field Data Resource
+      summary: "Get the shape of the field data. That is it's size, origin, extent,\
+        \ and data identifiers."
+      operationId: getFieldDataShapeFromID
+      parameters:
+      - name: fieldDataID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataShape'
   /api/v1/helloworld:
     get:
       tags:
@@ -449,10 +545,10 @@ paths:
           description: magic link sent in email if appropriate
         "400":
           description: unable to process request
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -498,6 +594,36 @@ components:
         userId:
           type: string
         userKey:
+          type: string
+    AnalyzedResultsFromFieldData:
+      type: object
+      properties:
+        shortSpecData:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+        varNames:
+          type: array
+          items:
+            type: string
+        times:
+          type: array
+          items:
+            format: double
+            type: number
+        origin:
+          $ref: '#/components/schemas/Origin'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        annotation:
+          type: string
+        name:
           type: string
     Application:
       type: object
@@ -558,6 +684,23 @@ components:
         versionFlag:
           format: int32
           type: integer
+    DataIdentifier:
+      type: object
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        variableType:
+          $ref: '#/components/schemas/VariableType'
+        domain:
+          $ref: '#/components/schemas/Domain'
+        bFunction:
+          type: boolean
+        function:
+          type: boolean
+        visible:
+          type: boolean
     Date:
       format: date
       type: string
@@ -615,6 +758,83 @@ components:
       - WORKEREVENT_FAILURE
       - JOB_FAILED
       type: string
+    Domain:
+      type: object
+      properties:
+        name:
+          type: string
+    Extent:
+      type: object
+      properties:
+        x:
+          format: double
+          type: number
+          xml:
+            attribute: true
+        "y":
+          format: double
+          type: number
+          xml:
+            attribute: true
+        z:
+          format: double
+          type: number
+          xml:
+            attribute: true
+    ExternalDataIdentifier:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/KeyValue'
+        owner:
+          $ref: '#/components/schemas/User'
+        name:
+          type: string
+        jobIndex:
+          format: int32
+          type: integer
+        simulationKey:
+          $ref: '#/components/schemas/KeyValue'
+        parameterScanType:
+          type: boolean
+        dataKey:
+          $ref: '#/components/schemas/KeyValue'
+    FieldDataReference:
+      type: object
+      properties:
+        externalDataIdentifier:
+          $ref: '#/components/schemas/ExternalDataIdentifier'
+        externalDataAnnotation:
+          type: string
+        externalDataIDSimRefs:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyValue'
+    FieldDataSaveResults:
+      type: object
+      properties:
+        fieldDataName:
+          type: string
+        fieldDataID:
+          type: string
+    FieldDataShape:
+      type: object
+      properties:
+        extent:
+          $ref: '#/components/schemas/Extent'
+        origin:
+          $ref: '#/components/schemas/Origin'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        dataIdentifier:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataIdentifier'
+        times:
+          type: array
+          items:
+            format: double
+            type: number
     HelloWorldMessage:
       type: object
       properties:
@@ -630,6 +850,18 @@ components:
           type: string
         batchSystemType:
           $ref: '#/components/schemas/BatchSystemType'
+    ISize:
+      type: object
+      properties:
+        x:
+          format: int32
+          type: integer
+        "y":
+          format: int32
+          type: integer
+        z:
+          format: int32
+          type: integer
     Identity:
       type: object
       properties:
@@ -672,6 +904,24 @@ components:
         versionFlag:
           format: int32
           type: integer
+    Origin:
+      type: object
+      properties:
+        x:
+          format: double
+          type: number
+          xml:
+            attribute: true
+        "y":
+          format: double
+          type: number
+          xml:
+            attribute: true
+        z:
+          format: double
+          type: number
+          xml:
+            attribute: true
     Publication:
       type: object
       properties:
@@ -832,8 +1082,6 @@ components:
           type: string
         key:
           $ref: '#/components/schemas/KeyValue'
-        iD:
-          $ref: '#/components/schemas/KeyValue'
         name:
           type: string
         testAccount:
@@ -879,6 +1127,38 @@ components:
         owner:
           $ref: '#/components/schemas/User'
         iD:
+          type: string
+    VariableDomain:
+      enum:
+      - VARIABLEDOMAIN_POSTPROCESSING
+      - VARIABLEDOMAIN_UNKNOWN
+      - VARIABLEDOMAIN_VOLUME
+      - VARIABLEDOMAIN_MEMBRANE
+      - VARIABLEDOMAIN_CONTOUR
+      - VARIABLEDOMAIN_NONSPATIAL
+      - VARIABLEDOMAIN_POINT
+      type: string
+    VariableType:
+      type: object
+      properties:
+        type:
+          format: int32
+          type: integer
+        variableDomain:
+          $ref: '#/components/schemas/VariableDomain'
+        name:
+          type: string
+        units:
+          type: string
+        label:
+          type: string
+        legacyWarn:
+          type: boolean
+        defaultLabel:
+          type: string
+        defaultUnits:
+          type: string
+        typeName:
           type: string
   securitySchemes:
     openId:

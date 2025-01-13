@@ -19,8 +19,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import org.vcell.restclient.model.Status;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -46,14 +44,6 @@ public class SimulationStatusPersistentRecordTest {
     @Test
     public void statusTest() {
         // TODO: test status
-    }
-
-    /**
-     * Test the property 'progressHash'
-     */
-    @Test
-    public void progressHashTest() {
-        // TODO: test progressHash
     }
 
     /**

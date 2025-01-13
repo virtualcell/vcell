@@ -13,7 +13,9 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
@@ -26,11 +28,14 @@ import org.vcell.util.document.User;
 
 import java.beans.PropertyVetoException;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class TestEndpointUtils {
 
@@ -131,5 +136,13 @@ public class TestEndpointUtils {
         Simulation simulation = simContext1.addNewSimulation("simulation1", callback, SimulationContext.NetworkGenerationRequirements.ComputeLongTimeout);
         simulation.getSolverTaskDescription().setTimeBounds(new TimeBounds(0, 10));
         return biomodel;
+    }
+
+    public static File getResourceFile(String relativeResourcePath) throws IOException {
+        InputStream inputStream = Objects.requireNonNull(TestEndpointUtils.class.getResourceAsStream(relativeResourcePath));
+        File tmpFile = File.createTempFile("tmp-" + RandomStringUtils.randomAlphabetic(10), ".api-test-file");
+        tmpFile.deleteOnExit();
+        FileUtils.copyInputStreamToFile(inputStream, tmpFile);
+        return tmpFile;
     }
 }

@@ -10,12 +10,15 @@
 
 package cbit.vcell.field.io;
 
+import cbit.vcell.simdata.DataIdentifier;
+import org.vcell.restclient.model.FieldDataSaveResults;
+import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
-
-import cbit.vcell.simdata.DataIdentifier;
+import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.
@@ -39,6 +42,7 @@ public class FieldDataFileOperationResults implements java.io.Serializable{
 
 	
 	public DataIdentifier[] dataIdentifierArr;
+	public ExternalDataIdentifier externalDataIdentifier;
 	public ISize iSize;
 	public Origin origin;
 	public Extent extent;
@@ -48,4 +52,21 @@ public class FieldDataFileOperationResults implements java.io.Serializable{
 public FieldDataFileOperationResults() {
 	super();
 }
+
+	public static FieldDataFileOperationResults fieldDataInfoDTOToFileOperationResults(FieldDataShape dto){
+		FieldDataFileOperationResults results = new FieldDataFileOperationResults();
+		results.extent = Extent.dtoToExtent(dto.getExtent());
+		results.origin = Origin.dtoToOrigin(dto.getOrigin());
+		results.iSize = ISize.dtoToISize(dto.getIsize());
+		results.times = dto.getTimes().stream().mapToDouble(Double::doubleValue).toArray();
+		results.dataIdentifierArr = dto.getDataIdentifier().stream().map(DataIdentifier::dtoToDataIdentifier).toArray(DataIdentifier[]::new);
+		return results;
+	}
+
+	public static FieldDataFileOperationResults fieldDataSaveResultsDTOToFileOperationResults(FieldDataSaveResults dto, User owner){
+		FieldDataFileOperationResults fieldDataFileOperationResults = new FieldDataFileOperationResults();
+		fieldDataFileOperationResults.externalDataIdentifier = new ExternalDataIdentifier(new KeyValue(dto.getFieldDataID()), owner, dto.getFieldDataName());
+		return fieldDataFileOperationResults;
+	}
+
 }

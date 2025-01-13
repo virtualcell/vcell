@@ -14,7 +14,8 @@
 package org.vcell.restclient.api;
 
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.model.OverrideRepresentation;
+import org.vcell.restclient.model.SimulationStatusPersistentRecord;
+import org.vcell.restclient.model.StatusMessage;
 import org.junit.Test;
 import org.junit.Ignore;
 
@@ -32,6 +33,26 @@ import java.util.Set;
 public class SimulationResourceApiTest {
 
     private final SimulationResourceApi api = new SimulationResourceApi();
+
+    
+    /**
+     * Get the status of simulation running
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getSimulationStatusTest() throws ApiException {
+        String simID = null;
+        String bioModelID = null;
+        String mathModelID = null;
+        SimulationStatusPersistentRecord response = 
+        api.getSimulationStatus(simID, bioModelID, mathModelID);
+        
+        // TODO: test validations
+    }
     
     /**
      * Start a simulation.
@@ -44,7 +65,7 @@ public class SimulationResourceApiTest {
     @Test
     public void startSimulationTest() throws ApiException {
         String simID = null;
-        
+        List<StatusMessage> response = 
         api.startSimulation(simID);
         
         // TODO: test validations
@@ -61,7 +82,7 @@ public class SimulationResourceApiTest {
     @Test
     public void stopSimulationTest() throws ApiException {
         String simID = null;
-        
+        List<StatusMessage> response = 
         api.stopSimulation(simID);
         
         // TODO: test validations
