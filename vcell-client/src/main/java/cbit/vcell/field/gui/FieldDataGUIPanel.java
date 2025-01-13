@@ -10,57 +10,7 @@
 
 package cbit.vcell.field.gui;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.zip.DataFormatException;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-
-import cbit.vcell.field.FieldDataFileConversion;
-import org.vcell.api.client.VCellApiClient;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.Version;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.exporter.FileFilters;
-
-import cbit.image.VCImageUncompressed;
-import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.DatabaseWindowManager;
-import cbit.vcell.client.FieldDataWindowManager;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.*;
 import cbit.vcell.client.TopLevelWindowManager.FDSimBioModelInfo;
 import cbit.vcell.client.TopLevelWindowManager.FDSimMathModelInfo;
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
@@ -71,17 +21,35 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataFileConversion;
+import cbit.vcell.field.gui.FieldDataGUIDataTransferObjects.*;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.field.gui.FieldDataGUIDataTransferObjects.*;
+import org.vcell.util.*;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.exporter.FileFilters;
+
+import javax.swing.*;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class FieldDataGUIPanel extends JPanel {
 
