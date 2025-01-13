@@ -109,7 +109,12 @@ public enum SolverDescription {
 
 	   Smoldyn(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "Smoldyn","Smoldyn (Spatial Stochastic Simulator)","Smoldyn (Spatial Stochastic Simulator)",
 	      SolverLongDesc.SMOLDYN, 1,SupportedTimeSpec.UNIFORM,
-	      new SolverFeature[]{SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_PeriodicBoundaryCondition, SolverFeature.Feature_DataProcessingInstructions},
+	      new SolverFeature[]{
+				  SolverFeature.Feature_Spatial,
+				  SolverFeature.Feature_Stochastic,
+				  SolverFeature.Feature_PeriodicBoundaryCondition,
+				  SolverFeature.Feature_DataProcessingInstructions,
+				  SolverFeature.Feature_Smoldyn},
 	      SolverExecutable.Smoldyn, "KISAO:0000057", false),
 
 	   Chombo(TimeStep.CONSTANT, ErrorTol.NO, TimeSpecCreated.UNIFORM, "EBChombo","EBChombo, Semi-Implicit (Fixed Time Step), Experimental","Chombo Standalone",
@@ -181,6 +186,7 @@ public enum SolverDescription {
 		Feature_Hybrid("Hybrid: both Deterministic and Stochastic"),
 		Feature_Moving("Moving Membrane"),
 		Feature_Springs("Spring connected Sites"),
+		Feature_Smoldyn("Requires Smoldyn"),
 		;
 
 		private final String name;
@@ -199,7 +205,7 @@ public enum SolverDescription {
 		public static void registerSolverFeatureSet(Object obj, String name) {
 			nameRegistry.put(obj, name);
 		}
-		public static String getVariableName(Object obj) {
+		public static String getSolverFeatureSetName(Object obj) {
 			return nameRegistry.get(obj);
 		}
 	}
@@ -215,9 +221,13 @@ public enum SolverDescription {
 	static { SolverFeatureSetRegistry.registerSolverFeatureSet(SpatialHybridFeatureSet, "SpatialHybridFeatureSet"); }
 
 	public static final SolverFeatureSet SpatialStochasticFeatureSet = new SolverFeatureSet (
-		new SolverFeature[] { SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic },
-		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) { 
-			return desc.isSpatialStoch() && !desc.isSpatialHybrid(); }},
+		new SolverFeature[] { SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_Smoldyn },
+		new SupportedProblemRequirements() {
+			public boolean supports(ProblemRequirements desc) {
+				boolean ret = desc.isSpatialStoch() && !desc.isSpatialHybrid() && !desc.isLangevin();
+				return ret;
+			}
+		},
 		Smoldyn,40);
 	static { SolverFeatureSetRegistry.registerSolverFeatureSet(SpatialStochasticFeatureSet, "SpatialStochasticFeatureSet"); }
 
@@ -238,7 +248,9 @@ public enum SolverDescription {
 	public static final SolverFeatureSet PdeFeatureSetWithoutDirichletAtMembrane = new SolverFeatureSet(
 		new SolverFeature[] { SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic },
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
-			return s.isSpatial() && !s.isSpatialHybrid()  && !s.isMovingMembrane() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
+			boolean ret = s.isSpatial() && !s.isSpatialHybrid()  && !s.isMovingMembrane() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch() && !s.isLangevin();
+			return ret;
+		}},
 		SundialsPDE,10);
 	static { SolverFeatureSetRegistry.registerSolverFeatureSet(PdeFeatureSetWithoutDirichletAtMembrane, "PdeFeatureSetWithoutDirichletAtMembrane"); }
 
@@ -252,7 +264,8 @@ public enum SolverDescription {
 	public static final SolverFeatureSet MovingBoundaryFeatureSet = new SolverFeatureSet(
 			new SolverFeature[] { SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
 			new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
-				return s.isSpatial() && !s.isSpatialHybrid()  && s.isMovingMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
+				boolean ret = s.isSpatial() && !s.isSpatialHybrid()  && s.isMovingMembrane() && !s.hasFastSystems() && !s.isSpatialStoch();
+				return ret; }},
 			MovingBoundary,30);
 	static { SolverFeatureSetRegistry.registerSolverFeatureSet(MovingBoundaryFeatureSet, "MovingBoundaryFeatureSet"); }
 
@@ -676,9 +689,11 @@ public enum SolverDescription {
 		ProblemRequirements.Checker.validate(mathDescription);
 		Collection<SolverDescription> solvers = new HashSet<SolverDescription>( );
 		for (SolverFeatureSet sfs : SolverFeatureSet.getSets()) {
-			System.out.println(SolverFeatureSetRegistry.getVariableName(sfs));
+			System.out.println(SolverFeatureSetRegistry.getSolverFeatureSetName(sfs));
 			if (sfs.supports(mathDescription)) {
-				solvers.addAll(getSolverDescriptions(sfs.getSolverFeatures()));
+				List<SolverFeature> solverFeatures = sfs.getSolverFeatures();
+				Collection<SolverDescription> solverDescriptions = getSolverDescriptions(solverFeatures);
+				solvers.addAll(solverDescriptions);
 			}
 		}
 		if (!solvers.isEmpty( )) {
