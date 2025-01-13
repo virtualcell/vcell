@@ -264,6 +264,10 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         return val;
     }
 
+    public enum NotifyValue {
+        on, off, bounce, unknown
+    }
+
 
     public record DbUsageSummary(
             DbUserSimCount[] simCounts_7Days,
@@ -281,7 +285,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
             int simCount,
             int publicBiomodelSimCount,
             int publicMathmodelSimCount) {}
-    public record DbUserSimCount(String username, int simCount) {}
+    public record DbUserSimCount(String userid, KeyValue userkey, String firstname, String lastname, String email, NotifyValue notify_value, int simCount) {}
     public record DbUsersRegisteredStats(int last1Week, int last1Month, int last3Months, int last6Months, int last12Months) {}
 
     public synchronized DbUsageSummary getUsageSummary(User.SpecialUser user) throws SQLException, DataAccessException{
@@ -375,18 +379,55 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         }
     }
 
-    private DbUserSimCount[] getUserSimCounts(Statement stmt, int pastTime) throws SQLException {
+    public DbUserSimCount[] getUserSimCounts(int pastTime_days) throws SQLException, DataAccessException{
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            return getUserSimCounts(stmt, pastTime_days);
+        } catch(Throwable e){
+            lg.error("failure in getSimulationJobStatusArray()", e);
+            handle_DataAccessException_SQLException(e);
+            return null; // never gets here;
+        } finally {
+            try {
+                if(stmt != null){
+                    stmt.close();
+                }
+            } catch(Exception e){
+                lg.error(e.getMessage(), e);
+            }
+            conFactory.release(con, lock);
+        }
+    }
+
+    private DbUserSimCount[] getUserSimCounts(Statement stmt, int pastTime_days) throws SQLException {
         ResultSet rset = stmt.executeQuery(
-                "SELECT userid,  COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
+                "SELECT userid, vc_userinfo.id, email, firstname, lastname, notify, COUNT(vc_simulationjob.id) simcount FROM vc_userinfo,  vc_simulation,  vc_simulationjob"
                         + " WHERE vc_userinfo.id = vc_simulation.ownerref AND "
                         + "vc_simulationjob.simref = vc_simulation.id AND "
-                        + "vc_simulationjob.submitdate >= (CURRENT_DATE -" + pastTime + ")" + " GROUP BY userid ORDER BY simcount desc");
+                        + "vc_simulationjob.submitdate >= (CURRENT_DATE -" + pastTime_days + ")" + " GROUP BY userid, vc_userinfo.id, email, firstname, lastname, notify ORDER BY simcount desc");
         ArrayList<DbUserSimCount> userSimCounts = new ArrayList<>();
+        HashSet<NotifyValue> notify_values = new HashSet<>();
         while (rset.next()) {
-            String username = rset.getString(1);
-            int userSimCount = rset.getInt(2);
-            userSimCounts.add(new DbUserSimCount(username, userSimCount));
+            String userid = rset.getString(1);
+            KeyValue userkey = new KeyValue(rset.getBigDecimal(2));
+            String email = rset.getString(3);
+            String firstname = rset.getString(4);
+            String lastname = rset.getString(5);
+            String notify_str = rset.getString(6);
+            NotifyValue notify_value = null;
+            try {
+                notify_value = NotifyValue.valueOf(notify_str);
+            }catch (Exception e){
+                lg.error("failed to parse boolean value: " + notify_str, e);
+            }
+            notify_values.add(notify_value);
+            int userSimCount = rset.getInt(7);
+            userSimCounts.add(new DbUserSimCount(userid, userkey, firstname, lastname, email, notify_value, userSimCount));
         }
+        System.out.println("notify string values is " + notify_values);
         rset.close();
         return userSimCounts.toArray(new DbUserSimCount[0]);
     }
