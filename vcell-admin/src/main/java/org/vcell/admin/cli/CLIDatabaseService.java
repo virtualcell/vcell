@@ -6,7 +6,6 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.server.SimulationJobStatusPersistent;
-import cbit.vcell.xml.XmlParseException;
 import org.vcell.admin.cli.sim.JobAdmin;
 import org.vcell.admin.cli.sim.ResultSetCrawler;
 import org.vcell.admin.cli.sim.SimDataVerifier;
@@ -91,6 +90,11 @@ public class CLIDatabaseService implements AutoCloseable {
     public String getBasicStatistics() throws SQLException, DataAccessException {
         AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
         return adminDbTopLevel.getBasicStatistics();
+    }
+
+    public AdminDBTopLevel.DbUserSimCount[] getUserSimCount(int pastTime_days) throws SQLException, DataAccessException {
+        AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+        return adminDbTopLevel.getUserSimCounts(pastTime_days);
     }
 
     public MathVerifier getMathVerifier() throws DataAccessException, SQLException {

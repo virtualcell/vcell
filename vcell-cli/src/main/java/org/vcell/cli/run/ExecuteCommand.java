@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import java.util.concurrent.Callable;
 import java.util.Date;
 
-@Command(name = "execute", description = "run .vcml or .omex files via Python API")
+@Command(name = "execute", description = "run .vcml or .omex files.")
 public class ExecuteCommand implements Callable<Integer> {
 
     private final static Logger logger = org.apache.logging.log4j.LogManager.getLogger(ExecuteCommand.class);
@@ -38,6 +38,9 @@ public class ExecuteCommand implements Callable<Integer> {
 
     @Option(names = "--keepFlushingLogs", defaultValue = "false")
     private boolean bKeepFlushingLogs = false;
+
+    @Option(names = "--guaranteeGoodReturnCode", defaultValue = "false", description = "Even on failure, return error code 0 for script purposes.")
+    private boolean bGuaranteeGoodReturnCode = false;
 
     @Option(names = "--small-mesh", defaultValue = "false", description = "force spatial simulations to have a very small mesh to make execution faster")
     private boolean bSmallMeshOverride = false;
@@ -100,7 +103,7 @@ public class ExecuteCommand implements Callable<Integer> {
                     bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, 
                     EXECUTABLE_MAX_WALLCLOCK_MILLIS, help, bDebug, bQuiet
             );
-            logger.trace(trace_args);
+            logger.debug(trace_args);
 
             logger.debug("Validating CLI arguments");
             if (bDebug && bQuiet) {
@@ -135,7 +138,7 @@ public class ExecuteCommand implements Callable<Integer> {
             return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
             org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
-            return 1;
+            return bGuaranteeGoodReturnCode ? 0 : 1;
         } finally {
             logger.debug("Completed all execution");
         }

@@ -103,10 +103,9 @@ public class FieldDataDBOperationDriver{
 		}
 
 	}
-	public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, KeyFactory keyFactory, User user,
-			FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
-		
-		if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_COPY_NO_CONFLICT){
+
+	private static FieldDataDBOperationResults copyNoConflict(Connection con, KeyFactory keyFactory, User user,
+															  FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
 			//get all current ExtDataIDs
 			ExternalDataIdentifier[] existingExtDataIDArr =
 				FieldDataDBOperationDriver.fieldDataDBOperation(
@@ -175,14 +174,17 @@ public class FieldDataDBOperationDriver{
 				}
 				oldNameNewIDHash.put(origFieldFuncName,fieldDataDBOperationResults.extDataID);
 			}
-			
+
 			FieldDataDBOperationResults fieldDataDBOperationResults =
 				new FieldDataDBOperationResults();
 			fieldDataDBOperationResults.oldNameNewIDHash = oldNameNewIDHash;
 			fieldDataDBOperationResults.oldNameOldExtDataIDKeyHash = oldNameOldExtDataIDKey;
 			return fieldDataDBOperationResults;
-		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS){
-			String sql;
+	}
+
+	private static FieldDataDBOperationResults getExtraDataIDs(Connection con, KeyFactory keyFactory, User user,
+															  FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException {
+		String sql;
 			ResultSet rset;
 			if(fieldDataDBOperationSpec.bIncludeSimRefs){
 				sql = 	"SELECT "+
@@ -201,17 +203,17 @@ public class FieldDataDBOperationDriver{
 					UserTable.table.id.getQualifiedColName() + " = " +
 						fieldDataDBOperationSpec.owner.getID() +
 					" AND "+
-					UserTable.table.id.getQualifiedColName() + " = " + 
-						ExternalDataTable.table.ownerRef.getQualifiedColName() +			
+					UserTable.table.id.getQualifiedColName() + " = " +
+						ExternalDataTable.table.ownerRef.getQualifiedColName() +
 					" AND "+
-					ExternalDataTable.table.id.getQualifiedColName() + " = " + 
-						MathDescExternalDataLinkTable.table.extDataRef.getQualifiedColName() +			
+					ExternalDataTable.table.id.getQualifiedColName() + " = " +
+						MathDescExternalDataLinkTable.table.extDataRef.getQualifiedColName() +
 					" AND "+
-					MathDescTable.table.id.getQualifiedColName() + " = " + 
-						MathDescExternalDataLinkTable.table.mathDescRef.getQualifiedColName() +			
+					MathDescTable.table.id.getQualifiedColName() + " = " +
+						MathDescExternalDataLinkTable.table.mathDescRef.getQualifiedColName() +
 					" AND "+
-					MathDescTable.table.id.getQualifiedColName() + " = " + 
-						SimulationTable.table.mathRef.getQualifiedColName();				
+					MathDescTable.table.id.getQualifiedColName() + " = " +
+						SimulationTable.table.mathRef.getQualifiedColName();
 			}else{
 				sql = 	"SELECT "+
 					ExternalDataTable.table.getTableName()+".*"+","+
@@ -225,7 +227,7 @@ public class FieldDataDBOperationDriver{
 					UserTable.table.id.getQualifiedColName() + " = " +
 						ExternalDataTable.table.ownerRef.getQualifiedColName();
 			}
-		
+
 			Statement stmt = con.createStatement();
 			Vector<ExternalDataIdentifier> extDataIDV = new Vector<ExternalDataIdentifier>();
 			Vector<String> extDataAnnotV = new Vector<String>();
@@ -264,16 +266,17 @@ public class FieldDataDBOperationDriver{
 			fieldDataDBOperationResults.extDataAnnotArr = extDataAnnotV.toArray(new String[extDataAnnotV.size()]);
 			fieldDataDBOperationResults.extdataIDAndSimRefH = extDataIDSimRefsH;
 			return fieldDataDBOperationResults;
-			
-		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID){
-		
-			if(!fieldDataDBOperationSpec.newExtDataIDName.equals(
+	}
+
+	private static FieldDataDBOperationResults saveExtraDataID(Connection con, KeyFactory keyFactory, User user,
+															   FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, SQLException {
+		if(!fieldDataDBOperationSpec.newExtDataIDName.equals(
 					TokenMangler.fixTokenStrict(fieldDataDBOperationSpec.newExtDataIDName))){
 				throw new DataAccessException("Error inserting Field Data name "+
 						fieldDataDBOperationSpec.newExtDataIDName+"\n"+
 						"Field Data names can contain only letters,digits and underscores");
 			}
-			
+
 			KeyValue newKey = keyFactory.getNewKey(con);
 			String sql =
 				"INSERT INTO "+ExternalDataTable.table.getTableName()+" "+
@@ -283,7 +286,7 @@ public class FieldDataDBOperationDriver{
 						newKey,user,
 						fieldDataDBOperationSpec.newExtDataIDName,
 						fieldDataDBOperationSpec.annotation);
-		
+
 			DbDriver.updateCleanSQL(con,sql);
 			ExternalDataIdentifier[] fdiArr =
 				FieldDataDBOperationDriver.fieldDataDBOperation(
@@ -297,22 +300,35 @@ public class FieldDataDBOperationDriver{
 			}
 			throw new DataAccessException(
 					"Unable to retrieve inserted ExternalDataIdentifier "+
-					fieldDataDBOperationSpec.newExtDataIDName);	
+					fieldDataDBOperationSpec.newExtDataIDName);
+	}
 
-		
-		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
-			String sql = 
-				"DELETE" + " FROM " + ExternalDataTable.table.getTableName() + 
+	private static FieldDataDBOperationResults deleteFieldData(Connection con, KeyFactory keyFactory, User user,
+															   FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException {
+		String sql =
+				"DELETE" + " FROM " + ExternalDataTable.table.getTableName() +
 				" WHERE " +
 					ExternalDataTable.table.ownerRef + " = " + user.getID() +
 					" AND " +
 					ExternalDataTable.table.id + " = " + fieldDataDBOperationSpec.specEDI.getKey().toString();
-			
+
 			DbDriver.updateCleanSQL(con,sql);
-			
+
 			return new FieldDataDBOperationResults();
-		}
+	}
+
+	public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, KeyFactory keyFactory, User user,
+			FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
 		
+		if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_COPY_NO_CONFLICT){
+			return copyNoConflict(con, keyFactory, user, fieldDataDBOperationSpec);
+		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS){
+			return getExtraDataIDs(con, keyFactory, user, fieldDataDBOperationSpec);
+		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID){
+			return saveExtraDataID(con, keyFactory, user, fieldDataDBOperationSpec);
+		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
+			return deleteFieldData(con, keyFactory, user, fieldDataDBOperationSpec);
+		}
 		throw new DataAccessException("Unknown FieldDataDBOperation "+fieldDataDBOperationSpec.opType);
 	}
 	

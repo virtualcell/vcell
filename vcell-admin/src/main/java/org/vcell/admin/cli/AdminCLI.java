@@ -16,6 +16,7 @@ import org.vcell.admin.cli.sim.JobInfoCommand;
 import org.vcell.admin.cli.sim.ResultSetCrawlerCommand;
 import org.vcell.admin.cli.sim.SimDataVerifierCommand;
 import org.vcell.admin.cli.tools.UsageCommand;
+import org.vcell.admin.cli.tools.UsersQueryCommand;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.dependency.server.VCellServerModule;
 import org.vcell.util.document.KeyValue;
@@ -31,6 +32,7 @@ import picocli.CommandLine.Command;
         DatabaseDestroyAndRecreateCommand.class,
         DatabaseCreateScriptCommand.class,
         UsageCommand.class,
+        UsersQueryCommand.class,
         ResultSetCrawlerCommand.class,
         SimDataVerifierCommand.class,
         JobInfoCommand.class,

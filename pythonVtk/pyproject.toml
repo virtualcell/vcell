@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pythonvtk"
+name = "python_vtk"
 version = "0.1.0"
 description = ""
 authors = ["Jim Schaff <schaff.jim@gmail.com>"]

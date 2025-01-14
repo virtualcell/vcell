@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """
-    VCell API (development)
+    VCell API
 
     VCell API
 
@@ -27,9 +27,73 @@ class TestUsersResourceApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_api_users_me_get(self) -> None:
-        """Test case for api_users_me_get
+    def test_forgot_legacy_password(self) -> None:
+        """Test case for forgot_legacy_password
 
+        The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+        """
+        pass
+
+    def test_get_guest_legacy_api_token(self) -> None:
+        """Test case for get_guest_legacy_api_token
+
+        Method to get legacy tokens for guest users
+        """
+        pass
+
+    def test_get_legacy_api_token(self) -> None:
+        """Test case for get_legacy_api_token
+
+        Get token for legacy API
+        """
+        pass
+
+    def test_get_mapped_user(self) -> None:
+        """Test case for get_mapped_user
+
+        Get mapped VCell identity
+        """
+        pass
+
+    def test_get_me(self) -> None:
+        """Test case for get_me
+
+        Get current user
+        """
+        pass
+
+    def test_map_new_user(self) -> None:
+        """Test case for map_new_user
+
+        create vcell user
+        """
+        pass
+
+    def test_map_user(self) -> None:
+        """Test case for map_user
+
+        map vcell user
+        """
+        pass
+
+    def test_process_magic_link(self) -> None:
+        """Test case for process_magic_link
+
+        Process the magic link and map the user
+        """
+        pass
+
+    def test_request_recovery_email(self) -> None:
+        """Test case for request_recovery_email
+
+        request a recovery email to link a VCell account.
+        """
+        pass
+
+    def test_unmap_user(self) -> None:
+        """Test case for unmap_user
+
+        remove vcell identity mapping
         """
         pass
 

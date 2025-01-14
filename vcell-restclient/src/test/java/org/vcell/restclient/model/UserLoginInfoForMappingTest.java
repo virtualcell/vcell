@@ -1,5 +1,5 @@
 /*
- * VCell API (development)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -46,11 +46,11 @@ public class UserLoginInfoForMappingTest {
     }
 
     /**
-     * Test the property 'digestedPassword'
+     * Test the property 'password'
      */
     @Test
-    public void digestedPasswordTest() {
-        // TODO: test digestedPassword
+    public void passwordTest() {
+        // TODO: test password
     }
 
 }

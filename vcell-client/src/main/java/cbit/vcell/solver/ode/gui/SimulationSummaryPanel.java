@@ -948,7 +948,7 @@ private void initialize() {
 		constraintsJLabel2.gridy = gridy;
 		constraintsJLabel2.anchor = GridBagConstraints.LINE_END;
 		constraintsJLabel2.insets = new Insets(4, 4, 4, 4);
-		add(new JLabel("Annotation:"), constraintsJLabel2);
+		add(new JLabel("Description:"), constraintsJLabel2);
 
 		GridBagConstraints constraintsJScrollPane1 = new GridBagConstraints();
 		constraintsJScrollPane1.gridx = 1; 

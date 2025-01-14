@@ -113,6 +113,16 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**getBiomodelByIdWithHttpInfo**](docs/BioModelResourceApi.md#getBiomodelByIdWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
 *BioModelResourceApi* | [**uploadBioModel**](docs/BioModelResourceApi.md#uploadBioModel) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
 *BioModelResourceApi* | [**uploadBioModelWithHttpInfo**](docs/BioModelResourceApi.md#uploadBioModelWithHttpInfo) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
+*FieldDataResourceApi* | [**analyzeFieldDataFile**](docs/FieldDataResourceApi.md#analyzeFieldDataFile) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+*FieldDataResourceApi* | [**analyzeFieldDataFileWithHttpInfo**](docs/FieldDataResourceApi.md#analyzeFieldDataFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+*FieldDataResourceApi* | [**createFieldDataFromAnalyzedFile**](docs/FieldDataResourceApi.md#createFieldDataFromAnalyzedFile) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+*FieldDataResourceApi* | [**createFieldDataFromAnalyzedFileWithHttpInfo**](docs/FieldDataResourceApi.md#createFieldDataFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+*FieldDataResourceApi* | [**deleteFieldData**](docs/FieldDataResourceApi.md#deleteFieldData) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
+*FieldDataResourceApi* | [**deleteFieldDataWithHttpInfo**](docs/FieldDataResourceApi.md#deleteFieldDataWithHttpInfo) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
+*FieldDataResourceApi* | [**getAllFieldDataIDs**](docs/FieldDataResourceApi.md#getAllFieldDataIDs) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
+*FieldDataResourceApi* | [**getAllFieldDataIDsWithHttpInfo**](docs/FieldDataResourceApi.md#getAllFieldDataIDsWithHttpInfo) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
+*FieldDataResourceApi* | [**getFieldDataShapeFromID**](docs/FieldDataResourceApi.md#getFieldDataShapeFromID) | **GET** /api/v1/fieldData/fieldDataShape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
+*FieldDataResourceApi* | [**getFieldDataShapeFromIDWithHttpInfo**](docs/FieldDataResourceApi.md#getFieldDataShapeFromIDWithHttpInfo) | **GET** /api/v1/fieldData/fieldDataShape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
 *HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message.
 *HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message.
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication
@@ -156,15 +166,25 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
+ - [AnalyzedResultsFromFieldData](docs/AnalyzedResultsFromFieldData.md)
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
+ - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)
+ - [Domain](docs/Domain.md)
+ - [Extent](docs/Extent.md)
+ - [ExternalDataIdentifier](docs/ExternalDataIdentifier.md)
+ - [FieldDataReference](docs/FieldDataReference.md)
+ - [FieldDataSaveResults](docs/FieldDataSaveResults.md)
+ - [FieldDataShape](docs/FieldDataShape.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
  - [HtcJobID](docs/HtcJobID.md)
+ - [ISize](docs/ISize.md)
  - [Identity](docs/Identity.md)
  - [KeyValue](docs/KeyValue.md)
  - [MathmodelRef](docs/MathmodelRef.md)
+ - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)
  - [SimulationExecutionStatusRecord](docs/SimulationExecutionStatusRecord.md)
@@ -180,6 +200,8 @@ Class | Method | HTTP request | Description
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
+ - [VariableDomain](docs/VariableDomain.md)
+ - [VariableType](docs/VariableType.md)
 
 
 <a id="documentation-for-authorization"></a>

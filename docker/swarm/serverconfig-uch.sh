@@ -115,7 +115,7 @@ VCELL_SSH_CMD_RESTORE_TIMEOUT=5
 
 #
 # write out the environment file to be for:
-# 1. deployment actions (e.g. deploy-action-kubernetes.sh)
+# 1. deployment actions (e.g. deploy-installers.sh)
 # 2. runtime environment for the docker stack run command (kubernetes uses ConfigMaps in vcell-fluxcd repo), what about VCell Installers?
 #
 cat <<EOF >"$_outputfile"

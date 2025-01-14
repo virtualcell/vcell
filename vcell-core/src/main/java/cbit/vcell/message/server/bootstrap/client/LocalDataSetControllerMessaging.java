@@ -12,8 +12,12 @@ package cbit.vcell.message.server.bootstrap.client;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.client.VCellApiClient;
+import org.vcell.restclient.model.*;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
@@ -44,12 +48,14 @@ import cbit.vcell.solvers.CartesianMesh;
 public class LocalDataSetControllerMessaging implements DataSetController {
     private RpcDataServerProxy dataServerProxy = null;
     private static Logger lg = LogManager.getLogger(LocalDataSetControllerMessaging.class);
+	private final VCellApiClient vCellApiClient;
 
 /**
  * This method was created by a SmartGuide.
  */
-public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, RpcSender rpcSender) {
+public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, RpcSender rpcSender, VCellApiClient vCellApiClient) {
 	this.dataServerProxy = new RpcDataServerProxy(userLoginInfo, rpcSender);
+	this.vCellApiClient = vCellApiClient;
 }
 
 
@@ -57,7 +63,19 @@ public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, RpcSender r
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.fieldDataFileOperationSpec(...)");
 	try {
-		return dataServerProxy.fieldDataFileOperation(fieldDataFileOperationSpec);
+		if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
+			AnalyzedResultsFromFieldData analyzedResultsFromFieldData = FieldDataFileOperationSpec.fieldDataSpecToAnalyzedResultsDTO(fieldDataFileOperationSpec);
+			FieldDataSaveResults results = vCellApiClient.getFieldDataApi().createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData);
+			return FieldDataFileOperationResults.fieldDataSaveResultsDTOToFileOperationResults(results, fieldDataFileOperationSpec.owner);
+		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE) {
+			vCellApiClient.getFieldDataApi().deleteFieldData(fieldDataFileOperationSpec.specEDI.getKey().toString());
+			return null;
+		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO) {
+			FieldDataShape fieldDataInfo = vCellApiClient.getFieldDataApi().getFieldDataShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
+			return FieldDataFileOperationResults.fieldDataInfoDTOToFileOperationResults(fieldDataInfo);
+		} else {
+			return dataServerProxy.fieldDataFileOperation(fieldDataFileOperationSpec);
+		}
 	} catch (DataAccessException e){
 		lg.error(e.getMessage(),e);
 		throw e;
@@ -108,7 +126,6 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
 /**
  * Insert the method's description here.
  * Creation date: (2/26/2004 1:05:01 PM)
- * @param function cbit.vcell.math.Function
  * @exception org.vcell.util.DataAccessException The exception description.
  * @exception RemoteProxyException The exception description.
  */
@@ -191,7 +208,6 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
 /**
  * This method was created by a SmartGuide.
  * @return double[]
- * @param varName java.lang.String
  * @param time double
  * @throws RemoteProxyException 
  */
@@ -252,9 +268,7 @@ public SimDataBlock getSimDataBlock(OutputContext outputContext,VCDataIdentifier
 /**
  * This method was created by a SmartGuide.
  * @return double[]
- * @param varName java.lang.String
- * @param index int
- * @throws RemoteProxyException 
+ * @throws RemoteProxyException
  */
 public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext,VCDataIdentifier vcdID,org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException, RemoteProxyException {
 	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getTimeSeriesValues(vcdID=" + vcdID + ", " + timeSeriesJobSpec + ")");
@@ -272,7 +286,6 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
 
 /**
  * This method was created in VisualAge.
- * @param simInfo cbit.vcell.solver.SimulationInfo
  * @exception org.vcell.util.DataAccessException The exception description.
  * @throws RemoteProxyException 
  */

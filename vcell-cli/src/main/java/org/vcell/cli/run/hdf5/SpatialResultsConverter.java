@@ -43,6 +43,11 @@ public class SpatialResultsConverter {
                 BiosimulationLog.instance().updateDatasetStatusYml(sedmlLocation, report.getId(), dataSet.getId(), BiosimulationLog.Status.SUCCEEDED);
             } // end of dataset
 
+            if (dataGenToDataSets.isEmpty()){
+                lg.warn(String.format("Report `%s` does not have any valid spatial component!", report.getId()));
+                continue;
+            }
+
             // Fill out DatasetWrapper Values
             Hdf5SedmlResultsSpatial.SpatialComponents reportMappings = convertedData.dataMapping.get(report);
             Hdf5SedmlResults hdf5DatasetWrapper = new Hdf5SedmlResults();
@@ -89,18 +94,24 @@ public class SpatialResultsConverter {
         Map<AbstractTask, TempSimulation> sedmlTaskToVCellSim = new HashMap<>();
         boolean allVarsValid = true;
         for (Variable variable : dataGenVarList) { // Since we're only doing single variable, this should run once!
-            // Check if it's asking for time (we don't include time with the rest of spatial data).
-            if (variable.isSymbol()) if (VariableSymbol.TIME.equals(variable.getSymbol())) continue;
             // for each variable we recover the task
             AbstractTask completeTask = sedml.getTaskWithId(variable.getReference());
             if (completeTask == null) throw new RuntimeException("Null SedML task encountered");
-            AbstractTask fundamentalTask = SpatialResultsConverter.getBaseTask(completeTask, sedml);
             // from the task we get the sbml model
+            if (!sourceOfTruth.getTaskGroupSet().contains(completeTask.getId())){
+                lg.info(String.format("`%s` is not a spatial task!", completeTask.getId()));
+                allVarsValid = false;
+                continue;
+            }
+            AbstractTask fundamentalTask = SpatialResultsConverter.getBaseTask(completeTask, sedml);
             if (!(sedml.getSimulation(fundamentalTask.getSimulationReference()) instanceof UniformTimeCourse utcSim)){
                 lg.error("only uniform time course simulations are supported");
                 allVarsValid = false;
                 break;
             }
+            // Check if it's asking for time (we don't include time with the rest of spatial data).
+            if (variable.isSymbol()) if (VariableSymbol.TIME.equals(variable.getSymbol())) continue;
+
             sedmlTaskToVCellSim.put(completeTask, completeSedmlTaskToVCellSim.get(completeTask));
         }
         if (allVarsValid){
@@ -159,7 +170,7 @@ public class SpatialResultsConverter {
             if (comps.varsToData == null) comps.varsToData = newVars;
             else comps.varsToData.integrateSimilarLocations(taskVars);
         }
-        return true;
+        return allVarsValid;
     }
 
     private static List<Report> getReports(List<Output> outputs){

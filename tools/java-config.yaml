@@ -54,3 +54,5 @@ additionalProperties:
   withAWSV4Signature: false # default
   withXml: false # default (whether to include support for application/xml content type and include XML annotations in the model) ... is this needed for VCML, SBML?
 
+#importMappings:
+#  FieldDataFileOperationSpec: cbit.vcell.field.io.FieldDataFileOperationSpec
