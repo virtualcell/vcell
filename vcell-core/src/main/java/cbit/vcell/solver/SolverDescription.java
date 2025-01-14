@@ -198,29 +198,28 @@ public enum SolverDescription {
 		}
 	}
 
-	// useful for debugging, makes easy to know which is the current SolverFeatureSet we're dealing with
-	public class SolverFeatureSetRegistry {
-		private static final Map<Object, String> nameRegistry = new LinkedHashMap<>();
-
-		public static void registerSolverFeatureSet(Object obj, String name) {
-			nameRegistry.put(obj, name);
-		}
-		public static String getSolverFeatureSetName(Object obj) {
-			return nameRegistry.get(obj);
-		}
-	}
+//	// useful for debugging, makes easy to know which is the current SolverFeatureSet we're dealing with
+//	public class SolverFeatureSetRegistry {
+//		private static final Map<Object, String> nameRegistry = new LinkedHashMap<>();
+//
+//		public static void registerSolverFeatureSet(Object obj, String name) {
+//			nameRegistry.put(obj, name);
+//		}
+//		public static String getSolverFeatureSetName(Object obj) {
+//			return nameRegistry.get(obj);
+//		}
+//	}
 
 	/*
 	 * Spatial solvers
 	 */
-	public static final SolverFeatureSet SpatialHybridFeatureSet = new SolverFeatureSet (
+	public static final SolverFeatureSet SpatialHybridFeatureSet = new SolverFeatureSet ("SpatialHybridFeatureSet",
 		new SolverFeature[] { SolverFeature.Feature_Spatial, SolverFeature.Feature_Hybrid, SolverFeature.Feature_Deterministic },
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) { 
 			return desc.isSpatialHybrid() && !desc.isMovingMembrane(); }},
 		FiniteVolumeStandalone,50);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(SpatialHybridFeatureSet, "SpatialHybridFeatureSet"); }
 
-	public static final SolverFeatureSet SpatialStochasticFeatureSet = new SolverFeatureSet (
+	public static final SolverFeatureSet SpatialStochasticFeatureSet = new SolverFeatureSet ("SpatialStochasticFeatureSet",
 		new SolverFeature[] { SolverFeature.Feature_Spatial, SolverFeature.Feature_Stochastic, SolverFeature.Feature_Smoldyn },
 		new SupportedProblemRequirements() {
 			public boolean supports(ProblemRequirements desc) {
@@ -229,30 +228,26 @@ public enum SolverDescription {
 			}
 		},
 		Smoldyn,40);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(SpatialStochasticFeatureSet, "SpatialStochasticFeatureSet"); }
 
-	public static final SolverFeatureSet PdeFastSystemFeatureSet = new SolverFeatureSet (
+	public static final SolverFeatureSet PdeFastSystemFeatureSet = new SolverFeatureSet ("PdeFastSystemFeatureSet",
 		new SolverFeature[] { SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem },
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) {
 			return desc.isSpatial() && !desc.isSpatialHybrid() && desc.hasFastSystems( ) && !desc.isSpatialStoch(); }},
 		FiniteVolumeStandalone,30);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(PdeFastSystemFeatureSet, "PdeFastSystemFeatureSet"); }
 
-	public static final SolverFeatureSet PdeFeatureSetWithDirichletAtMembrane =  new SolverFeatureSet(
+	public static final SolverFeatureSet PdeFeatureSetWithDirichletAtMembrane =  new SolverFeatureSet("PdeFeatureSetWithDirichletAtMembrane",
 		new SolverFeature[] { SolverFeature.Feature_DirichletAtMembraneBoundary },
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
 			return s.isSpatial() &&  !s.isSpatialHybrid( )  && s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch(); }},
 		Chombo,20);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(PdeFeatureSetWithDirichletAtMembrane, "PdeFeatureSetWithDirichletAtMembrane"); }
 
-	public static final SolverFeatureSet PdeFeatureSetWithoutDirichletAtMembrane = new SolverFeatureSet(
+	public static final SolverFeatureSet PdeFeatureSetWithoutDirichletAtMembrane = new SolverFeatureSet("PdeFeatureSetWithoutDirichletAtMembrane",
 		new SolverFeature[] { SolverFeature.Feature_Spatial, SolverFeature.Feature_Deterministic },
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
 			boolean ret = s.isSpatial() && !s.isSpatialHybrid()  && !s.isMovingMembrane() && !s.hasDirichletAtMembrane() && !s.hasFastSystems() && !s.isSpatialStoch() && !s.isLangevin();
 			return ret;
 		}},
 		SundialsPDE,10);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(PdeFeatureSetWithoutDirichletAtMembrane, "PdeFeatureSetWithoutDirichletAtMembrane"); }
 
 //	public static final SolverFeatureSet ComsolFeatureSet = new SolverFeatureSet(
 //			new SolverFeature[] { SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
@@ -261,52 +256,46 @@ public enum SolverDescription {
 //			Comsol,30);
 //	static { VariableNameRegistry.registerVariable(ComsolFeatureSet, "ComsolFeatureSet"); }
 
-	public static final SolverFeatureSet MovingBoundaryFeatureSet = new SolverFeatureSet(
+	public static final SolverFeatureSet MovingBoundaryFeatureSet = new SolverFeatureSet("MovingBoundaryFeatureSet",
 			new SolverFeature[] { SolverFeature.Feature_Moving,SolverFeature.Feature_Spatial,SolverFeature.Feature_Deterministic },
 			new SupportedProblemRequirements() { public boolean supports(ProblemRequirements s) {
 				boolean ret = s.isSpatial() && !s.isSpatialHybrid()  && s.isMovingMembrane() && !s.hasFastSystems() && !s.isSpatialStoch();
 				return ret; }},
 			MovingBoundary,30);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(MovingBoundaryFeatureSet, "MovingBoundaryFeatureSet"); }
 
 	/*
 	 * rule-based solvers
 	 */
-	public static final SolverFeatureSet RulebasedFeatureSet = new SolverFeatureSet (
+	public static final SolverFeatureSet RulebasedFeatureSet = new SolverFeatureSet ("RulebasedFeatureSet",
 		new SolverFeature[] { SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Rulebased },
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) { return desc.isRuleBased(); }},
 		NFSim,100);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(RulebasedFeatureSet, "RulebasedFeatureSet"); }
 
-	public static final SolverFeatureSet LangevinFeatureSet = new SolverFeatureSet (
+	public static final SolverFeatureSet LangevinFeatureSet = new SolverFeatureSet ("LangevinFeatureSet",
 		new SolverFeature[] { SolverFeature.Feature_Spatial, SolverFeature.Feature_Rulebased, SolverFeature.Feature_Springs },
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) {
 			return (desc.isLangevin()); }},
 		Langevin,200);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(LangevinFeatureSet, "LangevinFeatureSet"); }
 
 	/*
 	 * Non-spatial solvers
 	 */
-	public static final SolverFeatureSet NonSpatialStochasticFeatureSet = new SolverFeatureSet (
+	public static final SolverFeatureSet NonSpatialStochasticFeatureSet = new SolverFeatureSet ("NonSpatialStochasticFeatureSet",
 		new SolverFeature[] { SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Stochastic},
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) { return desc.isNonSpatialStoch() && !desc.isRuleBased(); }},
 		StochGibson,100);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(NonSpatialStochasticFeatureSet, "NonSpatialStochasticFeatureSet"); }
 
-	public static final SolverFeatureSet OdeFeatureSet =  new SolverFeatureSet(
+	public static final SolverFeatureSet OdeFeatureSet =  new SolverFeatureSet("OdeFeatureSet",
 		new SolverFeature[] { SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic},
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) {
 			return !desc.isSpatial() && !desc.hasFastSystems() && !desc.isNonSpatialStoch() && !desc.isRuleBased(); }},
 		CombinedSundials,10);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(OdeFeatureSet, "OdeFeatureSet"); }
 
-	public static final SolverFeatureSet OdeFastSystemFeatureSet =  new SolverFeatureSet(
+	public static final SolverFeatureSet OdeFastSystemFeatureSet =  new SolverFeatureSet("OdeFastSystemFeatureSet",
 		new SolverFeature[] { SolverFeature.Feature_NonSpatial, SolverFeature.Feature_Deterministic, SolverFeature.Feature_FastSystem},
 		new SupportedProblemRequirements() { public boolean supports(ProblemRequirements desc) {
 			return !desc.isSpatial() && desc.hasFastSystems() && !desc.isNonSpatialStoch() && !desc.isRuleBased(); }},
 		CombinedSundials,10);
-	static { SolverFeatureSetRegistry.registerSolverFeatureSet(OdeFastSystemFeatureSet, "OdeFastSystemFeatureSet"); }
 
 	//this one is not like the others
 	public static final Collection<SolverFeature> DiscontinutiesFeatures = Arrays.asList(new SolverFeature[]{
@@ -689,7 +678,7 @@ public enum SolverDescription {
 		ProblemRequirements.Checker.validate(mathDescription);
 		Collection<SolverDescription> solvers = new HashSet<SolverDescription>( );
 		for (SolverFeatureSet sfs : SolverFeatureSet.getSets()) {
-			System.out.println(SolverFeatureSetRegistry.getSolverFeatureSetName(sfs));
+			System.out.println(sfs.getName());
 			if (sfs.supports(mathDescription)) {
 				List<SolverFeature> solverFeatures = sfs.getSolverFeatures();
 				Collection<SolverDescription> solverDescriptions = getSolverDescriptions(solverFeatures);
