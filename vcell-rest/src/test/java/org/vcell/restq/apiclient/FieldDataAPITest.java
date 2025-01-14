@@ -17,6 +17,7 @@ import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
 import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.model.FieldDataSaveResults;
 import org.vcell.restclient.model.FieldDataShape;
+import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -115,16 +116,16 @@ public class FieldDataAPITest {
         ///////////////////
         AnalyzedResultsFromFieldData saveFieldDataFromFile = new AnalyzedResultsFromFieldData();
         saveFieldDataFromFile.setShortSpecData(matrix); saveFieldDataFromFile.varNames(varNames);
-        saveFieldDataFromFile.times(times); saveFieldDataFromFile.origin(Origin.originToDTO(origin)); saveFieldDataFromFile.extent(Extent.extentToDTO(extent));
-        saveFieldDataFromFile.isize(ISize.iSizeToDTO(iSize)); saveFieldDataFromFile.annotation("test annotation"); saveFieldDataFromFile.name("TestFile");
+        saveFieldDataFromFile.times(times); saveFieldDataFromFile.origin(DtoModelTransforms.originToDTO(origin)); saveFieldDataFromFile.extent(DtoModelTransforms.extentToDTO(extent));
+        saveFieldDataFromFile.isize(DtoModelTransforms.iSizeToDTO(iSize)); saveFieldDataFromFile.annotation("test annotation"); saveFieldDataFromFile.name("TestFile");
         FieldDataSaveResults results = fieldDataResourceApi.createFieldDataFromAnalyzedFile(saveFieldDataFromFile);
 
         // File is Saved on File System
         FieldDataShape fieldDataInfo = fieldDataResourceApi.getFieldDataShapeFromID(results.getFieldDataID());
         Assertions.assertEquals(saveFieldDataFromFile.getName(), results.getFieldDataName());
-        Assertions.assertTrue(origin.compareEqual(Origin.dtoToOrigin(fieldDataInfo.getOrigin())));
-        Assertions.assertTrue(extent.compareEqual(Extent.dtoToExtent(fieldDataInfo.getExtent())));
-        Assertions.assertTrue(iSize.compareEqual(ISize.dtoToISize(fieldDataInfo.getIsize())));
+        Assertions.assertTrue(origin.compareEqual(DtoModelTransforms.dtoToOrigin(fieldDataInfo.getOrigin())));
+        Assertions.assertTrue(extent.compareEqual(DtoModelTransforms.dtoToExtent(fieldDataInfo.getExtent())));
+        Assertions.assertTrue(iSize.compareEqual(DtoModelTransforms.dtoToISize(fieldDataInfo.getIsize())));
         Assertions.assertEquals(times, fieldDataInfo.getTimes());
 
         // It's in the DB
@@ -171,9 +172,9 @@ public class FieldDataAPITest {
 
         FieldDataShape fieldDataInfo = fieldDataResourceApi.getFieldDataShapeFromID(saveResults.getFieldDataID());
         Assertions.assertNotNull(fieldDataInfo);
-        Assertions.assertTrue(Origin.dtoToOrigin(fieldDataInfo.getOrigin()).compareEqual(new Origin(0.0, 0.0, 0.0)));
-        Assertions.assertTrue(Extent.dtoToExtent(fieldDataInfo.getExtent()).compareEqual(new Extent(684.9333393978472, 684.9333393978472, 1)));
-        Assertions.assertTrue(ISize.dtoToISize(fieldDataInfo.getIsize()).compareEqual(new ISize(256, 256, 1)));
+        Assertions.assertTrue(DtoModelTransforms.dtoToOrigin(fieldDataInfo.getOrigin()).compareEqual(new Origin(0.0, 0.0, 0.0)));
+        Assertions.assertTrue(DtoModelTransforms.dtoToExtent(fieldDataInfo.getExtent()).compareEqual(new Extent(684.9333393978472, 684.9333393978472, 1)));
+        Assertions.assertTrue(DtoModelTransforms.dtoToISize(fieldDataInfo.getIsize()).compareEqual(new ISize(256, 256, 1)));
         Assertions.assertEquals(1, fieldDataInfo.getTimes().size());
 
         fieldDataResourceApi.deleteFieldData(saveResults.getFieldDataID());
