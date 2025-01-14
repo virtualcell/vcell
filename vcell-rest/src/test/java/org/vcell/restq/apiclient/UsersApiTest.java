@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
+import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwt.JwtClaims;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.*;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.api.PublicationResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
@@ -153,8 +155,12 @@ public class UsersApiTest {
         Assertions.assertEquals ("vcellNagios", token.getUserId());
 
         // Bob requests
-        token = bobUserApi.getLegacyApiToken();
-        assert (token.getToken() == null);
+        try{
+            bobUserApi.getLegacyApiToken();
+            Assertions.fail("Should throw 401 since only clients with role user can call it.");
+        } catch (ApiException e){
+            Assertions.assertEquals(401, e.getCode());
+        }
 
         UsersResourceApi usersResourceApi2 = new UsersResourceApi(bobAPIClient);
         usersResourceApi2.mapUser(TestEndpointUtils.administratorUserLoginInfo);
@@ -164,6 +170,11 @@ public class UsersApiTest {
         Assertions.assertEquals("Administrator", token.getUserId());
     }
 
+    /**
+     * If there is no user mapping for the client or the user does not have an JWT token in the Authorization header for HTTP,
+     * throw 401. If the user is a guest, return a token with the user id "vcellguest" and the user key "140220477".
+     * @throws ApiException
+     */
     @Test
     public void testOldAPITokenGenerationForGuest() throws ApiException {
         ApiClient defaultUser = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
@@ -178,6 +189,27 @@ public class UsersApiTest {
         Assertions.assertEquals("140220477", guestApiToken.getUserKey());
     }
 
+    @Test
+    public void testUserMiddleWare() throws ApiException{
+        ApiClient defaultUser = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
+        PublicationResourceApi publicationResourceApi = new PublicationResourceApi(defaultUser);
+
+        // public available to everyone
+        Assertions.assertDoesNotThrow(publicationResourceApi::getPublications);
+
+        // guests can not delete a publication
+        try{
+            publicationResourceApi.deletePublication(1L);
+            Assertions.fail("Should throw 401 since guests can't create a publication.");
+        } catch (ApiException e){
+            Assertions.assertEquals(HttpStatus.UNAUTHORIZED_401, e.getCode());
+        }
+    }
+
+    /**
+     * Every guest user has the same exact specifications, the only difference will be the session token they use to identify themselves.
+     * @throws ApiException
+     */
     @Test
     public void testOldAPITokenGenerationForMultipleGuests() throws ApiException {
         ApiClient defaultUser = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);

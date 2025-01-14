@@ -62,10 +62,7 @@ public class AdminResource {
         if (securityIdentity.isAnonymous()){
             throw new WebApplicationException("not authenticated", 401);
         }
-        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-        if (vcellUser == null) {
-            throw new WebApplicationException("vcell user not specified", 401);
-        }
+        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, false);
         try {
             String htmlString = adminRestDB.getUsageSummaryHtml(vcellUser);
             StreamingOutput fileStream = output -> {

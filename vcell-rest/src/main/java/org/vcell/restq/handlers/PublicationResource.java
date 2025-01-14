@@ -3,12 +3,10 @@ package org.vcell.restq.handlers;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import io.quarkus.logging.Log;
 import io.quarkus.security.identity.SecurityIdentity;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.vcell.restq.Main;
 import org.vcell.restq.db.PublicationService;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.restq.models.Publication;
@@ -73,10 +71,7 @@ public class PublicationResource {
     public Long add(Publication publication) throws DataAccessException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-            if (vcellUser == null) {
-                throw new WebApplicationException("vcell user not specified", 401);
-            }
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, false);
             KeyValue key = publicationService.savePublication(publication, vcellUser);
             return Long.parseLong(key.toString());
         } catch (PermissionException ee) {
@@ -96,10 +91,7 @@ public class PublicationResource {
     public Publication update(Publication publication) {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-            if (vcellUser == null) {
-                throw new PermissionException("vcell user not specified");
-            }
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, false);
             Publication pub = publicationService.updatePublication(publication, vcellUser);
             return pub;
         } catch (PermissionException ee) {
@@ -118,10 +110,7 @@ public class PublicationResource {
     @Operation(operationId = "deletePublication", summary = "Delete publication")
     public void delete(@PathParam("id") Long publicationID) {
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-            if (vcellUser == null) {
-                throw new PermissionException("vcell user not specified");
-            }
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, false);
             int numRecordsDeleted = publicationService.deletePublication(new KeyValue(publicationID.toString()), vcellUser);
             if (numRecordsDeleted != 1) {
                 throw new ObjectNotFoundException("failed to delete publication, record not found");
