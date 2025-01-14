@@ -4,7 +4,6 @@ import com.lowagie.text.Document;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.pdf.PdfWriter;
 import io.quarkus.security.identity.SecurityIdentity;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -62,7 +61,7 @@ public class AdminResource {
         if (securityIdentity.isAnonymous()){
             throw new WebApplicationException("not authenticated", 401);
         }
-        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, false);
+        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
         try {
             String htmlString = adminRestDB.getUsageSummaryHtml(vcellUser);
             StreamingOutput fileStream = output -> {

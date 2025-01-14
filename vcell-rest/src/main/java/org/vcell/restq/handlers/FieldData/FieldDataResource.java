@@ -54,7 +54,7 @@ public class FieldDataResource {
     @Operation(operationId = "getAllFieldDataIDs", summary = "Get all of the ids used to identify, and retrieve field data.")
     public ArrayList<FieldDataReference> getAllFieldDataIDs(){
         try {
-            return fieldDataDB.getAllFieldDataIDs(userRestDB.getUserFromIdentity(securityIdentity, false));
+            return fieldDataDB.getAllFieldDataIDs(userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER));
         } catch (SQLException e) {
             throw new WebApplicationException("Can't retrieve field data ID's.", 500);
         } catch (DataAccessException e) {
@@ -67,7 +67,7 @@ public class FieldDataResource {
     @Operation(operationId = "getFieldDataShapeFromID", summary = "Get the shape of the field data. That is it's size, origin, extent, and data identifiers.")
     public FieldDataShape getFieldDataShapeFromID(@PathParam("fieldDataID") String fieldDataID){
         try {
-            FieldDataFileOperationResults results = fieldDataDB.getFieldDataFromID(userRestDB.getUserFromIdentity(securityIdentity, false), fieldDataID, 0);
+            FieldDataFileOperationResults results = fieldDataDB.getFieldDataFromID(userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER), fieldDataID, 0);
             return new FieldDataShape(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
         } catch (DataAccessException e) {
             if (e.getCause() instanceof FileNotFoundException){
@@ -99,6 +99,7 @@ public class FieldDataResource {
     @Operation(operationId = "analyzeFieldDataFile", summary = "Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.")
     public AnalyzedResultsFromFieldData analyzeFieldData(@RestForm File file, @RestForm String fileName){
         try{
+            userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             if (!Pattern.matches("^[a-z0-9_]*$", fileName) || fileName.length() > 100 || fileName.isEmpty()){
                 throw new WebApplicationException("Invalid file name.", 400);
             }
@@ -116,7 +117,7 @@ public class FieldDataResource {
     public FieldDataSaveResults createNewFieldDataFromFile(AnalyzedResultsFromFieldData saveFieldData){
         FieldDataSaveResults fieldDataSaveResults;
         try{
-            User user = userRestDB.getUserFromIdentity(securityIdentity, false);
+            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(saveFieldData, user);
             fieldDataSaveResults = new FieldDataSaveResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {
@@ -145,7 +146,7 @@ public class FieldDataResource {
     @Operation(operationId = "deleteFieldData", summary = "Delete the selected field data.")
     public void deleteFieldData(@PathParam("fieldDataID") String fieldDataID){
         try{
-            fieldDataDB.deleteFieldData(userRestDB.getUserFromIdentity(securityIdentity, false), fieldDataID);
+            fieldDataDB.deleteFieldData(userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER), fieldDataID);
         } catch (DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), 500);
         }

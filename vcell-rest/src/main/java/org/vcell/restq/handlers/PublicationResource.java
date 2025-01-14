@@ -40,7 +40,7 @@ public class PublicationResource {
     @Operation(operationId = "getPublicationById", summary = "Get publication by ID")
     public Publication get_by_id(@PathParam("id") Long publicationID) throws SQLException, DataAccessException {
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, true);
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
             return publicationService.getPublication(new KeyValue(publicationID.toString()), vcellUser);
         } catch (DataAccessException | SQLException e) {
             Log.error(e);
@@ -53,7 +53,7 @@ public class PublicationResource {
     @Operation(operationId = "getPublications", summary = "Get all publications")
     public Publication[] get_list() {
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, true);
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
             return publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, vcellUser);
         } catch (PermissionException ee) {
             Log.error(ee);
@@ -71,7 +71,7 @@ public class PublicationResource {
     public Long add(Publication publication) throws DataAccessException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, false);
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             KeyValue key = publicationService.savePublication(publication, vcellUser);
             return Long.parseLong(key.toString());
         } catch (PermissionException ee) {
@@ -87,11 +87,11 @@ public class PublicationResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
 //    @RolesAllowed("curator")
-    @Operation(operationId = "updatePublication", summary = "Create publication")
+    @Operation(operationId = "updatePublication", summary = "Update publication")
     public Publication update(Publication publication) {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, false);
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             Publication pub = publicationService.updatePublication(publication, vcellUser);
             return pub;
         } catch (PermissionException ee) {
@@ -110,7 +110,7 @@ public class PublicationResource {
     @Operation(operationId = "deletePublication", summary = "Delete publication")
     public void delete(@PathParam("id") Long publicationID) {
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, false);
+            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             int numRecordsDeleted = publicationService.deletePublication(new KeyValue(publicationID.toString()), vcellUser);
             if (numRecordsDeleted != 1) {
                 throw new ObjectNotFoundException("failed to delete publication, record not found");
