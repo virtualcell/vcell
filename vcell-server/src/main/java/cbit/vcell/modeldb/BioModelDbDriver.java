@@ -569,18 +569,17 @@ public BioModelRep[] getBioModelReps(Connection con, User user, String condition
 	return bioModelReps.toArray(new BioModelRep[bioModelReps.size()]);
 }
 
-public PublicationRep[] getPublicationReps(Connection con, User user, String conditions, OrderBy orderBy)
+	/**
+	 * Publications should be available to anyone. Anonymous users included.
+	 */
+	public PublicationRep[] getPublicationReps(Connection con, User user, String conditions, OrderBy orderBy)
 		throws SQLException, DataAccessException, ObjectNotFoundException {
-	if (user == null) {
-		throw new IllegalArgumentException("Improper parameters for getPublicationReps");
-	}
 	if (lg.isTraceEnabled()) lg.trace("BioModelDbDriver.getPublicationReps(user=" + user + ", conditions=" + conditions + ")");
 	
 	String sql = publicationTable.getPreparedStatement_PublicationReps(conditions, orderBy, dbSyntax);
 	
 	PreparedStatement stmt = con.prepareStatement(sql);
 //	System.out.println(sql);
-	publicationTable.setPreparedStatement_PublicationReps(stmt, user);
 
 	ArrayList<PublicationRep> publicationReps = new ArrayList<PublicationRep>();
 	try {
@@ -589,7 +588,7 @@ public PublicationRep[] getPublicationReps(Connection con, User user, String con
 		//showMetaData(rset);
 
 		while (rset.next()) {
-			PublicationRep publicationRep = publicationTable.getPublicationRep(user,rset,dbSyntax);
+			PublicationRep publicationRep = publicationTable.getPublicationRep(rset, dbSyntax);
 			publicationReps.add(publicationRep);
 		}
 	} finally {
