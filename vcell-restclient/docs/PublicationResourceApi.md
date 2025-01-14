@@ -12,8 +12,8 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 | [**getPublicationByIdWithHttpInfo**](PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/v1/publications/{id} | Get publication by ID |
 | [**getPublications**](PublicationResourceApi.md#getPublications) | **GET** /api/v1/publications | Get all publications |
 | [**getPublicationsWithHttpInfo**](PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications |
-| [**updatePublication**](PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Create publication |
-| [**updatePublicationWithHttpInfo**](PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication |
+| [**updatePublication**](PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Update publication |
+| [**updatePublicationWithHttpInfo**](PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Update publication |
 
 
 
@@ -531,7 +531,7 @@ No authorization required
 
 > Publication updatePublication(publication)
 
-Create publication
+Update publication
 
 ### Example
 
@@ -594,7 +594,7 @@ No authorization required
 
 > ApiResponse<Publication> updatePublication updatePublicationWithHttpInfo(publication)
 
-Create publication
+Update publication
 
 ### Example
 
