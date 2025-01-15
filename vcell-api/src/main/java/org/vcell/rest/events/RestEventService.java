@@ -13,6 +13,7 @@ import org.vcell.api.common.events.EventWrapper;
 import org.vcell.api.common.events.EventWrapper.EventType;
 import org.vcell.api.common.events.ExportEventRepresentation;
 import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
+import org.vcell.api.utils.DTOOldAPI;
 import org.vcell.rest.server.ClientTopicMessageCollector;
 import org.vcell.util.Compare;
 
@@ -56,8 +57,8 @@ public class RestEventService {
 		if (event instanceof ExportEvent) {
 			ExportEvent exportEvent = (ExportEvent) event;
 			try {
-				ExportEventRepresentation exportEventRep = exportEvent.toJsonRep();
-				ExportEvent event2 = ExportEvent.fromJsonRep(this, exportEventRep);
+				ExportEventRepresentation exportEventRep = DTOOldAPI.exportEventToJsonRep(exportEvent);
+				ExportEvent event2 = DTOOldAPI.exportEventFromJsonRep(this, exportEventRep);
 				if (!Compare.isEqual(event2.getFormat(),exportEvent.getFormat())) {
 					throw new RuntimeException("Export event round-trip failed");
 				}
@@ -73,8 +74,8 @@ public class RestEventService {
 		}else if (event instanceof SimulationJobStatusEvent) {
 			SimulationJobStatusEvent simJobEvent = (SimulationJobStatusEvent)event;
 			try {
-				SimulationJobStatusEventRepresentation simJobEventRep = simJobEvent.toJsonRep();
-				SimulationJobStatusEvent event2 = SimulationJobStatusEvent.fromJsonRep(this, simJobEventRep);
+				SimulationJobStatusEventRepresentation simJobEventRep = DTOOldAPI.simulationJobStatusEventToJsonRep(simJobEvent);
+				SimulationJobStatusEvent event2 = DTOOldAPI.simulationJobStatusEventFromJsonRep(this, simJobEventRep);
 				if (!Compare.isEqual(event2.getJobStatus(),simJobEvent.getJobStatus())) {
 					throw new RuntimeException("SimulationJobStatus event round-trip failed");
 				}
@@ -119,8 +120,8 @@ public class RestEventService {
 		}else if (event instanceof DataJobEvent) {
 			DataJobEvent dataJobEvent = (DataJobEvent)event;
 			try {
-				DataJobEventRepresentation dataJobEventRep = dataJobEvent.toJsonRep();
-				DataJobEvent event2 = DataJobEvent.fromJsonRep(this, dataJobEventRep);
+				DataJobEventRepresentation dataJobEventRep = DTOOldAPI.dataJobRepToJsonRep(dataJobEvent);
+				DataJobEvent event2 = DTOOldAPI.dataJobEventFromJsonRep(this, dataJobEventRep);
 				if (!Compare.isEqual(event2.getDataIdString(),dataJobEvent.getDataIdString())) {
 					throw new RuntimeException("DataJob event round-trip failed");
 				}

@@ -11,14 +11,11 @@
 package cbit.vcell.field.io;
 
 import cbit.vcell.simdata.DataIdentifier;
-import org.vcell.restclient.model.FieldDataSaveResults;
-import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.

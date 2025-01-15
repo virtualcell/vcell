@@ -12,8 +12,6 @@ package cbit.vcell.export.server;
 
 import java.io.Serializable;
 import java.util.List;
-
-import org.vcell.api.common.events.ExportVariableSpecs;
 /**
  * This type was created in VisualAge.
  */
@@ -99,13 +97,5 @@ public String toString() {
 	}
 	buf.append(", modeID: " + modeID + "]");
 	return buf.toString();
-}
-public ExportVariableSpecs toJsonRep() {
-	ExportVariableSpecs rep = new ExportVariableSpecs(variableNames, modeID);
-	return rep;
-}
-public static VariableSpecs fromJsonRep(ExportVariableSpecs rep) {
-	VariableSpecs variableSpecs = new VariableSpecs(rep.variableNames, rep.modeID);
-	return variableSpecs;
 }
 }

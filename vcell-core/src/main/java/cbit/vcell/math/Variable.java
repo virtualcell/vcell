@@ -13,7 +13,6 @@ package cbit.vcell.math;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
-import org.vcell.restclient.model.Domain;
 import org.vcell.util.Compare;
 import org.vcell.util.EqualsUtil;
 import org.vcell.util.Issue.IssueSource;

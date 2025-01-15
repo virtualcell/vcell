@@ -10,14 +10,14 @@
 
 package cbit.vcell.field;
 
-import java.io.Serializable;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+
+import java.io.Serializable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class FieldDataDBOperationResults implements Serializable {

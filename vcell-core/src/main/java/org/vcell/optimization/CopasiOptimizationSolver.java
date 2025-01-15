@@ -23,7 +23,6 @@ import org.vcell.api.client.VCellApiClient;
 import org.vcell.optimization.jtd.*;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.UserLoginInfo;
 
 import javax.swing.*;
 

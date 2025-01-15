@@ -11,6 +11,7 @@ import org.restlet.Restlet;
 import org.restlet.data.*;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
+import org.vcell.api.utils.DTOOldAPI;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
@@ -63,7 +64,7 @@ public final class NewUserRestlet extends Restlet {
 			VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
 			try {
 				UserInfo insertedUserInfo = vcellApiApplication.getRestDatabaseService().addUser(newUserInfo);
-				org.vcell.api.common.UserInfo inserted = insertedUserInfo.getApiUserInfo();				
+				org.vcell.api.common.UserInfo inserted = DTOOldAPI.getApiUserInfo(insertedUserInfo);
 				String userInfoJson = gson.toJson(inserted);
 				JsonRepresentation userRep = new JsonRepresentation(userInfoJson);
 				response.setStatus(Status.SUCCESS_CREATED);

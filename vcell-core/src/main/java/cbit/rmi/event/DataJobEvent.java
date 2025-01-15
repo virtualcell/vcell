@@ -10,9 +10,7 @@
 
 package cbit.rmi.event;
 
-import org.vcell.api.common.events.DataJobEventRepresentation;
 import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.TimeSeriesJobResults;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataJobID;
 
@@ -115,32 +113,6 @@ public boolean isIntendedFor(User user){
 		return true;
 	}
 	return user.equals(getUser());
-}
-
-public DataJobEventRepresentation toJsonRep() {
-	int eventType = this.eventType;
-	Double progress = this.progress;
-	String username = this.vcDataJobID.getJobOwner().getName();
-	String userkey = this.vcDataJobID.getJobOwner().getID().toString();
-	long jobid = this.vcDataJobID.getJobID();
-	boolean isBackgroundTask = this.vcDataJobID.isBackgroundTask();
-	String dataIdString = this.dataIdString;
-	String dataKey = this.dataKey.toString();
-	
-	DataJobEventRepresentation rep = new DataJobEventRepresentation(
-			eventType, progress, username, userkey, jobid, isBackgroundTask, dataIdString, dataKey);
-	return rep;
-}
-
-public static DataJobEvent fromJsonRep(Object eventSource, DataJobEventRepresentation eventRep) {
-	Double progress = eventRep.progress;
-	User owner = new User(eventRep.username,new KeyValue(eventRep.userkey));
-	VCDataJobID dataJobID = new VCDataJobID(eventRep.jobid, owner, eventRep.isBackgroundTask);
-	int eventType = eventRep.eventType;
-	KeyValue dataKey = new KeyValue(eventRep.dataKey);
-	String dataIdString = eventRep.dataIdString;
-	DataJobEvent dataJobEvent = new DataJobEvent(dataJobID, eventType, dataKey, dataIdString, progress);
-	return dataJobEvent;
 }
 
 }
