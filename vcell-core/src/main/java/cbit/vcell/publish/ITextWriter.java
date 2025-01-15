@@ -20,10 +20,10 @@ import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.image.WritableRaster;
 import java.awt.print.PageFormat;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Vector;
 
 import javax.imageio.IIOImage;
@@ -905,20 +905,40 @@ public abstract class ITextWriter {
         this.document = new Document(pageSize, (float) marginL, (float) marginR, (float) marginT, (float) marginB);
     }
 
+    public void writePlotImageDocument(String docTitle, FileOutputStream fos, PageFormat pageFormat, BufferedImage... plotImages) throws DocumentException, IOException {
+        if (plotImages == null) throw new IllegalArgumentException("No plot images provided");
+        if (fos == null) throw new IllegalArgumentException("No outputstream for plot-document provided");
+        if (pageFormat == null) throw new IllegalArgumentException("No page format provided");
 
-    public void writeBioModel(BioModel biomodel, FileOutputStream fos, PageFormat pageFormat) throws Exception {
+        this.createDocument(pageFormat);
+        this.createDocWriter(fos);
+        this.document.addTitle(docTitle);
+        this.document.addCreator("Virtual Cell");
+        this.document.addCreationDate();
+        this.document.open();
+        for (BufferedImage plotImage : plotImages){
+            com.lowagie.text.Image image = com.lowagie.text.Image.getInstance(plotImage, null);
+            image.setAlignment(Table.ALIGN_LEFT);
+            this.document.add(image);
+            if (this.document.getPageNumber() != plotImages.length) this.document.newPage();
+        }
+        this.document.close();
+    }
+
+
+    public void writeBioModel(BioModel biomodel, FileOutputStream fos, PageFormat pageFormat) throws DocumentException {
 
         writeBioModel(biomodel, fos, pageFormat, PublishPreferences.DEFAULT_BIO_PREF);
     }
 
 
-    public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pageFormat, PublishPreferences preferences) throws Exception {
+    public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pageFormat, PublishPreferences preferences) throws DocumentException {
 
         if (bioModel == null || fos == null || pageFormat == null || preferences == null) {
             throw new IllegalArgumentException("One or more null params while publishing BioModel.");
         }
-        createDocument(pageFormat);
-        createDocWriter(fos);
+        this.createDocument(pageFormat);
+        this.createDocWriter(fos);
         // Add metadata before you open the document...
         String name = bioModel.getName().trim();
         String userName = "Unknown";
@@ -2079,7 +2099,7 @@ public abstract class ITextWriter {
 
     //SimulationContext: ignored the constraints (steady/unsteady).
 //Electrical Stimulus: ignored the Ground Electrode,   
-    protected void writeSimulationContext(Chapter simContextsChapter, SimulationContext simContext, PublishPreferences preferences) throws Exception {
+    protected void writeSimulationContext(Chapter simContextsChapter, SimulationContext simContext, PublishPreferences preferences) throws DocumentException {
 
         Section simContextSection = simContextsChapter.addSection("Application: " + simContext.getName(), simContextsChapter.getNumberDepth() + 1);
         writeMetadata(simContextSection, simContext.getName(), simContext.getDescription(), null, "Application ");
