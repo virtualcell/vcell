@@ -171,14 +171,15 @@ public class UsersApiTest {
     }
 
     /**
-     * If there is no user mapping for the client or the user does not have an JWT token in the Authorization header for HTTP,
-     * throw 401. If the user is a guest, return a token with the user id "vcellguest" and the user key "140220477".
-     * @throws ApiException
+     * If there is no user mapping for the client or the user does not have a JWT token in the Authorization header for HTTP,
+     * throw 401.
+     * If the user is anonymous to Auth0 they must ask for a Guest token.
+     * A token with the user id "vcellguest" and the user key "140220477".
      */
     @Test
     public void testOldAPITokenGenerationForGuest() throws ApiException {
-        ApiClient defaultUser = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
-        UsersResourceApi usersResourceApi = new UsersResourceApi(defaultUser);
+        ApiClient anonymous = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
+        UsersResourceApi usersResourceApi = new UsersResourceApi(anonymous);
 
         Assertions.assertThrowsExactly(ApiException.class, () -> usersResourceApi.getLegacyApiToken(), "Should throw 401 since only clients with role user can call it.");
 
@@ -191,13 +192,13 @@ public class UsersApiTest {
 
     @Test
     public void testUserMiddleWare() throws ApiException{
-        ApiClient defaultUser = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
-        PublicationResourceApi publicationResourceApi = new PublicationResourceApi(defaultUser);
+        ApiClient anonymous = TestEndpointUtils.createUnAuthenticatedAPIClient(testPort);
+        PublicationResourceApi publicationResourceApi = new PublicationResourceApi(anonymous);
 
         // public available to everyone
         Assertions.assertDoesNotThrow(publicationResourceApi::getPublications);
 
-        // guests can not delete a publication
+        // anonymous user can not delete a publication (other tests exist to ensure role based access is used too)
         try{
             publicationResourceApi.deletePublication(1L);
             Assertions.fail("Should throw 401 since guests can't create a publication.");
