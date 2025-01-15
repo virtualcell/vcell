@@ -26,17 +26,6 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	private final static String PREVIOUS_DATABASE_VALUE_POWERUSER = "special1";
 	private final static String PREVIOUS_DATABASE_VALUE_PUBLICATION = "publication";
 
-	public static org.vcell.restclient.model.User userToDTO(User user) {
-		org.vcell.restclient.model.User userDTO = new org.vcell.restclient.model.User();
-		userDTO.setUserName(user.userName);
-		userDTO.setKey(KeyValue.keyValueToDTO(user.key));
-		return userDTO;
-	}
-
-	public static User dtoToUser(org.vcell.restclient.model.User dto){
-		return new User(dto.getUserName(), KeyValue.dtoToKeyValue(dto.getKey()));
-	}
-
 	public enum SPECIAL_CLAIM {
 		admins/*special0*/,
 		powerUsers/*special1*/,

@@ -53,20 +53,4 @@ public FieldDataFileOperationResults() {
 	super();
 }
 
-	public static FieldDataFileOperationResults fieldDataInfoDTOToFileOperationResults(FieldDataShape dto){
-		FieldDataFileOperationResults results = new FieldDataFileOperationResults();
-		results.extent = Extent.dtoToExtent(dto.getExtent());
-		results.origin = Origin.dtoToOrigin(dto.getOrigin());
-		results.iSize = ISize.dtoToISize(dto.getIsize());
-		results.times = dto.getTimes().stream().mapToDouble(Double::doubleValue).toArray();
-		results.dataIdentifierArr = dto.getDataIdentifier().stream().map(DataIdentifier::dtoToDataIdentifier).toArray(DataIdentifier[]::new);
-		return results;
-	}
-
-	public static FieldDataFileOperationResults fieldDataSaveResultsDTOToFileOperationResults(FieldDataSaveResults dto, User owner){
-		FieldDataFileOperationResults fieldDataFileOperationResults = new FieldDataFileOperationResults();
-		fieldDataFileOperationResults.externalDataIdentifier = new ExternalDataIdentifier(new KeyValue(dto.getFieldDataID()), owner, dto.getFieldDataName());
-		return fieldDataFileOperationResults;
-	}
-
 }

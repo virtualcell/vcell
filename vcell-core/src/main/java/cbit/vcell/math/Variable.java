@@ -39,11 +39,6 @@ public abstract class Variable extends CommentedObject implements SymbolTableEnt
 
     public static class Domain implements Matchable, Serializable {
 		private String name = null;
-
-		public static Domain dtoToDomain(org.vcell.restclient.model.Domain dto){
-			return new Domain(dto.getName());
-		}
-
 		
 		public Domain(String argName){
 			String nameWithPeriodsMangled = argName.replace('.','_');
