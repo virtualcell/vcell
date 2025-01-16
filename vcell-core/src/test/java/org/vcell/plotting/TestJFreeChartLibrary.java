@@ -1,24 +1,18 @@
 package org.vcell.plotting;
 
 import cbit.vcell.publish.PDFWriter;
+
 import com.lowagie.text.DocumentException;
+
 import org.jfree.chart.*;
 import org.jfree.chart.labels.StandardXYItemLabelGenerator;
-import org.jfree.chart.labels.XYItemLabelGenerator;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.category.LineAndShapeRenderer;
-import org.jfree.data.*;
 import org.jfree.data.xy.*;
-import org.jfree.data.category.CategoryDataset;
-import org.jfree.data.general.DefaultKeyedValues2DDataset;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.vcell.sbml.BMDB_SBML_Files;
+
 import org.vcell.util.Pair;
-import scala.collection.immutable.Page;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -26,7 +20,6 @@ import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,21 +63,20 @@ public class TestJFreeChartLibrary {
     }
 
     private void generateChart(XYDataset dataset2D, PageFormat pageFormat, String xAxisLabel) throws IOException, DocumentException {
-        int AXIS_LABEL_FONT_SIZE = 15;
         String yAxisLabel = "";
         JFreeChart chart = ChartFactory.createXYLineChart("Test Sim Results", xAxisLabel, yAxisLabel, dataset2D);
 
         // Tweak Chart so it looks better
         chart.setBorderVisible(true);
+        chart.getPlot().setBackgroundPaint(Color.white);
         XYPlot chartPlot = chart.getXYPlot();
-        chartPlot.getDomainAxis().setLabelFont(new Font(xAxisLabel, Font.PLAIN, AXIS_LABEL_FONT_SIZE));
-        chartPlot.getRangeAxis().setLabelFont(new Font(yAxisLabel, Font.PLAIN, AXIS_LABEL_FONT_SIZE));
-        if (dataset2D.getItemCount(0) <= 10) { // if it's too crowded, having data point labels is bad
+        chartPlot.getDomainAxis().setLabelFont(new Font(xAxisLabel, Font.PLAIN, Results2DLinePlot.AXIS_LABEL_FONT_SIZE));
+        chartPlot.getRangeAxis().setLabelFont(new Font(yAxisLabel, Font.PLAIN, Results2DLinePlot.AXIS_LABEL_FONT_SIZE));
+        if (dataset2D.getItemCount(0) <= Results2DLinePlot.MAX_SERIES_DATA_POINT_LABELS) { // if it's too crowded, having data point labels is bad
             for (int i = 0; i < dataset2D.getSeriesCount(); i++){
                 //DecimalFormat decimalformat1 = new DecimalFormat("##");
-                chartPlot.getRenderer().setSeriesItemLabelGenerator(0,
-                        new StandardXYItemLabelGenerator("({1}, {2})"));
-                chartPlot.getRenderer().setSeriesItemLabelFont(i, new Font(null, Font.PLAIN, 8));
+                chartPlot.getRenderer().setSeriesItemLabelGenerator(i, new StandardXYItemLabelGenerator("({1}, {2})"));
+                chartPlot.getRenderer().setSeriesItemLabelFont(i, new Font(null, Font.PLAIN, Results2DLinePlot.SERIES_DATA_POINT_LABEL_FONT_SIZE));
                 chartPlot.getRenderer().setSeriesItemLabelsVisible(i, true);
             }
         }
