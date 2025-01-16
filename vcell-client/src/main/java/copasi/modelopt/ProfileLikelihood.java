@@ -1,4 +1,4 @@
-package cbit.vcell.modelopt;
+package copasi.modelopt;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,6 +8,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
+import cbit.vcell.modelopt.*;
 import cbit.vcell.opt.OptSolverResultSet;
 import cbit.vcell.opt.OptSolverResultSet.OptRunResultSet;
 import cbit.vcell.opt.OptimizationResultSet;

@@ -46,7 +46,7 @@ import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.optimization.CopasiOptSolverCallbacks;
-import org.vcell.optimization.CopasiOptimizationSolver;
+import copasi.CopasiOptimizationSolver;
 import org.vcell.optimization.CopasiUtils;
 import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
 import org.vcell.optimization.jtd.OptProgressItem;

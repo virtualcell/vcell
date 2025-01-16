@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.optimization;
+package copasi;
 
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.modelopt.ParameterEstimationTask;
@@ -20,6 +20,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
+import org.vcell.optimization.CopasiOptSolverCallbacks;
+import org.vcell.optimization.CopasiUtils;
+import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
 import org.vcell.optimization.jtd.*;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
