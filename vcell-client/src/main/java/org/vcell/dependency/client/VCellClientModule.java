@@ -7,7 +7,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import org.vcell.DependencyConstants;
 import org.vcell.service.registration.RegistrationService;
-import org.vcell.service.registration.remote.RemoteRegistrationService;
+import org.vcell.util.network.RemoteRegistrationService;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.User;
 
