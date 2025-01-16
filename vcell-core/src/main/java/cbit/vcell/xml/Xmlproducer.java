@@ -4758,9 +4758,11 @@ private Element getXML(SolverTaskDescription param) {
 	numProcessors.setText(Integer.toString(param.getNumProcessors()));
 	solvertask.addContent(numProcessors);
 
-	Element numTrials = new Element(XMLTags.SolverTaskDescriptionNumTrials);
-	numTrials.setText(Integer.toString(param.getNumTrials()));
-	solvertask.addContent(numTrials);
+	if(param.getNumTrials() > 1) {
+		Element numTrials = new Element(XMLTags.SolverTaskDescriptionNumTrials);
+		numTrials.setText(Integer.toString(param.getNumTrials()));
+		solvertask.addContent(numTrials);
+	}
 
 	return solvertask;
 }
