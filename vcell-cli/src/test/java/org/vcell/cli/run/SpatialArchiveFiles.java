@@ -3,51 +3,46 @@ package org.vcell.cli.run;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.vcell.sedml.testsupport.OmexTestCase;
+import org.vcell.sedml.testsupport.OmexTestingDatabase;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Tag("Fast")
 public class SpatialArchiveFiles {
-    private final static String[] allTestFiles = new String[]{
-            "TinySpatialProject.omex",
-            "SimpleSpatialModel.omex"
-    };
 
-    public static String[] getSpatialTestCases() {
-        Predicate<String> testFilter = t -> true;
+    public static OmexTestCase[] getSpatialTestCases() throws IOException {
+        List<OmexTestCase> allTestCases = OmexTestingDatabase.loadOmexTestCases();
+        Predicate<OmexTestCase> testFilter = t -> t.test_collection == OmexTestingDatabase.TestCollection.VCELL_SPATIAL;
 
-        return Arrays.stream(allTestFiles).filter(testFilter).toArray(String[]::new);
+        return allTestCases.stream().filter(testFilter).toArray(OmexTestCase[]::new);
     }
 
-    public static InputStream getSpatialTestCase(String testFile) {
-        if (Arrays.stream(allTestFiles).noneMatch(file -> file.equals(testFile))) {
-            throw new RuntimeException("file not found for VCell Published Test Suite test "+testFile);
-        }
-        try {
-            return getFileFromResourceAsStream(testFile);
-        }catch (FileNotFoundException e){
-            throw new RuntimeException("failed to find test case file '"+testFile+"': " + e.getMessage(), e);
-        }
+    public static InputStream getOmex(OmexTestCase testCase) {
+        String fullPath = testCase.test_collection.pathPrefix + "/" + testCase.file_path;
+        String path = fullPath.substring(fullPath.indexOf("/spatial"));
+        return getFileFromResourceAsStream(path + ".omex");
     }
 
-    private static InputStream getFileFromResourceAsStream(String fileName) throws FileNotFoundException {
-        Class<org.vcell.cli.run.SpatialArchiveFiles> spatialFilesClass = org.vcell.cli.run.SpatialArchiveFiles.class;
-        InputStream nextTestFile = spatialFilesClass.getResourceAsStream("/spatial/" + fileName);
-        if (nextTestFile == null) {
-            throw new FileNotFoundException("file not found! " + fileName);
+    private static InputStream getFileFromResourceAsStream(String path) {
+        InputStream inputStream = SpatialArchiveFiles.class.getResourceAsStream(path);
+        if (inputStream == null) {
+            throw new RuntimeException("file not found! " + path);
         } else {
-            return nextTestFile;
+            return inputStream;
         }
     }
 
     @Test
-    public void test_read_Spatial_omex_file() {
-        InputStream inputStream = getSpatialTestCase(allTestFiles[0]);
-        assertNotNull(inputStream);
+    public void test_read_omex_file() throws IOException {
+        InputStream inputStream = getOmex(getSpatialTestCases()[0]);
+        Assertions.assertTrue(inputStream != null);
     }
 }

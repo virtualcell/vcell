@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.vcell.restclient.model.Simulation;
+import org.vcell.restclient.model.KeyValue;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -97,11 +97,11 @@ public class BioModelTest {
     }
 
     /**
-     * Test the property 'modelKey'
+     * Test the property 'physModelKey'
      */
     @Test
-    public void modelKeyTest() {
-        // TODO: test modelKey
+    public void physModelKeyTest() {
+        // TODO: test physModelKey
     }
 
     /**
@@ -121,11 +121,11 @@ public class BioModelTest {
     }
 
     /**
-     * Test the property 'simulations'
+     * Test the property 'simulationKeyList'
      */
     @Test
-    public void simulationsTest() {
-        // TODO: test simulations
+    public void simulationKeyListTest() {
+        // TODO: test simulationKeyList
     }
 
     /**

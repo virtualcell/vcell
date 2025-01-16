@@ -1,5 +1,5 @@
 /*
- * VCell API (test)
+ * VCell API
  * VCell API
  *
  * The version of the OpenAPI document: 1.0.1
@@ -13,7 +13,16 @@
 
 package org.vcell.restclient.model;
 
-import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
 /**
  * Model tests for HelloWorldMessage
  */

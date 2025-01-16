@@ -99,7 +99,6 @@ public class SolverHandler {
     }
 
     public void initialize(List<BioModel> bioModelList, SedML sedml) throws ExpressionException {
-
 		Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();
         for(BioModel bioModel : bioModelList) {
 			Simulation[] sims = bioModel.getSimulations();
@@ -391,12 +390,15 @@ public class SolverHandler {
 				}
 
 				for (TempSimulationJob tempSimulationJob : simJobsList) {
-					logger.debug("Initializing simulation job... ");
-					String logTaskMessage = "Initializing simulation job " + tempSimulationJob.getJobIndex() + " ... ";
+					AbstractTask task = tempSimulationToTaskMap.get(tempSimulationJob.getTempSimulation());
+					String paramScanIndex = task instanceof RepeatedTask ? ":" + tempSimulationJob.getJobIndex() : "";
+					String tempSimJobLabel = tempSimulationJob.getSimulationJobID() + tempSimulationJob.getJobIndex();
+					String logTaskMessage = String.format("Initializing simulation job %s (%s%s)...", tempSimJobLabel, task.getId(), paramScanIndex);
+					logger.debug(logTaskMessage);
 					String logTaskError = "";
 					long startTimeTask_ms = System.currentTimeMillis();
 
-					AbstractTask task = tempSimulationToTaskMap.get(tempSimulationJob.getTempSimulation());
+
 
 					SimulationTask simTask;
 					String kisao = "null";

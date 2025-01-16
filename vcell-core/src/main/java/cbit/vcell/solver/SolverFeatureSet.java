@@ -12,7 +12,7 @@ import cbit.vcell.solver.SolverDescription.SupportedProblemRequirements;
 
 //public class SolverFeatureSet extends ArrayList<SolverFeature> {
 public class SolverFeatureSet { 
-
+	private String name;
 	private ArrayList<SolverFeature> solverFeatures = new ArrayList<SolverFeature>();
 	private final SupportedProblemRequirements supportedProblemRequirements;
 	private final SolverDescription defaultSolver; 
@@ -26,7 +26,8 @@ public class SolverFeatureSet {
 		return sets;
 	}
 
-	private SolverFeatureSet(SupportedProblemRequirements supportedProblemRequirements, SolverDescription defaultExecutable, int priority) {
+	private SolverFeatureSet(String name, SupportedProblemRequirements supportedProblemRequirements, SolverDescription defaultExecutable, int priority) {
+		this.name = name;
 		this.supportedProblemRequirements = supportedProblemRequirements;
 		this.defaultSolver = defaultExecutable;
 		this.solverPriority = priority;
@@ -36,15 +37,19 @@ public class SolverFeatureSet {
 	/**
 	 * @param defaultExecutable may be null
 	 */
-	public SolverFeatureSet(SolverFeature[] solverFeatures,
+	public SolverFeatureSet(String name, SolverFeature[] solverFeatures,
 			SupportedProblemRequirements supportedProblemRequirements, SolverDescription defaultExecutable,
 			int solverPriority) {
-		this(supportedProblemRequirements,defaultExecutable, solverPriority);
+		this(name, supportedProblemRequirements,defaultExecutable, solverPriority);
 		this.solverFeatures.addAll(Arrays.asList(solverFeatures));
 	}
 
 
-	public List<SolverFeature> getSolverFeatures(){
+	public String getName() {
+		return name;
+	}
+
+	public List<SolverFeature> getSolverFeatures() {
 		return Collections.unmodifiableList(solverFeatures);
 	}
 

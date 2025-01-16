@@ -97,7 +97,6 @@ def login_interactive_tokens(client_id: str, auth_url: str, token_url: str, jwks
 
     with OAuthHttpServer((hostname, temp_http_port), OAuthHttpHandler, success_redirect_url=success_redirect_url) as httpd:
         redirectURI = f'http://{hostname}:{temp_http_port}{OIDC_TEST_CALLBACK}'
-
         oauth2client = OAuth2Client(
             token_endpoint=token_url,
             authorization_endpoint=auth_url,
@@ -127,19 +126,26 @@ def get_authorization_and_token_endpoints(issuer_url: str) -> tuple[str, str, st
     return data.get('authorization_endpoint'), data.get('token_endpoint'), data.get('jwks_uri')
 
 
-def login_interactive(api_base_url: str, client_id: str, issuer_url: str) -> ApiClient:
+def login_interactive(api_base_url: str = "https://vcell.cam.uchc.edu/api/v1", client_id: str = "cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf",
+                      issuer_url: str = "https://dev-dzhx7i2db3x3kkvq.us.auth0.com", insecure: bool = False) -> ApiClient:
     """
         This function is used to login interactively to the VCell API.
         It is used for the ApiClient class to set the access token.
+        Only change the default variables set if you know what you are doing.
         :param api_base_url: The base URL of the VCell API.
         :param client_id: The client ID of the VCell API OIDC auth provider.
         :param issuer_url: The base URL of the VCell API OIDC auth provider.
+        :param insecure: If a custom endpoint is used that does not have proper SSL certificate.
         :return: An ApiClient object with the access token set.
     """
     auth_url, token_url, jwks_uri = get_authorization_and_token_endpoints(issuer_url)
     auth_code_response: AuthCodeResponse = login_interactive_tokens(
         client_id=client_id, auth_url=auth_url, token_url=token_url, jwks_uri=jwks_uri, success_redirect_url=api_base_url + LOGIN_SUCCESS)
     id_token = auth_code_response.id_token
-    api_client = ApiClient(configuration=Configuration(host=api_base_url, access_token=id_token))
+    config = Configuration(host=api_base_url, access_token=id_token)
+    if insecure:
+        config.assert_hostname = False
+        config.verify_ssl = False
+    api_client = ApiClient(configuration=config)
     api_client.set_default_header('Authorization', f'Bearer {id_token}')
     return api_client

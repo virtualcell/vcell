@@ -62,7 +62,7 @@ public class VtkServicePython extends VtkService {
 				String.valueOf(visMeshFile.toAbsolutePath()),
 				String.valueOf(vtkFile.toAbsolutePath()),
 				String.valueOf(indexFile.toAbsolutePath()) };
-		PythonUtils.callPoetryModule(vtkPythonDir, "vtkService.vtkService", commands);
+		PythonUtils.callPoetryModule(vtkPythonDir, "python_vtk.vtkService.vtkService", commands);
 	}
 
 }

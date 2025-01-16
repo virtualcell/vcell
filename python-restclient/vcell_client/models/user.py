@@ -34,10 +34,9 @@ class User(BaseModel):
     """ # noqa: E501
     user_name: Optional[StrictStr] = Field(default=None, alias="userName")
     key: Optional[KeyValue] = None
-    i_d: Optional[KeyValue] = Field(default=None, alias="iD")
     name: Optional[StrictStr] = None
     test_account: Optional[StrictBool] = Field(default=None, alias="testAccount")
-    __properties: ClassVar[List[str]] = ["userName", "key", "iD", "name", "testAccount"]
+    __properties: ClassVar[List[str]] = ["userName", "key", "name", "testAccount"]
 
     model_config = {
         "populate_by_name": True,
@@ -78,9 +77,6 @@ class User(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of key
         if self.key:
             _dict['key'] = self.key.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of i_d
-        if self.i_d:
-            _dict['iD'] = self.i_d.to_dict()
         return _dict
 
     @classmethod
@@ -100,7 +96,6 @@ class User(BaseModel):
         _obj = cls.model_validate({
             "userName": obj.get("userName"),
             "key": KeyValue.from_dict(obj.get("key")) if obj.get("key") is not None else None,
-            "iD": KeyValue.from_dict(obj.get("iD")) if obj.get("iD") is not None else None,
             "name": obj.get("name"),
             "testAccount": obj.get("testAccount")
         })

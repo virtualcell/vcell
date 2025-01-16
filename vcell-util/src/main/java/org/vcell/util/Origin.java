@@ -23,7 +23,19 @@ public class Origin implements java.io.Serializable, Matchable {
 	@XmlAttribute
 	private double z;
 	public Origin() {}//For jaxb
-	
+
+public static org.vcell.restclient.model.Origin originToDTO(Origin origin){
+	org.vcell.restclient.model.Origin dtoOrigin = new org.vcell.restclient.model.Origin();
+	dtoOrigin.setX(origin.getX());
+	dtoOrigin.setY(origin.getY());
+	dtoOrigin.setZ(origin.getZ());
+	return dtoOrigin;
+}
+
+public static Origin dtoToOrigin(org.vcell.restclient.model.Origin dtoOrigin){
+    return new Origin(dtoOrigin.getX(), dtoOrigin.getY(), dtoOrigin.getZ());
+}
+
 /**
  * Origin constructor comment.
  */

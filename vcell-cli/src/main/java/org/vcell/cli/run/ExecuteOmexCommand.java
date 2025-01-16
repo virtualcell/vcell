@@ -8,8 +8,8 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.CliTracer;
-import org.vcell.cli.testsupport.OmexExecSummary;
-import org.vcell.cli.testsupport.OmexTestingDatabase;
+import org.vcell.sedml.testsupport.OmexExecSummary;
+import org.vcell.sedml.testsupport.OmexTestingDatabase;
 import org.vcell.trace.Tracer;
 import org.vcell.util.FileUtils;
 import org.vcell.util.exe.Executable;
@@ -63,6 +63,7 @@ public class ExecuteOmexCommand implements Callable<Integer> {
     public Integer call() {
 
         CLIRecordable cliTracer = new CliTracer();
+        long startTime_ms = System.currentTimeMillis();
         try {
             if (bDebug && bQuiet) {
                 System.err.println("cannot specify both debug and quiet, try --help for usage");
@@ -106,18 +107,19 @@ public class ExecuteOmexCommand implements Callable<Integer> {
             FileUtils.copyDirectoryContents(tmpDir, outputFilePath, true, null);
             final OmexExecSummary omexExecSummary;
             if (Tracer.hasErrors()){
-                omexExecSummary = OmexTestingDatabase.summarize(inputFilePath,(Exception)null,Tracer.getErrors());
+                omexExecSummary = OmexTestingDatabase.summarize(inputFilePath,(Exception)null,Tracer.getErrors(), System.currentTimeMillis() - startTime_ms);
             } else {
                 omexExecSummary = new OmexExecSummary();
                 omexExecSummary.file_path = String.valueOf(inputFilePath);
                 omexExecSummary.status = OmexExecSummary.ActualStatus.PASSED;
+                omexExecSummary.elapsed_time_ms = System.currentTimeMillis() - startTime_ms;
             }
             new ObjectMapper().writeValue(new File(outputFilePath, "exec_summary.json"), omexExecSummary);
             new ObjectMapper().writeValue(new File(outputFilePath, "tracer.json"), Tracer.getTraceEvents());
             return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
             LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
-            OmexExecSummary omexExecSummary = OmexTestingDatabase.summarize(inputFilePath,e,Tracer.getErrors());
+            OmexExecSummary omexExecSummary = OmexTestingDatabase.summarize(inputFilePath,e,Tracer.getErrors(),System.currentTimeMillis() - startTime_ms);
             try {
                 new ObjectMapper().writeValue(new File(outputFilePath, "exec_summary.json"), omexExecSummary);
                 new ObjectMapper().writeValue(new File(outputFilePath, "tracer.json"), Tracer.getTraceEvents());

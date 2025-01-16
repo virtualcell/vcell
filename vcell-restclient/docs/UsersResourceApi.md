@@ -1141,8 +1141,8 @@ null (empty response body)
 |-------------|-------------|------------------|
 | **200** | magic link sent in email if appropriate |  -  |
 | **400** | unable to process request |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## requestRecoveryEmailWithHttpInfo
 
@@ -1213,8 +1213,8 @@ ApiResponse<Void>
 |-------------|-------------|------------------|
 | **200** | magic link sent in email if appropriate |  -  |
 | **400** | unable to process request |  -  |
-| **403** | Not Allowed |  -  |
 | **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## unmapUser

@@ -3,8 +3,8 @@ package org.vcell.cli.run;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.vcell.cli.testsupport.OmexTestCase;
-import org.vcell.cli.testsupport.OmexTestingDatabase;
+import org.vcell.sedml.testsupport.OmexTestCase;
+import org.vcell.sedml.testsupport.OmexTestingDatabase;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,7 +19,11 @@ public class BSTSBasedTestSuiteFiles {
 
     public static OmexTestCase[] getBSTSTestCases() throws IOException {
         List<OmexTestCase> allTestCases = OmexTestingDatabase.loadOmexTestCases();
-        Predicate<OmexTestCase> testFilter = t -> t.test_collection.repo == OmexTestingDatabase.TestDataRepo.vcell;
+        Predicate<OmexTestCase> testFilter = t ->
+                        t.test_collection == OmexTestingDatabase.TestCollection.VCELL_BIOMD ||
+                        t.test_collection == OmexTestingDatabase.TestCollection.VCELL_BSTS_VCML ||
+                        t.test_collection == OmexTestingDatabase.TestCollection.VCELL_BSTS_SBML_CORE ||
+                        t.test_collection == OmexTestingDatabase.TestCollection.VCELL_BSTS_SYNTHS;
 
         return allTestCases.stream().filter(testFilter).toArray(OmexTestCase[]::new);
     }
