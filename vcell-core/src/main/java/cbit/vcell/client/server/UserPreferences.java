@@ -37,7 +37,7 @@ import cbit.vcell.resource.ResourceUtil;
 public class UserPreferences {
     private final static Logger lg = LogManager.getLogger(UserPreferences.class);
 
-    private ClientServerManager clientServerManager = null;
+    private ClientServerInterface clientServerManager = null;
 
     //the two broad types of preferences
     private static final String WARN = "WARN";                     //warning message
@@ -121,7 +121,7 @@ public class UserPreferences {
      *
      * @param clientServerManager cbit.vcell.client.server.ClientServerManager
      */
-    public UserPreferences(ClientServerManager clientServerManager){
+    public UserPreferences(ClientServerInterface clientServerManager){
         this.clientServerManager = clientServerManager;
         lastPref = null;
 

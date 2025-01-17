@@ -39,25 +39,15 @@ import java.net.URL;
  * Creation date: (5/12/2004 4:31:18 PM)
  * @author: Ion Moraru
  */
-public class ClientServerManager implements SessionManager,DataSetControllerProvider {
+public class ClientServerManager implements ClientServerInterface {
 	private final static Logger lg = LogManager.getLogger(ClientServerManager.class);
 	private final VCellConnectionFactory vcellConnectionFactory;
-
-	public interface InteractiveContext {
-		void showErrorDialog(String errorMessage);
-		
-		void showWarningDialog(String warningMessage);
-		
-		void clearConnectWarning();
-		
-		void showConnectWarning(String message);
-	}
 	
 	public interface InteractiveContextDefaultProvider {
-		InteractiveContext getInteractiveContext();
+		InteractiveClientServerContext getInteractiveContext();
 	}
 	
-	public static final String PROPERTY_NAME_CONNECTION_STATUS = "connectionStatus";
+	private static final String PROPERTY_NAME_CONNECTION_STATUS = "connectionStatus";
 	private class ClientConnectionStatus implements ConnectionStatus {
 		// actual status info
 		private String apihost = null;
@@ -230,7 +220,7 @@ public ClientServerManager(VCellConnectionFactory vcellConnectionFactory, Client
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)
  */
-private void changeConnection(InteractiveContext requester, VCellConnection newVCellConnection) {
+private void changeConnection(InteractiveClientServerContext requester, VCellConnection newVCellConnection) {
 	VCellThreadChecker.checkRemoteInvocation();
 
 	VCellConnection lastVCellConnection = getVcellConnection();
@@ -279,7 +269,7 @@ public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOExceptio
 	}
 }
 
-private void checkClientServerSoftwareVersion(InteractiveContext requester, ClientServerInfo clientServerInfo) {
+private void checkClientServerSoftwareVersion(InteractiveClientServerContext requester, ClientServerInfo clientServerInfo) {
 	String clientSoftwareVersion = System.getProperty(PropertyLoader.vcellSoftwareVersion);
 	if (clientSoftwareVersion != null &&  clientSoftwareVersion.toLowerCase().contains("devel") ) {
 		return;
@@ -310,7 +300,7 @@ private void checkClientServerSoftwareVersion(InteractiveContext requester, Clie
 }
 
 
-public void connectNewServer(InteractiveContext requester, ClientServerInfo csi) {
+public void connectNewServer(InteractiveClientServerContext requester, ClientServerInfo csi) {
 	clientServerInfo = csi;
 	connect(requester);
 }
@@ -319,7 +309,7 @@ public void connectNewServer(InteractiveContext requester, ClientServerInfo csi)
  * Insert the method's description here.
  * Creation date: (5/17/2004 6:26:14 PM)
  */
-public void connect(InteractiveContext requester) {
+public void connect(InteractiveClientServerContext requester) {
 	asynchMessageManager.stopPolling();
 	reconnectStat = ReconnectStatus.NOT;
 	checkClientServerSoftwareVersion(requester,clientServerInfo);
@@ -335,10 +325,10 @@ public void connect(InteractiveContext requester) {
 }
 
 /**
- * same as {@link #connect(InteractiveContext)} but pause {@link Reconnector}
+ * same as {@link #connect(InteractiveClientServerContext)} but pause {@link Reconnector}
  * @param requester
  */
-public void reconnect(InteractiveContext requester) {
+public void reconnect(InteractiveClientServerContext requester) {
 	Reconnector rc = getReconnector();
 	try {
 		rc.start();
@@ -354,7 +344,7 @@ public void reconnect(InteractiveContext requester) {
 	}
 }
 
-public void connectAs(InteractiveContext requester, String user) {
+public void connectAs(InteractiveClientServerContext requester, String user) {
 	reconnectStat = ReconnectStatus.NOT;
 	switch (getClientServerInfo().getServerType()) {
 		case SERVER_LOCAL: {
@@ -376,7 +366,7 @@ public void connectAs(InteractiveContext requester, String user) {
  * Insert the method's description here.
  * Creation date: (5/12/2004 4:48:13 PM)
  */
-private VCellConnection connectToServer(InteractiveContext requester,boolean bShowErrors) {
+private VCellConnection connectToServer(InteractiveClientServerContext requester, boolean bShowErrors) {
 	try {
 		// see static-files-config ConfigMap for definitions of dynamic properties as deployed
 		String url_path = PropertyLoader.getProperty(PropertyLoader.DYNAMIC_PROPERTIES_URL_PATH, "/vcell_dynamic_properties.csv");
@@ -730,7 +720,7 @@ void reconnect() {
 			break;
 		default:
 		}
-		InteractiveContext requester = defaultInteractiveContextProvider.getInteractiveContext();
+		InteractiveClientServerContext requester = defaultInteractiveContextProvider.getInteractiveContext();
 		VCellConnection connection = connectToServer(requester,false);
 		if (connection != null) { //success
 			changeConnection(requester,connection);
