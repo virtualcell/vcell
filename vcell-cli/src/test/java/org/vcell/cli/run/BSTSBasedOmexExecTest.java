@@ -43,13 +43,11 @@ public class BSTSBasedOmexExecTest {
 		PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
 		VCMongoMessage.enabled = false;
 
-		CLIPythonManager.getInstance().instantiatePythonProcess();
 		omexTestCases = OmexTestingDatabase.loadOmexTestCases();
 	}
 
 	@AfterAll
 	public static void teardown() throws Exception {
-		CLIPythonManager.getInstance().closePythonProcess();
 		VCellUtilityHub.shutdown();
 	}
 

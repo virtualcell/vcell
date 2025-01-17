@@ -46,7 +46,10 @@ public class CLIPythonManager {
     /**
      * Retrieve the Python Manager, or create and return if it doesn't exist.
      * @return the manager
+     * @deprecated CLIPythonManager is no longer used in CLI, and has no current use; should this be used again
+     * you need to check whether there are still bugs with Arm Macs, and whether single-instance python shells are not a viable alternative
      */
+    @Deprecated
     public static CLIPythonManager getInstance(){
         lg.trace("Getting Python instance");
         if (instance == null){
@@ -62,7 +65,9 @@ public class CLIPythonManager {
      * @param arguments the arguments to provide to the function call, each as their own string, in the correct order
      * @return the return response from Python
      * @throws PythonStreamException if there is any exception encountered in this exchange.
+     * @deprecated See getInstance()
      */
+    @Deprecated
     public String callPython(String functionName, String... arguments) throws PythonStreamException {
         String command = this.formatPythonFunctionCall(functionName, arguments);
         try {
@@ -82,7 +87,9 @@ public class CLIPythonManager {
      * @param cliCommand the command to run
      * @throws InterruptedException if the python process was interrupted
      * @throws IOException if there was a system IO failure
+     * @deprecated See getInstance()
      */
+    @Deprecated
     private static String callNonSharedPython(String cliCommand)
             throws InterruptedException, IOException, PythonStreamException {
         Path cliWorkingDir = Paths.get(PropertyLoader.getRequiredProperty(PropertyLoader.cliWorkingDir));
@@ -96,7 +103,9 @@ public class CLIPythonManager {
      * Shuts down the python session and cleans up.
      * 
      * @throws IOException if there is a system IO issue.
+     * @deprecated See getInstance()
      */
+    @Deprecated
     public void closePythonProcess() throws IOException {
         // Exit the living Python Process
         lg.debug("Closing Python Instance");
@@ -122,7 +131,9 @@ public class CLIPythonManager {
      * as means of installation verification.
      * 
      * @throws IOException if there is a problem with System I/O
+     * @deprecated this entire system is unstable on ARM Macs, and still a bit slow.
      */
+    @Deprecated
     public void instantiatePythonProcess() throws IOException, PythonStreamException {
         if (this.pythonProcess != null) return; // prevent override
         lg.info("Initializing Python...");
@@ -338,10 +349,26 @@ public class CLIPythonManager {
         return os;
     }
 
+    /**
+     * Checks whether python returned successfully or not
+     * @param returnedString
+     * @throws PythonStreamException
+     * @deprecated See getInstance()
+     */
+    @Deprecated
     public void parsePythonReturn(String returnedString) throws PythonStreamException {
        this.parsePythonReturn(returnedString, null, null);
     }
 
+    /**
+     * Checks whether python returned successfully or not
+     * @param returnedString
+     * @param outString
+     * @param errString
+     * @throws PythonStreamException
+     * @deprecated See getInstance()
+     */
+    @Deprecated
     public void parsePythonReturn(String returnedString, String outString, String errString) throws PythonStreamException {
         boolean DEBUG_NORMAL_OUTPUT = lg.isTraceEnabled(); // Consider getting rid of this, currently redundant
         String ERROR_PHRASE1 = "Traceback", ERROR_PHRASE2 = "File \"<stdin>\"";

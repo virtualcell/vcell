@@ -42,10 +42,10 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLIRecorder cliRecorder = null;
+        CLIRecorder cliRecorder;
         int returnCode;
         
-        if ((returnCode = this.noFurtherActionNeeded(bQuiet, bDebug, bVersion)) != -1)
+        if ((returnCode = BiosimulationsCommand.noFurtherActionNeeded(bQuiet, bDebug, bVersion)) != -1)
             return returnCode;
         
         try {
@@ -94,9 +94,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
             logger.info("Beginning execution");
             File tmpDir = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
             try {
-                CLIPythonManager.getInstance().instantiatePythonProcess();
                 ExecuteImpl.singleMode(ARCHIVE, tmpDir, cliRecorder, true);
-                CLIPythonManager.getInstance().closePythonProcess(); // Give the process time to finish
                 if (!Tracer.hasErrors()) return 0;
                 if (!bQuiet) {
                     logger.error("Errors occurred during execution");
@@ -104,11 +102,6 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 }
                 return 1;
             } finally {
-                try {
-                    CLIPythonManager.getInstance().closePythonProcess(); // WARNING: Python will need reinstantiation after this is called
-                } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
-                }
                 logger.debug("Finished all execution.");
                 FileUtils.copyDirectoryContents(tmpDir, OUT_DIR, true, null);
             }
@@ -121,7 +114,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
         }
     }
 
-    private int noFurtherActionNeeded(boolean bQuiet, boolean bDebug, boolean bVersion){
+    private static int noFurtherActionNeeded(boolean bQuiet, boolean bDebug, boolean bVersion){
         logger.debug("Validating CLI arguments");
         if (bVersion) {
             String version = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);

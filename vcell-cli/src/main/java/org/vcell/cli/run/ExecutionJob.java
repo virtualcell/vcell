@@ -26,8 +26,7 @@ public class ExecutionJob {
 
     private long startTime_ms, endTime_ms;
     private boolean bExactMatchOnly, bSmallMeshOverride, bKeepTempFiles;
-    private StringBuilder logOmexMessage;
-    private String inputFilePath;
+    private final StringBuilder logOmexMessage;
     private String bioModelBaseName;
     private String outputDir;
     private boolean anySedmlDocumentHasSucceeded = false;    // set to true if at least one sedml document run is successful
@@ -56,8 +55,7 @@ public class ExecutionJob {
         this();
         this.inputFile = inputFile;
         this.cliRecorder = cliRecorder;
-        
-        this.inputFilePath = inputFile.getAbsolutePath();
+
         this.bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // input file without the path
         String outputBaseDir = rootOutputDir.getAbsolutePath();
         this.outputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
@@ -67,7 +65,7 @@ public class ExecutionJob {
     }
 
     private ExecutionJob(){
-        this.logOmexMessage = new StringBuilder("");
+        this.logOmexMessage = new StringBuilder();
     }
 
     /**
@@ -77,29 +75,29 @@ public class ExecutionJob {
      * @throws PythonStreamException if calls to the python-shell instance are not working correctly
      * @throws IOException if there are system I/O issues.
      */
-    public void preprocessArchive() throws PythonStreamException, IOException {
+    public void preprocessArchive() throws IOException {
         // Start the clock
         this.startTime_ms = System.currentTimeMillis();
 
         // Beginning of Execution
         logger.info("Executing OMEX archive `{}`", this.inputFile.getName());
-        logger.info("Archive location: {}", this.inputFilePath);
+        logger.info("Archive location: {}", this.inputFile.getAbsolutePath());
         RunUtils.drawBreakLine("-", 100);
 
         // Unpack the Omex Archive
         try { // It's unlikely, but if we get errors here they're fatal.
             this.sedmlPath2d3d = Paths.get(this.outputDir, "temp");
-            this.omexHandler = new OmexHandler(this.inputFilePath, this.outputDir);
+            this.omexHandler = new OmexHandler(this.inputFile.getAbsolutePath(), this.outputDir);
             this.omexHandler.extractOmex();
             this.sedmlLocations = this.omexHandler.getSedmlLocationsAbsolute();
         } catch (IOException e){
-            String error = e.getMessage() + ", error for OmexHandler with " + this.inputFilePath;
+            String error = e.getMessage() + ", error for OmexHandler with " + this.inputFile.getAbsolutePath();
             this.cliRecorder.writeErrorList(e, this.bioModelBaseName);
             this.cliRecorder.writeDetailedResultList(this.bioModelBaseName + ", " + "IO error with OmexHandler");
             logger.error(error);
             throw new RuntimeException(error, e);
         } catch (Exception e) {
-            String error = e.getMessage() + ", error for archive " + this.inputFilePath;
+            String error = e.getMessage() + ", error for archive " + this.inputFile.getAbsolutePath();
             logger.error(error);
             if (this.omexHandler != null) this.omexHandler.deleteExtractedOmex();
             this.cliRecorder.writeErrorList(e, this.bioModelBaseName);

@@ -49,13 +49,10 @@ public class SpatialExecTest {
         config.updateLoggers();
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("io.jhdf").getName()).setLevel(Level.WARN);
         config.updateLoggers();
-
-        CLIPythonManager.getInstance().instantiatePythonProcess();
     }
 
     @AfterAll
     public static void teardown() throws Exception {
-        CLIPythonManager.getInstance().closePythonProcess();
         VCellUtilityHub.shutdown();
     }
 

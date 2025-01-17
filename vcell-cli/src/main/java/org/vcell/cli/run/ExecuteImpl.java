@@ -108,7 +108,8 @@ public class ExecuteImpl {
 
     private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bKeepTempFiles,
                                           boolean bExactMatchOnly, boolean bSmallMeshOverride)
-            throws IOException, ExecutionException, PythonStreamException, InterruptedException, BiosimulationsHdfWriterException {
+            throws IOException, ExecutionException, PythonStreamException, BiosimulationsHdfWriterException {
+
         String bioModelBaseName = inputFile.getName().substring(0, inputFile.getName().indexOf(".")); // ".omex"??
         Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
         final boolean bEncapsulateOutput = true;

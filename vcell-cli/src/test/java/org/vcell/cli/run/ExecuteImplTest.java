@@ -26,7 +26,6 @@ public class ExecuteImplTest {
         PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
         VCMongoMessage.enabled = false;
         try {
-            CLIPythonManager.getInstance().instantiatePythonProcess();
 
             InputStream omexInputStream = ExecuteImplTest.class.getResourceAsStream("/BioModel1.omex");
             File tempOutputDir = Files.createTempDirectory("ExecuteImplTest_temp").toFile();
@@ -46,7 +45,6 @@ public class ExecuteImplTest {
             tempOmexFile.delete();
 
         } finally {
-            CLIPythonManager.getInstance().closePythonProcess();
         }
     }
 }
