@@ -15,7 +15,7 @@ import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.Auth0ConnectionUtils;
+import org.vcell.api.utils.Auth0ConnectionUtils;
 import cbit.vcell.server.ConnectionException;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
@@ -44,13 +44,11 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 	public static final Logger lg = LogManager.getLogger(LocalVCellConnectionFactory.class);
 
 	private ConnectionFactory connectionFactory = null;
-	private final Auth0ConnectionUtils auth0ConnectionUtils;
 	private final VCellApiClient vcellApiClient;
 
 	public LocalVCellConnectionFactory() {
         try {
             this.vcellApiClient = new VCellApiClient("vcell-dev.cam.uchc.edu", 443, "/api/v0");
-			this.auth0ConnectionUtils = new Auth0ConnectionUtils(vcellApiClient);
 		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
             throw new RuntimeException(e);
         }
@@ -84,10 +82,5 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 			throw new RuntimeException(apiException);
 		}
     }
-
-	@Override
-	public Auth0ConnectionUtils getAuth0ConnectionUtils() {
-		return auth0ConnectionUtils;
-	}
 
 }

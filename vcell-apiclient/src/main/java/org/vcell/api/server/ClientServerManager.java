@@ -8,9 +8,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.server;
+package org.vcell.api.server;
 
 import cbit.rmi.event.MessageEvent;
+import cbit.vcell.client.server.*;
 import cbit.vcell.client.server.ClientServerInfo.ServerType;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
@@ -25,6 +26,7 @@ import cbit.vcell.server.*;
 import cbit.vcell.simdata.VCDataManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.utils.Auth0ConnectionUtils;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.*;
 import org.vcell.util.document.User;
@@ -213,7 +215,10 @@ public ClientServerManager(VCellConnectionFactory vcellConnectionFactory, Client
 }
 
 	public Auth0ConnectionUtils getAuth0ConnectionUtils() {
-		return vcellConnectionFactory.getAuth0ConnectionUtils();
+		if (!(vcellConnectionFactory instanceof RemoteProxyVCellConnectionFactory)){
+			throw new RuntimeException("Expected RemoteProxyVCellConnectionFactory");
+		}
+		return ((RemoteProxyVCellConnectionFactory)vcellConnectionFactory).getAuth0ConnectionUtils();
 	}
 
 /**
@@ -385,7 +390,8 @@ private VCellConnection connectToServer(InteractiveClientServerContext requester
 		try {
 			String apihost = getClientServerInfo().getApihost();
 			Integer apiport = getClientServerInfo().getApiport();
-			Auth0ConnectionUtils auth0ConnectionUtils = vcellConnectionFactory.getAuth0ConnectionUtils();
+
+			Auth0ConnectionUtils auth0ConnectionUtils = getAuth0ConnectionUtils();
 			String username = User.isGuest(getClientServerInfo().getUsername()) ? getClientServerInfo().getUsername() : auth0ConnectionUtils.getAuth0MappedUser();
 			setConnectionStatus(new ClientConnectionStatus(username, apihost, apiport, ConnectionStatus.INITIALIZING));
 			newVCellConnection = vcellConnectionFactory.createVCellConnection(getClientServerInfo().getUserLoginInfo());
@@ -480,7 +486,7 @@ public ClientServerInfo getClientServerInfo() {
 
 
 /**
- * Gets the connectionStatus property (cbit.vcell.client.server.ConnectionStatus) value.
+ * Gets the connectionStatus property (org.vcell.api.server.ConnectionStatus) value.
  * @return The connectionStatus property value.
  * @see #setConnectionStatus
  */
@@ -762,7 +768,7 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
 
 
 /**
- * Sets the connectionStatus property (cbit.vcell.client.server.ConnectionStatus) value.
+ * Sets the connectionStatus property (org.vcell.api.server.ConnectionStatus) value.
  * @param connectionStatus The new value for the property.
  * @see #getConnectionStatus
  */

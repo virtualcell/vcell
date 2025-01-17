@@ -10,12 +10,8 @@
 
 package cbit.vcell.server;
 
-import org.vcell.util.AuthenticationException;
 import org.vcell.util.document.UserLoginInfo;
-
-import java.io.IOException;
 
 public interface VCellConnectionFactory {
     VCellConnection createVCellConnection(UserLoginInfo userLoginInfo) throws ConnectionException;
-    Auth0ConnectionUtils getAuth0ConnectionUtils();
 }
