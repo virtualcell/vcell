@@ -48,7 +48,7 @@ import edu.uchc.connjur.wb.ExecutionTrace;
  * {@link AsynchMessageManager} also listens to {@link ClientJobManager} if user stops the simulation, then it will notify TopLevelWindowManager
  * to update the status.
  */
-public class AsynchMessageManager implements SimStatusListener, DataAccessException.Listener,DataJobListenerHolder {
+public class AsynchMessageManager implements AsyncMessageManagerInterface {
     private static final long BASE_POLL_SECONDS = 3;
     private static final long ATTEMPT_POLL_SECONDS = 3;
 	private static Logger lg = LogManager.getLogger(AsynchMessageManager.class);

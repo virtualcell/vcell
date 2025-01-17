@@ -10,6 +10,7 @@
 
 package cbit.vcell.server;
 
+import cbit.vcell.client.server.AsyncMessageManagerInterface;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
@@ -43,5 +44,5 @@ UserMetaDbServer getUserMetaDbServer() throws DataAccessException;
 SimulationController getSimulationController() throws DataAccessException;
 
 
-AsynchMessageManager getAsynchMessageManager();
+AsyncMessageManagerInterface getAsynchMessageManager();
 }
