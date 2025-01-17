@@ -13,6 +13,7 @@ package cbit.vcell.client;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.ClientServerInfo;
+import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ClientServerManager;
 import org.vcell.api.server.ClientServerManager.InteractiveContextDefaultProvider;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -34,7 +35,7 @@ import java.util.Hashtable;
  * @author: Ion Moraru
  */
 public class VCellClient {
-	private final VCellConnectionFactory vcellConnectionFactory; // injected in constructor
+	private final RemoteProxyVCellConnectionFactory vcellConnectionFactory; // injected in constructor
 
 	private ClientServerManager clientServerManager = null;
 	private StatusUpdater statusUpdater = null;
@@ -91,7 +92,10 @@ public class VCellClient {
 
 @Inject
 public VCellClient(VCellConnectionFactory vcellConnectionFactory) {
-	this.vcellConnectionFactory = vcellConnectionFactory;
+	if (!(vcellConnectionFactory instanceof RemoteProxyVCellConnectionFactory)){
+		throw new IllegalStateException("VCellConnectionFactory must be an instance of RemoteProxyVCellConnectionFactory");
+	}
+	this.vcellConnectionFactory = (RemoteProxyVCellConnectionFactory) vcellConnectionFactory;
 }
 
 

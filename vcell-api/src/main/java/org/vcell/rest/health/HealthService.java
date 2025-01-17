@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.common.events.EventWrapper;
 import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
+import org.vcell.api.utils.DTOOldAPI;
 import org.vcell.rest.events.RestEventService;
 import org.vcell.rest.server.RestDatabaseService;
 import org.vcell.util.BigString;
@@ -229,7 +230,7 @@ public class HealthService {
 							if (eventWrapper.eventType == EventWrapper.EventType.SimJob) {
 								SimulationJobStatusEventRepresentation simJobStatusEventRep =
 										gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);
-								SimulationJobStatusEvent jobEvent = SimulationJobStatusEvent.fromJsonRep(this, simJobStatusEventRep);
+								SimulationJobStatusEvent jobEvent = DTOOldAPI.simulationJobStatusEventFromJsonRep(this, simJobStatusEventRep);
 								SimulationJobStatus jobStatus = jobEvent.getJobStatus();
 								VCSimulationIdentifier eventSimId = jobStatus.getVCSimulationIdentifier();
 								if (eventSimId.getOwner().equals(userLoginInfo.getUser()) && eventSimId.getSimulationKey().equals(sim.getKey())) {

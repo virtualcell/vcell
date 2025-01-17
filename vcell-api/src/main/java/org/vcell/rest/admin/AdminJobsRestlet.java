@@ -13,6 +13,7 @@ import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.restlet.ext.json.JsonRepresentation;
 import org.vcell.api.common.SimpleJobStatusRepresentation;
+import org.vcell.api.utils.DTOOldAPI;
 import org.vcell.rest.VCellApiApplication;
 
 import com.google.gson.Gson;
@@ -104,7 +105,7 @@ public final class AdminJobsRestlet extends Restlet {
 				SimulationJobStatus[] jobStatusArray = adminService.query(querySpec);
 				SimpleJobStatusRepresentation[] reps = new SimpleJobStatusRepresentation[jobStatusArray.length];
 				for (int i=0;i<jobStatusArray.length;i++) {
-					reps[i] = jobStatusArray[i].toRep();
+					reps[i] = DTOOldAPI.fromSimpleJobStatus(jobStatusArray[i]);
 				}
 				String jobStatusArrayJson = gson.toJson(reps);
 				response.setStatus(Status.SUCCESS_OK);
