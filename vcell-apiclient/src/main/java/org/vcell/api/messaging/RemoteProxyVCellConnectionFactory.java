@@ -8,13 +8,13 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap.client;
+package org.vcell.api.messaging;
 
 import cbit.rmi.event.*;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
+import cbit.vcell.message.server.bootstrap.client.RpcSender;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.Auth0ConnectionUtils;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.gson.Gson;
@@ -26,6 +26,9 @@ import org.vcell.DependencyConstants;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.api.client.VCellApiRpcRequest;
+import org.vcell.api.common.events.*;
+import org.vcell.api.utils.Auth0ConnectionUtils;
+import org.vcell.api.utils.DTOOldAPI;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.util.document.KeyValue;
@@ -129,21 +132,21 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 					break;
 				}
 				case SimJob:{
-					SimulationJobStatusEventRepresentation simJobStatusEventRep = 
+					SimulationJobStatusEventRepresentation simJobStatusEventRep =
 							gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);
-					SimulationJobStatusEvent simJobStatusEvent = SimulationJobStatusEvent.fromJsonRep(this, simJobStatusEventRep);
+					SimulationJobStatusEvent simJobStatusEvent = DTOOldAPI.simulationJobStatusEventFromJsonRep(this, simJobStatusEventRep);
 					messageEvents.add(simJobStatusEvent);
 					break;
 				}
 				case ExportEvent:{
 					ExportEventRepresentation exportEventRep = gson.fromJson(eventWrapper.eventJSON, ExportEventRepresentation.class);
-					ExportEvent exportEvent = ExportEvent.fromJsonRep(this, exportEventRep);
+					ExportEvent exportEvent = DTOOldAPI.exportEventFromJsonRep(this, exportEventRep);
 					messageEvents.add(exportEvent);
 					break;
 				}
 				case DataJob:{
 					DataJobEventRepresentation dataJobEventRep = gson.fromJson(eventWrapper.eventJSON, DataJobEventRepresentation.class);
-					DataJobEvent dataJobEvent = DataJobEvent.fromJsonRep(this, dataJobEventRep);
+					DataJobEvent dataJobEvent = DTOOldAPI.dataJobEventFromJsonRep(this, dataJobEventRep);
 					messageEvents.add(dataJobEvent);
 					break;
 				}
@@ -201,7 +204,6 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 //		return null;
 	}
 
-	@Override
 	public Auth0ConnectionUtils getAuth0ConnectionUtils() {
 		return auth0ConnectionUtils;
 	}

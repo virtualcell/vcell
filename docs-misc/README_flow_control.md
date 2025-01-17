@@ -5,10 +5,10 @@ Client-Side
 -cbit.vcell.client.VCellClientMain  
 --cbit.vcell.client.VCellClient  
 ---org.vcell.api.server.ClientServerManager  
-----cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory  
+----org.vcell.api.messaging.RemoteProxyVCellConnectionFactory  
 -----cbit.vcell.server.VCellConnection (Connection to outside for all of VCell)  
-------cbit.vcell.message.server.bootstrap.client.LocalVCellConnectionMessaging (Presents restful VCellApiClient services)  
--------cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyRpcSender (manages VCellApiClient)  
+------org.vcell.api.messaging.LocalVCellConnectionMessaging (Presents restful VCellApiClient services)  
+-------org.vcell.api.messaging.RemoteProxyVCellConnectionFactory.RemoteProxyRpcSender (manages VCellApiClient)  
 --------org.vcell.api.client.VCellApiClient (.authenticate(...), and all VCell client calls (with AccessTokenRepresentation) leave host from here)  
 Server-side
 vcell-api container 
@@ -19,10 +19,10 @@ vcell-api container
 #Populate Client Database metadata
 Client-Side  
 ...  
--cbit.vcell.message.server.bootstrap.client.LocalVCellConnectionMessaging.getUserMetaDbServer()  
---cbit.vcell.message.server.bootstrap.client.LocalUserMetaDbServerMessaging.getVCInfoContainer()  
+-org.vcell.api.messaging.LocalVCellConnectionMessaging.getUserMetaDbServer()  
+--org.vcell.api.messaging.LocalUserMetaDbServerMessaging.getVCInfoContainer()  
 ---cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy.getVCInfoContainer()  
-----cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyRpcSender.sendRpcMessage(...)  
+----org.vcell.api.messaging.RemoteProxyVCellConnectionFactory.RemoteProxyRpcSender.sendRpcMessage(...)  
 -----org.vcell.api.client.VCellApiClient.sendRpcMessage(...)  (blocking call, waits for http response)
 Server-Side  
 vcell-api container  
@@ -68,7 +68,7 @@ Client-side
 -AsynchMessageManager.poll() (feeds a single AnychMessageManager, client code add listeners to get events)  
 --ClientServerManager.getmessageEvents()  
 ---LocalVCellConnectionMessaging.getMessageEvents()  
-----cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyRpcSender (manages VCellApiClient)  
+----org.vcell.api.messaging.RemoteProxyVCellConnectionFactory.RemoteProxyRpcSender (manages VCellApiClient)  
 -----org.vcell.api.client.VCellApiClient.getEvents() (uses https://host:port/events?beginTimestamp=xxx)  
 Server-side  
 vcell-api container

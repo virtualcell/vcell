@@ -8,31 +8,14 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.message.server.bootstrap.client;
-
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.api.client.VCellApiClient;
-import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VersionInfo;
+package org.vcell.api.messaging;
 
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy;
+import cbit.vcell.message.server.bootstrap.client.RpcSender;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
@@ -41,6 +24,19 @@ import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.api.client.VCellApiClient;
+import org.vcell.restclient.model.FieldDataReference;
+import org.vcell.restclient.utils.DtoModelTransforms;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.*;
+
+import java.rmi.RemoteException;
+import java.util.List;
+import java.util.TreeMap;
 
 
 /**
@@ -132,7 +128,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 			throw new RuntimeException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
 		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS) {
 			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllFieldDataIDs();
-			return FieldDataDBOperationResults.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
+			return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
 		} else{
 			return dbServerProxy.fieldDataDBOperation(fieldDataDBOperationSpec);
 		}
