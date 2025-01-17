@@ -21,7 +21,7 @@ import cbit.vcell.client.desktop.geometry.GeometryDisplayPanel;
 import cbit.vcell.client.desktop.geometry.GeometryEditor;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;

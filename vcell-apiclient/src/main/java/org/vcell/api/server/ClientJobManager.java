@@ -8,9 +8,12 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.server;
+package org.vcell.api.server;
 import javax.swing.event.EventListenerList;
 
+import cbit.vcell.client.server.JobManager;
+import cbit.vcell.client.server.SimStatusEvent;
+import cbit.vcell.client.server.SimStatusListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
@@ -35,7 +38,7 @@ public class ClientJobManager implements JobManager {
 /**
  * Insert the method's description here.
  * Creation date: (6/1/2004 11:12:34 PM)
- * @param csm cbit.vcell.client.server.ClientServerManager
+ * @param csm org.vcell.api.server.ClientServerManager
  */
 public ClientJobManager(ClientServerManager csm) {
 	clientServerManager = csm;
@@ -80,7 +83,7 @@ private void fireSimStatusEvent(SimStatusEvent event, SimStatusListener listener
 /**
  * Insert the method's description here.
  * Creation date: (6/2/2004 1:58:19 AM)
- * @return cbit.vcell.client.server.ClientServerManager
+ * @return org.vcell.api.server.ClientServerManager
  */
 private ClientServerManager getClientServerManager() {
 	return clientServerManager;

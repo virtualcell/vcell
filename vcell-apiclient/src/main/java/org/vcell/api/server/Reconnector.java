@@ -1,4 +1,4 @@
-package cbit.vcell.client.server;
+package org.vcell.api.server;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.SwingUtilities;
 
+import cbit.vcell.client.server.ReconnectListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -18,7 +18,7 @@ import org.vcell.client.logicalwindow.LWTopFrame;
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.desktop.TopLevelWindow;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 
 public class FieldDataWindow extends LWTopFrame implements TopLevelWindow {
 	private FieldDataWindowManager fieldDataWindowManger;
@@ -174,9 +174,9 @@ public void setWorkArea(java.awt.Component c) {
 /**
  * Insert the method's description here.
  * Creation date: (3/20/2007 6:15:14 AM)
- * @param connectionStatus cbit.vcell.client.server.ConnectionStatus
+ * @param connectionStatus org.vcell.api.server.ConnectionStatus
  */
-public void updateConnectionStatus(cbit.vcell.client.server.ConnectionStatus connectionStatus) {
+public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 	updateConnectionStatus_private(connectionStatus.getStatus());
 }
 

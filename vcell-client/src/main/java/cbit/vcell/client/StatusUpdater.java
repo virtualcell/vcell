@@ -9,7 +9,7 @@
  */
 
 package cbit.vcell.client;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 /**
  * Insert the type's description here.
  * Creation date: (5/10/2004 1:13:41 PM)

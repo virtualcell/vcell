@@ -119,7 +119,7 @@ public class UserPreferences {
      * Insert the method's description here.
      * Creation date: (6/12/2004 9:08:03 PM)
      *
-     * @param clientServerManager cbit.vcell.client.server.ClientServerManager
+     * @param clientServerManager org.vcell.api.server.ClientServerManager
      */
     public UserPreferences(ClientServerInterface clientServerManager){
         this.clientServerManager = clientServerManager;
@@ -222,7 +222,7 @@ public class UserPreferences {
     }
 
 
-    protected void resetFromSaved(Preference[] savedPreferences){
+    public void resetFromSaved(Preference[] savedPreferences){
         /* look in getUserChoices() for keys and values strings encoding of the preferences */
         // reset to defaults
         warningHash.clear();

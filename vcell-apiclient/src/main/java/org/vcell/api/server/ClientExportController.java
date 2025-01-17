@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.server;
+package org.vcell.api.server;
 import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.ExportEvent;
@@ -27,7 +27,7 @@ public class ClientExportController implements ExportController {
 /**
  * Insert the method's description here.
  * Creation date: (6/15/2004 2:18:14 AM)
- * @param csm cbit.vcell.client.server.ClientServerManager
+ * @param csm org.vcell.api.server.ClientServerManager
  */
 public ClientExportController(ClientServerManager csm) {
 	clientServerManager = csm;
@@ -37,7 +37,7 @@ public ClientExportController(ClientServerManager csm) {
 /**
  * Insert the method's description here.
  * Creation date: (6/15/2004 2:23:57 AM)
- * @return cbit.vcell.client.server.ClientServerManager
+ * @return org.vcell.api.server.ClientServerManager
  */
 private ClientServerManager getClientServerManager() {
 	return clientServerManager;
@@ -57,7 +57,7 @@ public cbit.vcell.server.ExportJobStatus getExportJobStatus(ExportSpecs exportSp
 /**
  * Insert the method's description here.
  * Creation date: (6/15/2004 2:23:57 AM)
- * @param newClientServerManager cbit.vcell.client.server.ClientServerManager
+ * @param newClientServerManager org.vcell.api.server.ClientServerManager
  */
 public void setClientServerManager(ClientServerManager newClientServerManager) {
 	clientServerManager = newClientServerManager;

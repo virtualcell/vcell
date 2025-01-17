@@ -40,7 +40,7 @@ import cbit.vcell.client.RequestManagerAdapter;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.desktop.TopLevelWindow;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.export.server.ExportSpecs;

@@ -60,7 +60,7 @@ import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.TopLevelWindow;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.microscopy.FRAPSingleWorkspace;

@@ -4,7 +4,7 @@
 Client-Side  
 -cbit.vcell.client.VCellClientMain  
 --cbit.vcell.client.VCellClient  
----cbit.vcell.client.server.ClientServerManager  
+---org.vcell.api.server.ClientServerManager  
 ----cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory  
 -----cbit.vcell.server.VCellConnection (Connection to outside for all of VCell)  
 ------cbit.vcell.message.server.bootstrap.client.LocalVCellConnectionMessaging (Presents restful VCellApiClient services)  

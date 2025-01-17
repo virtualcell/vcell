@@ -1,4 +1,4 @@
-package cbit.vcell.server;
+package org.vcell.api.utils;
 
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;

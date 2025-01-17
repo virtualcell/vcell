@@ -15,6 +15,7 @@ package cbit.vcell.client.desktop;
  * Creation date: (7/15/2004 12:00:01 PM)
  * @author: Anuradha Lakshminarayana
  */
+import org.vcell.api.server.ConnectionStatus;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.UserCancelException;
 
@@ -338,9 +339,9 @@ public void setWorkArea(java.awt.Component c) {
 /**
  * Insert the method's description here.
  * Creation date: (7/15/2004 12:00:01 PM)
- * @param connectionStatus cbit.vcell.client.server.ConnectionStatus
+ * @param connectionStatus org.vcell.api.server.ConnectionStatus
  */
-public void updateConnectionStatus(cbit.vcell.client.server.ConnectionStatus connectionStatus) {}
+public void updateConnectionStatus(ConnectionStatus connectionStatus) {}
 /**
  * Insert the method's description here.
  * Creation date: (7/15/2004 12:00:01 PM)

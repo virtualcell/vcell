@@ -13,7 +13,7 @@ import org.vcell.client.logicalwindow.LWContainerHandle;
 
 import cbit.vcell.client.ChildWindowManager;
 import cbit.vcell.client.TopLevelWindowManager;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 3:37:07 PM)
@@ -31,7 +31,7 @@ TopLevelWindowManager getTopLevelWindowManager();
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 6:04:35 PM)
- * @param connectionStatus cbit.vcell.client.server.ConnectionStatus
+ * @param connectionStatus org.vcell.api.server.ConnectionStatus
  */
 void updateConnectionStatus(ConnectionStatus connectionStatus);
 

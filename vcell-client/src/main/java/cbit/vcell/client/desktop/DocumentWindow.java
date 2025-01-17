@@ -29,6 +29,8 @@ import com.google.inject.ConfigurationException;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import org.vcell.DependencyConstants;
+import org.vcell.api.server.ConnectionStatus;
+import org.vcell.api.server.Reconnector;
 import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.documentation.VcellHelpViewer;
 import org.vcell.util.UtilCancelException;

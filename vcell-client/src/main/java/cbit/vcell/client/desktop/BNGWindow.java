@@ -14,6 +14,7 @@ import java.awt.BorderLayout;
 
 import javax.swing.JMenuBar;
 
+import org.vcell.api.server.ConnectionStatus;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.client.logicalwindow.LWTopFrame;
 
@@ -149,9 +150,9 @@ public void setWorkArea(java.awt.Component c) {
 /**
  * Insert the method's description here.
  * Creation date: (7/18/2006 1:52:57 PM)
- * @param connectionStatus cbit.vcell.client.server.ConnectionStatus
+ * @param connectionStatus org.vcell.api.server.ConnectionStatus
  */
-public void updateConnectionStatus(cbit.vcell.client.server.ConnectionStatus connectionStatus) {}
+public void updateConnectionStatus(ConnectionStatus connectionStatus) {}
 
 
 /**

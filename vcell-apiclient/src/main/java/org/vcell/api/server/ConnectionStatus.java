@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.vcell.client.server;
+package org.vcell.api.server;
 public interface ConnectionStatus {
 	// remote server status possibilitites
 	public static final int NOT_CONNECTED = 0;

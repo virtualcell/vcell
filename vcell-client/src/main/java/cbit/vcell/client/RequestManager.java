@@ -16,16 +16,15 @@ import javax.swing.filechooser.FileFilter;
 
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.*;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.importer.PathwayImportPanel.PathwayImportOption;
 
 import cbit.vcell.client.TopLevelWindowManager.OpenModelInfoHolder;
 import cbit.vcell.client.data.DataViewerController;
 import cbit.vcell.client.data.MergedDatasetViewerController;
-import cbit.vcell.client.server.AsynchMessageManager;
+import org.vcell.api.server.AsynchMessageManager;
 import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.clientdb.DocumentManager;

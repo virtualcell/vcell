@@ -49,7 +49,7 @@ import cbit.rmi.event.ExportListener;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.DocumentWindowManager.GeometrySelectionInfo;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;

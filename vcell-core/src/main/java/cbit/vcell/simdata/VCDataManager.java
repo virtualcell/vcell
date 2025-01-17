@@ -62,7 +62,7 @@ public synchronized FieldDataFileOperationResults fieldDataFileOperation(FieldDa
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 5:56:57 AM)
- * @return cbit.vcell.client.server.ClientServerManager
+ * @return org.vcell.api.server.ClientServerManager
  */
 private DataSetControllerProvider getDataSetControllerProvider() {
 	return dataSetControllerProvider;
