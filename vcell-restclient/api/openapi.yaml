@@ -46,10 +46,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -77,10 +77,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -108,10 +108,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -149,10 +149,10 @@ paths:
               schema:
                 type: string
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -365,7 +365,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
-      summary: Create publication
+      summary: Update publication
       tags:
       - Publication Resource
       x-content-type: application/json
@@ -421,10 +421,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -489,10 +489,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -511,10 +511,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
           description: "Successful, returning the identity"
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -549,10 +549,10 @@ paths:
           description: "Successful, returning the identity"
         "409":
           description: "VCell Identity not mapped, userid already exists"
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -604,10 +604,10 @@ paths:
           description: magic link sent in email if appropriate
         "400":
           description: unable to process request
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user
@@ -633,10 +633,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "401":
-          description: Not Authorized
         "403":
           description: Not Allowed
+        "401":
+          description: Not Authorized
       security:
       - openId:
         - user

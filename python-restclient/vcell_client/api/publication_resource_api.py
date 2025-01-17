@@ -1086,7 +1086,7 @@ class PublicationResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> Publication:
-        """Create publication
+        """Update publication
 
 
         :param publication:
@@ -1153,7 +1153,7 @@ class PublicationResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[Publication]:
-        """Create publication
+        """Update publication
 
 
         :param publication:
@@ -1220,7 +1220,7 @@ class PublicationResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Create publication
+        """Update publication
 
 
         :param publication:

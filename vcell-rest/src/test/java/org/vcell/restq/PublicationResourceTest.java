@@ -174,7 +174,7 @@ public class PublicationResourceTest {
                 .when()
                 .delete("/api/v1/publications/{id}")
                 .then()
-                .statusCode(403);
+                .statusCode(401);
 
         // remove publication1 as pubuser (does have permission)
         given().auth().oauth2(keycloakClient.getAccessToken(pubuser))

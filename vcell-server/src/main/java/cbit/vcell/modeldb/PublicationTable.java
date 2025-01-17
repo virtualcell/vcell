@@ -161,13 +161,7 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 	return sql;
 }
 
-public void setPreparedStatement_PublicationReps(PreparedStatement stmt, User user) throws SQLException{
-	if (user == null) {
-		throw new IllegalArgumentException("Improper parameters for getBioModelRepsSQL");
-	}
-}
-
-public PublicationRep getPublicationRep(User user, ResultSet rset, DatabaseSyntax dbSyntax) throws IllegalArgumentException, SQLException,DataAccessException {
+public PublicationRep getPublicationRep(ResultSet rset, DatabaseSyntax dbSyntax) throws IllegalArgumentException, SQLException,DataAccessException {
 	
 	KeyValue pubKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
 	String title = rset.getString(table.title.toString());

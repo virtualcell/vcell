@@ -63,14 +63,6 @@ public class UsersResourceApiTest {
      * @throws ApiException
      *          if the Api call fails
      */
-    @Test
-    public void getGuestLegacyApiTokenTest() throws ApiException {
-        AccesTokenRepresentationRecord response = 
-        api.getGuestLegacyApiToken();
-        
-        // TODO: test validations
-    }
-    
     /**
      * Get token for legacy API
      *

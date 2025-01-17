@@ -8,7 +8,7 @@ Method | HTTP request | Description
 [**delete_publication**](PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
 [**get_publication_by_id**](PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
 [**get_publications**](PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
-[**update_publication**](PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
+[**update_publication**](PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Update publication
 
 
 # **create_publication**
@@ -267,7 +267,7 @@ No authorization required
 # **update_publication**
 > Publication update_publication(publication=publication)
 
-Create publication
+Update publication
 
 ### Example
 
@@ -293,7 +293,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     publication = vcell_client.Publication() # Publication |  (optional)
 
     try:
-        # Create publication
+        # Update publication
         api_response = api_instance.update_publication(publication=publication)
         print("The response of PublicationResourceApi->update_publication:\n")
         pprint(api_response)

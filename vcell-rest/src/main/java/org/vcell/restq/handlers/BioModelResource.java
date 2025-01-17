@@ -45,7 +45,7 @@ public class BioModelResource {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public BioModel getBioModelInfo(@PathParam("bioModelID") String bioModelID) throws SQLException, DataAccessException, ExpressionException {
-        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
+        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
         if (vcellUser == null) {
             vcellUser = Main.DUMMY_USER;
         }
@@ -105,10 +105,7 @@ public class BioModelResource {
     @Produces(MediaType.TEXT_PLAIN)
     @RolesAllowed("user")
     public String uploadBioModel(String bioModelXML) throws DataAccessException, XmlParseException {
-        User user = userRestDB.getUserFromIdentity(securityIdentity);
-        if (user == null) {
-            throw new WebApplicationException("User not authenticated", 401);
-        }
+        User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
         KeyValue keyValue = bioModelRestDB.saveBioModel(user, bioModelXML);
         return keyValue.toString();
     }
@@ -117,10 +114,7 @@ public class BioModelResource {
     @Path("{bioModelID}")
     @Operation(operationId = "deleteBioModel", summary = "Delete the BioModel from VCell's database.")
     public void deleteBioModel(@PathParam("bioModelID") String bioModelID) throws DataAccessException {
-        User user = userRestDB.getUserFromIdentity(securityIdentity);;
-        if (user == null) {
-            throw new WebApplicationException("User not authenticated", 401);
-        }
+        User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);;
         bioModelRestDB.deleteBioModel(user, new KeyValue(bioModelID));
     }
 }

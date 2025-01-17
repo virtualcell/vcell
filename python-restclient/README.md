@@ -99,7 +99,7 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
-*PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Update publication
 *SimulationResourceApi* | [**get_simulation_status**](docs/SimulationResourceApi.md#get_simulation_status) | **GET** /api/v1/Simulation/{simID}/simulationStatus | Get the status of simulation running
 *SimulationResourceApi* | [**start_simulation**](docs/SimulationResourceApi.md#start_simulation) | **POST** /api/v1/Simulation/{simID}/startSimulation | Start a simulation.
 *SimulationResourceApi* | [**stop_simulation**](docs/SimulationResourceApi.md#stop_simulation) | **POST** /api/v1/Simulation/{simID}/stopSimulation | Stop a simulation.

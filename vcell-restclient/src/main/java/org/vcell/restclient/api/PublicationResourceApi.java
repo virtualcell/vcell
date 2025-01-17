@@ -373,7 +373,7 @@ public class PublicationResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Create publication
+   * Update publication
    * 
    * @param publication  (optional)
    * @return Publication
@@ -385,7 +385,7 @@ public class PublicationResourceApi {
   }
 
   /**
-   * Create publication
+   * Update publication
    * 
    * @param publication  (optional)
    * @return ApiResponse&lt;Publication&gt;
