@@ -29,7 +29,6 @@ import cbit.rmi.event.PerformanceMonitorEvent;
 import cbit.rmi.event.SimpleMessageCollector;
 import cbit.rmi.event.SimpleMessageService;
 import cbit.vcell.export.server.ExportServiceImpl;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
 import cbit.vcell.modeldb.LocalUserMetaDbServer;
 import cbit.vcell.resource.ErrorUtils;

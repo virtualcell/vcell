@@ -9,11 +9,11 @@
  */
 
 package org.vcell.api.server;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.ExportController;
 import cbit.vcell.simdata.OutputContext;
 /**

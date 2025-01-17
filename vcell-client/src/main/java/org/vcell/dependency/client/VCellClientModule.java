@@ -1,6 +1,6 @@
 package org.vcell.dependency.client;
 
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
+import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.simdata.ExternalDataIdentifierService;
 import com.google.inject.AbstractModule;

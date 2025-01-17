@@ -5,7 +5,6 @@ import cbit.vcell.message.VCMessagingService;
 import cbit.vcell.message.jms.activeMQ.VCMessagingServiceActiveMQ;
 import cbit.vcell.message.server.bootstrap.LocalVCellConnectionFactory;
 import cbit.vcell.message.server.bootstrap.LocalVCellConnectionServiceImpl;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.server.LocalVCellConnectionService;
 import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.simdata.ExternalDataIdentifierService;

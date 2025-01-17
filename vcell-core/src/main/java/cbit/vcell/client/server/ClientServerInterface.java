@@ -4,7 +4,7 @@ import cbit.rmi.event.MessageEvent;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.server.ExportController;
 import cbit.vcell.server.SessionManager;
@@ -19,7 +19,7 @@ public interface ClientServerInterface extends SessionManager, DataSetController
     void addPropertyChangeListener(java.beans.PropertyChangeListener listener);
 
     public void cleanup();
-    public MessageEvent[] getMessageEvents() throws RemoteProxyVCellConnectionFactory.RemoteProxyException, IOException;
+    public MessageEvent[] getMessageEvents() throws RemoteProxyException, IOException;
 
     public void connectNewServer(InteractiveClientServerContext requester, ClientServerInfo csi);
     public void connect(InteractiveClientServerContext requester);

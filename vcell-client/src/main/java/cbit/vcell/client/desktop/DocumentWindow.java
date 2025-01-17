@@ -29,6 +29,7 @@ import com.google.inject.ConfigurationException;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import org.vcell.DependencyConstants;
+import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ConnectionStatus;
 import org.vcell.api.server.Reconnector;
 import org.vcell.client.logicalwindow.LWTopFrame;
@@ -1477,6 +1478,10 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         Hashtable<String, Object> hash = new Hashtable();
         VCellConnectionFactory vcellConnectionFactory = VCellClientMain.injector.getInstance(VCellConnectionFactory.class);
 
+        if (!(vcellConnectionFactory instanceof RemoteProxyVCellConnectionFactory)){
+            throw new IllegalStateException("VCellConnectionFactory is not a RemoteProxyVCellConnectionFactory");
+        }
+
         String host = VCellClientMain.injector.getInstance(Key.get(String.class, Names.named(DependencyConstants.VCELL_API_HOST)));
         String port;
         String pathPrefix;
@@ -1494,8 +1499,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         ClientLogin.LoginOptions loginType = asGuest ?
                 ClientLogin.LoginOptions.GUEST_LOGIN : ClientLogin.LoginOptions.STANDARD_LOGIN;
         AsynchClientTask task1a = ClientLogin.popupLogin(loginType);
-        AsynchClientTask task1b = ClientLogin.loginWithAuth0(vcellConnectionFactory.getAuth0ConnectionUtils());
-        AsynchClientTask task2 = ClientLogin.connectToServer(vcellConnectionFactory.getAuth0ConnectionUtils(),
+        AsynchClientTask task1b = ClientLogin.loginWithAuth0(((RemoteProxyVCellConnectionFactory)vcellConnectionFactory).getAuth0ConnectionUtils());
+        AsynchClientTask task2 = ClientLogin.connectToServer(((RemoteProxyVCellConnectionFactory)vcellConnectionFactory).getAuth0ConnectionUtils(),
                 ClientServerInfo.createRemoteServerInfo(host, Integer.parseInt(port), pathPrefix, null));
 
         AsynchClientTask[] taskArray = new AsynchClientTask[]{task1a, task1b, task2};

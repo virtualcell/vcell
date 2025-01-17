@@ -14,12 +14,12 @@ import javax.swing.event.EventListenerList;
 import cbit.vcell.client.server.JobManager;
 import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.client.server.SimStatusListener;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.ExportJobStatus;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.OutputContext;
@@ -124,7 +124,7 @@ public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimul
  * Creation date: (1/4/01 1:38:14 PM)
  * @param remoteProxyException RemoteProxyException
  */
-private void handleRemoteProxyException(RemoteProxyException remoteProxyException) {
+private void handleRemoteProxyException(cbit.vcell.message.server.bootstrap.client.RemoteProxyException remoteProxyException) {
 	lg.error(remoteProxyException);
 }
 

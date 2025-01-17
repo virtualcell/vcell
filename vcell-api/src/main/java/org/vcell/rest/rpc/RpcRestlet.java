@@ -38,7 +38,7 @@ public final class RpcRestlet extends Restlet {
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
 	RestDatabaseService restDatabaseService;
 	private static final List<String> vcellguestAllowed;
-	//MUST keep sycnhronized with cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory
+	//MUST keep sycnhronized with org.vcell.api.messaging.RemoteProxyVCellConnectionFactory
 	static {
 		String[] temp =  new String[] {
 				"getVCInfoContainer",

@@ -7,7 +7,7 @@ import java.util.prefs.Preferences;
 import org.vcell.util.UtilCancelException;
 import org.vcell.util.gui.DialogUtils;
 
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
+import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.resource.NetworkProxyUtils;
 import cbit.vcell.resource.NetworkProxyUtils.RestartWarningProvider;
 

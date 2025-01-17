@@ -155,15 +155,6 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 			return messageEvents.toArray(new MessageEvent[0]);
 		}
 	}
-	
-	@SuppressWarnings("serial")
-	public static class RemoteProxyException extends Exception {
-
-		public RemoteProxyException(String message, Exception e) {
-			super(message,e);
-		}
-		
-	}
 
 	public RemoteProxyVCellConnectionFactory(
 			String apihost,

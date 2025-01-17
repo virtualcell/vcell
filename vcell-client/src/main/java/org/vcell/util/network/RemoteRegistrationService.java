@@ -1,6 +1,6 @@
 package org.vcell.util.network;
 
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.resource.PropertyLoader;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.utils.DTOOldAPI;

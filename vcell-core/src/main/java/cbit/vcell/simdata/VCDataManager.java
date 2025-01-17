@@ -10,6 +10,15 @@
 
 package cbit.vcell.simdata;
 
+import cbit.plot.PlotData;
+import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.math.Function;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.DataSetControllerProvider;
+import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solvers.CartesianMesh;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
@@ -20,16 +29,6 @@ import org.vcell.util.document.TimeSeriesJobSpec;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
-
-import cbit.plot.PlotData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.math.Function;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
-import cbit.vcell.server.DataSetController;
-import cbit.vcell.server.DataSetControllerProvider;
-import cbit.vcell.solver.ode.ODESimData;
-import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 5:36:06 AM)
@@ -373,7 +372,7 @@ public synchronized TimeSeriesJobResults getTimeSeriesValues(OutputContext outpu
 	}
 }
 
-private void handleRemoteProxyException(RemoteProxyException remoteProxyException) {
+private void handleRemoteProxyException(cbit.vcell.message.server.bootstrap.client.RemoteProxyException remoteProxyException) {
 	lg.error("Handling RemoteProxyException", remoteProxyException);
 }
 
