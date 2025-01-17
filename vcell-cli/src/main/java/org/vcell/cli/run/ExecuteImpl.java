@@ -205,8 +205,7 @@ public class ExecuteImpl {
 
             for (String simName : resultsHash.keySet()) {
                 String CSVFilePath = Paths.get(outDirForCurrentVcml.toString(), simName + ".csv").toString();
-                RunUtils.createCSVFromODEResultSet(resultsHash.get(simName), new File(CSVFilePath));
-                PythonCalls.transposeVcmlCsv(CSVFilePath);
+                RunUtils.createCSVFromODEResultSet(resultsHash.get(simName), new File(CSVFilePath), true);
             }
         } catch (IOException e) {
             Tracer.failure(e, "IOException while processing VCML " + vcmlFile.getName());
