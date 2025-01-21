@@ -192,13 +192,13 @@ public class RunUtils {
         for (Output sedmlOutput : allSedmlOutputs) {
             // We only want Reports
             if (!(sedmlOutput instanceof Report sedmlReport)) {
-                logger.info("Ignoring unsupported output `" + sedmlOutput.getId() + "` while CSV generation.");
+                if (logger.isDebugEnabled()) logger.info("Ignoring unsupported output `" + sedmlOutput.getId() + "` while CSV generation.");
                 continue;
             }
 
             StringBuilder sb = new StringBuilder();
 
-            logger.info("Generating report `" + sedmlReport.getId() +"`.");
+            if (logger.isDebugEnabled()) logger.info("Generating report `" + sedmlReport.getId() +"`.");
             /*
              * we go through each entry (dataset) in the list of datasets
              * for each dataset, we use the data reference to obtain the data generator
@@ -371,16 +371,16 @@ public class RunUtils {
 
                 } // end of dataset			
 
-                if (sb.length() > 0) {
+                if (!sb.isEmpty()) {
                     File f = new File(outDirForCurrentSedml, sedmlReport.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
-                    out.print(sb.toString());
+                    out.print(sb);
                     out.flush();
                     out.close();
-                    logger.info("created csv file for report " + sedmlReport.getId() + ": " + f.getAbsolutePath());
+                    if (logger.isDebugEnabled()) logger.info("created csv file for report " + sedmlReport.getId() + ": " + f.getAbsolutePath());
                     reportsHash.put(sedmlReport.getId(), f);
                 } else {
-                    logger.info("no csv file for report " + sedmlReport.getId());
+                    if (logger.isDebugEnabled()) logger.info("no csv file for report " + sedmlReport.getId());
                 }
             } catch (Exception e) {
                 throw new RuntimeException("CSV generation failed: " + e.getMessage(), e);
@@ -442,15 +442,13 @@ public class RunUtils {
             srcFiles = listFilesForFolder(dirPath, ext);
 
             if (srcFiles.isEmpty()) {
-                logger.warn("No " + ext.toUpperCase() + " files found, skipping archiving `" + extensionListMap.get(ext) + "` files");
+                if (logger.isDebugEnabled()) logger.warn("No {} files found, skipping archiving `{}` files", ext.toUpperCase(), extensionListMap.get(ext));
             } else {
                 fileOutputStream = new FileOutputStream(Paths.get(dirPath.toString(), extensionListMap.get(ext)).toFile());
                 zipOutputStream = new ZipOutputStream(fileOutputStream);
-                if (!srcFiles.isEmpty()) logger.info("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
+                if (!srcFiles.isEmpty() && logger.isDebugEnabled()) logger.info("Archiving resultant {} files to `{}`.", ext.toUpperCase(), extensionListMap.get(ext));
                 for (File srcFile : srcFiles) {
-
                     fileInputstream = new FileInputStream(srcFile);
-
                     // get relative path
                     relativePath = dirPath.toURI().relativize(srcFile.toURI()).toString();
                     zipEntry = new ZipEntry(relativePath);
@@ -472,7 +470,7 @@ public class RunUtils {
     public static String getTempDir() throws IOException {
         String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory(
             RunUtils.VCELL_TEMP_DIR_PREFIX + UUID.randomUUID()).toAbsolutePath());
-        logger.info("TempPath Created: " + tempPath);
+        logger.trace("TempPath Created: " + tempPath);
         return tempPath;
     }
 

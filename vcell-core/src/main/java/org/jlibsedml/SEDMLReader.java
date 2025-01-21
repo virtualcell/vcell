@@ -246,7 +246,7 @@ class SEDMLReader {
             if (eChild.getName().equals(SEDMLTags.ALGORITHM_PARAMETER_LIST)) {
                 addAlgorithmParameters(alg, eChild);
             } else {
-                log.warn("Unexpected " + eChild);
+                if (log.isDebugEnabled()) log.warn("Unexpected " + eChild);
             }
         }
 		return alg;

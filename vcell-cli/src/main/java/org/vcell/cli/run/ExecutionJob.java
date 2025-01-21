@@ -1,10 +1,12 @@
 package org.vcell.cli.run;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecordable;
 import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
+import org.vcell.cli.exceptions.PreProcessingException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer;
 import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
@@ -71,8 +73,7 @@ public class ExecutionJob {
     /**
      * Run the neexed steps to prepare an archive for execution.
      * Follow-up call: `executeArchive()`
-     * 
-     * @throws PythonStreamException if calls to the python-shell instance are not working correctly
+     *
      * @throws IOException if there are system I/O issues.
      */
     public void preprocessArchive() throws IOException {
@@ -81,7 +82,7 @@ public class ExecutionJob {
 
         // Beginning of Execution
         logger.info("Executing OMEX archive `{}`", this.inputFile.getName());
-        logger.info("Archive location: {}", this.inputFile.getAbsolutePath());
+        if (logger.isDebugEnabled()) logger.info("Archive location: {}", this.inputFile.getAbsolutePath());
         RunUtils.drawBreakLine("-", 100);
 
         // Unpack the Omex Archive
@@ -112,48 +113,41 @@ public class ExecutionJob {
 
     /**
      * Run solvers on all the models in the archive.
-     * 
+     * </br>
      * Called after: `preprocessArchive()`
      * Called before: `postProcessArchive()`
-     * 
-     * @throws InterruptedException if there is an issue with accessing data
-     * @throws PythonStreamException if calls to the python-shell instance are not working correctly
-     * @throws IOException if there are system I/O issues
-     * @throws ExecutionException if an execution specfic error occurs
+     *
+     * @throws ExecutionException if an execution specific error occurs
      */
-    public void executeArchive(boolean isBioSimSedml) throws BiosimulationsHdfWriterException, PythonStreamException, ExecutionException {
-        try {
-            HDF5ExecutionResults masterHdf5File = new HDF5ExecutionResults(isBioSimSedml);
-            this.queueAllSedml();
+    public void executeArchive(boolean isBioSimSedml) throws BiosimulationsHdfWriterException, ExecutionException {
+        HDF5ExecutionResults cumulativeHdf5Results = new HDF5ExecutionResults(isBioSimSedml);
 
-            for (String sedmlLocation : this.sedmlLocations){
-                SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile,
-                        this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder,
-                        this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
-                if (!job.preProcessDoc()){
-                    SedmlStatistics stats = job.getDocStatistics(); // Must process document first
-                    logger.error("Statistics of failed SedML:\n" + stats.toString());
+        try {
+            for (String sedmlLocation : this.sedmlLocations) {
+                try {
+                    this.executeSedmlDocument(sedmlLocation, cumulativeHdf5Results);
+                } catch (PreProcessingException e) {
                     this.anySedmlDocumentHasFailed = true;
                 }
-                SedmlStatistics stats = job.getDocStatistics();
-                boolean hasSucceeded = job.simulateSedml(masterHdf5File);
-                this.anySedmlDocumentHasSucceeded |= hasSucceeded;
-                this.anySedmlDocumentHasFailed &= hasSucceeded;
-                if (hasSucceeded){
-                    String formattedStats = stats.toFormattedString();
-                    logger.info("Processing of SedML succeeded.\n" + formattedStats);
-                }
-                else logger.error("Processing of SedML has failed.\n" + stats.toString());
             }
-            BiosimulationsHdf5Writer.writeHdf5(masterHdf5File, new File(this.outputDir));
-            
-        } catch(PythonStreamException e){
-            logger.error("Python-processing encountered fatal error. Execution is unable to properly continue.", e);
-            throw e;
-        } catch(InterruptedException | IOException e){
+            BiosimulationsHdf5Writer.writeHdf5(cumulativeHdf5Results, new File(this.outputDir));
+
+        } catch (IOException e){
             logger.error("System IO encountered a fatal error");
             throw new ExecutionException(e);
         }
+    }
+
+    private void executeSedmlDocument(String sedmlLocation, HDF5ExecutionResults cumulativeHdf5Results) throws IOException, PreProcessingException {
+        BiosimulationLog.instance().updateSedmlDocStatusYml(sedmlLocation, BiosimulationLog.Status.QUEUED);
+        SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile,
+                this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder,
+                this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
+        SedmlStatistics stats = job.preProcessDoc();
+        boolean hasSucceeded = job.simulateSedml(cumulativeHdf5Results);
+        this.anySedmlDocumentHasSucceeded |= hasSucceeded;
+        this.anySedmlDocumentHasFailed &= hasSucceeded;
+        logger.log(hasSucceeded ? Level.INFO : Level.ERROR, "Processing of SedML ({}) {}", stats.getSedmlName(), hasSucceeded ? "succeeded." : "failed!");
     }
 
     /**
@@ -171,7 +165,7 @@ public class ExecutionJob {
         this.endTime_ms = System.currentTimeMillis();
         long elapsedTime_ms = this.endTime_ms - this.startTime_ms;
         double duration_s = elapsedTime_ms / 1000.0;
-        logger.info("Omex " + inputFile.getName() + " processing completed (" + duration_s + "s)");
+        logger.info("Omex `" + inputFile.getName() + "` processing completed (" + duration_s + "s)");
         //
         // failure if at least one of the documents in the omex archive fails
         //
@@ -192,13 +186,7 @@ public class ExecutionJob {
         }
         BiosimulationLog.instance().setOutputMessage("null", "null", "omex", logOmexMessage.toString());
 
-        logger.debug("Finished Execution of Archive: " + bioModelBaseName);
-    }
-
-    private void queueAllSedml() throws PythonStreamException, InterruptedException, IOException {
-        for (String sedmlLocation: sedmlLocations){
-            BiosimulationLog.instance().updateSedmlDocStatusYml(sedmlLocation, BiosimulationLog.Status.QUEUED);
-        }
+        if (logger.isDebugEnabled()) logger.info("Finished Execution of Archive: {}", this.bioModelBaseName);
     }
 
 }

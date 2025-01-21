@@ -201,7 +201,8 @@ public class NonspatialResultsConverter {
             if (out instanceof Report){
                 reports.add((Report)out);
             } else {
-                logger.info("Ignoring unsupported output `" + out.getId() + "` while CSV generation.");
+                if (logger.isDebugEnabled())
+                    logger.info("Ignoring unsupported output `{}` while CSV generation.", out.getId());
             }
         } 
         return reports;

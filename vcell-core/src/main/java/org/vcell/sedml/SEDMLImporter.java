@@ -63,8 +63,7 @@ import java.util.*;
  */
 public class SEDMLImporter {
 	private final static Logger logger = LogManager.getLogger(SEDMLImporter.class);
-	private final SedML sedml;
-	private final ExternalDocInfo externalDocInfo;
+	private SedML sedml;
 	private final boolean exactMatchOnly;
 	
 	private final VCLogger transLogger;
@@ -76,31 +75,47 @@ public class SEDMLImporter {
 	private final HashMap<BioModel, SBMLImporter> importMap = new HashMap<>();
 	
 	/**
-	 * Prepares a sedml for import as biomodels
+	 * Builds the importer for future initialization
 	 * 
 	 * @param transLogger the VC logger to use
-	 * @param externalDocInfo contextual information necessary for import
-	 * @param sedml the sedml to import
+	 * @param exactMatchOnly do not substitute for "compatible" kisao solvers, use the exact solver only.
+	 */
+	public SEDMLImporter(VCLogger transLogger, boolean exactMatchOnly) {
+		this.transLogger = transLogger;
+		this.sedml = null;
+		this.exactMatchOnly = exactMatchOnly;
+	}
+
+	/**
+	 * Prepares a sedml for import as biomodels
+	 *
+	 * @param transLogger the VC logger to use
 	 * @param exactMatchOnly do not substitute for "compatible" kisao solvers, use the exact solver only.
 	 * @throws FileNotFoundException if the sedml archive can not be found
 	 * @throws XMLException if the sedml has invalid xml.
 	 */
-	public SEDMLImporter(VCLogger transLogger, ExternalDocInfo externalDocInfo, SedML sedml, boolean exactMatchOnly)
+	public SEDMLImporter(VCLogger transLogger, File fileWithSedmlToProcess, SedML sedml, boolean exactMatchOnly)
 			throws XMLException, IOException {
-		this.transLogger = transLogger;
-		this.externalDocInfo = externalDocInfo;
-		this.sedml = sedml;
-		this.exactMatchOnly = exactMatchOnly;
-		
-		this.initialize();
+		this(transLogger, exactMatchOnly);
+		this.initialize(fileWithSedmlToProcess, sedml);
 	}
-	
-	private void initialize() throws XMLException, IOException {
-		// extract bioModel name from sedx (or sedml) file
-		this.bioModelBaseName = FileUtils.getBaseName(this.externalDocInfo.getFile().getAbsolutePath());
-		if(this.externalDocInfo.getFile().getPath().toLowerCase().endsWith("sedx")
-				|| this.externalDocInfo.getFile().getPath().toLowerCase().endsWith("omex")) {
-			this.ac = Libsedml.readSEDMLArchive(Files.newInputStream(this.externalDocInfo.getFile().toPath()));
+
+	/**
+	 * Initialize the importer to process a specific set of SedML within a document or archive.
+	 * @param fileWithSedmlToProcess the file containing SedML
+	 * @param sedml the SedML to be processed (since the file may have more than 1 sedml)
+	 * @throws IOException if the sedml archive can not be found, or the IO stream reading it failed
+	 * @throws XMLException if the sedml has invalid xml.
+	 */
+	public void initialize(File fileWithSedmlToProcess, SedML sedml) throws XMLException, IOException {
+		// extract bioModel name from sedml (or sedml) file
+		if (fileWithSedmlToProcess == null) throw new IllegalArgumentException("Source file of SedML can not be null!");
+		if (sedml == null) throw new IllegalArgumentException("Provided SedML can not be null!");
+		this.sedml = sedml;
+		this.bioModelBaseName = FileUtils.getBaseName(fileWithSedmlToProcess.getAbsolutePath());
+		if(fileWithSedmlToProcess.getPath().toLowerCase().endsWith("sedx")
+				|| fileWithSedmlToProcess.getPath().toLowerCase().endsWith("omex")) {
+			this.ac = Libsedml.readSEDMLArchive(Files.newInputStream(fileWithSedmlToProcess.toPath()));
 		}
 		this.resolver = new ModelResolver(this.sedml);
 		if(this.ac != null) {
@@ -109,7 +124,7 @@ public class SEDMLImporter {
 			this.resolver.add(amr);
 		} else {
 			this.resolver.add(new FileModelResolver()); // assumes absolute paths
-			String sedmlRelativePrefix = this.externalDocInfo.getFile().getParent() + File.separator;
+			String sedmlRelativePrefix = fileWithSedmlToProcess.getParent() + File.separator;
 			this.resolver.add(new RelativeFileModelResolver(sedmlRelativePrefix)); // in case model URIs are relative paths
 		}
 		this.sbmlSupport = new SBMLSupport();
@@ -180,7 +195,7 @@ public class SEDMLImporter {
 				// try to find a match in the ontology tree
 				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, this.exactMatchOnly);
 				if (solverDescription != null) {
-                    logger.info("Task (id='{}') is compatible, solver match found in ontology: '{}' matched to {}", selectedTask.getId(), kisaoID, solverDescription);
+                    if (logger.isDebugEnabled()) logger.info("Task (id='{}') is compatible, solver match found in ontology: '{}' matched to {}", selectedTask.getId(), kisaoID, solverDescription);
 				} else {
 					// give it a try anyway with our deterministic default solver
 					solverDescription = SolverDescription.CombinedSundials;
@@ -426,10 +441,12 @@ public class SEDMLImporter {
 		
 		BioModel bm0 = bioModels.get(0);
 		for (int i = 1; i < bioModels.size(); i++) {
-			System.out.println("----comparing model from----"+bioModels.get(i)+" with model from "+bm0);
+			if (logger.isDebugEnabled())
+                logger.info("--------------------\ncomparing model from `{}`\n with model from `{}`\n--------------------",
+						bioModels.get(i), bm0);
 			RelationVisitor rvNotStrict = new ModelRelationVisitor(false);
 			boolean equivalent = bioModels.get(i).getModel().relate(bm0.getModel(),rvNotStrict);
-			System.out.println(equivalent);
+			if (logger.isDebugEnabled()) logger.info("Equivalent => {}", equivalent);
 			if (!equivalent) return bioModels;
 		}
 		// all have matchable model, try to merge by pooling SimContexts

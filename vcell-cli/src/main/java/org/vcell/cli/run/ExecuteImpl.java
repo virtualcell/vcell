@@ -55,9 +55,9 @@ public class ExecuteImpl {
                 String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
 
                 Span span = null;
-                try {
+                // Initialization call generates Status YAML
+                try (BiosimulationLog bioSimLog = BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir)) {
                     span = Tracer.startSpan(Span.ContextType.OMEX_EXECUTE, inputFileName, Map.of("filename", inputFileName));
-                    BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
                     System.out.println("\n\n");
                     logger.info("Processing " + inputFileName + "(" + inputFile + ")");
@@ -79,7 +79,6 @@ public class ExecuteImpl {
                     if (span != null) {
                         span.close();
                     }
-                    BiosimulationLog.instance().close();
                 }
             }
             if (failedFiles.isEmpty()){
@@ -134,19 +133,16 @@ public class ExecuteImpl {
         String targetOutputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
         File adjustedOutputDir = new File(targetOutputDir);
 
-        logger.info("Preparing output directory...");
+        if (logger.isDebugEnabled()) logger.info("Preparing output directory...");
         // we don't want to accidentally delete the input...
         // if the output directory is a subset of the input file's housing directory, we shouldn't delete!!
         if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
             RunUtils.removeAndMakeDirs(adjustedOutputDir);
 
-        try {
-            BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
-
+        // Initialization line generates Status YAML
+        try (BiosimulationLog bioSimLog = BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir)) {
             ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
                     bEncapsulateOutput, bSmallMeshOverride, bBioSimMode);
-        } finally {
-            BiosimulationLog.instance().close();
         }
     }
 

@@ -162,10 +162,10 @@ public class SolverUtilities {
 	private static List<SolverDescription> matchByKisaoId(KisaoTerm candidate) {
         List<SolverDescription> solverDescriptions = new ArrayList<>();
 		for (SolverDescription sd : SolverDescription.values()) {
-			if(sd.getKisao().contains(":") || sd.getKisao().contains("_")) {
+			if (sd.getKisao().contains(":") || sd.getKisao().contains("_")) {
 				logger.trace(sd.getKisao());
 			} else {
-				logger.warn(sd.getKisao() + " - bad format, skipping");
+				if (logger.isDebugEnabled()) logger.warn("`{}` is bad KiSAO formating, skipping", sd.getKisao());
 				continue;
 			}
 			String s1 = candidate.getId();

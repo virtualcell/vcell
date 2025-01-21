@@ -90,7 +90,7 @@ class SchemaValidatorImpl {
             return SEDML_L1_V2_SCHEMA;
         } else {
         	// probably level 3, but trying anyway to interpret with level 2
-        	System.out.println("SED-ML version level not supported, import may fail");
+        	if (log.isDebugEnabled()) log.warn("SED-ML version level not supported, import may fail");
         	return SEDML_L1_V3_SCHEMA;
 //            throw new IllegalArgumentException(
 //                    "Invalid level/version combingation - must be 1-1 or 1-2 but was "
