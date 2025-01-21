@@ -228,12 +228,7 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 		}
 		return false;
 	}
-//	public int getScanCount() {
-//		if (selectedSimWOSBE != null) {
-//			return selectedSimWOSBE.getScanCount();
-//		}
-//		return 0;
-//	}
+
 	public String getSimulationOverrideName() {
 		if (selectedSimWOSBE != null) {
 			return selectedSimWOSBE.getName();
