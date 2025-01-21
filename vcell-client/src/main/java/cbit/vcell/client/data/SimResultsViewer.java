@@ -39,8 +39,6 @@ import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Hashtable;
 
-import static cbit.vcell.solver.MathOverrides.parameterScanCoordinateToScanIndex;
-
 /**
  * Insert the type's description here.
  * Creation date: (10/17/2005 11:22:58 PM)
@@ -173,17 +171,17 @@ private Simulation getSimulation() {
 }
 
 private JLabel label = new JLabel("<html><b>Choose Parameter Values</b></html>");
-private int localScanProgress;
-public void setLocalScanProgress(int localScanProgress) {
-	this.localScanProgress = localScanProgress;
+private int localJobProgress;
+public void setLocalJobProgress(int localJobProgress) {
+	this.localJobProgress = localJobProgress;
 	SwingUtilities.invokeLater(new Runnable() {
 	@Override
 	public void run() {
-		label.setText("<html><b>Choose Parameter Values progress:("+(localScanProgress)+"/"+getSimulation().getScanCount()+")</b></html>");
+		label.setText("<html><b>Choose Parameter Values/Trials progress:("+(localJobProgress)+"/"+getSimulation().getJobCount()+")</b></html>");
 	}});
 }
-public int getLocalScanProgress() {
-	return localScanProgress;
+public int getLocalJobProgress() {
+	return localJobProgress;
 }
 /**
  * Insert the method's description here.

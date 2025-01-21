@@ -1,7 +1,6 @@
 package cbit.vcell.biomodel;
 
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
@@ -9,6 +8,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -171,6 +171,7 @@ public class MathOverrideApplyTest {
 			transformed_biomodel.refreshDependencies();
 			Simulation sim = transformed_biomodel.getSimulation(simNameWithOverride);
 			try {
+				Assertions.assertTrue(sim.getNumTrials()==1);
 				for (int scanIndex = 0; scanIndex < sim.getScanCount(); scanIndex++) {
 					BioModelTransforms.applyMathOverrides(sim, new MathOverrides.ScanIndex(scanIndex), transformed_biomodel);
 				}

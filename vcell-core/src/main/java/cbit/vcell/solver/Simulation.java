@@ -553,6 +553,10 @@ public int getScanCount() {
 	return getMathOverrides().getScanCount();
 }
 
+public int getJobCount() {
+	return getScanCount() * getNumTrials();
+}
+
 
 /**
  * Gets the simulationIdentifier property (java.lang.String) value.

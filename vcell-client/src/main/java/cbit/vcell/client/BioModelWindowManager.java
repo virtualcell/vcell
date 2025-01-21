@@ -485,7 +485,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	// if failed, notify
 	if (simStatusEvent.isNewFailureEvent()) {
 		String qualifier = "";
-		if (simulation.getScanCount() > 1) {
+		if (simulation.getJobCount() > 1) {
 			qualifier += "One job from ";
 		}
 		PopupGenerator.showErrorDialog(this, qualifier + "Simulation '" + simulation.getName() + "' failed\n" + simStatus.getDetails());

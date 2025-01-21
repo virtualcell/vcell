@@ -311,9 +311,9 @@ public void startSimulation(Simulation simulation) throws Exception {
 	addSimulationJobStatusListener(localVCellConnection.getMessageCollector());
 
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulation.getKey(), simulation.getVersion().getOwner());
-	simulationDispatcherEngine.onStartRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulation.getScanCount(), simulationDatabase, vcMessageSession, vcMessageSession);
+	simulationDispatcherEngine.onStartRequest(vcSimID, localVCellConnection.getUserLoginInfo().getUser(), simulation.getJobCount(), simulationDatabase, vcMessageSession, vcMessageSession);
 	vcMessageSession.deliverAll();
-	for (int jobIndex = 0; jobIndex < simulation.getScanCount(); jobIndex++){
+	for (int jobIndex = 0; jobIndex < simulation.getJobCount(); jobIndex++){
 		SimulationJobStatus latestSimJobStatus = simulationDatabase.getLatestSimulationJobStatus(simulation.getKey(), jobIndex);
 		simulationDispatcherEngine.onDispatch(simulation, latestSimJobStatus, simulationDatabase, vcMessageSession);
 		vcMessageSession.deliverAll();

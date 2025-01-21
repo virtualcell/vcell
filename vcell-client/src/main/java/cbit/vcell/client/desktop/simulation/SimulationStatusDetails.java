@@ -32,8 +32,8 @@ public SimulationStatusDetails(SimulationWorkspace arg_simWorkspace, Simulation 
 	super();
 	simWorkspace = arg_simWorkspace;
 	sim = arg_sim;
-	statusBars = new JProgressBar[sim.getScanCount()];
-	for (int i = 0; i < sim.getScanCount(); i ++) {
+	statusBars = new JProgressBar[sim.getJobCount()];
+	for (int i = 0; i < sim.getJobCount(); i ++) {
 		statusBars[i] = new JProgressBar();
 		statusBars[i].setStringPainted(true);
 	}

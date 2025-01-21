@@ -45,7 +45,7 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
 			// look in list for existing status
 			//
 			if (newSimulations[i].getKey()==null || newSimulations[i].getIsDirty()){
-				newHash.put(newSimulations[i],SimulationStatus.newNotSaved(newSimulations[i].getScanCount()));
+				newHash.put(newSimulations[i],SimulationStatus.newNotSaved(newSimulations[i].getJobCount()));
 			// 
 			// try to find status for previous instance of this simulation
 			// 
@@ -72,7 +72,7 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
 				if (newSimStatus!=null){
 					newHash.put(newSimulations[i],newSimStatus);
 				}else{
-					newHash.put(newSimulations[i],SimulationStatus.newUnknown(newSimulations[i].getScanCount())); // unknown status
+					newHash.put(newSimulations[i],SimulationStatus.newUnknown(newSimulations[i].getJobCount())); // unknown status
 				}
 			}
 		}

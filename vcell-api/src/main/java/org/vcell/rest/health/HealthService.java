@@ -210,7 +210,7 @@ public class HealthService {
 				long eventTimestamp = System.currentTimeMillis();
 
 				// submit simulation via an RPC call
-				RestDatabaseService.callStartSimulation(vcMessagingService, user, vcSimId.getSimulationKey(), sim.getSimulationVersion().getOwner(), sim.getScanCount());
+				RestDatabaseService.callStartSimulation(vcMessagingService, user, vcSimId.getSimulationKey(), sim.getSimulationVersion().getOwner(), sim.getJobCount());
 				// get initial status from database
 				SimulationStatus simStatus = simulationDatabaseDirect.getSimulationStatus(vcSimId.getSimulationKey());
 

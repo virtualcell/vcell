@@ -43,9 +43,9 @@ public LocalSimulationControllerMessaging(UserLoginInfo userLoginInfo, RpcSender
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationStatus startSimulation(VCSimulationIdentifier vcSimID, int numSimulationScanJobs) {
+public SimulationStatus startSimulation(VCSimulationIdentifier vcSimID, int numSimulationJobs) {
 	if (lg.isTraceEnabled()) lg.trace("LocalSimulationControllerMessaging.startSimulation(" + vcSimID + ")");
-	return simServerProxy.startSimulation(simServerProxy.userLoginInfo.getUser(),vcSimID,numSimulationScanJobs);
+	return simServerProxy.startSimulation(simServerProxy.userLoginInfo.getUser(),vcSimID,numSimulationJobs);
 }
 
 

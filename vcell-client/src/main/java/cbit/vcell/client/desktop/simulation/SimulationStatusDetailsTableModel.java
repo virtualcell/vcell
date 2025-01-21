@@ -111,7 +111,7 @@ public int getRowCount() {
 		return 0;
 	}
 	
-	return getSimulationStatusDetails().getSimulation().getScanCount();
+	return getSimulationStatusDetails().getSimulation().getJobCount();
 }
 
 

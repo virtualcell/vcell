@@ -23,7 +23,7 @@ public interface SimulationController {
  * This method was created by a SmartGuide.
  * @exception RemoteProxyException The exception description.
  */
-public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) throws RemoteProxyException;
+public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationJobs) throws RemoteProxyException;
 
 
 /**

@@ -350,13 +350,13 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 			{ 
 				Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
 				if (selectedSim != null) {
-					int scanCount = selectedSim.getScanCount();
+					int jobCount = selectedSim.getJobCount();
 					//-----
-					String baseExportFileName = (scanCount==1?null:exportFile.getPath().substring(0, exportFile.getPath().indexOf(".")));
-					for(int i=0; i<scanCount; i++){
+					String baseExportFileName = (jobCount==1?null:exportFile.getPath().substring(0, exportFile.getPath().indexOf(".")));
+					for(int i=0; i<jobCount; i++){
 						SimulationTask simTask = new SimulationTask(new SimulationJob(selectedSim, i, null),0);
 						// Need to export each parameter scan into a separate file
-						File localExportFile = (scanCount==1?exportFile:new File(baseExportFileName + "_" + i + SMOLDYN_INPUT_FILE_EXTENSION));
+						File localExportFile = (jobCount==1?exportFile:new File(baseExportFileName + "_" + i + SMOLDYN_INPUT_FILE_EXTENSION));
 						FileCloseHelper localCloseThis = new FileCloseHelper(localExportFile);
 						try{
 							SmoldynFileWriter smf = new SmoldynFileWriter(localCloseThis.getPrintWriter(), true, null, simTask, false);
