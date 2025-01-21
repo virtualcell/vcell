@@ -172,7 +172,7 @@ private Simulation getSimulation() {
 
 private JLabel label = new JLabel("<html><b>Choose Parameter Values</b></html>");
 private int localJobProgress;
-public void setLocalScanProgress(int localJobProgress) {
+public void setLocalJobProgress(int localJobProgress) {
 	this.localJobProgress = localJobProgress;
 	SwingUtilities.invokeLater(new Runnable() {
 	@Override

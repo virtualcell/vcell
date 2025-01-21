@@ -20,7 +20,6 @@ import cbit.vcell.client.desktop.simulation.SimulationStatusDetailsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWindow.LocalState;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
-import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
@@ -33,7 +32,6 @@ import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFact
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
@@ -768,7 +766,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 								bWinCloseHolder[0] = true;
 							}});
 						//First sim scan (0) is done already before viewer is shown
-						((SimResultsViewer)haveSimulationWindow.getDataViewer()).setLocalScanProgress(1);
+						((SimResultsViewer)haveSimulationWindow.getDataViewer()).setLocalJobProgress(1);
 						//Counter of how many simultaneous param scan threads are running (decremented when scan thread finishes)
 						final int[] currentlyRunningCountHolder = new int[] {0};
 						//Run other scans starting at 1 (scan 0 is already done if we got here)
@@ -836,7 +834,7 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 										currentlyRunningCountHolder[0]-= 1;
 										//Set progress on dataviewer
 										if(((SimResultsViewer)haveSimulationWindow.getDataViewer()).getLocalJobProgress() < (jobIndex+1)) {
-											((SimResultsViewer)haveSimulationWindow.getDataViewer()).setLocalScanProgress(jobIndex+1);
+											((SimResultsViewer)haveSimulationWindow.getDataViewer()).setLocalJobProgress(jobIndex+1);
 										}
 									}
 								}}).start();
