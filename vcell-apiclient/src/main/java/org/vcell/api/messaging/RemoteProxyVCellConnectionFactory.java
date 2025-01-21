@@ -26,8 +26,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.DependencyConstants;
 import org.vcell.api.client.VCellApiClient;
-import org.vcell.api.client.VCellApiClient.RpcDestination;
-import org.vcell.api.client.VCellApiRpcRequest;
+import cbit.rmi.event.VCellApiRpcBody;
+import cbit.rmi.event.VCellApiRpcRequest;
 import org.vcell.api.utils.Auth0ConnectionUtils;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
@@ -86,13 +86,13 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 			if(User.isGuest(userLoginInfo.getUserName()) && !vcellguestAllowed.contains(vcRpcRequest.getMethodName())) {
 				throw new IllegalArgumentException(User.createGuestErrorMessage(vcRpcRequest.getMethodName()));
 			}
-			final RpcDestination rpcDestination;
+			final VCellApiRpcBody.RpcDestination rpcDestination;
 			if (queue.equals(VCellQueue.DataRequestQueue)) {
-				rpcDestination = RpcDestination.DataRequestQueue;
+				rpcDestination = VCellApiRpcBody.RpcDestination.DataRequestQueue;
 			}else if (queue.equals(VCellQueue.DbRequestQueue)) {
-				rpcDestination = RpcDestination.DbRequestQueue;
+				rpcDestination = VCellApiRpcBody.RpcDestination.DbRequestQueue;
 			}else if (queue.equals(VCellQueue.SimReqQueue)) {
-				rpcDestination = RpcDestination.SimReqQueue;
+				rpcDestination = VCellApiRpcBody.RpcDestination.SimReqQueue;
 			}else {
 				throw new RuntimeException("RpcDestination "+queue.getName()+" not implemented for VCellApi RPC");
 			}

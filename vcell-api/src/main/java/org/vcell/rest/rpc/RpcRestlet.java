@@ -1,5 +1,6 @@
 package org.vcell.rest.rpc;
 
+import cbit.rmi.event.VCellApiRpcBody;
 import cbit.rmi.event.client.DTOOldAPI;
 import cbit.vcell.clientdb.ServerRejectedSaveException;
 import cbit.vcell.message.VCRpcRequest;
@@ -17,8 +18,7 @@ import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.restlet.representation.ByteArrayRepresentation;
-import org.vcell.api.client.VCellApiClient.VCellApiRpcBody;
-import org.vcell.api.client.VCellApiRpcRequest;
+import cbit.rmi.event.VCellApiRpcRequest;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.server.RestDatabaseService;

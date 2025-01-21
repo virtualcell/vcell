@@ -8,9 +8,8 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.api.client;
+package cbit.rmi.event;
 
-import org.vcell.api.client.VCellApiClient.RpcDestination;
 
 /**
  * Insert the type's description here.
@@ -39,7 +38,7 @@ public class VCellApiRpcRequest implements java.io.Serializable {
 	
 	public final String username;
 	public final Object[] args;
-	public final RpcDestination rpcDestination;
+	public final VCellApiRpcBody.RpcDestination rpcDestination;
 	public final String methodName;	
 	public final Long requestTimestampMS;
 /**
@@ -48,7 +47,7 @@ public class VCellApiRpcRequest implements java.io.Serializable {
  * @param argEstimatedSizeMB double
  * @param argUserid java.lang.String
  */
-public VCellApiRpcRequest(String username, RpcDestination rpcDestination, String methodName, Object[] arglist) {
+public VCellApiRpcRequest(String username, VCellApiRpcBody.RpcDestination rpcDestination, String methodName, Object[] arglist) {
 	this.username = username;
 	this.rpcDestination = rpcDestination;
 	this.methodName = methodName;

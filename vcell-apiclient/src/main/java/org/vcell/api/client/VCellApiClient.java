@@ -1,5 +1,7 @@
 package org.vcell.api.client;
 
+import cbit.rmi.event.VCellApiRpcBody;
+import cbit.rmi.event.VCellApiRpcRequest;
 import cbit.rmi.event.client.DTOOldAPI;
 import com.google.gson.Gson;
 import com.nimbusds.oauth2.sdk.ParseException;
@@ -52,7 +54,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 /**
@@ -684,30 +685,9 @@ public class VCellApiClient implements AutoCloseable {
 		}
 	}
 	
-	public enum RpcDestination {
-		DataRequestQueue, DbRequestQueue, SimReqQueue;
-	}
-	
-	public static class VCellApiRpcBody implements Serializable {
-		public final RpcDestination rpcDestination;
-		public final VCellApiRpcRequest rpcRequest;
-		public final boolean returnedRequired;
-		public final int timeoutMS;
-		public final String[] specialProperties;
-		public final Object[] specialValues;
 
-		public VCellApiRpcBody(RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest,
-				boolean returnedRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) {
-			this.rpcDestination = rpcDestination;
-			this.rpcRequest = rpcRequest;
-			this.returnedRequired = returnedRequired;
-			this.timeoutMS = timeoutMS;
-			this.specialProperties = specialProperties;
-			this.specialValues = specialValues;
-		}
-	}
 
-	public Serializable sendRpcMessage(RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest, boolean returnRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) throws ClientProtocolException, IOException {
+	public Serializable sendRpcMessage(VCellApiRpcBody.RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest, boolean returnRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) throws ClientProtocolException, IOException {
 		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/rpc");
 		VCellApiRpcBody vcellapiRpcBody = new VCellApiRpcBody(rpcDestination, rpcRequest, returnRequired, timeoutMS, specialProperties, specialValues);
 		byte[] compressedSerializedRpcBody = null;
