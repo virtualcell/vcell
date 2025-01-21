@@ -1,4 +1,4 @@
-package copasi;
+package org.vcell.optimization;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
@@ -15,7 +15,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.vcell.optimization.CopasiUtils;
 import org.vcell.optimization.jtd.OptProblem;
 import org.vcell.optimization.jtd.Vcellopt;
 import org.vcell.util.ClientTaskStatusSupport;

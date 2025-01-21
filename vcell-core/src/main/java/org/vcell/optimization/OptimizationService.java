@@ -1,8 +1,6 @@
-package copasi.modelopt;
+package org.vcell.optimization;
 
 import cbit.vcell.modelopt.ParameterEstimationTask;
-import org.vcell.optimization.CopasiOptSolverCallbacks;
-import copasi.CopasiOptimizationSolver;
 import org.vcell.util.Issue;
 import org.vcell.util.IssueContext;
 
