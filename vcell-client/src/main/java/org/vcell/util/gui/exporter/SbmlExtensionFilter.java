@@ -29,7 +29,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
 
 @SuppressWarnings("serial")
@@ -256,7 +255,7 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 			clonedBM.refreshDependencies();
 			String originalExportFilename = exportFile.getPath();
 			Files.deleteIfExists(Paths.get(originalExportFilename));
-			for (int scan = 0; scan < selectedSimWOSBE.getScanCount_2(); scan++) {
+			for (int scan = 0; scan < selectedSimWOSBE.getScanCount(); scan++) {
 				MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(scan);
 				BioModelTransforms.applyMathOverrides(selectedSimWOSBE, scanIndex, clonedBM);
 				String resultString = XmlHelper.exportSBML(clonedBM, sbmlLevel, sbmlVersion, sbmlPkgVersion, isSpatial, selectedSimContext, bRoundTripValidation);

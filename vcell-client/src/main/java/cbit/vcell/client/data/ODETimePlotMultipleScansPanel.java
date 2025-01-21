@@ -29,12 +29,9 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
-import cbit.plot.SingleXPlot2D;
 import cbit.plot.gui.PlotPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -84,7 +81,7 @@ Double[][] values;
 private void initialize()  {
 
 	setLayout(new BorderLayout());
-	int scanCount = simulation.getScanCount_2();
+	int scanCount = simulation.getScanCount();
 	int trialCount = simulation.getNumTrials();
 	if (trialCount > 1){
 		throw new RuntimeException("trials are not yet supported in ODETimePlotMultipleScansPanel");

@@ -1,7 +1,6 @@
 package cbit.vcell.biomodel;
 
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
@@ -173,7 +172,7 @@ public class MathOverrideApplyTest {
 			Simulation sim = transformed_biomodel.getSimulation(simNameWithOverride);
 			try {
 				Assertions.assertTrue(sim.getNumTrials()==1);
-				for (int scanIndex = 0; scanIndex < sim.getScanCount_2(); scanIndex++) {
+				for (int scanIndex = 0; scanIndex < sim.getScanCount(); scanIndex++) {
 					BioModelTransforms.applyMathOverrides(sim, new MathOverrides.ScanIndex(scanIndex), transformed_biomodel);
 				}
 				// for now, if it doesn't throw an exception, then it passes

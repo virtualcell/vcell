@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Vector;
 
 import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.vcell.util.document.SimResampleInfoProvider;
@@ -48,7 +47,6 @@ import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 
@@ -260,10 +258,10 @@ public class FVSolverStandalone extends AbstractCompiledSolver {
             Simulation sim = simTask.getSimulation();
             if(sim.isSerialParameterScan()){
                 //write functions file for all the simulations in the scan
-                if (sim.getJobCount() != sim.getScanCount_2()){
+                if (sim.getJobCount() != sim.getScanCount()){
                     throw new SolverException("using scanIndex for JobIndex, assuming no trials");
                 }
-                for(int scan = 0; scan < sim.getScanCount_2(); scan++){
+                for(int scan = 0; scan < sim.getScanCount(); scan++){
                     SimulationJob simJob = new SimulationJob(sim, scan, simTask.getSimulationJob().getFieldDataIdentifierSpecs());
                     // ** Dumping the functions of a simulation into a '.functions' file.
                     String basename = new File(getSaveDirectory(), simJob.getSimulationJobID()).getPath();

@@ -66,7 +66,7 @@ public class RunSims extends AsynchClientTask {
 	}
 
 	private boolean isSmoldynTimeStepOK(Simulation sim) {
-		for (int scan = 0; scan < sim.getScanCount_2(); scan ++) {
+		for (int scan = 0; scan < sim.getScanCount(); scan ++) {
 			MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(scan);
 			SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(sim, scanIndex);
 			double Dmax = 0;

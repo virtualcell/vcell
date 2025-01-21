@@ -39,8 +39,6 @@ import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Hashtable;
 
-import static cbit.vcell.solver.MathOverrides.parameterScanCoordinateToScanIndex;
-
 /**
  * Insert the type's description here.
  * Creation date: (10/17/2005 11:22:58 PM)
@@ -216,7 +214,7 @@ private void initialize() throws DataAccessException {
 		
 	
 	// if necessarry, create parameter choices panel and wire it up
-	if (getSimulation().getScanCount_2() > 1) {
+	if (getSimulation().getScanCount() > 1) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout(5, 0));
 		panel.setBorder(BorderFactory.createEtchedBorder());
@@ -321,7 +319,7 @@ private void initialize() throws DataAccessException {
 	// put things together
 	setLayout(new java.awt.BorderLayout());
 	add(getMainViewer(), java.awt.BorderLayout.CENTER);
-	if (getSimulation().getScanCount_2() > 1) {
+	if (getSimulation().getScanCount() > 1) {
 		add(getParamChoicesPanel(), java.awt.BorderLayout.SOUTH);
 	}
 }

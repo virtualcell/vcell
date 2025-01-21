@@ -256,10 +256,10 @@ public abstract class SEDMLExporterCommon {
 					//
 					List<String> oldOverrideNames = Arrays.stream(simToExport.getMathOverrides().getOverridenConstantNames()).sorted().collect(Collectors.toList());
 					List<String> newOverrideNames = Arrays.stream(simRoundTripped.getMathOverrides().getOverridenConstantNames()).sorted().collect(Collectors.toList());
-					if (!oldOverrideNames.equals(newOverrideNames) && (simToExport.getScanCount_2() == simRoundTripped.getScanCount_2())){
+					if (!oldOverrideNames.equals(newOverrideNames) && (simToExport.getScanCount() == simRoundTripped.getScanCount())){
 						// simulation scan counts are the same, but overridden constants have different names, try substituting them into the math and compare the maths.
 						System.out.println("old names: "+oldOverrideNames+", new names: "+newOverrideNames);
-						for (int scan=0; scan < simToExport.getScanCount_2(); scan++){
+						for (int scan = 0; scan < simToExport.getScanCount(); scan++){
 							MathOverrides.ScanIndex scanIndex = new MathOverrides.ScanIndex(scan);
 							MathDescription oldMathDescription = new SimulationSymbolTable(simToExport, scanIndex).getMathDescription();
 							MathDescription newMathDescription = new SimulationSymbolTable(simRoundTripped, scanIndex).getMathDescription();
