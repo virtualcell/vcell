@@ -174,7 +174,7 @@ public final class RpcRestlet extends Restlet {
 					serializableResultObject = rpcService.sendRpcMessage(
 							queue, vcRpcRequest, rpcBody.returnedRequired, specialProperties, specialValues, new UserLoginInfo(username));
 				}
-				byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(serializableResultObject);
+				byte[] serializedResultObject = DTOOldAPI.toCompressedSerialized(serializableResultObject);
 				response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");
 				response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 			} catch (Exception e) {
@@ -182,7 +182,7 @@ public final class RpcRestlet extends Restlet {
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				if(e.getCause() instanceof ServerRejectedSaveException) {//send back actual exception, client needs specific cause
 					try {
-						byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(e.getCause());
+						byte[] serializedResultObject = DTOOldAPI.toCompressedSerialized(e.getCause());
 						response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 						return;
 					} catch (Exception e1) {

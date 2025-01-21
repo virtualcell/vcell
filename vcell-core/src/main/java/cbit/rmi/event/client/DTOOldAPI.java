@@ -1,20 +1,28 @@
-package org.vcell.api.utils;
+package cbit.rmi.event.client;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
+import cbit.rmi.event.client.common.SimpleJobStatusRepresentation;
+import cbit.rmi.event.client.events.*;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
-import cbit.vcell.server.*;
+import cbit.vcell.server.HtcJobID;
+import cbit.vcell.server.SimulationExecutionStatus;
+import cbit.vcell.server.SimulationJobStatus;
+import cbit.vcell.server.SimulationQueueEntryStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
-import org.vcell.api.common.SimpleJobStatusRepresentation;
-import org.vcell.api.common.events.*;
 import org.vcell.util.document.*;
 
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Date;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 public class DTOOldAPI {
     public static DataJobEventRepresentation dataJobRepToJsonRep(DataJobEvent dataJobEvent) {
@@ -244,8 +252,8 @@ public class DTOOldAPI {
         return eventRep;
     }
 
-    public static org.vcell.api.common.UserInfo getApiUserInfo(UserInfo userInfo){
-        org.vcell.api.common.UserInfo apiUserInfo = new org.vcell.api.common.UserInfo(
+    public static cbit.rmi.event.client.common.UserInfo getApiUserInfo(UserInfo userInfo){
+        cbit.rmi.event.client.common.UserInfo apiUserInfo = new cbit.rmi.event.client.common.UserInfo(
                 (userInfo.id!=null) ? userInfo.id.toString() : null,
                 userInfo.userid, userInfo.digestedPassword0.getString(), userInfo.email, userInfo.wholeName,
                 userInfo.title, userInfo.company, userInfo.country, userInfo.notify, userInfo.insertDate);
@@ -253,7 +261,7 @@ public class DTOOldAPI {
     }
 
 
-    public static UserInfo fromApiUserInfo(org.vcell.api.common.UserInfo apiUserInfo) {
+    public static UserInfo fromApiUserInfo(cbit.rmi.event.client.common.UserInfo apiUserInfo) {
         UserInfo userInfo = new UserInfo();
         userInfo.id = new KeyValue(apiUserInfo.id);
         userInfo.userid = apiUserInfo.userid;
@@ -320,4 +328,28 @@ public class DTOOldAPI {
         return rep;
     }
 
+
+    public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
+        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+        DeflaterOutputStream dos = new DeflaterOutputStream(bos);
+        java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(dos);
+        oos.writeObject(cacheObj);
+        oos.flush();
+        dos.close();
+        bos.flush();
+        byte[] objData = bos.toByteArray();
+        oos.close();
+        bos.close();
+        return objData;
+    }
+
+    public static Serializable fromCompressedSerialized(InputStream is) throws ClassNotFoundException, java.io.IOException {
+        BufferedInputStream bis = new BufferedInputStream(is);
+        InflaterInputStream iis = new InflaterInputStream(bis);
+        java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis);
+        Serializable cacheClone = (Serializable) ois.readObject();
+        ois.close();
+        bis.close();
+        return cacheClone;
+    }
 }

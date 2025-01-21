@@ -711,7 +711,7 @@ public class VCellApiClient implements AutoCloseable {
 		VCellApiRpcBody vcellapiRpcBody = new VCellApiRpcBody(rpcDestination, rpcRequest, returnRequired, timeoutMS, specialProperties, specialValues);
 		byte[] compressedSerializedRpcBody = null;
 		try {
-			compressedSerializedRpcBody = toCompressedSerialized(vcellapiRpcBody);
+			compressedSerializedRpcBody = DTOOldAPI.toCompressedSerialized(vcellapiRpcBody);
 		} catch (IOException e2) {
 			e2.printStackTrace();
 			throw new RuntimeException("vcellapi rpc failure serializing request body, method="+rpcRequest.methodName+": "+e2.getMessage(),e2);
@@ -801,30 +801,8 @@ public class VCellApiClient implements AutoCloseable {
 			return str.substring(0, maxlength-4)+"...";
 		}
 	}
-	
-	public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
-		java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
-		java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(dos);
-		oos.writeObject(cacheObj);
-		oos.flush();
-		dos.close();
-		bos.flush();
-		byte[] objData = bos.toByteArray();
-		oos.close();
-		bos.close();
-		return objData;
-	}
-	
-	public static Serializable fromCompressedSerialized(InputStream is) throws ClassNotFoundException, java.io.IOException {
-		BufferedInputStream bis = new BufferedInputStream(is);
-		InflaterInputStream iis = new InflaterInputStream(bis);
-		java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis);
-		Serializable cacheClone = (Serializable) ois.readObject();
-		ois.close();
-		bis.close();
-		return cacheClone;
-	}
+
+
 	
 	public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, java.io.IOException {
 		java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData);
