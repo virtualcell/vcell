@@ -5,7 +5,7 @@ import cbit.vcell.server.VCellConnection;
 import org.junit.jupiter.api.*;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.query.BioModelsQuerySpec;
-import org.vcell.api.common.BiomodelRepresentation;
+import cbit.rmi.event.client.common.BiomodelRepresentation;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.UserLoginInfo;
 import org.vcell.util.document.VCInfoContainer;

@@ -7,13 +7,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.api.common.events.BroadcastEventRepresentation;
-import org.vcell.api.common.events.DataJobEventRepresentation;
-import org.vcell.api.common.events.EventWrapper;
-import org.vcell.api.common.events.EventWrapper.EventType;
-import org.vcell.api.common.events.ExportEventRepresentation;
-import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
-import org.vcell.api.utils.DTOOldAPI;
+import cbit.rmi.event.client.events.BroadcastEventRepresentation;
+import cbit.rmi.event.client.events.DataJobEventRepresentation;
+import cbit.rmi.event.client.events.EventWrapper;
+import cbit.rmi.event.client.events.EventWrapper.EventType;
+import cbit.rmi.event.client.events.ExportEventRepresentation;
+import cbit.rmi.event.client.events.SimulationJobStatusEventRepresentation;
+import cbit.rmi.event.client.DTOOldAPI;
 import org.vcell.rest.server.ClientTopicMessageCollector;
 import org.vcell.util.Compare;
 

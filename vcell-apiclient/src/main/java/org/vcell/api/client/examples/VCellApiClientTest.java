@@ -5,10 +5,10 @@ import java.io.IOException;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
-import org.vcell.api.common.ApplicationRepresentation;
-import org.vcell.api.common.BiomodelRepresentation;
-import org.vcell.api.common.SimulationRepresentation;
-import org.vcell.api.common.SimulationTaskRepresentation;
+import cbit.rmi.event.client.common.ApplicationRepresentation;
+import cbit.rmi.event.client.common.BiomodelRepresentation;
+import cbit.rmi.event.client.common.SimulationRepresentation;
+import cbit.rmi.event.client.common.SimulationTaskRepresentation;
 
 public class VCellApiClientTest {
 	

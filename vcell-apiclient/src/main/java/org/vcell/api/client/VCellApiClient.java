@@ -1,5 +1,6 @@
 package org.vcell.api.client;
 
+import cbit.rmi.event.client.DTOOldAPI;
 import com.google.gson.Gson;
 import com.nimbusds.oauth2.sdk.ParseException;
 import org.apache.http.*;
@@ -25,11 +26,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
-import org.vcell.api.common.BiomodelRepresentation;
-import org.vcell.api.common.SimulationRepresentation;
-import org.vcell.api.common.SimulationTaskRepresentation;
-import org.vcell.api.common.UserInfo;
-import org.vcell.api.common.events.EventWrapper;
+import cbit.rmi.event.client.common.BiomodelRepresentation;
+import cbit.rmi.event.client.common.SimulationRepresentation;
+import cbit.rmi.event.client.common.SimulationTaskRepresentation;
+import cbit.rmi.event.client.common.UserInfo;
+import cbit.rmi.event.client.events.EventWrapper;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomApiClientCode;

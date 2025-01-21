@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package org.vcell.api.common;
+package cbit.rmi.event.client.common;
 
 import java.util.Date;
 

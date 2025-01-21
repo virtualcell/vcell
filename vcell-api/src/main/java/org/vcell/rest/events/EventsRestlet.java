@@ -12,7 +12,7 @@ import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.restlet.ext.json.JsonRepresentation;
-import org.vcell.api.common.events.EventWrapper;
+import cbit.rmi.event.client.events.EventWrapper;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.util.document.User;

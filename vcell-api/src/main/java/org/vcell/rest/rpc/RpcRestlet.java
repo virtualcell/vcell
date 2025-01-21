@@ -1,24 +1,22 @@
 package org.vcell.rest.rpc;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-
+import cbit.rmi.event.client.DTOOldAPI;
+import cbit.vcell.clientdb.ServerRejectedSaveException;
+import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
+import cbit.vcell.message.VCellQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.*;
+import org.restlet.data.Form;
+import org.restlet.data.MediaType;
+import org.restlet.data.Method;
+import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
-import org.restlet.engine.adapter.HttpResponse;
-import org.restlet.engine.header.HeaderConstants;
 import org.restlet.representation.ByteArrayRepresentation;
-import org.restlet.util.Series;
-import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiClient.VCellApiRpcBody;
 import org.vcell.api.client.VCellApiRpcRequest;
 import org.vcell.rest.VCellApiApplication;
@@ -29,10 +27,10 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
 
-import cbit.vcell.clientdb.ServerRejectedSaveException;
-import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.message.VCRpcRequest.RpcServiceType;
-import cbit.vcell.message.VCellQueue;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public final class RpcRestlet extends Restlet {
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);

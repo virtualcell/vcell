@@ -1,4 +1,4 @@
-package org.vcell.api.common;
+package cbit.rmi.event.client.common;
 
 
 public class MathModelLink {

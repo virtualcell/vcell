@@ -3,7 +3,7 @@ package org.vcell.util.network;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.resource.PropertyLoader;
 import org.vcell.api.client.VCellApiClient;
-import org.vcell.api.utils.DTOOldAPI;
+import cbit.rmi.event.client.DTOOldAPI;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
@@ -23,7 +23,7 @@ public class RemoteRegistrationService implements RegistrationService {
 	@Override
 	public UserInfo insertUserInfo(UserInfo newUserInfo, boolean bUpdate) throws RemoteProxyException, DataAccessException, UseridIDExistsException {
 		try (VCellApiClient apiClient = getvCellApiClient()){
-			org.vcell.api.common.UserInfo apiUserInfo = apiClient.insertUserInfo(DTOOldAPI.getApiUserInfo(newUserInfo));
+			cbit.rmi.event.client.common.UserInfo apiUserInfo = apiClient.insertUserInfo(DTOOldAPI.getApiUserInfo(newUserInfo));
 			return DTOOldAPI.fromApiUserInfo(apiUserInfo);
 		} catch (IOException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
 			throw new RemoteProxyException("failed to insert user: "+e.getMessage(), e);

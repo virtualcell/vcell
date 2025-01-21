@@ -11,6 +11,8 @@
 package org.vcell.api.messaging;
 
 import cbit.rmi.event.*;
+import cbit.rmi.event.client.DTOOldAPI;
+import cbit.rmi.event.client.events.*;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
@@ -26,9 +28,7 @@ import org.vcell.DependencyConstants;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.VCellApiClient.RpcDestination;
 import org.vcell.api.client.VCellApiRpcRequest;
-import org.vcell.api.common.events.*;
 import org.vcell.api.utils.Auth0ConnectionUtils;
-import org.vcell.api.utils.DTOOldAPI;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.util.document.KeyValue;

@@ -12,8 +12,8 @@ import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.restlet.ext.json.JsonRepresentation;
-import org.vcell.api.common.SimpleJobStatusRepresentation;
-import org.vcell.api.utils.DTOOldAPI;
+import cbit.rmi.event.client.common.SimpleJobStatusRepresentation;
+import cbit.rmi.event.client.DTOOldAPI;
 import org.vcell.rest.VCellApiApplication;
 
 import com.google.gson.Gson;
