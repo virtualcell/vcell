@@ -157,7 +157,7 @@ public class UsersApiTest {
         // Bob requests
         try{
             bobUserApi.getLegacyApiToken();
-            Assertions.fail("Should throw 401 since only clients with role user can call it.");
+            Assertions.fail("Should throw 401 since only users mapped to VCell Users can authenticate to this endpoint.");
         } catch (ApiException e){
             Assertions.assertEquals(401, e.getCode());
         }
