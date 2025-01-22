@@ -46,10 +46,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -77,10 +77,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -108,10 +108,10 @@ paths:
                   $ref: '#/components/schemas/StatusMessage'
                 type: array
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -149,10 +149,10 @@ paths:
               schema:
                 type: string
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -421,10 +421,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -448,10 +448,10 @@ paths:
           description: Legacy password sent in email
         "401":
           description: Need to login to Auth0
-        "500":
-          description: Internal Error
         "403":
           description: Not Allowed
+        "500":
+          description: Internal Error
       security:
       - openId:
         - user
@@ -489,10 +489,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -511,10 +511,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
           description: "Successful, returning the identity"
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -547,12 +547,12 @@ paths:
       responses:
         "200":
           description: "Successful, returning the identity"
-        "409":
-          description: "VCell Identity not mapped, userid already exists"
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
+        "409":
+          description: "VCell Identity not mapped, userid already exists"
       security:
       - openId:
         - user
@@ -604,10 +604,10 @@ paths:
           description: magic link sent in email if appropriate
         "400":
           description: unable to process request
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user
@@ -633,10 +633,10 @@ paths:
               schema:
                 type: boolean
           description: OK
-        "403":
-          description: Not Allowed
         "401":
           description: Not Authorized
+        "403":
+          description: Not Allowed
       security:
       - openId:
         - user

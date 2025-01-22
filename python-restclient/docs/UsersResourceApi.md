@@ -80,8 +80,8 @@ void (empty response body)
 |-------------|-------------|------------------|
 **200** | Legacy password sent in email |  -  |
 **401** | Need to login to Auth0 |  -  |
-**500** | Internal Error |  -  |
 **403** | Not Allowed |  -  |
+**500** | Internal Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -208,8 +208,8 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -275,8 +275,8 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Successful, returning the identity |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -405,9 +405,9 @@ void (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Successful, returning the identity |  -  |
-**409** | VCell Identity not mapped, userid already exists |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
+**409** | VCell Identity not mapped, userid already exists |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -477,8 +477,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -611,8 +611,8 @@ void (empty response body)
 |-------------|-------------|------------------|
 **200** | magic link sent in email if appropriate |  -  |
 **400** | unable to process request |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -681,8 +681,8 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**403** | Not Allowed |  -  |
 **401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
