@@ -4,6 +4,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.pdf.PdfWriter;
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
@@ -50,6 +51,7 @@ public class AdminResource {
     @GET
     @Path("/usage")
 //    @RolesAllowed("admin")
+    @RolesAllowed("user")
     @Operation(operationId = "getUsage", summary = "Get usage summary")
     @NoCache
     @APIResponse(
