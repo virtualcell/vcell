@@ -4,6 +4,7 @@ import cbit.image.ImageException;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.simdata.DataIdentifier;
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -51,6 +52,7 @@ public class FieldDataResource {
 
     @GET
     @Path("IDs")
+    @RolesAllowed("user")
     @Operation(operationId = "getAllFieldDataIDs", summary = "Get all of the ids used to identify, and retrieve field data.")
     public ArrayList<FieldDataReference> getAllFieldDataIDs(){
         try {
@@ -64,6 +66,7 @@ public class FieldDataResource {
 
     @GET
     @Path("/fieldDataShape/{fieldDataID}")
+    @RolesAllowed("user")
     @Operation(operationId = "getFieldDataShapeFromID", summary = "Get the shape of the field data. That is it's size, origin, extent, and data identifiers.")
     public FieldDataShape getFieldDataShapeFromID(@PathParam("fieldDataID") String fieldDataID){
         try {
@@ -94,6 +97,7 @@ public class FieldDataResource {
 
     @POST
     @Path("/analyzeFieldDataFile")
+    @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Operation(operationId = "analyzeFieldDataFile", summary = "Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.")
@@ -111,6 +115,7 @@ public class FieldDataResource {
 
     @POST
     @Path("/createFieldDataFromAnalyzedFile")
+    @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "createFieldDataFromAnalyzedFile", summary = "Take the analyzed results of the field data, modify it to your liking, then save it on the server.")
@@ -143,6 +148,7 @@ public class FieldDataResource {
 
     @DELETE
     @Path("/delete/{fieldDataID}")
+    @RolesAllowed("user")
     @Operation(operationId = "deleteFieldData", summary = "Delete the selected field data.")
     public void deleteFieldData(@PathParam("fieldDataID") String fieldDataID){
         try{

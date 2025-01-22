@@ -3,6 +3,7 @@ package org.vcell.restq.handlers;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import io.quarkus.logging.Log;
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -67,6 +68,7 @@ public class PublicationResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
 //    @RolesAllowed("curator")
+    @RolesAllowed("user")
     @Operation(operationId = "createPublication", summary = "Create publication")
     public Long add(Publication publication) throws DataAccessException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
@@ -87,6 +89,7 @@ public class PublicationResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
 //    @RolesAllowed("curator")
+    @RolesAllowed("user")
     @Operation(operationId = "updatePublication", summary = "Update publication")
     public Publication update(Publication publication) {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
@@ -107,6 +110,7 @@ public class PublicationResource {
     @DELETE
     @Path("{id}")
 //    @RolesAllowed("curator")
+    @RolesAllowed("user")
     @Operation(operationId = "deletePublication", summary = "Delete publication")
     public void delete(@PathParam("id") Long publicationID) {
         try {
