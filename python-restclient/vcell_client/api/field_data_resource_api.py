@@ -108,7 +108,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "AnalyzedResultsFromFieldData"
+            '200': "AnalyzedResultsFromFieldData",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -179,7 +181,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "AnalyzedResultsFromFieldData"
+            '200': "AnalyzedResultsFromFieldData",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -250,7 +254,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "AnalyzedResultsFromFieldData"
+            '200': "AnalyzedResultsFromFieldData",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -317,6 +323,7 @@ class FieldDataResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -390,7 +397,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FieldDataSaveResults"
+            '200': "FieldDataSaveResults",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -457,7 +466,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FieldDataSaveResults"
+            '200': "FieldDataSaveResults",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -524,7 +535,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FieldDataSaveResults"
+            '200': "FieldDataSaveResults",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -588,6 +601,7 @@ class FieldDataResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -837,6 +851,7 @@ class FieldDataResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -906,7 +921,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[FieldDataReference]"
+            '200': "List[FieldDataReference]",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -969,7 +986,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[FieldDataReference]"
+            '200': "List[FieldDataReference]",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1032,7 +1051,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[FieldDataReference]"
+            '200': "List[FieldDataReference]",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1080,6 +1101,7 @@ class FieldDataResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'openId'
         ]
 
         return self.api_client.param_serialize(
@@ -1153,7 +1175,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FieldDataShape"
+            '200': "FieldDataShape",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1220,7 +1244,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FieldDataShape"
+            '200': "FieldDataShape",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1287,7 +1313,9 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "FieldDataShape"
+            '200': "FieldDataShape",
+            '401': None,
+            '403': None
             
         }
         response_data = self.api_client.call_api(
@@ -1338,6 +1366,7 @@ class FieldDataResourceApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'openId'
         ]
 
         return self.api_client.param_serialize(

@@ -62,6 +62,10 @@ configuration = vcell_client.Configuration(
     host = "https://vcell-dev.cam.uchc.edu"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
 
 
 # Enter a context with an instance of the API client

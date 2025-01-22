@@ -130,6 +130,13 @@ paths:
                 format: binary
                 type: string
           description: The PDF report
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: Get usage summary
       tags:
       - Admin Resource
@@ -214,6 +221,13 @@ paths:
                   $ref: '#/components/schemas/FieldDataReference'
                 type: array
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: "Get all of the ids used to identify, and retrieve field data."
       tags:
       - Field Data Resource
@@ -233,6 +247,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: "Analyze the field data from the uploaded file. Filenames must be lowercase\
         \ alphanumeric, and can contain underscores."
       tags:
@@ -254,6 +275,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSaveResults'
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: "Take the analyzed results of the field data, modify it to your liking,\
         \ then save it on the server."
       tags:
@@ -274,6 +302,13 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: Delete the selected field data.
       tags:
       - Field Data Resource
@@ -296,6 +331,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataShape'
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: "Get the shape of the field data. That is it's size, origin, extent,\
         \ and data identifiers."
       tags:
@@ -346,6 +388,13 @@ paths:
                 format: int64
                 type: integer
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: Create publication
       tags:
       - Publication Resource
@@ -365,6 +414,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: Update publication
       tags:
       - Publication Resource
@@ -385,6 +441,13 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: Delete publication
       tags:
       - Publication Resource
