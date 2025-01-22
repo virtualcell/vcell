@@ -29,7 +29,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.XmlHelper;
 
 @SuppressWarnings("serial")
@@ -229,12 +228,7 @@ public class SbmlExtensionFilter extends SelectorExtensionFilter {
 		}
 		return false;
 	}
-	public int getScanCount() {
-		if (selectedSimWOSBE != null) {
-			return selectedSimWOSBE.getScanCount();
-		}
-		return 0;
-	}
+
 	public String getSimulationOverrideName() {
 		if (selectedSimWOSBE != null) {
 			return selectedSimWOSBE.getName();

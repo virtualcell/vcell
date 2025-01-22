@@ -691,7 +691,9 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
             buffer.append(movingBoundarySolverOptions.getVCML() + "\n");
         }
 
-        buffer.append(VCML.SolverTaskDescriptionNumTrials + " " + getNumTrials() + "\n");
+        if(getNumTrials() > 1) {
+            buffer.append(VCML.SolverTaskDescriptionNumTrials + " " + getNumTrials() + "\n");
+        }
 
         buffer.append(VCML.EndBlock + "\n");
 

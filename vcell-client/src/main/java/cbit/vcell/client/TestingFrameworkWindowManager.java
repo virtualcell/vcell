@@ -1178,8 +1178,8 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
      */
     private String generateTestCriteriaReport(TestCaseNew testCase, TestCriteriaNew testCriteria, Simulation testSim, TFGenerateReport.VCDocumentAndSimInfo userSelectedRefSimInfo/*,VCDocument refDoc,VCDocument testDocument*/) {
 
-        if (testSim.getScanCount() != 1) {
-            throw new RuntimeException("paramater scan is not supported in Math Testing Framework");
+        if (testSim.getJobCount() != 1) {
+            throw new RuntimeException("paramater scans and trials are not supported in Math Testing Framework");
         }
         SimulationSymbolTable simSymbolTable = new SimulationSymbolTable(testSim, MathOverrides.ScanIndex.ZERO);
 
@@ -1310,8 +1310,8 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
                             VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refVCDocumentAndSimInfo.getSimInfo().getAuthoritativeVCSimulationIdentifier(), 0);
                             PDEDataManager refDataManager = (PDEDataManager) getRequestManager().getDataManager(null, refVcdID, refSim.isSpatial());
 
-                            if (refSim.getScanCount() != 1) {
-                                throw new RuntimeException("paramater scan is not supported in Math Testing Framework");
+                            if (refSim.getJobCount() != 1) {
+                                throw new RuntimeException("paramater scans and trials are not supported in Math Testing Framework");
                             }
                             SimulationSymbolTable refSimSymbolTable = new SimulationSymbolTable(refSim, MathOverrides.ScanIndex.ZERO);
 
@@ -1407,8 +1407,8 @@ public class TestingFrameworkWindowManager extends TopLevelWindowManager impleme
                             }
                         } else if (testCase.getType().equals(TestCaseNew.REGRESSION)) {
                             Simulation refSim = ((ClientDocumentManager) getRequestManager().getDocumentManager()).getSimulation(testCriteria.getRegressionSimInfo());
-                            if (refSim.getScanCount() != 1) {
-                                throw new RuntimeException("paramater scan is not supported in Math Testing Framework");
+                            if (refSim.getJobCount() != 1) {
+                                throw new RuntimeException("paramater scans and trials are not supported in Math Testing Framework");
                             }
                             SimulationSymbolTable refSimSymbolTable = new SimulationSymbolTable(refSim, MathOverrides.ScanIndex.ZERO);
 

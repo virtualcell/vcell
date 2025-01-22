@@ -45,7 +45,7 @@ protected LocalSimulationController(User user, SimulationControllerImpl simulati
 /**
  * This method was created by a SmartGuide.
  */
-public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationScanJobs) {
+public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdentifier, int numSimulationJobs) {
 	if (lg.isTraceEnabled()) lg.trace("LocalSimulationController.startSimulation(simInfo="+vcSimulationIdentifier+")");
 	try {
 		Simulation simulation = simulationControllerImpl.getSimulationDatabase().getSimulation(user,vcSimulationIdentifier.getSimulationKey());
@@ -53,7 +53,7 @@ public SimulationStatus startSimulation(VCSimulationIdentifier vcSimulationIdent
 		return simulationControllerImpl.getSimulationDatabase().getSimulationStatus(vcSimulationIdentifier.getSimulationKey());
 	}catch (Exception e){
 		lg.error(e.getMessage(),e);
-		throw new RuntimeException("startSimluation" + vcSimulationIdentifier.getID() + " " + numSimulationScanJobs + " scan jobs",e);
+		throw new RuntimeException("startSimluation" + vcSimulationIdentifier.getID() + " " + numSimulationJobs + " scan/trial jobs",e);
 	}
 }
 

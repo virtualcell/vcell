@@ -4382,7 +4382,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 								// check for running once more... directly from job status
 								SimulationStatus serverSimulationStatus = getServerSimulationStatus(simInfo);
 								if (serverSimulationStatus != null
-										&& serverSimulationStatus.numberOfJobsDone() < simulations[i].getScanCount()) {
+										&& serverSimulationStatus.numberOfJobsDone() < simulations[i].getJobCount()) {
 									SimulationStatus simStatus = getClientServerManager().getJobManager()
 											.stopSimulation(simInfo.getAuthoritativeVCSimulationIdentifier());
 									// updateStatus
@@ -4461,7 +4461,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							}
 							Simulation[] sims = simContexts[i].getSimulations();
 							for (int j = 0; j < sims.length; j += 1) {
-								for (int k = 0; k < sims[j].getScanCount(); k += 1) {
+								for (int k = 0; k < sims[j].getJobCount(); k += 1) {
 									FieldDataWindowManager.OpenModelInfoHolder simInfoHolder = new FieldDataWindowManager.FDSimBioModelInfo(
 											sims[j].getName(), bioModel.getVersion(), simContexts[i],
 											sims[j].getSimulationInfo(), k,
@@ -4489,7 +4489,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						}
 						Simulation[] sims = mathModel.getSimulations();
 						for (int i = 0; i < sims.length; i += 1) {
-							for (int k = 0; k < sims[i].getScanCount(); k += 1) {
+							for (int k = 0; k < sims[i].getJobCount(); k += 1) {
 								FieldDataWindowManager.OpenModelInfoHolder simInfoHolder = new FieldDataWindowManager.FDSimMathModelInfo(
 										sims[i].getName(), mathModel.getVersion(), mathModel.getMathDescription(),
 										sims[i].getSimulationInfo(), k,

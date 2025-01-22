@@ -281,8 +281,8 @@ public class VCComprehensiveStatistics {
 						boolean bHasCompletedSim = false;
 						for (Simulation sim : mathModel.getSimulations()) {
 							SimulationStatusPersistent ss = dbServerImpl.getSimulationStatus(sim.getKey());
-							for (int scan = 0; ss != null && scan < sim.getScanCount(); scan ++) {
-								SimulationJobStatusPersistent jobStatus = ss.getJobStatus(scan);
+							for (int jobIndex = 0; ss != null && jobIndex < sim.getJobCount(); jobIndex ++) {
+								SimulationJobStatusPersistent jobStatus = ss.getJobStatus(jobIndex);
 								if (jobStatus != null) {
 									if (jobStatus.getSchedulerStatus() == SchedulerStatus.COMPLETED) {								
 										bHasCompletedSim = true;
@@ -422,8 +422,8 @@ public class VCComprehensiveStatistics {
 						for (Simulation sim : bioModel.getSimulations()) {
 							SimulationStatusPersistent ss = dbServerImpl.getSimulationStatus(sim.getKey());
 							if (ss != null) {
-								for (int scan = 0; scan < sim.getScanCount(); scan ++) {
-									SimulationJobStatusPersistent jobStatus = ss.getJobStatus(scan);
+								for (int jobIndex = 0; jobIndex < sim.getJobCount(); jobIndex ++) {
+									SimulationJobStatusPersistent jobStatus = ss.getJobStatus(jobIndex);
 									if (jobStatus != null) {
 										if (jobStatus.getSchedulerStatus() == SchedulerStatus.COMPLETED) {								
 											bHasCompletedSim = true;
