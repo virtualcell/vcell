@@ -2,13 +2,16 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.solver.TempSimulation;
 
+import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
 import org.jlibsedml.AbstractTask;
-import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
+import org.vcell.cli.run.results.NonSpatialValueHolder;
+import org.vcell.cli.run.results.NonSpatialResultsConverter;
 import org.vcell.cli.run.TaskJob;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.cli.run.results.SpatialResultsConverter;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -21,9 +24,9 @@ import java.util.Map;
  * Factory class to create Hdf5DataWrappers from a sedml object and simulation data.
  */
 public class Hdf5DataExtractor {
-    private SedML sedml;
-    private Map<AbstractTask, TempSimulation> taskToSimulationMap;
-    private String sedmlLocation, sedmlRoot;
+    private final SedML sedml;
+    private final Map<AbstractTask, TempSimulation> taskToSimulationMap;
+    private final String sedmlLocation;
 
     private final static Logger logger = LogManager.getLogger(Hdf5DataExtractor.class);
 
@@ -36,30 +39,31 @@ public class Hdf5DataExtractor {
     public Hdf5DataExtractor(SedML sedml, Map<AbstractTask, TempSimulation> taskToSimulationMap){
         this.sedml = sedml;
         this.taskToSimulationMap = taskToSimulationMap;
-        this.sedmlRoot = Paths.get(sedml.getPathForURI()).toString();
-        this.sedmlLocation = Paths.get(this.sedmlRoot, this.sedml.getFileName()).toString();
+        this.sedmlLocation = Paths.get(sedml.getPathForURI(), sedml.getFileName()).toString();
     }
 
     /**
      * 
-     * @param nonSpatialResults the nonspatial results set of a sedml execution
+     * @param organizedNonSpatialResults the nonspatial results set of a sedml execution
      * @param spatialResults the spatial results set of a sedml execution
      * @return a wrapper for hdf5 relevant data
-     * @see NonspatialResultsConverter::convertNonspatialResultsToSedmlFormat
-     * @see SpatialResultsConverter::collectSpatialDatasets
+     * @see NonSpatialResultsConverter ::convertNonspatialResultsToSedmlFormat
+     * @see SpatialResultsConverter ::collectSpatialDatasets
      */
-    public Hdf5DataContainer extractHdf5RelevantData(Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResults, Map<TaskJob, File> spatialResults, boolean isBioSimMode) {
+    public Hdf5DataContainer extractHdf5RelevantData(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults, Map<TaskJob, File> spatialResults, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> wrappers = new LinkedHashMap<>();
         Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer(isBioSimMode);
         Exception nonSpatialException = null, spatialException = null;
 
-        try {
-            Map<Report, List<Hdf5SedmlResults>> nonspatialWrappers = NonspatialResultsConverter.convertNonspatialResultsToSedmlFormat(
-                    this.sedml, nonSpatialResults, this.taskToSimulationMap, this.sedmlLocation);
-            Hdf5DataExtractor.addWrappers(wrappers, nonspatialWrappers);
-        } catch (Exception e){
-            logger.warn("Collection of nonspatial datasets failed for " + this.sedml.getFileName(), e);
-            nonSpatialException = e;
+        if (!organizedNonSpatialResults.isEmpty()){
+            try {
+                Map<Report, List<Hdf5SedmlResults>> nonSpatialWrappers = NonSpatialResultsConverter.prepareNonSpatialDataForHdf5(
+                        this.sedml, organizedNonSpatialResults, this.sedmlLocation);
+                Hdf5DataExtractor.addWrappers(wrappers, nonSpatialWrappers);
+            } catch (Exception e){
+                logger.warn("Collection of non-spatial datasets failed for " + this.sedml.getFileName(), e);
+                nonSpatialException = e;
+            }
         }
 
         try {
@@ -77,7 +81,7 @@ public class Hdf5DataExtractor {
                 + "\nSpatial Reported:\n" + spatialException.getMessage());
         } else if (nonSpatialException != null || spatialException != null){
             Exception exception = nonSpatialException == null ? spatialException : nonSpatialException;
-            throw new RuntimeException("Encountered " + (nonSpatialException == null ? "spatial " : "nonspatial") 
+            throw new RuntimeException("Encountered " + (nonSpatialException == null ? "spatial " : "non-spatial")
                 + "dataset collection failure.", exception);
         } // else no problem
 
