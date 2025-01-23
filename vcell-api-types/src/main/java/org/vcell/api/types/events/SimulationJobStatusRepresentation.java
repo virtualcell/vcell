@@ -1,8 +1,8 @@
-package cbit.rmi.event.client.common;
+package org.vcell.api.types.events;
 
 import java.util.Date;
 
-public class SimpleJobStatusRepresentation {
+public class SimulationJobStatusRepresentation {
 	
 	// enum SimulationJobStatus.SimulationQueueID
 	public enum SimulationQueueID {
@@ -114,10 +114,11 @@ public class SimpleJobStatusRepresentation {
 	public String computeHost = null;
 	public Boolean hasData = false;
 	
-	private SimpleJobStatusRepresentation() {
+	private SimulationJobStatusRepresentation() {
+		
 	}
 	
-	public SimpleJobStatusRepresentation(String vcellServerID, String simulationKey, int taskID,
+	public SimulationJobStatusRepresentation(String vcellServerID, Date timeDateStamp, String simulationKey, int taskID,
 			int jobIndex, Date submitDate, String owner_userid, String onwer_userkey, SchedulerStatus schedulerStatus,
 			DetailedState detailedState, String detailedStateMessage, Long htcJobNumber, String htcComputeServer,
 			BatchSystemType htcBatchSystemType, Integer queuePriority, Date queueDate, SimulationQueueID queueId,
@@ -125,6 +126,7 @@ public class SimpleJobStatusRepresentation {
 			Boolean hasData) {
 		super();
 		this.vcellServerID = vcellServerID;
+		this.timeDateStamp = timeDateStamp;
 		this.simulationKey = simulationKey;
 		this.taskID = taskID;
 		this.jobIndex = jobIndex;
@@ -146,5 +148,7 @@ public class SimpleJobStatusRepresentation {
 		this.computeHost = computeHost;
 		this.hasData = hasData;
 	}
+	
+	
 	
 }

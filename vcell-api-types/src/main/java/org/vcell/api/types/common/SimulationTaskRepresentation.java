@@ -1,4 +1,4 @@
-package cbit.rmi.event.client.common;
+package org.vcell.api.types.common;
 
 
 public class SimulationTaskRepresentation {

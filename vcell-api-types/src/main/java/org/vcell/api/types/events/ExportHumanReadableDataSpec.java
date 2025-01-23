@@ -1,4 +1,4 @@
-package cbit.rmi.event.client.events;
+package org.vcell.api.types.events;
 
 import java.util.ArrayList;
 import java.util.HashMap;

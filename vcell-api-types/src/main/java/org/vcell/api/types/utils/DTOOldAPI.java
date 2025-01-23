@@ -1,10 +1,8 @@
-package cbit.rmi.event.client;
+package org.vcell.api.types.utils;
 
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
-import cbit.rmi.event.client.common.SimpleJobStatusRepresentation;
-import cbit.rmi.event.client.events.*;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
@@ -15,6 +13,9 @@ import cbit.vcell.server.SimulationQueueEntryStatus;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
+import org.vcell.api.types.common.SimpleJobStatusRepresentation;
+import org.vcell.api.types.common.UserInfo;
+import org.vcell.api.types.events.*;
 import org.vcell.util.document.*;
 
 import java.io.BufferedInputStream;
@@ -252,8 +253,8 @@ public class DTOOldAPI {
         return eventRep;
     }
 
-    public static cbit.rmi.event.client.common.UserInfo getApiUserInfo(UserInfo userInfo){
-        cbit.rmi.event.client.common.UserInfo apiUserInfo = new cbit.rmi.event.client.common.UserInfo(
+    public static UserInfo getApiUserInfo(org.vcell.util.document.UserInfo userInfo){
+        UserInfo apiUserInfo = new UserInfo(
                 (userInfo.id!=null) ? userInfo.id.toString() : null,
                 userInfo.userid, userInfo.digestedPassword0.getString(), userInfo.email, userInfo.wholeName,
                 userInfo.title, userInfo.company, userInfo.country, userInfo.notify, userInfo.insertDate);
@@ -261,8 +262,8 @@ public class DTOOldAPI {
     }
 
 
-    public static UserInfo fromApiUserInfo(cbit.rmi.event.client.common.UserInfo apiUserInfo) {
-        UserInfo userInfo = new UserInfo();
+    public static org.vcell.util.document.UserInfo fromApiUserInfo(UserInfo apiUserInfo) {
+        org.vcell.util.document.UserInfo userInfo = new org.vcell.util.document.UserInfo();
         userInfo.id = new KeyValue(apiUserInfo.id);
         userInfo.userid = apiUserInfo.userid;
         userInfo.digestedPassword0 = UserLoginInfo.DigestedPassword.createAlreadyDigested(apiUserInfo.digestedPassword0);

@@ -1,4 +1,4 @@
-package cbit.rmi.event.client.events;
+package org.vcell.api.types.events;
 
 public class DataJobEventRepresentation {
 	

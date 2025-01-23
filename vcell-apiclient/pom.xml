@@ -119,5 +119,10 @@
 			<artifactId>vcell-core</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-api-types</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 </project>

@@ -1,7 +1,6 @@
 package org.vcell.rest.rpc;
 
 import cbit.rmi.event.VCellApiRpcBody;
-import cbit.rmi.event.client.DTOOldAPI;
 import cbit.vcell.clientdb.ServerRejectedSaveException;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
@@ -26,6 +25,7 @@ import org.vcell.util.CompressionUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.api.types.utils.DTOOldAPI;
 
 import java.io.Serializable;
 import java.util.Arrays;

@@ -11,8 +11,8 @@
 package org.vcell.api.messaging;
 
 import cbit.rmi.event.*;
-import cbit.rmi.event.client.DTOOldAPI;
-import cbit.rmi.event.client.events.*;
+import org.vcell.api.types.events.*;
+import org.vcell.api.types.utils.DTOOldAPI;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;

@@ -1,5 +1,6 @@
 package org.vcell.rest.admin;
 
+import org.vcell.api.types.common.SimpleJobStatusRepresentation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
@@ -12,14 +13,13 @@ import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.restlet.ext.json.JsonRepresentation;
-import cbit.rmi.event.client.common.SimpleJobStatusRepresentation;
-import cbit.rmi.event.client.DTOOldAPI;
 import org.vcell.rest.VCellApiApplication;
 
 import com.google.gson.Gson;
 
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
+import org.vcell.api.types.utils.DTOOldAPI;
 
 public final class AdminJobsRestlet extends Restlet {
 	private final static Logger lg = LogManager.getLogger(AdminJobsRestlet.class);

@@ -1,5 +1,6 @@
 package org.vcell.rest.events;
 
+import org.vcell.api.types.events.EventWrapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
@@ -12,7 +13,6 @@ import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
 import org.restlet.ext.json.JsonRepresentation;
-import cbit.rmi.event.client.events.EventWrapper;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.util.document.User;
