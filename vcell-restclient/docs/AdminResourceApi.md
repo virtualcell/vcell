@@ -22,6 +22,7 @@ Get usage summary
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.AdminResourceApi;
 
@@ -29,6 +30,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         AdminResourceApi apiInstance = new AdminResourceApi(defaultClient);
         try {
@@ -56,7 +58,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -67,6 +69,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | The PDF report |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getUsageWithHttpInfo
 
@@ -82,6 +86,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.AdminResourceApi;
 
@@ -89,6 +94,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         AdminResourceApi apiInstance = new AdminResourceApi(defaultClient);
         try {
@@ -118,7 +124,7 @@ ApiResponse<[**File**](File.md)>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -129,4 +135,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | The PDF report |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 

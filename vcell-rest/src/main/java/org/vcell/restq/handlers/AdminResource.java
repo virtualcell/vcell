@@ -51,6 +51,7 @@ public class AdminResource {
     @GET
     @Path("/usage")
 //    @RolesAllowed("admin")
+    @RolesAllowed("user")
     @Operation(operationId = "getUsage", summary = "Get usage summary")
     @NoCache
     @APIResponse(
@@ -62,10 +63,7 @@ public class AdminResource {
         if (securityIdentity.isAnonymous()){
             throw new WebApplicationException("not authenticated", 401);
         }
-        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-        if (vcellUser == null) {
-            throw new WebApplicationException("vcell user not specified", 401);
-        }
+        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
         try {
             String htmlString = adminRestDB.getUsageSummaryHtml(vcellUser);
             StreamingOutput fileStream = output -> {

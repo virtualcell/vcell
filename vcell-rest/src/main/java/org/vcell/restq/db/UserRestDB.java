@@ -7,9 +7,9 @@ import cbit.vcell.modeldb.UserIdentity;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.vcell.auth.JWTUtils;
-import org.vcell.restq.Main;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
@@ -19,6 +19,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
+import org.w3c.www.http.HTTP;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -42,20 +43,29 @@ public class UserRestDB {
 
 
     // TODO: add some short-lived caching here to avoid repeated database calls
-    public User getUserFromIdentity(SecurityIdentity securityIdentity, boolean defaultGuest) throws DataAccessException {
+
+    /**
+     * Get the users identity from the requests that they make, usually this is a JWT token, placed within the
+     * HTTP Authorization header. If allowAnonymous is true, then null will be returned for anonymous users, otherwise
+     * an error will be thrown about the user being unauthenticated.
+     */
+    public enum UserRequirement{
+        ALLOW_ANONYMOUS,
+        REQUIRE_USER
+    }
+    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws DataAccessException, WebApplicationException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
-            if (defaultGuest) return User.VCELL_GUEST;
-            return null;
+            if (allowAnonymous == UserRequirement.ALLOW_ANONYMOUS){
+                return null;
+            } else {
+                throw new WebApplicationException("User is not authenticated.", HTTP.UNAUTHORIZED);
+            }
         }
         if (userIdentities.size() > 1){
             throw new DataAccessException("multiple identities found for user");
         }
         return userIdentities.get(0).user();
-    }
-
-    public User getUserFromIdentity(SecurityIdentity securityIdentity) throws DataAccessException {
-        return getUserFromIdentity(securityIdentity, false);
     }
 
     // TODO: add some short-lived caching here to avoid repeated database calls

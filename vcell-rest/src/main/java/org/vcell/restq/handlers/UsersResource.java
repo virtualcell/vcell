@@ -252,10 +252,7 @@ public class UsersResource {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
-        org.vcell.util.document.User vcellUser = userRestDB.getUserFromIdentity(securityIdentity);
-        if(vcellUser == null){
-            return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
-        }
+        org.vcell.util.document.User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
         ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), vcellUser);
         return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
     }

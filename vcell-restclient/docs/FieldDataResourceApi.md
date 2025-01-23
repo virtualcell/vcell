@@ -30,6 +30,7 @@ Analyze the field data from the uploaded file. Filenames must be lowercase alpha
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -37,6 +38,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         File _file = new File("/path/to/file"); // File | 
@@ -70,7 +72,7 @@ public class Example {
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -81,6 +83,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## analyzeFieldDataFileWithHttpInfo
 
@@ -96,6 +100,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -103,6 +108,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         File _file = new File("/path/to/file"); // File | 
@@ -138,7 +144,7 @@ ApiResponse<[**AnalyzedResultsFromFieldData**](AnalyzedResultsFromFieldData.md)>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -149,6 +155,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## createFieldDataFromAnalyzedFile
@@ -164,6 +172,7 @@ Take the analyzed results of the field data, modify it to your liking, then save
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -171,6 +180,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         AnalyzedResultsFromFieldData analyzedResultsFromFieldData = new AnalyzedResultsFromFieldData(); // AnalyzedResultsFromFieldData | 
@@ -202,7 +212,7 @@ public class Example {
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -213,6 +223,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## createFieldDataFromAnalyzedFileWithHttpInfo
 
@@ -228,6 +240,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -235,6 +248,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         AnalyzedResultsFromFieldData analyzedResultsFromFieldData = new AnalyzedResultsFromFieldData(); // AnalyzedResultsFromFieldData | 
@@ -268,7 +282,7 @@ ApiResponse<[**FieldDataSaveResults**](FieldDataSaveResults.md)>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -279,6 +293,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## deleteFieldData
@@ -294,6 +310,7 @@ Delete the selected field data.
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -301,6 +318,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         String fieldDataID = "fieldDataID_example"; // String | 
@@ -331,7 +349,7 @@ null (empty response body)
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -342,6 +360,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## deleteFieldDataWithHttpInfo
 
@@ -357,6 +377,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -364,6 +385,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         String fieldDataID = "fieldDataID_example"; // String | 
@@ -396,7 +418,7 @@ ApiResponse<Void>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -407,6 +429,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## getAllFieldDataIDs
@@ -422,6 +446,7 @@ Get all of the ids used to identify, and retrieve field data.
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -429,6 +454,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         try {
@@ -456,7 +482,7 @@ This endpoint does not need any parameter.
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -467,6 +493,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getAllFieldDataIDsWithHttpInfo
 
@@ -482,6 +510,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -489,6 +518,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         try {
@@ -518,7 +548,7 @@ ApiResponse<[**List&lt;FieldDataReference&gt;**](FieldDataReference.md)>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -529,6 +559,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## getFieldDataShapeFromID
@@ -544,6 +576,7 @@ Get the shape of the field data. That is it&#39;s size, origin, extent, and data
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -551,6 +584,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         String fieldDataID = "fieldDataID_example"; // String | 
@@ -582,7 +616,7 @@ public class Example {
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -593,6 +627,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getFieldDataShapeFromIDWithHttpInfo
 
@@ -608,6 +644,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
 import org.vcell.restclient.api.FieldDataResourceApi;
 
@@ -615,6 +652,7 @@ public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         String fieldDataID = "fieldDataID_example"; // String | 
@@ -648,7 +686,7 @@ ApiResponse<[**FieldDataShape**](FieldDataShape.md)>
 
 ### Authorization
 
-No authorization required
+[openId](../README.md#openId)
 
 ### HTTP request headers
 
@@ -659,4 +697,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 

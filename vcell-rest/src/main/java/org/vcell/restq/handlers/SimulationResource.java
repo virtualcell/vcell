@@ -40,7 +40,7 @@ public class SimulationResource {
     @Produces(MediaType.APPLICATION_JSON)
     public ArrayList<StatusMessage> startSimulation(@PathParam("simID") String simID) {
         try {
-            User user = userRestDB.getUserFromIdentity(securityIdentity);
+            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             return simulationRestDB.startSimulation(simID, user);
         } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
@@ -53,7 +53,7 @@ public class SimulationResource {
     @Operation(operationId = "stopSimulation", summary = "Stop a simulation.")
     public ArrayList<StatusMessage> stopSimulation(@PathParam("simID") String simID) {
         try {
-            User user = userRestDB.getUserFromIdentity(securityIdentity);
+            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             return simulationRestDB.stopSimulation(simID, user);
         } catch (DataAccessException | SQLException | VCMessagingException e) {
             throw new RuntimeException(e);
@@ -67,7 +67,7 @@ public class SimulationResource {
     public SimulationStatusPersistentRecord getSimulationStatus(@PathParam("simID") String simID,
                                     @QueryParam("bioModelID") String bioModelID, @QueryParam("mathModelID") String mathModelID){
         try {
-            User user = userRestDB.getUserFromIdentity(securityIdentity);
+            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             return simulationRestDB.getBioModelSimulationStatus(simID, bioModelID, user);
         } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);

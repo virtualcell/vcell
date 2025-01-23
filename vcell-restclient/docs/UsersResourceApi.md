@@ -91,8 +91,8 @@ null (empty response body)
 |-------------|-------------|------------------|
 | **200** | Legacy password sent in email |  -  |
 | **401** | Need to login to Auth0 |  -  |
-| **500** | Internal Error |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Internal Error |  -  |
 
 ## forgotLegacyPasswordWithHttpInfo
 
@@ -161,8 +161,8 @@ ApiResponse<Void>
 |-------------|-------------|------------------|
 | **200** | Legacy password sent in email |  -  |
 | **401** | Need to login to Auth0 |  -  |
-| **500** | Internal Error |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Internal Error |  -  |
 
 
 ## getGuestLegacyApiToken
@@ -732,9 +732,9 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
-| **409** | VCell Identity not mapped, userid already exists |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **409** | VCell Identity not mapped, userid already exists |  -  |
 
 ## mapNewUserWithHttpInfo
 
@@ -802,9 +802,9 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Successful, returning the identity |  -  |
-| **409** | VCell Identity not mapped, userid already exists |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **409** | VCell Identity not mapped, userid already exists |  -  |
 
 
 ## mapUser

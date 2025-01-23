@@ -133,8 +133,8 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationByIdWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/v1/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**getPublications**](docs/PublicationResourceApi.md#getPublications) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications
-*PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Create publication
-*PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Create publication
+*PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Update publication
+*PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Update publication
 *SimulationResourceApi* | [**getSimulationStatus**](docs/SimulationResourceApi.md#getSimulationStatus) | **GET** /api/v1/Simulation/{simID}/simulationStatus | Get the status of simulation running
 *SimulationResourceApi* | [**getSimulationStatusWithHttpInfo**](docs/SimulationResourceApi.md#getSimulationStatusWithHttpInfo) | **GET** /api/v1/Simulation/{simID}/simulationStatus | Get the status of simulation running
 *SimulationResourceApi* | [**startSimulation**](docs/SimulationResourceApi.md#startSimulation) | **POST** /api/v1/Simulation/{simID}/startSimulation | Start a simulation.
