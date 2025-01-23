@@ -118,7 +118,7 @@ public class VCellApiApplication extends WadlApplication {
 	public static final String SIMDATA = "simdata";
 	public static final String SIMDATAID = "simdataid";
 	
-	public static final String EVENTS = "org/vcell/api/types";
+	public static final String EVENTS = "events";
 	public static final String EVENTS_BEGINTIMESTAMP = "beginTimestamp";
 
 	public static final String N5DATA = "n5data";
