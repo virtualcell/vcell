@@ -54,7 +54,7 @@ public class PlottingDataExtractor {
                 // There's two cases: 1 x-axis, n y-axes; or n x-axes, n y-axes.
                 final boolean hasSingleXSeries = xResults.listOfResultSets.size() == 1;
                 final boolean hasSingleYSeries = yResults.listOfResultSets.size() == 1;
-                boolean hasPairsOfSeries = xResults.listOfResultSets.size() != yResults.listOfResultSets.size();
+                boolean hasPairsOfSeries = xResults.listOfResultSets.size() == yResults.listOfResultSets.size();
                 if (!hasSingleXSeries && !hasPairsOfSeries){
                     throw new RuntimeException("Unexpected mismatch between number of x data sets, and y data sets!");
                 }
