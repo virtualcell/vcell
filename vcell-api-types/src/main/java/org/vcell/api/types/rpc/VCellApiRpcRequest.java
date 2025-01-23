@@ -8,7 +8,7 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
-package cbit.rmi.event;
+package org.vcell.api.types.rpc;
 
 
 /**

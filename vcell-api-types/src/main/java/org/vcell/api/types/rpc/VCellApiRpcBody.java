@@ -1,4 +1,4 @@
-package cbit.rmi.event;
+package org.vcell.api.types.rpc;
 
 import java.io.Serializable;
 

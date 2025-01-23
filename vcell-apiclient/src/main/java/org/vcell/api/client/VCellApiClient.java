@@ -1,7 +1,7 @@
 package org.vcell.api.client;
 
-import cbit.rmi.event.VCellApiRpcBody;
-import cbit.rmi.event.VCellApiRpcRequest;
+import org.vcell.api.types.rpc.VCellApiRpcBody;
+import org.vcell.api.types.rpc.VCellApiRpcRequest;
 import com.google.gson.Gson;
 import com.nimbusds.oauth2.sdk.ParseException;
 import org.vcell.api.types.common.BiomodelRepresentation;
