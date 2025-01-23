@@ -164,8 +164,10 @@ public class SolverUtilities {
 		for (SolverDescription sd : SolverDescription.values()) {
 			if (sd.getKisao().contains(":") || sd.getKisao().contains("_")) {
 				logger.trace(sd.getKisao());
+			} else if ("KISAO".equals(sd.getKisao())){
+				logger.info("Skipping not-yet-created KiSAO term");
 			} else {
-				if (logger.isDebugEnabled()) logger.warn("`{}` is bad KiSAO formating, skipping", sd.getKisao());
+				logger.warn("`{}` is bad KiSAO formating, skipping", sd.getKisao());
 				continue;
 			}
 			String s1 = candidate.getId();

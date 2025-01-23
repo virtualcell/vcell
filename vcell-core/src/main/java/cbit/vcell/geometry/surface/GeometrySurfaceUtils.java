@@ -85,7 +85,7 @@ public class GeometrySurfaceUtils {
         cbit.vcell.geometry.RegionImage.RegionInfo regionInfos[] = regionImage.getRegionInfos();
         for(int i = 0; i < regionInfos.length; i++){
             cbit.vcell.geometry.RegionImage.RegionInfo regionInfo = regionInfos[i];
-            if (lg.isDebugEnabled()) lg.info(regionInfo);
+            lg.debug(regionInfo);
             cbit.vcell.geometry.SubVolume subVolume = geometrySpec.getSubVolume(regionInfo.getPixelValue());
             String name = subVolume.getName() + regionInfo.getRegionIndex();
             int numPixels = regionInfo.getNumPixels();
@@ -214,7 +214,7 @@ public class GeometrySurfaceUtils {
                     }
 
                     size -= sizeOfPixel * 0.125 * numOctantsToRemove;
-                    if(lg.isDebugEnabled()) lg.info("size={}", size);
+                    lg.debug("size={}", size);
 
                     break;
                 }
@@ -222,7 +222,7 @@ public class GeometrySurfaceUtils {
 
             VolumeGeometricRegion volumeRegion = new VolumeGeometricRegion(name, size, volumeUnit, subVolume, regionInfo.getRegionIndex());
             regionList.add(volumeRegion);
-            if(lg.isDebugEnabled()) lg.info("added volumeRegion({})", volumeRegion.getName());
+            lg.debug("added volumeRegion({})", volumeRegion.getName());
 
         }
         //
@@ -266,7 +266,7 @@ public class GeometrySurfaceUtils {
             }
             surfaceRegion.addAdjacentGeometricRegion(interiorVolumeRegion);
             interiorVolumeRegion.addAdjacentGeometricRegion(surfaceRegion);
-            if(lg.isDebugEnabled()) lg.info("added surfaceRegion({})", surfaceRegion.getName());
+            lg.debug("added surfaceRegion({})", surfaceRegion.getName());
 
         }
 

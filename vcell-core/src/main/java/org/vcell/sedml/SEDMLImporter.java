@@ -195,7 +195,7 @@ public class SEDMLImporter {
 				// try to find a match in the ontology tree
 				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, this.exactMatchOnly);
 				if (solverDescription != null) {
-                    if (logger.isDebugEnabled()) logger.info("Task (id='{}') is compatible, solver match found in ontology: '{}' matched to {}", selectedTask.getId(), kisaoID, solverDescription);
+                    logger.info("Task (id='{}') is compatible, solver match found in ontology: '{}' matched to {}", selectedTask.getId(), kisaoID, solverDescription);
 				} else {
 					// give it a try anyway with our deterministic default solver
 					solverDescription = SolverDescription.CombinedSundials;
@@ -441,12 +441,10 @@ public class SEDMLImporter {
 		
 		BioModel bm0 = bioModels.get(0);
 		for (int i = 1; i < bioModels.size(); i++) {
-			if (logger.isDebugEnabled())
-                logger.info("--------------------\ncomparing model from `{}`\n with model from `{}`\n--------------------",
-						bioModels.get(i), bm0);
+			logger.debug("--------------------\ncomparing model from `{}`\n with model from `{}`\n--------------------", bioModels.get(i), bm0);
 			RelationVisitor rvNotStrict = new ModelRelationVisitor(false);
 			boolean equivalent = bioModels.get(i).getModel().relate(bm0.getModel(),rvNotStrict);
-			if (logger.isDebugEnabled()) logger.info("Equivalent => {}", equivalent);
+			logger.debug("Equivalent => {}", equivalent);
 			if (!equivalent) return bioModels;
 		}
 		// all have matchable model, try to merge by pooling SimContexts
@@ -1087,7 +1085,7 @@ public class SEDMLImporter {
 				NonspatialStochHybridOptions nonspatialSHO = simTaskDesc.getStochHybridOpt();
 				nonspatialSHO.setSDETolerance(Double.parseDouble(apValue));
 			} else {
-				logger.error("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
+				logger.warn("Algorithm parameter with kisao id '" + apKisaoID + "' not supported at this time, skipping.");
 			}
 		}
 		simTaskDesc.setErrorTolerance(errorTolerance);

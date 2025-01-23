@@ -82,7 +82,9 @@ public class BiosimulationsCommand implements Callable<Integer> {
             }
             LoggerContext config = (LoggerContext)(LogManager.getContext(false));
             config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
-            config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
+
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(bDebug ? logLevel : Level.WARN );
+            config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.jlibsedml").getName()).setLevel(bDebug ? logLevel : Level.WARN);
             config.updateLoggers();
 
             logger.debug("Biosimulations mode requested");

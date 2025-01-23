@@ -88,9 +88,12 @@ class SchemaValidatorImpl {
             return SEDML_L1_V1_SCHEMA;
         } else if (level.equals("1") && version.equals("2")) {
             return SEDML_L1_V2_SCHEMA;
+        } else if (level.equals("1") && version.equals("3")) {
+            log.info("Version 3 support still in development.");
+            return SEDML_L1_V3_SCHEMA;
         } else {
         	// probably level 3, but trying anyway to interpret with level 2
-        	if (log.isDebugEnabled()) log.warn("SED-ML version level not supported, import may fail");
+        	log.info("WARNING: SED-ML L{}V{} not supported, import may fail", level, version);
         	return SEDML_L1_V3_SCHEMA;
 //            throw new IllegalArgumentException(
 //                    "Invalid level/version combingation - must be 1-1 or 1-2 but was "
