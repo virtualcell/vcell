@@ -1,4 +1,4 @@
-package org.vcell.plotting;
+package org.vcell.cli.run.plotting;
 
 public class ChartCouldNotBeProducedException extends RuntimeException {
     public ChartCouldNotBeProducedException(){
