@@ -266,9 +266,11 @@ public class SedmlJob {
                     NonSpatialResultsConverter.organizeNonSpatialResultsBySedmlDataGenerator(
                             this.sedml, solverHandler.nonSpatialResults, solverHandler.taskToTempSimulationMap);
 
+            boolean hasReports = !this.sedml.getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList().isEmpty();
+            boolean has2DPlots = !this.sedml.getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList().isEmpty();
             if (!solverHandler.nonSpatialResults.isEmpty()) {
-                this.generateCSV(solverHandler);
-                this.generatePlots(organizedNonSpatialResults);
+                if (hasReports) this.generateCSV(solverHandler);
+                if (has2DPlots) this.generatePlots(organizedNonSpatialResults);
             }
 
             this.indexHDF5Data(organizedNonSpatialResults, solverHandler, masterHdf5File);
