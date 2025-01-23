@@ -13,6 +13,11 @@ import org.vcell.cli.exceptions.PreProcessingException;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
 import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.cli.run.hdf5.Hdf5DataExtractor;
+import org.vcell.cli.run.results.NonSpatialValueHolder;
+import org.vcell.cli.run.results.NonSpatialResultsConverter;
+import org.vcell.cli.run.plotting.PlottingDataExtractor;
+import org.vcell.cli.run.plotting.ChartCouldNotBeProducedException;
+import org.vcell.cli.run.plotting.Results2DLinePlot;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
@@ -27,6 +32,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class that deals with the processing quest of a sedml file.
@@ -252,15 +258,20 @@ public class SedmlJob {
                 logger.info("Failed to execute one or more tasks in " + this.SEDML_NAME);
             }
 
+
             this.logDocumentMessage += "Generating outputs... ";
             logger.info("Generating outputs... ");
+            /////////////////////////////////////////////////////
+            Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults =
+                    NonSpatialResultsConverter.organizeNonSpatialResultsBySedmlDataGenerator(
+                            this.sedml, solverHandler.nonSpatialResults, solverHandler.taskToTempSimulationMap);
 
             if (!solverHandler.nonSpatialResults.isEmpty()) {
                 this.generateCSV(solverHandler);
-                this.generatePlots();
+                this.generatePlots(organizedNonSpatialResults);
             }
 
-            this.generateHDF5(solverHandler, masterHdf5File);
+            this.indexHDF5Data(organizedNonSpatialResults, solverHandler, masterHdf5File);
 
         } catch (Exception e) {
             this.somethingFailed = somethingDidFail();
@@ -331,23 +342,29 @@ public class SedmlJob {
         }
     }
 
-    private void generatePlots() throws IOException {
+    private void generatePlots(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults) throws ExecutionException {
         logger.info("Generating Plots... ");
-        //PythonCalls.genPlotsPseudoSedml(this.SEDML_LOCATION, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML.toString());    // generate the plots
         // We assume if no exception is returned that the plots pass
-        for (Output output : this.sedml.getOutputs()){
-            if (!(output instanceof Plot2D plot)) continue;
-            BiosimulationLog.instance().updatePlotStatusYml(this.SEDML_LOCATION, plot.getId(), BiosimulationLog.Status.SUCCEEDED);
+        PlottingDataExtractor plotExtractor = new PlottingDataExtractor(this.sedml);
+        Map<Results2DLinePlot, String> plot2Ds = plotExtractor.extractPlotRelevantData(organizedNonSpatialResults);
+        for (Results2DLinePlot plotToExport : plot2Ds.keySet()){
+            try {
+                plotToExport.generatePng(plot2Ds.get(plotToExport) + ".png", this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
+                plotToExport.generatePdf(plot2Ds.get(plotToExport) + ".pdf", this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
+            } catch (ChartCouldNotBeProducedException e){
+                logger.error("Failed creating plot:", e);
+                throw new ExecutionException("Failed to create plot: " + plotToExport.getTitle(), e);
+            }
         }
     }
 
-    private void generateHDF5(SolverHandler solverHandler, HDF5ExecutionResults masterHdf5File) {
+    private void indexHDF5Data(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults, SolverHandler solverHandler, HDF5ExecutionResults masterHdf5File) {
         this.logDocumentMessage += "Indexing HDF5 data... ";
         logger.info("Indexing HDF5 data... ");
 
         Hdf5DataExtractor hdf5Extractor = new Hdf5DataExtractor(this.sedml, solverHandler.taskToTempSimulationMap);
 
-        Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(solverHandler.nonSpatialResults, solverHandler.spatialResults, masterHdf5File.isBioSimHdf5);
+        Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(organizedNonSpatialResults, solverHandler.spatialResults, masterHdf5File.isBioSimHdf5);
         masterHdf5File.addResults(this.sedml, partialHdf5File);
 
         for (File tempH5File : solverHandler.spatialResults.values()) {
