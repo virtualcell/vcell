@@ -42,14 +42,38 @@ public class BiosimulationsCommand implements Callable<Integer> {
     private boolean help;
 
     public Integer call() {
-        CLIRecorder cliRecorder;
         int returnCode;
-        
+
         if ((returnCode = BiosimulationsCommand.noFurtherActionNeeded(bQuiet, bDebug, bVersion)) != -1)
             return returnCode;
-        
+
+        if (this.ARCHIVE == null) {
+            logger.error("ARCHIVE file not specified, try --help for usage");
+            return 1;
+        }
+        if (this.OUT_DIR == null) {
+            logger.error("OUT_DIR not specified, try --help for usage");
+            return 1;
+        }
+        String trace_args =  String.format(
+                "Arguments:\nArchive\t: \"%s\"\nOut Dir\t: \"%s\"\nDebug\t: %b\n" +
+                        "Quiet\t: %b\nVersion\t: %b\nHelp\t: %b",
+                ARCHIVE.getAbsolutePath(), OUT_DIR.getAbsolutePath(), bDebug, bQuiet, bVersion, help
+        );
+
+        logger.trace(trace_args);
+        return BiosimulationsCommand.executeVCellBiosimulationsMode(ARCHIVE, OUT_DIR, bQuiet, bDebug);
+    }
+
+    public static int executeVCellBiosimulationsMode(File inFile, File outDir){
+        return BiosimulationsCommand.executeVCellBiosimulationsMode(inFile, outDir, false, false);
+    }
+
+    public static int executeVCellBiosimulationsMode(File inFile, File outDir, boolean bQuiet, boolean bDebug){
+        CLIRecorder cliRecorder;
+
         try {
-            cliRecorder = new CLIRecorder(OUT_DIR); // CLILogger will throw an execption if our output dir isn't valid.
+            cliRecorder = new CLIRecorder(outDir); // CLILogger will throw an execption if our output dir isn't valid.
             Level logLevel = logger.getLevel();
             if (!bQuiet && bDebug) {
                 logLevel = Level.DEBUG;
@@ -63,38 +87,22 @@ public class BiosimulationsCommand implements Callable<Integer> {
 
             logger.debug("Biosimulations mode requested");
 
-            String trace_args =  String.format(
-                "Arguments:\nArchive\t: \"%s\"\nOut Dir\t: \"%s\"\nDebug\t: %b\n" +
-                    "Quiet\t: %b\nVersion\t: %b\nHelp\t: %b",
-                ARCHIVE.getAbsolutePath(), OUT_DIR.getAbsolutePath(), bDebug, bQuiet, bVersion, help
-            );
-
-            logger.trace(trace_args);
-
             logger.trace("Validating input");
-            if (ARCHIVE == null) {
-                logger.error("ARCHIVE file not specified, try --help for usage");
-                return 1;
-            }
-            if (!ARCHIVE.isFile()) {
-                logger.error("ARCHIVE file " + ARCHIVE.getAbsolutePath() + " not found, try --help for usage");
+            if (!inFile.isFile()) {
+                logger.error("ARCHIVE file " + inFile.getAbsolutePath() + " not found, try --help for usage");
                 return 1;
             }
 
             logger.trace("Validating output");
-            if (OUT_DIR == null) {
-                logger.error("OUT_DIR not specified, try --help for usage");
-                return 1;
-            }
-            if (!OUT_DIR.isDirectory()) {
-                logger.error("OUT_DIR " + OUT_DIR.getAbsolutePath() + " not found or is not a directory, try --help for usage");
+            if (!outDir.isDirectory()) {
+                logger.error("OUT_DIR " + outDir.getAbsolutePath() + " not found or is not a directory, try --help for usage");
                 return 1;
             }
 
             logger.info("Beginning execution");
             File tmpDir = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
             try {
-                ExecuteImpl.singleMode(ARCHIVE, tmpDir, cliRecorder, true);
+                ExecuteImpl.singleMode(inFile, tmpDir, cliRecorder, true);
                 if (!Tracer.hasErrors()) return 0;
                 if (!bQuiet) {
                     logger.error("Errors occurred during execution");
@@ -103,7 +111,7 @@ public class BiosimulationsCommand implements Callable<Integer> {
                 return 1;
             } finally {
                 logger.debug("Finished all execution.");
-                FileUtils.copyDirectoryContents(tmpDir, OUT_DIR, true, null);
+                FileUtils.copyDirectoryContents(tmpDir, outDir, true, null);
             }
         } catch (Exception e) {
             if (!bQuiet) {
