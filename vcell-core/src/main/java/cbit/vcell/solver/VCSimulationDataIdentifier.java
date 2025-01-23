@@ -25,7 +25,9 @@ public class VCSimulationDataIdentifier
 
 
 	private VCSimulationIdentifier vcSimID = null;
-	private int jobIndex = -1;
+	private int jobIndex;
+	// TODO: replace jobIndex with next line (maybe)
+//	private MathOverrides.DataQuery dataQuery = null;
 
 /**
  * VCSimulationIdentifier constructor comment.
