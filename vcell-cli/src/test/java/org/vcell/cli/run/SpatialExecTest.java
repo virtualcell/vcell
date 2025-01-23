@@ -11,9 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
-import org.vcell.cli.PythonStreamException;
 import org.vcell.sedml.testsupport.FailureType;
 import org.vcell.sedml.testsupport.OmexTestCase;
 import org.vcell.sedml.testsupport.OmexTestingDatabase;
@@ -24,19 +22,16 @@ import org.vcell.util.VCellUtilityHub;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
 @Tag("Spatial_IT")
 public class SpatialExecTest {
     @BeforeAll
-    public static void setup() throws PythonStreamException, IOException {
+    public static void setup() {
         PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
         VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
 

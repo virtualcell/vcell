@@ -81,8 +81,8 @@ public class Hdf5DataExtractor {
                 + "\nSpatial Reported:\n" + spatialException.getMessage());
         } else if (nonSpatialException != null || spatialException != null){
             Exception exception = nonSpatialException == null ? spatialException : nonSpatialException;
-            throw new RuntimeException("Encountered " + (nonSpatialException == null ? "spatial " : "non-spatial")
-                + "dataset collection failure.", exception);
+            throw new RuntimeException("Encountered " + (nonSpatialException == null ? "spatial" : "non-spatial")
+                + " dataset collection failure.", exception);
         } // else no problem
 
         Hdf5DataExtractor.addWrappers(hdf5FileWrapper.reportToResultsMap, wrappers);

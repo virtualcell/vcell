@@ -258,7 +258,7 @@ public class SpatialResultsConverter {
         return s;
     }
 
-//    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws PythonStreamException {
+//    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) {
 //        Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
 //        List<Report> allReports = SpatialResultsConverter.getReports(sedml.getOutputs());
 //

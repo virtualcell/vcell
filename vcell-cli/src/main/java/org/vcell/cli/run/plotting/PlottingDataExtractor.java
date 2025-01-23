@@ -3,19 +3,16 @@ package org.vcell.cli.run.plotting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
-import org.vcell.cli.run.hdf5.*;
 import org.vcell.cli.run.results.NonSpatialValueHolder;
 import org.vcell.cli.run.results.NonSpatialResultsConverter;
 import org.vcell.cli.run.results.SpatialResultsConverter;
 
-import java.nio.file.Paths;
 import java.util.*;
 
 public class PlottingDataExtractor {
     private final SedML sedml;
-    private final String sedmlLocation;
 
-    private final static Logger logger = LogManager.getLogger(Hdf5DataExtractor.class);
+    private final static Logger logger = LogManager.getLogger(PlottingDataExtractor.class);
 
     /**
      * Constructor to initialize the factory for a given set of simulation and model data.
@@ -24,7 +21,6 @@ public class PlottingDataExtractor {
      */
     public PlottingDataExtractor(SedML sedml){
         this.sedml = sedml;
-        this.sedmlLocation = Paths.get(sedml.getPathForURI(), sedml.getFileName()).toString();
     }
 
     /**

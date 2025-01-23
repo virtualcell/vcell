@@ -5,7 +5,6 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecordable;
-import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 import org.vcell.sedml.log.BiosimulationLog;
@@ -107,7 +106,7 @@ public class ExecuteImpl {
 
     private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bKeepTempFiles,
                                           boolean bExactMatchOnly, boolean bSmallMeshOverride)
-            throws IOException, ExecutionException, PythonStreamException, BiosimulationsHdfWriterException {
+            throws IOException, ExecutionException, BiosimulationsHdfWriterException {
 
         String bioModelBaseName = inputFile.getName().substring(0, inputFile.getName().indexOf(".")); // ".omex"??
         Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
@@ -233,7 +232,7 @@ public class ExecuteImpl {
 
     private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride, boolean bBioSimMode)
-            throws ExecutionException, PythonStreamException, IOException, BiosimulationsHdfWriterException {
+            throws ExecutionException, IOException, BiosimulationsHdfWriterException {
 
         ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder,
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);

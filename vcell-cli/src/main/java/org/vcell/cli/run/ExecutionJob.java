@@ -4,7 +4,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecordable;
-import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.exceptions.PreProcessingException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer;
@@ -152,11 +151,9 @@ public class ExecutionJob {
 
     /**
      * Clean up and analyze the results of the archive's execution
-     * 
+     * <br/>
      * Called after: `executeArchive()`
-     * 
-     * @throws InterruptedException if there is an issue with accessing data
-     * @throws PythonStreamException if calls to the python-shell instance are not working correctly
+     *
      * @throws IOException if there are system I/O issues
      */
     public void postProcessessArchive() throws IOException {

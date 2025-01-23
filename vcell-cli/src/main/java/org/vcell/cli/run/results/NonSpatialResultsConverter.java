@@ -25,9 +25,9 @@ public class NonSpatialResultsConverter {
         if (nonSpatialResultsHash.isEmpty()) return nonSpatialOrganizedResultsMap;
 
         for (Output output : NonSpatialResultsConverter.getValidOutputs(sedml)){
-            List<DataGenerator> dataGeneratorsToProcess;
+            Set<DataGenerator> dataGeneratorsToProcess;
             if (output instanceof Report report){
-                dataGeneratorsToProcess = new ArrayList<>();
+                dataGeneratorsToProcess = new LinkedHashSet<>();
                 for (DataSet dataSet : report.getListOfDataSets()){
                     // use the data reference to obtain the data generator
                     dataGeneratorsToProcess.add(sedml.getDataGeneratorWithId(dataSet.getDataReference()));
@@ -40,7 +40,7 @@ public class NonSpatialResultsConverter {
                     uniqueDataGens.add(sedml.getDataGeneratorWithId(curve.getXDataReference()));
                     uniqueDataGens.add(sedml.getDataGeneratorWithId(curve.getYDataReference()));
                 }
-                dataGeneratorsToProcess = uniqueDataGens.stream().toList();
+                dataGeneratorsToProcess = uniqueDataGens;
             } else {
                 if (logger.isDebugEnabled()) logger.warn("Unrecognized output type: `{}` (id={})", output.getClass().getName(), output.getId());
                 continue;
@@ -65,8 +65,6 @@ public class NonSpatialResultsConverter {
             Map<DataSet, NonSpatialValueHolder> dataSetValues = new LinkedHashMap<>();
 
             for (DataSet dataset : report.getListOfDataSets()) {
-                int maxLengthOfAllData = 0; // We have to pad up to this value
-
                 // use the data reference to obtain the data generator
                 DataGenerator dataGen = sedml.getDataGeneratorWithId(dataset.getDataReference());
                 if (dataGen == null || !organizedNonSpatialResults.containsKey(dataGen))
