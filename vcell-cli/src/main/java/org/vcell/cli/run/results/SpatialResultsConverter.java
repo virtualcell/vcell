@@ -1,4 +1,4 @@
-package org.vcell.cli.run.hdf5;
+package org.vcell.cli.run.results;
 
 
 import cbit.vcell.parser.Expression;
@@ -11,10 +11,10 @@ import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.run.TaskJob;
+import org.vcell.cli.run.hdf5.*;
 import org.vcell.sedml.log.BiosimulationLog;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -258,7 +258,7 @@ public class SpatialResultsConverter {
         return s;
     }
 
-//    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) throws PythonStreamException {
+//    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) {
 //        Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
 //        List<Report> allReports = SpatialResultsConverter.getReports(sedml.getOutputs());
 //

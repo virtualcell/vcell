@@ -1,9 +1,6 @@
 package org.vcell.cli.run.hdf5;
 
-import org.jlibsedml.DataSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.List;
+import org.vcell.cli.run.results.NonSpatialDataMapping;
 
 /**
  * Struct-class to hold list of nonspatial variable data
@@ -14,6 +11,6 @@ public class Hdf5SedmlResultsNonspatial extends Hdf5SedmlResultData {
     /**
      * Map of all data contained within a job relevant to HDF5 formatted files
      */
-    public NonspatialDataMapping dataItems = new NonspatialDataMapping();
+    public NonSpatialDataMapping dataItems = new NonSpatialDataMapping();
     
 }

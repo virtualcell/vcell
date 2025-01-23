@@ -1,4 +1,4 @@
-package org.vcell.cli.run.hdf5;
+package org.vcell.cli.run.results;
 
 import cbit.vcell.solver.TempSimulation;
 import io.jhdf.api.Dataset;
@@ -8,6 +8,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.AbstractTask;
 import org.vcell.cli.run.TaskJob;
+import org.vcell.cli.run.hdf5.Hdf5DataSourceSpatialSimMetadata;
+import org.vcell.cli.run.hdf5.Hdf5DataSourceSpatialSimVars;
+import org.vcell.cli.run.hdf5.Hdf5DataSourceSpatialVarDataLocation;
 
 import java.io.File;
 import java.nio.file.Paths;

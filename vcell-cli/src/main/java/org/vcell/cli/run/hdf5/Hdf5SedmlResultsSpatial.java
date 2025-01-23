@@ -15,5 +15,5 @@ public class Hdf5SedmlResultsSpatial extends Hdf5SedmlResultData {
         public Hdf5DataSourceSpatialSimVars varsToData;
     }
 
-    Map<Report, SpatialComponents> dataMapping = new HashMap<>();
+    public Map<Report, SpatialComponents> dataMapping = new HashMap<>();
 }

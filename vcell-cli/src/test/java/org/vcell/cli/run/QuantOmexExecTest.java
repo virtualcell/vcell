@@ -8,9 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
-import org.vcell.cli.PythonStreamException;
 import org.vcell.sedml.testsupport.FailureType;
 import org.vcell.sedml.testsupport.OmexTestCase;
 import org.vcell.sedml.testsupport.OmexTestingDatabase;
@@ -33,19 +31,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @Tag("BSTS_IT")
 public class QuantOmexExecTest {
 	@BeforeAll
-	public static void setup() throws PythonStreamException, IOException {
+	public static void setup() {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
 		VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
 
 		PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
 		VCMongoMessage.enabled = false;
-
-		CLIPythonManager.getInstance().instantiatePythonProcess();
 	}
 
 	@AfterAll
 	public static void teardown() throws Exception {
-		CLIPythonManager.getInstance().closePythonProcess();
 		VCellUtilityHub.shutdown();
 	}
 

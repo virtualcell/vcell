@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BiosimulationLog {
+public class BiosimulationLog implements AutoCloseable {
 
     public static class LogValidationException extends RuntimeException {
         public LogValidationException(String message) {

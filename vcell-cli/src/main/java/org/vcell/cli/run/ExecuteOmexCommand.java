@@ -93,8 +93,6 @@ public class ExecuteOmexCommand implements Callable<Integer> {
             config.updateLoggers();
 
 
-            CLIPythonManager.getInstance().instantiatePythonProcess();
-
             Executable.setGlobalTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
             logger.info("Beginning execution");
             File tmpDir = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
@@ -102,7 +100,7 @@ public class ExecuteOmexCommand implements Callable<Integer> {
             Tracer.clearTraceEvents();
             ExecuteImpl.singleMode(inputFilePath, tmpDir, cliTracer, bKeepTempFiles, bExactMatchOnly,
                             bEncapsulateOutput, bSmallMeshOverride);
-            CLIPythonManager.getInstance().closePythonProcess();
+
             // WARNING: Python needs re-instantiation once the above line is called!
             FileUtils.copyDirectoryContents(tmpDir, outputFilePath, true, null);
             final OmexExecSummary omexExecSummary;

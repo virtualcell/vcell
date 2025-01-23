@@ -110,8 +110,6 @@ public class ExecuteCommand implements Callable<Integer> {
                 System.err.println("cannot specify both debug and quiet, try --help for usage");
                 return 1;
             }
-
-            CLIPythonManager.getInstance().instantiatePythonProcess();
             
 
             Executable.setGlobalTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
@@ -132,7 +130,7 @@ public class ExecuteCommand implements Callable<Integer> {
                             bEncapsulateOutput, bSmallMeshOverride);
                 }
             }
-            CLIPythonManager.getInstance().closePythonProcess();
+
             // WARNING: Python needs re-instantiation once the above line is called!
             FileUtils.copyDirectoryContents(tmpDir, outputFilePath, true, null);
             return 0;

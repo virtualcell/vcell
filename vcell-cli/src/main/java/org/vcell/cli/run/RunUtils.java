@@ -23,7 +23,6 @@ import org.jlibsedml.DataSet;
 import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
-import org.vcell.cli.CLIUtils;
 import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
@@ -193,13 +192,13 @@ public class RunUtils {
         for (Output sedmlOutput : allSedmlOutputs) {
             // We only want Reports
             if (!(sedmlOutput instanceof Report sedmlReport)) {
-                logger.info("Ignoring unsupported output `" + sedmlOutput.getId() + "` while CSV generation.");
+                if (logger.isDebugEnabled()) logger.info("Ignoring unsupported output `" + sedmlOutput.getId() + "` while CSV generation.");
                 continue;
             }
 
             StringBuilder sb = new StringBuilder();
 
-            logger.info("Generating report `" + sedmlReport.getId() +"`.");
+            if (logger.isDebugEnabled()) logger.info("Generating report `" + sedmlReport.getId() +"`.");
             /*
              * we go through each entry (dataset) in the list of datasets
              * for each dataset, we use the data reference to obtain the data generator
@@ -372,16 +371,16 @@ public class RunUtils {
 
                 } // end of dataset			
 
-                if (sb.length() > 0) {
+                if (!sb.isEmpty()) {
                     File f = new File(outDirForCurrentSedml, sedmlReport.getId() + ".csv");
                     PrintWriter out = new PrintWriter(f);
-                    out.print(sb.toString());
+                    out.print(sb);
                     out.flush();
                     out.close();
-                    logger.info("created csv file for report " + sedmlReport.getId() + ": " + f.getAbsolutePath());
+                    if (logger.isDebugEnabled()) logger.info("created csv file for report " + sedmlReport.getId() + ": " + f.getAbsolutePath());
                     reportsHash.put(sedmlReport.getId(), f);
                 } else {
-                    logger.info("no csv file for report " + sedmlReport.getId());
+                    if (logger.isDebugEnabled()) logger.info("no csv file for report " + sedmlReport.getId());
                 }
             } catch (Exception e) {
                 throw new RuntimeException("CSV generation failed: " + e.getMessage(), e);
@@ -443,15 +442,13 @@ public class RunUtils {
             srcFiles = listFilesForFolder(dirPath, ext);
 
             if (srcFiles.isEmpty()) {
-                logger.warn("No " + ext.toUpperCase() + " files found, skipping archiving `" + extensionListMap.get(ext) + "` files");
+                if (logger.isDebugEnabled()) logger.warn("No {} files found, skipping archiving `{}` files", ext.toUpperCase(), extensionListMap.get(ext));
             } else {
                 fileOutputStream = new FileOutputStream(Paths.get(dirPath.toString(), extensionListMap.get(ext)).toFile());
                 zipOutputStream = new ZipOutputStream(fileOutputStream);
-                if (!srcFiles.isEmpty()) logger.info("Archiving resultant " + ext.toUpperCase() + " files to `" + extensionListMap.get(ext) + "`.");
+                if (!srcFiles.isEmpty() && logger.isDebugEnabled()) logger.info("Archiving resultant {} files to `{}`.", ext.toUpperCase(), extensionListMap.get(ext));
                 for (File srcFile : srcFiles) {
-
                     fileInputstream = new FileInputStream(srcFile);
-
                     // get relative path
                     relativePath = dirPath.toURI().relativize(srcFile.toURI()).toString();
                     zipEntry = new ZipEntry(relativePath);
@@ -473,7 +470,7 @@ public class RunUtils {
     public static String getTempDir() throws IOException {
         String tempPath = String.valueOf(java.nio.file.Files.createTempDirectory(
             RunUtils.VCELL_TEMP_DIR_PREFIX + UUID.randomUUID()).toAbsolutePath());
-        logger.info("TempPath Created: " + tempPath);
+        logger.trace("TempPath Created: " + tempPath);
         return tempPath;
     }
 
@@ -511,75 +508,83 @@ public class RunUtils {
         return true;
     }
 
-    public static void createCSVFromODEResultSet(ODESolverResultSet resultSet, File f) throws ExpressionException {
+    public static void createCSVFromODEResultSet(ODESolverResultSet resultSet, File f, boolean shouldTranspose) throws ExpressionException {
         ColumnDescription[] descriptions = resultSet.getColumnDescriptions();
-        StringBuilder sb = new StringBuilder();
+        Map<String, List<Double>> resultsMapping = new LinkedHashMap<>();
 
-
-        int numberOfColumns = descriptions.length;
-        int numberOfRows = resultSet.getRowCount();
-
-        double[][] dataPoints = new double[numberOfColumns][];
-        // Write headers
-        for (ColumnDescription description : descriptions) {
-            sb.append(description.getDisplayName());
-            sb.append(",");
-        }
-        sb.deleteCharAt(sb.lastIndexOf(","));
-        sb.append("\n");
-
-
-        // Write rows
-        for (int i = 0; i < numberOfColumns; i++) {
-            dataPoints[i] = resultSet.extractColumn(i);
+        for (int i = 0; i < descriptions.length; i++){
+            resultsMapping.put(descriptions[i].getDisplayName(), Arrays.stream(resultSet.extractColumn(i)).boxed().toList());
         }
 
-        for (int rowNum = 0; rowNum < numberOfRows; rowNum++) {
-            for (int colNum = 0; colNum < numberOfColumns; colNum++) {
-                sb.append(dataPoints[colNum][rowNum]);
-                sb.append(",");
-            }
-
-            sb.deleteCharAt(sb.lastIndexOf(","));
-            sb.append("\n");
-        }
-
-        PrintWriter out = null;
-        try {
-            out = new PrintWriter(f);
-            out.print(sb.toString());
+        try (PrintWriter out = new PrintWriter(f)) {
+            out.print(RunUtils.formatCSVContents(resultsMapping, !shouldTranspose));
             out.flush();
         } catch (FileNotFoundException e) {
             logger.error("Unable to find path, failed with err: " + e.getMessage(), e);
-        } finally {
-            if (out != null) out.close();
         }
-
     }
 
-    public static void removeIntermediarySimFiles(File path) {
-        File[] files = path.listFiles();
-        for (File f : files) {
-            if (f.getName().endsWith(".csv")) {
-                // Do nothing
-                continue;
-            } else {
-                f.delete();
+    public static <T> String formatCSVContents(Map<String, List<T>> csvContents, boolean organizeDataVertically){
+        if (!(csvContents instanceof LinkedHashMap<String, List<T>>))
+            logger.warn("Warning; using a non-linked hash map will result in random ordering of lines!");
+        List<List<String>> csvLines = new ArrayList<>();
+        int numTopics = csvContents.size();
+        int maxNumValuesPerTopic = 0;
+        for (List<T> values : csvContents.values())
+            if (values.size() > maxNumValuesPerTopic)
+                maxNumValuesPerTopic = values.size();
+
+        // Initialize with empties
+        for (int i = 0; i < (organizeDataVertically ? maxNumValuesPerTopic + 1 : numTopics); i++){
+            csvLines.add(new ArrayList<>());
+        }
+
+        // Fill out lines
+        List<String> topics = new ArrayList<>(csvContents.keySet());
+        if (organizeDataVertically){
+            for (String topic : topics) csvLines.get(0).add(topic);
+        } else {
+            for (int topicNum = 0; topicNum < topics.size(); topicNum++){
+                csvLines.get(topicNum).add(topics.get(topicNum));
             }
         }
+        for (int topicNum = 0; topicNum < topics.size(); topicNum++){
+            String topic = topics.get(topicNum);
+            List<T> data = csvContents.get(topic);
+
+            for (int i = 0; i < maxNumValuesPerTopic; i++){
+                String value = i < data.size() ? data.get(i).toString() : "";
+                csvLines.get(organizeDataVertically ? i + 1 : topicNum).add(value);
+            }
+        }
+
+        // Build CSV
+        StringBuilder sb = new StringBuilder();
+        for (List<String> row : csvLines){
+            for (String value : row){
+                sb.append(value).append(",");
+            }
+            sb.deleteCharAt(sb.lastIndexOf(",")).append("\n");
+        }
+
+        return sb.deleteCharAt(sb.lastIndexOf("\n")).toString();
     }
 
+    @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
+    public static void removeIntermediarySimFiles(File path) {
+        if (!path.isDirectory()) throw new IllegalArgumentException("Provided path does not lead to a directory!");
+        File[] files = path.listFiles();
+        for (File f : files) {
+            if (f.getName().endsWith(".csv")) continue;
+            f.delete();
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
     public static boolean containsExtension(String folder, String ext) {
         GenericExtensionFilter filter = new GenericExtensionFilter(ext);
         File dir = new File(folder);
-        if (dir.isDirectory() == false) {
-            return false;
-        }
-        String[] list = dir.list(filter);
-        if (list.length > 0) {
-            return true;
-        }
-        return false;
+        return dir.isDirectory() && dir.list(filter).length > 0;
     }
 
     private static List<String> getListOfVariableNames(DataIdentifier... dataIDArr){

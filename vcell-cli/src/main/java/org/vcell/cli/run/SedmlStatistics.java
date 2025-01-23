@@ -14,11 +14,13 @@ package org.vcell.cli.run;
  * - hasScans :: if the sedml has parameter scans
  */
 public class SedmlStatistics {
+    private String sedmlName;
     private Integer nModels, nSimulations, nTasks, nOutputs, nReportsCount, nPlots2DCount, nPlots3DCount;
     public boolean hasOverrides, hasScans;
 
-    public SedmlStatistics(){
+    public SedmlStatistics(String sedmlName){
         // -1 indicates the value has not been initialized.
+        this.sedmlName = sedmlName;
         this.nModels = null;
         this.nSimulations = null;
         this.nTasks = null;
@@ -28,6 +30,10 @@ public class SedmlStatistics {
         this.nPlots3DCount = null;
         this.hasOverrides = false;
         this.hasScans = false;
+    }
+
+    public String getSedmlName(){
+        return this.sedmlName;
     }
 
     public int getNumModels(){

@@ -501,7 +501,7 @@ public class XmlHelper {
 
 	public static List<BioModel> importSEDML(VCLogger transLogger, ExternalDocInfo externalDocInfo,
 	   SedML sedml, boolean exactMatchOnly) throws Exception {
-		SEDMLImporter sedmlImporter = new SEDMLImporter(transLogger, externalDocInfo,
+		SEDMLImporter sedmlImporter = new SEDMLImporter(transLogger, externalDocInfo.getFile(),
 				sedml, exactMatchOnly);
 		return sedmlImporter.getBioModels();
 	}

@@ -4562,7 +4562,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             if(element != null){
                 getRbmModelContainer(element, newmodel);
             } else {
-                lg.info("RbmModelContainer is missing.");
+                lg.debug("RbmModelContainer is missing.");
             }
 
             //Add SpeciesContexts

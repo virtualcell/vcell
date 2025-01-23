@@ -5,7 +5,6 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.cli.CLIRecordable;
-import org.vcell.cli.PythonStreamException;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 import org.vcell.sedml.log.BiosimulationLog;
@@ -55,9 +54,9 @@ public class ExecuteImpl {
                 String targetOutputDir = Paths.get(outputBaseDir, bioModelBaseName).toString();
 
                 Span span = null;
-                try {
+                // Initialization call generates Status YAML
+                try (BiosimulationLog bioSimLog = BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir)) {
                     span = Tracer.startSpan(Span.ContextType.OMEX_EXECUTE, inputFileName, Map.of("filename", inputFileName));
-                    BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
 
                     System.out.println("\n\n");
                     logger.info("Processing " + inputFileName + "(" + inputFile + ")");
@@ -79,7 +78,6 @@ public class ExecuteImpl {
                     if (span != null) {
                         span.close();
                     }
-                    BiosimulationLog.instance().close();
                 }
             }
             if (failedFiles.isEmpty()){
@@ -108,7 +106,8 @@ public class ExecuteImpl {
 
     private static void runSingleExecOmex(File inputFile, File outputDir, CLIRecordable cliLogger, boolean bKeepTempFiles,
                                           boolean bExactMatchOnly, boolean bSmallMeshOverride)
-            throws IOException, ExecutionException, PythonStreamException, InterruptedException, BiosimulationsHdfWriterException {
+            throws IOException, ExecutionException, BiosimulationsHdfWriterException {
+
         String bioModelBaseName = inputFile.getName().substring(0, inputFile.getName().indexOf(".")); // ".omex"??
         Files.createDirectories(Paths.get(outputDir.getAbsolutePath() + File.separator + bioModelBaseName)); // make output subdir
         final boolean bEncapsulateOutput = true;
@@ -133,19 +132,16 @@ public class ExecuteImpl {
         String targetOutputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
         File adjustedOutputDir = new File(targetOutputDir);
 
-        logger.info("Preparing output directory...");
+        if (logger.isDebugEnabled()) logger.info("Preparing output directory...");
         // we don't want to accidentally delete the input...
         // if the output directory is a subset of the input file's housing directory, we shouldn't delete!!
         if (!inputFile.getParentFile().getCanonicalPath().contains(adjustedOutputDir.getCanonicalPath()))
             RunUtils.removeAndMakeDirs(adjustedOutputDir);
 
-        try {
-            BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir);    // generate Status YAML
-
+        // Initialization line generates Status YAML
+        try (BiosimulationLog bioSimLog = BiosimulationLog.initialize(inputFile.getAbsolutePath(), targetOutputDir)) {
             ExecuteImpl.singleExecOmex(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
                     bEncapsulateOutput, bSmallMeshOverride, bBioSimMode);
-        } finally {
-            BiosimulationLog.instance().close();
         }
     }
 
@@ -205,8 +201,7 @@ public class ExecuteImpl {
 
             for (String simName : resultsHash.keySet()) {
                 String CSVFilePath = Paths.get(outDirForCurrentVcml.toString(), simName + ".csv").toString();
-                RunUtils.createCSVFromODEResultSet(resultsHash.get(simName), new File(CSVFilePath));
-                PythonCalls.transposeVcmlCsv(CSVFilePath);
+                RunUtils.createCSVFromODEResultSet(resultsHash.get(simName), new File(CSVFilePath), true);
             }
         } catch (IOException e) {
             Tracer.failure(e, "IOException while processing VCML " + vcmlFile.getName());
@@ -237,7 +232,7 @@ public class ExecuteImpl {
 
     private static void singleExecOmex(File inputFile, File rootOutputDir, CLIRecordable cliRecorder,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput, boolean bSmallMeshOverride, boolean bBioSimMode)
-            throws ExecutionException, PythonStreamException, IOException, BiosimulationsHdfWriterException {
+            throws ExecutionException, IOException, BiosimulationsHdfWriterException {
 
         ExecutionJob requestedExecution = new ExecutionJob(inputFile, rootOutputDir, cliRecorder,
             bKeepTempFiles, bExactMatchOnly, bEncapsulateOutput, bSmallMeshOverride);

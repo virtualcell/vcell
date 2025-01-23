@@ -8,9 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.vcell.cli.CLIPythonManager;
 import org.vcell.cli.CLIRecordable;
-import org.vcell.cli.PythonStreamException;
 import org.vcell.sedml.testsupport.FailureType;
 import org.vcell.sedml.testsupport.OmexTestCase;
 import org.vcell.sedml.testsupport.OmexTestingDatabase;
@@ -36,20 +34,18 @@ public class BSTSBasedOmexExecTest {
 	static List<OmexTestCase> omexTestCases;
 
 	@BeforeAll
-	public static void setup() throws PythonStreamException, IOException {
+	public static void setup() throws IOException {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, new File("..").getAbsolutePath());
 		VCellUtilityHub.startup(VCellUtilityHub.MODE.CLI);
 
 		PropertyLoader.setProperty(PropertyLoader.cliWorkingDir, new File("../vcell-cli-utils").getAbsolutePath());
 		VCMongoMessage.enabled = false;
 
-		CLIPythonManager.getInstance().instantiatePythonProcess();
 		omexTestCases = OmexTestingDatabase.loadOmexTestCases();
 	}
 
 	@AfterAll
 	public static void teardown() throws Exception {
-		CLIPythonManager.getInstance().closePythonProcess();
 		VCellUtilityHub.shutdown();
 	}
 

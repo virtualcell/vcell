@@ -278,10 +278,10 @@ public class SolverHandler {
 				taskToChangeTargetMap.put(rt, targetIdSet);
 			}
         }
-        System.out.println("taskToSimulationMap: " + this.taskToTempSimulationMap.size());
-        System.out.println("taskToListOfSubTasksMap: " + taskToListOfSubTasksMap.size());
-        System.out.println("taskToVariableMap: " + taskToVariableMap.size());
-        System.out.println("topTaskToBaseTask: " + topTaskToBaseTask.size());
+		if (logger.isDebugEnabled()){
+			logger.info("Initialization Statistics:\n\t> taskToSimulationMap: {}\n\t> taskToListOfSubTasksMap: {}\n\t> taskToVariableMap: {}\n\t> topTaskToBaseTask: {}\n",
+					this.taskToTempSimulationMap.size(), this.taskToListOfSubTasksMap.size(), this.taskToVariableMap.size(), this.topTaskToBaseTask.size());
+		}
     }
 
 	private static class TempSimulationJob extends SimulationJob {
@@ -325,7 +325,7 @@ public class SolverHandler {
         String docName = null;
         List<TempSimulation> tempSims = null;
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
-		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo, sedml, exactMatchOnly);
+		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo.getFile(), sedml, exactMatchOnly);
         try {
 			bioModelList = this.sedmlImporter.getBioModels();
         } catch (Exception e) {
@@ -430,22 +430,24 @@ public class SolverHandler {
 						}
 						if (solver instanceof AbstractCompiledSolver) {
 							((AbstractCompiledSolver) solver).runSolver();
-							logger.info("Solver: " + solver);
-							logger.info("Status: " + solver.getSolverStatus());
-							if (solver instanceof ODESolver) {
-								odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
-							} else if (solver instanceof GibsonSolver) {
-								odeSolverResultSet = ((GibsonSolver) solver).getStochSolverResultSet();
-							} else if (solver instanceof HybridSolver) {
-								odeSolverResultSet = ((HybridSolver) solver).getHybridSolverResultSet();
+							if (logger.isDebugEnabled()){
+								logger.info("Solver: " + solver);
+								logger.info("Status: " + solver.getSolverStatus());
+							}
+							if (solver instanceof ODESolver odeSolver) {
+								odeSolverResultSet = odeSolver.getODESolverResultSet();
+							} else if (solver instanceof GibsonSolver gibsonSolver) {
+								odeSolverResultSet = gibsonSolver.getStochSolverResultSet();
+							} else if (solver instanceof HybridSolver hybridSolver) {
+								odeSolverResultSet = hybridSolver.getHybridSolverResultSet();
 							} else {
-								String str = "Solver results are not compatible with CSV format. ";
+								String str = "Solver results will not be compatible with CSV format. ";
 								logger.warn(str);
 	//                            keepTempFiles = true;		// temp fix for Jasraj
 	//                        	throw new RuntimeException(str);
 							}
-						} else if (solver instanceof AbstractJavaSolver) {
-							((AbstractJavaSolver) solver).runSolver();
+						} else if (solver instanceof AbstractJavaSolver abstractJavaSolver) {
+							abstractJavaSolver.runSolver();
 							odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
 							// must interpolate data for uniform time course which is not supported natively by the Java solvers
 							org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
@@ -477,8 +479,6 @@ public class SolverHandler {
 						if (solver.getSolverStatus().getStatus() == SolverStatus.SOLVER_FINISHED) {
 
 							logTaskMessage += "done. ";
-							logger.info("Succesful execution: Model '" + docName + "' Task '" + sim.getDescription() + "'.");
-
 							long endTimeTask_ms = System.currentTimeMillis();
 							long elapsedTime_ms = endTimeTask_ms - startTimeTask_ms;
 							int duration_ms = (int) elapsedTime_ms;
@@ -488,14 +488,13 @@ public class SolverHandler {
 							simDuration_ms += duration_ms;
 							simDurationMap_ms.put(originalSim, simDuration_ms);
 
-							String msg = "Running simulation " + simTask.getSimulation().getName() + ", " + elapsedTime_ms + " ms";
-							logger.info(msg);
+                            logger.info("Successful execution ({}s): Model '{}' Task '{}' ({}).",
+									((double)elapsedTime_ms)/1000, docName, sim.getDescription(), simTask.getSimulation().getName());
 							countSuccessfulSimulationRuns++;    // we only count the number of simulations (tasks) that succeeded
 							if (simStatusMap.get(originalSim) != BiosimulationLog.Status.ABORTED && simStatusMap.get(originalSim) != BiosimulationLog.Status.FAILED) {
 								simStatusMap.put(originalSim, BiosimulationLog.Status.SUCCEEDED);
 							}
 							BiosimulationLog.instance().setOutputMessage(sedmlLocation, sim.getImportedTaskID(), "task", logTaskMessage);
-							RunUtils.drawBreakLine("-", 100);
 						} else {
 							String error = solver.getSolverStatus().getSimulationMessage().getDisplayMessage();
 							solverStatus = solver.getSolverStatus().getStatus();
@@ -553,14 +552,15 @@ public class SolverHandler {
 						} else {
 							cliLogger.writeDetailedErrorList(e,bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
 						}
-						RunUtils.drawBreakLine("-", 100);
 					} finally {
 						if (sim_span != null) {
 							sim_span.close();
 						}
 					}
 
+
 					if (sd.isSpatial()) {
+						logger.info("Processing spatial results of execution...");
 						File hdf5Results = new File(outDir + System.getProperty("file.separator") + task.getId() + "_job_" + tempSimulationJob.getJobIndex() + "_results.h5");
 						try {
 							RunUtils.exportPDE2HDF5(tempSimulationJob, outputDirForSedml, hdf5Results);
@@ -572,6 +572,7 @@ public class SolverHandler {
 							spatialResults.put(new TaskJob(task.getId(), tempSimulationJob.getJobIndex()), null);
 						}
 					} else {
+						logger.info("Processing non-spatial results of execution...");
 						MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
 						SBMLSymbolMapping sbmlMapping = this.sedmlImporter.getSBMLSymbolMapping(bioModel);
 
@@ -580,9 +581,10 @@ public class SolverHandler {
 						this.nonSpatialResults.put(taskJob, nonspatialSimResults);
 					}
 
-					if (keepTempFiles == false) {
+					if (!keepTempFiles) {
 						RunUtils.removeIntermediarySimFiles(outputDirForSedml);
 					}
+					RunUtils.drawBreakLine("-", 100);
 					simulationJobCount++;
 				}
 				for (Map.Entry<TempSimulation, BiosimulationLog.Status> entry : simStatusMap.entrySet()) {
