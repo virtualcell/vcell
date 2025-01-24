@@ -108,9 +108,9 @@ public class OmexTestingDatabase {
     public static FailureType determineFault(Exception caughtException, List<TraceEvent> errorEvents){ // Throwable because Assertion Error
         FailureType determinedFailure;
         if (caughtException != null) if ((determinedFailure = determineFault(caughtException)) != null) return determinedFailure;
-        if (errorEvents == null) return FailureType.UNCATETORIZED_FAULT;
+        if (errorEvents == null) return FailureType.UNCATEGORIZED_FAULT;
         for (TraceEvent errorEvent : errorEvents) if ((determinedFailure = determineFault(errorEvent)) != null) return determinedFailure;
-        return FailureType.UNCATETORIZED_FAULT;
+        return FailureType.UNCATEGORIZED_FAULT;
     }
 
     private static FailureType determineFault(TraceEvent traceEvent){
