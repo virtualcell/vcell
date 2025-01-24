@@ -580,7 +580,7 @@ public class SEDMLImporter {
 	}
 
 	private Variable resolveMathVariable(SimulationContext importedSimContext, SimulationContext convertedSimContext,
-										 String SBMLTargetID) throws SEDMLImportException  {
+										 String SBMLTargetID) {
 		// finds name of math-side Constant corresponding to SBML entity, if there is one
 		// returns null if there isn't
 
@@ -633,7 +633,14 @@ public class SEDMLImporter {
 			}
 
 			Task baseTask = this.getBaseTask(repeatedTask);
-			Simulation simulation = new Simulation(vcSimulations.get(baseTask.getId())); // make a copy of the original simulation
+			Simulation originalSim = vcSimulations.get(baseTask.getId());
+			if (originalSim == null){
+				String baseTaskName = String.format("%s(%s)", baseTask.getName() == null ? "" : baseTask.getName(), baseTask.getId());
+				String repeatedTaskName = String.format("%s(%s)", abstractedRepeatedTask.getName() == null ? "" : abstractedRepeatedTask.getName(), abstractedRepeatedTask.getId());
+				logger.warn("VCSimulation for base task `{}` was not found;skipping RepeatedTask `{}`", baseTaskName, repeatedTaskName);
+				continue;
+			}
+			Simulation simulation = new Simulation(originalSim); // make a copy of the original simulation
 			SimulationContext importedSimcontext, convertedSimcontext;
 			SimulationContext currentSC = (SimulationContext)simulation.getSimulationOwner();
 			if (currentSC.getApplicationType() == Application.NETWORK_STOCHASTIC) {
