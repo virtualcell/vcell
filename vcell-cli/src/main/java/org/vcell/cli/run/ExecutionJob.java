@@ -125,11 +125,13 @@ public class ExecutionJob {
             for (String sedmlLocation : this.sedmlLocations) {
                 try {
                     this.executeSedmlDocument(sedmlLocation, cumulativeHdf5Results);
-                } catch (PreProcessingException e) {
+                } catch (PreProcessingException | ExecutionException e) {
                     this.anySedmlDocumentHasFailed = true;
+                    String subString = sedmlLocation.lastIndexOf(File.separator) == sedmlLocation.length() ? "" : sedmlLocation.substring(sedmlLocation.lastIndexOf(File.separator) + 1);
+                    logger.error("SedML (@" + subString + ") processing failed:", e);
                 }
             }
-            BiosimulationsHdf5Writer.writeHdf5(cumulativeHdf5Results, new File(this.outputDir));
+            if (this.anySedmlDocumentHasSucceeded) BiosimulationsHdf5Writer.writeHdf5(cumulativeHdf5Results, new File(this.outputDir));
 
         } catch (IOException e){
             logger.error("System IO encountered a fatal error");
@@ -137,11 +139,9 @@ public class ExecutionJob {
         }
     }
 
-    private void executeSedmlDocument(String sedmlLocation, HDF5ExecutionResults cumulativeHdf5Results) throws IOException, PreProcessingException {
+    private void executeSedmlDocument(String sedmlLocation, HDF5ExecutionResults cumulativeHdf5Results) throws IOException, PreProcessingException, ExecutionException {
         BiosimulationLog.instance().updateSedmlDocStatusYml(sedmlLocation, BiosimulationLog.Status.QUEUED);
-        SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile,
-                this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder,
-                this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
+        SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
         SedmlStatistics stats = job.preProcessDoc();
         boolean hasSucceeded = job.simulateSedml(cumulativeHdf5Results);
         this.anySedmlDocumentHasSucceeded |= hasSucceeded;
