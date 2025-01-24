@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.solver.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.PropertyConstants;
 import org.vcell.util.gui.DialogUtils;
@@ -25,13 +27,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.ExplicitOutputTimeSpec;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.UniformOutputTimeSpec;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 4:07:40 PM)
@@ -196,8 +192,22 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			refreshData();
 		} else if (evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
 			int simIndex = (Integer)evt.getNewValue();
-			simIndex = simIndex % getMaxRowsPerPage();
-			fireTableRowsUpdated(simIndex, simIndex);
+			int row = simIndex % getMaxRowsPerPage();
+			Simulation simulation = getValueAt(row);
+			if (simulation.getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
+				SolverTaskDescription std = simulation.getSolverTaskDescription();
+				SolverDescription sd = std.getSolverDescription();
+				SimulationStatus simulationStatus = getSimulationWorkspace().getSimulationStatus(simulation);
+				System.out.println("SimulationListTableModel: simIndex: " + simIndex + ", row: " + row);
+				System.out.println("SimulationListTableModel: status changed: " + simulationStatus.getStatusString());
+				SimulationOwner so = getSimulationWorkspace().getSimulationOwner();
+				if(so instanceof SimulationContext) {
+					SimulationContext sc = (SimulationContext)so;
+					// TODO: get more sim info, trial, scan, etc
+					// TODO: launch postprocessing thread
+				}
+			}
+			fireTableRowsUpdated(row, row);
 		}
 	} else {
 		if (evt.getSource() instanceof Simulation && evt.getPropertyName().equals(Simulation.PROPERTY_NAME_SOLVER_TASK_DESCRIPTION)) {
