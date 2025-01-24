@@ -184,7 +184,7 @@ public class RunUtils {
         RunUtils.exportDocument(exportServiceImpl, dataServerImpl, outputContext, exportSpecs, vcId, outputFilePointer);
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, SolverHandler solverHandler, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, SolverHandler solverHandler, File outDirForCurrentSedml) {
         // finally, the real work
         Map<TaskJob, SBMLNonspatialSimResults> resultsHash = solverHandler.nonSpatialResults;
         HashMap<String, File> reportsHash = new HashMap<>();
@@ -388,38 +388,6 @@ public class RunUtils {
         }
         return reportsHash;
     }
-
-
-    public static String generateIdNamePlotsMap(SedML sedml, File outDirForCurrentSedml) {
-        StringBuilder sb = new StringBuilder();
-        List<Output> ooo = sedml.getOutputs();
-        for (Output oo : ooo) {
-            if (!(oo instanceof Report)) {
-                logger.info("Ignoring unsupported output `" + oo.getId() + "` while generating idNamePlotsMap.");
-            } else {
-                String id = oo.getId();
-                sb.append(id).append("|");	// hopefully no vcell name contains '|', so I can use it as separator
-                sb.append(oo.getName()).append("\n");
-                if(id.startsWith("__plot__")) {
-                    id = id.substring("__plot__".length());
-                    sb.append(id).append("|");	// the creation of the csv files is whimsical, we also use an id with __plot__ removed
-                    sb.append(oo.getName()).append("\n");
-                }
-            }
-        }
-
-        File f = new File(outDirForCurrentSedml, "idNamePlotsMap.txt");
-        try {
-            PrintWriter out = new PrintWriter(f);
-            out.print(sb.toString());
-            out.flush();
-            out.close();
-        } catch(Exception e) {
-            logger.error("Unable to create the idNamePlotsMap; " + e.getMessage(), e);
-        }
-        return f.toString();
-    }
-
 
 
     public static void zipResFiles(File dirPath) throws IOException {

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.jdom2.JDOMException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
@@ -188,9 +189,23 @@ public class OmexHandler {
     }
 
     public void deleteExtractedOmex() {
-        boolean isRemoved = CLIUtils.removeDirs(new File(this.tempPath));
-        if (!isRemoved) {
-            logger.error("Unable to remove temp directory: " + this.tempPath);
+        File f = new File(this.tempPath);
+        String fileOrDir = f.isDirectory() ? "directory" : "file";
+        try {
+            OmexHandler.deleteRecursively(f);
+        } catch (IOException ex) {
+            logger.error("Unable to remove temp {} `{}`", fileOrDir, this.tempPath);
+        }
+    }
+
+    private static void deleteRecursively(File f) throws IOException {
+        if (f.isDirectory()) {
+            for (File c : Objects.requireNonNull(f.listFiles())) {
+                OmexHandler.deleteRecursively(c);
+            }
+        }
+        if (!f.delete()) {
+            throw new FileNotFoundException("Failed to delete file: " + f);
         }
     }
 }
