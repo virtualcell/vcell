@@ -163,43 +163,42 @@ public class SEDMLImporter {
 			// Creating one VCell Simulation for each SED-ML actual Task
 			// 		(RepeatedTasks get added either on top of or separately as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
-				org.jlibsedml.Simulation sedmlSimulation;	// this will become the vCell simulation
-				org.jlibsedml.Model sedmlModel;				// the "original" model referred to by the task
-				String sedmlOriginalModelLanguage;			// can be sbml or vcml
-				String sedmlOriginalModelName = "";		// this will be used in the BioModel name
+				if (selectedTask instanceof RepeatedTask) continue; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks
+				if (!(selectedTask instanceof Task baseTask)) throw new RuntimeException("Unsupported task " + selectedTask);
 
-				if(selectedTask instanceof Task) {
-					sedmlModel = this.sedml.getModelWithId(selectedTask.getModelReference());
-					if (sedmlModel == null)
-						throw new RuntimeException("We somehow got a null sedml model!!");
-					sedmlSimulation = this.sedml.getSimulation(selectedTask.getSimulationReference());
-					sedmlOriginalModelLanguage = sedmlModel.getLanguage();
-					if (sedmlModel.getName() != null)
-						sedmlOriginalModelName = sedmlModel.getName();
-
-				} else if (selectedTask instanceof RepeatedTask) {
-					continue; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks 
-				} else {
-					throw new RuntimeException("Unsupported task " + selectedTask);
-				}
-				
-				if(!(sedmlSimulation instanceof UniformTimeCourse)) { // only UTC sims supported
-					logger.error("task '" + selectedTask.getName() + "' is being skipped, it references an unsupported simulation type: " + sedmlSimulation);
+				// the SedML simulation will become the vCell simulation
+				org.jlibsedml.Simulation sedmlSimulation = this.sedml.getSimulation(baseTask.getSimulationReference());
+				if(!(sedmlSimulation instanceof UniformTimeCourse utcSimulation)) { // only UTC sims supported
+					String baseTaskName = String.format("%s(%s)", baseTask.getName() == null ? "" : baseTask.getName(), baseTask.getId());
+                    logger.error("task '{}' is being skipped, it references an unsupported simulation type: {}", baseTaskName, sedmlSimulation);
 					continue;
 				}
+
+				// the "original" model referred to by the task; almost always sbml we can import as physiology
+				org.jlibsedml.Model sedmlModel = this.sedml.getModelWithId(baseTask.getModelReference());
+				if (sedmlModel == null) throw new RuntimeException("We somehow got a null sedml model!!");
+				// can be sbml or vcml
+				String sedmlOriginalModelLanguage = sedmlModel.getLanguage();
+				// this will be used in the BioModel name
+				String sedmlOriginalModelName = sedmlModel.getName() != null ? sedmlModel.getName() : "";
 
 				// at this point we assume that the sedml simulation, algorithm and kisaoID are all valid
 
 				// identify the vCell solvers that would match best the sedml solver kisao id
-				String kisaoID = sedmlSimulation.getAlgorithm().getKisaoID();
+				String kisaoID = utcSimulation.getAlgorithm().getKisaoID();
 				// try to find a match in the ontology tree
 				SolverDescription solverDescription = SolverUtilities.matchSolverWithKisaoId(kisaoID, this.exactMatchOnly);
 				if (solverDescription != null) {
-                    logger.info("Task (id='{}') is compatible, solver match found in ontology: '{}' matched to {}", selectedTask.getId(), kisaoID, solverDescription);
+                    logger.info("Task (id='{}') is compatible, solver match found in ontology: '{}' matched to {}", baseTask.getId(), kisaoID, solverDescription);
 				} else {
+					logger.warn("Task (id='{})' is not compatible, no equivalent solver found in ontology for requested algorithm '{}'.", selectedTask.getId(), kisaoID);
+					if (this.exactMatchOnly){
+						logger.error("Unable to continue; \"Exact Match Only\" mode is enabled; no substitute can be applied.");
+						throw new RuntimeException("No appropriate solver could be found; \"Exact Match Only\" mode is enabled");
+					}
 					// give it a try anyway with our deterministic default solver
 					solverDescription = SolverDescription.CombinedSundials;
-                    logger.error("Task (id='{})' is not compatible, no equivalent solver found in ontology for requested algorithm '{}'; trying with deterministic default solver {}", selectedTask.getId(), kisaoID, solverDescription);
+                    logger.info("Attempting to solve Task (id='{})' with deterministic default solver {}", selectedTask.getId(), solverDescription);
 				}
 				// find out everything else we need about the application we're going to use,
 				// as some more info will be needed when we parse the sbml file
@@ -239,20 +238,20 @@ public class SEDMLImporter {
 				if(sedmlOriginalModelLanguage.contentEquals(SUPPORTED_LANGUAGE.VCELL_GENERIC.getURN())) {
 					Simulation theSimulation = null;
 					for (Simulation sim : bioModel.getSimulations()) {
-						if (sim.getName().equals(selectedTask.getName())) {
-							logger.trace(" --- selected task - name: " + selectedTask.getName() + ", id: " + selectedTask.getId());
-							sim.setImportedTaskID(selectedTask.getId());
+						if (sim.getName().equals(baseTask.getName())) {
+							logger.trace(" --- selected task - name: " + baseTask.getName() + ", id: " + baseTask.getId());
+							sim.setImportedTaskID(baseTask.getId());
 							theSimulation = sim;
 							break;	// found the one, no point to continue the for loop
 						}
 					}if(theSimulation == null) {
-						logger.error("Couldn't match sedml task '" + selectedTask.getName() + "' with any biomodel simulation");
+						logger.error("Couldn't match sedml task '" + baseTask.getName() + "' with any biomodel simulation");
 						// TODO: should we throw an exception?
 						continue;	// should never happen
 					}
 					
 					SolverTaskDescription simTaskDesc = theSimulation.getSolverTaskDescription();
-					this.translateTimeBounds(simTaskDesc, sedmlSimulation);
+					this.translateTimeBounds(simTaskDesc, utcSimulation);
 					continue;
 				}
 				
@@ -293,18 +292,18 @@ public class SEDMLImporter {
 				Simulation newSimulation = new Simulation(matchingSimulationContext.getMathDescription(), matchingSimulationContext);
 
 				// See note below this immediately following section
-				String newSimName = selectedTask.getId();
-				if(SEDMLUtil.getName(selectedTask) != null) {
-					newSimName += "_" + SEDMLUtil.getName(selectedTask);
+				String newSimName = baseTask.getId();
+				if(SEDMLUtil.getName(baseTask) != null) {
+					newSimName += "_" + SEDMLUtil.getName(baseTask);
 				}
 				newSimulation.setName(newSimName);
-				newSimulation.setImportedTaskID(selectedTask.getId());
-				vcSimulations.put(selectedTask.getId(), newSimulation);
+				newSimulation.setImportedTaskID(baseTask.getId());
+				vcSimulations.put(baseTask.getId(), newSimulation);
 
 				/* NOTE: Before, we checked if the selected task was an instance of a task; we no longer need to check
 					that because we logically confirm that earlier on. If we ever get to this point and need an 'else':
 
-				 newSimulation.setName(SEDMLUtil.getName(sedmlSimulation)+"_"+SEDMLUtil.getName(selectedTask));
+				 newSimulation.setName(SEDMLUtil.getName(utcSimulation)+"_"+SEDMLUtil.getName(baseTask));
 				 */
 				
 				// we identify the type of sedml simulation (uniform time course, etc.)
@@ -313,11 +312,11 @@ public class SEDMLImporter {
 				simTaskDesc.setSolverDescription(solverDescription);
 
 
-				this.translateTimeBounds(simTaskDesc, sedmlSimulation);
-				this.translateAlgorithmParams(simTaskDesc, sedmlSimulation);
+				this.translateTimeBounds(simTaskDesc, utcSimulation);
+				this.translateAlgorithmParams(simTaskDesc, utcSimulation);
 				
 				newSimulation.setSolverTaskDescription(simTaskDesc);
-				newSimulation.setDescription(SEDMLUtil.getName(selectedTask));
+				newSimulation.setDescription(SEDMLUtil.getName(baseTask));
 				bioModel.addSimulation(newSimulation);
 				newSimulation.refreshDependencies();
 				
