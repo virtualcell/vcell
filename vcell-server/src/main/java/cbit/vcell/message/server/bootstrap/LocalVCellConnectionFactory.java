@@ -40,9 +40,8 @@ public class LocalVCellConnectionFactory implements VCellConnectionFactory {
 
 	private ConnectionFactory connectionFactory = null;
 
-    public LocalVCellConnectionFactory() {
+	public LocalVCellConnectionFactory() {}
 
-	}
 
 
 	@Override

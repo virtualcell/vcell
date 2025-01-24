@@ -686,7 +686,7 @@ public class ClientRequestManager
 
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
-			Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().getAuth0ConnectionUtils();
+			Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().auth0ConnectionUtils;
 			if (!getClientServerInfo().getUsername().equals(User.VCELL_GUEST_NAME)){
 				auth0ConnectionUtils.logOut();
 			}

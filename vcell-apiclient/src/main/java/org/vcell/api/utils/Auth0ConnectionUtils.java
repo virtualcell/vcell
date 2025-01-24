@@ -11,12 +11,26 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 
 public final class Auth0ConnectionUtils {
     private static String showLoginPopUpIndexString = "showLoginPopUp";
 
     private final VCellApiClient vcellApiClient;
+
+    /**
+    Only use this constructor for VCell admin dev main, and to create the injector
+     */
+    public Auth0ConnectionUtils(){
+        try {
+            this.vcellApiClient = new VCellApiClient("vcell-dev.cam.uchc.edu", 443, "/api/v0");
+        } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public Auth0ConnectionUtils(VCellApiClient vcellApiClient) {this.vcellApiClient = vcellApiClient;}
 
     public boolean isVCellIdentityMapped() throws ApiException {

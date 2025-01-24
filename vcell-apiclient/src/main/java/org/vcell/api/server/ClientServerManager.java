@@ -18,6 +18,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import com.google.inject.Inject;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.resource.ErrorUtils;
@@ -44,6 +45,7 @@ import java.net.URL;
 public class ClientServerManager implements ClientServerInterface {
 	private final static Logger lg = LogManager.getLogger(ClientServerManager.class);
 	private final VCellConnectionFactory vcellConnectionFactory;
+	public final Auth0ConnectionUtils auth0ConnectionUtils;
 	
 	public interface InteractiveContextDefaultProvider {
 		InteractiveClientServerContext getInteractiveContext();
@@ -208,18 +210,14 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 	getPropertyChange().addPropertyChangeListener(listener);
 }
 
-public ClientServerManager(VCellConnectionFactory vcellConnectionFactory, ClientServerInfo clientServerInfo, InteractiveContextDefaultProvider defaultInteractiveContextProvider) {
+
+public ClientServerManager(VCellConnectionFactory vcellConnectionFactory, ClientServerInfo clientServerInfo,
+						   InteractiveContextDefaultProvider defaultInteractiveContextProvider, Auth0ConnectionUtils auth0ConnectionUtils) {
 	this.vcellConnectionFactory = vcellConnectionFactory;
 	this.clientServerInfo = clientServerInfo;
 	this.defaultInteractiveContextProvider = defaultInteractiveContextProvider;
+	this.auth0ConnectionUtils = auth0ConnectionUtils;
 }
-
-	public Auth0ConnectionUtils getAuth0ConnectionUtils() {
-		if (!(vcellConnectionFactory instanceof RemoteProxyVCellConnectionFactory)){
-			throw new RuntimeException("Expected RemoteProxyVCellConnectionFactory");
-		}
-		return ((RemoteProxyVCellConnectionFactory)vcellConnectionFactory).getAuth0ConnectionUtils();
-	}
 
 /**
  * Insert the method's description here.
@@ -391,7 +389,6 @@ private VCellConnection connectToServer(InteractiveClientServerContext requester
 			String apihost = getClientServerInfo().getApihost();
 			Integer apiport = getClientServerInfo().getApiport();
 
-			Auth0ConnectionUtils auth0ConnectionUtils = getAuth0ConnectionUtils();
 			String username = User.isGuest(getClientServerInfo().getUsername()) ? getClientServerInfo().getUsername() : auth0ConnectionUtils.getAuth0MappedUser();
 			setConnectionStatus(new ClientConnectionStatus(username, apihost, apiport, ConnectionStatus.INITIALIZING));
 			newVCellConnection = vcellConnectionFactory.createVCellConnection(getClientServerInfo().getUserLoginInfo());
