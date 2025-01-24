@@ -39,6 +39,7 @@ import org.jlibsedml.XPathTarget;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jmathml.ASTNode;
 import org.vcell.cli.messaging.CLIRecordable;
+import org.vcell.sedml.SEDMLImportException;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
@@ -48,7 +49,6 @@ import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sedml.SEDMLImporter;
 import org.vcell.util.ISize;
-import org.vcell.util.document.VCDocument;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -77,23 +77,22 @@ public class SolverHandler {
     Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<Task, Set<RepeatedTask>> ();    // key = Task, value = list of RepeatedTasks ending with this task
     Map<String, Task> topTaskToBaseTask = new LinkedHashMap<String, Task> ();                // key = TopmostTaskId, value = Tasks at the bottom of the SubTasks chain OR the topmost task itself if instanceof Task
 
-    private static void sanityCheck(VCDocument doc) {
-        if (doc == null) {
-            throw new RuntimeException("Imported VCDocument is null.");
-        }
-        String docName = doc.getName();
-        if (docName == null || docName.isEmpty()) {
-            throw new RuntimeException("The name of the imported VCDocument is null or empty.");
-        }
-        if (!(doc instanceof BioModel)) {
-            throw new RuntimeException("The imported VCDocument '" + docName + "' is not a BioModel.");
-        }
-        BioModel bioModel = (BioModel) doc;
-        if (bioModel.getSimulationContext(0) == null) {
-            throw new RuntimeException("The imported VCDocument '" + docName + "' has no Application");
-        }
-        if (bioModel.getSimulation(0) == null) {
-            throw new RuntimeException("The imported VCDocument '" + docName + "' has no Simulation");
+    private static void sanityCheck(BioModel bioModel) throws SEDMLImportException {
+        if (bioModel == null) throw new SEDMLImportException("Imported BioModel is null.");
+
+        String docName = bioModel.getName();
+        if (docName == null || docName.isEmpty()) throw new SEDMLImportException("The name of the imported BioModel is null or empty.");
+
+		// VCell (vcml) has a different Paradigm to SedML.
+		// > SedML Tasks contain SedML Simulations.
+		// > VCell Applications (SimContexts) contain VCell Simulations.
+		// BUT
+		// > SedML Tasks are actually analogous to VCell Simulations
+		if (bioModel.getNumSimulationContexts() == 0 || bioModel.getSimulationContext(0) == null) {
+			throw new SEDMLImportException("VCell did not generate any VCell-Applications from `" + docName + "`; Does the SedML contain tasks?");
+		}
+        if (bioModel.getNumSimulations() == 0 || bioModel.getSimulation(0) == null) {
+			throw new SEDMLImportException("VCell did not generate any VCell-Simulations from `" + docName + "`; No tasks in the SedML are able to run by VCell.");
         }
     }
 
@@ -321,17 +320,23 @@ public class SolverHandler {
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
         
-        List<BioModel> bioModelList = null;
-        String docName = null;
-        List<TempSimulation> tempSims = null;
+        List<BioModel> bioModelList;
+        String docName;
+        List<TempSimulation> tempSims;
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
 		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo.getFile(), sedml, exactMatchOnly);
-        try {
-			bioModelList = this.sedmlImporter.getBioModels();
-        } catch (Exception e) {
+
+		try {
+			for (BioModel generatedBioModel : (bioModelList = this.sedmlImporter.getBioModels())){
+				SolverHandler.sanityCheck(generatedBioModel);
+			}
+        } catch (SEDMLImportException e) {
+			throw e;
+		} catch (Exception e) {
             logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
             throw e;
         }
+
         if(bioModelList != null) {
 			countBioModels = bioModelList.size();
         }
@@ -347,13 +352,7 @@ public class SolverHandler {
 			Span biomodel_span = null;
 			try {
 				biomodel_span = Tracer.startSpan(Span.ContextType.BioModel, bioModel.getName(), Map.of("bioModelName", bioModel.getName()));
-				try {
-					SolverHandler.sanityCheck(bioModel);
-				} catch (Exception e) {
-					Tracer.failure(e, "Sanity check failed for BioModel " + bioModel.getName() + " " + e.getMessage());
-					logger.error("Exception encountered: " + e.getMessage(), e);
-					// continue;
-				}
+
 				docName = bioModel.getName();
 				tempSims = Arrays.stream(bioModel.getSimulations()).map(s -> origSimulationToTempSimulationMap.get(s)).collect(Collectors.toList());
 
