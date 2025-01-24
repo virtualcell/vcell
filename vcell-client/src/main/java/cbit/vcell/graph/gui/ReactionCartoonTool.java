@@ -97,7 +97,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.ChildWindowManager.ChildWindow;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.BioModelEditor;
-import cbit.vcell.client.server.ClientServerManager;
+import org.vcell.api.server.ClientServerManager;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;

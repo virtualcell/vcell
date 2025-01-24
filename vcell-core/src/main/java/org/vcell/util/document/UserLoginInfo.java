@@ -10,14 +10,13 @@
 
 package org.vcell.util.document;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.Serializable;
-
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.api.common.AccessTokenRepresentation;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.Serializable;
 
 @SuppressWarnings("serial")
 public class UserLoginInfo implements Serializable {

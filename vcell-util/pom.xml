@@ -136,14 +136,14 @@
 		  <version>${jaxb-core.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${jackson-annotations.version}</version>
+		</dependency>
+		<dependency>
 		  <groupId>com.sun.xml.bind</groupId>
 		  <artifactId>jaxb-impl</artifactId>
 		  <version>${jaxb-impl.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.vcell</groupId>
-			<artifactId>vcell-restclient</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

@@ -1,7 +1,14 @@
 package org.vcell.api.client;
 
+import org.vcell.api.types.rpc.VCellApiRpcBody;
+import org.vcell.api.types.rpc.VCellApiRpcRequest;
 import com.google.gson.Gson;
 import com.nimbusds.oauth2.sdk.ParseException;
+import org.vcell.api.types.common.BiomodelRepresentation;
+import org.vcell.api.types.common.SimulationRepresentation;
+import org.vcell.api.types.common.SimulationTaskRepresentation;
+import org.vcell.api.types.common.UserInfo;
+import org.vcell.api.types.events.EventWrapper;
 import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpResponseException;
@@ -25,11 +32,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
-import org.vcell.api.common.BiomodelRepresentation;
-import org.vcell.api.common.SimulationRepresentation;
-import org.vcell.api.common.SimulationTaskRepresentation;
-import org.vcell.api.common.UserInfo;
-import org.vcell.api.common.events.EventWrapper;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomApiClientCode;
@@ -38,6 +40,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
+import org.vcell.api.types.utils.DTOOldAPI;
 
 import java.awt.*;
 import java.io.*;
@@ -51,7 +54,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 /**
@@ -683,35 +685,14 @@ public class VCellApiClient implements AutoCloseable {
 		}
 	}
 	
-	public enum RpcDestination {
-		DataRequestQueue, DbRequestQueue, SimReqQueue;
-	}
-	
-	public static class VCellApiRpcBody implements Serializable {
-		public final RpcDestination rpcDestination;
-		public final VCellApiRpcRequest rpcRequest;
-		public final boolean returnedRequired;
-		public final int timeoutMS;
-		public final String[] specialProperties;
-		public final Object[] specialValues;
 
-		public VCellApiRpcBody(RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest,
-				boolean returnedRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) {
-			this.rpcDestination = rpcDestination;
-			this.rpcRequest = rpcRequest;
-			this.returnedRequired = returnedRequired;
-			this.timeoutMS = timeoutMS;
-			this.specialProperties = specialProperties;
-			this.specialValues = specialValues;
-		}
-	}
 
-	public Serializable sendRpcMessage(RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest, boolean returnRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) throws ClientProtocolException, IOException {
+	public Serializable sendRpcMessage(VCellApiRpcBody.RpcDestination rpcDestination, VCellApiRpcRequest rpcRequest, boolean returnRequired, int timeoutMS, String[] specialProperties, Object[] specialValues) throws ClientProtocolException, IOException {
 		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/rpc");
 		VCellApiRpcBody vcellapiRpcBody = new VCellApiRpcBody(rpcDestination, rpcRequest, returnRequired, timeoutMS, specialProperties, specialValues);
 		byte[] compressedSerializedRpcBody = null;
 		try {
-			compressedSerializedRpcBody = toCompressedSerialized(vcellapiRpcBody);
+			compressedSerializedRpcBody = DTOOldAPI.toCompressedSerialized(vcellapiRpcBody);
 		} catch (IOException e2) {
 			e2.printStackTrace();
 			throw new RuntimeException("vcellapi rpc failure serializing request body, method="+rpcRequest.methodName+": "+e2.getMessage(),e2);
@@ -801,30 +782,8 @@ public class VCellApiClient implements AutoCloseable {
 			return str.substring(0, maxlength-4)+"...";
 		}
 	}
-	
-	public static byte[] toCompressedSerialized(Serializable cacheObj) throws java.io.IOException {
-		java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
-		java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(dos);
-		oos.writeObject(cacheObj);
-		oos.flush();
-		dos.close();
-		bos.flush();
-		byte[] objData = bos.toByteArray();
-		oos.close();
-		bos.close();
-		return objData;
-	}
-	
-	public static Serializable fromCompressedSerialized(InputStream is) throws ClassNotFoundException, java.io.IOException {
-		BufferedInputStream bis = new BufferedInputStream(is);
-		InflaterInputStream iis = new InflaterInputStream(bis);
-		java.io.ObjectInputStream ois = new java.io.ObjectInputStream(iis);
-		Serializable cacheClone = (Serializable) ois.readObject();
-		ois.close();
-		bis.close();
-		return cacheClone;
-	}
+
+
 	
 	public static Serializable fromCompressedSerialized(byte[] objData) throws ClassNotFoundException, java.io.IOException {
 		java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(objData);

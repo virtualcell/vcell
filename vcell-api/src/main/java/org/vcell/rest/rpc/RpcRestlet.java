@@ -1,26 +1,23 @@
 package org.vcell.rest.rpc;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-
+import org.vcell.api.types.rpc.VCellApiRpcBody;
+import cbit.vcell.clientdb.ServerRejectedSaveException;
+import cbit.vcell.message.VCRpcRequest;
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
+import cbit.vcell.message.VCellQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.restlet.Context;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.*;
+import org.restlet.data.Form;
+import org.restlet.data.MediaType;
+import org.restlet.data.Method;
+import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
-import org.restlet.engine.adapter.HttpResponse;
-import org.restlet.engine.header.HeaderConstants;
 import org.restlet.representation.ByteArrayRepresentation;
-import org.restlet.util.Series;
-import org.vcell.api.client.VCellApiClient;
-import org.vcell.api.client.VCellApiClient.VCellApiRpcBody;
-import org.vcell.api.client.VCellApiRpcRequest;
+import org.vcell.api.types.rpc.VCellApiRpcRequest;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.VCellApiApplication.AuthenticationPolicy;
 import org.vcell.rest.server.RestDatabaseService;
@@ -28,17 +25,18 @@ import org.vcell.util.CompressionUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
+import org.vcell.api.types.utils.DTOOldAPI;
 
-import cbit.vcell.clientdb.ServerRejectedSaveException;
-import cbit.vcell.message.VCRpcRequest;
-import cbit.vcell.message.VCRpcRequest.RpcServiceType;
-import cbit.vcell.message.VCellQueue;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public final class RpcRestlet extends Restlet {
 	private static Logger lg = LogManager.getLogger(RpcRestlet.class);
 	RestDatabaseService restDatabaseService;
 	private static final List<String> vcellguestAllowed;
-	//MUST keep sycnhronized with cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory
+	//MUST keep sycnhronized with org.vcell.api.messaging.RemoteProxyVCellConnectionFactory
 	static {
 		String[] temp =  new String[] {
 				"getVCInfoContainer",
@@ -174,7 +172,7 @@ public final class RpcRestlet extends Restlet {
 					serializableResultObject = rpcService.sendRpcMessage(
 							queue, vcRpcRequest, rpcBody.returnedRequired, specialProperties, specialValues, new UserLoginInfo(username));
 				}
-				byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(serializableResultObject);
+				byte[] serializedResultObject = DTOOldAPI.toCompressedSerialized(serializableResultObject);
 				response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");
 				response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 			} catch (Exception e) {
@@ -182,7 +180,7 @@ public final class RpcRestlet extends Restlet {
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				if(e.getCause() instanceof ServerRejectedSaveException) {//send back actual exception, client needs specific cause
 					try {
-						byte[] serializedResultObject = VCellApiClient.toCompressedSerialized(e.getCause());
+						byte[] serializedResultObject = DTOOldAPI.toCompressedSerialized(e.getCause());
 						response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 						return;
 					} catch (Exception e1) {

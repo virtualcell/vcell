@@ -36,19 +36,6 @@ public class VariableType implements java.io.Serializable, org.vcell.util.Matcha
 
 	public VariableType(){}
 
-	public static org.vcell.restclient.model.VariableType variableTypeToDTO(VariableType vt) {
-		org.vcell.restclient.model.VariableType dto = new org.vcell.restclient.model.VariableType();
-		dto.setType(vt.type);
-		dto.setName(vt.name);
-		dto.setUnits(vt.units);
-		dto.setLabel(vt.label);
-		return dto;
-	}
-
-	public static VariableType dtoToVariableType(org.vcell.restclient.model.VariableType dto) {
-		return new VariableType(dto.getType(), dto.getName(), dto.getUnits(), dto.getLabel());
-	}
-
 	/**
 	 * mark types that were not previously supported by {@link #getVariableTypeFromInteger(int)}, issue warning if triggered
 	 */

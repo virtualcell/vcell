@@ -2,19 +2,14 @@ package cbit.vcell.desktop;
 
 import cbit.vcell.client.DocumentWindowManager;
 import cbit.vcell.client.VCellClient;
-import cbit.vcell.client.VCellClientMain;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.server.Auth0ConnectionUtils;
-import com.google.inject.Guice;
+import org.vcell.api.utils.Auth0ConnectionUtils;
 import com.google.inject.Inject;
-import com.google.inject.Key;
 import com.google.inject.name.Named;
-import com.google.inject.name.Names;
 import org.vcell.DependencyConstants;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.VCellIcons;
-import scala.util.parsing.combinator.testing.Str;
 
 import javax.swing.*;
 import java.util.Hashtable;

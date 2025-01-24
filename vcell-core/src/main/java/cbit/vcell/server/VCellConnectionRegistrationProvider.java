@@ -1,12 +1,12 @@
 package cbit.vcell.server;
 
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 
 public class VCellConnectionRegistrationProvider implements RegistrationService {
 	private VCellConnection vcellConnection;

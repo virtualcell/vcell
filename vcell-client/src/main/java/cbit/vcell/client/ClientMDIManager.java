@@ -47,7 +47,7 @@ import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.desktop.TestingFrameworkWindow;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.client.desktop.TopLevelWindow;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 import cbit.vcell.client.server.SimStatusListener;
 import cbit.vcell.desktop.VCDocumentDbTreeModel;
 import cbit.vcell.field.gui.FieldDataGUIPanel;
@@ -590,7 +590,7 @@ public static void unBlockWindow(Component component) {
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 3:15:04 PM)
- * @param connectionStatus cbit.vcell.client.server.ConnectionStatus
+ * @param connectionStatus org.vcell.api.server.ConnectionStatus
  */
 public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 	if (connectionStatus.getStatus() == ConnectionStatus.CONNECTED) {

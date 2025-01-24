@@ -21,17 +21,6 @@ public class ISize implements java.io.Serializable, Matchable {
 	private int y;
 	private int z;
 
-	public static org.vcell.restclient.model.ISize iSizeToDTO(ISize iSize){
-		org.vcell.restclient.model.ISize iSizeDTO = new org.vcell.restclient.model.ISize();
-		iSizeDTO.setX(iSize.getX());
-		iSizeDTO.setY(iSize.getY());
-		iSizeDTO.setZ(iSize.getZ());
-		return iSizeDTO;
-	}
-
-	public static ISize dtoToISize(org.vcell.restclient.model.ISize dto){
-        return new ISize(dto.getX(), dto.getY(), dto.getZ());
-	}
 	public ISize(){}
 
 /**

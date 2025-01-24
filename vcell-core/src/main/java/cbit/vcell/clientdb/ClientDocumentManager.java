@@ -23,6 +23,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Element;
@@ -75,7 +76,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
@@ -1341,7 +1341,7 @@ public ReactionStepInfo[] getUserReactionStepInfos(KeyValue[] reactionStepKeys) 
  * Creation date: (11/14/00 5:24:29 PM)
  * @param e RemoteProxyException
  */
-private void handleRemoteProxyException(RemoteProxyException e) {
+private void handleRemoteProxyException(cbit.vcell.message.server.bootstrap.client.RemoteProxyException e) {
 	lg.error("Handling RemoteProxyException", e);
 }
 

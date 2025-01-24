@@ -38,7 +38,6 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
 import cbit.vcell.simdata.ClientPDEDataContext;
@@ -57,6 +56,7 @@ import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 
 public class DisplayTimeSeries extends Task {
 	

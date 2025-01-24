@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.vcell</groupId>
+        <artifactId>vcell-pom</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>vcell-api-types</artifactId>
+
+    <name>vcell-api-types</name>
+
+    <description>Types used for communication.</description>
+    <version>1.0.0</version>
+    <url>https://maven.apache.org</url>
+    <inceptionYear>2025</inceptionYear>
+    <organization>
+        <name>VCell</name>
+        <url>https://vcell.org</url>
+    </organization>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>avocadomoon</id>
+            <name>Ezequiel Valencia</name>
+            <roles>
+                <role>founder</role>
+                <role>lead</role>
+                <role>developer</role>
+                <role>debugger</role>
+                <role>reviewer</role>
+                <role>support</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <mailingLists>
+        <mailingList>
+            <name>VCell Open Discussion Forum</name>
+            <subscribe>https://groups.google.com/group/vcell-discuss</subscribe>
+            <unsubscribe>https://groups.google.com/group/vcell-discuss</unsubscribe>
+            <post>vcell-discuss@googlegroups.com</post>
+            <archive>https://groups.google.com/group/vcell-discuss</archive>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:git:git://github.com/virtualcell/vcell</connection>
+        <developerConnection>scm:git:git@github.com:virtualcell/vcell</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/virtualcell/vcell</url>
+    </scm>
+    <issueManagement>
+        <system>Bugzilla</system>
+        <url>https://github.com/virtualcell/vcell/issues</url>
+    </issueManagement>
+
+    <properties>
+        <license.licenseName>MIT</license.licenseName>
+        <license.copyrightOwners>UConn Health</license.copyrightOwners>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>maven-restlet</id>
+            <name>Restlet repository</name>
+            <url>https://maven.restlet.talend.com</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.vcell</groupId>
+            <artifactId>vcell-core</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>

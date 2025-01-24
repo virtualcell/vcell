@@ -11,8 +11,6 @@
 package cbit.vcell.export.server;
 
 import java.io.Serializable;
-
-import org.vcell.api.common.events.ExportTimeSpecs;
 /**
  * This type was created in VisualAge.
  */
@@ -112,12 +110,5 @@ public String toString() {
 	buf.append(", modeID: " + modeID + "]");
 	return buf.toString();
 }
-public ExportTimeSpecs toJsonRep() {
-	ExportTimeSpecs rep = new ExportTimeSpecs(beginTimeIndex, endTimeIndex, allTimes, modeID);
-	return rep;
-}
-public static TimeSpecs fromJsonRep(ExportTimeSpecs rep) {
-	TimeSpecs timeSpecs = new TimeSpecs(rep.beginTimeIndex, rep.endTimeIndex, rep.allTimes, rep.modeID);
-	return timeSpecs;
-}
+
 }

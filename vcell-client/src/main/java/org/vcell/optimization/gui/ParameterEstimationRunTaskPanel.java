@@ -40,13 +40,13 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import copasi.CopasiOptimizationSolverRemote;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWNamespace;
 import org.vcell.optimization.CopasiOptSolverCallbacks;
-import org.vcell.optimization.CopasiOptimizationSolver;
 import org.vcell.optimization.CopasiUtils;
 import org.vcell.optimization.ParameterEstimationTaskSimulatorIDA;
 import org.vcell.optimization.jtd.OptProgressItem;
@@ -1168,7 +1168,7 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
                 // OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveLocalPython(parameterEstimationTask);
                 ClientServerInfo clientServerInfo = TopLevelWindowManager.activeManager().getRequestManager().getClientServerInfo();
                 optSolverCallbacks.setProgressReport(new OptProgressReport());
-                OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveRemoteApi(parameterEstimationTask, optSolverCallbacks, getClientTaskStatusSupport(), clientServerInfo);
+                OptimizationResultSet optResultSet = CopasiOptimizationSolverRemote.solveRemoteApi(parameterEstimationTask, optSolverCallbacks, getClientTaskStatusSupport(), clientServerInfo);
                 hashTable.put(ORS_KEY, optResultSet);
             }
 

@@ -17,7 +17,6 @@ import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.importer.MicroscopyXMLTags;
 import cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper;
 import cbit.vcell.biomodel.BioModel;
@@ -48,7 +47,6 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MembraneSubDomain;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model.ModelParameter;
@@ -59,7 +57,10 @@ import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
-import cbit.vcell.server.Auth0ConnectionUtils;
+import org.vcell.api.server.AsynchMessageManager;
+import org.vcell.api.server.ClientServerManager;
+import org.vcell.api.server.ConnectionStatus;
+import org.vcell.api.utils.Auth0ConnectionUtils;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
@@ -685,7 +686,7 @@ public class ClientRequestManager
 
 			Hashtable<String, Object> hash = new Hashtable<String, Object>();
 
-			Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().getAuth0ConnectionUtils();
+			Auth0ConnectionUtils auth0ConnectionUtils = getClientServerManager().auth0ConnectionUtils;
 			if (!getClientServerInfo().getUsername().equals(User.VCELL_GUEST_NAME)){
 				auth0ConnectionUtils.logOut();
 			}

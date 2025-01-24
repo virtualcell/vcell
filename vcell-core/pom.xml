@@ -103,11 +103,6 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.vcell</groupId>
-			<artifactId>vcell-apiclient</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
 			<version>${guice.version}</version>
@@ -656,12 +651,12 @@
 			<artifactId>commons-codec</artifactId>
 			<version>${commons-codec.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.vcell</groupId>
-			<artifactId>vcell-restclient</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${httpclient.version}</version>
+		</dependency>
     </dependencies>
 	
 	<profiles>

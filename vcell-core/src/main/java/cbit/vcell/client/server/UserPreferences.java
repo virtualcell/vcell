@@ -37,7 +37,7 @@ import cbit.vcell.resource.ResourceUtil;
 public class UserPreferences {
     private final static Logger lg = LogManager.getLogger(UserPreferences.class);
 
-    private ClientServerManager clientServerManager = null;
+    private ClientServerInterface clientServerManager = null;
 
     //the two broad types of preferences
     private static final String WARN = "WARN";                     //warning message
@@ -119,9 +119,9 @@ public class UserPreferences {
      * Insert the method's description here.
      * Creation date: (6/12/2004 9:08:03 PM)
      *
-     * @param clientServerManager cbit.vcell.client.server.ClientServerManager
+     * @param clientServerManager org.vcell.api.server.ClientServerManager
      */
-    public UserPreferences(ClientServerManager clientServerManager){
+    public UserPreferences(ClientServerInterface clientServerManager){
         this.clientServerManager = clientServerManager;
         lastPref = null;
 
@@ -222,7 +222,7 @@ public class UserPreferences {
     }
 
 
-    protected void resetFromSaved(Preference[] savedPreferences){
+    public void resetFromSaved(Preference[] savedPreferences){
         /* look in getUserChoices() for keys and values strings encoding of the preferences */
         // reset to defaults
         warningHash.clear();

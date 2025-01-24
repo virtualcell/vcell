@@ -3,9 +3,9 @@ package cbit.vcell.client;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
-import cbit.vcell.client.server.ClientServerManager.InteractiveContext;
+import cbit.vcell.client.server.InteractiveClientServerContext;
 
-public class VCellGuiInteractiveContext implements InteractiveContext {
+public class VCellGuiInteractiveContext implements InteractiveClientServerContext {
 	private org.vcell.client.logicalwindow.LWModelessWarning cantConnectWarning = null;
 	private final cbit.vcell.client.TopLevelWindowManager topLevelWindowManager;
 	

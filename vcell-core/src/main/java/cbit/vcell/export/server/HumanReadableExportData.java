@@ -1,8 +1,5 @@
 package cbit.vcell.export.server;
 
-import cbit.vcell.mapping.SimulationContext;
-import org.vcell.api.common.events.ExportHumanReadableDataSpec;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,18 +28,5 @@ public class HumanReadableExportData implements Serializable {
         this.applicationType = applicationType;
         this.nonSpatial = nonSpatial;
         this.subVolume = subVolume;
-    }
-
-    public ExportHumanReadableDataSpec toJsonRep() {
-        return new ExportHumanReadableDataSpec(biomodelName, applicationName, simulationName, differentParameterValues, serverSavedFileName, applicationType, nonSpatial, subVolume,
-                zSlices, tSlices, numChannels);
-    }
-    public static HumanReadableExportData fromJsonRep(ExportHumanReadableDataSpec rep) {
-        HumanReadableExportData hre = new HumanReadableExportData(rep.simulationName, rep.applicationName, rep.bioModelName, rep.differentParameterValues,
-                rep.serverSavedFileName, rep.applicationType, rep.nonSpatial, rep.subVolume);
-        hre.zSlices = rep.zSlices;
-        hre.tSlices = rep.tSlices;
-        hre.numChannels = rep.numChannels;
-        return hre;
     }
 }

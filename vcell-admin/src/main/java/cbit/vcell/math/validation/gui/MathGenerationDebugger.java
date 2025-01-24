@@ -155,7 +155,7 @@ public class MathGenerationDebugger extends JPanel {
 		try {
 			new Thread() {
 				public void run(){
-					VCellClient vcellClient = new VCellClient( null);
+					VCellClient vcellClient = new VCellClient( null, null);
 					ClientServerInfo clientServerInfo = ClientServerInfo.createLocalServerInfo(vcellUserID);
 					vcellClient.startClient(mathGenerationResults.bioModelFromDB, clientServerInfo);
 				}

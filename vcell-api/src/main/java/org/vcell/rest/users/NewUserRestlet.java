@@ -17,6 +17,7 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+import org.vcell.api.types.utils.DTOOldAPI;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -32,7 +33,7 @@ public final class NewUserRestlet extends Restlet {
 	private void handleJsonRequest(Request request, Response response) {
 		String content = request.getEntityAsText();
 		Gson gson = new Gson();
-		org.vcell.api.common.UserInfo userinfo = gson.fromJson(content, org.vcell.api.common.UserInfo.class);
+		org.vcell.api.types.common.UserInfo userinfo = gson.fromJson(content, org.vcell.api.types.common.UserInfo.class);
 		
 		if (userinfo.email.length()<4){
 			response.setStatus(Status.CLIENT_ERROR_FORBIDDEN);
@@ -63,7 +64,7 @@ public final class NewUserRestlet extends Restlet {
 			VCellApiApplication vcellApiApplication = (VCellApiApplication)getApplication();
 			try {
 				UserInfo insertedUserInfo = vcellApiApplication.getRestDatabaseService().addUser(newUserInfo);
-				org.vcell.api.common.UserInfo inserted = insertedUserInfo.getApiUserInfo();				
+				org.vcell.api.types.common.UserInfo inserted = DTOOldAPI.getApiUserInfo(insertedUserInfo);
 				String userInfoJson = gson.toJson(inserted);
 				JsonRepresentation userRep = new JsonRepresentation(userInfoJson);
 				response.setStatus(Status.SUCCESS_CREATED);

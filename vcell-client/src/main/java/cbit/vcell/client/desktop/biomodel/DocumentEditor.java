@@ -65,7 +65,7 @@ import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEvent;
 import cbit.vcell.client.desktop.biomodel.IssueManager.IssueEventListener;
 import cbit.vcell.client.desktop.biomodel.SelectionManager.ActiveView;
 import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 import cbit.vcell.desktop.BioModelMetaDataPanel;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.GeometryMetaDataPanel;

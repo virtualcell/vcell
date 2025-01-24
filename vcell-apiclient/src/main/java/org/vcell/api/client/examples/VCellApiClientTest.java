@@ -2,13 +2,14 @@ package org.vcell.api.client.examples;
 
 import java.io.IOException;
 
+import org.vcell.api.types.common.ApplicationRepresentation;
+import org.vcell.api.types.common.BiomodelRepresentation;
+import org.vcell.api.types.common.SimulationRepresentation;
+import org.vcell.api.types.common.SimulationTaskRepresentation;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.client.query.BioModelsQuerySpec;
 import org.vcell.api.client.query.SimTasksQuerySpec;
-import org.vcell.api.common.ApplicationRepresentation;
-import org.vcell.api.common.BiomodelRepresentation;
-import org.vcell.api.common.SimulationRepresentation;
-import org.vcell.api.common.SimulationTaskRepresentation;
+
 
 public class VCellApiClientTest {
 	

@@ -11,7 +11,7 @@
 package cbit.vcell.server;
 
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.simdata.OutputContext;
 /**
  * Insert the type's description here.

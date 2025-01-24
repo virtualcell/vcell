@@ -13,7 +13,6 @@ package cbit.vcell.math;
 import cbit.vcell.geometry.GeometryClass;
 import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
-import org.vcell.restclient.model.Domain;
 import org.vcell.util.Compare;
 import org.vcell.util.EqualsUtil;
 import org.vcell.util.Issue.IssueSource;
@@ -39,11 +38,6 @@ public abstract class Variable extends CommentedObject implements SymbolTableEnt
 
     public static class Domain implements Matchable, Serializable {
 		private String name = null;
-
-		public static Domain dtoToDomain(org.vcell.restclient.model.Domain dto){
-			return new Domain(dto.getName());
-		}
-
 		
 		public Domain(String argName){
 			String nameWithPeriodsMangled = argName.replace('.','_');

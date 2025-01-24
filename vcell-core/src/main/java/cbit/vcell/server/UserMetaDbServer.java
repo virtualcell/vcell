@@ -11,6 +11,7 @@
 package cbit.vcell.server;
 import java.util.TreeMap;
 
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -33,11 +34,9 @@ import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionDescription;
 import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.model.ReactionStepInfo;

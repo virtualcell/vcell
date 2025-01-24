@@ -2,6 +2,7 @@ package org.vcell.service.registration.localdb;
 
 import java.sql.SQLException;
 
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.ConnectionFactory;
@@ -13,7 +14,6 @@ import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.UserInfo;
 
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory.RemoteProxyException;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.server.AdminDatabaseServer;
 
@@ -56,7 +56,7 @@ public class LocaldbRegistrationService implements RegistrationService {
 		return getAdminDbServer().getUserInfo(userKey);
 	}					
 	@Override
-	public void sendLostPassword(String userid) throws DataAccessException,RemoteProxyException{
+	public void sendLostPassword(String userid) throws DataAccessException, RemoteProxyException {
 		getAdminDbServer().sendLostPassword(userid);
 	}
 }

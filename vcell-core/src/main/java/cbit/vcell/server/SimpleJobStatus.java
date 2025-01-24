@@ -9,11 +9,10 @@
  */
 
 package cbit.vcell.server;
-import java.io.Serializable;
-
-import org.vcell.api.common.SimpleJobStatusRepresentation;
 
 import cbit.vcell.solver.SimulationMetadata;
+
+import java.io.Serializable;
 
 /**
  * Insert the type's description here.
@@ -35,10 +34,6 @@ public SimpleJobStatus(SimulationMetadata simulationMetadata, SimulationDocument
 	this.simulationDocumentLink = simulationDocumentLink;
 	this.jobStatus = jobStatus;
 	this.stateInfo = stateInfo;
-}
-
-public SimpleJobStatusRepresentation toRep() {
-	return this.jobStatus.toRep();
 }
 
 }

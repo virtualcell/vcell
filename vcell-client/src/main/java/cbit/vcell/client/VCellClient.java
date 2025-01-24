@@ -13,8 +13,9 @@ package cbit.vcell.client;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.ClientServerInfo;
-import cbit.vcell.client.server.ClientServerManager;
-import cbit.vcell.client.server.ClientServerManager.InteractiveContextDefaultProvider;
+import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
+import org.vcell.api.server.ClientServerManager;
+import org.vcell.api.server.ClientServerManager.InteractiveContextDefaultProvider;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.ClientLogin;
@@ -23,7 +24,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
-import org.vcell.util.document.UserLoginInfo.DigestedPassword;
+import org.vcell.api.utils.Auth0ConnectionUtils;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
@@ -36,6 +37,7 @@ import java.util.Hashtable;
  */
 public class VCellClient {
 	private final VCellConnectionFactory vcellConnectionFactory; // injected in constructor
+	private final Auth0ConnectionUtils auth0ConnectionUtils;
 
 	private ClientServerManager clientServerManager = null;
 	private StatusUpdater statusUpdater = null;
@@ -91,8 +93,13 @@ public class VCellClient {
 
 
 @Inject
-public VCellClient(VCellConnectionFactory vcellConnectionFactory) {
+public VCellClient(VCellConnectionFactory vcellConnectionFactory, Auth0ConnectionUtils auth0ConnectionUtils) {
 	this.vcellConnectionFactory = vcellConnectionFactory;
+	if (vcellConnectionFactory instanceof RemoteProxyVCellConnectionFactory){
+		this.auth0ConnectionUtils = ((RemoteProxyVCellConnectionFactory)vcellConnectionFactory).getAuth0ConnectionUtils();
+	} else{
+		this.auth0ConnectionUtils = auth0ConnectionUtils;
+	}
 }
 
 
@@ -163,7 +170,7 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			// start management layer
 			InteractiveContextDefaultProvider defaultRequester = new VCellGuiInteractiveContextDefaultProvider();
-			VCellClient.this.setClientServerManager(new ClientServerManager(vcellConnectionFactory, clientServerInfo, defaultRequester));
+			VCellClient.this.setClientServerManager(new ClientServerManager(vcellConnectionFactory, clientServerInfo, defaultRequester, auth0ConnectionUtils));
 			VCellClient.this.setRequestManager(new ClientRequestManager(VCellClient.this));
 			VCellClient.this.setMdiManager(new ClientMDIManager(VCellClient.this.getRequestManager()));
 			VCellClient.setInstance(VCellClient.this);
@@ -215,9 +222,9 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 
 	AsynchClientTask task3a = ClientLogin.popupLogin();
 
-	AsynchClientTask task3b = ClientLogin.loginWithAuth0(vcellConnectionFactory.getAuth0ConnectionUtils());
+	AsynchClientTask task3b = ClientLogin.loginWithAuth0(auth0ConnectionUtils);
 	
-	AsynchClientTask task4  = ClientLogin.connectToServer(vcellConnectionFactory.getAuth0ConnectionUtils(), clientServerInfo);
+	AsynchClientTask task4  = ClientLogin.connectToServer(auth0ConnectionUtils, clientServerInfo);
 
 	AsynchClientTask[] taskArray = new AsynchClientTask[] { task1, task2,  task2a, task3a, task3b, task4};
 	ClientTaskDispatcher.dispatch(null, hash, taskArray);

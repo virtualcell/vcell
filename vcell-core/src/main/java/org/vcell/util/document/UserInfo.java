@@ -89,25 +89,4 @@ public String toString() {
 	return "["+id+","+userid+","+/*password+*/","+email+","+wholeName+","+title+","+company+","+country+","+notify+","+insertDate+"]";
 }
 
-public org.vcell.api.common.UserInfo getApiUserInfo(){
-	org.vcell.api.common.UserInfo apiUserInfo = new org.vcell.api.common.UserInfo(
-			(id!=null)?id.toString():null,userid,digestedPassword0.getString(),email,wholeName,title,company,country,notify,insertDate);
-	return apiUserInfo;
-}
-
-
-public static UserInfo fromApiUserInfo(org.vcell.api.common.UserInfo apiUserInfo) {
-	UserInfo userInfo = new UserInfo();
-	userInfo.id = new KeyValue(apiUserInfo.id);
-	userInfo.userid = apiUserInfo.userid;
-	userInfo.digestedPassword0 = DigestedPassword.createAlreadyDigested(apiUserInfo.digestedPassword0);
-	userInfo.email = apiUserInfo.email;
-	userInfo.wholeName = apiUserInfo.wholeName;
-	userInfo.title = apiUserInfo.title;
-	userInfo.company = apiUserInfo.company;
-	userInfo.country = apiUserInfo.country;
-	userInfo.notify = apiUserInfo.notify;
-	userInfo.insertDate = apiUserInfo.insertDate;
-	return userInfo;
-}
 }

@@ -16,17 +16,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.JTree;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
@@ -42,11 +39,10 @@ import org.vcell.util.document.Version;
 
 import cbit.vcell.client.desktop.DatabaseSearchPanel.SearchCriterion;
 import cbit.vcell.client.desktop.biomodel.BioModelsNetModelInfo;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 import cbit.vcell.client.task.CommonTask;
 import cbit.vcell.clientdb.DatabaseListener;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.desktop.BioModelNode.PublicationInfoNode;
 import cbit.vcell.desktop.BioModelNode.UserNameNode;
 import cbit.vcell.desktop.VCellBasicCellRenderer.VCDocumentInfoNode;
 import cbit.vcell.geometry.GeometryInfo;

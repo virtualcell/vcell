@@ -9,17 +9,13 @@
  */
 
 package cbit.rmi.event;
+
 import cbit.vcell.export.server.HumanReadableExportData;
-import org.vcell.api.common.events.ExportEventRepresentation;
-import org.vcell.api.common.events.ExportHumanReadableDataSpec;
-import org.vcell.api.common.events.ExportTimeSpecs;
-import org.vcell.api.common.events.ExportVariableSpecs;
+import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.export.server.VariableSpecs;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
-
-import cbit.vcell.export.server.TimeSpecs;
-import cbit.vcell.export.server.VariableSpecs;
 
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
@@ -184,50 +180,7 @@ public String toString() {
 }
 
 
-public ExportEventRepresentation toJsonRep() {
-	ExportTimeSpecs exportTimeSpecs = null;
-	if (timeSpecs!=null) {
-		exportTimeSpecs = timeSpecs.toJsonRep();
-	}
-	ExportVariableSpecs exportVariableSpecs = null;
-	if (variableSpecs!=null) {
-		exportVariableSpecs = variableSpecs.toJsonRep();
-	}
-	ExportHumanReadableDataSpec exportHumanReadableDataSpec = null;
-	if (humanReadableExportData != null){
-		exportHumanReadableDataSpec = humanReadableExportData.toJsonRep();
-	}
 
-	return new ExportEventRepresentation(
-			eventType,progress,format,
-			location,user.getName(),user.getID().toString(), jobID,
-			dataIdString, dataKey.toString(),
-			exportTimeSpecs, exportVariableSpecs, exportHumanReadableDataSpec);
-}
-
-
-public static ExportEvent fromJsonRep(Object eventSource, ExportEventRepresentation rep) {
-	User user = new User(rep.username, new KeyValue(rep.userkey));
-	TimeSpecs timeSpecs = null;
-	if (rep.exportTimeSpecs!=null) {
-		timeSpecs = TimeSpecs.fromJsonRep(rep.exportTimeSpecs);
-	}
-	VariableSpecs variableSpecs = null;
-	if (rep.exportVariableSpecs!=null) {
-		variableSpecs = VariableSpecs.fromJsonRep(rep.exportVariableSpecs);
-	}
-	HumanReadableExportData humanReadableExportData1 = null;
-	if (rep.exportHumanReadableDataSpec!=null){
-		humanReadableExportData1 = HumanReadableExportData.fromJsonRep(rep.exportHumanReadableDataSpec);
-	}
-	ExportEvent event = new ExportEvent(
-		eventSource, rep.jobid, user, 
-		rep.dataIdString, new KeyValue(rep.dataKey), rep.eventType, 
-		rep.format, rep.location, rep.progress,
-		timeSpecs, variableSpecs);
-	event.setHumanReadableExportData(humanReadableExportData1);
-	return event;
-}
 
 public void setHumanReadableExportData(HumanReadableExportData humanReadableExportData){
 	this.humanReadableExportData = humanReadableExportData;

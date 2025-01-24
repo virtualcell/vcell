@@ -1,31 +1,19 @@
 package org.vcell.rest.events;
 
+import cbit.rmi.event.*;
+import cbit.vcell.message.VCMessagingService;
+import com.google.gson.Gson;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.api.types.events.*;
+import org.vcell.rest.server.ClientTopicMessageCollector;
+import org.vcell.util.Compare;
+import org.vcell.api.types.utils.DTOOldAPI;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.api.common.events.BroadcastEventRepresentation;
-import org.vcell.api.common.events.DataJobEventRepresentation;
-import org.vcell.api.common.events.EventWrapper;
-import org.vcell.api.common.events.EventWrapper.EventType;
-import org.vcell.api.common.events.ExportEventRepresentation;
-import org.vcell.api.common.events.SimulationJobStatusEventRepresentation;
-import org.vcell.rest.server.ClientTopicMessageCollector;
-import org.vcell.util.Compare;
-
-import com.google.gson.Gson;
-
-import cbit.rmi.event.DataJobEvent;
-import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.MessageEvent;
-import cbit.rmi.event.PerformanceMonitorEvent;
-import cbit.rmi.event.SimulationJobStatusEvent;
-import cbit.rmi.event.VCellMessageEvent;
-import cbit.rmi.event.WorkerEvent;
-import cbit.vcell.message.VCMessagingService;
 
 public class RestEventService {
 	private final static Logger lg = LogManager.getLogger(RestEventService.class);
@@ -44,7 +32,7 @@ public class RestEventService {
 		}
 	}
 		
-	public void insert(String userid, EventType eventType, String eventJSON) {
+	public void insert(String userid, EventWrapper.EventType eventType, String eventJSON) {
 		long id = eventSequence.getAndIncrement();
 		long timestamp = System.currentTimeMillis();
 		EventWrapper wrapper = new EventWrapper(id, timestamp, userid, eventType, eventJSON);
@@ -56,8 +44,8 @@ public class RestEventService {
 		if (event instanceof ExportEvent) {
 			ExportEvent exportEvent = (ExportEvent) event;
 			try {
-				ExportEventRepresentation exportEventRep = exportEvent.toJsonRep();
-				ExportEvent event2 = ExportEvent.fromJsonRep(this, exportEventRep);
+				ExportEventRepresentation exportEventRep = DTOOldAPI.exportEventToJsonRep(exportEvent);
+				ExportEvent event2 = DTOOldAPI.exportEventFromJsonRep(this, exportEventRep);
 				if (!Compare.isEqual(event2.getFormat(),exportEvent.getFormat())) {
 					throw new RuntimeException("Export event round-trip failed");
 				}
@@ -66,15 +54,15 @@ public class RestEventService {
 				}
 				Gson gson = new Gson();
 				String eventJSON = gson.toJson(exportEventRep);
-				insert(exportEventRep.username,EventType.ExportEvent,eventJSON);
+				insert(exportEventRep.username, EventWrapper.EventType.ExportEvent,eventJSON);
 			}catch (Exception e) {
 				lg.error(e.getMessage(), e);
 			}
 		}else if (event instanceof SimulationJobStatusEvent) {
 			SimulationJobStatusEvent simJobEvent = (SimulationJobStatusEvent)event;
 			try {
-				SimulationJobStatusEventRepresentation simJobEventRep = simJobEvent.toJsonRep();
-				SimulationJobStatusEvent event2 = SimulationJobStatusEvent.fromJsonRep(this, simJobEventRep);
+				SimulationJobStatusEventRepresentation simJobEventRep = DTOOldAPI.simulationJobStatusEventToJsonRep(simJobEvent);
+				SimulationJobStatusEvent event2 = DTOOldAPI.simulationJobStatusEventFromJsonRep(this, simJobEventRep);
 				if (!Compare.isEqual(event2.getJobStatus(),simJobEvent.getJobStatus())) {
 					throw new RuntimeException("SimulationJobStatus event round-trip failed");
 				}
@@ -83,7 +71,7 @@ public class RestEventService {
 				}
 				Gson gson = new Gson();
 				String eventJSON = gson.toJson(simJobEventRep);
-				insert(simJobEventRep.username,EventType.SimJob,eventJSON);
+				insert(simJobEventRep.username, EventWrapper.EventType.SimJob,eventJSON);
 			}catch (Exception e) {
 				lg.error(e.getMessage(), e);
 			}
@@ -106,7 +94,7 @@ public class RestEventService {
 				//Add new broadcast message
 				Gson gson = new Gson();
 				String eventJSON = gson.toJson(broadcastEventRepresentation);
-				insert(null,EventType.Broadcast,eventJSON);
+				insert(null, EventWrapper.EventType.Broadcast,eventJSON);
 			}else {
 				lg.error("event of type VCellMessageEvent:"+vcellMessageEvent.getEventTypeID()+" not supported");
 			}
@@ -119,8 +107,8 @@ public class RestEventService {
 		}else if (event instanceof DataJobEvent) {
 			DataJobEvent dataJobEvent = (DataJobEvent)event;
 			try {
-				DataJobEventRepresentation dataJobEventRep = dataJobEvent.toJsonRep();
-				DataJobEvent event2 = DataJobEvent.fromJsonRep(this, dataJobEventRep);
+				DataJobEventRepresentation dataJobEventRep = DTOOldAPI.dataJobRepToJsonRep(dataJobEvent);
+				DataJobEvent event2 = DTOOldAPI.dataJobEventFromJsonRep(this, dataJobEventRep);
 				if (!Compare.isEqual(event2.getDataIdString(),dataJobEvent.getDataIdString())) {
 					throw new RuntimeException("DataJob event round-trip failed");
 				}
@@ -129,7 +117,7 @@ public class RestEventService {
 				}
 				Gson gson = new Gson();
 				String eventJSON = gson.toJson(dataJobEventRep);
-				insert(dataJobEventRep.username,EventType.DataJob,eventJSON);
+				insert(dataJobEventRep.username, EventWrapper.EventType.DataJob,eventJSON);
 			}catch (Exception e) {
 				lg.error(e.getMessage(), e);
 			}

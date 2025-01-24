@@ -14,7 +14,7 @@ import java.util.Collection;
 import javax.swing.JFrame;
 
 import cbit.vcell.client.desktop.DocumentWindow;
-import cbit.vcell.client.server.ConnectionStatus;
+import org.vcell.api.server.ConnectionStatus;
 public interface MDIManager {
 /**
  * Insert the method's description here.
@@ -124,7 +124,7 @@ void unBlockWindow(String windowID);
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2004 2:38:08 PM)
- * @param connectionStatus cbit.vcell.client.server.ConnectionStatus
+ * @param connectionStatus org.vcell.api.server.ConnectionStatus
  */
 void updateConnectionStatus(ConnectionStatus connectionStatus);
 

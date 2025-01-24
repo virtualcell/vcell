@@ -1,13 +1,13 @@
 package org.vcell.dependency.client;
 
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyVCellConnectionFactory;
+import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.simdata.ExternalDataIdentifierService;
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import org.vcell.DependencyConstants;
 import org.vcell.service.registration.RegistrationService;
-import org.vcell.service.registration.remote.RemoteRegistrationService;
+import org.vcell.util.network.RemoteRegistrationService;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.User;
 

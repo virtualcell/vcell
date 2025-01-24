@@ -162,5 +162,10 @@
 			<artifactId>joda-time</artifactId>
 			<version>${joda-time.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-api-types</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 </project>

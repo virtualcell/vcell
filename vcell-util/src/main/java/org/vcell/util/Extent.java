@@ -25,18 +25,6 @@ public class Extent implements java.io.Serializable, Matchable {
 	private double z;
 	public Extent() {}//For jaxb
 
-	public static org.vcell.restclient.model.Extent extentToDTO(Extent extent) {
-		org.vcell.restclient.model.Extent newExtent = new org.vcell.restclient.model.Extent();
-		newExtent.setX(extent.getX());
-		newExtent.setY(extent.getY());
-		newExtent.setZ(extent.getZ());
-		return newExtent;
-	}
-
-	public static Extent dtoToExtent(org.vcell.restclient.model.Extent dto) {
-        return new Extent(dto.getX(), dto.getY(), dto.getZ());
-	}
-
 /**
  * Origin constructor comment.
  */
