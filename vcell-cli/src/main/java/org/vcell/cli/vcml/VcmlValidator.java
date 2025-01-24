@@ -10,7 +10,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.messaging.CLIRecorder;
 
 import java.io.File;
 import java.io.FilenameFilter;

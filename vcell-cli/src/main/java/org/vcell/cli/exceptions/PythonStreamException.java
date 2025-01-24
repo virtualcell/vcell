@@ -1,6 +1,4 @@
-package org.vcell.cli;
-
-import java.io.IOException;
+package org.vcell.cli.exceptions;
 
 //import java.io.ObjectStreamException;
 

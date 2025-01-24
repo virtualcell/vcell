@@ -6,7 +6,6 @@ import de.unirostock.sems.cbarchive.CombineArchiveException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.JDOMException;
-import org.vcell.cli.CLIUtils;
 
 import java.io.File;
 import java.io.IOException;

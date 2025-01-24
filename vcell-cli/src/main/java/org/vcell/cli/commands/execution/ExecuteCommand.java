@@ -1,11 +1,11 @@
-package org.vcell.cli.run;
+package org.vcell.cli.commands.execution;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.vcell.cli.CLIPythonManager;
-import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.messaging.CLIRecorder;
+import org.vcell.cli.run.ExecuteImpl;
 import org.vcell.util.FileUtils;
 import org.vcell.util.exe.Executable;
 import picocli.CommandLine.Command;
@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
 import java.util.Date;
 
 @Command(name = "execute", description = "run .vcml or .omex files.")
-public class ExecuteCommand implements Callable<Integer> {
+public class ExecuteCommand extends ExecutionBasedCommand {
 
     private final static Logger logger = org.apache.logging.log4j.LogManager.getLogger(ExecuteCommand.class);
 
@@ -78,11 +78,8 @@ public class ExecuteCommand implements Callable<Integer> {
             // CLILogger will throw an exception if our output dir isn't valid.
             boolean shouldFlush = this.bKeepFlushingLogs || this.bDebug;
             cliLogger = new CLIRecorder(this.outputFilePath, this.bWriteLogFiles, shouldFlush);
-            
-            LoggerContext config = (LoggerContext)(LogManager.getContext(false));
-            config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
-            config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
-            config.updateLoggers();
+
+            ExecuteCommand.generateLoggerContext(logLevel, bDebug);
 
             logger.debug("Execution mode requested");
 

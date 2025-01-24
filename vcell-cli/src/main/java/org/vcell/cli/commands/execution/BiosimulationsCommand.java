@@ -1,12 +1,11 @@
-package org.vcell.cli.biosimulation;
+package org.vcell.cli.commands.execution;
 
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.vcell.cli.CLIPythonManager;
-import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.messaging.CLIRecorder;
 import org.vcell.cli.run.ExecuteImpl;
 import org.vcell.trace.Tracer;
 import org.vcell.util.FileUtils;
@@ -19,7 +18,7 @@ import java.util.Date;
 import java.util.concurrent.Callable;
 
 @Command(name = "biosimulations", description = "BioSimulators-compliant command-line interface to the vcell simulation program <https://vcell.org>.")
-public class BiosimulationsCommand implements Callable<Integer> {
+public class BiosimulationsCommand extends ExecutionBasedCommand {
 
     private final static Logger logger = LogManager.getLogger(BiosimulationsCommand.class);
 
@@ -80,12 +79,8 @@ public class BiosimulationsCommand implements Callable<Integer> {
             } else if (bQuiet) {
                 logLevel = Level.OFF;
             }
-            LoggerContext config = (LoggerContext)(LogManager.getContext(false));
-            config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
 
-            config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(bDebug ? logLevel : Level.WARN );
-            config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.jlibsedml").getName()).setLevel(bDebug ? logLevel : Level.WARN);
-            config.updateLoggers();
+            BiosimulationsCommand.generateLoggerContext(logLevel, bDebug);
 
             logger.debug("Biosimulations mode requested");
 

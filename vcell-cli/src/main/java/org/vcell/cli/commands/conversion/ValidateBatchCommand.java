@@ -1,10 +1,11 @@
-package org.vcell.cli.vcml;
+package org.vcell.cli.commands.conversion;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.messaging.CLIRecorder;
+import org.vcell.cli.vcml.VcmlValidator;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

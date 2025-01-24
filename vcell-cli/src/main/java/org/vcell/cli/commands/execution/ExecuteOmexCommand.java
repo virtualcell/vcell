@@ -1,13 +1,13 @@
-package org.vcell.cli.run;
+package org.vcell.cli.commands.execution;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.vcell.cli.CLIPythonManager;
-import org.vcell.cli.CLIRecordable;
-import org.vcell.cli.CliTracer;
+import org.vcell.cli.messaging.CLIRecordable;
+import org.vcell.cli.messaging.CliTracer;
+import org.vcell.cli.run.ExecuteImpl;
 import org.vcell.sedml.testsupport.OmexExecSummary;
 import org.vcell.sedml.testsupport.OmexTestingDatabase;
 import org.vcell.trace.Tracer;
@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.concurrent.Callable;
 
 @Command(name = "execute-omex", description = "run a single .omex file and log into exec_summary.json and tracer.json")
-public class ExecuteOmexCommand implements Callable<Integer> {
+public class ExecuteOmexCommand extends ExecutionBasedCommand {
 
     private final static Logger logger = LogManager.getLogger(ExecuteOmexCommand.class);
 
@@ -87,11 +87,7 @@ public class ExecuteOmexCommand implements Callable<Integer> {
                 return 1;
             }
 
-            LoggerContext config = (LoggerContext)(LogManager.getContext(false));
-            config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
-            config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
-            config.updateLoggers();
-
+            ExecuteOmexCommand.generateLoggerContext(logLevel, bDebug);
 
             Executable.setGlobalTimeoutMS(EXECUTABLE_MAX_WALLCLOCK_MILLIS);
             logger.info("Beginning execution");

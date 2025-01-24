@@ -38,7 +38,7 @@ import org.jlibsedml.Variable;
 import org.jlibsedml.XPathTarget;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jmathml.ASTNode;
-import org.vcell.cli.CLIRecordable;
+import org.vcell.cli.messaging.CLIRecordable;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;

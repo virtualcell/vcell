@@ -1,54 +1,56 @@
-package org.vcell.cli.vcml;
+package org.vcell.cli.commands.conversion;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.vcell.cli.vcml.VcmlOmexConverter;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.io.File;
 import java.util.concurrent.Callable;
 
-@Command(name = "import-omex-batch", description = "convert directory of COMBINE archives (.omex) to VCML documents (1 COMBINE archive could yeild more than one BioModel).")
-public class ImportOmexBatchCommand implements Callable<Integer> {
+@Command(name = "import-omex", description = "import a COMBINE archive (.omex) to one or more VCML documents")
+public class ImportOmexCommand implements Callable<Integer> {
 
-    private final static Logger logger = LogManager.getLogger(ImportOmexBatchCommand.class);
+    private final static Logger logger = LogManager.getLogger(ImportOmexCommand.class);
 
-    @Option(names = { "-i", "--inputFilePath" }, description = "directory of .omex files", required = true)
+    @Option(names = { "-i", "--inputFilePath" }, description = "full path to .omex file", required = true)
     private File inputFilePath;
 
     @Option(names = { "-o", "--outputFilePath" }, description = "full path to output directory", required = true)
     private File outputFilePath;
 
-    @Option(names = {"--writeLogFiles"}, defaultValue = "true", description = "write log files")
-    private boolean bWriteLogFiles = true;
+    @Option(names = {"--writeLogFiles"}, defaultValue = "false", description = "write log files")
+    private boolean bWriteLogFiles;
 
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
 
     public Integer call() {
-        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel();
+        Level logLevel = bDebug ? Level.DEBUG : logger.getLevel(); 
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(logLevel);
         config.updateLoggers();
 
         try {
-            if (!inputFilePath.exists() || !inputFilePath.isDirectory()){
-                throw new RuntimeException("inputFilePath '"+inputFilePath+"' should be a directory");
+             if (!inputFilePath.exists() || !inputFilePath.isFile()){
+                throw new RuntimeException("expecting inputFilePath to be an existing file: "+inputFilePath.getAbsolutePath());
             }
             if (!outputFilePath.exists() || !outputFilePath.isDirectory()){
-                throw new RuntimeException("outputFilePath '"+outputFilePath+"' should be a directory");
+                throw new RuntimeException("expecting outputFilePath to be an existing directory: "+inputFilePath.getAbsolutePath());
             }
-            logger.debug("Beginning batch import");
-            VcmlOmexConverter.importOmexFiles(inputFilePath, outputFilePath, bWriteLogFiles);
+            logger.debug("Beginning import");
+            VcmlOmexConverter.importOneOmexFile(inputFilePath, outputFilePath, bWriteLogFiles);
+
             return 0;
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         } finally {
-            logger.debug("Batch import completed");
+            logger.debug("Import completed");
         }
     }
 }

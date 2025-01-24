@@ -1,4 +1,4 @@
-package org.vcell.cli.sbml;
+package org.vcell.cli.commands;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
@@ -6,7 +6,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 
-import org.vcell.sbml.vcell.SBMLExporter;
+import org.vcell.cli.sbml.MemoryLogger;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sedml.ModelFormat;
 
@@ -19,7 +19,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
 @Command(name = "model", description = "translate between a BioModel application and an SBML model")

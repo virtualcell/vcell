@@ -14,6 +14,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.cli.exceptions.PythonStreamException;
 
 /**
  * Singleton class that manages VCell CLI's interaction with the `cli.py` external python calls

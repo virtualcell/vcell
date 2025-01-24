@@ -10,8 +10,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
-import org.vcell.cli.biosimulation.BiosimulationsCommand;
-import org.vcell.cli.run.ExecuteImpl;
+import org.vcell.cli.commands.execution.BiosimulationsCommand;
 import org.vcell.util.Pair;
 import org.vcell.util.VCellUtilityHub;
 

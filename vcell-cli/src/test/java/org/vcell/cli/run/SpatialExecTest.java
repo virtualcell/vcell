@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.vcell.cli.CLIRecordable;
+import org.vcell.cli.messaging.CLIRecordable;
 import org.vcell.sedml.testsupport.FailureType;
 import org.vcell.sedml.testsupport.OmexTestCase;
 import org.vcell.sedml.testsupport.OmexTestingDatabase;

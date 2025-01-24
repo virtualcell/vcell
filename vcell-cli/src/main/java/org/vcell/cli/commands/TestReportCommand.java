@@ -1,4 +1,4 @@
-package org.vcell.cli.testing;
+package org.vcell.cli.commands;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
