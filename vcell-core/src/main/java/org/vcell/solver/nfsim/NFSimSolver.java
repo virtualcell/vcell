@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.exe.ExecutableException;
 
 import cbit.vcell.messaging.server.SimulationTask;
@@ -46,6 +48,7 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
  * 
  */
 public class NFSimSolver extends SimpleCompiledSolver {
+	private static final Logger lg = LogManager.getLogger(NFSimSolver.class);
 
 	public NFSimSolver(SimulationTask simTask, java.io.File directory,
 			boolean bMsging) throws SolverException {
@@ -92,7 +95,7 @@ public class NFSimSolver extends SimpleCompiledSolver {
 	 * This method takes the place of the old runUnsteady()...
 	 */
 	protected void initialize() throws SolverException {
-		if (lg.isTraceEnabled()) lg.trace("NFSimSolver.initialize()");
+		lg.trace("NFSimSolver.initialize()");
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 		writeFunctionsFile();
 
@@ -110,25 +113,19 @@ public class NFSimSolver extends SimpleCompiledSolver {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
 					SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
 			throw new SolverException(e.getMessage(), e);
-		} 
-
-		PrintWriter lg = null;
-		String logFilename = getLogFilename();
-		String outputFilename = getOutputFilename();
-		try {
-			lg = new PrintWriter(logFilename);
-			String shortOutputFilename = outputFilename
-					.substring(1 + outputFilename.lastIndexOf("\\"));
-			lg.println(NFSIM_DATA_IDENTIFIER + " " + shortOutputFilename);
-		} catch (Exception e) {
-			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
-					SimulationMessage.solverAborted("Could not generate log file: " + e.getMessage())));
-			throw new SolverException(e.getMessage(), e);
-		} finally {
-			if (lg != null) {
-				lg.close();
-			}
 		}
+
+        String logFilename = getLogFilename();
+        String outputFilename = getOutputFilename();
+        try (PrintWriter printWriter = new PrintWriter(logFilename)) {
+            String shortOutputFilename = outputFilename
+                    .substring(1 + outputFilename.lastIndexOf("\\"));
+            printWriter.println(NFSIM_DATA_IDENTIFIER + " " + shortOutputFilename);
+        } catch (Exception e) {
+            setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
+                    SimulationMessage.solverAborted("Could not generate log file: " + e.getMessage())));
+            throw new SolverException(e.getMessage(), e);
+        }
 
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,
 				SimulationMessage.MESSAGE_SOLVER_RUNNING_START));

@@ -15,6 +15,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ExceptionInterpreter;
 
 import cbit.vcell.math.MathException;
@@ -36,8 +38,9 @@ import cbit.vcell.solvers.SubdomainInfo;
  * @author: Tracy LI
  */
 public class SmoldynSolver extends SimpleCompiledSolver {
-	
+	private static final Logger lg;
 	static {
+		lg = LogManager.getLogger(SmoldynSolver.class);
 		ExceptionInterpreter.instance().add("libglut.so", ".*no such file.*",
 				"Use Linux distribution's package manager to install libglut.so.3",
 				"OpenSuse install 'libglut3'",
@@ -92,7 +95,7 @@ protected ApplicationMessage getApplicationMessage(String message) {
  */
 protected void initialize() throws SolverException 
 {
-	if (lg.isTraceEnabled()) lg.trace("SmoldynSolver.initialize()");
+	lg.trace("SmoldynSolver.initialize()");
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 	writeFunctionsFile();
 	
@@ -109,40 +112,34 @@ protected void initialize() throws SolverException
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_INPUT_FILE));
 	fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INPUT_FILE);
 
-	PrintWriter pw = null;
-	try {
-		pw = new PrintWriter(inputFilename);
-		if (SystemUtils.IS_OS_WINDOWS){
-			//
-			// the windows executable is compiled under cygwin (or mingw) and expect Unix style line termination characters.
-			// so SmoldynInput file is written with platform default Java convention (different on windows) to a String.
-			// Then the string is translated to Unix style before written to the file.
-			// smoldyn is particularly sensitive to this issue, other compiled solvers are more tolerant.
-			//
-			StringWriter stringWriter = new StringWriter();
-			PrintWriter pw2 = new PrintWriter(stringWriter);
-			
-			SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw2, false, getBaseName(), simTask, bMessaging);
-			stFileWriter.write();
-			
-			String fileContents = stringWriter.getBuffer().toString();
-			fileContents = fileContents.replace("\r\n", "\n");
-			pw.write(fileContents);
-		}else{
-			//
-			// for linux or macos, no translation is necessary.
-			//
-			SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simTask, bMessaging);
-			stFileWriter.write();			
-		}
-	} catch (Exception e) {
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
-		throw new SolverException(e.getMessage(), e);
-	} finally {
-		if (pw != null) {
-			pw.close();	
-		}
-	}
+    try (PrintWriter pw = new PrintWriter(inputFilename)) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            //
+            // the windows executable is compiled under cygwin (or mingw) and expect Unix style line termination characters.
+            // so SmoldynInput file is written with platform default Java convention (different on windows) to a String.
+            // Then the string is translated to Unix style before written to the file.
+            // smoldyn is particularly sensitive to this issue, other compiled solvers are more tolerant.
+            //
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter pw2 = new PrintWriter(stringWriter);
+
+            SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw2, false, getBaseName(), simTask, bMessaging);
+            stFileWriter.write();
+
+            String fileContents = stringWriter.getBuffer().toString();
+            fileContents = fileContents.replace("\r\n", "\n");
+            pw.write(fileContents);
+        } else {
+            //
+            // for linux or macos, no translation is necessary.
+            //
+            SmoldynFileWriter stFileWriter = new SmoldynFileWriter(pw, false, getBaseName(), simTask, bMessaging);
+            stFileWriter.write();
+        }
+    } catch (Exception e) {
+        setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not generate input file: " + e.getMessage())));
+        throw new SolverException(e.getMessage(), e);
+    }
 
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,SimulationMessage.MESSAGE_SOLVER_RUNNING_START));	
 	//get executable path+name.

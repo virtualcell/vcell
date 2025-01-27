@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.solver.comsol.model.VCCModel;
 import org.vcell.solver.comsol.service.ComsolService;
 import org.vcell.solver.comsol.service.ComsolServiceFactory;
@@ -27,6 +29,7 @@ import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.CartesianMesh;
 
 public class ComsolSolver extends AbstractSolver {
+	private static final Logger lg = LogManager.getLogger(ComsolSolver.class);
 	private ComsolService comsolService = null;
 	private VCCModel vccModel = null;
 	private double progress = 0.0;

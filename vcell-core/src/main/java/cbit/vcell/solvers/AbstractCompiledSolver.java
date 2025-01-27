@@ -16,6 +16,8 @@ import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.document.User;
 
 import java.io.BufferedOutputStream;
@@ -39,6 +41,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     /**
      * thread used to run solver. All access to this field should be synchronized
      */
+    private static final Logger lg = LogManager.getLogger(AbstractCompiledSolver.class);
     private transient Thread fieldThread = null;
 
     private cbit.vcell.solvers.MathExecutable mathExecutable = null;
@@ -118,7 +121,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             }
             ApplicationMessage appMessage = getApplicationMessage(messageString);
             if (appMessage == null) {
-                if (lg.isWarnEnabled()) lg.warn("AbstractCompiledSolver: Unexpected Message '" + messageString + "'");
+                lg.warn("{}: Unexpected Message '{}'", this.getClass().getName(), messageString);
                 return;
             } else {
                 switch (appMessage.getMessageType()) {
@@ -131,7 +134,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
                         break;
                     }
                     case ApplicationMessage.ERROR_MESSAGE: {
-                        if (lg.isWarnEnabled()) lg.warn(appMessage.getError());
+                        lg.warn(appMessage.getError());
                         break;
                     }
                     // ignore unknown message types
@@ -182,8 +185,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
             setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted("Could not execute code: " + executableException.getMessage())));
             fireSolverAborted(SimulationMessage.solverAborted(executableException.getMessage()));
         } catch (Exception exception) {
-            if (lg.isWarnEnabled())
-                lg.warn("AbstractODESolver.start() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!");
+            lg.warn("{}.start() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!", this.getClass().getName());
             lg.error(exception.getMessage(), exception);
             cleanup();
             setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(exception.getMessage())));

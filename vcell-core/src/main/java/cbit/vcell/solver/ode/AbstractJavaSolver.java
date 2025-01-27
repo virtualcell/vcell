@@ -22,6 +22,9 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.server.SimulationMessage;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.AbstractSolver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Some of this class' stuff could/should go into an AbstractSolver
  * base class...just have to wait until we finalize Solver's interface.
@@ -29,6 +32,7 @@ import cbit.vcell.solvers.AbstractSolver;
  * @author: John Wagner
  */
 public abstract class AbstractJavaSolver extends AbstractSolver {
+	private static final Logger lg = LogManager.getLogger(AbstractJavaSolver.class);
 	private boolean bUserStopRequest = false;
 	private transient boolean fieldRunning = false;
 	private transient Thread fieldThread = null;
@@ -129,8 +133,8 @@ protected final void printToFile(double progress) throws IOException {
 		}
 		if (shouldSave) {
 			// write file and fire event
-			if (this instanceof ODESolver) {
-				ODESolverResultSet odeSolverResultSet = ((ODESolver)this).getODESolverResultSet();
+			if (this instanceof ODESolver odeSolver) {
+				ODESolverResultSet odeSolverResultSet = odeSolver.getODESolverResultSet();
 				Simulation simulation = simTask.getSimulationJob().getSimulation();
 				OutputTimeSpec outputTimeSpec = simulation.getSolverTaskDescription().getOutputTimeSpec();
 				if (outputTimeSpec.isDefault()) {
@@ -138,7 +142,7 @@ protected final void printToFile(double progress) throws IOException {
 				}
 				ODESimData odeSimData = new ODESimData(new VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), odeSolverResultSet);
 				String mathName = odeSimData.getMathName();
-				if (lg.isTraceEnabled()) lg.trace("AbstractJavaSolver.printToFile(" + mathName + ")");
+				lg.trace("AbstractJavaSolver.printToFile(" + mathName + ")");
 				File logFile = new File(getBaseName() + LOGFILE_EXTENSION);
 				File dataFile = new File(getBaseName() + ODE_DATA_EXTENSION);
 				ODESimData.writeODEDataFile(odeSimData, dataFile);
@@ -166,14 +170,9 @@ public void runSolver() {
 		integrate();
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVER_FINISHED));
 		fireSolverFinished();
-	} catch (SolverException integratorException) {
+	} catch (SolverException | IOException integratorException) {
 		lg.error(integratorException.getMessage(),integratorException);
 		SimulationMessage simulationMessage = SimulationMessage.solverAborted(integratorException.getMessage());
-		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, simulationMessage));
-		fireSolverAborted(simulationMessage);
-	} catch (IOException ioException) {
-		lg.error(ioException.getMessage(),ioException);
-		SimulationMessage simulationMessage = SimulationMessage.solverAborted(ioException.getMessage());
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, simulationMessage));
 		fireSolverAborted(simulationMessage);
 	} catch (UserStopException userStopException) {

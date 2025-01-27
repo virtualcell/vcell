@@ -503,7 +503,7 @@ public class SolverHandler {
 							throw new RuntimeException(error + " ");
 						}
 					} catch (Exception e) {
-						String error = "Failed execution: Model '" + docName + "' Task '" + sim.getDescription() + "'. ";
+						String error = String.format("Failed execution: Model '%s' Task '%s' Cause `%s(%s)`", docName, sim.getDescription(), e.getClass().getName(), e.getMessage());
 						logger.error(error);
 						Tracer.failure(e, error);
 
