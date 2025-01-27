@@ -105,7 +105,7 @@ public class OmexTestingDatabase {
         return execSummary;
     }
 
-    public static FailureType determineFault(Exception caughtException, List<TraceEvent> errorEvents){ // Throwable because Assertion Error
+    public static FailureType determineFault(Exception caughtException, List<TraceEvent> errorEvents){
         FailureType determinedFailure;
         if (caughtException != null) if ((determinedFailure = determineFault(caughtException)) != null) return determinedFailure;
         if (errorEvents == null) return FailureType.UNCATEGORIZED_FAULT;
@@ -118,9 +118,14 @@ public class OmexTestingDatabase {
             FailureType sbmlFailureType;
             return (sbmlFailureType = determineFault(traceEvent.exception)) != null ? sbmlFailureType : FailureType.SBML_IMPORT_FAILURE;
         }
-        if (traceEvent.hasException(SEDMLImportException.class)){
+
+        if (traceEvent.exception != null && traceEvent.message.toLowerCase().contains("non-compatible sedml simulations"))
+            return FailureType.SEDML_NON_UTC_SIMULATION_FOUND;
+
+        if (traceEvent.hasException(SEDMLImportException.class) && traceEvent.exception != null){
             String errMsg = traceEvent.exception.getMessage() == null ? "" : traceEvent.exception.getMessage();
-            return (errMsg.contains("expecting vcell var") && errMsg.contains("to be constant valued")) ?  FailureType.BIOMODEL_IMPORT_SEDML_FAILURE : FailureType.SEDML_IMPORT_FAILURE;
+            if (errMsg.contains("expecting vcell var") && errMsg.contains("to be constant valued")) return FailureType.BIOMODEL_IMPORT_SEDML_FAILURE;
+            return FailureType.SEDML_IMPORT_FAILURE;
         }
         if (traceEvent.span.getNestedContextName().contains(Span.ContextType.PROCESSING_SEDML.name()+"(preProcessDoc)")){
             return FailureType.SEDML_PREPROCESS_FAILURE;
