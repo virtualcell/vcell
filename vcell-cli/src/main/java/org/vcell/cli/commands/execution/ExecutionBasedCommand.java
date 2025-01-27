@@ -12,6 +12,7 @@ public abstract class ExecutionBasedCommand implements Callable<Integer>  {
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell.sbml").getName()).setLevel(bDebug ? logLevel : Level.ERROR);
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit").getName()).setLevel(bDebug ? logLevel : Level.WARN );
+        config.getConfiguration().getLoggerConfig(LogManager.getLogger("cbit.vcell.solver").getName()).setLevel(bDebug ? logLevel : Level.FATAL);
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.jlibsedml").getName()).setLevel(bDebug ? logLevel : Level.WARN);
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell.cli").getName()).setLevel(logLevel);
         config.updateLoggers();
