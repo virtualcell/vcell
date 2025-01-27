@@ -14,7 +14,6 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.sedml.log.BiosimulationLog;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -270,7 +269,7 @@ public class Results2DLinePlot implements ResultsLinePlot {
         XYSeriesCollection dataset2D = new XYSeriesCollection();
         for (SingleAxisSeries xAxis : this.dataSetMappings.keySet()){
             for (SingleAxisSeries yAxis : this.dataSetMappings.get(xAxis)){
-                XYSeries xySeries = new XYSeries(yAxis.label(), true, false);
+                XYSeries xySeries = new XYSeries(yAxis.label(), true, true);
                 for (int i = 0; i < yAxis.data().size(); i++){
                     xySeries.add(xAxis.data().get(i), yAxis.data().get(i));
                 }
