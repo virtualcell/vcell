@@ -52,7 +52,7 @@ public class PlottingDataExtractor {
                 DataGenerator requestedYGenerator = this.sedml.getDataGeneratorWithId(curve.getYDataReference());
                 if (requestedXGenerator == null || requestedYGenerator == null)
                     throw this.logBeforeThrowing(new RuntimeException("Unexpected null returns"), requestedPlot.getId(), curve.getId());
-                if (null == (xResults = organizedNonSpatialResults.get(requestedXGenerator)))
+                if (null == (xResults = PlottingDataExtractor.simplifyRedundantSets(organizedNonSpatialResults.get(requestedXGenerator))))
                     throw this.logBeforeThrowing(new RuntimeException("Unexpected lack of x-axis results!"), requestedPlot.getId(), curve.getId());
                 if (null == (yResults = organizedNonSpatialResults.get(requestedYGenerator)))
                     throw this.logBeforeThrowing(new RuntimeException("Unexpected lack of y-axis results!"), requestedPlot.getId(), curve.getId());
@@ -106,5 +106,24 @@ public class PlottingDataExtractor {
     private RuntimeException logBeforeThrowing(RuntimeException e, String plotId, String curveId) {
         BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, plotId, curveId, BiosimulationLog.Status.FAILED);
         return e;
+    }
+
+    /**
+     * Basically, some people make track a species that remains constant over all iterations. We want to reduce that to 1 entry
+     * @return
+     */
+    private static NonSpatialValueHolder simplifyRedundantSets(NonSpatialValueHolder startingValues){
+        if (startingValues == null) return null;
+        Map<String, double[]> dataMapping = new LinkedHashMap<>(); // Need to preserve order!
+        for (double[] dataSet : startingValues.listOfResultSets){
+            String stringRep = String.join(",", Arrays.stream(dataSet).mapToObj(Double::toString).toArray(String[]::new));
+            if (dataMapping.containsKey(stringRep)) continue;
+            dataMapping.put(stringRep, dataSet);
+        }
+        NonSpatialValueHolder adjustedSets = NonSpatialValueHolder.createEmptySetWithSameVCsim(startingValues);
+        for (String stringKey : dataMapping.keySet()){
+            adjustedSets.listOfResultSets.add(dataMapping.get(stringKey));
+        }
+        return adjustedSets;
     }
 }
