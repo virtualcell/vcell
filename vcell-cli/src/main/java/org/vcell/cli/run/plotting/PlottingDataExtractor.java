@@ -1,5 +1,6 @@
 package org.vcell.cli.run.plotting;
 
+import cbit.vcell.resource.OperatingSystemInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
@@ -76,11 +77,18 @@ public class PlottingDataExtractor {
             }
 
             plot.setXAxisTitle(String.join("/", xAxisNames));
-            boolean hasBadPlotName = requestedPlot.getName() == null || "".equals(requestedPlot.getName());
-            String plotFileName = hasBadPlotName ? requestedPlot.getId() : requestedPlot.getName();
+            String plotFileName = getValidPlotName(requestedPlot);
             plots.put(plot, plotFileName);
         }
 
         return plots;
+    }
+
+    private static String getValidPlotName(Plot2D requestedPlot) {
+        String illegalChars = OperatingSystemInfo.getInstance().isWindows() ? "<>:\"/\\|?*" : "/";
+        String illegalRegex = ".*[" + illegalChars + "].*"; // Need to make sure the file can be made in the OS
+        String requestedPlotName = requestedPlot.getName();
+        boolean hasBadPlotName = requestedPlotName == null || requestedPlotName.isBlank() || requestedPlotName.matches(illegalRegex);
+        return hasBadPlotName ? requestedPlot.getId() : requestedPlot.getName();
     }
 }
