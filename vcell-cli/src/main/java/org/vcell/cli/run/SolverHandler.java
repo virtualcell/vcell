@@ -11,6 +11,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.AbstractJavaSolver;
 import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -36,7 +37,9 @@ import org.jlibsedml.Task;
 import org.jlibsedml.UniformTimeCourse;
 import org.jlibsedml.Variable;
 import org.jlibsedml.XPathTarget;
+import org.jlibsedml.XMLException;
 import org.jlibsedml.modelsupport.SBMLSupport;
+
 import org.jmathml.ASTNode;
 import org.vcell.cli.messaging.CLIRecordable;
 import org.vcell.sedml.SEDMLImportException;
@@ -53,6 +56,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.beans.PropertyVetoException;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -311,128 +315,86 @@ public class SolverHandler {
 		}
 	}
 
-    public void simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedml, CLIRecordable cliLogger,
+    public Map<AbstractTask, BiosimulationLog.Status> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedmlRequested, CLIRecordable cliLogger,
                                  File outputDirForSedml, String outDir, String sedmlLocation,
-                                 boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride
-								 ) throws Exception {
+                                 boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride)
+			throws XMLException, IOException, SEDMLImportException, ExpressionException, PropertyVetoException {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
+		Map<AbstractTask, BiosimulationLog.Status> biosimStatusMap = new LinkedHashMap<>();
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         String inputFile = externalDocInfo.getFile().getAbsolutePath();
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
-        
-        List<BioModel> bioModelList;
-        String docName;
-        List<TempSimulation> tempSims;
-        //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
-		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo.getFile(), sedml, exactMatchOnly);
 
+        //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
+		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo.getFile(), sedmlRequested, exactMatchOnly);
+		List<BioModel> bioModelList;
 		try {
-			for (BioModel generatedBioModel : (bioModelList = this.sedmlImporter.getBioModels())){
-				SolverHandler.sanityCheck(generatedBioModel);
-			}
-        } catch (SEDMLImportException e) {
-			throw e;
-		} catch (Exception e) {
-            logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: " + e.getMessage(), e);
+			bioModelList = this.sedmlImporter.getBioModels();
+        } catch (Exception e) {
+            logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: {}", e.getMessage(), e);
             throw e;
         }
+		for (BioModel generatedBioModel : bioModelList) SolverHandler.sanityCheck(generatedBioModel);
 
-        if(bioModelList != null) {
-			countBioModels = bioModelList.size();
-        }
+        this.countBioModels = bioModelList.size();
+
         
-        this.initialize(bioModelList, sedml);
-
+        this.initialize(bioModelList, sedmlRequested);
         int simulationJobCount = 0;
         int bioModelCount = 0;
         boolean hasSomeSpatial = false;
         boolean bTimeoutFound = false;
-        
         for (BioModel bioModel : bioModelList) {
 			Span biomodel_span = null;
 			try {
 				biomodel_span = Tracer.startSpan(Span.ContextType.BioModel, bioModel.getName(), Map.of("bioModelName", bioModel.getName()));
 
-				docName = bioModel.getName();
-				tempSims = Arrays.stream(bioModel.getSimulations()).map(s -> origSimulationToTempSimulationMap.get(s)).collect(Collectors.toList());
-
-				Map<TempSimulation, BiosimulationLog.Status> simStatusMap = new LinkedHashMap<>();
+				Map<TempSimulation, BiosimulationLog.Status> vCellTempSimStatusMap = new LinkedHashMap<>();
 				Map<TempSimulation, Integer> simDurationMap_ms = new LinkedHashMap<>();
-				List<TempSimulationJob> simJobsList = new ArrayList<>();
-				for (TempSimulation tempSimulation : tempSims) {
-					if (tempSimulation.getImportedTaskID() == null) {
-						continue;    // this is a simulation not matching the imported task, so we skip it
-					}
 
-					AbstractTask task = tempSimulationToTaskMap.get(tempSimulation);
-					simStatusMap.put(tempSimulation, BiosimulationLog.Status.RUNNING);
-					BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, task.getId(), BiosimulationLog.Status.RUNNING,
-							0.0, tempSimulation.getSolverTaskDescription().getSolverDescription().getKisao());
-					simDurationMap_ms.put(tempSimulation, 0);
-
-					if (bSmallMeshOverride && tempSimulation.getMeshSpecification() != null) {
-						int maxSize = 11;
-						ISize currSize = tempSimulation.getMeshSpecification().getSamplingSize();
-						ISize newSize = new ISize(
-								Math.min(maxSize, currSize.getX()),
-								Math.min(maxSize, currSize.getY()),
-								Math.min(maxSize, currSize.getZ()));
-						tempSimulation.getMeshSpecification().setSamplingSize(newSize);
-					}
-
-					int scanCount = tempSimulation.getScanCount();
-					for (int i = 0; i < scanCount; i++) {
-						TempSimulationJob simJob = new TempSimulationJob(tempSimulation, i, null);
-						simJobsList.add(simJob);
-					}
-				}
-
+				List<TempSimulationJob> simJobsList = preProcessTempSimulations(sedmlLocation, bSmallMeshOverride, bioModel, vCellTempSimStatusMap, simDurationMap_ms);
 				for (TempSimulationJob tempSimulationJob : simJobsList) {
 					AbstractTask task = tempSimulationToTaskMap.get(tempSimulationJob.getTempSimulation());
+					biosimStatusMap.put(task, BiosimulationLog.Status.QUEUED);
 					String paramScanIndex = task instanceof RepeatedTask ? ":" + tempSimulationJob.getJobIndex() : "";
 					String tempSimJobLabel = tempSimulationJob.getSimulationJobID() + tempSimulationJob.getJobIndex();
 					String logTaskMessage = String.format("Initializing simulation job %s (%s%s)...", tempSimJobLabel, task.getId(), paramScanIndex);
-					logger.debug(logTaskMessage);
+					RunUtils.drawBreakLine("-  -", 25);
+					logger.info(logTaskMessage);
 					String logTaskError = "";
 					long startTimeTask_ms = System.currentTimeMillis();
-
-
 
 					SimulationTask simTask;
 					String kisao = "null";
 					ODESolverResultSet odeSolverResultSet = null;
-					SolverTaskDescription std = null;
 					SolverDescription sd = null;
 					int solverStatus = SolverStatus.SOLVER_READY;
 
-					Simulation sim = tempSimulationJob.getSimulation();
+					Simulation tempSimulationJobSim = tempSimulationJob.getSimulation();
 					simTask = new SimulationTask(tempSimulationJob, 0);
 					Span sim_span = null;
 					try {
-						sim_span = Tracer.startSpan(Span.ContextType.SIMULATION_RUN, sim.getName(), Map.of("simName", sim.getName()));
-						SimulationOwner so = sim.getSimulationOwner();
-						sim = new TempSimulation(sim, false);
-						sim.setSimulationOwner(so);
+						sim_span = Tracer.startSpan(Span.ContextType.SIMULATION_RUN, tempSimulationJobSim.getName(), Map.of("simName", tempSimulationJobSim.getName()));
+						SimulationOwner so = tempSimulationJobSim.getSimulationOwner();
+						tempSimulationJobSim = new TempSimulation(tempSimulationJobSim, false);
+						tempSimulationJobSim.setSimulationOwner(so);
 
-						std = sim.getSolverTaskDescription();
+						SolverTaskDescription std = tempSimulationJobSim.getSolverTaskDescription();
 						sd = std.getSolverDescription();
 						kisao = sd.getKisao();
-						if (kisao == null) {
-							throw new RuntimeException("KISAO is null.");
-						}
+						if (kisao == null) throw new RuntimeException("KISAO is null.");
+
 
 						Solver solver = SolverFactory.createSolver(outputDirForSedml, simTask, false);
 						logTaskMessage += "done. Starting simulation... ";
 
-						if (sd.isSpatial()) {
-							hasSomeSpatial = true;
-						}
-						if (solver instanceof AbstractCompiledSolver) {
-							((AbstractCompiledSolver) solver).runSolver();
-							if (logger.isDebugEnabled()){
-								logger.info("Solver: " + solver);
-								logger.info("Status: " + solver.getSolverStatus());
-							}
+						if (sd.isSpatial()) hasSomeSpatial = true;
+
+						biosimStatusMap.put(task, BiosimulationLog.Status.RUNNING);
+						RunUtils.drawBreakLine("-  -", 25);
+						logger.info("Beginning Simulation...");
+						if (solver instanceof AbstractCompiledSolver abstractCompiledSolver) {
+							abstractCompiledSolver.runSolver();
 							if (solver instanceof ODESolver odeSolver) {
 								odeSolverResultSet = odeSolver.getODESolverResultSet();
 							} else if (solver instanceof GibsonSolver gibsonSolver) {
@@ -447,16 +409,19 @@ public class SolverHandler {
 							}
 						} else if (solver instanceof AbstractJavaSolver abstractJavaSolver) {
 							abstractJavaSolver.runSolver();
-							odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
-							// must interpolate data for uniform time course which is not supported natively by the Java solvers
-							org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(task.getSimulationReference());
-							if (sedmlSim instanceof UniformTimeCourse) {
-								odeSolverResultSet = RunUtils.interpolate(odeSolverResultSet, (UniformTimeCourse) sedmlSim);
-								logTaskMessage += "done. Interpolating... ";
+							if (SolverStatus.SOLVER_FINISHED == abstractJavaSolver.getSolverStatus().getStatus()){
+								odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
+								// must interpolate data for uniform time course which is not supported natively by the Java solvers
+								org.jlibsedml.Simulation sedmlSim = sedmlRequested.getSimulation(task.getSimulationReference());
+								if (sedmlSim instanceof UniformTimeCourse utcSedmlSim) {
+									odeSolverResultSet = RunUtils.interpolate(odeSolverResultSet, utcSedmlSim);
+									logTaskMessage += "done. Interpolating... ";
+								}
 							}
 						} else {
 							// this should actually never happen...
 							String str = "Unexpected solver: " + kisao + " " + solver + ". ";
+							biosimStatusMap.put(task, BiosimulationLog.Status.SKIPPED);
 							throw new RuntimeException(str);
 						}
 
@@ -488,53 +453,44 @@ public class SolverHandler {
 							simDurationMap_ms.put(originalSim, simDuration_ms);
 
                             logger.info("Successful execution ({}s): Model '{}' Task '{}' ({}).",
-									((double)elapsedTime_ms)/1000, docName, sim.getDescription(), simTask.getSimulation().getName());
+									((double)elapsedTime_ms)/1000, bioModel.getName(), tempSimulationJobSim.getDescription(), simTask.getSimulation().getName());
 							countSuccessfulSimulationRuns++;    // we only count the number of simulations (tasks) that succeeded
-							if (simStatusMap.get(originalSim) != BiosimulationLog.Status.ABORTED && simStatusMap.get(originalSim) != BiosimulationLog.Status.FAILED) {
-								simStatusMap.put(originalSim, BiosimulationLog.Status.SUCCEEDED);
+							if (vCellTempSimStatusMap.get(originalSim) != BiosimulationLog.Status.ABORTED && vCellTempSimStatusMap.get(originalSim) != BiosimulationLog.Status.FAILED) {
+								vCellTempSimStatusMap.put(originalSim, BiosimulationLog.Status.SUCCEEDED);
 							}
-							BiosimulationLog.instance().setOutputMessage(sedmlLocation, sim.getImportedTaskID(), "task", logTaskMessage);
+							BiosimulationLog.instance().setOutputMessage(sedmlLocation, tempSimulationJobSim.getImportedTaskID(), "task", logTaskMessage);
+							biosimStatusMap.put(task, BiosimulationLog.Status.SUCCEEDED);
 						} else {
 							String error = solver.getSolverStatus().getSimulationMessage().getDisplayMessage();
 							solverStatus = solver.getSolverStatus().getStatus();
-							logger.error("Solver status: " + solverStatus);
-							logger.error("Solver message: " + error);
-
-							throw new RuntimeException(error + " ");
+							String message = String.format("Solver (%s) status: `%s` (%s) ", solver.getClass().getSimpleName(), solver.getSolverStatus().getStatusAsString(), error);
+							biosimStatusMap.put(task, BiosimulationLog.Status.FAILED);
+							throw new RuntimeException(message);
 						}
 					} catch (Exception e) {
-						String error = String.format("Failed execution: Model '%s' Task '%s' Cause `%s(%s)`", docName, sim.getDescription(), e.getClass().getName(), e.getMessage());
+						long endTime_ms = System.currentTimeMillis();
+						long elapsedTime_ms = endTime_ms - startTimeTask_ms;
+						String error = String.format("Failed execution:\n\t> Elapsed Time:\t%dms\n\t> Model:\t\t%s\n\t> Task:\t\t\t%s\n\t> Cause:\t\t%s\n\t> Message:\t\t%s", elapsedTime_ms, bioModel.getName(), tempSimulationJobSim.getDescription(), e.getClass().getSimpleName(), e.getMessage());
 						logger.error(error);
 						Tracer.failure(e, error);
 
-						long endTime_ms = System.currentTimeMillis();
-						long elapsedTime_ms = endTime_ms - startTimeTask_ms;
-						String msg = "Running simulation for " + elapsedTime_ms + " ms";
-						logger.info(msg);
-
-						if (sim.getImportedTaskID() == null) {
+						if (tempSimulationJobSim.getImportedTaskID() == null) {
 							String str = "'null' imported task id, this should never happen. ";
 							logger.error(str);
 							logTaskError += str;
 						} else {
 							TempSimulation originalSim = tempSimulationJob.getSimulation();
 							if (solverStatus == SolverStatus.SOLVER_ABORTED) {
-								simStatusMap.put(originalSim, BiosimulationLog.Status.ABORTED);
+								vCellTempSimStatusMap.put(originalSim, BiosimulationLog.Status.ABORTED);
 							} else {
-								simStatusMap.put(originalSim, BiosimulationLog.Status.FAILED);
+								vCellTempSimStatusMap.put(originalSim, BiosimulationLog.Status.FAILED);
 							}
 						}
 	//                    CLIUtils.finalStatusUpdate(CLIUtils.Status.FAILED, outDir);
-						if (e.getMessage() != null) {
-							// something else than failure caught by solver instance during execution
-							logTaskError += (e.getMessage() + ". ");
-							logger.error(e.getMessage());
-						} else {
-							logTaskError += (error + ". ");
-						}
+						logTaskError += (e.getMessage() != null ? e.getMessage() : error) + ". ";
 						String type = e.getClass().getSimpleName();
-						BiosimulationLog.instance().setOutputMessage(sedmlLocation, sim.getImportedTaskID(), "task", logTaskMessage);
-						BiosimulationLog.instance().setExceptionMessage(sedmlLocation, sim.getImportedTaskID(), "task", type, logTaskError);
+						BiosimulationLog.instance().setOutputMessage(sedmlLocation, tempSimulationJobSim.getImportedTaskID(), "task", logTaskMessage);
+						BiosimulationLog.instance().setExceptionMessage(sedmlLocation, tempSimulationJobSim.getImportedTaskID(), "task", type, logTaskError);
 						String sdl = "";
 						if (sd != null && sd.getShortDisplayLabel() != null && !sd.getShortDisplayLabel().isEmpty()) {
 							sdl = sd.getShortDisplayLabel();
@@ -583,10 +539,9 @@ public class SolverHandler {
 					if (!keepTempFiles) {
 						RunUtils.removeIntermediarySimFiles(outputDirForSedml);
 					}
-					RunUtils.drawBreakLine("-", 100);
 					simulationJobCount++;
 				}
-				for (Map.Entry<TempSimulation, BiosimulationLog.Status> entry : simStatusMap.entrySet()) {
+				for (Map.Entry<TempSimulation, BiosimulationLog.Status> entry : vCellTempSimStatusMap.entrySet()) {
 
 					TempSimulation tempSimulation = entry.getKey();
 					BiosimulationLog.Status status = entry.getValue();
@@ -607,6 +562,7 @@ public class SolverHandler {
 					}
 				}
 				bioModelCount++;
+				RunUtils.drawBreakLine("-  -", 25);
 			} finally {
 				if (biomodel_span != null){
 					biomodel_span.close();
@@ -617,9 +573,43 @@ public class SolverHandler {
         if(hasSomeSpatial) {
             cliLogger.writeSpatialList(bioModelBaseName);
         }
+		RunUtils.drawBreakLine("-", 100);
+		return biosimStatusMap;
     }
 
-    /**
+	private List<TempSimulationJob> preProcessTempSimulations(String sedmlLocation, boolean bSmallMeshOverride, BioModel bioModel, Map<TempSimulation, BiosimulationLog.Status> vCellTempSimStatusMap, Map<TempSimulation, Integer> simDurationMap_ms) throws PropertyVetoException {
+		List<TempSimulationJob> simJobsList = new ArrayList<>();
+		for (TempSimulation tempSimulation : Arrays.stream(bioModel.getSimulations()).map(s -> origSimulationToTempSimulationMap.get(s)).toList()) {
+			if (tempSimulation.getImportedTaskID() == null) {
+				continue;    // this is a simulation not matching the imported task, so we skip it
+			}
+
+			AbstractTask task = tempSimulationToTaskMap.get(tempSimulation);
+			vCellTempSimStatusMap.put(tempSimulation, BiosimulationLog.Status.RUNNING);
+			BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, task.getId(), BiosimulationLog.Status.RUNNING,
+					0.0, tempSimulation.getSolverTaskDescription().getSolverDescription().getKisao());
+			simDurationMap_ms.put(tempSimulation, 0);
+
+			if (bSmallMeshOverride && tempSimulation.getMeshSpecification() != null) {
+				int maxSize = 11;
+				ISize currSize = tempSimulation.getMeshSpecification().getSamplingSize();
+				ISize newSize = new ISize(
+						Math.min(maxSize, currSize.getX()),
+						Math.min(maxSize, currSize.getY()),
+						Math.min(maxSize, currSize.getZ()));
+				tempSimulation.getMeshSpecification().setSamplingSize(newSize);
+			}
+
+			int scanCount = tempSimulation.getScanCount();
+			for (int i = 0; i < scanCount; i++) {
+				TempSimulationJob simJob = new TempSimulationJob(tempSimulation, i, null);
+				simJobsList.add(simJob);
+			}
+		}
+		return simJobsList;
+	}
+
+	/**
      * this function is unmaintained, do not run it
      */
     @Deprecated

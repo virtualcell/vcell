@@ -25,7 +25,7 @@ public class SolverStatus implements java.io.Serializable {
 	public static final int SOLVER_ABORTED = 3;
 	public static final int SOLVER_STOPPED = 4;
 	public static final int SOLVER_STARTING = 5;
-	private static final String SOLVER_STATUS[] = {"Ready", "Running", "Finished", "Aborted", "Stopped", "Starting"}; 
+	private static final String[] SOLVER_STATUS = {"Ready", "Running", "Finished", "Aborted", "Stopped", "Starting"};
 	public int fieldStatus = 0;
 	private SimulationMessage fieldSimulationMessage = null;
 
@@ -40,7 +40,6 @@ public class SolverStatus implements java.io.Serializable {
 	/**
 	 * This method was created in VisualAge.
 	 * @return boolean
-	 * @param executableStatus cbit.vcell.solvers.ExecutableStatus
 	 */
 	public boolean equals(SolverStatus solverStatus) {
 		return (getStatus() == solverStatus.getStatus() && getSimulationMessage().equals(solverStatus.getSimulationMessage()));
@@ -58,6 +57,10 @@ public class SolverStatus implements java.io.Serializable {
 	 */
 	public int getStatus() {
 		return fieldStatus;
+	}
+
+	public String getStatusAsString(){
+		return SolverStatus.SOLVER_STATUS[fieldStatus];
 	}
 /**
  * Insert the method's description here.

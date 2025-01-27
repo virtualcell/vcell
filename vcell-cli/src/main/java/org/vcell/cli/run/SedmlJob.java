@@ -216,10 +216,19 @@ public class SedmlJob {
         RunUtils.drawBreakLine("-", 100);
         try {
             span = Tracer.startSpan(Span.ContextType.SIMULATIONS_RUN, "runSimulations", null);
-            solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
+            Map<AbstractTask, BiosimulationLog.Status> taskResults =  solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
                     this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH,
                     this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES,
                     this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
+            int numSimulationsUnsuccessful = 0;
+            StringBuilder executionSummary = new StringBuilder("Summary of Task Results\n");
+            for (AbstractTask sedmlTask : taskResults.keySet()){
+                String sedmlTaskName = (sedmlTask.getName() == null || sedmlTask.getName().isBlank()) ? sedmlTask.getId() : sedmlTask.getName() + " (" + sedmlTask.getId() + ")" ;
+                executionSummary.append("\t> ").append(sedmlTaskName).append("::").append(taskResults.get(sedmlTask).name()).append("\n");
+                if (!taskResults.get(sedmlTask).equals(BiosimulationLog.Status.SUCCEEDED)) numSimulationsUnsuccessful++;
+            }
+            logger.info(executionSummary.toString());
+            if (numSimulationsUnsuccessful > 0) throw new ExecutionException(numSimulationsUnsuccessful + " simulation" + (numSimulationsUnsuccessful == 1 ? "s" : "") + " were unsuccessful.");
         } catch (Exception e) {
             Throwable currentTierOfException = e;
             StringBuilder errorMessage = new StringBuilder();
