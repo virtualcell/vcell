@@ -13,8 +13,10 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.PropertyConstants;
@@ -190,21 +192,19 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				}
 			}
 			refreshData();
+
 		} else if (evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
 			int simIndex = (Integer)evt.getNewValue();
 			int row = simIndex % getMaxRowsPerPage();
 			Simulation simulation = getValueAt(row);
-			if (simulation.getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
+			if(simulation != null) {
 				SolverTaskDescription std = simulation.getSolverTaskDescription();
 				SolverDescription sd = std.getSolverDescription();
 				SimulationStatus simulationStatus = getSimulationWorkspace().getSimulationStatus(simulation);
-				System.out.println("SimulationListTableModel: simIndex: " + simIndex + ", row: " + row);
-				System.out.println("SimulationListTableModel: status changed: " + simulationStatus.getStatusString());
-				SimulationOwner so = getSimulationWorkspace().getSimulationOwner();
-				if(so instanceof SimulationContext) {
-					SimulationContext sc = (SimulationContext)so;
-					// TODO: get more sim info, trial, scan, etc
-					// TODO: launch postprocessing thread
+				if (sd.isLangevinSolver() && simulationStatus.isCompleted()) {
+					System.out.println("SimulationListTableModel: simIndex: " + simIndex + ", row: " + row);
+					System.out.println("SimulationListTableModel: status changed: " + simulationStatus.getStatusString());
+					getSimulationWorkspace().postProcessLangevinResults(simulation);
 				}
 			}
 			fireTableRowsUpdated(row, row);

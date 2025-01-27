@@ -197,6 +197,56 @@ public void showSimulationResults(OutputContext outputContext, Simulation[] simu
 	AsynchClientTask[] taskArray = showSimulationResults0(false, viewerType);
 	ClientTaskDispatcher.dispatch(getDocumentWindowManager().getComponent(), hashTable, taskArray, false, true, null);
 }
+/*
+ * -------------------------------------------------------------------------------------------------
+		TODO: postProcessLangevinResults
+ */
+public void postProcessLangevinResults(Simulation sim) {
+
+	final String FAILURE_KEY = "FAILURE_KEY";
+	final String SIMULATION_KEY = "SIMULATION_KEY";
+	Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
+	hashTable.put(FAILURE_KEY, false);
+	hashTable.put(SIMULATION_KEY, sim);
+
+	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
+	AsynchClientTask retrieveLangevinResultsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean failure = (boolean) hashTable.get(FAILURE_KEY);
+			SolverTaskDescription std = sim.getSolverTaskDescription();
+			int numTrials = std.getNumTrials();
+			System.out.println(sim.getName() + ", NumTrials = " + numTrials);
+//			LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
+			final VCSimulationIdentifier vcSimulationIdentifier = sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+			SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
+			Simulation allSims[] = simOwner.getSimulations();
+			for (Simulation simCandidate : allSims) {
+				if (simCandidate.getName().startsWith(sim.getName())) {
+					System.out.println(" --- " + simCandidate.getName() + ", " + simCandidate.getJobCount());
+				}
+			}
+		}
+	};
+	AsynchClientTask calculateLangevinAveragesTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean failure = (boolean)hashTable.get(FAILURE_KEY);
+
+		}
+	};
+	AsynchClientTask calculateLangevinAdvancedStatisticsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean failure = (boolean)hashTable.get(FAILURE_KEY);
+
+		}
+	};
+	taskList.add(retrieveLangevinResultsTask);
+	taskList.add(calculateLangevinAveragesTask);
+	taskList.add(calculateLangevinAdvancedStatisticsTask);
+	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
+	taskList.toArray(taskArray);
+	ClientTaskDispatcher.dispatch(getDocumentWindowManager().getComponent(), hashTable, taskArray, false, true, null);
+
+}
 
 public enum ViewerType {
 	NativeViewer_only
