@@ -119,6 +119,11 @@ public class OmexTestingDatabase {
             return (sbmlFailureType = determineFault(traceEvent.exception)) != null ? sbmlFailureType : FailureType.SBML_IMPORT_FAILURE;
         }
 
+        if (traceEvent.exception instanceof RuntimeException && traceEvent.message.contains("Failed execution")){
+            if (traceEvent.message.contains("divide by zero")) return FailureType.DIVIDE_BY_ZERO;
+            if (traceEvent.message.contains("infinite loop")) return FailureType.SOLVER_FAILURE;
+        }
+
         if (traceEvent.exception != null && traceEvent.message.toLowerCase().contains("non-compatible sedml simulations"))
             return FailureType.SEDML_NON_UTC_SIMULATION_FOUND;
 
