@@ -356,22 +356,43 @@ public class BiosimulationLog implements AutoCloseable {
 
     public void updatePlotStatusYml(String sedmlName, String plotId, Status simStatus) {
         for (SedDocumentLog sedDocument : this.archiveLog.sedDocuments) {
-            if (sedmlName.endsWith(sedDocument.location)) {
-                for (OutputLog output : sedDocument.outputs) {
-                    if (output.id.equals(plotId)) {
-                        for (CurveLog curveLog : output.curves) {
-                            curveLog.status = simStatus;
-                            if (simStatus == Status.QUEUED || simStatus == Status.SUCCEEDED) {
-                                output.status = Status.SUCCEEDED;
-                            } else {
-                                output.status = Status.FAILED;
-                            }
-                        }
-                    }
+            if (!(sedmlName.endsWith(sedDocument.location))) continue;
+            for (OutputLog output : sedDocument.outputs) {
+                if (!(output.id.equals(plotId))) continue;
+                if (simStatus != Status.SUCCEEDED && simStatus != Status.SKIPPED){
+                    output.status = simStatus;
+                    break;
                 }
+                //  Verify we've actually passed all curves!
+                for (CurveLog curveLog : output.curves) {
+                    if (curveLog.status == Status.SUCCEEDED || curveLog.status == Status.SKIPPED) continue;
+                    // If we get to here, we haven't finished processing the curves yet...
+                    // ... but the programmer making the call may not realize that.
+                    // throw them an exception!
+                    String formatString = "Can not update plot `%s` to status `%s`: curve `%s` has status `%s`.";
+                    String errorMessage = String.format(formatString, plotId, simStatus.name(), curveLog.id, curveLog.status.name());
+                    throw new IllegalArgumentException(errorMessage);
+                }
+                output.status = simStatus;
+                break;
             }
         }
         setDirty();
     }
 
+    public void updateCurveStatusYml(String sedmlName, String plotId, String curveId, Status simStatus) {
+        for (SedDocumentLog sedDocument : this.archiveLog.sedDocuments) {
+            if (!(sedmlName.endsWith(sedDocument.location))) continue;
+            for (OutputLog output : sedDocument.outputs) {
+                if (!(output.id.equals(plotId))) continue;
+                for (CurveLog curve : output.curves) {
+                    if (!curve.id.equals(curveId)) continue;
+                    curve.status = simStatus;
+                    break;
+                }
+                break;
+            }
+        }
+        setDirty();
+    }
 }

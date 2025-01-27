@@ -23,6 +23,7 @@ import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
+import org.vcell.util.Pair;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -335,12 +336,13 @@ public class SedmlJob {
     private void generatePlots(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults) throws ExecutionException {
         logger.info("Generating Plots... ");
         // We assume if no exception is returned that the plots pass
-        PlottingDataExtractor plotExtractor = new PlottingDataExtractor(this.sedml);
-        Map<Results2DLinePlot, String> plot2Ds = plotExtractor.extractPlotRelevantData(organizedNonSpatialResults);
+        PlottingDataExtractor plotExtractor = new PlottingDataExtractor(this.sedml, this.SEDML_NAME);
+        Map<Results2DLinePlot, Pair<String, String>> plot2Ds = plotExtractor.extractPlotRelevantData(organizedNonSpatialResults);
         for (Results2DLinePlot plotToExport : plot2Ds.keySet()){
             try {
-                plotToExport.generatePng(plot2Ds.get(plotToExport) + ".png", this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
-                plotToExport.generatePdf(plot2Ds.get(plotToExport) + ".pdf", this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
+                plotToExport.generatePng(plot2Ds.get(plotToExport).one + ".png", this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
+                plotToExport.generatePdf(plot2Ds.get(plotToExport).one + ".pdf", this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
+                BiosimulationLog.instance().updatePlotStatusYml(this.SEDML_NAME, plot2Ds.get(plotToExport).two, BiosimulationLog.Status.SUCCEEDED);
             } catch (ChartCouldNotBeProducedException e){
                 logger.error("Failed creating plot:", e);
                 throw new ExecutionException("Failed to create plot: " + plotToExport.getTitle(), e);

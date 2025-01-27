@@ -14,6 +14,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.sedml.log.BiosimulationLog;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -258,11 +259,8 @@ public class Results2DLinePlot implements ResultsLinePlot {
             try (FileOutputStream fos = new FileOutputStream(testfile)) {
                 BufferedImage bfi = chart.createBufferedImage((int) pageFormat.getImageableWidth(), (int) pageFormat.getImageableHeight());
                 pdfWriter.writePlotImageDocument("Test Document", fos, pageFormat, bfi);
-            } catch (DocumentException e) {
-                lg.error("Error while building PDF; see exception below");
-                throw new ChartCouldNotBeProducedException(e);
             }
-        } catch (IOException e){
+        } catch (DocumentException | IOException e){
             lg.error("Error while preparing PDF; see exception below");
             throw new ChartCouldNotBeProducedException(e);
         }

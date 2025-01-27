@@ -7,11 +7,14 @@ import org.jlibsedml.*;
 import org.vcell.cli.run.results.NonSpatialValueHolder;
 import org.vcell.cli.run.results.NonSpatialResultsConverter;
 import org.vcell.cli.run.results.SpatialResultsConverter;
+import org.vcell.sedml.log.BiosimulationLog;
+import org.vcell.util.Pair;
 
 import java.util.*;
 
 public class PlottingDataExtractor {
     private final SedML sedml;
+    private final String sedmlName;
 
     private final static Logger logger = LogManager.getLogger(PlottingDataExtractor.class);
 
@@ -20,40 +23,47 @@ public class PlottingDataExtractor {
      *
      * @param sedml the sedml object to get outputs, datasets, and data generators from.
      */
-    public PlottingDataExtractor(SedML sedml){
+    public PlottingDataExtractor(SedML sedml, String sedmlName){
         this.sedml = sedml;
+        this.sedmlName = sedmlName;
     }
 
     /**
      *
      * @param organizedNonSpatialResults the non-spatial results set of a sedml execution
-     * @return a wrapper for hdf5 relevant data
+     * @return a mapping from Results to plot to a pair of strings: a valid name to apply to an exported plot file, and the sedml id of the plot.
      * @see NonSpatialResultsConverter ::convertNonspatialResultsToSedmlFormat
      * @see SpatialResultsConverter ::collectSpatialDatasets
      */
-    public Map<Results2DLinePlot, String> extractPlotRelevantData(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults) {
-        Map<Results2DLinePlot, String> plots = new LinkedHashMap<>();
+    public Map<Results2DLinePlot, Pair<String, String>> extractPlotRelevantData(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults) {
+        Map<Results2DLinePlot, Pair<String, String>> plots = new LinkedHashMap<>();
         Set<String> xAxisNames = new LinkedHashSet<>();
         if (organizedNonSpatialResults.isEmpty()) return plots;
 
         for (Plot2D requestedPlot : this.sedml.getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList()){
+            BiosimulationLog.instance().updatePlotStatusYml(this.sedmlName, requestedPlot.getId(), BiosimulationLog.Status.RUNNING);
             Results2DLinePlot plot = new Results2DLinePlot();
             plot.setTitle(requestedPlot.getName());
 
             for (Curve curve : requestedPlot.getListOfCurves()){
                 NonSpatialValueHolder xResults, yResults;
+                BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, requestedPlot.getId(), curve.getId(), BiosimulationLog.Status.RUNNING);
                 DataGenerator requestedXGenerator = this.sedml.getDataGeneratorWithId(curve.getXDataReference());
                 DataGenerator requestedYGenerator = this.sedml.getDataGeneratorWithId(curve.getYDataReference());
-                if (requestedXGenerator == null || requestedYGenerator == null) throw new RuntimeException("Unexpected null returns");
-                if (null == (xResults = organizedNonSpatialResults.get(requestedXGenerator))) throw new RuntimeException("Unexpected lack of x-axis results!");
-                if (null == (yResults = organizedNonSpatialResults.get(requestedYGenerator))) throw new RuntimeException("Unexpected lack of y-axis results!");
+                if (requestedXGenerator == null || requestedYGenerator == null)
+                    throw this.logBeforeThrowing(new RuntimeException("Unexpected null returns"), requestedPlot.getId(), curve.getId());
+                if (null == (xResults = organizedNonSpatialResults.get(requestedXGenerator)))
+                    throw this.logBeforeThrowing(new RuntimeException("Unexpected lack of x-axis results!"), requestedPlot.getId(), curve.getId());
+                if (null == (yResults = organizedNonSpatialResults.get(requestedYGenerator)))
+                    throw this.logBeforeThrowing(new RuntimeException("Unexpected lack of y-axis results!"), requestedPlot.getId(), curve.getId());
 
                 // There's two cases: 1 x-axis, n y-axes; or n x-axes, n y-axes.
                 final boolean hasSingleXSeries = xResults.listOfResultSets.size() == 1;
                 final boolean hasSingleYSeries = yResults.listOfResultSets.size() == 1;
                 boolean hasPairsOfSeries = xResults.listOfResultSets.size() == yResults.listOfResultSets.size();
                 if (!hasSingleXSeries && !hasPairsOfSeries){
-                    throw new RuntimeException("Unexpected mismatch between number of x data sets, and y data sets!");
+                    RuntimeException exception = new RuntimeException("Unexpected mismatch between number of x data sets, and y data sets!");
+                    throw this.logBeforeThrowing(exception, requestedPlot.getId(), curve.getId());
                 }
 
                 boolean hasBadXName = requestedXGenerator.getName() == null || "".equals(requestedXGenerator.getName());
@@ -74,11 +84,12 @@ public class PlottingDataExtractor {
                     SingleAxisSeries ySeries = new SingleAxisSeries(ySeriesLabel, yData);
                     plot.addXYData(xSeries, ySeries);
                 }
+                BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, requestedPlot.getId(), curve.getId(), BiosimulationLog.Status.SUCCEEDED);
             }
 
             plot.setXAxisTitle(String.join("/", xAxisNames));
             String plotFileName = getValidPlotName(requestedPlot);
-            plots.put(plot, plotFileName);
+            plots.put(plot, new Pair<>(plotFileName, requestedPlot.getId()));
         }
 
         return plots;
@@ -90,5 +101,10 @@ public class PlottingDataExtractor {
         String requestedPlotName = requestedPlot.getName();
         boolean hasBadPlotName = requestedPlotName == null || requestedPlotName.isBlank() || requestedPlotName.matches(illegalRegex);
         return hasBadPlotName ? requestedPlot.getId() : requestedPlot.getName();
+    }
+
+    private RuntimeException logBeforeThrowing(RuntimeException e, String plotId, String curveId) {
+        BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, plotId, curveId, BiosimulationLog.Status.FAILED);
+        return e;
     }
 }
