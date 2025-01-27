@@ -134,29 +134,29 @@ public class SedmlJob {
 
         // Generate Doc Statistics
         this.DOC_STATISTICS.setNumModels(this.sedml.getModels().size());
-        this.DOC_STATISTICS.setNumSimulations(this.sedml.getSimulations().size());
-        this.DOC_STATISTICS.setNumTasks(this.sedml.getTasks().size());
-        this.DOC_STATISTICS.setNumOutputs(this.sedml.getOutputs().size());
 
+        this.DOC_STATISTICS.setNumSimulations(this.sedml.getSimulations().size());
+        for (Simulation simulation : this.sedml.getSimulations()){
+            boolean isUTC = simulation instanceof UniformTimeCourse;
+            if (isUTC) this.DOC_STATISTICS.setNumUniformTimeCourseSimulations(this.DOC_STATISTICS.getNumUniformTimeCourseSimulations() + 1);
+            else if (simulation instanceof OneStep) this.DOC_STATISTICS.setNumOneStepSimulations(this.DOC_STATISTICS.getNumOneStepSimulations() + 1);
+            else if (simulation instanceof SteadyState) this.DOC_STATISTICS.setNumSteadyStateSimulations(this.DOC_STATISTICS.getNumSteadyStateSimulations() + 1);
+            else this.DOC_STATISTICS.setNumAnalysisSimulations(this.DOC_STATISTICS.getNumAnalysisSimulations() + 1);
+        }
+
+        this.DOC_STATISTICS.setNumTasks(this.sedml.getTasks().size());
+
+        this.DOC_STATISTICS.setNumOutputs(this.sedml.getOutputs().size());
         for (Output output : this.sedml.getOutputs()) {
             if (output instanceof Report) this.DOC_STATISTICS.setReportsCount(this.DOC_STATISTICS.getReportsCount() + 1);
             if (output instanceof Plot2D) this.DOC_STATISTICS.setPlots2DCount(this.DOC_STATISTICS.getPlots2DCount() + 1);
             if (output instanceof Plot3D) this.DOC_STATISTICS.setPlots3DCount(this.DOC_STATISTICS.getPlots3DCount() + 1);
         }
 
-        String summarySedmlContentString = "Found:\n"
-                + "\t" + this.DOC_STATISTICS.getNumModels() + " model(s)\n"
-                + "\t" + this.DOC_STATISTICS.getNumSimulations() + " simulation(s)\n"
-                + "\t" + this.DOC_STATISTICS.getNumTasks() + " task(s)\n"
-                + "\t" + this.DOC_STATISTICS.getReportsCount() + " report(s)\n"
-                + "\t" + this.DOC_STATISTICS.getPlots2DCount() + " plot2D(s)\n"
-                + "\t" + this.DOC_STATISTICS.getPlots3DCount() + " plot3D(s)\n";
-        logger.info("{}{}", resultString, summarySedmlContentString);
-
         // Check for overrides
         for(Model m : this.sedml.getModels()) {
             if (m.getListOfChanges().isEmpty()) continue;
-            this.hasOverrides = true;
+            this.DOC_STATISTICS.setHasOverrides(this.hasOverrides = true);
             break;
         }
 
@@ -165,8 +165,21 @@ public class SedmlJob {
             if (!(at instanceof RepeatedTask rt)) continue;
             List<SetValue> changes = rt.getChanges();
             if(changes == null || changes.isEmpty()) continue;
-            this.hasScans = true;
+            this.DOC_STATISTICS.setHasScans(this.hasScans = true);
+            break;
         }
+
+        logger.info("{}{}", resultString, this.DOC_STATISTICS.toFormattedString());
+
+
+        // Before we leave, we need to throw an exception if we have any VCell Sims we can't run.
+        if (this.DOC_STATISTICS.getNumUniformTimeCourseSimulations() != this.DOC_STATISTICS.getNumSimulations()){
+            biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.SKIPPED);
+            PreProcessingException exception = new PreProcessingException("There are SedML simulations VCell is not capable of running at this time!");
+            Tracer.failure(exception, "Fatal discovery encountered while processing SedML: non-compatible SedML Simulations found.");
+            throw exception;
+        }
+
         span.close();
         return this.DOC_STATISTICS;
     }

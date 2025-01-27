@@ -14,8 +14,8 @@ package org.vcell.cli.run;
  * - hasScans :: if the sedml has parameter scans
  */
 public class SedmlStatistics {
-    private String sedmlName;
-    private Integer nModels, nSimulations, nTasks, nOutputs, nReportsCount, nPlots2DCount, nPlots3DCount;
+    private final String sedmlName;
+    private Integer nModels, nSimulations, nUTCSims, nOneStepSims, nSteadyStateSims, nAnalysisSims, nTasks, nOutputs, nReportsCount, nPlots2DCount, nPlots3DCount;
     public boolean hasOverrides, hasScans;
 
     public SedmlStatistics(String sedmlName){
@@ -23,6 +23,10 @@ public class SedmlStatistics {
         this.sedmlName = sedmlName;
         this.nModels = null;
         this.nSimulations = null;
+        this.nUTCSims = null;
+        this.nOneStepSims = null;
+        this.nSteadyStateSims = null;
+        this.nAnalysisSims = null;
         this.nTasks = null;
         this.nOutputs = null;
         this.nReportsCount = null;
@@ -42,6 +46,22 @@ public class SedmlStatistics {
 
     public int getNumSimulations(){
         return this.nSimulations == null ? 0 : this.nSimulations;
+    }
+
+    public int getNumUniformTimeCourseSimulations(){
+        return this.nUTCSims == null ? 0 : this.nUTCSims;
+    }
+
+    public int getNumOneStepSimulations(){
+        return this.nOneStepSims == null ? 0 : this.nOneStepSims;
+    }
+
+    public int getNumSteadyStateSimulations(){
+        return this.nSteadyStateSims == null ? 0 : this.nSteadyStateSims;
+    }
+
+    public int getNumAnalysisSimulations(){
+        return this.nAnalysisSims == null ? 0 : this.nAnalysisSims;
     }
 
     public int getNumTasks(){
@@ -78,6 +98,22 @@ public class SedmlStatistics {
 
     public void setNumSimulations(int nSimulations){
         this.nSimulations = nSimulations;
+    }
+
+    public void setNumUniformTimeCourseSimulations(int nUTCSims){
+        this.nUTCSims = nUTCSims;
+    }
+
+    public void setNumOneStepSimulations(int nOneStepSims){
+        this.nOneStepSims = nOneStepSims;
+    }
+
+    public void setNumSteadyStateSimulations(int nSteadyStateSims){
+        this.nSteadyStateSims = nSteadyStateSims;
+    }
+
+    public void setNumAnalysisSimulations(int nAnalysisSims){
+        this.nAnalysisSims = nAnalysisSims;
     }
 
     public void setNumTasks(int nTasks){
@@ -119,15 +155,28 @@ public class SedmlStatistics {
     public String toFormattedString(){
         if (this.nModels == null && this.nSimulations == null && this.nTasks == null && this.nReportsCount == null
                 && this.nPlots2DCount == null && this.nPlots3DCount == null) return "Processing incomplete; no reportable data.";
+        String simulationTypeFormatString = "\t\t> %d %s simulation%s\n";
+        String utcSimTypeString = this.getNumUniformTimeCourseSimulations() == 0 ? "" : (String.format(simulationTypeFormatString, this.getNumUniformTimeCourseSimulations(), "Uniform Time Course", this.getNumUniformTimeCourseSimulations() != 1 ? "s" : ""));
+        String osSimTypeString = this.getNumOneStepSimulations() == 0 ? "" : (String.format(simulationTypeFormatString, this.getNumOneStepSimulations(), "One Step", this.getNumOneStepSimulations() != 1 ? "s" : ""));
+        String ssSimTypeString = this.getNumSteadyStateSimulations() == 0 ? "" : (String.format(simulationTypeFormatString, this.getNumSteadyStateSimulations(), "Steady State", this.getNumSteadyStateSimulations() != 1 ? "s" : ""));
+        String anSimTypeString = this.getNumAnalysisSimulations() == 0 ? "" : (String.format(simulationTypeFormatString, this.getNumAnalysisSimulations(), "Analysis", this.getNumAnalysisSimulations() != 1 ? "s" : ""));
+        String outputTypeFormatString = "\t\t> %d %s%s\n";
+        String reportTypeString = this.getReportsCount() == 0 ? "" : (String.format(outputTypeFormatString, this.getReportsCount(), "Report", this.getReportsCount() != 1 ? "s" : ""));
+        String plot2DTypeString = this.getPlots2DCount() == 0 ? "" : (String.format(outputTypeFormatString, this.getPlots2DCount(), "2D Plot", this.getPlots2DCount() != 1 ? "s" : ""));
+        String plot3DTypeString = this.getPlots3DCount() == 0 ? "" : (String.format(outputTypeFormatString, this.getPlots3DCount(), "3D Plot", this.getPlots3DCount() != 1 ? "s" : ""));
         return String.format(
-            "\t> %d model%s\n\t> %d simulation%s\n\t> %d task%s\n\t> %d output%s\n\t\t>> %d report%s\n\t\t>> %d 2D plot%s\n\t\t>> %d 3D plot%s\n\t> %s Math Overrides\n\t> %s Parameter Scans",
-            this.getNumModels(), this.nModels != 1 ? "s" : "",
-            this.getNumSimulations(), this.nSimulations != 1 ? "s" : "",
-            this.getNumTasks(), this.nTasks != 1 ? "s" : "",
-            this.getNumOutputs(), this.nOutputs != 1 ? "s" : "",
-            this.getReportsCount(), this.nReportsCount != 1 ? "s" : "",
-            this.getPlots2DCount(), this.nPlots2DCount != 1 ? "s" : "",
-            this.getPlots3DCount(), this.nPlots3DCount != 1 ? "s" : "",
+            "\t> %d model%s\n\t> %d simulation%s\n%s%s%s%s\t> %d task%s\n\t> %d output%s\n%s%s%s\t> %s Math Overrides\n\t> %s Parameter Scans",
+            this.getNumModels(), this.getNumModels() != 1 ? "s" : "",
+            this.getNumSimulations(), this.getNumSimulations() != 1 ? "s" : "",
+            utcSimTypeString,
+            osSimTypeString,
+            ssSimTypeString,
+            anSimTypeString,
+            this.getNumTasks(), this.getNumTasks() != 1 ? "s" : "",
+            this.getNumOutputs(), this.getNumOutputs() != 1 ? "s" : "",
+            reportTypeString,
+            plot2DTypeString,
+            plot3DTypeString,
             this.getHasOverrides() ? "Has" : "Does not have",
             this.getHasScans() ? "Has" : "Does not have"
         );
