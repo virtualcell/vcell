@@ -330,7 +330,7 @@ jobs:
         run: sudo apt update && sudo apt install jq -y
 
       - name: Combine .report artifacts into one file
-        run: cat $(find $GITHUB_WORKSPACE/bmdb-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
+        run: sort $(find $GITHUB_WORKSPACE/bmdb-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
 
       - name: Combine .summary artifacts into one file
         run: jq -s 'add | sort_by(.file_path)' $(find "$GITHUB_WORKSPACE/bmdb-results" -name 'total_exec_summary.json') > $GITHUB_WORKSPACE/summary.json
@@ -370,20 +370,15 @@ jobs:
           name: complete_tracer.json
           path: ${{ github.workspace }}/tracer.json
 
-      - name: Post results to slack part 1
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the $(cat ${GITHUB_WORKSPACE}/combined.txt | wc -l) BMDB models that didn't pass:" https://slack.com/api/chat.postMessage
-
-      - name: Post results to slack part 2
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(sort ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
-
-      - name: Post results to slack part 3 (report.md from exec-report CLI command)
+      - name: Post results to slack part 1 (report.md from exec-report CLI command)
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/report.md)" https://slack.com/api/chat.postMessage
 
-      - name: Post results to slack part 4 (sound alarm if changed results)
+      # Not currently working
+      - name: Post results to slack part 2 (sound alarm if changed results)
         run: |
           if grep -q "Unmatched Results Statistics" "$(cat ${GITHUB_WORKSPACE}/report.md)"; then
             curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="@here BMDB Nightly Testing has reported a change in execution results!! Please Investigate" https://slack.com/api/chat.postMessage
           fi
 
-      - name: Post results to slack part 5
+      - name: Post results to slack part 3
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="To see detailed logs of the BMDB results, see - ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. Go see what happened!" https://slack.com/api/chat.postMessage
