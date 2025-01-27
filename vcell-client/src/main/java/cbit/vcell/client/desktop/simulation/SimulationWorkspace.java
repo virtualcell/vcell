@@ -892,6 +892,15 @@ void showSimulationResults(Simulation[] sims, ViewerType viewerType) {
 	getClientSimManager().showSimulationResults(outputContext,sims,viewerType);
 }
 
+void postProcessLangevinResults(Simulation simulation) {
+	if(!getSimulationOwner().getMathDescription().isLangevin()) {
+		return;
+	}
+	if (simulation.getSimulationInfo() != null && getSimulationStatus(simulation).getHasData()) {
+		getClientSimManager().postProcessLangevinResults(simulation);
+	}
+}
+
 
 /**
  * Comment
