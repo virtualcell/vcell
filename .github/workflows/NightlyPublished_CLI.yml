@@ -133,14 +133,17 @@ jobs:
           name: docker-image
           path: /tmp/docker
 
-      - name: Load Downloaded Docker Image
-        run: docker load --input /tmp/docker/$(ls /tmp/docker)
-
-        # Get files from VCDB
       - name: Checkout Input Files
         uses: actions/checkout@v4
         with:
           repository: virtualcell/vcdb
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/docker/$(ls /tmp/docker)
+
+      - name: Install JQ
+        run: sudo apt update && sudo apt install jq -y
+
 
       - name: Prepare sub directory
         run: |
@@ -161,35 +164,14 @@ jobs:
                 echo "Input is invalid. Expecting 'VCDB_#*#_*.omex format, got '${file_name}'."
                 continue
               fi
-
+  
               number=$(echo "$file_name" | sed -n 's/^VCDB_\([0-9]\+\).*\.omex$/\1/p' | sed 's/^0*//')
-
-              # TODO: remove later - if number is greater than MAX_TEST_NUMBER or less than MIN_TEST_NUMBER then continue
-#              MIN_TEST_NUMBER=0
-#              MAX_TEST_NUMBER=2000
-#              if [ $number -lt $MIN_TEST_NUMBER ]; then
-#                  echo "Skipping ${file_name}"
-#                  continue
-#              fi
-#              if [ $number -gt $MAX_TEST_NUMBER ]; then
-#                  echo "Skipping ${file_name}"
-#                  continue
-#              fi
-#              case $number in
-#                235|255|595|711|1008|1013|1022|1025|1030|1035|1042)
-#                  echo "Skipping ${file_name} - too slow or otherwise misbehaved"
-#                  continue
-#                  ;;
-#              esac
-
+  
               if [ $((number % ${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
                   echo "Accepting ${file_name}"
                   cp ${file} $TARGET_DIR/
               fi
           done
-
-      - name: Install JQ
-        run: sudo apt update && sudo apt install jq -y
 
         # Do the execution
       - name: Begin Execution
@@ -259,7 +241,7 @@ jobs:
           echo "Completed processing of \"${file}\"!"
           echo "\n\n-----------------------------------------------------------------------------------------------\n\n"
           done
-
+  
 
       - name: Check For Success
         run: |
