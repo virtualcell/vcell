@@ -14,6 +14,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.cli.exceptions.PythonStreamException;
 
 /**
  * Singleton class that manages VCell CLI's interaction with the `cli.py` external python calls
@@ -249,22 +250,18 @@ public class CLIPythonManager {
         }
 
 
-        if (results.toString().contains(importantPrefix)) {
-            // Got the results we need. Now lets clean the results string up before returning it
-            results = new StringBuilder(CLIUtils.stripString(results.substring(0, results.length() - importantPrefix.length())));
-        } else {
-            // We may have gotten a warning or something; continue to poll for
-            return this.getResultsOfLastCommand();
-        }
+        if (!results.toString().contains(importantPrefix)) return this.getResultsOfLastCommand();
 
+        // Got the results we need. Now lets clean the results string up before returning it
+        String subString = results.substring(0, results.length() - importantPrefix.length());
 
-        return results.toString().isEmpty() ? null : results.toString();
+        return subString.isBlank() ? null : subString.strip();
     }
 
     private void sendNewCommand(String cmd) throws IOException {
         // we can easily send the command, but we need to format it first.
 
-        String command = String.format("%s\n", CLIPythonManager.stripStringForPython(cmd));
+        String command = String.format("%s\n", cmd.strip());
         lg.trace("Sent cmd to Python: {}", command);
         this.pythonOSW.write(command);
         this.pythonOSW.flush();
@@ -378,29 +375,30 @@ public class CLIPythonManager {
         if (errString == null) errString = "";
 
         // Null or empty strings are considered passing results
-        if(returnedString == null || (returnedString = CLIUtils.stripString(returnedString)).isEmpty()){
+        if(returnedString == null || returnedString.isBlank()){
             lg.trace("Python returned successfully.");
             return;
         }
 
+        String cleanedString = returnedString.strip();
         if (    // time for complex error checking
-                (returnedString.length() >= ERROR_PHRASE1.length() && ERROR_PHRASE1.equals(returnedString.substring(0, ERROR_PHRASE1.length())))
-            ||  (returnedString.length() >= ERROR_PHRASE2.length() && ERROR_PHRASE2.equals(returnedString.substring(0, ERROR_PHRASE2.length())))
-            ||  (returnedString.contains("File \"<stdin>\""))
+                (cleanedString.length() >= ERROR_PHRASE1.length() && ERROR_PHRASE1.equals(cleanedString.substring(0, ERROR_PHRASE1.length())))
+            ||  (cleanedString.length() >= ERROR_PHRASE2.length() && ERROR_PHRASE2.equals(cleanedString.substring(0, ERROR_PHRASE2.length())))
+            ||  (cleanedString.contains("File \"<stdin>\""))
         ){ // Report an error:
             String resultString = errString.isEmpty() ? "" : String.format("Result: %s\n", errString);
-            String errorMessage = String.format("Python error caught: <\n%s\n>\n%s\n", returnedString, resultString);
+            String errorMessage = String.format("Python error caught: <\n%s\n>\n%s\n", cleanedString, resultString);
             throw new PythonStreamException(errorMessage);
         } else {
             String resultString = outString.isEmpty() ? "" : String.format("Result: %s\n", outString);
             String message = "Python returned%s\nResult: %s\n";
-            String debugTypeString = DEBUG_NORMAL_OUTPUT? String.format(": [%s]", returnedString) : " successfully.";
+            String debugTypeString = DEBUG_NORMAL_OUTPUT? String.format(": [%s]", cleanedString) : " successfully.";
             lg.trace(String.format(message, debugTypeString, resultString));
         }
     }
 
     private String formatPythonFunctionCall(String functionName, String... arguments){
-        return String.format("wrapper.%s(%s)", CLIUtils.stripString(functionName), this.processPythonArguments(arguments));
+        return String.format("wrapper.%s(%s)", functionName.strip(), this.processPythonArguments(arguments));
     }
 
 
@@ -408,13 +406,9 @@ public class CLIPythonManager {
         StringBuilder argList = new StringBuilder();
         int adjArgLength;
         for (String arg : arguments){
-            argList.append("r\"\"\"").append(CLIUtils.stripString(arg)).append("\"\"\","); // python r-string
+            argList.append("r\"\"\"").append(arg.strip()).append("\"\"\","); // python r-string
         }
         adjArgLength = argList.isEmpty() ? 0 : argList.length() - 1;
         return argList.substring(0, adjArgLength);
-    }
-
-    private static String stripStringForPython(String str){
-        return CLIUtils.stripString(str);
     }
 }

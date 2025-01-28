@@ -43,7 +43,8 @@ import cbit.vcell.solver.server.SolverStatus;
  * @author: Ion Moraru
  */
 public abstract class AbstractSolver implements Solver, SimDataConstants {
-	public static final Logger lg = LogManager.getLogger(AbstractSolver.class);
+	// We can't use static loggers with inheritance...they all share the same, and it makes finding errors hard!!
+	private static final Logger lg = LogManager.getLogger(AbstractSolver.class);
 
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY, SimulationMessage.MESSAGE_SOLVER_READY);
@@ -62,7 +63,7 @@ public AbstractSolver(SimulationTask simTask, File directory) throws SolverExcep
 		if (bMakeUserDirs && !directory.exists()) {
 			if (!directory.mkdirs()){
 				String msg = "could not create directory "+directory;
-				if (lg.isWarnEnabled()) lg.warn(msg);
+				lg.warn(msg);
 				throw new ConfigurationException(msg);
 			}
 			//
@@ -229,7 +230,6 @@ protected abstract void initialize() throws SolverException;
 /**
  * This method was created by a SmartGuide.
  * @return double[]
- * @param identifier java.lang.String
  */
 public Expression getFunctionSensitivity(Expression funcExpr, Constant constant, StateVariable stateVariables[]) throws ExpressionException {
 	if (stateVariables==null || stateVariables.length == 0) {

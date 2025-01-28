@@ -1,12 +1,10 @@
 package org.vcell.cli.run;
 
 import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.resource.NativeLib;
 import cbit.vcell.resource.PropertyLoader;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.vcell.cli.CLIPythonManager;
-import org.vcell.cli.CLIRecorder;
+import org.vcell.cli.messaging.CLIRecorder;
 import org.vcell.util.VCellUtilityHub;
 
 import java.io.File;

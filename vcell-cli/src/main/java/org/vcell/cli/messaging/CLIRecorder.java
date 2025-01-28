@@ -1,4 +1,4 @@
-package org.vcell.cli;
+package org.vcell.cli.messaging;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package org.vcell.cli;
+package org.vcell.cli.messaging;
 
 import org.vcell.trace.Tracer;
 

@@ -21,7 +21,7 @@ jobs:
         run: echo '${{ github.ref }}' >> ~/github.ref
 
       - name: Upload Ref
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: github_hash
           path: ~/github.ref
@@ -102,7 +102,7 @@ jobs:
             MAX_JAVA_MEM=5734
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: /tmp/image.tar
@@ -128,7 +128,7 @@ jobs:
         run: mkdir /tmp/docker
 
       - name: Download Docker Image from `build` Job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docker-image
           path: /tmp/docker
@@ -272,25 +272,25 @@ jobs:
           cat ${{ github.workspace }}/errors.report
 
       - name: Upload failures
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: set_${{ matrix.sets }}.report
           path: ${{ github.workspace }}/errors.report
 
       - name: Upload summary as json
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: set_${{ matrix.sets }}.summary
           path: ${{ github.workspace }}/total_exec_summary.json
 
       - name: Upload summary as ndjson
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: set_${{ matrix.sets }}.summary_ndjson
           path: ${{ github.workspace }}/total_exec_summary.ndjson
 
       - name: Upload tracer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: set_${{ matrix.sets }}.tracer
           path: ${{ github.workspace }}/full_tracer.json
@@ -313,7 +313,7 @@ jobs:
         run: mkdir /tmp/docker
 
       - name: Download Docker Image from `build` Job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docker-image
           path: /tmp/docker
@@ -322,7 +322,7 @@ jobs:
         run: docker load --input /tmp/docker/$(ls /tmp/docker)
 
       - name: Gather Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ${{ github.workspace }}/bmdb-results
 
@@ -330,7 +330,7 @@ jobs:
         run: sudo apt update && sudo apt install jq -y
 
       - name: Combine .report artifacts into one file
-        run: cat $(find $GITHUB_WORKSPACE/bmdb-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
+        run: sort $(find $GITHUB_WORKSPACE/bmdb-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
 
       - name: Combine .summary artifacts into one file
         run: jq -s 'add | sort_by(.file_path)' $(find "$GITHUB_WORKSPACE/bmdb-results" -name 'total_exec_summary.json') > $GITHUB_WORKSPACE/summary.json
@@ -339,8 +339,14 @@ jobs:
         # note that the total_exec_summary.ndjson files are already line delimited json text, so simple concatenation is fine
         run: find $GITHUB_WORKSPACE/bmdb-results -name total_exec_summary.ndjson -exec cat {} + | sort > $GITHUB_WORKSPACE/exec_summary.ndjson
 
+      - name: Delete Artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            *
+
       - name: Upload combined exec_summary.ndjson file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/exec_summary.ndjson
           name: exec_summary.ndjson
@@ -353,37 +359,32 @@ jobs:
         run: docker run -v ${{ github.workspace }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') test-report -c SYSBIO_BIOMD --exec-summaries /root/exec_summary.ndjson --report-md /root/report.md
 
       - name: Upload generated report.md
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: report.md
           path: ${{ github.workspace }}/report.md
 
       - name: Upload complete, compiled summary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: complete_summary.json
           path: ${{ github.workspace }}/summary.json
 
       - name: Upload  complete, compiled tracer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: complete_tracer.json
           path: ${{ github.workspace }}/tracer.json
 
-      - name: Post results to slack part 1
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Here're the $(cat ${GITHUB_WORKSPACE}/combined.txt | wc -l) BMDB models that didn't pass:" https://slack.com/api/chat.postMessage
-
-      - name: Post results to slack part 2
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(sort ${GITHUB_WORKSPACE}/combined.txt)" https://slack.com/api/chat.postMessage
-
-      - name: Post results to slack part 3 (report.md from exec-report CLI command)
+      - name: Post results to slack part 1 (report.md from exec-report CLI command)
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/report.md)" https://slack.com/api/chat.postMessage
 
-      - name: Post results to slack part 4 (sound alarm if changed results)
+      # Not currently working
+      - name: Post results to slack part 2 (sound alarm if changed results)
         run: |
           if grep -q "Unmatched Results Statistics" "$(cat ${GITHUB_WORKSPACE}/report.md)"; then
             curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="@here BMDB Nightly Testing has reported a change in execution results!! Please Investigate" https://slack.com/api/chat.postMessage
           fi
 
-      - name: Post results to slack part 5
+      - name: Post results to slack part 3
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="To see detailed logs of the BMDB results, see - ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. Go see what happened!" https://slack.com/api/chat.postMessage

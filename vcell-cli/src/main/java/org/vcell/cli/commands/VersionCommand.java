@@ -1,4 +1,4 @@
-package org.vcell.cli;
+package org.vcell.cli.commands;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -12,7 +12,7 @@ import static java.lang.System.getProperty;
 import static java.lang.System.out;
 
 @Command(name = "version", description = "display software version")
-class VersionCommand implements Callable<Integer> {
+public class VersionCommand implements Callable<Integer> {
 
     public Integer call() {
         try {

@@ -2097,9 +2097,7 @@ public void resolveUndefinedUnits() {
 				}
 			}
 		}catch (Exception e){
-			if (lg.isWarnEnabled()) {
-				lg.warn("Kinetics.resolveUndefinedUnits(): EXCEPTION: "+e.getMessage());
-			}
+			lg.info("Kinetics.resolveUndefinedUnits(): EXCEPTION: "+e.getMessage());
 		}finally{
 			bResolvingUnits = false;
 		}

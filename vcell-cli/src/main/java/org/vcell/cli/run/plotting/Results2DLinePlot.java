@@ -258,11 +258,8 @@ public class Results2DLinePlot implements ResultsLinePlot {
             try (FileOutputStream fos = new FileOutputStream(testfile)) {
                 BufferedImage bfi = chart.createBufferedImage((int) pageFormat.getImageableWidth(), (int) pageFormat.getImageableHeight());
                 pdfWriter.writePlotImageDocument("Test Document", fos, pageFormat, bfi);
-            } catch (DocumentException e) {
-                lg.error("Error while building PDF; see exception below");
-                throw new ChartCouldNotBeProducedException(e);
             }
-        } catch (IOException e){
+        } catch (DocumentException | IOException e){
             lg.error("Error while preparing PDF; see exception below");
             throw new ChartCouldNotBeProducedException(e);
         }
@@ -272,7 +269,7 @@ public class Results2DLinePlot implements ResultsLinePlot {
         XYSeriesCollection dataset2D = new XYSeriesCollection();
         for (SingleAxisSeries xAxis : this.dataSetMappings.keySet()){
             for (SingleAxisSeries yAxis : this.dataSetMappings.get(xAxis)){
-                XYSeries xySeries = new XYSeries(yAxis.label(), true, false);
+                XYSeries xySeries = new XYSeries(yAxis.label(), true, true);
                 for (int i = 0; i < yAxis.data().size(); i++){
                     xySeries.add(xAxis.data().get(i), yAxis.data().get(i));
                 }

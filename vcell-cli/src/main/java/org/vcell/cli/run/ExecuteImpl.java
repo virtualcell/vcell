@@ -4,7 +4,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.cli.CLIRecordable;
+import org.vcell.cli.messaging.CLIRecordable;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 import org.vcell.sedml.log.BiosimulationLog;

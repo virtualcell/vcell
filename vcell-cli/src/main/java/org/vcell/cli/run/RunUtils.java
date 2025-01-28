@@ -184,7 +184,7 @@ public class RunUtils {
         RunUtils.exportDocument(exportServiceImpl, dataServerImpl, outputContext, exportSpecs, vcId, outputFilePointer);
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, SolverHandler solverHandler, File outDirForCurrentSedml, String outDir, String sedmlLocation) throws DataAccessException, IOException {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, SolverHandler solverHandler, File outDirForCurrentSedml) {
         // finally, the real work
         Map<TaskJob, SBMLNonspatialSimResults> resultsHash = solverHandler.nonSpatialResults;
         HashMap<String, File> reportsHash = new HashMap<>();
@@ -390,39 +390,7 @@ public class RunUtils {
     }
 
 
-    public static String generateIdNamePlotsMap(SedML sedml, File outDirForCurrentSedml) {
-        StringBuilder sb = new StringBuilder();
-        List<Output> ooo = sedml.getOutputs();
-        for (Output oo : ooo) {
-            if (!(oo instanceof Report)) {
-                logger.info("Ignoring unsupported output `" + oo.getId() + "` while generating idNamePlotsMap.");
-            } else {
-                String id = oo.getId();
-                sb.append(id).append("|");	// hopefully no vcell name contains '|', so I can use it as separator
-                sb.append(oo.getName()).append("\n");
-                if(id.startsWith("__plot__")) {
-                    id = id.substring("__plot__".length());
-                    sb.append(id).append("|");	// the creation of the csv files is whimsical, we also use an id with __plot__ removed
-                    sb.append(oo.getName()).append("\n");
-                }
-            }
-        }
-
-        File f = new File(outDirForCurrentSedml, "idNamePlotsMap.txt");
-        try {
-            PrintWriter out = new PrintWriter(f);
-            out.print(sb.toString());
-            out.flush();
-            out.close();
-        } catch(Exception e) {
-            logger.error("Unable to create the idNamePlotsMap; " + e.getMessage(), e);
-        }
-        return f.toString();
-    }
-
-
-
-    public static void zipResFiles(File dirPath) throws IOException {
+    public static void zipResFiles(File dirFile) throws IOException {
 
         FileInputStream fileInputstream;
         FileOutputStream fileOutputStream;
@@ -431,7 +399,7 @@ public class RunUtils {
         String relativePath;
         ZipEntry zipEntry;
 
-        // TODO: Add SED-ML name as base dirPath to avoid zipping all available CSV, PDF
+        // TODO: Add SED-ML name as base dirFile to avoid zipping all available CSV, PDF
         // Map for naming to extension
         Map<String, String> extensionListMap = new HashMap<String, String>() {{
             put("csv", "reports.zip");
@@ -439,18 +407,19 @@ public class RunUtils {
         }};
 
         for (String ext : extensionListMap.keySet()) {
-            srcFiles = listFilesForFolder(dirPath, ext);
+            srcFiles = listFilesForFolder(dirFile, ext);
 
             if (srcFiles.isEmpty()) {
                 if (logger.isDebugEnabled()) logger.warn("No {} files found, skipping archiving `{}` files", ext.toUpperCase(), extensionListMap.get(ext));
             } else {
-                fileOutputStream = new FileOutputStream(Paths.get(dirPath.toString(), extensionListMap.get(ext)).toFile());
+                fileOutputStream = new FileOutputStream(Paths.get(dirFile.toString(), extensionListMap.get(ext)).toFile());
                 zipOutputStream = new ZipOutputStream(fileOutputStream);
                 if (!srcFiles.isEmpty() && logger.isDebugEnabled()) logger.info("Archiving resultant {} files to `{}`.", ext.toUpperCase(), extensionListMap.get(ext));
                 for (File srcFile : srcFiles) {
                     fileInputstream = new FileInputStream(srcFile);
                     // get relative path
-                    relativePath = dirPath.toURI().relativize(srcFile.toURI()).toString();
+
+                    relativePath = dirFile.toPath().relativize(srcFile.toPath()).toString();
                     zipEntry = new ZipEntry(relativePath);
                     zipOutputStream.putNextEntry(zipEntry);
 

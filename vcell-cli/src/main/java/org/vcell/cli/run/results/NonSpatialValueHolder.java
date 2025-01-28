@@ -17,6 +17,10 @@ public class NonSpatialValueHolder {
         return listOfResultSets.isEmpty();
     }
 
+    public static NonSpatialValueHolder createEmptySetWithSameVCsim(NonSpatialValueHolder original){
+        return new NonSpatialValueHolder(original.vcSimulation);
+    }
+
     /*public int[] getJobCoordinate(int index){
         String[] names = vcSimulation.getMathOverrides().getScannedConstantNames();
         java.util.Arrays.sort(names); // must do things in a consistent way

@@ -18,6 +18,8 @@ import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.MathExecutable;
 import cbit.vcell.solvers.SimpleCompiledSolver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +31,7 @@ import java.util.ArrayList;
  * 
  */
 public class LangevinSolver extends SimpleCompiledSolver {
-
+	private static final Logger lg = LogManager.getLogger(LangevinSolver.class);
 	/**
 	 * LangevinNoVis01 output file names
 	 */
@@ -79,7 +81,7 @@ public class LangevinSolver extends SimpleCompiledSolver {
 	}
 
 	protected void initialize() throws SolverException {
-		if (lg.isTraceEnabled()) lg.trace("LangevinSolver.initialize()");
+		lg.trace("LangevinSolver.initialize()");
 		fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING_INIT);
 		writeFunctionsFile();
 
@@ -116,19 +118,14 @@ public class LangevinSolver extends SimpleCompiledSolver {
 		PrintWriter lg = null;
 		String logFilename = getLogFilename();
 		String outputFilename = getOutputFilename();
-		try {
-			lg = new PrintWriter(logFilename);
+		try (PrintWriter printWriter = new PrintWriter(logFilename)){
 			String shortOutputFilename = new File(outputFilename).getName();
-			lg.println(IDA_DATA_IDENTIFIER + "\n" + IDA_DATA_FORMAT_ID + "\n" + shortOutputFilename);
+			printWriter.println(IDA_DATA_IDENTIFIER + "\n" + IDA_DATA_FORMAT_ID + "\n" + shortOutputFilename);
 		} catch (Exception e) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED,
 					SimulationMessage.solverAborted("Could not generate log file: " + e.getMessage())));
 			e.printStackTrace(System.out);
 			throw new SolverException(e.getMessage());
-		} finally {
-			if (lg != null) {
-				lg.close();
-			}
 		}
 		
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));

@@ -1,11 +1,11 @@
 package org.vcell.cli;
 
-import org.vcell.cli.biosimulation.BiosimulationsCommand;
-import org.vcell.cli.run.ExecuteCommand;
-import org.vcell.cli.run.ExecuteOmexCommand;
-import org.vcell.cli.sbml.ModelCommand;
-import org.vcell.cli.testing.TestReportCommand;
-import org.vcell.cli.vcml.*;
+import org.vcell.cli.commands.*;
+import org.vcell.cli.commands.conversion.*;
+import org.vcell.cli.commands.execution.BiosimulationsCommand;
+import org.vcell.cli.commands.execution.ExecuteCommand;
+import org.vcell.cli.commands.execution.ExecuteOmexCommand;
+import org.vcell.cli.commands.ModelCommand;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
