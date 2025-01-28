@@ -21,7 +21,7 @@ jobs:
         run: echo '${{ github.ref }}' >> ~/github.ref
 
       - name: Upload Ref
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: github_hash
           path: ~/github.ref
@@ -102,7 +102,7 @@ jobs:
             MAX_JAVA_MEM=5734
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: /tmp/image.tar
@@ -128,7 +128,7 @@ jobs:
         run: mkdir /tmp/docker
 
       - name: Download Docker Image from `build` Job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docker-image
           path: /tmp/docker
@@ -166,7 +166,7 @@ jobs:
 
               # TODO: remove later - if number is greater than MAX_TEST_NUMBER or less than MIN_TEST_NUMBER then continue
               MIN_TEST_NUMBER=0
-              MAX_TEST_NUMBER=2
+              MAX_TEST_NUMBER=2000
               if [ $number -lt $MIN_TEST_NUMBER ]; then
                   echo "Skipping ${file_name}"
                   continue
@@ -272,25 +272,25 @@ jobs:
           cat ${{ github.workspace }}/errors.report
 
       - name: Upload failures
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: set_${{ matrix.sets }}.report
           path: ${{ github.workspace }}/errors.report
 
       - name: Upload summary as json
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: set_${{ matrix.sets }}.summary
           path: ${{ github.workspace }}/total_exec_summary.json
 
       - name: Upload summary as ndjson
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: set_${{ matrix.sets }}.summary_ndjson
           path: ${{ github.workspace }}/total_exec_summary.ndjson
 
       - name: Upload tracer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: set_${{ matrix.sets }}.tracer
           path: ${{ github.workspace }}/full_tracer.json
@@ -313,7 +313,7 @@ jobs:
         run: mkdir /tmp/docker
 
       - name: Download Docker Image from `build` Job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docker-image
           path: /tmp/docker
@@ -322,15 +322,9 @@ jobs:
         run: docker load --input /tmp/docker/$(ls /tmp/docker)
 
       - name: Gather Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ${{ github.workspace }}/bmdb-results
-
-      - name: Delete Artifacts
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: |
-            *
 
       - name: Install JQ
         run: sudo apt update && sudo apt install jq -y
@@ -345,8 +339,14 @@ jobs:
         # note that the total_exec_summary.ndjson files are already line delimited json text, so simple concatenation is fine
         run: find $GITHUB_WORKSPACE/bmdb-results -name total_exec_summary.ndjson -exec cat {} + | sort > $GITHUB_WORKSPACE/exec_summary.ndjson
 
+      - name: Delete Artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            *
+
       - name: Upload combined exec_summary.ndjson file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ github.workspace }}/exec_summary.ndjson
           name: exec_summary.ndjson
@@ -359,19 +359,19 @@ jobs:
         run: docker run -v ${{ github.workspace }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') test-report -c SYSBIO_BIOMD --exec-summaries /root/exec_summary.ndjson --report-md /root/report.md
 
       - name: Upload generated report.md
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: report.md
           path: ${{ github.workspace }}/report.md
 
       - name: Upload complete, compiled summary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: complete_summary.json
           path: ${{ github.workspace }}/summary.json
 
       - name: Upload  complete, compiled tracer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: complete_tracer.json
           path: ${{ github.workspace }}/tracer.json
