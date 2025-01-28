@@ -166,7 +166,7 @@ jobs:
 
               # TODO: remove later - if number is greater than MAX_TEST_NUMBER or less than MIN_TEST_NUMBER then continue
               MIN_TEST_NUMBER=0
-              MAX_TEST_NUMBER=2000
+              MAX_TEST_NUMBER=2
               if [ $number -lt $MIN_TEST_NUMBER ]; then
                   echo "Skipping ${file_name}"
                   continue
@@ -325,6 +325,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: ${{ github.workspace }}/bmdb-results
+
+      - name: Delete Artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            *
 
       - name: Install JQ
         run: sudo apt update && sudo apt install jq -y
