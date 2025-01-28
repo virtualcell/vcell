@@ -12,6 +12,379 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout Our Code
+        uses: actions/checkout@v4
+        with:
+          ref: '${{ github.ref }}'
 
-      - name: Say Hello
-        run: echo 'Hello, VCell!'
+      - name: Get GH Reference
+        run: echo '${{ github.ref }}' >> ~/github.ref
+
+      - name: Upload Ref
+        uses: actions/upload-artifact@v4
+        with:
+          name: github_hash
+          path: ~/github.ref
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python-version }}
+
+      - name: Install poetry
+        run: python3 -m pip install poetry==${{ env.poetry-version }}
+
+      - name: Install other python dependencies
+        run: python3 -m pip install -r requirements.txt
+
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonCopasiOpt package
+        run: |
+          cd pythonCopasiOpt/vcell-opt
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcutils package
+        run: |
+          cd python-utils
+          poetry install
+          poetry run python -m pytest
+
+      - name: build python-restclient package
+        run: |
+          cd python-restclient
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcelldata package
+        run: |
+          cd pythonData
+          poetry install
+          poetry run python -m pytest
+
+      - name: Setup Java for Build
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build VCell Jars
+        run: mvn clean install dependency:copy-dependencies -DskipTests=True
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Export
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile
+          outputs: type=docker,dest=/tmp/image.tar
+          build-args: | # Max ram for Ubuntu GitHub workflow is 7GB (as of 12/9/22), using MB for precision (0.8 of 7gb)
+            MAX_JAVA_MEM=5734
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/image.tar
+
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Uh-Oh! The *Build Step* of Nightly Execution Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} )! This may need attention..." https://slack.com/api/chat.postMessage
+
+      # Tmate just in case
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+
+  published:
+    runs-on: ubuntu-20.04
+    needs: build
+    strategy:
+      matrix:
+        sets: [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19" ]
+    steps:
+      - name: Create Docker Image Dir
+        run: mkdir /tmp/docker
+
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/docker
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/docker/$(ls /tmp/docker)
+
+        # Get files from VCDB
+      - name: Checkout Input Files
+        uses: actions/checkout@v4
+        with:
+          repository: virtualcell/vcdb
+
+      - name: Prepare sub directory
+        run: |
+          SOURCE_DIR="$GITHUB_WORKSPACE/published/biomodel/omex/sbml"
+          TARGET_DIR="$GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+          MOD_VALUE=${{ matrix.sets }}
+          
+          # make target dir
+          mkdir $TARGET_DIR
+          # loop through files in directory, increment indexing and separating files
+          
+          echo "Extracting tests"
+          
+          for file in $SOURCE_DIR/*; do
+              # Is the file of the correct form?
+              file_name=$(basename $file)
+              if ! [[ $file_name =~ ^VCDB_[0-9]+.*\.omex$ ]]; then
+                echo "Input is invalid. Expecting 'VCDB_#*#_*.omex format, got '${file_name}'."
+                continue
+              fi
+
+              number=$(echo "$file_name" | sed -n 's/^VCDB_\([0-9]\+\).*\.omex$/\1/p' | sed 's/^0*//')
+
+              # TODO: remove later - if number is greater than MAX_TEST_NUMBER or less than MIN_TEST_NUMBER then continue
+#              MIN_TEST_NUMBER=0
+#              MAX_TEST_NUMBER=2000
+#              if [ $number -lt $MIN_TEST_NUMBER ]; then
+#                  echo "Skipping ${file_name}"
+#                  continue
+#              fi
+#              if [ $number -gt $MAX_TEST_NUMBER ]; then
+#                  echo "Skipping ${file_name}"
+#                  continue
+#              fi
+#              case $number in
+#                235|255|595|711|1008|1013|1022|1025|1030|1035|1042)
+#                  echo "Skipping ${file_name} - too slow or otherwise misbehaved"
+#                  continue
+#                  ;;
+#              esac
+
+              if [ $((number % ${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
+                  echo "Accepting ${file_name}"
+                  cp ${file} $TARGET_DIR/
+              fi
+          done
+
+      - name: Install JQ
+        run: sudo apt update && sudo apt install jq -y
+
+        # Do the execution
+      - name: Begin Execution
+        #$(docker image ls | grep "<none>" | awk '{print $3;}')  to get image id
+        run: |
+          # Prepare files
+          set +e
+          echo "[]" > ${{ github.workspace }}/total_exec_summary.json
+          touch ${{ github.workspace }}/total_exec_summary.ndjson
+          echo "[]" > ${{ github.workspace }}/full_tracer.json
+          # The /* goes on the outside, otherwise bash just interprets a string!
+          for file in "$GITHUB_WORKSPACE/set_${{ matrix.sets }}"/*; do
+            if [ -f "$file" ]; then
+              extensionless_name="${file%.*}"
+              base_name="$(basename ${file})"
+              base_extless_name="$(basename ${extensionless_name})"
+              mkdir "${extensionless_name}_output"
+          
+              sim_input="/root/${base_name}"
+              sim_output="/root/${base_extless_name}_output"
+              echo -n "Running \"${file}\" in output folder \"${base_extless_name}_output\"..."
+              vcell_result=$(docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute-omex -d -i ${sim_input} -o ${sim_output} --timeout_ms=300000)
+              echo "Done!"
+              # Grab Summary
+              echo -n "Obtaining Summary..."
+              if [ -f "${GITHUB_WORKSPACE}/set_${{ matrix.sets }}/${base_extless_name}_output/exec_summary.json" ]
+              then
+                # Append to master summary in github workspace
+                jq '. + [inputs]' ${{ github.workspace }}/total_exec_summary.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json) > temp.json
+                mv temp.json ${{ github.workspace }}/total_exec_summary.json
+                # note that the exec_summary.json file is already only a single line of json text, so simple concatenation is fine
+                find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name exec_summary.json -exec cat {} + | sort > temp.ndjson
+                cat temp.ndjson >> ${{ github.workspace }}/total_exec_summary.ndjson
+                echo "Done!"
+              else
+                echo "No summary found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+              fi
+          
+              # Check for individual Failure (a.k.a. if we failed early)
+              echo -n "Obtaining Execution Result..."
+              status=$(cat "${GITHUB_WORKSPACE}/set_${{ matrix.sets }}/${base_extless_name}_output/exec_summary.json" | jq -r '.status')
+              echo "${status}"
+              # Note: `cat`ing "$vcell_result" will be the runting logging! 
+              if [[ "${status}" == "FAILED" ]]; then
+                # Copy error log to github workspace
+                echo -n "Copying Failure Report..."
+                echo "${base_extless_name}" >> $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output/errorLog.txt
+                touch ${{ github.workspace }}/errors.report
+                cat $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output/errorLog.txt >> ${{ github.workspace }}/errors.report
+                echo "Done!"
+              fi
+          
+              # Grab Trace
+              # Check for individual Success
+              echo -n "Obtaining Execution Tracer Logs..."
+              if [ $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name tracer.json | wc -l) -ne 0 ]
+              then
+                echo -n "Copying Tracer Logs..."
+                # Append to master trace in github workspace
+                jq '. + inputs' ${{ github.workspace }}/full_tracer.json $(find $GITHUB_WORKSPACE/set_${{ matrix.sets }}/${base_extless_name}_output -name tracer.json) > temp_2.json
+                mv temp_2.json ${{ github.workspace }}/full_tracer.json
+                echo "Done!"
+              else
+                echo "No trace found in set $GITHUB_WORKSPACE/set_${{ matrix.sets }}"
+              fi
+            fi
+          echo "Completed processing of \"${file}\"!"
+          echo "\n\n-----------------------------------------------------------------------------------------------\n\n"
+          done
+
+
+      - name: Check For Success
+        run: |
+          # If the error file exists, then we have failures to report and upload; else, we can just end here; the next job will process results
+          if [ $(find ${{ github.workspace }} -name errors.report | wc -l) -eq 0 ]
+          then
+            exit 0
+          fi
+          echo "Models that failed:"
+          cat ${{ github.workspace }}/errors.report
+
+      - name: Upload failures
+        uses: actions/upload-artifact@v4
+        with:
+          name: set_${{ matrix.sets }}.report
+          path: ${{ github.workspace }}/errors.report
+
+      - name: Upload summary as json
+        uses: actions/upload-artifact@v4
+        with:
+          name: set_${{ matrix.sets }}.summary
+          path: ${{ github.workspace }}/total_exec_summary.json
+
+      - name: Upload summary as ndjson
+        uses: actions/upload-artifact@v4
+        with:
+          name: set_${{ matrix.sets }}.summary_ndjson
+          path: ${{ github.workspace }}/total_exec_summary.ndjson
+
+      - name: Upload tracer
+        uses: actions/upload-artifact@v4
+        with:
+          name: set_${{ matrix.sets }}.tracer
+          path: ${{ github.workspace }}/full_tracer.json
+
+      # Report a Problem to Slack
+      - name: Report Problem to Slack
+        if: ${{ failure() }}
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="Oops! The *published Step* of Nightly **Execution** (set ${{ matrix.sets }}) Testing Action on GitHub Failed ( ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} ). Go see what happened!" https://slack.com/api/chat.postMessage
+
+      - name: Setup tmate session 3
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+
+  published_results:
+    runs-on: ubuntu-20.04
+    needs: published
+
+    steps:
+      - name: Create Docker Image Dir
+        run: mkdir /tmp/docker
+
+      - name: Download Docker Image from `build` Job
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/docker
+
+      - name: Load Downloaded Docker Image
+        run: docker load --input /tmp/docker/$(ls /tmp/docker)
+
+      - name: Gather Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ github.workspace }}/published-results
+
+      - name: Install JQ
+        run: sudo apt update && sudo apt install jq -y
+
+      - name: Combine .report artifacts into one file
+        run: sort $(find $GITHUB_WORKSPACE/published-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
+
+      - name: Combine .summary artifacts into one file
+        run: jq -s 'add | sort_by(.file_path)' $(find "$GITHUB_WORKSPACE/published-results" -name 'total_exec_summary.json') > $GITHUB_WORKSPACE/summary.json
+
+      - name: Combine all .summary_ndjson artifacts into one file
+        # note that the total_exec_summary.ndjson files are already line delimited json text, so simple concatenation is fine
+        run: find $GITHUB_WORKSPACE/published-results -name total_exec_summary.ndjson -exec cat {} + | sort > $GITHUB_WORKSPACE/exec_summary.ndjson
+
+      - name: Delete Artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            *
+
+      - name: Upload combined exec_summary.ndjson file
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/exec_summary.ndjson
+          name: exec_summary.ndjson
+
+      - name: Combine .summary artifacts into one file
+        run: jq -s 'add' $(find $GITHUB_WORKSPACE/published-results -name 'full_tracer.json') > $GITHUB_WORKSPACE/tracer.json
+
+      # run exec-report CLI command via docker to generate report using the exec_summary.ndjson file and the embedded test_cases.ndjson file
+      - name: Run Docker test-report command
+        run: docker run -v ${{ github.workspace }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') test-report -c SYSBIO_BIOMD --exec-summaries /root/exec_summary.ndjson --report-md /root/report.md
+
+      - name: Upload generated report.md
+        uses: actions/upload-artifact@v4
+        with:
+          name: report.md
+          path: ${{ github.workspace }}/report.md
+
+      - name: Upload complete, compiled summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: complete_summary.json
+          path: ${{ github.workspace }}/summary.json
+
+      - name: Upload  complete, compiled tracer
+        uses: actions/upload-artifact@v4
+        with:
+          name: complete_tracer.json
+          path: ${{ github.workspace }}/tracer.json
+
+      - name: Post results to slack part 1 (report.md from exec-report CLI command)
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/report.md)" https://slack.com/api/chat.postMessage
+
+      # Not currently working
+      - name: Post results to slack part 2 (sound alarm if changed results)
+        run: |
+          if grep -q "Unmatched Results Statistics" "$(cat ${GITHUB_WORKSPACE}/report.md)"; then
+            curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="@here Published Nightly Testing has reported a change in execution results!! Please Investigate" https://slack.com/api/chat.postMessage
+          fi
+
+      - name: Post results to slack part 3
+        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="To see detailed logs of the Published results, see - ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. Go see what happened!" https://slack.com/api/chat.postMessage

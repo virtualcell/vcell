@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class OmexTestingDatabase {
 
     public enum TestDataRepo {
-        vcell, sysbio
+        vcell, sysbio, vcdb
     }
     public enum TestCollection {
         VCELL_QUANT_OMEX(TestDataRepo.vcell, "vcell-cli/src/test/resources/OmexWithThirdPartyResults"),
@@ -28,7 +28,8 @@ public class OmexTestingDatabase {
         VCELL_BSTS_SBML_CORE(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/sbml-core"),
         VCELL_BSTS_SYNTHS(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/synths"),
         VCELL_SPATIAL(TestDataRepo.vcell, "vcell-cli/src/test/resources/spatial"),
-        SYSBIO_BIOMD(TestDataRepo.sysbio, "omex_files");
+        SYSBIO_BIOMD(TestDataRepo.sysbio, "omex_files"),
+        VCELL_PUBLISHED(TestDataRepo.vcdb,"published/biomodel/omex/sbml");
 
         public final TestDataRepo repo;
         public final String pathPrefix;
