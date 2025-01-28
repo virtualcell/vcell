@@ -1,0 +1,17 @@
+name: Nightly CLI Execution Tests (Published)
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+env:
+  python-version: "3.10"
+  poetry-version: "2.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+
+      - name: Say Hello
+        run: echo 'Hello, VCell!'
