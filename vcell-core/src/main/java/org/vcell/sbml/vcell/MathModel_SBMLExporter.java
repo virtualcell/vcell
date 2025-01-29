@@ -20,7 +20,7 @@ import java.util.Iterator;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.sbml.jsbml.ASTNode;
@@ -321,7 +321,9 @@ public static ASTNode getFormulaFromExpression(Expression expression, MathType m
 	}
 	
 	// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
-	org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN); // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+	((org.apache.logging.log4j.core.LoggerContext)org.apache.logging.log4j.LogManager.getContext(false))
+			.getConfiguration().getLoggerConfig(org.apache.logging.log4j.LogManager.getLogger(ASTNode.class).getName())
+			.setLevel(Level.WARN);
 	ASTNode mathNode = ASTNode.readMathMLFromString(expMathMLStr);
 	return mathNode;
 }
@@ -555,7 +557,9 @@ private static void addGeometry(Model sbmlModel, MathModel vcMathModel) {
 				Expression expr = ((AnalyticSubVolume)vcGeomClasses[i]).getExpression();
 				try {
 					String mathMLStr = ExpressionMathMLPrinter.getMathML(expr, true);
-					org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN); // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+					((org.apache.logging.log4j.core.LoggerContext)org.apache.logging.log4j.LogManager.getContext(false))
+							.getConfiguration().getLoggerConfig(org.apache.logging.log4j.LogManager.getLogger(ASTNode.class).getName())
+							.setLevel(Level.WARN); // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
 					ASTNode mathMLNode = ASTNode.readMathMLFromString(mathMLStr);
 					analyticVol.setMath(mathMLNode);
 				} catch (Exception e) {

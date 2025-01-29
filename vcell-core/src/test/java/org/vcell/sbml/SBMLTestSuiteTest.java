@@ -11,12 +11,25 @@ import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.sbml.jsbml.ASTNode;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
@@ -25,10 +38,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -39,7 +49,23 @@ public class SBMLTestSuiteTest {
 	@BeforeAll
 	public static void before() {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
-		Logger.getLogger(SBMLExporter.class).addAppender(new ConsoleAppender());
+
+		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		Configuration config = ctx.getConfiguration();
+
+		PatternLayout layout = PatternLayout.newBuilder()
+				.withPattern("%d [%t] %p %c - %m%n")
+				.build();
+		Appender appender = ConsoleAppender.newBuilder()
+				.setName("Console")
+				.setLayout(layout)
+				.setTarget(ConsoleAppender.Target.SYSTEM_OUT)
+				.build();
+		appender.start();
+
+		Logger logger = LogManager.getLogger(SBMLExporter.class);
+		LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+		loggerConfig.addAppender(appender, logger.getLevel(), null);
 	}
 
 	public static Collection<Integer> testCases() {
