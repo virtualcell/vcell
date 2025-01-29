@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class OmexTestingDatabase {
@@ -29,7 +30,8 @@ public class OmexTestingDatabase {
         VCELL_BSTS_SYNTHS(TestDataRepo.vcell, "vcell-cli/src/test/resources/bsts-omex/synths"),
         VCELL_SPATIAL(TestDataRepo.vcell, "vcell-cli/src/test/resources/spatial"),
         SYSBIO_BIOMD(TestDataRepo.sysbio, "omex_files"),
-        VCELL_PUBLISHED(TestDataRepo.vcdb,"published/biomodel/omex/sbml");
+        VCELL_PUBLISHED_OMEX(TestDataRepo.vcdb,"published/biomodel/omex/sbml"),
+        VCELL_PUBLISHED_VCML(TestDataRepo.vcdb,"published/biomodel/vcml");
 
         public final TestDataRepo repo;
         public final String pathPrefix;
@@ -120,6 +122,9 @@ public class OmexTestingDatabase {
             return (sbmlFailureType = determineFault(traceEvent.exception)) != null ? sbmlFailureType : FailureType.SBML_IMPORT_FAILURE;
         }
 
+        if (traceEvent.message.contains("convert necessary file to sbml/sedml combine archive"))
+            return FailureType.VCML_EXPORT_FAILURE;
+
         if (traceEvent.exception instanceof RuntimeException && traceEvent.message.contains("Failed execution")){
             if (traceEvent.message.contains("divide by zero")) return FailureType.DIVIDE_BY_ZERO;
             if (traceEvent.message.contains("infinite loop")) return FailureType.SOLVER_FAILURE;
@@ -147,7 +152,9 @@ public class OmexTestingDatabase {
     private static FailureType determineFault(Exception caughtException){
         String errorMessage = caughtException.getMessage();
 
-        if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
+        if (caughtException instanceof TimeoutException) {
+            return FailureType.TIMEOUT_ENCOUNTERED;
+        } else if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
             return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
         } else if (errorMessage.contains("Non-integer stoichiometry")) {
             return FailureType.UNSUPPORTED_NON_INT_STOCH;
