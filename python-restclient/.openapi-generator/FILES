@@ -35,6 +35,7 @@ docs/SimulationQueueEntryStatusRecord.md
 docs/SimulationQueueID.md
 docs/SimulationResourceApi.md
 docs/SimulationStatusPersistentRecord.md
+docs/SpatialResourceApi.md
 docs/Status.md
 docs/StatusMessage.md
 docs/User.md
@@ -56,6 +57,7 @@ vcell_client/api/field_data_resource_api.py
 vcell_client/api/hello_world_api.py
 vcell_client/api/publication_resource_api.py
 vcell_client/api/simulation_resource_api.py
+vcell_client/api/spatial_resource_api.py
 vcell_client/api/users_resource_api.py
 vcell_client/api_client.py
 vcell_client/api_response.py

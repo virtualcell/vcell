@@ -474,6 +474,27 @@ paths:
       tags:
       - Publication Resource
       x-accepts: application/json
+  /api/v1/spatial/retrieveFiniteVolumeInputFromSpatialModel:
+    get:
+      operationId: retrieveFiniteVolumeInputFromSpatialModel
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/retrieveFiniteVolumeInputFromSpatialModel_request'
+      responses:
+        "200":
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+          description: OK
+      summary: Retrieve finite volume input from spatial model
+      tags:
+      - Spatial Resource
+      x-content-type: multipart/form-data
+      x-accepts: application/octet-stream
   /api/v1/users/bearerToken:
     post:
       operationId: getLegacyApiToken
@@ -1703,6 +1724,12 @@ components:
           format: binary
           type: string
         fileName:
+          type: string
+      type: object
+    retrieveFiniteVolumeInputFromSpatialModel_request:
+      properties:
+        sbmlFile:
+          format: binary
           type: string
       type: object
   securitySchemes:
