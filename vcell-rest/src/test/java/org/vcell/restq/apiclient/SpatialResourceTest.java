@@ -27,7 +27,6 @@ import org.vcell.util.DataAccessException;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -35,7 +34,7 @@ import java.util.Scanner;
 import java.util.Vector;
 
 @QuarkusTest
-public class SpacialResourceTest {
+public class SpatialResourceTest {
     @ConfigProperty(name = "quarkus.http.test-port")
     Integer testPort;
 
@@ -100,7 +99,6 @@ public class SpacialResourceTest {
         zipFile.extractAll(unzipDir.getAbsolutePath());
         zipFile.close();
 
-        unzipDir = unzipDir.listFiles()[0];
 
         for (int i = 0; i < outputDir.listFiles().length; i++) {
             File output = outputDir.listFiles()[i];

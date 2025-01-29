@@ -46,7 +46,9 @@ public class SpatialResource {
             sbmlToFiniteVolumeInput(sbmlFile, workingDir);
             ZipFile zip = new ZipFile(zipFile);
 
-            zip.addFolder(workingDir);
+            for (File file : workingDir.listFiles()) {
+                zip.addFile(file);
+            }
             zip.close();
 
             return zipFile;
@@ -54,13 +56,6 @@ public class SpatialResource {
             throw new WebApplicationException("Error processing spatial model", HTTP.INTERNAL_SERVER_ERROR);
         }
     }
-
-    public record FiniteVolumeInput(
-            @RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM)
-            File zipFile
-    ) { }
-
-
 
     public static void sbmlToFiniteVolumeInput(File sbmlFile, File outputDir) throws IOException, MappingException, VCLoggerException, PropertyVetoException, SolverException, ExpressionException {
         SBMLExporter.MemoryVCLogger vcl = new SBMLExporter.MemoryVCLogger();
