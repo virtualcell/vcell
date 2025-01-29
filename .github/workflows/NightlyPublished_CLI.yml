@@ -157,6 +157,7 @@ jobs:
           
           echo "Extracting tests"
           
+          file_num=1
           for file in $SOURCE_DIR/*; do
               # Is the file of the correct form?
               file_name=$(basename $file)
@@ -165,7 +166,8 @@ jobs:
                 continue
               fi
   
-              number=$(echo "$file_name" | sed -n 's/^VCDB_\([0-9]\+\).*\.omex$/\1/p' | sed 's/^0*//')
+              number=${file_num}
+              file_num=$(( ${file_num} + 1 ))
   
               if [ $((number % ${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
                   echo "Accepting ${file_name}"
