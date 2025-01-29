@@ -27,51 +27,6 @@ public class SBMLSpatialTest {
 
 	private static File workingDir;
 
-	public static class MyFiniteVolumeSolver extends FVSolverStandalone {
-		public MyFiniteVolumeSolver(SimulationTask simulationTask, File dataDir) throws SolverException {
-			super(simulationTask, dataDir, false);
-		}
-		@Override
-		public void initialize() throws SolverException {
-			super.initialize();
-		}
-	}
-
-	public static class SBMLSpatialSolver {
-
-		private static class TempSimulationJob extends SimulationJob {
-			public TempSimulationJob(TempSimulation argSim, int jobIndex, FieldDataIdentifierSpec[] argFDIS) {
-				super(argSim, jobIndex, argFDIS);
-			}
-			@Override
-			public TempSimulation getSimulation() {
-				return (TempSimulation)super.getSimulation();
-			}
-		}
-
-		public static void simulate(File workingDir, Simulation simulation) throws SolverException, ExpressionException {
-
-			TempSimulation tempSimulation = new TempSimulation(simulation,false);
-			tempSimulation.setSimulationOwner(simulation.getSimulationOwner());
-			TempSimulationJob tempSimulationJob = new TempSimulationJob(tempSimulation, 0, null);
-
-			SimulationTask simTask = new SimulationTask(tempSimulationJob, 0);
-			MyFiniteVolumeSolver solver = new MyFiniteVolumeSolver(simTask, workingDir);
-			solver.runSolver();
-		}
-
-		public static void writeInputFilesOnly(File workingDir, Simulation simulation) throws SolverException, ExpressionException {
-
-			TempSimulation tempSimulation = new TempSimulation(simulation,false);
-			tempSimulation.setSimulationOwner(simulation.getSimulationOwner());
-			TempSimulationJob tempSimulationJob = new TempSimulationJob(tempSimulation, 0, null);
-
-			SimulationTask simTask = new SimulationTask(tempSimulationJob, 0);
-			MyFiniteVolumeSolver solver = new MyFiniteVolumeSolver(simTask, workingDir);
-			solver.initialize();
-		}
-	}
-
 	@BeforeAll
 	public static void before() throws IOException {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
@@ -118,11 +73,11 @@ public class SBMLSpatialTest {
 			sim.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(time_step));
 
 			System.out.println("INPUT FILES ONLY");
-			SBMLSpatialSolver.writeInputFilesOnly(workingDir, sim);
+			SBMLFakeSpatialBioModel.writeInputFilesOnly(workingDir, sim);
 			printWorkingDir();
 
 			System.out.println("ALL FILES INCLUDING OUTPUT");
-			SBMLSpatialSolver.simulate(workingDir, sim);
+			SBMLFakeSpatialBioModel.simulate(workingDir, sim);
 			printWorkingDir();
 
 		}catch (Exception e){
