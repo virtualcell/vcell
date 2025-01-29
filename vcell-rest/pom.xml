@@ -208,6 +208,11 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>net.lingala.zip4j</groupId>
+      <artifactId>zip4j</artifactId>
+      <version>2.11.5</version>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.logmanager</groupId>
       <artifactId>log4j2-jboss-logmanager</artifactId>
       <version>${log4j2-jboss-logmanager.version}</version>
