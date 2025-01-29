@@ -3,10 +3,11 @@ package org.vcell.cli.commands.execution;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.vcell.cli.commands.TimeLimitedCommand;
 
 import java.util.concurrent.Callable;
 
-public abstract class ExecutionBasedCommand implements Callable<Integer>  {
+public abstract class ExecutionBasedCommand extends TimeLimitedCommand {
     protected static void generateLoggerContext(Level logLevel, boolean bDebug){
         LoggerContext config = (LoggerContext)(LogManager.getContext(false));
         config.getConfiguration().getLoggerConfig(LogManager.getLogger("org.vcell").getName()).setLevel(logLevel);

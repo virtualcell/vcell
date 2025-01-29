@@ -40,12 +40,25 @@ public class BiosimulationsCommand extends ExecutionBasedCommand {
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help;
 
-    public Integer call() {
-        int returnCode;
+    /**
+     * All the processing done related to validating and storing the arguments provided at runtime.
+     *
+     * @return true if the execution needs to proceed, otherwise false
+     * <br/>
+     * Note that returning false does NOT mean execution failed, but rather succeeded (think: show help / version)
+     */
+    @Override
+    protected boolean executionShouldContinue() {
+        return -1 == BiosimulationsCommand.noFurtherActionNeeded(this.bQuiet, this.bDebug, this.bVersion);
+    }
 
-        if ((returnCode = BiosimulationsCommand.noFurtherActionNeeded(bQuiet, bDebug, bVersion)) != -1)
-            return returnCode;
-
+    /**
+     * Perform the desired command
+     *
+     * @return return code of the command
+     */
+    @Override
+    protected Integer executeCommand() {
         if (this.ARCHIVE == null) {
             logger.error("ARCHIVE file not specified, try --help for usage");
             return 1;
@@ -57,11 +70,11 @@ public class BiosimulationsCommand extends ExecutionBasedCommand {
         String trace_args =  String.format(
                 "Arguments:\nArchive\t: \"%s\"\nOut Dir\t: \"%s\"\nDebug\t: %b\n" +
                         "Quiet\t: %b\nVersion\t: %b\nHelp\t: %b",
-                ARCHIVE.getAbsolutePath(), OUT_DIR.getAbsolutePath(), bDebug, bQuiet, bVersion, help
+                this.ARCHIVE.getAbsolutePath(), this.OUT_DIR.getAbsolutePath(), this.bDebug, this.bQuiet, this.bVersion, this.help
         );
 
         logger.trace(trace_args);
-        return BiosimulationsCommand.executeVCellBiosimulationsMode(ARCHIVE, OUT_DIR, bQuiet, bDebug);
+        return BiosimulationsCommand.executeVCellBiosimulationsMode(this.ARCHIVE, this.OUT_DIR, this.bQuiet, this.bDebug);
     }
 
     public static int executeVCellBiosimulationsMode(File inFile, File outDir){

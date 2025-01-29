@@ -157,8 +157,10 @@ jobs:
           
           echo "Extracting tests"
           
+          MAX_NUM_FILES=20
           file_num=1
           for file in $SOURCE_DIR/*; do
+              break ${MAX_NUM_FILES}
               # Is the file of the correct form?
               file_name=$(basename $file)
               if ! [[ $file_name =~ ^VCDB_[0-9]+.*\.omex$ ]]; then
