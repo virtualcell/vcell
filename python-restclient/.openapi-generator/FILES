@@ -46,7 +46,6 @@ docs/UsersResourceApi.md
 docs/VCSimulationIdentifier.md
 docs/VariableDomain.md
 docs/VariableType.md
-pyproject.toml
 test/__init__.py
 tox.ini
 vcell_client/__init__.py

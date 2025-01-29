@@ -8,3 +8,4 @@ setup.py
 test-requirements.txt
 .gitlab-ci.yml
 .travis.yml
+pyproject.toml
