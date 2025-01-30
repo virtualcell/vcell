@@ -205,9 +205,10 @@ public class OmexTestReport {
         MarkdownTable errorTypeStatistics = new MarkdownTable();
         List<Pair<FailureType, Pair<Integer, Integer>>> failureTypeList = OmexTestReport.getFailureTypePairings(historicalFailures, currentFailures);
 
-        errorTypeStatistics.resizeRowAndColumnLabels(failureTypeList.size(), 2);
+        errorTypeStatistics.resizeRowAndColumnLabels(failureTypeList.size(), 3);
         errorTypeStatistics.setColumnTitle(0, "Historical");
         errorTypeStatistics.setColumnTitle(1, "Current");
+        errorTypeStatistics.setColumnTitle(1, "Change");
         for (int i = 0; i < failureTypeList.size(); i++){
             Pair<FailureType, Pair<Integer, Integer>> pairing = failureTypeList.get(i);
             String failureTypeString = pairing.one == null ? "SKIPPED" : pairing.one.toString();
@@ -215,6 +216,8 @@ public class OmexTestReport {
 
             errorTypeStatistics.setTableValue(i, 0, pairing.two.one);
             errorTypeStatistics.setTableValue(i, 1, pairing.two.two);
+            int comparison = pairing.two.two - pairing.two.one;
+            errorTypeStatistics.setTableValue(i, 2, (comparison > 0 ? "↑" : (comparison < 0 ? "↓" : "-")));
         }
         return errorTypeStatistics;
     }
@@ -257,8 +260,8 @@ public class OmexTestReport {
             incomparableStatistics.setRowTitle(i, name);
             // We want to put a checkmark in the correct column, based on which actually ran the test
             int matchedColumn = nameToIfHistoricalMap.get(name) ? 0 : 1;
-            incomparableStatistics.setTableValue(i, matchedColumn, "yes");
-            incomparableStatistics.setTableValue(i, 1 - matchedColumn, "no");
+            incomparableStatistics.setTableValue(i, matchedColumn, "✔");
+            incomparableStatistics.setTableValue(i, 1 - matchedColumn, "✘");
         }
         return incomparableStatistics;
     }
