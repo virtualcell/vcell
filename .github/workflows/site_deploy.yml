@@ -77,7 +77,7 @@ jobs:
         scp docker/swarm/$VCELL_CONFIG_FILE_NAME ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}
         scp docker/swarm/variables ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/variables_$VCELL_TAG
     - name: upload variables
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: variables
         path: docker/swarm/variables
@@ -91,7 +91,7 @@ jobs:
         ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
     - name: upload generated installers
       if: ${{ github.event.inputs.server_only != 'true' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: installers
         path: docker/swarm/generated_installers
@@ -107,7 +107,7 @@ jobs:
     steps:
     - name: download generated installers
       if: ${{ github.event.inputs.server_only != 'true' }}
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
     - name: notarize mac installer
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
@@ -142,7 +142,7 @@ jobs:
         fi
     - name: update generated installers
       if: ${{ github.event.inputs.server_only != 'true' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: installers
         path: installers
@@ -161,7 +161,7 @@ jobs:
       with:
         ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: retrieve installers and variables
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
     - name: setenv
       run: |
         for line in $(cat variables/variables); do echo $line >> $GITHUB_ENV; done
