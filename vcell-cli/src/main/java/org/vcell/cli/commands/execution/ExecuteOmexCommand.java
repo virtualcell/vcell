@@ -79,7 +79,7 @@ public class ExecuteOmexCommand extends ExecutionBasedCommand {
                 // We'll leave an in-log reference to the actual class and method
                 futureResult.cancel(true);
                 String debugSnipIt = logger.getLevel().isInRange(Level.TRACE, Level.DEBUG) ? "(TimeLimitedCommand::call) " : "";
-                String msg = String.format("%sTask too too long, exceeding %s %s.", debugSnipIt, this.getTimeout(), this.getTimeUnit().toString().toLowerCase());
+                String msg = String.format("%sProcess timed out: Task took too long, exceeding %s %s.", debugSnipIt, this.getTimeout(), this.getTimeUnit().toString().toLowerCase());
                 LogManager.getLogger(this.getClass()).error(msg);
                 throw new ExecutionException(msg, e);
             } finally {
