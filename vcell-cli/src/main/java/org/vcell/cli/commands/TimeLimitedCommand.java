@@ -24,7 +24,7 @@ public abstract class TimeLimitedCommand implements Callable<Integer> {
      * Perform the desired command
      * @return return code of the command
      */
-    protected abstract Integer executeCommand();
+    protected abstract Integer executeCommand() throws Exception;
 
     protected long getTimeout() {return this.timeout;}
 

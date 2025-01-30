@@ -4,6 +4,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jlibsedml.XMLException;
 import org.vcell.cli.messaging.CLIRecordable;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
@@ -118,14 +119,14 @@ public class ExecuteImpl {
 
     public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
                                   boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput,
-                                  boolean bSmallMeshOverride) throws Exception{
+                                  boolean bSmallMeshOverride) throws IOException, BiosimulationsHdfWriterException, ExecutionException, XMLException {
         ExecuteImpl.singleMode(inputFile, rootOutputDir, cliLogger, bKeepTempFiles, bExactMatchOnly,
                 bEncapsulateOutput, bSmallMeshOverride, false);
     }
 
     public static void singleMode(File inputFile, File rootOutputDir, CLIRecordable cliLogger,
             boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bEncapsulateOutput,
-          boolean bSmallMeshOverride, boolean bBioSimMode) throws Exception {
+          boolean bSmallMeshOverride, boolean bBioSimMode) throws IOException, BiosimulationsHdfWriterException, ExecutionException, XMLException {
         // Build statuses
         String bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // bioModelBaseName = input file without the path
         String outputBaseDir = rootOutputDir.getAbsolutePath(); 
@@ -209,13 +210,13 @@ public class ExecuteImpl {
             somethingFailed = somethingDidFail();
         } catch (ExpressionException e) {
             Tracer.failure(e, "ExpressionException while processing VCML " + vcmlFile.getName());
-            logger.error("InterruptedException while creating results CSV from VCML " + vcmlFile.getName(), e);
+            logger.error("ExpressionException while creating results CSV from VCML " + vcmlFile.getName(), e);
             somethingFailed = somethingDidFail();
-        } catch (InterruptedException e) {
+        } /*catch (InterruptedException e) {
             Tracer.failure(e, "InterruptedException while processing VCML " + vcmlFile.getName());
             logger.error("InterruptedException while transposing CSV from VCML " + vcmlFile.getName(), e);
             somethingFailed = somethingDidFail();
-        } catch (Exception e) {
+        }*/ catch (Exception e) {
             Tracer.failure(e, "Unexpected exception while processing VCML " + vcmlFile.getName());
             String errorMessage = String.format("Unexpected exception while transposing CSV from VCML <%s>\n%s", vcmlFile.getName(), e.toString());
             logger.error(errorMessage, e);

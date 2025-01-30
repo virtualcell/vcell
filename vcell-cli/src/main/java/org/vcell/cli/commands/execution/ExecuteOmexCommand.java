@@ -64,27 +64,10 @@ public class ExecuteOmexCommand extends ExecutionBasedCommand {
     @Override
     public Integer call() throws Exception {
         if (!this.executionShouldContinue()) return 0;
-        CLIRecordable cliTracer = new CliTracer();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<Integer> futureResult = executor.submit(this::executeCommand);
         long startTime_ms = System.currentTimeMillis();
-
         try {
-            File tmpDirExec = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
-            File tmpDirConv = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
-            Tracer.clearTraceEvents();
-
-            startTime_ms = System.currentTimeMillis();
-            boolean needsNoConversion = !this.inputFilePath.getName().endsWith(".vcml");
-            File inFile = needsNoConversion ? this.inputFilePath : ExecuteOmexCommand.performInputFileConversion(this.inputFilePath, tmpDirConv);
-
-            if (inFile != null)
-                ExecuteImpl.singleMode(inFile, tmpDirExec, cliTracer,
-                        this.bKeepTempFiles, this.bExactMatchOnly, this.bEncapsulateOutput, this.bSmallMeshOverride);
-
-
-            FileUtils.copyDirectoryContents(tmpDirExec, this.outputFilePath, true, null);
-            Integer ignored;
             try { // This try is explicitly for timeouts
                 if (this.getTimeout() == 0) {
                     futureResult.get();
@@ -94,6 +77,7 @@ public class ExecuteOmexCommand extends ExecutionBasedCommand {
             } catch (TimeoutException e) {
                 // In the event of timeout, we want to log like we're talking from the command in question
                 // We'll leave an in-log reference to the actual class and method
+                futureResult.cancel(true);
                 String debugSnipIt = logger.getLevel().isInRange(Level.TRACE, Level.DEBUG) ? "(TimeLimitedCommand::call) " : "";
                 String msg = String.format("%sTask too too long, exceeding %s %s.", debugSnipIt, this.getTimeout(), this.getTimeUnit().toString().toLowerCase());
                 LogManager.getLogger(this.getClass()).error(msg);
@@ -171,8 +155,23 @@ public class ExecuteOmexCommand extends ExecutionBasedCommand {
      * @return return code of the command
      */
     @Override
-    protected Integer executeCommand() {
-        return 0;
+    protected Integer executeCommand() throws Exception {
+            File tmpDirExec = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
+            File tmpDirConv = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
+            Tracer.clearTraceEvents();
+
+            boolean needsNoConversion = !this.inputFilePath.getName().endsWith(".vcml");
+            File inFile = needsNoConversion ? this.inputFilePath : ExecuteOmexCommand.performInputFileConversion(this.inputFilePath, tmpDirConv);
+
+            CLIRecordable cliTracer = new CliTracer();
+            if (inFile != null)
+                ExecuteImpl.singleMode(inFile, tmpDirExec, cliTracer,
+                        this.bKeepTempFiles, this.bExactMatchOnly, this.bEncapsulateOutput, this.bSmallMeshOverride);
+
+
+            FileUtils.copyDirectoryContents(tmpDirExec, this.outputFilePath, true, null);
+            return 0;
+
     }
 
     private static File performInputFileConversion(File inputFile, File outputDir) {
