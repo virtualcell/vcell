@@ -315,21 +315,33 @@ jobs:
       - name: Install JQ
         run: sudo apt update && sudo apt install jq -y
 
+#      - name: Delete Artifacts
+#        uses: geekyeggo/delete-artifact@v5
+#        with:
+#          name: |
+#            *
+
       - name: Combine .report artifacts into one file
-        run: sort $(find $GITHUB_WORKSPACE/published-results -name 'errors.report') > $GITHUB_WORKSPACE/combined.txt
+        run: sort $(find $GITHUB_WORKSPACE/published-results -name 'errors.report') > $GITHUB_WORKSPACE/combined_errors.txt
+
+      - name: Upload combined errors
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/combined_errors.txt
+          name: combined_errors.txt
 
       - name: Combine .summary artifacts into one file
         run: jq -s 'add | sort_by(.file_path)' $(find "$GITHUB_WORKSPACE/published-results" -name 'total_exec_summary.json') > $GITHUB_WORKSPACE/summary.json
 
+      - name: Upload complete, compiled summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: complete_summary.json
+          path: ${{ github.workspace }}/summary.json
+
       - name: Combine all .summary_ndjson artifacts into one file
         # note that the total_exec_summary.ndjson files are already line delimited json text, so simple concatenation is fine
         run: find $GITHUB_WORKSPACE/published-results -name total_exec_summary.ndjson -exec cat {} + | sort > $GITHUB_WORKSPACE/exec_summary.ndjson
-
-      - name: Delete Artifacts
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: |
-            *
 
       - name: Upload combined exec_summary.ndjson file
         uses: actions/upload-artifact@v4
@@ -340,6 +352,12 @@ jobs:
       - name: Combine .summary artifacts into one file
         run: jq -s 'add' $(find $GITHUB_WORKSPACE/published-results -name 'full_tracer.json') > $GITHUB_WORKSPACE/tracer.json
 
+      - name: Upload complete, compiled tracer
+        uses: actions/upload-artifact@v4
+        with:
+          name: complete_tracer.json
+          path: ${{ github.workspace }}/tracer.json
+
       # run exec-report CLI command via docker to generate report using the exec_summary.ndjson file and the embedded test_cases.ndjson file
       - name: Run Docker test-report command
         run: docker run -v ${{ github.workspace }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') test-report -c SYSBIO_BIOMD --exec-summaries /root/exec_summary.ndjson --report-md /root/report.md
@@ -349,18 +367,6 @@ jobs:
         with:
           name: report.md
           path: ${{ github.workspace }}/report.md
-
-      - name: Upload complete, compiled summary
-        uses: actions/upload-artifact@v4
-        with:
-          name: complete_summary.json
-          path: ${{ github.workspace }}/summary.json
-
-      - name: Upload  complete, compiled tracer
-        uses: actions/upload-artifact@v4
-        with:
-          name: complete_tracer.json
-          path: ${{ github.workspace }}/tracer.json
 
       - name: Post results to slack part 1 (report.md from exec-report CLI command)
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/report.md)" https://slack.com/api/chat.postMessage
