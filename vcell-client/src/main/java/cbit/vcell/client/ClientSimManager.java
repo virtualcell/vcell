@@ -25,6 +25,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.ExportServiceImpl;
+import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
@@ -203,45 +204,22 @@ public void showSimulationResults(OutputContext outputContext, Simulation[] simu
  */
 public void postProcessLangevinResults(Simulation sim) {
 
-	final String FAILURE_KEY = "FAILURE_KEY";
-	final String SIMULATION_KEY = "SIMULATION_KEY";
+	SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
+
 	Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
-	hashTable.put(FAILURE_KEY, false);
-	hashTable.put(SIMULATION_KEY, sim);
+	hashTable.put(LangevinPostProcessor.FAILURE_KEY, false);
+	hashTable.put(LangevinPostProcessor.SIMULATION_KEY, sim);
+	hashTable.put(LangevinPostProcessor.SIMULATION_OWNER, simOwner);
 
 	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
-	AsynchClientTask retrieveLangevinResultsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
+	AsynchClientTask postProcessLangevinResultsTask = new AsynchClientTask("PostProcessLangevinResultsTask", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			boolean failure = (boolean) hashTable.get(FAILURE_KEY);
-			SolverTaskDescription std = sim.getSolverTaskDescription();
-			int numTrials = std.getNumTrials();
-			System.out.println(sim.getName() + ", NumTrials = " + numTrials);
-//			LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
-			final VCSimulationIdentifier vcSimulationIdentifier = sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-			SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
-			Simulation allSims[] = simOwner.getSimulations();
-			for (Simulation simCandidate : allSims) {
-				if (simCandidate.getName().startsWith(sim.getName())) {
-					System.out.println(" --- " + simCandidate.getName() + ", " + simCandidate.getJobCount());
-				}
-			}
+			LangevinPostProcessor lpp = new LangevinPostProcessor();
+			lpp.postProcessLangevinResults(hashTable);
 		}
 	};
-	AsynchClientTask calculateLangevinAveragesTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			boolean failure = (boolean)hashTable.get(FAILURE_KEY);
 
-		}
-	};
-	AsynchClientTask calculateLangevinAdvancedStatisticsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
-		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			boolean failure = (boolean)hashTable.get(FAILURE_KEY);
-
-		}
-	};
-	taskList.add(retrieveLangevinResultsTask);
-	taskList.add(calculateLangevinAveragesTask);
-	taskList.add(calculateLangevinAdvancedStatisticsTask);
+	taskList.add(postProcessLangevinResultsTask);
 	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
 	taskList.toArray(taskArray);
 	ClientTaskDispatcher.dispatch(getDocumentWindowManager().getComponent(), hashTable, taskArray, false, true, null);
