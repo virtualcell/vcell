@@ -36,17 +36,17 @@ public abstract class TimeLimitedCommand implements Callable<Integer> {
         if (this.timeout == 0) return;
 
         // Calculate equivalent times for human readability (only works for whole units)
-        if (timeUnit == TimeUnit.MILLISECONDS && timeout % 1000 == 0){
+        if (this.timeUnit == TimeUnit.MILLISECONDS && this.timeout % 1000 == 0){
             this.timeout /= 1000;
             this.timeUnit = TimeUnit.SECONDS;
         }
 
-        if (timeUnit == TimeUnit.SECONDS && timeout % 60 == 0){
+        if (this.timeUnit == TimeUnit.SECONDS && this.timeout % 60 == 0){
             this.timeout /= 60;
             this.timeUnit = TimeUnit.MINUTES;
         }
 
-        if (timeUnit == TimeUnit.MINUTES && timeout % 60 == 0){
+        if (this.timeUnit == TimeUnit.MINUTES && this.timeout % 60 == 0){
             this.timeout /= 60;
             this.timeUnit = TimeUnit.HOURS;
         }
