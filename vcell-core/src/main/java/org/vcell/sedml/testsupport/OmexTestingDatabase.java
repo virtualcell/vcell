@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -150,9 +151,11 @@ public class OmexTestingDatabase {
     }
 
     private static FailureType determineFault(Exception caughtException){
-        String errorMessage = caughtException.getMessage();
+        String errorMessage = caughtException.getMessage() == null ? "" : caughtException.getMessage();
 
-        if (caughtException instanceof TimeoutException || errorMessage.contains("Process timed out")) {
+        if (caughtException instanceof ExecutionException && caughtException.getCause() != null && caughtException.getCause() instanceof TimeoutException) {
+            return FailureType.TIMEOUT_ENCOUNTERED;
+        } else if (caughtException instanceof TimeoutException && errorMessage.contains("timed out")) {
             return FailureType.TIMEOUT_ENCOUNTERED;
         } else if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
             return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;

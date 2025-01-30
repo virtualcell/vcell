@@ -208,7 +208,7 @@ public class OmexTestReport {
         errorTypeStatistics.resizeRowAndColumnLabels(failureTypeList.size(), 3);
         errorTypeStatistics.setColumnTitle(0, "Historical");
         errorTypeStatistics.setColumnTitle(1, "Current");
-        errorTypeStatistics.setColumnTitle(1, "Change");
+        errorTypeStatistics.setColumnTitle(2, "Change");
         for (int i = 0; i < failureTypeList.size(); i++){
             Pair<FailureType, Pair<Integer, Integer>> pairing = failureTypeList.get(i);
             String failureTypeString = pairing.one == null ? "SKIPPED" : pairing.one.toString();
