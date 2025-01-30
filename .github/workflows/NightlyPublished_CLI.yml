@@ -200,7 +200,7 @@ jobs:
               sim_input="/root/${base_name}"
               sim_output="/root/${base_extless_name}_output"
               echo -n "Running \"${file}\" in output folder \"${base_extless_name}_output\"..."
-              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute-omex -d -i ${sim_input} -o ${sim_output} --timeout_ms=300000
+              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute-omex -d -i ${sim_input} -o ${sim_output} --timeout_ms=600000
               echo "Done!"
               # Grab Summary
               echo -n "Obtaining Summary..."
@@ -318,11 +318,11 @@ jobs:
       - name: Install JQ
         run: sudo apt update && sudo apt install jq -y
 
-#      - name: Delete Artifacts
-#        uses: geekyeggo/delete-artifact@v5
-#        with:
-#          name: |
-#            *
+      - name: Delete Artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            *
 
       - name: Combine .report artifacts into one file
         run: sort $(find $GITHUB_WORKSPACE/published-results -name 'errors.report') > $GITHUB_WORKSPACE/combined_errors.txt
@@ -363,7 +363,7 @@ jobs:
 
       # run exec-report CLI command via docker to generate report using the exec_summary.ndjson file and the embedded test_cases.ndjson file
       - name: Run Docker test-report command
-        run: docker run -v ${{ github.workspace }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') test-report -c SYSBIO_BIOMD --exec-summaries /root/exec_summary.ndjson --report-md /root/report.md
+        run: docker run -v ${{ github.workspace }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') test-report -c VCELL_PUBLISHED_OMEX --exec-summaries /root/exec_summary.ndjson --report-md /root/report.md
 
       - name: Upload generated report.md
         uses: actions/upload-artifact@v4
