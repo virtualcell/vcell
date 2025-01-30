@@ -152,7 +152,7 @@ public class OmexTestingDatabase {
     private static FailureType determineFault(Exception caughtException){
         String errorMessage = caughtException.getMessage();
 
-        if (caughtException instanceof TimeoutException) {
+        if (caughtException instanceof TimeoutException || errorMessage.contains("Process timed out")) {
             return FailureType.TIMEOUT_ENCOUNTERED;
         } else if (errorMessage.contains("refers to either a non-existent model")) { //"refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)"
             return FailureType.SEDML_UNSUPPORTED_MODEL_REFERENCE;
@@ -189,8 +189,6 @@ public class OmexTestingDatabase {
             return FailureType.UNSUPPORTED_DELAY_SBML;
         } else if (errorMessage.contains("are in unnamed module of loader")){
             return FailureType.SBML_IMPORT_FAILURE;
-        } else if (errorMessage.contains("Process timed out")) {
-            return FailureType.TOO_SLOW;
         }
         return null;
     }

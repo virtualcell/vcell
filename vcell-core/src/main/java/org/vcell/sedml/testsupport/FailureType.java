@@ -31,7 +31,6 @@ public enum FailureType {
     SEDML_UNSUPPORTED_MODEL_REFERENCE, // Model refers to either a non-existent model (invalid SED-ML) or to another model with changes (not supported yet)
     SEDML_NON_UTC_SIMULATION_FOUND,
     SEDML_SBML_LEVEL_CHANGE, // unsupported SBML Level change within the SED-ML
-    TOO_SLOW,
     UNCATEGORIZED_FAULT,
     UNITS_EXCEPTION,
     UNKNOWN_IDENTIFIER,
