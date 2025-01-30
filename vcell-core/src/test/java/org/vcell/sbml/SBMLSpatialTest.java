@@ -1,13 +1,9 @@
 package org.vcell.sbml;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.*;
-import cbit.vcell.solvers.FVSolverStandalone;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
@@ -73,11 +69,11 @@ public class SBMLSpatialTest {
 			sim.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(time_step));
 
 			System.out.println("INPUT FILES ONLY");
-			SBMLFakeSpatialBioModel.writeInputFilesOnly(workingDir, sim);
+			FiniteVolumeRunUtil.writeInputFilesOnly(workingDir, sim);
 			printWorkingDir();
 
 			System.out.println("ALL FILES INCLUDING OUTPUT");
-			SBMLFakeSpatialBioModel.simulate(workingDir, sim);
+			FiniteVolumeRunUtil.simulate(workingDir, sim);
 			printWorkingDir();
 
 		}catch (Exception e){

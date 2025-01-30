@@ -35,7 +35,7 @@ docs/SimulationQueueEntryStatusRecord.md
 docs/SimulationQueueID.md
 docs/SimulationResourceApi.md
 docs/SimulationStatusPersistentRecord.md
-docs/SpatialResourceApi.md
+docs/SolverResourceApi.md
 docs/Status.md
 docs/StatusMessage.md
 docs/User.md
@@ -62,7 +62,7 @@ src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
 src/main/java/org/vcell/restclient/api/HelloWorldApi.java
 src/main/java/org/vcell/restclient/api/PublicationResourceApi.java
 src/main/java/org/vcell/restclient/api/SimulationResourceApi.java
-src/main/java/org/vcell/restclient/api/SpatialResourceApi.java
+src/main/java/org/vcell/restclient/api/SolverResourceApi.java
 src/main/java/org/vcell/restclient/api/UsersResourceApi.java
 src/main/java/org/vcell/restclient/model/AbstractOpenApiSchema.java
 src/main/java/org/vcell/restclient/model/AccesTokenRepresentationRecord.java

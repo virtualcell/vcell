@@ -14,8 +14,8 @@ api/publication-resource.service.ts
 api/publication-resource.serviceInterface.ts
 api/simulation-resource.service.ts
 api/simulation-resource.serviceInterface.ts
-api/spatial-resource.service.ts
-api/spatial-resource.serviceInterface.ts
+api/solver-resource.service.ts
+api/solver-resource.serviceInterface.ts
 api/users-resource.service.ts
 api/users-resource.serviceInterface.ts
 configuration.ts

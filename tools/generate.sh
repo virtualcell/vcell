@@ -28,10 +28,6 @@ if ! git apply "${scriptDir}/AdminResourceApi.patch"; then
   echo "Failed to apply AdminResourceApi.patch"
   exit 1
 fi
-if ! git apply "${scriptDir}/SpatialResourceApi.patch"; then
-  echo "Failed to apply SpatialResourceApi.patch"
-  exit 1
-fi
 popd || { echo "Failed to return to the previous directory"; exit 1; }
 
 

@@ -474,14 +474,14 @@ paths:
       tags:
       - Publication Resource
       x-accepts: application/json
-  /api/v1/spatial/retrieveFiniteVolumeInputFromSpatialModel:
+  /api/v1/solver/getFVSolverInput:
     get:
-      operationId: retrieveFiniteVolumeInputFromSpatialModel
+      operationId: getFVSolverInput
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/retrieveFiniteVolumeInputFromSpatialModel_request'
+              $ref: '#/components/schemas/getFVSolverInput_request'
       responses:
         "200":
           content:
@@ -490,9 +490,9 @@ paths:
                 format: binary
                 type: string
           description: OK
-      summary: Retrieve finite volume input from spatial model
+      summary: Retrieve finite volume input from SBML spatial model.
       tags:
-      - Spatial Resource
+      - Solver Resource
       x-content-type: multipart/form-data
       x-accepts: application/octet-stream
   /api/v1/users/bearerToken:
@@ -1726,7 +1726,7 @@ components:
         fileName:
           type: string
       type: object
-    retrieveFiniteVolumeInputFromSpatialModel_request:
+    getFVSolverInput_request:
       properties:
         sbmlFile:
           format: binary

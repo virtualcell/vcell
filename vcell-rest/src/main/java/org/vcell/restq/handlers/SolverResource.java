@@ -11,13 +11,11 @@ import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import net.lingala.zip4j.ZipFile;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.jboss.resteasy.reactive.PartType;
 import org.jboss.resteasy.reactive.RestForm;
-import org.vcell.sbml.SBMLFakeSpatialBioModel;
+import org.vcell.sbml.FiniteVolumeRunUtil;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.w3c.www.http.HTTP;
@@ -29,31 +27,34 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 
-@Path("/api/v1/spatial")
+@Path("/api/v1/solver")
 @RequestScoped
-public class SpatialResource {
-    public SpatialResource() { }
+public class SolverResource {
+    public SolverResource() { }
 
     @GET
-    @Path("/retrieveFiniteVolumeInputFromSpatialModel")
-    @Operation(operationId = "retrieveFiniteVolumeInputFromSpatialModel", summary = "Retrieve finite volume input from spatial model")
+    @Path("/getFVSolverInput")
+    @Operation(operationId = "getFVSolverInput", summary = "Retrieve finite volume input from SBML spatial model.")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public File retrieveFiniteVolumeInputFromSpatialModel(@RestForm File sbmlFile) {
+    public File retrieveFiniteVolumeInputFromSpatialModel(@RestForm File sbmlFile) throws IOException {
+        File workingDir = Files.createTempDirectory("vcell-").toFile();
+        File zipFile = Files.createTempFile("finite-volume", ".zip").toFile();
         try {
-            File workingDir = Files.createTempDirectory("vcell-").toFile();
-            File zipFile = Files.createTempFile("finite-volume", ".zip").toFile();
             sbmlToFiniteVolumeInput(sbmlFile, workingDir);
             ZipFile zip = new ZipFile(zipFile);
-
             for (File file : workingDir.listFiles()) {
                 zip.addFile(file);
             }
             zip.close();
-
             return zipFile;
         }catch (Exception e){
             throw new WebApplicationException("Error processing spatial model", HTTP.INTERNAL_SERVER_ERROR);
+        } finally {
+            for (File file: workingDir.listFiles()){
+                file.delete();
+            }
+            workingDir.delete();
         }
     }
 
@@ -73,7 +74,7 @@ public class SpatialResource {
         sim.getSolverTaskDescription().setTimeBounds(new TimeBounds(0.0, duration));
         sim.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(time_step));
 
-        SBMLFakeSpatialBioModel.writeInputFilesOnly(outputDir, sim);
+        FiniteVolumeRunUtil.writeInputFilesOnly(outputDir, sim);
     }
 
 }

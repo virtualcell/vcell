@@ -18,11 +18,12 @@ import org.junit.jupiter.api.*;
 import org.testcontainers.shaded.com.google.common.io.Files;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.api.SolverResourceApi;
 import org.vcell.restclient.api.SpatialResourceApi;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
-import org.vcell.restq.handlers.SpatialResource;
+import org.vcell.restq.handlers.SolverResource;
 import org.vcell.util.DataAccessException;
 
 import java.beans.PropertyVetoException;
@@ -34,7 +35,7 @@ import java.util.Scanner;
 import java.util.Vector;
 
 @QuarkusTest
-public class SpatialResourceTest {
+public class SolverResourceTest {
     @ConfigProperty(name = "quarkus.http.test-port")
     Integer testPort;
 
@@ -86,14 +87,14 @@ public class SpatialResourceTest {
     // Ensure the round trip from request to resulting Zip is equivalent to a local run of input file generation
     @Test
     public void testSpacialSBMLResults() throws ApiException, IOException, VCLoggerException, SolverException, ExpressionException, PropertyVetoException, MappingException {
-        SpatialResourceApi spatialResourceApi = new SpatialResourceApi(aliceAPIClient);
+        SolverResourceApi spatialResourceApi = new SolverResourceApi(aliceAPIClient);
         File sbmlFile = TestEndpointUtils.getResourceFile("/TinySpacialProject_Application0.xml");
 
-        File zip = spatialResourceApi.retrieveFiniteVolumeInputFromSpatialModel(sbmlFile);
+        File zip = spatialResourceApi.getFVSolverInput(sbmlFile);
         File unzipDir = Files.createTempDir();
         File outputDir = Files.createTempDir();
 
-        SpatialResource.sbmlToFiniteVolumeInput(sbmlFile, outputDir);
+        SolverResource.sbmlToFiniteVolumeInput(sbmlFile, outputDir);
 
         ZipFile zipFile = new ZipFile(zip);
         zipFile.extractAll(unzipDir.getAbsolutePath());

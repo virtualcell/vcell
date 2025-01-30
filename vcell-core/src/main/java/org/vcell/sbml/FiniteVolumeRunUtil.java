@@ -11,7 +11,7 @@ import cbit.vcell.solvers.FVSolverStandalone;
 
 import java.io.File;
 
-public class SBMLFakeSpatialBioModel {
+public class FiniteVolumeRunUtil {
 
     public static class MyFiniteVolumeSolver extends FVSolverStandalone {
         public MyFiniteVolumeSolver(SimulationTask simulationTask, File dataDir) throws SolverException {

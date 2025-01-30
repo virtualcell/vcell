@@ -434,12 +434,12 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/spatial/retrieveFiniteVolumeInputFromSpatialModel:
+  /api/v1/solver/getFVSolverInput:
     get:
       tags:
-      - Spatial Resource
-      summary: Retrieve finite volume input from spatial model
-      operationId: retrieveFiniteVolumeInputFromSpatialModel
+      - Solver Resource
+      summary: Retrieve finite volume input from SBML spatial model.
+      operationId: getFVSolverInput
       requestBody:
         content:
           multipart/form-data:
