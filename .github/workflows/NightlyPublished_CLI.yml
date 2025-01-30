@@ -166,8 +166,8 @@ jobs:
               fi
               # Is the file of the correct form?
               file_name=$(basename $file)
-              if ! [[ $file_name =~ ^VCDB_[0-9]+.*\.omex$ ]]; then
-                echo "Input is invalid. Expecting 'VCDB_#*#_*.omex format, got '${file_name}'."
+              if ! [[ $file_name =~ ^VCDB_published_[0-9]+.*\.omex$ ]]; then
+                echo "Input is invalid. Expecting 'VCDB_published_#*#_*.omex format, got '${file_name}'."
                 continue
               fi
   
