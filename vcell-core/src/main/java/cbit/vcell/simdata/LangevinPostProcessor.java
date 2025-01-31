@@ -1,142 +1,76 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.document.SimulationVersion;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class LangevinPostProcessor {
 
     public static final String FAILURE_KEY = "FAILURE_KEY";
 	public static final String SIMULATION_KEY = "SIMULATION_KEY";
-    public static final String SIMULATION_OWNER = "SIMULATION_OWNER";
+    public static final String SIMULATION_OWNER_KEY = "SIMULATION_OWNER_KEY";
+    public static final String ODE_SIM_DATA_MAP_KEY = "ODE_SIM_DATA_MAP_KEY";
 
     boolean failure;
     Simulation sim;
     SimulationOwner simOwner;
+    Map<Integer, ODESimData> odeSimDataMap;
 
     public void postProcessLangevinResults(Hashtable<String, Object> hashTable) {
 
         failure = (boolean) hashTable.get(FAILURE_KEY);
         sim = (Simulation)hashTable.get(SIMULATION_KEY);
-        simOwner = (SimulationOwner)hashTable.get(SIMULATION_OWNER);;
+        simOwner = (SimulationOwner)hashTable.get(SIMULATION_OWNER_KEY);
+        odeSimDataMap = (Map<Integer, ODESimData>)hashTable.get(ODE_SIM_DATA_MAP_KEY);
 
-        if(sim.getVersion() == null) {
-            throw new RuntimeException("Missing Version.");
-        }
-        if(sim.getSimulationInfo() == null) {
-            throw new RuntimeException("Missing Simulation Info.");
+        if(failure) {
+            return;
         }
 
-        retrieveLangevinResultsTask();
         calculateLangevinAveragesTask();
         calculateLangevinAdvancedStatisticsTask();
     }
 
-    private void retrieveLangevinResultsTask() {
+    private void calculateLangevinAveragesTask() {
         SolverTaskDescription std = sim.getSolverTaskDescription();
         int numTrials = std.getNumTrials();
-        VCSimulationIdentifier vcSimulationIdentifier = sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-        MathOverrides mathOverrides = sim.getMathOverrides();
-        int sizeOverrides = mathOverrides.getSize();
-        int scanCount = mathOverrides.getScanCount();
-
-        System.out.println(" --- " + sim.getName() + ", numTrials = " + numTrials);
-        System.out.println(" --- " + sim.getName() + ", jobCount" + sim.getJobCount());
-        System.out.println(" --- " + sim.getName() + ", sizeOverrides = " + sizeOverrides);
-        System.out.println(" --- " + sim.getName() + ", scanCount = " + scanCount);
-
         SimulationInfo simInfo = sim.getSimulationInfo();
-        VCSimulationIdentifier asi = simInfo.getAuthoritativeVCSimulationIdentifier();
-        VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(asi, 0);
+        VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
+        MathOverrides mathOverrides = sim.getMathOverrides();
+        SimulationVersion simVersion = simInfo.getSimulationVersion();
 
-//        ODEDataManager dm = (ODEDataManager)getDocumentWindowManager().getRequestManager().getDataManager(null, vcSimulationDataIdentifier, false);
-//        ODESimData osd = (ODESimData)dm.getODESolverResultSet();
-
+        // TODO: go through time series and compute averages, erc
 
         System.out.println(" ------------------------------------");
 
     }
-    private void calculateLangevinAveragesTask() {
 
-    }
     private void calculateLangevinAdvancedStatisticsTask() {
 
     }
 
-//    public void postProcessLangevinResults(Simulation sim) {
-//
-//        final String FAILURE_KEY = "FAILURE_KEY";
-//        final String SIMULATION_KEY = "SIMULATION_KEY";
-//        Hashtable<String, Object> hashTable = new Hashtable<String, Object>();
-//        hashTable.put(FAILURE_KEY, false);
-//        hashTable.put(SIMULATION_KEY, sim);
-//
-//        ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
-//        AsynchClientTask retrieveLangevinResultsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
-//            public void run(Hashtable<String, Object> hashTable) throws Exception {
-//                boolean failure = (boolean) hashTable.get(FAILURE_KEY);
-//                SolverTaskDescription std = sim.getSolverTaskDescription();
-//                int numTrials = std.getNumTrials();
-//                System.out.println(sim.getName() + ", numTrials = " + numTrials);
-////			LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
-//                final VCSimulationIdentifier vcSimulationIdentifier = sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
-//                SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
-//                Simulation allSims[] = simOwner.getSimulations();
-//                for (Simulation simCandidate : allSims) {
-//                    if (simCandidate.getName().startsWith(sim.getName())) {
-//                        System.out.println(" --- " + simCandidate.getName() + ", jobCount" + simCandidate.getJobCount());
-//                        MathOverrides mathOverrides = simCandidate.getMathOverrides();
-//                        int sizeOverrides = mathOverrides.getSize();
-//                        int scanCount = mathOverrides.getScanCount();
-//                        System.out.println(" --- " + sim.getName() + ", sizeOverrides = " + sizeOverrides);
-//                        System.out.println(" --- " + sim.getName() + ", scanCount = " + scanCount);
-//
-//                        ExportSpecs.ExportParamScanInfo es = ExportSpecs.getParamScanInfo(simCandidate,0);
-//                        ExportSpecs.ExportParamScanInfo es1 = ExportSpecs.getParamScanInfo(simCandidate,1);
-//                        ExportSpecs.ExportParamScanInfo es2 = ExportSpecs.getParamScanInfo(simCandidate,2);
-//
-//                        if(sim.getVersion() == null) {
-//                            throw new RuntimeException("Missing Version.");
-//                        }
-//                        SimulationInfo simInfo = sim.getSimulationInfo();
-//                        if(simInfo == null) {
-//                            throw new RuntimeException("Missing Simulation Info.");
-//                        }
-//
-//                        VCSimulationIdentifier asi = simInfo.getAuthoritativeVCSimulationIdentifier();
-//                        VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(asi, 0);
-//
-//                        ODEDataManager dm = (ODEDataManager)getDocumentWindowManager().getRequestManager().getDataManager(outputContext, vcSimulationDataIdentifier, false);
-//                        ODESimData osd = (ODESimData)dm.getODESolverResultSet();
-//
-//
-//                        System.out.println(" ------------------------------------");
-//                    }
-//                }
-//            }
-//        };
-//        AsynchClientTask calculateLangevinAveragesTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
-//            public void run(Hashtable<String, Object> hashTable) throws Exception {
-//                boolean failure = (boolean)hashTable.get(FAILURE_KEY);
-//
-//            }
-//        };
-//        AsynchClientTask calculateLangevinAdvancedStatisticsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
-//            public void run(Hashtable<String, Object> hashTable) throws Exception {
-//                boolean failure = (boolean)hashTable.get(FAILURE_KEY);
-//
-//            }
-//        };
-//        taskList.add(retrieveLangevinResultsTask);
-//        taskList.add(calculateLangevinAveragesTask);
-//        taskList.add(calculateLangevinAdvancedStatisticsTask);
-//        AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
-//        taskList.toArray(taskArray);
-//        ClientTaskDispatcher.dispatch(getDocumentWindowManager().getComponent(), hashTable, taskArray, false, true, null);
-//
+//    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_HHmmss");
+//    private static File createDirFile(SimulationContext simulationContext){
+//        String userid = simulationContext.getBioModel().getVersion().getOwner().getName();
+//        String simContextDirName =
+//                TokenMangler.fixTokenStrict(userid)+"-"+
+//                        TokenMangler.fixTokenStrict(simulationContext.getBioModel().getName())+"-"+
+//                        TokenMangler.fixTokenStrict(simulationContext.getName())+"-"+
+//                        TokenMangler.fixTokenStrict(simpleDateFormat.format(simulationContext.getBioModel().getVersion().getDate()));
+////		simContextDirName = TokenMangler.fixTokenStrict(simContextDirName);
+//        File dirFile = new File("C:\\temp\\ruleBasedTestDir\\"+simContextDirName);
+//        if(!dirFile.exists()){
+//            dirFile.mkdirs();
+//        }
+//        return dirFile;
 //    }
 
 }
