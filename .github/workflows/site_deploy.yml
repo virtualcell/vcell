@@ -164,6 +164,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
           name: updated_installers
+          path: updated_installers
     - name: setenv
       run: |
         for line in $(cat variables/variables); do echo $line >> $GITHUB_ENV; done
