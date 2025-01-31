@@ -144,8 +144,8 @@ jobs:
       if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/upload-artifact@v4
       with:
-        name: installers
-        path: installers
+        name: updated_installers
+        path: updated_installers
         retention-days: 1
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
@@ -168,7 +168,7 @@ jobs:
     - name: stage installers
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
-        cd installers
+        cd updated_installers
         mkdir ../docker/swarm/generated_installers
         mv * ../docker/swarm/generated_installers
     - name: setup ssh-agent
