@@ -262,6 +262,7 @@ jobs:
 
       - name: Upload failures
         uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() && !failure() && hashFiles('errors.report') == '' }}
         with:
           name: set_${{ matrix.sets }}.report
           path: ${{ github.workspace }}/errors.report
@@ -370,6 +371,9 @@ jobs:
         with:
           name: report.md
           path: ${{ github.workspace }}/report.md
+
+      - name: Show results)
+        run: echo "$(cat ${GITHUB_WORKSPACE}/report.md)"
 
       - name: Post results to slack part 1 (report.md from exec-report CLI command)
         run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="```$(cat ${GITHUB_WORKSPACE}/report.md)```" https://slack.com/api/chat.postMessage
