@@ -157,7 +157,7 @@ jobs:
           
           echo "Extracting tests"
           
-          MAX_NUM_FILES=20
+          MAX_NUM_FILES=2000
           file_num=1
           for file in $SOURCE_DIR/*; do
               if [[ "$file_num" -eq "$MAX_NUM_FILES" ]]; then
@@ -375,8 +375,32 @@ jobs:
       - name: Show results)
         run: echo "$(cat ${GITHUB_WORKSPACE}/report.md)"
 
+      - name: Read report file into GH env variable
+        run: echo "REPORT_CONTENT<<EOF" >> $GITHUB_ENV && cat ${{ github.workspace }}/report.md >> $GITHUB_ENV && echo "EOF" >> $GITHUB_ENV
+
       - name: Post results to slack part 1 (report.md from exec-report CLI command)
-        run: curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="```$(cat ${GITHUB_WORKSPACE}/report.md)```" https://slack.com/api/chat.postMessage
+        run: |
+          if [[ "$(cat ${GITHUB_WORKSPACE}/report.md) | wc -c | awk '{ print $1; }'" -lt "2970" ]]; then
+            curl -X POST  -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" -H "Content-type: application/json" \
+              --data '{
+              "channel": "${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "```\nPublished Results:\n${{ env.REPORT_CONTENT }}\n```"
+                  }
+                }
+              ]
+            }' https://slack.com/api/chat.postMessage
+          else
+            # Results too long to be formatted
+            echo "Results too long to format with code block"
+            curl -X POST -F token="${{ secrets.SLACK_BOT_TOKEN }}" -F channel=${{ secrets.SLACK_CHANNEL_VCELL_DEV_TOKEN }} -F text="$(cat ${GITHUB_WORKSPACE}/report.md)" https://slack.com/api/chat.postMessage
+          fi
+          
+          
 
       # Not currently working
       - name: Post results to slack part 2 (sound alarm if changed results)
