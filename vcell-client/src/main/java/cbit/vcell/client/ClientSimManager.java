@@ -257,8 +257,19 @@ public void postProcessLangevinResults(Simulation sim) {
 			lpp.postProcessLangevinResults(hashTable);
 		}
 	};
+	AsynchClientTask finishProcessLangevinResultsTask = new AsynchClientTask("FinishProcessLangevinResultsTask", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean failure = (boolean) hashTable.get(LangevinPostProcessor.FAILURE_KEY);
+			if(failure) {	// just open some dialog for now; eventually we'll have some unobtrusive visual notification
+				PopupGenerator.showErrorDialog(ClientSimManager.this.getDocumentWindowManager(), "PostProcessing failed");
+			} else {
+				PopupGenerator.showInfoDialog(ClientSimManager.this.getDocumentWindowManager(), "PostProcessing successful");
+			}
+		}
+	};
 
 	taskList.add(postProcessLangevinResultsTask);
+	taskList.add(finishProcessLangevinResultsTask);
 	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
 	taskList.toArray(taskArray);
 	ClientTaskDispatcher.dispatch(getDocumentWindowManager().getComponent(), hashTable, taskArray, false, true, null);
