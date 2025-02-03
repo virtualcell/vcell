@@ -145,8 +145,8 @@ public class QuantOmexExecTest {
 			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
 			Path computedH5File = outdirPath.resolve("report.h5");
 
-			String errorMessage = (Tracer.hasErrors()) ? "failure: '" + Tracer.getErrors().get(0).message.replace("\n", " | ") : "";
-			if (Tracer.hasErrors()) {
+			String errorMessage = (Tracer.getInstance().hasErrors()) ? "failure: '" + Tracer.getInstance().getErrors().get(0).message.replace("\n", " | ") : "";
+			if (Tracer.getInstance().hasErrors()) {
 				throw new RuntimeException(errorMessage);
 			}
 			if (knownFailureType != null){
@@ -169,7 +169,7 @@ public class QuantOmexExecTest {
 				throw new RuntimeException("H5 files have significant differences: " + stdOutString.substring(0, Math.min(300, stdOutString.length())));
 			}
 		} catch (Exception e){
-			List<TraceEvent> errorEvents = Tracer.getErrors();
+			List<TraceEvent> errorEvents = Tracer.getInstance().getErrors();
 			FailureType observedFailure = OmexTestingDatabase.determineFault(e, errorEvents);
 			if (knownFailureType == observedFailure) {
 				System.err.println("Expected error: " + e.getMessage());

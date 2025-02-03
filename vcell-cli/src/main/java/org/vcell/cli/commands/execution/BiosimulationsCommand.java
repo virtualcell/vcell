@@ -113,10 +113,10 @@ public class BiosimulationsCommand extends ExecutionBasedCommand {
             File tmpDir = Files.createTempDirectory("VCell_CLI_" + Long.toHexString(new Date().getTime())).toFile();
             try {
                 ExecuteImpl.singleMode(inFile, tmpDir, cliRecorder, true);
-                if (!Tracer.hasErrors()) return 0;
+                if (!Tracer.getInstance().hasErrors()) return 0;
                 if (!bQuiet) {
                     logger.error("Errors occurred during execution");
-                    Tracer.reportErrors(bDebug);
+                    Tracer.getInstance().reportErrors(bDebug);
                 }
                 return 1;
             } finally {
@@ -125,7 +125,7 @@ public class BiosimulationsCommand extends ExecutionBasedCommand {
             }
         } catch (Exception e) {
             if (!bQuiet) {
-                Tracer.reportErrors(bDebug);
+                Tracer.getInstance().reportErrors(bDebug);
                 logger.error(e.getMessage(), e);
             }
             return 1;

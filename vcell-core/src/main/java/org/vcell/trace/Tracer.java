@@ -1,95 +1,136 @@
 package org.vcell.trace;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Tracer {
+    // We want each thread to have its own "singleton"; we don't want to be able to add to another thread's tracer, but we want the ability to "observe it"
+    private static final ConcurrentHashMap<Long, Tracer> masterTracerRecord = new ConcurrentHashMap<>();
 
     // single global instance of CliTracer, but each thread has its own stack of spans
-    private final static Tracer instance = new Tracer();
-    private final static ThreadLocal<Stack<Span>> spanStackVar = ThreadLocal.withInitial(Stack<Span>::new);
-    private final static ThreadLocal<Span> rootSpanVar = ThreadLocal.withInitial(() -> new Span(null, Span.ContextType.Root, "root"));
-    private final static ThreadLocal<List<TraceEvent>> traceEventsVar = ThreadLocal.withInitial(ArrayList::new);
+//    private final ThreadLocal<Stack<Span>> spanStackVar = ThreadLocal.withInitial(Stack<Span>::new);
+//    private final ThreadLocal<Span> rootSpanVar = ThreadLocal.withInitial(() -> new Span(null, Span.ContextType.Root, "root"));
+//    private final ThreadLocal<List<TraceEvent>> traceEventsVar = ThreadLocal.withInitial(ArrayList::new);
+    private final Stack<Span> spanStackVar;
+    private final Span rootSpanVar;
+    private final List<TraceEvent> traceEventsVar;
 
+    public static Tracer getInstance(){
+        return Tracer.getInstance(Thread.currentThread().getId());
+    }
+
+    public static Tracer getInstance(long threadId) {
+        if (!Tracer.masterTracerRecord.containsKey(threadId)) Tracer.masterTracerRecord.put(threadId, new Tracer());
+        return Tracer.masterTracerRecord.get(threadId);
+    }
+
+    private Tracer() {
+        this.spanStackVar = new Stack<>();
+        this.rootSpanVar = new Span(null, Span.ContextType.Root, "root");
+        this.traceEventsVar = new ArrayList<>();
+    }
+
+    /**
+     * This method is explicitly static because it should only ever do work on the current thread, and *never* modify work on another thread.
+     * FAILING TO OBEY THIS MAY CAUSE RACE CONDITIONS, MESSY / HARD TO DEBUG CODE, ETC.
+     * @param message message to record with the success
+     */
+    public static void success(String message) {
+        Tracer.getInstance().traceEventsVar.add(new TraceEvent(TraceEvent.EventType.Success, currentSpan(), message));
+    }
+
+    /**
+     * This method is explicitly static because it should only ever do work on the current thread, and *never* modify work on another thread.
+     * FAILING TO OBEY THIS MAY CAUSE RACE CONDITIONS, MESSY / HARD TO DEBUG CODE, ETC.
+     * @param message message to record with the failure
+     */
     public static void failure(Exception exception, String message) {
-        traceEventsVar.get().add(new TraceEvent(TraceEvent.EventType.Failure, currentSpan(), message, exception));
+        Tracer.getInstance().traceEventsVar.add(new TraceEvent(TraceEvent.EventType.Failure, currentSpan(), message, exception));
     }
 
+    /**
+     * This method is explicitly static because it should only ever do work on the current thread, and *never* modify work on another thread.
+     * FAILING TO OBEY THIS MAY CAUSE RACE CONDITIONS, MESSY / HARD TO DEBUG CODE, ETC.
+     * @param message message to log
+     */
     public static void log(String message) {
-        traceEventsVar.get().add(new TraceEvent(TraceEvent.EventType.Log, currentSpan(), message));
+        Tracer.getInstance().traceEventsVar.add(new TraceEvent(TraceEvent.EventType.Log, currentSpan(), message));
     }
 
-    public static void logEvent(TraceEvent.UserTraceEvent userTraceEvent) {
-        traceEventsVar.get().add(new TraceEvent(TraceEvent.EventType.UserDefined, currentSpan(), userTraceEvent));
+    /**
+     * This method is explicitly static because it should only ever do work on the current thread, and *never* modify work on another thread.
+     * FAILING TO OBEY THIS MAY CAUSE RACE CONDITIONS, MESSY / HARD TO DEBUG CODE, ETC.
+     * @param userTraceEvent user trace event to log
+     */
+    public void logEvent(TraceEvent.UserTraceEvent userTraceEvent) {
+        Tracer.getInstance().traceEventsVar.add(new TraceEvent(TraceEvent.EventType.UserDefined, currentSpan(), userTraceEvent));
     }
 
-    public static List<TraceEvent> getTraceEvents() {
-        return traceEventsVar.get();
+    /**
+     * Returned list is unmodifiable because we only want the owning thread to make edits.
+     * @return an unmodified copy of the underlying trace events
+     */
+    public List<TraceEvent> getTraceEvents() {
+        return List.copyOf(this.traceEventsVar);
     }
 
+    /**
+     * Method is static so that only the thread that "owns" the trace events may clear it.
+     */
     public static void clearTraceEvents() {
-        traceEventsVar.remove();
+        Tracer.getInstance().traceEventsVar.clear();
     }
 
     // write text report of error events to System.err
-    public static void reportErrors(boolean bPrintStacktrace) {
-        //List<TraceEvent> events = getTraceEvents();
-        List<TraceEvent> events = traceEventsVar.get();
-        for (TraceEvent event : events) {
-            if (event.eventType == TraceEvent.EventType.Failure) {
-                System.err.println(event.span.getNestedContextName()+"**** Error: " + event.message);
-                if (bPrintStacktrace)
-                    event.exception.printStackTrace(System.err);
-            }
+    public void reportErrors(boolean bPrintStacktrace) {
+        for (TraceEvent event : this.getTraceEvents()) {
+            if (event.eventType != TraceEvent.EventType.Failure) continue;
+            System.err.println(event.span.getNestedContextName() + "**** Error: " + event.message);
+            if (bPrintStacktrace && null != event.exception) event.exception.printStackTrace(System.err);
         }
     }
 
-    public static List<TraceEvent> getErrors() {
-        return traceEventsVar.get().stream().filter(event -> event.eventType == TraceEvent.EventType.Failure).toList();
+    public List<TraceEvent> getErrors() {
+        return this.getTraceEvents().stream().filter(event -> event.eventType == TraceEvent.EventType.Failure).toList();
     }
 
     // has error event been recorded?
-    public static boolean hasErrors() {
-        return !getErrors().isEmpty();
+    public boolean hasErrors() {
+        return !this.getErrors().isEmpty();
     }
 
     public static Span currentSpan() {
-        if (spanStackVar.get().empty()) {
-            return rootSpanVar.get();
-        }else{
-            return spanStackVar.get().peek();
-        }
+        Tracer currentInstance = Tracer.getInstance();
+        return currentInstance.spanStackVar.empty() ? currentInstance.rootSpanVar : currentInstance.spanStackVar.peek();
     }
 
     public static void addTag(String key, String value) {
-        currentSpan().addTag(key, value);
+        Tracer.currentSpan().addTag(key, value);
     }
 
     // start span
     public static Span startSpan(Span.ContextType contextType, String spanName) {
-        return startSpan(contextType, spanName, null);
+        return Tracer.startSpan(contextType, spanName, null);
     }
 
     public static Span startSpan(Span.ContextType contextType, String spanName, Map<String,String> tags) {
         Span span = new Span(currentSpan(), contextType, spanName, tags);
-        spanStackVar.get().push(span);
+        Tracer.getInstance().spanStackVar.push(span);
         return span;
     }
 
     static void endSpan(Span span) {
-        if (span == rootSpanVar.get()) {
+        Tracer currentInstance = Tracer.getInstance();
+        if (span == currentInstance.rootSpanVar) {
             throw new IllegalStateException("Cannot end root span");
         }
-        if (spanStackVar.get().empty()) {
+        if (currentInstance.spanStackVar.empty()) {
             throw new IllegalStateException("No span to end");
         }
-        if (spanStackVar.get().peek() != span){
+        if (currentInstance.spanStackVar.peek() != span){
             throw new IllegalStateException("Span to end is not the current span");
         }
-        spanStackVar.get().pop();
-    }
-
-    public static void success(String message) {
-        traceEventsVar.get().add(new TraceEvent(TraceEvent.EventType.Success, currentSpan(), message));
+        currentInstance.spanStackVar.pop();
     }
 }

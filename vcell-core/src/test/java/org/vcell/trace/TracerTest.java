@@ -27,7 +27,7 @@ public class TracerTest {
                 span.close();
             }
         }
-        TraceEvent errorEvent = Tracer.getTraceEvents().stream()
+        TraceEvent errorEvent = Tracer.getInstance().getTraceEvents().stream()
                 .filter(event -> event.eventType == TraceEvent.EventType.Failure).findFirst().get();
         Assertions.assertEquals("error message", errorEvent.message);
     }
@@ -54,7 +54,7 @@ public class TracerTest {
                 outer_span.close();
             }
         }
-        TraceEvent errorEvent = Tracer.getTraceEvents().stream()
+        TraceEvent errorEvent = Tracer.getInstance().getTraceEvents().stream()
                 .filter(event -> event.eventType == TraceEvent.EventType.Failure).findFirst().get();
         Assertions.assertEquals("exception in inner span", errorEvent.message);
         Assertions.assertEquals(errorEvent.span.getNestedContextName(), " | Root(root) | Other(outer) | Other(inner) | ");

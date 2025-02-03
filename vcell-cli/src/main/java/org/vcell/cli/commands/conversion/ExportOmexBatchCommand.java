@@ -65,15 +65,15 @@ public class ExportOmexBatchCommand implements Callable<Integer> {
             VcmlOmexConverter.convertFilesNoDatabase(
                     inputFilePath, outputFilePath, outputModelFormat, bWriteLogFiles, bValidateOmex, bSkipUnsupportedApps, bAddPublicationInfo);
 
-            return Tracer.hasErrors() ? 1 : 0;
+            return Tracer.getInstance().hasErrors() ? 1 : 0;
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         } finally {
             logger.debug("Batch export completed");
-            if (Tracer.hasErrors()){
+            if (Tracer.getInstance().hasErrors()){
                 logger.error("Errors encountered during batch export");
-                Tracer.reportErrors(false);
+                Tracer.getInstance().reportErrors(false);
             }
         }
     }

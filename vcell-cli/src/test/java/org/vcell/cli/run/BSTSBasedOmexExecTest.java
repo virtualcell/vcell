@@ -106,7 +106,7 @@ public class BSTSBasedOmexExecTest {
 
 			TestRecorder cliRecorder = new TestRecorder();
 			ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
-			List<TraceEvent> errorEvents = Tracer.getErrors();
+			List<TraceEvent> errorEvents = Tracer.getInstance().getErrors();
 			String errorMessages = (errorEvents.isEmpty()) ? "" : errorEvents.get(0).message + " " + errorEvents.get(0).exception;
 			if (!errorEvents.isEmpty()){
 				throw new RuntimeException("failure: '" + errorMessages + "'");
@@ -116,10 +116,10 @@ public class BSTSBasedOmexExecTest {
 			}
 		} catch (Exception e){
 			System.err.println("========== Begin Tracer report ==========");
-			Tracer.reportErrors(true);
+			Tracer.getInstance().reportErrors(true);
 			System.err.println("=========== End Tracer report ===========");
 			e.printStackTrace(System.err);
-			List<org.vcell.trace.TraceEvent> errorEvents = Tracer.getErrors();
+			List<org.vcell.trace.TraceEvent> errorEvents = Tracer.getInstance().getErrors();
 			FailureType fault = OmexTestingDatabase.determineFault(e, errorEvents);
 			if (knownFault != null) {
 				if (knownFault == fault) {

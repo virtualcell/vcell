@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Date;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Command(name = "execute-omex", description = "run a single .omex file and log into exec_summary.json and tracer.json")
 public class ExecuteOmexCommand extends ExecutionBasedCommand {
@@ -64,8 +65,13 @@ public class ExecuteOmexCommand extends ExecutionBasedCommand {
     @Override
     public Integer call() throws Exception {
         if (!this.executionShouldContinue()) return 0;
+
+        AtomicReference<Long> futureThreadId = new AtomicReference<>();
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Integer> futureResult = executor.submit(this::executeCommand);
+        Future<Integer> futureResult = executor.submit(()->{
+            futureThreadId.set(Thread.currentThread().getId());
+            return this.executeCommand();
+        });
         long startTime_ms = System.currentTimeMillis();
         try {
             try { // This try is explicitly for timeouts
@@ -86,8 +92,9 @@ public class ExecuteOmexCommand extends ExecutionBasedCommand {
                 executor.shutdown();
             }
             final OmexExecSummary omexExecSummary;
-            if (Tracer.hasErrors()){
-                omexExecSummary = OmexTestingDatabase.summarize(this.inputFilePath, null,Tracer.getErrors(), System.currentTimeMillis() - startTime_ms);
+            Tracer executionTracer = Tracer.getInstance(futureThreadId.get());
+            if (executionTracer.hasErrors()){
+                omexExecSummary = OmexTestingDatabase.summarize(this.inputFilePath, null,executionTracer.getErrors(), System.currentTimeMillis() - startTime_ms);
             } else {
                 omexExecSummary = new OmexExecSummary();
                 omexExecSummary.file_path = String.valueOf(this.inputFilePath);
@@ -95,14 +102,15 @@ public class ExecuteOmexCommand extends ExecutionBasedCommand {
                 omexExecSummary.elapsed_time_ms = System.currentTimeMillis() - startTime_ms;
             }
             new ObjectMapper().writeValue(new File(this.outputFilePath, "exec_summary.json"), omexExecSummary);
-            new ObjectMapper().writeValue(new File(this.outputFilePath, "tracer.json"), Tracer.getTraceEvents());
+            new ObjectMapper().writeValue(new File(this.outputFilePath, "tracer.json"), executionTracer.getTraceEvents());
             return 0;
         } catch (Exception e) { ///TODO: Break apart into specific exceptions to maximize logging.
+            Tracer availableTracer = futureThreadId.get() == null ? Tracer.getInstance() : Tracer.getInstance(futureThreadId.get());
             LogManager.getLogger(this.getClass()).error(e.getMessage(), e);
-            OmexExecSummary omexExecSummary = OmexTestingDatabase.summarize(this.inputFilePath,e,Tracer.getErrors(),System.currentTimeMillis() - startTime_ms);
+            OmexExecSummary omexExecSummary = OmexTestingDatabase.summarize(this.inputFilePath,e,availableTracer.getErrors(),System.currentTimeMillis() - startTime_ms);
             try {
                 new ObjectMapper().writeValue(new File(this.outputFilePath, "exec_summary.json"), omexExecSummary);
-                new ObjectMapper().writeValue(new File(this.outputFilePath, "tracer.json"), Tracer.getTraceEvents());
+                new ObjectMapper().writeValue(new File(this.outputFilePath, "tracer.json"), availableTracer.getTraceEvents());
             } catch (IOException ex) {
                 logger.error("Failed to write exec summary and structured logs", ex);
             }

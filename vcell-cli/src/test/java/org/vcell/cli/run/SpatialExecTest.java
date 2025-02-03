@@ -151,8 +151,8 @@ public class SpatialExecTest {
             CLIRecordable cliRecorder = new TestRecorder();
             ExecuteImpl.singleMode(omexFile.toFile(), outdirPath.toFile(), cliRecorder);
 
-            String errorMessage = (Tracer.hasErrors()) ? "failure: '" + Tracer.getErrors().get(0).message.replace("\n", " | ") : "";
-            if (Tracer.hasErrors()) {
+            String errorMessage = (Tracer.getInstance().hasErrors()) ? "failure: '" + Tracer.getInstance().getErrors().get(0).message.replace("\n", " | ") : "";
+            if (Tracer.getInstance().hasErrors()) {
                 throw new RuntimeException(errorMessage);
             }
             if (knownFailureType != null){
@@ -160,7 +160,7 @@ public class SpatialExecTest {
             }
 
         } catch (Exception e){
-            List<TraceEvent> errorEvents = Tracer.getErrors();
+            List<TraceEvent> errorEvents = Tracer.getInstance().getErrors();
             FailureType observedFailure = OmexTestingDatabase.determineFault(e, errorEvents);
             if (knownFailureType == observedFailure) {
                 System.err.println("Expected error: " + e.getMessage());

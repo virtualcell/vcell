@@ -10,6 +10,7 @@ import org.vcell.cli.run.hdf5.BiosimulationsHdf5Writer;
 import org.vcell.cli.run.hdf5.BiosimulationsHdfWriterException;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
 import org.vcell.sedml.log.BiosimulationLog;
+import org.vcell.trace.Tracer;
 import org.vcell.util.FileUtils;
 
 import java.io.File;
@@ -128,7 +129,9 @@ public class ExecutionJob {
                 } catch (PreProcessingException | ExecutionException e) {
                     this.anySedmlDocumentHasFailed = true;
                     String subString = sedmlLocation.lastIndexOf(File.separator) == sedmlLocation.length() ? "" : sedmlLocation.substring(sedmlLocation.lastIndexOf(File.separator) + 1);
-                    logger.error("SedML (@" + subString + ") processing failed:", e);
+                    String errorMessage = "SedML (@" + subString + ") processing failed:";
+                    logger.error(errorMessage, e);
+                    Tracer.failure(e, errorMessage);
                 }
             }
             if (this.anySedmlDocumentHasSucceeded) BiosimulationsHdf5Writer.writeHdf5(cumulativeHdf5Results, new File(this.outputDir));
