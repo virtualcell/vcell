@@ -123,6 +123,11 @@ public class OmexTestingDatabase {
             return (sbmlFailureType = determineFault(traceEvent.exception)) != null ? sbmlFailureType : FailureType.SBML_IMPORT_FAILURE;
         }
 
+        if (traceEvent.hasException(RuntimeException.class) && traceEvent.exception.getCause() != null && traceEvent.exception.getCause() instanceof Exception causalException) {
+            if (causalException instanceof IllegalArgumentException && causalException.getMessage().contains("invalid species name; not located"))
+                return FailureType.SPECIES_NOT_LOCATED_IN_RESULTS;
+        }
+
         if (traceEvent.message.contains("convert necessary file to sbml/sedml combine archive"))
             return FailureType.VCML_EXPORT_FAILURE;
 

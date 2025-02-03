@@ -1182,7 +1182,7 @@
 {"test_collection":"SYSBIO_BIOMD","file_path":"BIOMD0000001080.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_101962320.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_101981216.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_102802266.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_102802266.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SOLVER_FAILURE","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_105608907.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_10829774.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_116704767.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -1237,7 +1237,7 @@
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_229605883.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_26454052.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_26454463.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_26455186.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_26455186.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"TIMEOUT_ENCOUNTERED","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_26581203.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_26928347.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_27071354.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -1261,7 +1261,7 @@
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_32579611.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_34855932.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_35789302.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_36053554.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_36053554.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SOLVER_FAILURE","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_36230715.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_36275161.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_40882931.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -1271,7 +1271,7 @@
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_49411430.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_50584157.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_59280306.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_59361239.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_59361239.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SOLVER_FAILURE","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_60113862.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_60647264.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_60647373.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -1281,21 +1281,21 @@
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_61340695.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_61414583.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_61629922.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_61680876.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_61699798.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_62467093.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_62477836.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_62585003.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_62849940.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_6436213.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_65182838.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_65183024.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_65183094.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_65183128.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_61680876.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SOLVER_FAILURE","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_61699798.omex","should_fail":true,"known_status":"FAIL","known_failure_type":"TIMEOUT_ENCOUNTERED","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_62467093.omex","should_fail":true,"known_status":"FAIL","known_failure_type":"TIMEOUT_ENCOUNTERED","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_62477836.omex","should_fail":true,"known_status":"FAIL","known_failure_type":"TIMEOUT_ENCOUNTERED","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_62585003.omex","should_fail":true,"known_status":"FAIL","known_failure_type":"TIMEOUT_ENCOUNTERED","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_62849940.omex","should_fail":true,"known_status":"FAIL","known_failure_type":"TIMEOUT_ENCOUNTERED","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_6436213.omex","should_fail":true,"known_status":"FAIL","known_failure_type":"TIMEOUT_ENCOUNTERED","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_65182838.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SEDML_IMPORT_FAILURE","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_65183024.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SEDML_IMPORT_FAILURE","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_65183094.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SEDML_IMPORT_FAILURE","known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_65183128.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SEDML_IMPORT_FAILURE","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_66264206.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_66264973.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_74924130.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_7681482.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_7681482.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SEDML_IMPORT_FAILURE","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_81992349.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_82065439.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_82798486.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
@@ -1311,7 +1311,7 @@
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_84982814.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_84985561.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_89712092.omex","should_fail":true,"known_status":"FAIL","known_failure_type": "TIMEOUT_ENCOUNTERED","known_failure_desc":null}
-{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_91133993.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
+{"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_91133993.omex","should_fail":false,"known_status":"FAIL","known_failure_type":"SOLVER_FAILURE","known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_91134220.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_91134296.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
 {"test_collection":"VCELL_PUBLISHED_OMEX","file_path":"VCDB_published_91134339.omex","should_fail":false,"known_status":"PASS","known_failure_type":null,"known_failure_desc":null}
