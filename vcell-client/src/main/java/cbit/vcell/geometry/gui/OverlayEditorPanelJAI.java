@@ -1769,7 +1769,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			
 			JLabel cropConfirmJlabel =
 				new JLabel("Crop data to new bounds?: ("+cropRect.x+","+cropRect.y+") to ("+
-						(cropRect.x+cropRect.width-1)+","+(cropRect.y+cropRect.height-1)+")");
+						(cropRect.x+cropRect.width)+","+(cropRect.y+cropRect.height)+")");
 			cropConfirmJlabel.setPreferredSize(new Dimension(300,40));
 			cropConfirmJlabel.setMinimumSize(new Dimension(300,40));
 			if(DialogUtils.showComponentOKCancelDialog(
