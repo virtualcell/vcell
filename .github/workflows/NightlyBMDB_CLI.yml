@@ -175,12 +175,13 @@ jobs:
                   echo "Skipping ${file_name}"
                   continue
               fi
-              case $number in
-                235|255|595|711|1008|1013|1022|1025|1030|1035|1042)
-                  echo "Skipping ${file_name} - too slow or otherwise misbehaved"
-                  continue
-                  ;;
-              esac
+#               We're handling timeouts java side now!
+#              case $number in
+#                235|255|595|711|1008|1013|1022|1025|1030|1035|1042)
+#                  echo "Skipping ${file_name} - too slow or otherwise misbehaved"
+#                  continue
+#                  ;;
+#              esac
 
               if [ $((number % ${{ strategy.job-total }})) -eq $((MOD_VALUE + 0)) ]; then
                   echo "Accepting ${file_name}"

@@ -50,7 +50,7 @@ public class ExecuteOmexCommand extends ExecutionBasedCommand {
 
     @Option(names = {"--timeout_ms"}, defaultValue = "600000", description = "executable wall clock timeout in milliseconds")
     // timeout for compiled solver running long jobs; default 10 minutes
-    private long EXECUTABLE_MAX_WALLCLOCK_MILLIS = 10 * 60 * 1000;
+    private long TIMEOUT_MS = 0;
 
     @Option(names = {"-h", "--help"}, description = "show this help message and exit", usageHelp = true)
     private boolean help = false;
@@ -153,7 +153,7 @@ public class ExecuteOmexCommand extends ExecutionBasedCommand {
         }
 
         ExecuteOmexCommand.generateLoggerContext(logLevel, this.bDebug);
-        this.setTimeout(this.EXECUTABLE_MAX_WALLCLOCK_MILLIS, TimeUnit.MILLISECONDS);
+        this.setTimeout(this.TIMEOUT_MS, TimeUnit.MILLISECONDS);
         return true;
     }
 
