@@ -138,6 +138,7 @@ public class OmexTestingDatabase {
 
         if (traceEvent.exception instanceof SolverException solverException) {
             if (solverException.getMessage().contains("is higher than the internal vCell limit of")) return FailureType.UNSUPPORTED_INITIAL_CONDITIONS;
+            if (solverException.getMessage().contains("divide by zero")) return FailureType.DIVIDE_BY_ZERO;
             return FailureType.SOLVER_FAILURE;
         }
 
