@@ -211,7 +211,7 @@ jobs:
               sim_input="/root/${base_name}"
               sim_output="/root/${base_extless_name}_output"
               echo -n "Running \"${file}\" in output folder \"${base_extless_name}_output\"..."
-              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute-omex -i ${sim_input} -o ${sim_output} --timeout_ms=900000
+              docker run -v $GITHUB_WORKSPACE/set_${{ matrix.sets }}:/root $(docker image ls | grep "<none>" | awk '{print $3;}') execute-omex -i ${sim_input} -o ${sim_output} --timeout_ms=1200000
               echo "Done!"
               # Grab Summary
               echo -n "Obtaining Summary..."

@@ -318,7 +318,7 @@ public class SolverHandler {
     public Map<AbstractTask, BiosimulationLog.Status> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedmlRequested, CLIRecordable cliLogger,
                                  File outputDirForSedml, String outDir, String sedmlLocation,
                                  boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride)
-			throws XMLException, IOException, SEDMLImportException, ExpressionException, PropertyVetoException {
+			throws XMLException, IOException, SEDMLImportException, ExpressionException, PropertyVetoException, SolverException {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
 		Map<AbstractTask, BiosimulationLog.Status> biosimStatusMap = new LinkedHashMap<>();
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
@@ -465,7 +465,7 @@ public class SolverHandler {
 							solverStatus = solver.getSolverStatus().getStatus();
 							String message = String.format("Solver (%s) status: `%s` (%s) ", solver.getClass().getSimpleName(), solver.getSolverStatus().getStatusAsString(), error);
 							biosimStatusMap.put(task, BiosimulationLog.Status.FAILED);
-							throw new RuntimeException(message);
+							throw SolverStatus.SOLVER_ABORTED == solverStatus ? new SolverException(message) : new RuntimeException(message);
 						}
 					} catch (Exception e) {
 						long endTime_ms = System.currentTimeMillis();
@@ -507,6 +507,7 @@ public class SolverHandler {
 						} else {
 							cliLogger.writeDetailedErrorList(e,bioModelBaseName + ",  solver: " + sdl + ": " + type + ": " + logTaskError);
 						}
+						if (e instanceof SolverException solverException) throw solverException;
 					} finally {
 						if (sim_span != null) {
 							sim_span.close();
@@ -530,6 +531,7 @@ public class SolverHandler {
 						logger.info("Processing non-spatial results of execution...");
 						MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
 						SBMLSymbolMapping sbmlMapping = this.sedmlImporter.getSBMLSymbolMapping(bioModel);
+						if (sbmlMapping == null) throw new SEDMLImportException("BioModel `" + bioModel.getName() + "` not found in mapping; mismatch in SedMLImporter!!");
 
 						TaskJob taskJob = new TaskJob(task.getId(), tempSimulationJob.getJobIndex());
 						SBMLNonspatialSimResults nonspatialSimResults = new SBMLNonspatialSimResults(odeSolverResultSet, sbmlMapping, mathMapping);

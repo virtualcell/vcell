@@ -20,6 +20,9 @@ public class SBMLNonspatialSimResults {
     private MathSymbolMapping mathMapping;
 
     public SBMLNonspatialSimResults(ODESolverResultSet resultSet, SBMLSymbolMapping sbmlMapping, MathSymbolMapping mathMapping){
+        if (resultSet == null) throw new IllegalArgumentException("`resultSet` cannot be null");
+        if (sbmlMapping == null) throw new IllegalArgumentException("`sbmlMapping` cannot be null");
+        if (mathMapping == null) throw new IllegalArgumentException("`mathMapping` cannot be null");
         this.resultSet = resultSet;
         this.sbmlMapping = sbmlMapping;
         this.mathMapping = mathMapping;

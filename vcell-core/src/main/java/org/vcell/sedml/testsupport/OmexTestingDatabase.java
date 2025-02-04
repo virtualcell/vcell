@@ -1,6 +1,7 @@
 package org.vcell.sedml.testsupport;
 
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.solver.SolverException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.vcell.sbml.vcell.SBMLImportException;
@@ -123,18 +124,25 @@ public class OmexTestingDatabase {
             return (sbmlFailureType = determineFault(traceEvent.exception)) != null ? sbmlFailureType : FailureType.SBML_IMPORT_FAILURE;
         }
 
-        if (traceEvent.hasException(RuntimeException.class) && traceEvent.exception.getCause() != null && traceEvent.exception.getCause() instanceof Exception causalException) {
-            if (causalException instanceof IllegalArgumentException && causalException.getMessage().contains("invalid species name; not located"))
-                return FailureType.SPECIES_NOT_LOCATED_IN_RESULTS;
+        if (traceEvent.exception instanceof RuntimeException) {
+            if (traceEvent.exception.getCause() != null && traceEvent.exception.getCause() instanceof Exception causalException) {
+                if (causalException instanceof IllegalArgumentException && causalException.getMessage().contains("invalid species name; not located"))
+                    return FailureType.SPECIES_NOT_LOCATED_IN_RESULTS;
+            }
+
+            if (traceEvent.message.contains("Failed execution")) {
+                if (traceEvent.message.contains("divide by zero")) return FailureType.DIVIDE_BY_ZERO;
+                if (traceEvent.message.contains("infinite loop")) return FailureType.SOLVER_FAILURE;
+            }
+        }
+
+        if (traceEvent.exception instanceof SolverException solverException) {
+            if (solverException.getMessage().contains("is higher than the internal vCell limit of")) return FailureType.UNSUPPORTED_INITIAL_CONDITIONS;
+            return FailureType.SOLVER_FAILURE;
         }
 
         if (traceEvent.message.contains("convert necessary file to sbml/sedml combine archive"))
             return FailureType.VCML_EXPORT_FAILURE;
-
-        if (traceEvent.exception instanceof RuntimeException && traceEvent.message.contains("Failed execution")){
-            if (traceEvent.message.contains("divide by zero")) return FailureType.DIVIDE_BY_ZERO;
-            if (traceEvent.message.contains("infinite loop")) return FailureType.SOLVER_FAILURE;
-        }
 
         if (traceEvent.exception != null && traceEvent.message.toLowerCase().contains("non-compatible sedml simulations"))
             return FailureType.SEDML_NON_UTC_SIMULATION_FOUND;
