@@ -72,6 +72,12 @@ public class LangevinPostProcessor {
         int columnDescriptionCount = osrs.getColumnDescriptionsCount();
         int rowCount = osrs.getRowCount();
         List<double[]> rows = osrs.getRows();
+        for(int column = 0; column < columnDescriptionCount; column++) {
+            double[] rowData = osrs.getRow(column);
+            for(int i = 0; i < rowData.length; i++) {
+                rowData[i] = 0;
+            }
+        }
 
         System.out.println("post process langevin");
     }
