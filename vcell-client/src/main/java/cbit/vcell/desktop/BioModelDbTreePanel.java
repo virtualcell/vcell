@@ -136,6 +136,7 @@ protected void actionsOnClick(MouseEvent mouseEvent) {
 					getJMenuItemArchive().setEnabled(false);
 					getJMenuItemPublish().setEnabled(false);
 				} else {
+					getJMenuItemOpen().setEnabled(true);	// anything can be opened unless duplicated leaf
 					configureArhivePublishMenuState(version,isOwner);
 					getJMenuItemPermission().setEnabled(isOwner && !version.getFlag().compareEqual(VersionFlag.Published));
 					getJMenuItemDelete().setEnabled(isOwner &&
