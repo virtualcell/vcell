@@ -1891,7 +1891,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 				sb.append("/");
 				sb.append(w);
 				if(calcCoords != null){
-					sb.append(" "+NumberUtils.formatNumber(calcCoords.calcX(inx),6)+"/"+NumberUtils.formatNumber(calcCoords.extentX(),6));
+					sb.append(" ("+NumberUtils.formatNumber(calcCoords.calcX(inx),6)+"/"+NumberUtils.formatNumber(calcCoords.extentX(),6) + ")");
 				}
 
 			}
@@ -1901,7 +1901,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 				sb.append("/");
 				sb.append(h);
 				if(calcCoords != null){
-					sb.append(" "+NumberUtils.formatNumber(calcCoords.calcY(iny),6)+"/"+NumberUtils.formatNumber(calcCoords.extentY(),6));
+					sb.append(" ("+NumberUtils.formatNumber(calcCoords.calcY(iny),6)+"/"+NumberUtils.formatNumber(calcCoords.extentY(),6) + ")");
 				}
 
 			}
