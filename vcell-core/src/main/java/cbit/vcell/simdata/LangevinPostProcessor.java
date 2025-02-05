@@ -4,6 +4,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.util.ColumnDescription;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.SimulationVersion;
@@ -29,7 +30,7 @@ public class LangevinPostProcessor {
 
     // the results
     ODESolverResultSet averagesResultSet;
-    ODESolverResultSet atdResultSet;
+    ODESolverResultSet stdResultSet;
     ODESolverResultSet minResultSet;
     ODESolverResultSet maxResultSet;
 
@@ -43,38 +44,121 @@ public class LangevinPostProcessor {
         // key = trial index, value = simulation results (ODESimData object) for that trial
         odeDataManagerMap = (Map<Integer, ODEDataManager>)hashTable.get(ODE_SIM_DATA_MAP_KEY);
 
-        ODEDataManager tempODEDataManager0 = odeDataManagerMap.get(0);
-        ODEDataManager tempODEDataManager1 = odeDataManagerMap.get(1);
-        ODESimData tempODESimData = (ODESimData)tempODEDataManager0.getODESolverResultSet();
+        SolverTaskDescription std = sim.getSolverTaskDescription();
+        int numTrials = std.getNumTrials();
+        isMultiTrial = numTrials > 1 ? true : false;
+        hashTable.put(LANGEVIN_MULTI_TRIAL_KEY, isMultiTrial);
+
+        // probably useless at this point
+        SimulationInfo simInfo = sim.getSimulationInfo();
+        VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
+        MathOverrides mathOverrides = sim.getMathOverrides();
+        SimulationVersion simVersion = simInfo.getSimulationVersion();
+
+        ODEDataManager tempODEDataManager = odeDataManagerMap.get(0);
+        ODESimData tempODESimData = (ODESimData)tempODEDataManager.getODESolverResultSet();
         String format = tempODESimData.getFormatID();
         String mathName = tempODESimData.getMathName();     // should be different instances?
 
         // sanity check: shouldn't be, that only works for non-spatial stochastic where things are done differently
-        System.out.println("isGibsonMultiTrial: " + tempODEDataManager0.getODESolverResultSet().isMultiTrialData());
+        System.out.println("isGibsonMultiTrial: " + tempODEDataManager.getODESolverResultSet().isMultiTrialData());
 
-        // the
-        averagesResultSet = new ODESolverResultSet(tempODEDataManager0.getODESolverResultSet());
-        atdResultSet = new ODESolverResultSet(tempODEDataManager0.getODESolverResultSet());
-        minResultSet = new ODESolverResultSet(tempODEDataManager0.getODESolverResultSet());
-        maxResultSet = new ODESolverResultSet(tempODEDataManager0.getODESolverResultSet());
+        averagesResultSet = new ODESolverResultSet(tempODEDataManager.getODESolverResultSet());
+        stdResultSet = new ODESolverResultSet(tempODEDataManager.getODESolverResultSet());
+        minResultSet = new ODESolverResultSet(tempODEDataManager.getODESolverResultSet());
+        maxResultSet = new ODESolverResultSet(tempODEDataManager.getODESolverResultSet());
 
         initializeResultSetValues(averagesResultSet);
-
+        initializeResultSetValues(stdResultSet);
+        // we leave the min and max initialized with whatever the first trial has and adjust as we go through the other trials
         if(failure) {
             return;
         }
 
-        calculateLangevinAveragesTask();
-        calculateLangevinAdvancedStatisticsTask();
+        calculateLangevinPrimaryStatistics();   // averages, standard deviation, min, max
+        calculateLangevinAdvancedStatistics();
+    }
+
+    private void calculateLangevinPrimaryStatistics() throws DataAccessException {
+
+        int numTrials = odeDataManagerMap.size();
+        for(int trialIndex = 0; trialIndex < numTrials; trialIndex++) {
+            ODEDataManager sourceOdm = odeDataManagerMap.get(trialIndex);
+            ODESolverResultSet sourceOsrs = sourceOdm.getODESolverResultSet();
+            int rowCount = sourceOsrs.getRowCount();
+            for (int row = 0; row < rowCount; row++) {
+                double[] sourceRowData = sourceOsrs.getRow(row);
+                double[] averageRowData = averagesResultSet.getRow(row);    // destination average
+                double[] minRowData = minResultSet.getRow(row);             // destination min
+                double[] maxRowData = maxResultSet.getRow(row);             // destination max
+
+                for (int i = 0; i < averageRowData.length; i++) {
+                    ColumnDescription cd = averagesResultSet.getColumnDescriptions(i);
+                    String name = cd.getName();
+                    if (name.equals("t")) {
+                        continue;
+                    }
+                    averageRowData[i] = sourceRowData[i] / numTrials;
+                    if (minRowData[i] > sourceRowData[i]) {
+                        minRowData[i] = sourceRowData[i];
+                    }
+                    if (maxRowData[i] < sourceRowData[i]) {
+                        maxRowData[i] = sourceRowData[i];
+                    }
+                }
+            }
+        }
+
+        for(int trialIndex = 0; trialIndex < numTrials; trialIndex++) {
+            ODEDataManager sourceOdm = odeDataManagerMap.get(trialIndex);
+            ODESolverResultSet sourceOsrs = sourceOdm.getODESolverResultSet();
+            int rowCount = sourceOsrs.getRowCount();
+            for (int row = 0; row < rowCount; row++) {
+                double[] sourceRowData = sourceOsrs.getRow(row);
+                double[] averageRowData = averagesResultSet.getRow(row);
+                double[] stdRowData = stdResultSet.getRow(row);    // destination std
+
+                for (int i = 0; i < averageRowData.length; i++) {
+                    ColumnDescription cd = averagesResultSet.getColumnDescriptions(i);
+                    String name = cd.getName();
+                    if (name.equals("t")) {
+                        continue;
+                    }
+
+                    double variance = Math.pow(sourceRowData[i] - averageRowData[i], 2);
+                    stdRowData[i] += variance / numTrials;
+                }
+            }
+        }
+
+        int rowCount = stdResultSet.getRowCount();
+        for (int row = 0; row < rowCount; row++) {
+            double[] stdRowData = stdResultSet.getRow(row);
+            for (int i = 0; i < stdRowData.length; i++) {
+                ColumnDescription cd = stdResultSet.getColumnDescriptions(i);
+                String name = cd.getName();
+                if (name.equals("t")) {
+                    continue;
+                }
+                double variance = stdRowData[i];
+                stdRowData[i] = Math.sqrt(variance);
+            }
+        }
+        System.out.println(" ------------------------------------");
     }
 
     private void initializeResultSetValues(ODESolverResultSet osrs) {
         int columnDescriptionCount = osrs.getColumnDescriptionsCount();
         int rowCount = osrs.getRowCount();
         List<double[]> rows = osrs.getRows();
-        for(int column = 0; column < columnDescriptionCount; column++) {
-            double[] rowData = osrs.getRow(column);
+        for(int row = 0; row < rowCount; row++) {
+            double[] rowData = osrs.getRow(row);
             for(int i = 0; i < rowData.length; i++) {
+                ColumnDescription cd = osrs.getColumnDescriptions(i);
+                String name = cd.getName();
+                if(name.equals("t")) {
+                    continue;
+                }
                 rowData[i] = 0;
             }
         }
@@ -82,24 +166,8 @@ public class LangevinPostProcessor {
         System.out.println("post process langevin");
     }
 
-    private void calculateLangevinAveragesTask() {
-        SolverTaskDescription std = sim.getSolverTaskDescription();
-        int numTrials = std.getNumTrials();
-        isMultiTrial = true;
-        hashTable.put(LANGEVIN_MULTI_TRIAL_KEY, isMultiTrial);
 
-        SimulationInfo simInfo = sim.getSimulationInfo();
-        VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
-        MathOverrides mathOverrides = sim.getMathOverrides();
-        SimulationVersion simVersion = simInfo.getSimulationVersion();
-
-        // TODO: go through time series and compute averages, erc
-
-        System.out.println(" ------------------------------------");
-
-    }
-
-    private void calculateLangevinAdvancedStatisticsTask() {
+    private void calculateLangevinAdvancedStatistics() {
 
     }
 
