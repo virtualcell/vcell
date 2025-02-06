@@ -88,17 +88,19 @@ public class OmexTestReport {
                                     matchingTestCase.should_fail, OmexTestCase.Status.PASS, null, null);
                 }
             }
-            if (execSummary.status == OmexExecSummary.ActualStatus.FAILED){
+            if (execSummary.status == OmexExecSummary.ActualStatus.FAILED){ // Includes things we should skip
                 if (matchingTestCase.known_status == OmexTestCase.Status.PASS || matchingTestCase.known_status == null) {
                     System.out.println("Test case marked as "+matchingTestCase.known_status+", but failed "+execSummary.failure_type+": "+execSummary.failure_desc+", "+execSummary.file_path);
                     updatedTestCase = new OmexTestCase(matchingTestCase.test_collection, matchingTestCase.file_path,
                             matchingTestCase.should_fail, OmexTestCase.Status.FAIL,
                             execSummary.failure_type, execSummary.failure_desc);
                 } else if (matchingTestCase.known_status == OmexTestCase.Status.SKIP) {
-                    System.out.println("Test case marked as SKIP and failed with "+execSummary.failure_type+": "+execSummary.failure_desc+", "+execSummary.file_path);
-                    updatedTestCase = new OmexTestCase(matchingTestCase.test_collection, matchingTestCase.file_path,
-                            matchingTestCase.should_fail, OmexTestCase.Status.SKIP,
-                            execSummary.failure_type, execSummary.failure_desc);
+                    if (execSummary.failure_type != matchingTestCase.known_failure_type) { // If we set to skip, and it failed as expected, we're fine!
+                        System.out.println("Test case marked as SKIP ("+matchingTestCase.known_failure_type+") but failed unexpectedly with "+execSummary.failure_type+": "+execSummary.failure_desc+", "+execSummary.file_path);
+                        updatedTestCase = new OmexTestCase(matchingTestCase.test_collection, matchingTestCase.file_path,
+                                matchingTestCase.should_fail, OmexTestCase.Status.SKIP,
+                                execSummary.failure_type, execSummary.failure_desc);
+                    }
                 } else if (matchingTestCase.known_status == OmexTestCase.Status.FAIL) {
                     if (matchingTestCase.known_failure_type == null || !matchingTestCase.known_failure_type.equals(execSummary.failure_type)) {
                         System.out.println("Test case marked as FAIL with different type "+matchingTestCase.known_failure_type+", but failed with "+execSummary.failure_type+": "+execSummary.failure_desc+", "+execSummary.file_path);

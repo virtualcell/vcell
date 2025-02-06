@@ -14,6 +14,7 @@ public enum FailureType {
     MATH_GENERATION_FAILURE,
     MATH_OVERRIDES_A_FUNCTION,
     MATH_OVERRIDES_INVALID,
+    MODIFIED_MESH_INVALID,
     NESTED_SEDML_REPEATED_TASK, // We can do a repeated task of a normal task, but not another repeated task.
     NULL_POINTER_EXCEPTION,
     OPERATION_NOT_SUPPORTED, // VCell simply doesn't have the necessary features to run this archive.

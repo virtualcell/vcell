@@ -578,7 +578,6 @@ public class RunUtils {
         try {
             exportOutputs = asciiExporter.makeASCIIData(outputContext, jobRequest, vcId.getOwner(), dataServerImpl, exportSpecs, fileDataContainerManager);
         } catch (DataAccessException | IOException e) {
-            logger.error(e);
             throw e;
         }
 

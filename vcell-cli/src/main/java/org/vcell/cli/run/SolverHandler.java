@@ -51,6 +51,7 @@ import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
 import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sedml.SEDMLImporter;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
@@ -318,7 +319,7 @@ public class SolverHandler {
     public Map<AbstractTask, BiosimulationLog.Status> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedmlRequested, CLIRecordable cliLogger,
                                  File outputDirForSedml, String outDir, String sedmlLocation,
                                  boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride)
-			throws XMLException, IOException, SEDMLImportException, ExpressionException, PropertyVetoException, SolverException {
+			throws XMLException, IOException, SEDMLImportException, ExpressionException, PropertyVetoException, SolverException, DataAccessException {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
 		Map<AbstractTask, BiosimulationLog.Status> biosimStatusMap = new LinkedHashMap<>();
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
@@ -526,6 +527,7 @@ public class SolverHandler {
 							Tracer.failure(e, "Failed to export PDE2HDF5 for " + task.getId() + " " + e.getMessage());
 							logger.error(e.getMessage(), e);
 							spatialResults.put(new TaskJob(task.getId(), tempSimulationJob.getJobIndex()), null);
+							throw e;
 						}
 					} else {
 						logger.info("Processing non-spatial results of execution...");

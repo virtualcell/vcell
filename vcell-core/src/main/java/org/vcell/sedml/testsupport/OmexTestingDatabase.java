@@ -8,6 +8,7 @@ import org.vcell.sbml.vcell.SBMLImportException;
 import org.vcell.sedml.SEDMLImportException;
 import org.vcell.trace.Span;
 import org.vcell.trace.TraceEvent;
+import org.vcell.util.DataAccessException;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
@@ -95,18 +96,15 @@ public class OmexTestingDatabase {
     public static OmexExecSummary summarize(File inputFilePath, Exception exception, List<TraceEvent> errorEvents, long elapsedTime_ms) {
         OmexExecSummary execSummary = new OmexExecSummary();
         execSummary.file_path = inputFilePath.toString();
-        execSummary.status = OmexExecSummary.ActualStatus.FAILED;
+        execSummary.status = OmexExecSummary.ActualStatus.FAILED; // We assume it's a normal failure right off the bat.
         execSummary.elapsed_time_ms = elapsedTime_ms;
-        if (exception != null || !errorEvents.isEmpty()) {
-            execSummary.failure_type = determineFault(exception, errorEvents);
-            execSummary.failure_desc = null;
-            if (exception != null) {
-                execSummary.failure_desc = exception.getMessage();
-            }
-            if (!errorEvents.isEmpty()) {
-                execSummary.failure_desc = errorEvents.get(0).message + " " + errorEvents.get(0).exception;
-            }
-        }
+        if (exception == null && errorEvents.isEmpty()) return execSummary;
+
+        // We can do some additional parsing
+        execSummary.failure_type = determineFault(exception, errorEvents);
+
+        // Either exception must be null, or we must have no events; not both!
+        execSummary.failure_desc = exception != null ? exception.getMessage() : errorEvents.get(0).message + " " + errorEvents.get(0).exception;
         return execSummary;
     }
 
@@ -137,10 +135,17 @@ public class OmexTestingDatabase {
         }
 
         if (traceEvent.exception instanceof SolverException solverException) {
+            if (solverException.getMessage().contains("ith current mesh sampling")
+                    || solverException.getMessage().contains("is too coarse, found isolated membrane element"))
+                return FailureType.MODIFIED_MESH_INVALID;
             if (solverException.getMessage().contains("is higher than the internal vCell limit of")) return FailureType.UNSUPPORTED_INITIAL_CONDITIONS;
             if (solverException.getMessage().contains("divide by zero")) return FailureType.DIVIDE_BY_ZERO;
             if (solverException.getMessage().contains("timed out")) return FailureType.TIMEOUT_ENCOUNTERED;
             return FailureType.SOLVER_FAILURE;
+        }
+
+        if (traceEvent.exception instanceof DataAccessException dataAccessException) {
+            if (dataAccessException.getMessage().contains("either not found in your model or is not allowed to be used")) return FailureType.UNKNOWN_IDENTIFIER;
         }
 
         if (traceEvent.message.contains("convert necessary file to sbml/sedml combine archive"))
