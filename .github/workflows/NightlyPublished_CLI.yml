@@ -372,7 +372,7 @@ jobs:
           name: report.md
           path: ${{ github.workspace }}/report.md
 
-      - name: Show results)
+      - name: Show results
         run: echo "$(cat ${GITHUB_WORKSPACE}/report.md)"
 
       - name: Read report file into GH env variable

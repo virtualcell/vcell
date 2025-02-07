@@ -369,6 +369,12 @@ jobs:
           name: complete_tracer.json
           path: ${{ github.workspace }}/tracer.json
 
+      - name: Show results
+        run: echo "$(cat ${GITHUB_WORKSPACE}/report.md)"
+
+      - name: Read report file into GH env variable
+        run: echo "REPORT_CONTENT<<EOF" >> $GITHUB_ENV && cat ${{ github.workspace }}/report.md >> $GITHUB_ENV && echo "EOF" >> $GITHUB_ENV
+
       - name: Post results to slack part 1 (report.md from exec-report CLI command)
         run: |
           echo "Word Count $(wc -c < ${GITHUB_WORKSPACE}/report.md)"
