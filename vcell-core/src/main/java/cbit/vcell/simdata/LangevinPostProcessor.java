@@ -1,6 +1,7 @@
 package cbit.vcell.simdata;
 
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -9,6 +10,8 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.SimulationVersion;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -29,10 +32,10 @@ public class LangevinPostProcessor {
     Map<Integer, ODEDataManager> odeDataManagerMap;
 
     // the results
-    ODESolverResultSet averagesResultSet;
-    ODESolverResultSet stdResultSet;
-    ODESolverResultSet minResultSet;
-    ODESolverResultSet maxResultSet;
+    RowColumnResultSet averagesResultSet;
+    RowColumnResultSet stdResultSet;
+    RowColumnResultSet minResultSet;
+    RowColumnResultSet maxResultSet;
 
     public void postProcessLangevinResults(Hashtable<String, Object> aHashTable) throws DataAccessException {
 
@@ -56,6 +59,7 @@ public class LangevinPostProcessor {
         SimulationVersion simVersion = simInfo.getSimulationVersion();
 
         ODEDataManager tempODEDataManager = odeDataManagerMap.get(0);
+//        ODEDataManager tempODEDataManager1 = odeDataManagerMap.get(1);
         ODESimData tempODESimData = (ODESimData)tempODEDataManager.getODESolverResultSet();
         String format = tempODESimData.getFormatID();
         String mathName = tempODESimData.getMathName();     // should be different instances?
@@ -63,13 +67,11 @@ public class LangevinPostProcessor {
         // sanity check: shouldn't be, that only works for non-spatial stochastic where things are done differently
         System.out.println("isGibsonMultiTrial: " + tempODEDataManager.getODESolverResultSet().isMultiTrialData());
 
-        averagesResultSet = new ODESolverResultSet(tempODEDataManager.getODESolverResultSet());
-        stdResultSet = new ODESolverResultSet(tempODEDataManager.getODESolverResultSet());
-        minResultSet = new ODESolverResultSet(tempODEDataManager.getODESolverResultSet());
-        maxResultSet = new ODESolverResultSet(tempODEDataManager.getODESolverResultSet());
+        averagesResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.ZeroInitialize);
+        stdResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.ZeroInitialize);
+        minResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.CopyValues);
+        maxResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.CopyValues);
 
-        initializeResultSetValues(averagesResultSet);
-        initializeResultSetValues(stdResultSet);
         // we leave the min and max initialized with whatever the first trial has and adjust as we go through the other trials
         if(failure) {
             return;
@@ -98,7 +100,7 @@ public class LangevinPostProcessor {
                     if (name.equals("t")) {
                         continue;
                     }
-                    averageRowData[i] = sourceRowData[i] / numTrials;
+                    averageRowData[i] += sourceRowData[i] / numTrials;
                     if (minRowData[i] > sourceRowData[i]) {
                         minRowData[i] = sourceRowData[i];
                     }
@@ -147,29 +149,12 @@ public class LangevinPostProcessor {
         System.out.println(" ------------------------------------");
     }
 
-    private void initializeResultSetValues(ODESolverResultSet osrs) {
-        int columnDescriptionCount = osrs.getColumnDescriptionsCount();
-        int rowCount = osrs.getRowCount();
-        List<double[]> rows = osrs.getRows();
-        for(int row = 0; row < rowCount; row++) {
-            double[] rowData = osrs.getRow(row);
-            for(int i = 0; i < rowData.length; i++) {
-                ColumnDescription cd = osrs.getColumnDescriptions(i);
-                String name = cd.getName();
-                if(name.equals("t")) {
-                    continue;
-                }
-                rowData[i] = 0;
-            }
-        }
-
-        System.out.println("post process langevin");
-    }
-
-
     private void calculateLangevinAdvancedStatistics() {
 
     }
+
+
+
 
 //    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_HHmmss");
 //    private static File createDirFile(SimulationContext simulationContext){
