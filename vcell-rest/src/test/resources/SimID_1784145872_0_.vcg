@@ -1,0 +1,10 @@
+name spatialGeom
+dimension 1
+size 10.0
+origin 0.0
+volumeRegions 1
+subdomain00 10.0 0
+membraneRegions 0
+volumeSamples 200
+789C636018058309000001900001
+cells 0

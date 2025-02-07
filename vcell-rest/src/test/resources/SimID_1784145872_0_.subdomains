@@ -1,0 +1,3 @@
+# CompartmentSubDomain name, handle
+# MembraneSubDomain name, inside compartment name, handle, outside compartment name, handle
+CompartmentSubDomain, subdomain0, 0
