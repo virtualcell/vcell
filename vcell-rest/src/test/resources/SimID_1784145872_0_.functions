@@ -1,0 +1,10 @@
+##---------------------------------------------
+##  /Users/jimschaff/Documents/workspace/vcell/vcell-rest/src/test/resources/SimID_1784145872_0_.functions
+##---------------------------------------------
+
+subdomain0::J_r0; (s0 - (0.5 * s1)); ; Volume_VariableType; false
+subdomain0::s0_init_umol_l_1; (100000.0 * x); ; Volume_VariableType; false
+subdomain0::s1_init_umol_l_1; (10.0 - (100000.0 * x)); ; Volume_VariableType; false
+subdomain0::Size_c0; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+subdomain0::vobj_subdomain00_size; vcRegionVolume('subdomain0'); ; Volume_Region_VariableType; false
+
