@@ -94,8 +94,13 @@ public class OmexTestReport {
                     updatedTestCase = new OmexTestCase(matchingTestCase.test_collection, matchingTestCase.file_path,
                             matchingTestCase.should_fail, OmexTestCase.Status.FAIL,
                             execSummary.failure_type, execSummary.failure_desc);
-                } else if (matchingTestCase.known_status == OmexTestCase.Status.SKIP) {
-                    if (execSummary.failure_type != matchingTestCase.known_failure_type) { // If we set to skip, and it failed as expected, we're fine!
+                } else if (matchingTestCase.known_status == OmexTestCase.Status.SKIP) { // If we set to skip, and it failed as expected, we're fine!
+                    if (matchingTestCase.known_failure_type == FailureType.UNSTABLE_EXECUTION && matchingTestCase.known_failure_desc != null && !matchingTestCase.known_failure_desc.contains(execSummary.failure_type.name())){
+                        System.out.println("Test case marked as `UNSTABLE_EXECUTION` failed with new type of failure ("+execSummary.failure_type+": "+execSummary.failure_desc+", "+execSummary.file_path+")!!");
+                        updatedTestCase = new OmexTestCase(matchingTestCase.test_collection, matchingTestCase.file_path,
+                                matchingTestCase.should_fail, OmexTestCase.Status.SKIP,
+                                execSummary.failure_type, execSummary.failure_desc);
+                    } else if (execSummary.failure_type != matchingTestCase.known_failure_type) {
                         System.out.println("Test case marked as SKIP ("+matchingTestCase.known_failure_type+") but failed unexpectedly with "+execSummary.failure_type+": "+execSummary.failure_desc+", "+execSummary.file_path);
                         updatedTestCase = new OmexTestCase(matchingTestCase.test_collection, matchingTestCase.file_path,
                                 matchingTestCase.should_fail, OmexTestCase.Status.SKIP,
@@ -162,7 +167,7 @@ public class OmexTestReport {
         }
     }
 
-    public String toMarkdown() throws JsonProcessingException {
+    public String toMarkdown() {
         MarkdownTable resultsStatistics = OmexTestReport.generateResultStatistics(this.statistics);
         MarkdownTable errorTypeStatistics = OmexTestReport.generateErrorTypeStatistics(this.historicalFailureTypeCounts, this.currentFailureTypeCounts);
         MarkdownTable incomparableStatistics = OmexTestReport.generateIncomparableStatistics(this.statistics, this.unmatchedTestCases, this.unmatchedExecSummaries);
@@ -281,7 +286,7 @@ public class OmexTestReport {
                 case PASS:
                     yield "PASSED";
                 case SKIP:
-                    yield "SKIPPED";
+                    yield String.format("SKIPPED (%s)", testCaseChange.original.known_failure_type.name());
                 case FAIL:
                     yield String.format("FAILED (%s)", testCaseChange.original.known_failure_type.name());
             };
@@ -291,9 +296,11 @@ public class OmexTestReport {
                 case PASS:
                     yield "PASSED";
                 case SKIP:
-                    yield "SKIPPED";
+                    String formatStringSkip = testCaseChange.original.known_failure_type == FailureType.UNSTABLE_EXECUTION ? "NEW %s" : "SKIPPED (%s)";
+                    yield String.format(formatStringSkip, testCaseChange.updated.known_failure_type.name());
                 case FAIL:
-                    yield String.format("FAILED (%s)", testCaseChange.updated.known_failure_type.name());
+                    String formatStringFail = testCaseChange.original.known_failure_type == FailureType.UNSTABLE_EXECUTION ? "NEW %s" : "FAILED (%s)";
+                    yield String.format(formatStringFail, testCaseChange.updated.known_failure_type.name());
             };
             unmatchedResultStatistics.setTableValue(i, 1, currentResult);
         }
