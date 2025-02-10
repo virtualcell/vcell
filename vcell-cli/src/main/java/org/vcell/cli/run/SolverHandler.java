@@ -60,7 +60,6 @@ import org.apache.logging.log4j.Logger;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SolverHandler {
 
@@ -330,7 +329,7 @@ public class SolverHandler {
 		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo.getFile(), sedmlRequested, exactMatchOnly);
 		List<BioModel> bioModelList;
 		try {
-			bioModelList = this.sedmlImporter.getBioModels();
+			bioModelList = this.sedmlImporter.generateBioModels();
         } catch (Exception e) {
             logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: {}", e.getMessage(), e);
             throw e;

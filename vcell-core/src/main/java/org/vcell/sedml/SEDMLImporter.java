@@ -133,7 +133,7 @@ public class SEDMLImporter {
 	/**
 	 * Get the list of biomodels from the sedml initialized at construction time.
 	 */
-	public List<BioModel> getBioModels() {
+	public List<BioModel> generateBioModels() {
 		List<BioModel> bioModelList = new LinkedList<>();
 		List<org.jlibsedml.Model> modelList;
 		List<org.jlibsedml.Simulation> simulationList;
@@ -163,7 +163,13 @@ public class SEDMLImporter {
 			// Creating one VCell Simulation for each SED-ML actual Task
 			// 		(RepeatedTasks get added either on top of or separately as parameter scan overrides)
 			for (AbstractTask selectedTask : abstractTaskList) {
-				if (selectedTask instanceof RepeatedTask) continue; // Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks
+				// Repeated tasks refer to regular tasks, so first we need to create simulations for all regular tasks
+				if (selectedTask instanceof RepeatedTask repeatedTask){
+					if (repeatedTask.getSubTasks().size() > 1) throw new SEDMLImportException("Repeated Tasks with multiple subtasks not supported at this time.");
+					SubTask subTask = repeatedTask.getSubTasks().values().iterator().next();
+					if (this.sedml.getTaskWithId(subTask.getTaskId()) instanceof RepeatedTask) throw new SEDMLImportException("Repeated Tasks of Repeated Tasks are not supported at this time.");
+					continue;
+				}
 				if (!(selectedTask instanceof Task baseTask)) throw new RuntimeException("Unsupported task " + selectedTask);
 
 				// the SedML simulation will become the vCell simulation
