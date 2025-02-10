@@ -154,6 +154,94 @@ public class LangevinPostProcessor {
     }
 
 
+    public static void main(String[] args) {
+
+        class MyClass extends JPanel {
+            private double[] means;
+            private double[] stds;
+            private double[] mins;
+            private double[] maxs;
+
+            public MyClass(double[] means, double[] stds, double[] mins, double[] maxs) {
+                this.means = means;
+                this.stds = stds;
+                this.mins = mins;
+                this.maxs = maxs;
+            }
+
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                int xOffset = 50;
+                int yOffset = 50;
+                int width = getWidth();
+                int height = getHeight();
+                int xStep = (width - xOffset*2) / (means.length+1);
+
+                Graphics2D g2 = (Graphics2D) g;
+                Stroke oldStroke = g2.getStroke();
+                Font oldFont = g2.getFont();
+                Color oldColor = g2.getColor();
+
+                Font boldFont = oldFont.deriveFont(Font.BOLD);
+                g2.setFont(boldFont);
+
+                float newWidth = 2.0f;
+                g2.setStroke(new BasicStroke(newWidth));
+
+                g2.drawLine(xOffset, height - yOffset, width - yOffset, height - yOffset); // x-axis
+                g2.drawLine(xOffset, height - yOffset, xOffset, yOffset);
+
+                int[] xPoints = new int[mins.length + maxs.length];
+                int[] yPoints = new int[mins.length + maxs.length];
+
+                for (int i = 0; i < mins.length; i++) {
+                    xPoints[i] = 10 + xOffset + xStep*i;
+                    yPoints[i] = height - 50 - (int) mins[i] * 10;
+                }
+                for (int i = maxs.length - 1; i >= 0; i--) {
+                    xPoints[mins.length + (maxs.length - 1 - i)] = 10 + xOffset + xStep*i;
+                    yPoints[mins.length + (maxs.length - 1 - i)] = height - 50 - (int) maxs[i] * 10;
+                }
+                g2.setColor(Color.darkGray);
+                Polygon polygon = new Polygon(xPoints, yPoints, xPoints.length);
+                g2.setColor(Color.yellow.darker().darker());
+                g2.draw(polygon);
+
+                for(int i=0; i<means.length; i++) {
+                    g2.setColor(Color.green.darker());                  // ----- value
+                    int xMean = 10 + xOffset + xStep*i;
+                    int yMean = height - 50 - (int) means[i] * 10;
+                    g2.fillOval(xMean - 5, yMean - 5, 10, 10);
+
+                    g2.setColor(Color.red.darker());                    // ----- std bar
+                    int stdDevHeight = (int) (stds[i] * 10);
+                    g2.drawLine(xMean, yMean - stdDevHeight, xMean, yMean + stdDevHeight);
+
+                    g2.setColor(Color.green.darker());                  // ----- labels
+                    g2.drawString("Mean", xMean + 10, yMean-3);
+                    g2.setColor(Color.red.darker());
+                    g2.drawString("Std Dev", xMean + 10, yMean-15);
+                }
+
+                g2.setStroke(oldStroke);
+                g2.setFont(oldFont);
+                g2.setColor(oldColor);
+            }
+        }
+
+        double[] meansA = { 30.0, 22.5, 15.8, 12.1, 9.4, 7.1, 4.9, 3.2, 2.3 };
+        double[] meansB = { 0.0, 7.5, 14.2, 17.9, 20.6, 22.9, 25.1, 26.8, 27.7 };
+        double[] stds = { 0.0, 2.2, 2.1, 1.5, 1.6, 1.9, 1.4, 1.1, 0.9 };
+        double[] minA = { 30.0, 20.0, 17.0, 12.0, 8.0, 4.0, 4.0, 2.0, 1.0 };
+        double[] maxA = { 30.0, 24.0, 20.0, 14.0, 11.0, 9.0, 9.0, 9.0, 5.0 };
+
+        JFrame frame = new JFrame("Mean and Standard Deviation Chart");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(new MyClass(meansA, stds, minA, maxA));
+        frame.setSize(600, 400);
+        frame.setVisible(true);
+    }
+
 
 
 //    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy_MM_dd_HHmmss");
