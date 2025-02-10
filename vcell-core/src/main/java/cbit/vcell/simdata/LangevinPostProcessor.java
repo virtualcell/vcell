@@ -171,69 +171,94 @@ public class LangevinPostProcessor {
 
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                int xOffset = 50;
+                int xOffset = 50;           // margins
                 int yOffset = 50;
                 int width = getWidth();
                 int height = getHeight();
-                int xStep = (width - xOffset*2) / (means.length+1);
 
                 Graphics2D g2 = (Graphics2D) g;
                 Stroke oldStroke = g2.getStroke();
                 Font oldFont = g2.getFont();
                 Color oldColor = g2.getColor();
-
                 Font boldFont = oldFont.deriveFont(Font.BOLD);
                 g2.setFont(boldFont);
 
-                float newWidth = 2.0f;
-                g2.setStroke(new BasicStroke(newWidth));
+                g2.setStroke(new BasicStroke(2.0f));
+                g2.setColor(Color.darkGray);
+                g2.drawLine(xOffset, height - yOffset, width - xOffset +15, height - yOffset);  // x-axis
+                g2.drawLine(xOffset, yOffset - 20, xOffset, height - yOffset);                      // y-axis
+                g2.setStroke(oldStroke);
 
-                g2.drawLine(xOffset, height - yOffset, width - yOffset, height - yOffset); // x-axis
-                g2.drawLine(xOffset, height - yOffset, xOffset, yOffset);
+                // calculate scale factors
+                double scaleX = (width - 2 * xOffset) / (double) (means.length - 1);
+                double scaleY = (height - 2 * yOffset) / getMaxValue();
 
+                // arrays to hold the polygon points
                 int[] xPoints = new int[mins.length + maxs.length];
                 int[] yPoints = new int[mins.length + maxs.length];
-
-                for (int i = 0; i < mins.length; i++) {
-                    xPoints[i] = 10 + xOffset + xStep*i;
-                    yPoints[i] = height - 50 - (int) mins[i] * 10;
+                for (int i = 0; i < mins.length; i++) {             // mins array
+                    xPoints[i] = xOffset + (int) (i * scaleX);
+                    yPoints[i] = height - yOffset - (int) (mins[i] * scaleY);
                 }
-                for (int i = maxs.length - 1; i >= 0; i--) {
-                    xPoints[mins.length + (maxs.length - 1 - i)] = 10 + xOffset + xStep*i;
-                    yPoints[mins.length + (maxs.length - 1 - i)] = height - 50 - (int) maxs[i] * 10;
+                for (int i = maxs.length - 1; i >= 0; i--) {        // maxs array
+                    xPoints[mins.length + (maxs.length - 1 - i)] = xOffset + (int) (i * scaleX);
+                    yPoints[mins.length + (maxs.length - 1 - i)] = height - yOffset - (int) (maxs[i] * scaleY);
                 }
-                g2.setColor(Color.darkGray);
-                Polygon polygon = new Polygon(xPoints, yPoints, xPoints.length);
-                g2.setColor(Color.yellow.darker().darker());
-                g2.draw(polygon);
+                Polygon polygon = new Polygon(xPoints, yPoints, xPoints.length);    // close the polygon by uniting mins[0] with maxs[0]
+                g2.setColor(Color.YELLOW);
+                g2.fill(polygon);               // fill the polygon with yellow
+                g2.setColor(Color.BLACK);
+                g2.draw(polygon);               // draw the outline of the polygon
 
-                for(int i=0; i<means.length; i++) {
-                    g2.setColor(Color.green.darker());                  // ----- value
-                    int xMean = 10 + xOffset + xStep*i;
-                    int yMean = height - 50 - (int) means[i] * 10;
-                    g2.fillOval(xMean - 5, yMean - 5, 10, 10);
+                for (int i = 0; i < means.length; i++) {
+                    int x = xOffset + (int) (i * scaleX);
+                    int y = height - yOffset - (int) (means[i] * scaleY);
 
-                    g2.setColor(Color.red.darker());                    // ----- std bar
-                    int stdDevHeight = (int) (stds[i] * 10);
-                    g2.drawLine(xMean, yMean - stdDevHeight, xMean, yMean + stdDevHeight);
+                    g2.setColor(Color.green.darker());
+                    g2.fillOval(x - 5, y - 5, 10, 10);  // draw mean point
+                    g2.setStroke(new BasicStroke(2.0f));
+                    if(i>0) {                                             // unite points (draw line to previous point)
+                        g2.drawLine(x, y, xOffset + (int) ((i-1) * scaleX), height - yOffset - (int) (means[i-1] * scaleY));
+                    }
+                    g2.setStroke(oldStroke);
 
-                    g2.setColor(Color.green.darker());                  // ----- labels
-                    g2.drawString("Mean", xMean + 10, yMean-3);
                     g2.setColor(Color.red.darker());
-                    g2.drawString("Std Dev", xMean + 10, yMean-15);
+                    g2.setStroke(new BasicStroke(3.0f));
+                    int stdDevHeight = (int) (stds[i] * scaleY);
+                    g2.drawLine(x, y - stdDevHeight, x, y + stdDevHeight);     // draw standard deviation bar
+                    g2.setStroke(oldStroke);
+
+//                    g2.setColor(Color.green.darker());            // labels for each
+//                    g2.drawString("Mean", x + 10, y-3);
+//                    g2.setColor(Color.red.darker());
+//                    g2.drawString("Std Dev", x + 10, y-15);
                 }
+                g2.setColor(Color.green.darker());                  // labels just once
+                g2.drawString("Mean", xOffset + 10, yOffset - 3);
+                g2.setColor(Color.red.darker());
+                g2.drawString("Std Dev", xOffset + 10, yOffset-15);
 
                 g2.setStroke(oldStroke);
                 g2.setFont(oldFont);
                 g2.setColor(oldColor);
+            }
+
+            private double getMaxValue() {          // needed for scaling properly - based on the largest number
+                double maxVal = Double.MIN_VALUE;
+                for (double val : maxs) {           // we only need to look into maxs, no mins or means may be higher
+                    if (val > maxVal) {
+                        maxVal = val;
+                    }
+                }
+                return maxVal;
             }
         }
 
         double[] meansA = { 30.0, 22.5, 15.8, 12.1, 9.4, 7.1, 4.9, 3.2, 2.3 };
         double[] meansB = { 0.0, 7.5, 14.2, 17.9, 20.6, 22.9, 25.1, 26.8, 27.7 };
         double[] stds = { 0.0, 2.2, 2.1, 1.5, 1.6, 1.9, 1.4, 1.1, 0.9 };
-        double[] minA = { 30.0, 20.0, 17.0, 12.0, 8.0, 4.0, 4.0, 2.0, 1.0 };
-        double[] maxA = { 30.0, 24.0, 20.0, 14.0, 11.0, 9.0, 9.0, 9.0, 5.0 };
+        double[] minA = { 30.0, 18.0, 14.0, 11.0, 8.0, 4.0, 4.0, 2.0, 1.0 };
+        double[] maxA = { 30.0, 24.0, 20.0, 15.0, 12.0, 10.0, 9.0, 8.0, 5.0 };
 
         JFrame frame = new JFrame("Mean and Standard Deviation Chart");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
