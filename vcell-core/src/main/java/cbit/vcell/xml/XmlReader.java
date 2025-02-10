@@ -6035,6 +6035,9 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             }
         } else if((param.getAttributeValue(XMLTags.SpringSaLaDAttrTag) != null) && (param.getAttributeValue(XMLTags.SpringSaLaDAttrTag).equals("true"))){
             bSpringSaLaD = true;
+            if((param.getAttributeValue(XMLTags.ConcentrationAttrTag) != null) && (param.getAttributeValue(XMLTags.ConcentrationAttrTag).equals("false"))){
+                bUseConcentration = false;
+            }
         }
 
         //Retrieve Geometry

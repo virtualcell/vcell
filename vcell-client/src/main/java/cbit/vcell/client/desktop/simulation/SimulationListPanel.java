@@ -170,6 +170,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == fieldSimulationWorkspace && evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
+//				System.out.println("SimulationListPanel: status changed: simIndex: " + evt.getNewValue());
 				refreshButtonsLax();
 			}
 			if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {

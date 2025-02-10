@@ -892,6 +892,22 @@ void showSimulationResults(Simulation[] sims, ViewerType viewerType) {
 	getClientSimManager().showSimulationResults(outputContext,sims,viewerType);
 }
 
+void postProcessLangevinResults(Simulation simulation) {
+	if(!getSimulationOwner().getMathDescription().isLangevin()) {
+		throw new RuntimeException("Expecting Langevin math description.");
+	}
+	if(simulation.getVersion() == null) {
+		throw new RuntimeException("Missing Version.");
+	}
+	if(simulation.getSimulationInfo() == null) {
+		throw new RuntimeException("Missing Simulation Info.");
+	}
+
+	if (simulation.getSimulationInfo() != null && getSimulationStatus(simulation).getHasData()) {
+		getClientSimManager().postProcessLangevinResults(simulation);
+	}
+}
+
 
 /**
  * Comment

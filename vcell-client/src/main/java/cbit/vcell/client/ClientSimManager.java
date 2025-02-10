@@ -197,6 +197,84 @@ public void showSimulationResults(OutputContext outputContext, Simulation[] simu
 	AsynchClientTask[] taskArray = showSimulationResults0(false, viewerType);
 	ClientTaskDispatcher.dispatch(getDocumentWindowManager().getComponent(), hashTable, taskArray, false, true, null);
 }
+/*
+		TODO: postProcessLangevinResults
+ */
+public void postProcessLangevinResults(Simulation sim) {
+	SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
+	Hashtable<String, Object> hashTable = new Hashtable<> ();
+
+	hashTable.put(LangevinPostProcessor.FAILURE_KEY, false);
+	hashTable.put(LangevinPostProcessor.SIMULATION_KEY, sim);
+	hashTable.put(LangevinPostProcessor.SIMULATION_OWNER_KEY, simOwner);
+
+	SolverTaskDescription std = sim.getSolverTaskDescription();
+	int numTrials = std.getNumTrials();
+	VCSimulationIdentifier vcSimulationIdentifier = sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+	MathOverrides mathOverrides = sim.getMathOverrides();
+	int sizeOverrides = mathOverrides.getSize();
+	int scanCount = mathOverrides.getScanCount();
+	System.out.println(" --- " + sim.getName() + ", numTrials = " + numTrials);
+	System.out.println(" --- " + sim.getName() + ", jobCount" + sim.getJobCount());
+	System.out.println(" --- " + sim.getName() + ", sizeOverrides = " + sizeOverrides);
+	System.out.println(" --- " + sim.getName() + ", scanCount = " + scanCount);
+
+	if(sizeOverrides > 0) {
+		System.out.println("ClientSimManager: parameter overrides not supported yet for SpringSaLaD applications");
+		hashTable.put(LangevinPostProcessor.FAILURE_KEY, true);
+	}
+	if(scanCount != 1) {
+		System.out.println("ClientSimManager: parameter scans not supported yet for SpringSaLaD applications");
+		hashTable.put(LangevinPostProcessor.FAILURE_KEY, true);
+	}
+	if(numTrials != sim.getJobCount()) {
+		System.out.println("ClientSimManager: numTrials must be the same as numTrials: " + numTrials + ", " + sim.getJobCount());
+		hashTable.put(LangevinPostProcessor.FAILURE_KEY, true);
+	}
+
+	ArrayList<AsynchClientTask> taskList = new ArrayList<AsynchClientTask>();
+	AsynchClientTask postProcessLangevinResultsTask = new AsynchClientTask("PostProcessLangevinResultsTask", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+
+			Map<Integer, ODEDataManager> odeDataManagerMap = new LinkedHashMap<>();
+			try {
+				for (int trialIndex = 0; trialIndex < numTrials; trialIndex++) {
+					VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, trialIndex);
+					ODEDataManager dm = (ODEDataManager) getDocumentWindowManager().getRequestManager().getDataManager(null, vcSimulationDataIdentifier, false);
+					odeDataManagerMap.put(trialIndex, dm);
+				}
+			} catch(DataAccessException dae) {
+				System.out.println("ClientSimManager.postProcessLangevinResults() DataAccessException: " + dae.getMessage());
+				hashTable.put(LangevinPostProcessor.FAILURE_KEY, true);
+			}
+			if(odeDataManagerMap.isEmpty()) {
+				System.out.println("ClientSimManager: no data");
+				hashTable.put(LangevinPostProcessor.FAILURE_KEY, true);
+			}
+			hashTable.put(LangevinPostProcessor.ODE_SIM_DATA_MAP_KEY, odeDataManagerMap);
+
+			LangevinPostProcessor lpp = new LangevinPostProcessor();
+			lpp.postProcessLangevinResults(hashTable);
+		}
+	};
+	AsynchClientTask finishProcessLangevinResultsTask = new AsynchClientTask("FinishProcessLangevinResultsTask", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			boolean failure = (boolean) hashTable.get(LangevinPostProcessor.FAILURE_KEY);
+			if(failure) {	// just open some dialog for now; eventually we'll have some unobtrusive visual notification
+				PopupGenerator.showErrorDialog(ClientSimManager.this.getDocumentWindowManager(), "PostProcessing failed");
+			} else {
+				PopupGenerator.showInfoDialog(ClientSimManager.this.getDocumentWindowManager(), "PostProcessing successful");
+			}
+		}
+	};
+
+	taskList.add(postProcessLangevinResultsTask);
+	taskList.add(finishProcessLangevinResultsTask);
+	AsynchClientTask[] taskArray = new AsynchClientTask[taskList.size()];
+	taskList.toArray(taskArray);
+	ClientTaskDispatcher.dispatch(getDocumentWindowManager().getComponent(), hashTable, taskArray, false, true, null);
+
+}
 
 public enum ViewerType {
 	NativeViewer_only
