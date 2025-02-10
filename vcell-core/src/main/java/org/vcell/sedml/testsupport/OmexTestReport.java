@@ -95,12 +95,13 @@ public class OmexTestReport {
                             matchingTestCase.should_fail, OmexTestCase.Status.FAIL,
                             execSummary.failure_type, execSummary.failure_desc);
                 } else if (matchingTestCase.known_status == OmexTestCase.Status.SKIP) { // If we set to skip, and it failed as expected, we're fine!
-                    if (matchingTestCase.known_failure_type == FailureType.UNSTABLE_EXECUTION && matchingTestCase.known_failure_desc != null && !matchingTestCase.known_failure_desc.contains(execSummary.failure_type.name())){
+                    boolean multipleFailuresAllowed = matchingTestCase.known_failure_type == FailureType.UNSTABLE_EXECUTION;
+                    if (multipleFailuresAllowed && matchingTestCase.known_failure_desc != null && !matchingTestCase.known_failure_desc.contains(execSummary.failure_type.name())){
                         System.out.println("Test case marked as `UNSTABLE_EXECUTION` failed with new type of failure ("+execSummary.failure_type+": "+execSummary.failure_desc+", "+execSummary.file_path+")!!");
                         updatedTestCase = new OmexTestCase(matchingTestCase.test_collection, matchingTestCase.file_path,
                                 matchingTestCase.should_fail, OmexTestCase.Status.SKIP,
                                 execSummary.failure_type, execSummary.failure_desc);
-                    } else if (execSummary.failure_type != matchingTestCase.known_failure_type) {
+                    } else if (!multipleFailuresAllowed && execSummary.failure_type != matchingTestCase.known_failure_type) {
                         System.out.println("Test case marked as SKIP ("+matchingTestCase.known_failure_type+") but failed unexpectedly with "+execSummary.failure_type+": "+execSummary.failure_desc+", "+execSummary.file_path);
                         updatedTestCase = new OmexTestCase(matchingTestCase.test_collection, matchingTestCase.file_path,
                                 matchingTestCase.should_fail, OmexTestCase.Status.SKIP,
