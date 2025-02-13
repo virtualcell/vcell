@@ -251,15 +251,28 @@ public void postProcessLangevinResults(Simulation sim) {
 				System.out.println("ClientSimManager: no data");
 				hashTable.put(LangevinPostProcessor.FAILURE_KEY, true);
 			}
-			hashTable.put(LangevinPostProcessor.ODE_SIM_DATA_MAP_KEY, odeDataManagerMap);
+
+        	Simulation sim = (Simulation)hashTable.get(LangevinPostProcessor.SIMULATION_KEY);
+			SimulationOwner simOwner = (SimulationOwner)hashTable.get(LangevinPostProcessor.SIMULATION_OWNER_KEY);
+			LangevinPostProcessorInput lppInput = new LangevinPostProcessorInput(sim, simOwner);
+			lppInput.setFailed((boolean)hashTable.get(LangevinPostProcessor.FAILURE_KEY));
+			lppInput.setOdeDataManagerMap(odeDataManagerMap);
 
 			LangevinPostProcessor lpp = new LangevinPostProcessor();
-			lpp.postProcessLangevinResults(hashTable);
+			LangevinPostProcessorOutput lppOutput = lpp.postProcessLangevinResults(lppInput);
+			hashTable.put(LangevinPostProcessor.LPP_OUTPUT_KEY, lppOutput);
+
+			// the LangevinPostProcessorOutput contains all we need, remove the rest
+			hashTable.remove(LangevinPostProcessor.FAILURE_KEY);
+			hashTable.remove(LangevinPostProcessor.LANGEVIN_MULTI_TRIAL_KEY);
+			hashTable.remove(LangevinPostProcessor.SIMULATION_KEY);
+			hashTable.remove(LangevinPostProcessor.SIMULATION_OWNER_KEY);
 		}
 	};
 	AsynchClientTask finishProcessLangevinResultsTask = new AsynchClientTask("FinishProcessLangevinResultsTask", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
-			boolean failure = (boolean) hashTable.get(LangevinPostProcessor.FAILURE_KEY);
+			LangevinPostProcessorOutput lppOutput = (LangevinPostProcessorOutput) hashTable.get(LangevinPostProcessor.LPP_OUTPUT_KEY);
+			boolean failure = lppOutput.isFailed();
 			if(failure) {	// just open some dialog for now; eventually we'll have some unobtrusive visual notification
 				PopupGenerator.showErrorDialog(ClientSimManager.this.getDocumentWindowManager(), "PostProcessing failed");
 			} else {

@@ -1,19 +1,15 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.TokenMangler;
 import org.vcell.util.document.SimulationVersion;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class LangevinPostProcessor {
@@ -21,9 +17,8 @@ public class LangevinPostProcessor {
     public static final String FAILURE_KEY = "FAILURE_KEY";
 	public static final String SIMULATION_KEY = "SIMULATION_KEY";
     public static final String SIMULATION_OWNER_KEY = "SIMULATION_OWNER_KEY";
-    public static final String ODE_SIM_DATA_MAP_KEY = "ODE_SIM_DATA_MAP_KEY";
     public static final String LANGEVIN_MULTI_TRIAL_KEY = "LANGEVIN_MULTI_TRIAL_KEY";
-    Hashtable<String, Object> hashTable;
+    public static final String LPP_OUTPUT_KEY = "LANGEVIN_POST_PROCESSOR_OUTPUT_KEY";
 
     boolean isMultiTrial = false;   // springsalad / langevin definition of multi-trial: numTasks > 1
     boolean failure;
@@ -37,20 +32,24 @@ public class LangevinPostProcessor {
     RowColumnResultSet minResultSet;
     RowColumnResultSet maxResultSet;
 
-    public void postProcessLangevinResults(Hashtable<String, Object> aHashTable) throws DataAccessException {
 
-        this.hashTable = aHashTable;
-        failure = (boolean) hashTable.get(FAILURE_KEY);
-        sim = (Simulation)hashTable.get(SIMULATION_KEY);
-        simOwner = (SimulationOwner)hashTable.get(SIMULATION_OWNER_KEY);
+    public LangevinPostProcessorOutput postProcessLangevinResults(LangevinPostProcessorInput lppInput) {
 
-        // key = trial index, value = simulation results (ODESimData object) for that trial
-        odeDataManagerMap = (Map<Integer, ODEDataManager>)hashTable.get(ODE_SIM_DATA_MAP_KEY);
+        sim = lppInput.getSimulation();
+        simOwner = lppInput.getSimulationOwner();
+        LangevinPostProcessorOutput pllOut = new LangevinPostProcessorOutput(sim, simOwner);
 
+        failure = lppInput.isFailed();
         SolverTaskDescription std = sim.getSolverTaskDescription();
         int numTrials = std.getNumTrials();
         isMultiTrial = numTrials > 1 ? true : false;
-        hashTable.put(LANGEVIN_MULTI_TRIAL_KEY, isMultiTrial);
+        if(failure) {
+            pllOut.setFailed(failure);
+            pllOut.setMultiTrial(isMultiTrial);
+            return pllOut;
+        }
+
+        odeDataManagerMap = lppInput.getOdeDataManagerMap();    // key = trial index, value = simulation results (ODESimData object) for that trial
 
         // probably useless at this point
         SimulationInfo simInfo = sim.getSimulationInfo();
@@ -58,27 +57,35 @@ public class LangevinPostProcessor {
         MathOverrides mathOverrides = sim.getMathOverrides();
         SimulationVersion simVersion = simInfo.getSimulationVersion();
 
-        ODEDataManager tempODEDataManager = odeDataManagerMap.get(0);
-//        ODEDataManager tempODEDataManager1 = odeDataManagerMap.get(1);
-        ODESimData tempODESimData = (ODESimData)tempODEDataManager.getODESolverResultSet();
-        String format = tempODESimData.getFormatID();
-        String mathName = tempODESimData.getMathName();     // should be different instances?
+        try {
+            ODEDataManager tempODEDataManager = odeDataManagerMap.get(0);
+            ODESimData tempODESimData = (ODESimData) tempODEDataManager.getODESolverResultSet();
+            String format = tempODESimData.getFormatID();
+            String mathName = tempODESimData.getMathName();     // should be different instances?
 
-        // sanity check: shouldn't be, that only works for non-spatial stochastic where things are done differently
-        System.out.println("isGibsonMultiTrial: " + tempODEDataManager.getODESolverResultSet().isMultiTrialData());
+            // sanity check: shouldn't be, that only works for non-spatial stochastic where things are done differently
+            System.out.println("isGibsonMultiTrial: " + tempODEDataManager.getODESolverResultSet().isMultiTrialData());
 
-        averagesResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.ZeroInitialize);
-        stdResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.ZeroInitialize);
-        minResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.CopyValues);
-        maxResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.CopyValues);
+            averagesResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.ZeroInitialize);
+            stdResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.ZeroInitialize);
+            minResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.CopyValues);
+            maxResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.CopyValues);
 
-        // we leave the min and max initialized with whatever the first trial has and adjust as we go through the other trials
-        if(failure) {
-            return;
+            calculateLangevinPrimaryStatistics();   // averages, standard deviation, min, max
+            calculateLangevinAdvancedStatistics();
+
+        } catch(DataAccessException dae) {
+            pllOut.setFailed(true);
+            pllOut.setMultiTrial(isMultiTrial);
+            return pllOut;
         }
-
-        calculateLangevinPrimaryStatistics();   // averages, standard deviation, min, max
-        calculateLangevinAdvancedStatistics();
+        pllOut.setFailed(failure);
+        pllOut.setMultiTrial(isMultiTrial);
+        pllOut.setAveragesResultSet(averagesResultSet);
+        pllOut.setStdResultSet(stdResultSet);
+        pllOut.setMinResultSet(minResultSet);
+        pllOut.setMaxResultSet((maxResultSet));
+        return pllOut;
     }
 
     private void calculateLangevinPrimaryStatistics() throws DataAccessException {
