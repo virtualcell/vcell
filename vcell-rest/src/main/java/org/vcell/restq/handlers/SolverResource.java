@@ -13,6 +13,8 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import net.lingala.zip4j.ZipFile;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.RestForm;
 import org.vcell.sbml.FiniteVolumeRunUtil;
@@ -32,7 +34,9 @@ import java.nio.file.Files;
 public class SolverResource {
     public SolverResource() { }
 
-    @GET
+    private static final Logger lg = LogManager.getLogger(SolverResource.class);
+
+    @POST
     @Path("/getFVSolverInput")
     @Operation(operationId = "getFVSolverInput", summary = "Retrieve finite volume input from SBML spatial model.")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -49,6 +53,7 @@ public class SolverResource {
             zip.close();
             return zipFile;
         }catch (Exception e){
+            lg.error(e);
             throw new WebApplicationException("Error processing spatial model", HTTP.INTERNAL_SERVER_ERROR);
         } finally {
             for (File file: workingDir.listFiles()){

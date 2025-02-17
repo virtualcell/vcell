@@ -4,8 +4,8 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**getFVSolverInput**](SolverResourceApi.md#getFVSolverInput) | **GET** /api/v1/solver/getFVSolverInput | Retrieve finite volume input from SBML spatial model. |
-| [**getFVSolverInputWithHttpInfo**](SolverResourceApi.md#getFVSolverInputWithHttpInfo) | **GET** /api/v1/solver/getFVSolverInput | Retrieve finite volume input from SBML spatial model. |
+| [**getFVSolverInput**](SolverResourceApi.md#getFVSolverInput) | **POST** /api/v1/solver/getFVSolverInput | Retrieve finite volume input from SBML spatial model. |
+| [**getFVSolverInputWithHttpInfo**](SolverResourceApi.md#getFVSolverInputWithHttpInfo) | **POST** /api/v1/solver/getFVSolverInput | Retrieve finite volume input from SBML spatial model. |
 
 
 

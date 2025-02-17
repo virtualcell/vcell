@@ -301,7 +301,7 @@ class SolverResourceApi:
         ]
 
         return self.api_client.param_serialize(
-            method='GET',
+            method='POST',
             resource_path='/api/v1/solver/getFVSolverInput',
             path_params=_path_params,
             query_params=_query_params,

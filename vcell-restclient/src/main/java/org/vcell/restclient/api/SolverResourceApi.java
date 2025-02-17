@@ -183,7 +183,7 @@ public class SolverResourceApi {
     }
     localVarRequestBuilder
         .header("Content-Type", entity.getContentType().getValue())
-        .method("GET", formDataPublisher);
+        .method("POST", formDataPublisher);
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

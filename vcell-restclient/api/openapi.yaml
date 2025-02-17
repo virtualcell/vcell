@@ -475,7 +475,7 @@ paths:
       - Publication Resource
       x-accepts: application/json
   /api/v1/solver/getFVSolverInput:
-    get:
+    post:
       operationId: getFVSolverInput
       requestBody:
         content:

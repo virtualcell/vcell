@@ -159,7 +159,7 @@ export class SolverResourceService implements SolverResourceServiceInterface {
         }
 
         let localVarPath = `/api/v1/solver/getFVSolverInput`;
-        return this.httpClient.request('get', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,

@@ -435,7 +435,7 @@ paths:
       - openId:
         - user
   /api/v1/solver/getFVSolverInput:
-    get:
+    post:
       tags:
       - Solver Resource
       summary: Retrieve finite volume input from SBML spatial model.
