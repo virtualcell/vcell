@@ -16,6 +16,10 @@
     <Root level="info">
       <AppenderRef ref="Console"/>
     </Root>
+            <!--      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
+            <!--      !!! Never set JSBML to debug log level will break JSBML. Runtime errors in JSBML.-->
+            <!--      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
+            <Logger name="org.sbml.jsbml" level="info" />
     <!--    <Logger name="org.vcell" level="warn" />-->
     <!--    <Logger name="cbit.vcell" level="warn" />-->
             <Logger name="cbit.vcell.modeldb" level="debug" />
