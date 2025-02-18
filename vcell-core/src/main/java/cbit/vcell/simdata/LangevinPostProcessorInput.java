@@ -1,6 +1,7 @@
 package cbit.vcell.simdata;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 
 import java.util.*;
 
@@ -10,7 +11,7 @@ public class LangevinPostProcessorInput {
     private final Simulation sim;
     private final SimulationOwner simOwner;
 
-    Map<Integer, ODEDataManager> odeDataManagerMap = new LinkedHashMap<>(); // key = trialIndex
+    Map<Integer, ODESolverResultSet> odeSolverResultSetMap = new LinkedHashMap<>(); // key = trialIndex
 
     private boolean failed = false;
 
@@ -26,15 +27,15 @@ public class LangevinPostProcessorInput {
     public SimulationOwner getSimulationOwner() {
         return simOwner;
     }
-    public Map<Integer, ODEDataManager> getOdeDataManagerMap() {
-        return odeDataManagerMap;
+    public Map<Integer, ODESolverResultSet> getOdeSolverResultSetMap() {
+        return odeSolverResultSetMap;
     }
     public boolean isFailed() {
         return failed;
     }
 
-    public void setOdeDataManagerMap(Map<Integer, ODEDataManager> odeDataManagerMap) {
-        this.odeDataManagerMap = odeDataManagerMap;
+    public void setOdeSolverResultSetMap(Map<Integer, ODESolverResultSet> odeSolverResultSetMap) {
+        this.odeSolverResultSetMap = odeSolverResultSetMap;
     }
     public void setFailed(boolean failed) {
         this.failed = failed;

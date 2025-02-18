@@ -24,7 +24,7 @@ public class LangevinPostProcessor {
     boolean failure;
     Simulation sim;
     SimulationOwner simOwner;
-    Map<Integer, ODEDataManager> odeDataManagerMap;
+    Map<Integer, ODESolverResultSet> odeSolverResultSetMap;
 
     // the results
     RowColumnResultSet averagesResultSet;
@@ -37,39 +37,35 @@ public class LangevinPostProcessor {
 
         sim = lppInput.getSimulation();
         simOwner = lppInput.getSimulationOwner();
-        LangevinPostProcessorOutput pllOut = new LangevinPostProcessorOutput(sim, simOwner);
-
+        odeSolverResultSetMap = lppInput.getOdeSolverResultSetMap();    // key = trial index, value = simulation results (ODESolverResultSet object) for that trial
         failure = lppInput.isFailed();
-        SolverTaskDescription std = sim.getSolverTaskDescription();
-        int numTrials = std.getNumTrials();
-        isMultiTrial = numTrials > 1 ? true : false;
+        isMultiTrial = odeSolverResultSetMap.size() > 1 ? true : false;
+
+        LangevinPostProcessorOutput pllOut = new LangevinPostProcessorOutput(sim, simOwner);
         if(failure) {
             pllOut.setFailed(failure);
             pllOut.setMultiTrial(isMultiTrial);
             return pllOut;
         }
 
-        odeDataManagerMap = lppInput.getOdeDataManagerMap();    // key = trial index, value = simulation results (ODESimData object) for that trial
-
         // probably useless at this point
-        SimulationInfo simInfo = sim.getSimulationInfo();
-        VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
-        MathOverrides mathOverrides = sim.getMathOverrides();
-        SimulationVersion simVersion = simInfo.getSimulationVersion();
+        if(sim != null) {
+            SimulationInfo simInfo = sim.getSimulationInfo();
+            VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
+            MathOverrides mathOverrides = sim.getMathOverrides();
+            SimulationVersion simVersion = simInfo.getSimulationVersion();
+        }
 
         try {
-            ODEDataManager tempODEDataManager = odeDataManagerMap.get(0);
-            ODESimData tempODESimData = (ODESimData) tempODEDataManager.getODESolverResultSet();
-            String format = tempODESimData.getFormatID();
-            String mathName = tempODESimData.getMathName();     // should be different instances?
+            ODESolverResultSet tempODESolverResultSet = odeSolverResultSetMap.get(0);
 
             // sanity check: shouldn't be, that only works for non-spatial stochastic where things are done differently
-            System.out.println("isGibsonMultiTrial: " + tempODEDataManager.getODESolverResultSet().isMultiTrialData());
+            System.out.println("isGibsonMultiTrial: " + tempODESolverResultSet.isMultiTrialData());
 
-            averagesResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.ZeroInitialize);
-            stdResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.ZeroInitialize);
-            minResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.CopyValues);
-            maxResultSet = RowColumnResultSet.deepCopy(tempODEDataManager.getODESolverResultSet(), RowColumnResultSet.DuplicateMode.CopyValues);
+            averagesResultSet = RowColumnResultSet.deepCopy(tempODESolverResultSet, RowColumnResultSet.DuplicateMode.ZeroInitialize);
+            stdResultSet = RowColumnResultSet.deepCopy(tempODESolverResultSet, RowColumnResultSet.DuplicateMode.ZeroInitialize);
+            minResultSet = RowColumnResultSet.deepCopy(tempODESolverResultSet, RowColumnResultSet.DuplicateMode.CopyValues);
+            maxResultSet = RowColumnResultSet.deepCopy(tempODESolverResultSet, RowColumnResultSet.DuplicateMode.CopyValues);
 
             calculateLangevinPrimaryStatistics();   // averages, standard deviation, min, max
             calculateLangevinAdvancedStatistics();
@@ -90,10 +86,9 @@ public class LangevinPostProcessor {
 
     private void calculateLangevinPrimaryStatistics() throws DataAccessException {
 
-        int numTrials = odeDataManagerMap.size();
+        int numTrials = odeSolverResultSetMap.size();
         for(int trialIndex = 0; trialIndex < numTrials; trialIndex++) {
-            ODEDataManager sourceOdm = odeDataManagerMap.get(trialIndex);
-            ODESolverResultSet sourceOsrs = sourceOdm.getODESolverResultSet();
+            ODESolverResultSet sourceOsrs = odeSolverResultSetMap.get(trialIndex);
             int rowCount = sourceOsrs.getRowCount();
             for (int row = 0; row < rowCount; row++) {
                 double[] sourceRowData = sourceOsrs.getRow(row);
@@ -119,8 +114,7 @@ public class LangevinPostProcessor {
         }
 
         for(int trialIndex = 0; trialIndex < numTrials; trialIndex++) {
-            ODEDataManager sourceOdm = odeDataManagerMap.get(trialIndex);
-            ODESolverResultSet sourceOsrs = sourceOdm.getODESolverResultSet();
+            ODESolverResultSet sourceOsrs = odeSolverResultSetMap.get(trialIndex);
             int rowCount = sourceOsrs.getRowCount();
             for (int row = 0; row < rowCount; row++) {
                 double[] sourceRowData = sourceOsrs.getRow(row);

@@ -36,6 +36,7 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.server.*;
 import cbit.vcell.util.ColumnDescription;
 import org.apache.logging.log4j.LogManager;
@@ -236,18 +237,18 @@ public void postProcessLangevinResults(Simulation sim) {
 	AsynchClientTask postProcessLangevinResultsTask = new AsynchClientTask("PostProcessLangevinResultsTask", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 
-			Map<Integer, ODEDataManager> odeDataManagerMap = new LinkedHashMap<>();
+			Map<Integer, ODESolverResultSet> odeSolverResultSetMap = new LinkedHashMap<>();
 			try {
 				for (int trialIndex = 0; trialIndex < numTrials; trialIndex++) {
 					VCSimulationDataIdentifier vcSimulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, trialIndex);
 					ODEDataManager dm = (ODEDataManager) getDocumentWindowManager().getRequestManager().getDataManager(null, vcSimulationDataIdentifier, false);
-					odeDataManagerMap.put(trialIndex, dm);
+					odeSolverResultSetMap.put(trialIndex, dm.getODESolverResultSet());
 				}
 			} catch(DataAccessException dae) {
 				System.out.println("ClientSimManager.postProcessLangevinResults() DataAccessException: " + dae.getMessage());
 				hashTable.put(LangevinPostProcessor.FAILURE_KEY, true);
 			}
-			if(odeDataManagerMap.isEmpty()) {
+			if(odeSolverResultSetMap.isEmpty()) {
 				System.out.println("ClientSimManager: no data");
 				hashTable.put(LangevinPostProcessor.FAILURE_KEY, true);
 			}
@@ -256,7 +257,7 @@ public void postProcessLangevinResults(Simulation sim) {
 			SimulationOwner simOwner = (SimulationOwner)hashTable.get(LangevinPostProcessor.SIMULATION_OWNER_KEY);
 			LangevinPostProcessorInput lppInput = new LangevinPostProcessorInput(sim, simOwner);
 			lppInput.setFailed((boolean)hashTable.get(LangevinPostProcessor.FAILURE_KEY));
-			lppInput.setOdeDataManagerMap(odeDataManagerMap);
+			lppInput.setOdeSolverResultSetMap(odeSolverResultSetMap);
 
 			LangevinPostProcessor lpp = new LangevinPostProcessor();
 			LangevinPostProcessorOutput lppOutput = lpp.postProcessLangevinResults(lppInput);
