@@ -74,43 +74,6 @@ public class MathOverrides implements Matchable, java.io.Serializable {
         return new ScanIndex(index);
     }
 
-    public enum DataReduction {
-        NONE,
-        OVER_ALL_TRIALS
-    }
-
-    // TODO: possible way to add generalized numTrials
-//    public static class DataQuery {
-//        public final Optional<ScanIndex> scanIndex;
-//        public final DataReduction dataReduction;
-//        public final Optional<Integer> scanCount;  // only needed when multiple trials are present.
-//        public final Optional<Integer> trialCount;
-//        public final Optional<Integer> jobIndex;   // only used without data reduction, referring to a single job index
-//
-//        private DataQuery(ScanIndex scanIndex, DataReduction dataReduction, Optional<Integer> scanCount, Optional<Integer> scanCount, Optional<Integer> jobIndex){
-//            this.scanIndex = scanIndex;
-//            this.dataReduction = dataReduction;
-//            this.scanCount = scanCount;
-//            this.jobIndex = jobIndex;
-//        }
-//
-//        public static DataQuery fromSingleTrial(ScanIndex scanIndex) {
-//            return new DataQuery(scanIndex, DataReduction.NONE, Optional.empty(), Optional.of(scanIndex.index));
-//        }
-//        public static DataQuery summarizeTrials(ScanIndex scanIndex, int scanCount, int trialCount) {
-//            return new DataQuery(scanIndex, DataReduction.OVER_ALL_TRIALS, Optional.of(scanCount), Optional.empty());
-//        }
-//        public static DataQuery fromJobIndex(int jobIndex) {
-//            return new DataQuery(scanIndex, DataReduction.NONE, Optional.empty(), Optional.of(jobIndex));
-//        }
-//        public int getJobIndex() {
-//            if (jobIndex.isEmpty()) {
-//                throw new RuntimeException("not a single job index, involves data reduction");
-//            }
-//            return jobIndex.get().intValue();
-//        }
-//    }
-
     public static class ScanIndex implements Serializable {
         public final static ScanIndex ZERO = new ScanIndex(0);
         public final int index;

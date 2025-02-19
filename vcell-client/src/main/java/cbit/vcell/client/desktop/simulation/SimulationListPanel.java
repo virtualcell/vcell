@@ -46,8 +46,6 @@ import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 
-import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DefaultScrollTableActionManager;

@@ -12,10 +12,8 @@ package cbit.vcell.math;
 
 import java.util.*;
 
-import com.lowagie.text.Row;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.DivideByZeroException;

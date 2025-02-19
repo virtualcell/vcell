@@ -13,10 +13,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Vector;
 
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.document.PropertyConstants;

@@ -2,7 +2,6 @@ package cbit.vcell.simdata;
 
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.solver.*;
-import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import org.vcell.util.DataAccessException;
@@ -60,7 +59,6 @@ public class LangevinPostProcessor {
             ODESolverResultSet tempODESolverResultSet = odeSolverResultSetMap.get(0);
 
             // sanity check: shouldn't be, that only works for non-spatial stochastic where things are done differently
-            System.out.println("isGibsonMultiTrial: " + tempODESolverResultSet.isMultiTrialData());
 
             averagesResultSet = RowColumnResultSet.deepCopy(tempODESolverResultSet, RowColumnResultSet.DuplicateMode.ZeroInitialize);
             stdResultSet = RowColumnResultSet.deepCopy(tempODESolverResultSet, RowColumnResultSet.DuplicateMode.ZeroInitialize);
@@ -147,7 +145,6 @@ public class LangevinPostProcessor {
                 stdRowData[i] = Math.sqrt(variance);
             }
         }
-        System.out.println(" ------------------------------------");
     }
 
     private void calculateLangevinAdvancedStatistics() {

@@ -190,9 +190,9 @@
 		<solvers-vcell-mac.version>v0.0.44-dev4</solvers-vcell-mac.version>
 		<solvers-vcell-windows.version>v0.0.40</solvers-vcell-windows.version>
 		<solvers-vcell-linux.version>v0.0.44-dev4</solvers-vcell-linux.version>
-		<solvers-langevin-mac.version>1.2.7</solvers-langevin-mac.version>
+		<solvers-langevin-mac.version>1.3.3</solvers-langevin-mac.version>
 		<solvers-langevin-windows.version>1.3.3</solvers-langevin-windows.version>
-		<solvers-langevin-linux.version>1.2.7</solvers-langevin-linux.version>
+		<solvers-langevin-linux.version>1.3.3</solvers-langevin-linux.version>
 	</properties>
 
 
