@@ -46,8 +46,6 @@ import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 
-import org.vcell.util.ArrayUtils;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
@@ -170,6 +168,7 @@ public class SimulationListPanel extends DocumentEditorSubPanel {
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == fieldSimulationWorkspace && evt.getPropertyName().equals(SimulationWorkspace.PROPERTY_NAME_SIMULATION_STATUS)) {
+//				System.out.println("SimulationListPanel: status changed: simIndex: " + evt.getNewValue());
 				refreshButtonsLax();
 			}
 			if (evt.getSource() instanceof SimulationContext && evt.getPropertyName().equals(GeometryOwner.PROPERTY_NAME_GEOMETRY)) {

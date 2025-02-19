@@ -1250,6 +1250,12 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					return;
 				}
+//				if(checkOnRate(sasOne, sasTwo) == false) {	// rate doesn't check as acceptable
+//					String msg = "The simulation Kon is too large (I.e. exceeds the diffusion limited rate) for this reaction.";
+//					String tip = "Please consider reducing Kon or increasing the Radius or D of the participating Site Types.";
+//					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+//					return;
+//				}
 			}
 			// binding reactions must be reversible
 			if(!reactionRule.isReversible()) {
@@ -1309,6 +1315,30 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		}
 	}
 }
+	/*
+	 * The maximum possible on-rate is given by kon_max = 4*pi*R*D, so we'd
+	 * better have kon < 4*pi*R*D . If that isn't satisfied then nothing else will work.
+	 */
+	public boolean checkOnRate(SiteAttributesSpec sasOne, SiteAttributesSpec sasTwo) {
+
+		double R = sasOne.computeReactionRadius() + sasTwo.computeReactionRadius();	// nm
+		double D = sasOne.getDiffusionRate() + sasTwo.getDiffusionRate();
+
+		LocalParameter lp = getModelProcess().getKineticLaw().getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+		String doubleRegex = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?";
+		if(!lp.getExpression().infix().matches(doubleRegex)) {
+			return false;
+		}
+		double kon = Double.parseDouble(lp.getExpression().infix());
+// TODO: check all scaling
+		double kon_scale = 1660000.0 * kon;			// Kon also needs some conversion (TODO: why?)
+		double D_scale = D * 1000000.0;				// D is in um^2/s, convert to nm^2/s
+
+		double rhs1 = 4.0*Math.PI*R*D_scale;
+
+		boolean check = (kon_scale < rhs1);
+		return check;
+	}
 
 /**
  * Accessor for the propertyChange field.

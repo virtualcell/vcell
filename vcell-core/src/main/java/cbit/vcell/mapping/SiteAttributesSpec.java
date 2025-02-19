@@ -194,7 +194,16 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		return true;
 	}
 
-		public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
+	public double computeReactionRadius() {		// in langevin solver notation is R
+		// assumes radius in nanometers
+		// Either 1.5x radius or radius+2 nm, whichever is smaller, but not smaller than radius+0.5 nm
+		double minRadius = Math.max(0.5+fieldRadius,  1.5*fieldRadius);
+		double R = Math.min(minRadius, fieldRadius+2);
+		return R;
+	}
+
+	@Deprecated
+	public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 		issueContext = issueContext.newChildContext(ContextType.SiteAttributesSpec, this);
 
 		if(fieldLocation instanceof Membrane) {

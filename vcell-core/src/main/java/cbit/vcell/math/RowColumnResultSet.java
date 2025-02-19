@@ -12,10 +12,8 @@ package cbit.vcell.math;
 
 import java.util.*;
 
-import com.lowagie.text.Row;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.util.BeanUtils;
 
 import cbit.vcell.math.Variable.Domain;
 import cbit.vcell.parser.DivideByZeroException;
@@ -60,6 +58,28 @@ public class RowColumnResultSet implements java.io.Serializable {
         this.fieldDataColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.fieldDataColumnDescriptions);
         this.fieldFunctionColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.fieldFunctionColumnDescriptions);
         this.fieldValues = new ArrayList<>(copyThisRowColumnResultSet.fieldValues);
+    }
+
+    public enum DuplicateMode {
+        CopyValues,
+        ZeroInitialize
+    }
+    public static RowColumnResultSet deepCopy(RowColumnResultSet original, DuplicateMode mode) {
+        RowColumnResultSet copy = new RowColumnResultSet();
+        copy.fieldDataColumnDescriptions = new Vector<>(original.fieldDataColumnDescriptions);
+        copy.fieldFunctionColumnDescriptions = new Vector<>(original.fieldFunctionColumnDescriptions);
+        copy.fieldValues = new ArrayList<>();
+        for (double[] originalRow : original.fieldValues) {
+            double[] copyRow = new double[originalRow.length];
+            if(mode == DuplicateMode.CopyValues) {
+                System.arraycopy(originalRow, 0, copyRow, 0, originalRow.length);
+            }
+            copy.fieldValues.add(copyRow);
+        }
+
+
+
+        return copy;
     }
 
     /**
