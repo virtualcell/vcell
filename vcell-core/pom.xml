@@ -775,7 +775,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-latest</url>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-13</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
@@ -904,7 +904,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-latest</url>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-13</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
