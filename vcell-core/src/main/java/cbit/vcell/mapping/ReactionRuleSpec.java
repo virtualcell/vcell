@@ -1250,12 +1250,12 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					return;
 				}
-//				if(checkOnRate(sasOne, sasTwo) == false) {	// rate doesn't check as acceptable
-//					String msg = "The simulation Kon is too large (I.e. exceeds the diffusion limited rate) for this reaction.";
-//					String tip = "Please consider reducing Kon or increasing the Radius or D of the participating Site Types.";
-//					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-//					return;
-//				}
+				if(checkOnRate(sasOne, sasTwo) == false) {	// rate doesn't check as acceptable
+					String msg = "The simulation Kon is too large (I.e. exceeds the diffusion limited rate) for this reaction.";
+					String tip = "Please consider reducing Kon or increasing the Radius or D of the participating Site Types.";
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+					return;
+				}
 			}
 			// binding reactions must be reversible
 			if(!reactionRule.isReversible()) {
