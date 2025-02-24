@@ -58,7 +58,7 @@ public class BiosimulationsHdf5WriterTest {
 
         Hdf5SedmlResults plotDatasetWrapper = new Hdf5SedmlResults();
         plotDatasetWrapper.datasetMetadata = plotMetadata;
-        Hdf5SedmlResultsNonspatial plotDataSourceNonspatial = new Hdf5SedmlResultsNonspatial();
+        Hdf5SedmlResultsNonSpatial plotDataSourceNonspatial = new Hdf5SedmlResultsNonSpatial();
         plotDataSourceNonspatial.scanBounds = new int[0];
         plotDataSourceNonspatial.scanParameterNames = new String[0];
         plotDatasetWrapper.dataSource = plotDataSourceNonspatial;
@@ -68,7 +68,7 @@ public class BiosimulationsHdf5WriterTest {
 
         Hdf5SedmlResults reportDatasetWrapper = new Hdf5SedmlResults();
         reportDatasetWrapper.datasetMetadata = reportMetadata;
-        Hdf5SedmlResultsNonspatial reportDataSourceNonspatial = new Hdf5SedmlResultsNonspatial();
+        Hdf5SedmlResultsNonSpatial reportDataSourceNonspatial = new Hdf5SedmlResultsNonSpatial();
         reportDataSourceNonspatial.scanBounds = new int[] { 2 }; // zero indexed? 
         reportDataSourceNonspatial.scanParameterNames = new String[] { "k1" };
         reportDatasetWrapper.dataSource = reportDataSourceNonspatial;

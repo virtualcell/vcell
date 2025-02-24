@@ -13,11 +13,12 @@ import org.vcell.cli.exceptions.PreProcessingException;
 import org.vcell.cli.run.hdf5.HDF5ExecutionResults;
 import org.vcell.cli.run.hdf5.Hdf5DataContainer;
 import org.vcell.cli.run.hdf5.Hdf5DataExtractor;
-import org.vcell.cli.run.results.NonSpatialValueHolder;
-import org.vcell.cli.run.results.NonSpatialResultsConverter;
+import org.vcell.cli.run.results.*;
 import org.vcell.cli.run.plotting.PlottingDataExtractor;
 import org.vcell.cli.run.plotting.ChartCouldNotBeProducedException;
 import org.vcell.cli.run.plotting.Results2DLinePlot;
+import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
+import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
@@ -259,9 +260,13 @@ public class SedmlJob {
         try {
             span = Tracer.startSpan(Span.ContextType.PROCESSING_SIMULATION_OUTPUTS, "processOutputs", null);
             /////////////////////////////////////////////////////
-            Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults =
+            Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults =
                     NonSpatialResultsConverter.organizeNonSpatialResultsBySedmlDataGenerator(
                             this.sedml, solverHandler.nonSpatialResults, solverHandler.taskToTempSimulationMap);
+
+            Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizedSpatialResults =
+                    SpatialResultsConverter.organizeSpatialResultsBySedmlDataGenerator(
+                        this.sedml, solverHandler.spatialResults, solverHandler.taskToTempSimulationMap);
 
             boolean hasReports = !this.sedml.getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList().isEmpty();
             boolean has2DPlots = !this.sedml.getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList().isEmpty();
@@ -270,7 +275,7 @@ public class SedmlJob {
                 if (has2DPlots) this.generatePlots(organizedNonSpatialResults);
             }
 
-            this.indexHDF5Data(organizedNonSpatialResults, solverHandler, masterHdf5File);
+            this.indexHDF5Data(organizedNonSpatialResults, organizedSpatialResults, solverHandler, masterHdf5File);
 
         } catch (Exception e) {
             this.somethingFailed = somethingDidFail();
@@ -355,7 +360,7 @@ public class SedmlJob {
         }
     }
 
-    private void generatePlots(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults) throws ExecutionException {
+    private void generatePlots(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults) throws ExecutionException {
         logger.info("Generating Plots... ");
         // We assume if no exception is returned that the plots pass
         PlottingDataExtractor plotExtractor = new PlottingDataExtractor(this.sedml, this.SEDML_NAME);
@@ -372,23 +377,14 @@ public class SedmlJob {
         }
     }
 
-    private void indexHDF5Data(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults, SolverHandler solverHandler, HDF5ExecutionResults masterHdf5File) {
+    private void indexHDF5Data(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizedSpatialResults, SolverHandler solverHandler, HDF5ExecutionResults masterHdf5File) {
         this.logDocumentMessage += "Indexing HDF5 data... ";
         logger.info("Indexing HDF5 data... ");
 
         Hdf5DataExtractor hdf5Extractor = new Hdf5DataExtractor(this.sedml, solverHandler.taskToTempSimulationMap);
 
-        Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(organizedNonSpatialResults, solverHandler.spatialResults, masterHdf5File.isBioSimHdf5);
+        Hdf5DataContainer partialHdf5File = hdf5Extractor.extractHdf5RelevantData(organizedNonSpatialResults, organizedSpatialResults, masterHdf5File.isBioSimHdf5);
         masterHdf5File.addResults(this.sedml, partialHdf5File);
-
-        for (File tempH5File : solverHandler.spatialResults.values()) {
-            if (tempH5File == null) continue;
-            tempH5File.deleteOnExit();
-            if (!SystemUtils.IS_OS_WINDOWS) continue;
-            String message = "VCell can not delete intermediate file '%s' on Windows OS " +
-                    "(this is due to the JHDF library suffering from JDK-4715154?).";
-            logger.warn(String.format(message, tempH5File.getName()));
-        }
     }
 
     // This method is a bit weird; it uses a temp file as a reference to compare against while getting the file straight from the archive.

@@ -6,19 +6,14 @@ import org.jlibsedml.DataGenerator;
 import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
 import org.jlibsedml.AbstractTask;
-import org.vcell.cli.run.results.NonSpatialValueHolder;
-import org.vcell.cli.run.results.NonSpatialResultsConverter;
-import org.vcell.cli.run.TaskJob;
+import org.vcell.cli.run.results.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.cli.run.results.SpatialResultsConverter;
+import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
+import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 
-import java.io.File;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Factory class to create Hdf5DataWrappers from a sedml object and simulation data.
@@ -45,20 +40,22 @@ public class Hdf5DataExtractor {
     /**
      * 
      * @param organizedNonSpatialResults the nonspatial results set of a sedml execution
-     * @param spatialResults the spatial results set of a sedml execution
+     * @param organizedSpatialResults the spatial results set of a sedml execution
      * @return a wrapper for hdf5 relevant data
      * @see NonSpatialResultsConverter ::convertNonspatialResultsToSedmlFormat
      * @see SpatialResultsConverter ::collectSpatialDatasets
      */
-    public Hdf5DataContainer extractHdf5RelevantData(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults, Map<TaskJob, File> spatialResults, boolean isBioSimMode) {
+    public Hdf5DataContainer extractHdf5RelevantData(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizedSpatialResults, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> wrappers = new LinkedHashMap<>();
         Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer(isBioSimMode);
         Exception nonSpatialException = null, spatialException = null;
+        Set<DataGenerator> allValidDataGenerators = new HashSet<>(organizedNonSpatialResults.keySet());
+        allValidDataGenerators.addAll(organizedSpatialResults.keySet());
 
         if (!organizedNonSpatialResults.isEmpty()){
             try {
                 Map<Report, List<Hdf5SedmlResults>> nonSpatialWrappers = NonSpatialResultsConverter.prepareNonSpatialDataForHdf5(
-                        this.sedml, organizedNonSpatialResults, this.sedmlLocation);
+                        this.sedml, organizedNonSpatialResults, allValidDataGenerators, this.sedmlLocation, isBioSimMode);
                 Hdf5DataExtractor.addWrappers(wrappers, nonSpatialWrappers);
             } catch (Exception e){
                 logger.warn("Collection of non-spatial datasets failed for " + this.sedml.getFileName(), e);
@@ -67,8 +64,8 @@ public class Hdf5DataExtractor {
         }
 
         try {
-            Map<Report, List<Hdf5SedmlResults>> spatialWrappers = SpatialResultsConverter.convertSpatialResultsToSedmlFormat(
-                    this.sedml, spatialResults, this.taskToSimulationMap, this.sedmlLocation);
+            Map<Report, List<Hdf5SedmlResults>> spatialWrappers = SpatialResultsConverter.prepareSpatialDataForHdf5(
+                    this.sedml, organizedSpatialResults, allValidDataGenerators, this.sedmlLocation, isBioSimMode);
             Hdf5DataExtractor.addWrappers(wrappers, spatialWrappers);
 
         } catch (Exception e){
