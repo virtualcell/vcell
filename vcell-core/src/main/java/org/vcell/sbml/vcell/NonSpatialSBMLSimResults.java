@@ -8,6 +8,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import org.jlibsedml.UniformTimeCourse;
 import org.sbml.jsbml.SBase;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.util.Pair;
@@ -39,15 +40,15 @@ public class NonSpatialSBMLSimResults {
         return this.resultSet.getRowCount();
     }
 
-    public LazySBMLNonSpatialDataAccessor getSBMLDataAccessor(String sbmlId, double outputStartTime, int outputNumberOfPoints){
-        String key = NonSpatialSBMLSimResults.createUniqueKey(sbmlId, outputStartTime, outputNumberOfPoints);
+    public LazySBMLNonSpatialDataAccessor getSBMLDataAccessor(String sbmlId, UniformTimeCourse utcSim, int desiredLength){
+        String key = NonSpatialSBMLSimResults.createUniqueKey(sbmlId, utcSim);
         if (this.lazyAccessorMapping.containsKey(key))return this.lazyAccessorMapping.get(key);
-        LazySBMLNonSpatialDataAccessor newAccessor = new LazySBMLNonSpatialDataAccessor(this.generateCallable(sbmlId, outputStartTime, outputNumberOfPoints), outputNumberOfPoints);
+        LazySBMLNonSpatialDataAccessor newAccessor = new LazySBMLNonSpatialDataAccessor(this.generateCallable(sbmlId, utcSim, desiredLength), desiredLength);
         this.lazyAccessorMapping.put(key, newAccessor);
         return newAccessor;
     }
 
-    private Callable<SBMLDataRecord> generateCallable(String sbmlId, double outputStartTime, int outputNumberOfPoints){
+    private Callable<SBMLDataRecord> generateCallable(String sbmlId, UniformTimeCourse utcSim, int desiredLength){
         return new Callable<>() {
             /**
              * Access upon request the data desired from the appropriate
@@ -57,16 +58,17 @@ public class NonSpatialSBMLSimResults {
              */
             @Override
             public SBMLDataRecord call() throws Exception {
-                return NonSpatialSBMLSimResults.this.getSBMLVarData(sbmlId, outputStartTime, outputNumberOfPoints);
+                return NonSpatialSBMLSimResults.this.getSBMLVarData(sbmlId, utcSim, desiredLength);
             }
         };
     }
 
     // We want to do lazy data fetching
-    private SBMLDataRecord getSBMLVarData(String sbmlId, double outputStartTime, int outputNumberOfPoints)
+    private SBMLDataRecord getSBMLVarData(String sbmlId, UniformTimeCourse utcSim, int desiredLength)
             throws ExpressionException {
         int column = this.resultSet.findColumn(sbmlId) ;
-        double[] data = null;
+        //double[] data = null;
+        double[] processedData = new double[desiredLength];
 
         if (column < 0) {
             SBase sBase = this.sbmlMapping.getMappedSBase(sbmlId);
@@ -124,19 +126,21 @@ public class NonSpatialSBMLSimResults {
                 double compartmentSize = sizeMathVar.getExpression().evaluateConstant();
                 // if the distributed rate is in the result set, then multiply distributed rate by compartment size
                 if (this.resultSet.findColumn(distributedRateMathVar.getName()) >= 0) {
-                    data = this.resultSet.extractColumn(this.resultSet.findColumn(distributedRateMathVar.getName()));
+                    double[] data = this.resultSet.extractColumn(this.resultSet.findColumn(distributedRateMathVar.getName()));
+                    System.arraycopy(data, 0, processedData, 0, data.length);
                     for (int i = 0; i < data.length; i++) {
-                        data[i] *= compartmentSize;
+                        processedData[i] *= compartmentSize;
                     }
                 } else if (distributedRateMathVar instanceof Constant constDRMV) {
                     // if the distributed rate is a constant, then multiply constant by compartment size
-                    data = new double[this.resultSet.getRowCount()];
+                    double[] data = new double[this.resultSet.getRowCount()];
                     Arrays.fill(data, constDRMV.getExpression().evaluateConstant() * compartmentSize);
+                    System.arraycopy(data, 0, processedData, 0, data.length);
                 } else {
                     throw new RuntimeException("failed to find VCell reaction rate for sbml reaction: " + sbmlId);
                 }
 
-                double[] vector = getRequestedDataVector(outputStartTime, outputNumberOfPoints, data);
+                double[] vector = NonSpatialSBMLSimResults.getRequestedDataVector(utcSim.getOutputStartTime() - utcSim.getInitialTime(), desiredLength, processedData);
                 return new SBMLDataRecord(vector, List.of(vector.length), null);
             }
 
@@ -144,26 +148,27 @@ public class NonSpatialSBMLSimResults {
             if (mathVar == null) {
                 throw new RuntimeException("Math mapping couldn't find mathVar with ste: " + ste.getName());
             }
-
+            double[] data = null;
             int varIndex = this.resultSet.findColumn(mathVar.getName());
-            if (varIndex < 0) {
-                if (mathVar instanceof Constant) {
-                    double value = mathVar.getExpression().evaluateConstant();
-                    data = new double[this.resultSet.getRowCount()];
-                    Arrays.fill(data, value);
-                }
-            } else {
+
+            if (varIndex >= 0){
                 data = this.resultSet.extractColumn(varIndex);
+            } else if (mathVar instanceof Constant){
+                double value = mathVar.getExpression().evaluateConstant();
+                data = new double[this.resultSet.getRowCount()];
+                Arrays.fill(data, value);
             }
 
-            if (data == null) {
-                throw new RuntimeException("couldn't find var '" + sbmlId + "' in vcell sim results");
-            }
+            if (data == null) throw new RuntimeException("couldn't find var '" + sbmlId + "' in vcell sim results");
+
+            System.arraycopy(data, 0, processedData, 0, data.length);
         } else { // found column
-            data = this.resultSet.extractColumn(column);
+            double[] data = this.resultSet.extractColumn(column);
+            if ("t".equals(sbmlId)) for (int i = 0; i < data.length; i++) data[i] += utcSim.getInitialTime();
+            System.arraycopy(data, 0, processedData, 0, data.length);
         }
 
-        double[] vector = NonSpatialSBMLSimResults.getRequestedDataVector(outputStartTime, outputNumberOfPoints, data);
+        double[] vector = NonSpatialSBMLSimResults.getRequestedDataVector(utcSim.getOutputStartTime() - utcSim.getInitialTime(), utcSim.getNumberOfSteps() + 1, processedData);
         return new SBMLDataRecord(vector, List.of(vector.length), null);
     }
 
@@ -171,15 +176,12 @@ public class NonSpatialSBMLSimResults {
         if (outputNumberOfPoints > data.length) throw new IllegalArgumentException("outputNumberOfPoints > data.length");
         if (outputStartTime == 0) return data;
 
-        double[] adjData = new double[outputNumberOfPoints + 1];
-        System.arraycopy(data, data.length - outputNumberOfPoints - 1, adjData, 0, outputNumberOfPoints + 1);
-//        for (int i = data.length - outputNumberOfPoints - 1, j = 0; i < data.length; i++, j++) {
-//            adjData[j] = data[i];
-//        }
+        double[] adjData = new double[outputNumberOfPoints];
+        System.arraycopy(data, data.length - outputNumberOfPoints - 1, adjData, 0, outputNumberOfPoints);
         return adjData;
     }
 
-    private static String createUniqueKey(String sbmlId, double outputStartTime, int outputNumberOfPoints){
-        return String.format("%s@%f->%d", sbmlId, outputStartTime, outputNumberOfPoints);
+    private static String createUniqueKey(String sbmlId, UniformTimeCourse utcSim){
+        return String.format("%s@%s", sbmlId, utcSim.toString());
     }
 }

@@ -209,7 +209,7 @@ public class SpatialResultsConverter extends ResultsConverter {
             for (TaskJob taskJob : taskJobs) {
                 // Leaving intermediate variables for debugging access
                 SpatialSBMLSimResults spatialResults = spatialResultsHash.get(taskJob);
-                LazySBMLSpatialDataAccessor dataAccessor = spatialResults.getSBMLDataAccessor(vcellVarId, utcSim.getOutputStartTime(), utcSim.getNumberOfSteps() + 1);
+                LazySBMLSpatialDataAccessor dataAccessor = spatialResults.getSBMLDataAccessor(vcellVarId, utcSim);
                 individualVarResultsHolder.listOfResultSets.add(dataAccessor);
                 int localMax;
                 if ((localMax = spatialResults.getMaxDataFlatLength()) > maxLengthOfData) maxLengthOfData = localMax;

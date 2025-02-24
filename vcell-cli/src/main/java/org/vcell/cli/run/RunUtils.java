@@ -186,12 +186,10 @@ public class RunUtils {
                     // get target values
                     for (Variable var : vars) {
                         AbstractTask task = sedml.getTaskWithId(var.getReference());
-                        Simulation sedmlSim = null;
-                        Task actualTask = null;
+                        Simulation sedmlSim;
+                        Task actualTask;
 
-                        if(task instanceof RepeatedTask) { // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
-                            RepeatedTask rt = (RepeatedTask)task;
-                            
+                        if(task instanceof RepeatedTask rt) { // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
                             if (!rt.getResetModel() || rt.getSubTasks().size() != 1) {
                                 logger.warn("Sequential RepeatedTask not yet supported, task " + task.getElementName() + " is being skipped");
                                 continue;
@@ -205,14 +203,13 @@ public class RunUtils {
                                 if (referredTask instanceof RepeatedTask) rt = (RepeatedTask)referredTask;
                             } while (referredTask instanceof RepeatedTask);
                             actualTask = (Task)referredTask;
-                            sedmlSim = sedml.getSimulation(actualTask.getSimulationReference());
                         } else {
                             actualTask = (Task)task;
-                            sedmlSim = sedml.getSimulation(task.getSimulationReference());
                         }
+                        sedmlSim = sedml.getSimulation(actualTask.getSimulationReference());
 
                         // Confirm uniform time
-                        if (!(sedmlSim instanceof UniformTimeCourse)){
+                        if (!(sedmlSim instanceof UniformTimeCourse utcSim)){
                             logger.error("only uniform time course simulations are supported");
                             continue;
                         }
@@ -247,8 +244,6 @@ public class RunUtils {
                         varIDs.add(var.getId());
                         
                         // we want to keep the last outputNumberOfSteps only
-                        int outputNumberOfSteps = ((UniformTimeCourse) sedmlSim).getNumberOfSteps();
-                        double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
                         List<double[]> variablesList = new ArrayList<>();
 
                         for (TaskJob taskJob : taskJobs){
@@ -256,7 +251,7 @@ public class RunUtils {
                             // ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
                             NonSpatialSBMLSimResults results = resultsHash.get(taskJob); // hence the added "_0"
                             if (results==null) continue;
-                            double[] data = results.getSBMLDataAccessor(sbmlVarId, outputStartTime, outputNumberOfSteps + 1).getData().data();
+                            double[] data = results.getSBMLDataAccessor(sbmlVarId, utcSim).getData().data();
 
                             mxlen = Integer.max(mxlen, data.length);
                             if(!values.containsKey(var)) {		// this is the first double[]

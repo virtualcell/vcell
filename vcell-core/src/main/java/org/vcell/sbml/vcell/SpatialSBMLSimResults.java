@@ -14,6 +14,7 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
+import org.jlibsedml.UniformTimeCourse;
 import org.sbml.jsbml.SBase;
 import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 import org.vcell.util.DataAccessException;
@@ -58,15 +59,15 @@ public class SpatialSBMLSimResults {
         return mesh.getSizeZ() * mesh.getSizeY() * mesh.getSizeX() * this.dataSetController.getDataSetTimes(id).length;
     }
 
-    public LazySBMLSpatialDataAccessor getSBMLDataAccessor(String sbmlId, double outputStartTime, int outputNumberOfPoints) throws MathException, IOException, DataAccessException {
-        String key = SpatialSBMLSimResults.createUniqueKey(sbmlId, outputStartTime, outputNumberOfPoints);
+    public LazySBMLSpatialDataAccessor getSBMLDataAccessor(String sbmlId, UniformTimeCourse utcSim) throws MathException, IOException, DataAccessException {
+        String key = SpatialSBMLSimResults.createUniqueKey(sbmlId, utcSim);
         if (this.lazyAccessorMapping.containsKey(key))return this.lazyAccessorMapping.get(key);
-        LazySBMLSpatialDataAccessor newAccessor = new LazySBMLSpatialDataAccessor(this.generateCallable(sbmlId, outputStartTime, outputNumberOfPoints), this.getMaxDataFlatLength());
+        LazySBMLSpatialDataAccessor newAccessor = new LazySBMLSpatialDataAccessor(this.generateCallable(sbmlId, utcSim), this.getMaxDataFlatLength());
         this.lazyAccessorMapping.put(key, newAccessor);
         return newAccessor;
     }
 
-    private Callable<SBMLDataRecord> generateCallable(String vcellVarId, double outputStartTime, int outputNumberOfPoints){
+    private Callable<SBMLDataRecord> generateCallable(String vcellVarId, UniformTimeCourse utcSim){
         return new Callable<>() {
             /**
              * Access upon request the data desired from the appropriate
@@ -76,15 +77,15 @@ public class SpatialSBMLSimResults {
              */
             @Override
             public SBMLDataRecord call() throws Exception {
-                return SpatialSBMLSimResults.this.getDataForSBMLVar(vcellVarId, outputStartTime, outputNumberOfPoints);
+                return SpatialSBMLSimResults.this.getDataForSBMLVar(vcellVarId, utcSim);
             }
         };
     }
 
-    public SBMLDataRecord getDataForSBMLVar(String sbmlId, double outputStartTime, int outputNumberOfPoints)
+    public SBMLDataRecord getDataForSBMLVar(String sbmlId, UniformTimeCourse utcSim)
             throws ExpressionException, DataAccessException, MathException, IOException {
         VCDataIdentifier vcDId = new VCSimulationDataIdentifier(this.simId, this.jobIndex);
-        double[] times = this.getDesiredTimes(vcDId, outputStartTime, outputNumberOfPoints);
+        double[] times = this.getDesiredTimes(vcDId, utcSim);
 
         DataOperation dataOperation = new DataOperation.DataProcessingOutputInfoOP(vcDId,true, this.DEFAULT_OUTPUT_CONTEXT);
         DataOperationResults.DataProcessingOutputInfo results = (DataOperationResults.DataProcessingOutputInfo) this.dataSetController.doDataOperation(dataOperation);
@@ -188,22 +189,23 @@ public class SpatialSBMLSimResults {
         throw new RuntimeException("failed to find VCell structure size parameter for sbml compartment size: " + sbmlId);
     }
 
-    private double[] getDesiredTimes(VCDataIdentifier vcDId, double outputStartTime, int outputNumberOfPoints) throws DataAccessException {
-        double[] finalTimes = new double[outputNumberOfPoints];
+    private double[] getDesiredTimes(VCDataIdentifier vcDId, UniformTimeCourse utcSim) throws DataAccessException {
+        double adjustedStartTime = utcSim.getOutputStartTime() - utcSim.getInitialTime();
+        double[] finalTimes = new double[utcSim.getNumberOfSteps() + 1];
         double[] preTimes = this.dataSetController.getDataSetTimes(vcDId);
         int startIndex = -1;
         for (int i = 0; i < preTimes.length; i++) {
-            if (preTimes[i] != outputStartTime) continue;
+            if (preTimes[i] != adjustedStartTime) continue;
             startIndex = i;
             break;
         }
-        if (startIndex < 0) throw new IllegalArgumentException("Time `" + outputStartTime + "` not found");
+        if (startIndex < 0) throw new IllegalArgumentException("Time `" + adjustedStartTime + "` not found");
         double[] subArray = Arrays.copyOfRange(preTimes, startIndex, preTimes.length);
-        double indexStep = (1.0 * subArray.length - 1) / (outputNumberOfPoints - 1);
+        double indexStep = (1.0 * subArray.length - 1) / (utcSim.getNumberOfSteps());
         if (indexStep % 1 != 0)
-            throw new RuntimeException("Found incompatible sampling with respect to requested output points: `" + subArray.length + "` vs `" + outputNumberOfPoints + "`");
-        for (int i = 0, j = 0; i < outputNumberOfPoints; i++, j += (int)indexStep) {
-            finalTimes[i] = subArray[j];
+            throw new RuntimeException("Found incompatible sampling with respect to requested output points: `" + subArray.length + "` vs `" + utcSim.getNumberOfSteps() + 1 + "`");
+        for (int i = 0, j = 0; i < utcSim.getNumberOfSteps() + 1; i++, j += (int)indexStep) {
+            finalTimes[i] = subArray[j] + utcSim.getInitialTime();
         }
         return finalTimes;
     }
@@ -219,7 +221,7 @@ public class SpatialSBMLSimResults {
         return new VCSimulationIdentifier(vcellSim.getKey(), user);
     }
 
-    private static String createUniqueKey(String sbmlId, double outputStartTime, int outputNumberOfPoints){
-        return String.format("%s@%f->%d", sbmlId, outputStartTime, outputNumberOfPoints);
+    private static String createUniqueKey(String sbmlId, UniformTimeCourse utcSim){
+        return String.format("%s@%s", sbmlId, utcSim.toString());
     }
 }
