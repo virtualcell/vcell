@@ -65,14 +65,6 @@ public class BiosimulationsHdf5Writer {
                             throw new BiosimulationsHdfWriterException("Unexpected parent encountered");
                         }
 
-//                        if (child instanceof WritableGroup writableChild) {
-//                            group = writableChild;
-//                        } else {
-//                            group = hdf5File.putGroup(groupPath);
-//                            JhdfUtils.putAttribute(group,"combineArchiveLocation", groupPath);
-//                            JhdfUtils.putAttribute(group,"uri", groupPath);
-//                        }
-
                         // Process the Dataset
                         for (Hdf5SedmlResults data : hdf5DataWrapper.reportToResultsMap.get(report)){
                             final Hdf5PreparedData preparedData = Hdf5DataPreparer.prepareData(data, report, hdf5DataWrapper.trackSubSetsInReports);
