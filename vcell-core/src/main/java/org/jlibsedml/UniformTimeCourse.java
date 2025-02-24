@@ -9,7 +9,7 @@ public final class UniformTimeCourse extends Simulation {
 	  @Override
 	public String toString() {
 		return "UniformTimeCourse [initialTime=" + initialTime
-				+ ", numberOfPoints=" + numberOfSteps + ", outputEndTime="
+				+ ", numberOfSteps=" + numberOfSteps + ", outputEndTime="
 				+ outputEndTime + ", outputStartTime=" + outputStartTime
 				+ ", " + getAlgorithm() + ", getId()=" + getId()
 				+ "]";

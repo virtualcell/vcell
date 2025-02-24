@@ -118,9 +118,8 @@ public class SolverHandler {
     	// we first make a list of all the sub tasks (sub tasks themselves may be instanceof Task or another RepeatedTask)
         Set <AbstractTask> subTasks = new LinkedHashSet<> ();
         for(AbstractTask at : sedml.getTasks()) {
-        	if(!(at instanceof RepeatedTask)) continue;
-			RepeatedTask rt = (RepeatedTask)at;
-			Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
+        	if(!(at instanceof RepeatedTask rt)) continue;
+            Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
 			for (Map.Entry<String, SubTask> entry : subTasksOfRepeatedTask.entrySet()) {
 				String subTaskId = entry.getKey();
 				AbstractTask subTask = sedml.getTaskWithId(subTaskId);
@@ -145,15 +144,13 @@ public class SolverHandler {
 			RepeatedTask rt;
 			Task actualTask;
 			// find the actual Task and extract the simulation
-			if(task instanceof RepeatedTask) {
-				rt = (RepeatedTask)task;
+			if(task instanceof RepeatedTask repeatedTask) {
+				rt = repeatedTask;
 				do {
 					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
 					String taskId = st.getTaskId();
 					referredTask = sedml.getTaskWithId(taskId);
-					if (referredTask instanceof RepeatedTask) {
-						rt = (RepeatedTask)referredTask;
-					}
+					if (referredTask instanceof RepeatedTask repeatedReferredTask) rt = repeatedReferredTask;
 					subTasksList.add(referredTask);                // last entry added will be a instanceof Task
 				} while (referredTask instanceof RepeatedTask);
 				actualTask = (Task)referredTask;

@@ -15,6 +15,7 @@ import org.vcell.sbml.vcell.NonSpatialSBMLSimResults;
 import org.vcell.sbml.vcell.SBMLDataRecord;
 import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
+import org.vcell.sedml.SEDMLImportException;
 import org.vcell.sedml.log.BiosimulationLog;
 
 import java.nio.file.Paths;
@@ -23,7 +24,7 @@ import java.util.*;
 public class NonSpatialResultsConverter extends ResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonSpatialResultsConverter.class);
 
-    public static Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizeNonSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException {
+    public static Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizeNonSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, SEDMLImportException {
         Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialOrganizedResultsMap = new HashMap<>();
         if (nonSpatialResultsHash.isEmpty()) return nonSpatialOrganizedResultsMap;
 
@@ -48,9 +49,21 @@ public class NonSpatialResultsConverter extends ResultsConverter {
                 if (logger.isDebugEnabled()) logger.warn("Unrecognized output type: `{}` (id={})", output.getClass().getName(), output.getId());
                 continue;
             }
+            // We need to determine the "correct" number of data points to pad correctly.
+            int maxTimeLength = 0;
+            for (DataGenerator dataGenerator : dataGeneratorsToProcess){
+                for (Variable variable : dataGenerator.getListOfVariables()){
+                    AbstractTask task = sedml.getTaskWithId(variable.getReference());
+                    AbstractTask derivedTask = ResultsConverter.getBaseTask(task, sedml);
+                    if (!(derivedTask instanceof Task baseTask)) throw new SEDMLImportException("Unable to find base task referred to by var `" + variable.getId() + "`");
+                    org.jlibsedml.Simulation sim = sedml.getSimulation(baseTask.getSimulationReference());
+                    if (!(sim instanceof UniformTimeCourse utcSim)) throw new SEDMLImportException("Unable to find utc sim referred to by var `" + variable.getId() + "`");
+                    maxTimeLength = Math.max(utcSim.getNumberOfSteps() + 1, maxTimeLength);
+                }
+            }
 
             for (DataGenerator dataGen : dataGeneratorsToProcess) {
-                ValueHolder<LazySBMLNonSpatialDataAccessor> valueHolder = NonSpatialResultsConverter.getNonSpatialValueHolderForDataGenerator(sedml, dataGen, nonSpatialResultsHash, taskToSimulationMap);
+                ValueHolder<LazySBMLNonSpatialDataAccessor> valueHolder = NonSpatialResultsConverter.getNonSpatialValueHolderForDataGenerator(sedml, dataGen, nonSpatialResultsHash, taskToSimulationMap, maxTimeLength);
                 if (valueHolder == null) continue;
                 nonSpatialOrganizedResultsMap.put(dataGen, valueHolder);
             }
@@ -148,10 +161,9 @@ public class NonSpatialResultsConverter extends ResultsConverter {
 
     private static ValueHolder<LazySBMLNonSpatialDataAccessor> getNonSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
                                                                                   Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash,
-                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException {
+                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap, int padToLength) throws ExpressionException {
         if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");
         Map<Variable, ValueHolder<LazySBMLNonSpatialDataAccessor>> resultsByVariable = new HashMap<>();
-        int maxLengthOfData = 0;
 
         // get the list of variables associated with the data reference
         for (Variable var : dataGen.getListOfVariables()) {
@@ -197,10 +209,8 @@ public class NonSpatialResultsConverter extends ResultsConverter {
             for (TaskJob taskJob : taskJobs) {
                 // Leaving intermediate variables for debugging access
                 NonSpatialSBMLSimResults nonSpatialResults = nonSpatialResultsHash.get(taskJob);
-                LazySBMLNonSpatialDataAccessor dataAccessor = nonSpatialResults.getSBMLDataAccessor(vcellVarId, utcSim.getOutputStartTime(), utcSim.getNumberOfSteps() + 1);
+                LazySBMLNonSpatialDataAccessor dataAccessor = nonSpatialResults.getSBMLDataAccessor(vcellVarId, utcSim, padToLength);
                 individualVarResultsHolder.listOfResultSets.add(dataAccessor);
-                int localMax;
-                if ((localMax = nonSpatialResults.getMaxDataFlatLength()) > maxLengthOfData) maxLengthOfData = localMax;
             }
             resultsByVariable.put(var, individualVarResultsHolder);
         }
