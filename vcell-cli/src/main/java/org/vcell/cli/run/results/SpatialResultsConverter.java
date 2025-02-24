@@ -1,6 +1,6 @@
 package org.vcell.cli.run.results;
 
-
+import cbit.vcell.math.MathException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MathOverrides;
@@ -8,399 +8,217 @@ import cbit.vcell.solver.TempSimulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
-import org.jlibsedml.execution.IXPathToVariableIDResolver;
-import org.jlibsedml.modelsupport.SBMLSupport;
+import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.TaskJob;
-import org.vcell.cli.run.hdf5.*;
+import org.vcell.cli.run.hdf5.Hdf5SedmlResults;
+import org.vcell.cli.run.hdf5.Hdf5SedmlResultsSpatial;
+import org.vcell.sbml.vcell.SpatialSBMLSimResults;
+import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
+import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 import org.vcell.sedml.log.BiosimulationLog;
+import org.vcell.util.DataAccessException;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public class SpatialResultsConverter {
-    private final static Logger lg = LogManager.getLogger(SpatialResultsConverter.class);
+public class SpatialResultsConverter extends ResultsConverter {
+    private final static Logger logger = LogManager.getLogger(SpatialResultsConverter.class);
 
-    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation) {
-        Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
-        if (spatialResultsHash.isEmpty()) return results;
-        ReorganizedSpatialResults sourceOfTruth = new ReorganizedSpatialResults(spatialResultsHash, taskToSimulationMap);
+    public static Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizeSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, MathException, IOException, ExecutionException, DataAccessException {
+        Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialOrganizedResultsMap = new HashMap<>();
+        if (spatialResultsHash.isEmpty()) return spatialOrganizedResultsMap;
 
-        for (Report report : SpatialResultsConverter.getReports(sedml.getOutputs())){
-            Hdf5SedmlResultsSpatial convertedData = new Hdf5SedmlResultsSpatial();
-            Map<DataGenerator, List<DataSet>> dataGenToDataSets = new HashMap<>();
-
-            // go through each entry (dataset)
-            for (DataSet dataSet : report.getListOfDataSets()) {
-                // use the data reference to obtain the data generator
-                DataGenerator dataGen = sedml.getDataGeneratorWithId(dataSet.getDataReference()); assert dataGen != null;
-                boolean returnedGoodResult = processDataGenerator(sedml, report, dataGen, taskToSimulationMap, sourceOfTruth, convertedData);
-                if (!returnedGoodResult) continue;
-                if (!dataGenToDataSets.containsKey(dataGen)) dataGenToDataSets.put(dataGen, new ArrayList<>());
-                dataGenToDataSets.get(dataGen).add(dataSet);
-                BiosimulationLog.instance().updateDatasetStatusYml(sedmlLocation, report.getId(), dataSet.getId(), BiosimulationLog.Status.SUCCEEDED);
-            } // end of dataset
-
-            if (dataGenToDataSets.isEmpty()){
-                lg.warn(String.format("Report `%s` does not have any valid spatial component!", report.getId()));
+        for (Output output : ResultsConverter.getValidOutputs(sedml)){
+            Set<DataGenerator> dataGeneratorsToProcess;
+            if (output instanceof Report report){
+                dataGeneratorsToProcess = new LinkedHashSet<>();
+                for (DataSet dataSet : report.getListOfDataSets()){
+                    // use the data reference to obtain the data generator
+                    dataGeneratorsToProcess.add(sedml.getDataGeneratorWithId(dataSet.getDataReference()));
+                    BiosimulationLog.instance().updateDatasetStatusYml(Paths.get(sedml.getPathForURI(), sedml.getFileName()).toString(), output.getId(), dataSet.getId(), BiosimulationLog.Status.SUCCEEDED);
+                }
+            }
+            else if (output instanceof Plot2D plot2D){
+                Set<DataGenerator> uniqueDataGens = new LinkedHashSet<>();
+                for (Curve curve : plot2D.getListOfCurves()){
+                    uniqueDataGens.add(sedml.getDataGeneratorWithId(curve.getXDataReference()));
+                    uniqueDataGens.add(sedml.getDataGeneratorWithId(curve.getYDataReference()));
+                }
+                dataGeneratorsToProcess = uniqueDataGens;
+            } else {
+                if (logger.isDebugEnabled()) logger.warn("Unrecognized output type: `{}` (id={})", output.getClass().getName(), output.getId());
                 continue;
             }
 
-            // Fill out DatasetWrapper Values
-            Hdf5SedmlResultsSpatial.SpatialComponents reportMappings = convertedData.dataMapping.get(report);
+            for (DataGenerator dataGen : dataGeneratorsToProcess) {
+                ValueHolder<LazySBMLSpatialDataAccessor> valueHolder = SpatialResultsConverter.getSpatialValueHolderForDataGenerator(sedml, dataGen, spatialResultsHash, taskToSimulationMap);
+                // if (valueHolder == null) continue; // We don't want this, we want nulls to pass through for later processing.
+                spatialOrganizedResultsMap.put(dataGen, valueHolder);
+            }
+        }
+
+        return spatialOrganizedResultsMap;
+    }
+
+    public static Map<Report, List<Hdf5SedmlResults>> prepareSpatialDataForHdf5(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialResultsMapping,
+                                                                                   Set<DataGenerator> allValidDataGenerators, String sedmlLocation, boolean isBioSimMode) {
+        Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
+        if (spatialResultsMapping.isEmpty()){
+            logger.debug("No spatial data generated; No need to prepare non-existent data!");
+            return results;
+        }
+
+        List<Report> modifiedList = new ArrayList<>(sedml.getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList());
+
+        // We can generalize the results now!
+        Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> generalizedResultsMapping = new LinkedHashMap<>();
+        for (var set : spatialResultsMapping.entrySet()) generalizedResultsMapping.put(set.getKey(), set.getValue() == null ? null : new ValueHolder<>(set.getValue()));
+
+        // If we're not doing biosimulators mode, we need to record the plot2D as reports as well.
+        if (isBioSimMode) ResultsConverter.add2DPlotsAsReports(sedml, generalizedResultsMapping, modifiedList);
+
+        for (Report report : modifiedList){
+            Map<DataSet, ValueHolder<LazySBMLDataAccessor>> dataSetValues = new LinkedHashMap<>();
+
+            for (DataSet dataset : report.getListOfDataSets()) {
+                // use the data reference to obtain the data generator
+                DataGenerator dataGen = sedml.getDataGeneratorWithId(dataset.getDataReference());
+                if (dataGen == null)
+                    throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");
+                if (!generalizedResultsMapping.containsKey(dataGen)){
+                    if (allValidDataGenerators.contains(dataGen)) continue;
+                    throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");
+                }
+                ValueHolder<LazySBMLDataAccessor> value = generalizedResultsMapping.get(dataGen);
+                dataSetValues.put(dataset, value);
+            } // end of current dataset processing
+
+            if (dataSetValues.isEmpty()) {
+                logger.warn("We did not get any entries in the final data set. This may mean a problem has been encountered.");
+                continue;
+            }
+
+            List<String> shapes = new LinkedList<>();
+            Hdf5SedmlResultsSpatial dataSourceSpatial = new Hdf5SedmlResultsSpatial();
             Hdf5SedmlResults hdf5DatasetWrapper = new Hdf5SedmlResults();
+
             hdf5DatasetWrapper.datasetMetadata._type = SpatialResultsConverter.getKind(report.getId());
-            hdf5DatasetWrapper.datasetMetadata.sedmlId = SpatialResultsConverter.removeVCellPrefixes(report.getId(), report.getId());
+            hdf5DatasetWrapper.datasetMetadata.sedmlId = ResultsConverter.removeVCellPrefixes(report.getId(), report.getId());
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
             hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
-            hdf5DatasetWrapper.dataSource = convertedData;
 
-            for (DataGenerator jobDataSet : reportMappings.varsToData.getVariableSet()){
-                for (DataSet dataSet : dataGenToDataSets.get(jobDataSet)){
-                    String dimensionLabelString = "[" + "XYZ".substring(0, reportMappings.metadata.getNumSpaceTimeDimensions() - 1) + "T]";
-                    hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
-                    hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(
-                            SpatialResultsConverter.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
-                    hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel() + dimensionLabelString);
-                    hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName() + dimensionLabelString);
-                    List<Integer> shapes = new LinkedList<>();
-                    if (reportMappings.varsToData.getMaxNumScans() > 1){
-                        shapes.add(reportMappings.varsToData.getMaxNumScans());
+            Set<DataSet> refinedDataSets = new LinkedHashSet<>();
+            for (DataSet dataSet : dataSetValues.keySet()){
+                if (null == dataSetValues.get(dataSet)) continue;
+                refinedDataSets.add(dataSet);
+            }
+            if (refinedDataSets.isEmpty()) continue; // Check if we have data to work with.
+
+            for (DataSet dataSet : refinedDataSets){
+                ValueHolder<LazySBMLDataAccessor> dataSetValuesSource = dataSetValues.get(dataSet);
+
+                dataSourceSpatial.dataItems.put(report, dataSet, new LinkedList<>());
+                dataSourceSpatial.scanBounds = dataSetValuesSource.vcSimulation.getMathOverrides().getScanBounds();
+                dataSourceSpatial.scanParameterNames = dataSetValuesSource.vcSimulation.getMathOverrides().getScannedConstantNames();
+                double[][] scanValues = new double[dataSourceSpatial.scanBounds.length][];
+                for (int nameIndex = 0; nameIndex < dataSourceSpatial.scanBounds.length; nameIndex++){
+                    String nameKey = dataSourceSpatial.scanParameterNames[nameIndex];
+                    scanValues[nameIndex] = new double[dataSourceSpatial.scanBounds[nameIndex] + 1];
+                    for (int scanIndex = 0; scanIndex < dataSourceSpatial.scanBounds[nameIndex] + 1; scanIndex++){
+                        Expression overrideExp = dataSetValuesSource.vcSimulation.getMathOverrides().getActualExpression(nameKey, new MathOverrides.ScanIndex(scanIndex));
+                        try { scanValues[nameIndex][scanIndex] = overrideExp.evaluateConstant(); }
+                        catch (ExpressionException e){ throw new RuntimeException(e); }
                     }
-                    for (int size : reportMappings.metadata.getSpaceTimeDimensions()) shapes.add(size);
-                    hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes.add(shapes.toString());
+                }
+                dataSourceSpatial.scanParameterValues = scanValues;
+
+                for (LazySBMLDataAccessor data : dataSetValuesSource.listOfResultSets) {
+                    if (!(data instanceof LazySBMLSpatialDataAccessor spatialData))
+                        throw new IllegalArgumentException("Non-spatial data somehow got into spatial data!");
+                    dataSourceSpatial.dataItems.get(report, dataSet).add(spatialData);
+                    shapes.add(Integer.toString(data.getFlatSize()));
                 }
 
+                hdf5DatasetWrapper.dataSource = dataSourceSpatial; // Using upcasting
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(
+                        ResultsConverter.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
+
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes.add("(" + String.join(", ", shapes)+ ")");
             }
+
             if (!results.containsKey(report)) results.put(report, new LinkedList<>());
             results.get(report).add(hdf5DatasetWrapper);
         } // outputs/reports
         return results;
     }
 
-    private static boolean processDataGenerator(SedML sedml, Report report, DataGenerator dataGen, Map<AbstractTask, TempSimulation> completeSedmlTaskToVCellSim,
-                                                ReorganizedSpatialResults sourceOfTruth, Hdf5SedmlResultsSpatial convertedData){
-        //TODO: Allow multiple variables in DataGenerators for Spatial, AND fill out TDDO below.
-        List<Variable> dataGenVarList = dataGen.getListOfVariables();
-        if (dataGenVarList.size() != 1){
-            lg.error("Multi-variable data generators in spatial sim detected.");
-            throw new RuntimeException("VCell is unable to support multi-variable data generators in spatial sims at this time.");
-        }
+    private static ValueHolder<LazySBMLSpatialDataAccessor> getSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
+                                                                                  Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash,
+                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, ExecutionException, MathException, IOException, DataAccessException {
+        if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");
+        Map<Variable, ValueHolder<LazySBMLSpatialDataAccessor>> resultsByVariable = new HashMap<>();
+        int maxLengthOfData = 0;
 
-        Map<AbstractTask, List<DataGenerator>> sedmlTaskMap = new HashMap<>();
         // get the list of variables associated with the data reference
-        Map<AbstractTask, TempSimulation> sedmlTaskToVCellSim = new HashMap<>();
-        boolean allVarsValid = true;
-        for (Variable variable : dataGenVarList) { // Since we're only doing single variable, this should run once!
+        for (Variable var : dataGen.getListOfVariables()) {
             // for each variable we recover the task
-            AbstractTask completeTask = sedml.getTaskWithId(variable.getReference());
-            if (completeTask == null) throw new RuntimeException("Null SedML task encountered");
+            AbstractTask topLevelTask = sedml.getTaskWithId(var.getReference());
+            AbstractTask baseTask = ResultsConverter.getBaseTask(topLevelTask, sedml); // if !RepeatedTask, baseTask == topLevelTask
+
             // from the task we get the sbml model
-            if (!sourceOfTruth.getTaskGroupSet().contains(completeTask.getId())){
-                lg.info(String.format("`%s` is not a spatial task!", completeTask.getId()));
-                allVarsValid = false;
+            org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
+
+            if (!(sedmlSim instanceof UniformTimeCourse utcSim)){
+                logger.error("only uniform time course simulations are supported");
                 continue;
             }
-            AbstractTask fundamentalTask = SpatialResultsConverter.getBaseTask(completeTask, sedml);
-            if (!(sedml.getSimulation(fundamentalTask.getSimulationReference()) instanceof UniformTimeCourse utcSim)){
-                lg.error("only uniform time course simulations are supported");
-                allVarsValid = false;
+
+            // must get variable ID from SBML model
+            String vcellVarId = ResultsConverter.convertToVCellSymbol(var);
+            // VCell has decided it is inappropriate to include time as a spatial variable; we provide an HDF5 attribute in lieu.
+            if ("t".equals(vcellVarId)) return null;
+
+            // If the task isn't in our results hash, it's unwanted and skippable.
+            boolean bFoundTaskInSpatial = spatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
+            if (!bFoundTaskInSpatial){
+                if (logger.isDebugEnabled()) logger.warn("Was not able to find simulation data for task with ID: {}", topLevelTask.getId());
                 break;
             }
-            // Check if it's asking for time (we don't include time with the rest of spatial data).
-            if (variable.isSymbol()) if (VariableSymbol.TIME.equals(variable.getSymbol())) continue;
 
-            sedmlTaskToVCellSim.put(completeTask, completeSedmlTaskToVCellSim.get(completeTask));
-        }
-        if (allVarsValid){
-            for (AbstractTask completeTask : sedmlTaskToVCellSim.keySet()){
-                if (!sedmlTaskMap.containsKey(completeTask)) sedmlTaskMap.put(completeTask, new ArrayList<>());
-                sedmlTaskMap.get(completeTask).add(dataGen);
+            // ==================================================================================
+
+            ArrayList<TaskJob> taskJobs = new ArrayList<>();
+
+            // We can have multiple TaskJobs sharing IDs (in the case of repeated tasks), so we need to get them all
+            for (TaskJob taskJob : spatialResultsHash.keySet()) {
+                SpatialSBMLSimResults simResults = spatialResultsHash.get(taskJob);
+                if (simResults == null || !taskJob.getTaskId().equals(topLevelTask.getId())) continue;
+                taskJobs.add(taskJob);
+                if (!(topLevelTask instanceof RepeatedTask)) break; // No need to keep looking if it's not a repeated task, one "loop" is good
             }
-        }
 
+            if (taskJobs.isEmpty()) continue;
 
-        for (AbstractTask completeTask : sedmlTaskMap.keySet()){
-            if (sourceOfTruth.getTaskGroupSet().contains(completeTask.getId()) && sedmlTaskToVCellSim.containsKey(completeTask)) continue;
-            String format = "Was not able to find simulation data in VCell for task `%s` in sedml report `%s`";
-            lg.warn(String.format(format, completeTask.getId(), report.getId()));
-            return false;
-        }
-
-        for (AbstractTask completeTask : sedmlTaskMap.keySet()){
-            TempSimulation vcellSimulation = sedmlTaskToVCellSim.get(completeTask);
-            Hdf5DataSourceSpatialSimMetadata taskMetadata = sourceOfTruth.getMetadataFromTaskGroup(completeTask.getId());
-            if (vcellSimulation.getMathOverrides().getScannedConstantNames().length != 0){
-                if (taskMetadata.getScanTargets() == null){
-                    taskMetadata.validateScanTargets(vcellSimulation.getMathOverrides().getScannedConstantNames());
-                    convertedData.scanParameterNames = taskMetadata.getScanTargets();
-                }
-                if (taskMetadata.getScanValues() == null){
-                    int[] eachBound = vcellSimulation.getMathOverrides().getScanBounds();
-                    taskMetadata.validateScanBounds(eachBound);
-                    convertedData.scanBounds = taskMetadata.getScanBounds();
-                    convertedData.scanParameterValues = taskMetadata.getScanValues();
-                    double[][] scanValues = new double[eachBound.length][];
-                    for (int nameIndex = 0; nameIndex < eachBound.length; nameIndex++){
-                        String nameKey = convertedData.scanParameterNames[nameIndex];
-                        scanValues[nameIndex] = new double[eachBound[nameIndex] + 1];
-                        for (int scanIndex = 0; scanIndex < eachBound[nameIndex] + 1; scanIndex++){
-                            Expression overrideExp = vcellSimulation.getMathOverrides().getActualExpression(nameKey, new MathOverrides.ScanIndex(scanIndex));
-                            try { scanValues[nameIndex][scanIndex] = overrideExp.evaluateConstant(); }
-                            catch (ExpressionException e){ throw new RuntimeException(e); }
-                        }
-                    }
-                    taskMetadata.validateScanValues(scanValues);
-                    convertedData.scanParameterValues = taskMetadata.getScanValues();
-                }
+            boolean resultsAlreadyExist = topLevelTask instanceof RepeatedTask && resultsByVariable.containsKey(var);
+            ValueHolder<LazySBMLSpatialDataAccessor> individualVarResultsHolder = resultsAlreadyExist ? resultsByVariable.get(var) :
+                    new ValueHolder<>(taskToSimulationMap.get(topLevelTask));
+            for (TaskJob taskJob : taskJobs) {
+                // Leaving intermediate variables for debugging access
+                SpatialSBMLSimResults spatialResults = spatialResultsHash.get(taskJob);
+                LazySBMLSpatialDataAccessor dataAccessor = spatialResults.getSBMLDataAccessor(vcellVarId, utcSim.getOutputStartTime(), utcSim.getNumberOfSteps() + 1);
+                individualVarResultsHolder.listOfResultSets.add(dataAccessor);
+                int localMax;
+                if ((localMax = spatialResults.getMaxDataFlatLength()) > maxLengthOfData) maxLengthOfData = localMax;
             }
-            Hdf5DataSourceSpatialSimVars taskVars = sourceOfTruth.getVarsFromTaskGroup(completeTask.getId());
-            if (!convertedData.dataMapping.containsKey(report)) convertedData.dataMapping.put(report, new Hdf5SedmlResultsSpatial.SpatialComponents());
-            Hdf5SedmlResultsSpatial.SpatialComponents comps = convertedData.dataMapping.get(report);
-            if (comps.metadata == null) comps.metadata = taskMetadata;
-            else if (!taskMetadata.equals(comps.metadata)) lg.warn("Unequal metadata encountered; this could be a sign something has gone wrong.");
-            Hdf5DataSourceSpatialSimVars newVars = new Hdf5DataSourceSpatialSimVars();
-            for (DataGenerator dataGenerator : sedmlTaskMap.get(completeTask)){
-                Hdf5DataSourceSpatialSimVars taskGroupVars = sourceOfTruth.getVarsFromTaskGroup(completeTask.getId());
-                for (Hdf5DataSourceSpatialVarDataLocation location : taskGroupVars.getLocations(dataGenerator))
-                    newVars.addLocation(dataGenerator, location);
-            }
-            if (comps.varsToData == null) comps.varsToData = newVars;
-            else comps.varsToData.integrateSimilarLocations(taskVars);
+            resultsByVariable.put(var, individualVarResultsHolder);
         }
-        return allVarsValid;
+        if (resultsByVariable.isEmpty()) return null;
+
+        if (resultsByVariable.size() != 1) throw new ExecutionException("Unable to process multi-variable data generators for spatial sims!");
+        return resultsByVariable.values().iterator().next();
     }
-
-    private static List<Report> getReports(List<Output> outputs){
-        List<Report> reports = new LinkedList<>();
-        for (Output out : outputs) {
-            if (out instanceof Report report) reports.add(report);
-            else lg.info("Ignoring unsupported output `" + out.getId() + "` when generating CSV.");
-        } 
-        return reports;
-    }
-
-    private static AbstractTask getBaseTask(AbstractTask task, SedML sedml){
-        while (task instanceof RepeatedTask) { // We need to find the original task burried beneath.
-            // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
-            SubTask st = ((RepeatedTask)task).getSubTasks().entrySet().iterator().next().getValue(); // single subtask
-            task = sedml.getTaskWithId(st.getTaskId());
-        }
-        return task;
-    }
-
-    private static String getKind(String prefixedSedmlId){
-        String plotPrefix = "__plot__";
-        if (prefixedSedmlId.startsWith(plotPrefix))
-            return "SedPlot2D";
-        return "SedReport";
-    }
-
-    private static boolean allTasksFound(Set<TaskJob> setToTest, Set<AbstractTask> setOfRequirements){
-        Set<String> vcellSimIDs = setToTest.stream().map(TaskJob::getTaskId).collect(Collectors.toSet());
-        Stream<String> reportSimIDs = setOfRequirements.stream().map(AbstractIdentifiableElement::getId);
-        return reportSimIDs.filter(vcellSimIDs::contains).count() == setOfRequirements.size();
-    }
-
-    private static String convertSymbol(Variable var){
-        // must get variable ID from SBML model
-        if (var.getSymbol() != null) { // it is a predefined symbol
-            // search the sbml model to find the vcell variable name associated with the run
-            switch(var.getSymbol().name()){
-                case "TIME": { // TIME is t, etc
-                    return "t"; // this is VCell reserved symbol for time
-                }
-                default:{
-                    return var.getSymbol().name();
-                }
-                // etc, TODO: check spec for other symbols (CSymbols?)
-                // Delay? Avogadro? rateOf?
-            }
-        } else { // it is an XPATH target in model
-            String target = var.getTarget();
-            IXPathToVariableIDResolver resolver = new SBMLSupport();
-            return resolver.getIdFromXPathIdentifer(target);
-        }
-    }
-
-    /**
-     * We need the sedmlId to help remove prefixes, but the sedmlId itself may need to be fixed.
-     * 
-     * If a sedmlId is being checked, just provide itself twice
-     * 
-     * The reason for this, is having an overload with just "(String s)" as a requirment is misleading.
-     */
-    private static String removeVCellPrefixes(String s, String sedmlId){
-        String plotPrefix = "__plot__";
-        String reservedPrefix = "__vcell_reserved_data_set_prefix__";
-        
-        String checkedId = sedmlId.startsWith(plotPrefix) ? sedmlId.replace(plotPrefix, "") : sedmlId;
-        if (sedmlId.equals(s)) return checkedId;
-        
-        if (s.startsWith(plotPrefix)){
-            s = s.replace(plotPrefix, "");
-        } 
-        
-        if (s.startsWith(reservedPrefix)){
-            s = s.replace(reservedPrefix, "");
-        }
-
-        if (s.startsWith(checkedId + "_")){
-            s = s.replace(checkedId + "_", "");
-        }
-
-        if (s.startsWith(checkedId)){
-            s = s.replace(checkedId, "");
-        }
-
-        return s;
-    }
-
-//    public static Map<Report, List<Hdf5SedmlResults>> convertSpatialResultsToSedmlFormat(SedML sedml, Map<TaskJob, File> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap, String sedmlLocation, String outDir) {
-//        Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
-//        List<Report> allReports = SpatialResultsConverter.getReports(sedml.getOutputs());
-//
-//        for (Report report : allReports){
-//            boolean bNotSpatial = false, hasNotGivenWarning = true;
-//            Hdf5SedmlResultsSpatial hdf5DataSourceSpatial = new Hdf5SedmlResultsSpatial();
-//
-//            // go through each entry (dataset)
-//            for (DataSet dataset : report.getListOfDataSets()) {
-//                // use the data reference to obtain the data generator
-//                DataGenerator dataGen = sedml.getDataGeneratorWithId(dataset.getDataReference()); assert dataGen != null;
-//                //TODO: Allow multiple variables in DataGenerators for Spatial, AND fill out TDDO below.
-//                if (dataGen.getListOfVariables().size() != 1 && hasNotGivenWarning){
-//                    logger.warn("VCell does not support multi-variable data generators in spatial sims.");
-//                    hasNotGivenWarning = false;
-//                }
-//                Map<Variable, Hdf5DataSourceSpatialVarDataItem> variableToDataMap = new HashMap<>();
-//
-//                // get the list of variables associated with the data reference
-//                for (Variable variable : dataGen.getListOfVariables()) {
-//                    // for each variable we recover the task
-//                    AbstractTask topLevelTask = sedml.getTaskWithId(variable.getReference());
-//                    if (topLevelTask == null) throw new RuntimeException("Null SedML task encountered");
-//                    AbstractTask baseTask = SpatialResultsConverter.getBaseTask(topLevelTask, sedml);
-//                    // from the task we get the sbml model
-//                    if (!(sedml.getSimulation(baseTask.getSimulationReference()) instanceof UniformTimeCourse utcSim)){
-//                        logger.error("only uniform time course simulations are supported");
-//                        continue;
-//                    }
-//
-//                    String vcellVarId = convertToVCellSymbol(variable);
-//
-//                    boolean bFoundTaskInSpatial = spatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
-//                    if (!bFoundTaskInSpatial){
-//                        bNotSpatial = true;
-//                        logger.warn("Was not able to find simulation data for task with ID: " + topLevelTask.getId());
-//                        break;
-//                    }
-//
-//                    // ==================================================================================
-//
-//
-//                    ArrayList<TaskJob> taskJobs = new ArrayList<>();
-//                    int[] scanBounds;
-//                    String[] scanParamNames;
-//
-//                    if (topLevelTask instanceof RepeatedTask) {
-//                        for (Map.Entry<TaskJob, File> entry : spatialResultsHash.entrySet()) {
-//                            TaskJob taskJob = entry.getKey();
-//                            if (entry.getValue() != null && taskJob.getTaskId().equals(topLevelTask.getId())) {
-//                                taskJobs.add(taskJob);
-//                            }
-//                        }
-//                        scanBounds = taskToSimulationMap.get(topLevelTask).getMathOverrides().getScanBounds();
-//                        scanParamNames = taskToSimulationMap.get(topLevelTask).getMathOverrides().getScannedConstantNames();
-//                    } else { // Not repeated Tasks
-//                        taskJobs.add(new TaskJob(baseTask.getId(), 0));
-//                        scanBounds = new int[0];
-//                        scanParamNames = new String[0];
-//                    }
-//
-//                    for (Map.Entry<TaskJob, File> entry : spatialResultsHash.entrySet()) {
-//                        TaskJob taskJob = entry.getKey();
-//                        if (entry.getValue() != null && taskJob.getTaskId().equals(topLevelTask.getId())) {
-//                            taskJobs.add(taskJob);
-//                            if (topLevelTask instanceof RepeatedTask)
-//                                break; // No need to keep looking if it's not a repeated task
-//                        }
-//                    }
-//
-//                    if (taskJobs.isEmpty()) continue;
-//
-//                    int outputNumberOfPoints = utcSim.getNumberOfPoints();
-//                    double outputStartTime = utcSim.getOutputStartTime();
-//
-//                    int jobIndex = 0;
-//                    for (TaskJob taskJob : taskJobs) {
-//                        File spatialH5File = spatialResultsHash.get(taskJob);
-//                        if (spatialH5File != null) {
-//                            Hdf5DataSourceSpatialVarDataItem job;
-//                            try {
-//                                job = new Hdf5DataSourceSpatialVarDataItem(
-//                                        report, dataset, variable, jobIndex, spatialH5File,
-//                                        outputStartTime, outputNumberOfPoints, vcellVarId);
-//                            } catch (MissingDataException e) {
-//                                String warningMessage = "Resulting HDF5 will not be complete as requested: ";
-//                                if (logger.isDebugEnabled()) logger.warn(warningMessage, e);
-//                                else logger.warn(warningMessage + e.getMessage());
-//                                continue;
-//                            }
-//                            if (job.spaceTimeDimensions == null){
-//                                throw new RuntimeException("Unable to find dimensionality data for " + vcellVarId);
-//                            }
-//                            variableToDataMap.put(variable, job);
-//                            hdf5DataSourceSpatial.scanBounds = scanBounds;
-//                            hdf5DataSourceSpatial.scanParameterNames = scanParamNames;
-//                        }
-//                        jobIndex++;
-//                    }
-//                }
-//                // TODO: Data generator logic (to resolve multiple variables) goes here...
-//                for (Variable nextVariable : variableToDataMap.keySet()) { // ...Modify this loop!!
-//                    hdf5DataSourceSpatial.dataItems.put(report, dataset, variableToDataMap.get(nextVariable));
-//                }
-//                PythonCalls.updateDatasetStatusYml(sedmlLocation, report.getId(), dataset.getId(), Status.SUCCEEDED, outDir);
-//            } // end of dataset
-//
-//            if (bNotSpatial || hdf5DataSourceSpatial.dataItems.isEmpty()){
-//                logger.warn("We encountered non-compatible (or non-existent) data. " +
-//                        "This may mean a problem has been encountered.");
-//                continue;
-//            }
-//
-//            Hdf5SedmlResults hdf5DatasetWrapper = new Hdf5SedmlResults();
-//            hdf5DatasetWrapper.dataSource = hdf5DataSourceSpatial;
-//            hdf5DatasetWrapper.datasetMetadata._type = SpatialResultsConverter.getKind(report.getId());
-//            hdf5DatasetWrapper.datasetMetadata.sedmlId = SpatialResultsConverter.removeVCellPrefixes(report.getId(), report.getId());
-//            hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
-//            hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
-//
-//            hdf5DatasetWrapper.dataSource = hdf5DataSourceSpatial;
-//            Map<DataSet, Hdf5DataSourceSpatialVarDataItem> reportMappings = hdf5DataSourceSpatial.dataItems.getDataSetMappings(report);
-//            for (DataSet jobDataSet : reportMappings.keySet()){
-//                Hdf5DataSourceSpatialVarDataItem job = reportMappings.get(jobDataSet);
-//                String dimensionLabelString = "[" + "XYZ".substring(0, job.spaceTimeDimensions.length - 1) + "T]";
-//                VariableSymbol symbol = job.sedmlVariable.getSymbol();
-//                if (symbol != null && "TIME".equals(symbol.name())) continue; // Skip time, no need for n-dimensional duplicated time-centric hdf5 dataset for spatial.
-//                DataSet dataSet = job.sedmlDataset;
-//                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
-//                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(
-//                        SpatialResultsConverter.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
-//                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel() + dimensionLabelString);
-//                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName() + dimensionLabelString);
-//                List<Integer> shapes = new LinkedList<>();
-//                if (hdf5DataSourceSpatial.scanBounds.length > 0)
-//                    shapes.add(hdf5DataSourceSpatial.scanBounds[hdf5DataSourceSpatial.scanBounds.length - 1]);
-//                for (int size : job.spaceTimeDimensions) shapes.add(size);
-//                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes.add(shapes.toString());
-//            }
-//            if (!results.containsKey(report)) results.put(report, new LinkedList<>());
-//            results.get(report).add(hdf5DatasetWrapper);
-//        } // outputs/reports
-//        return results;
-//    }
 }

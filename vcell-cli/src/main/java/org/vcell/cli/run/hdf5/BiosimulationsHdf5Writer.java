@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.Report;
 import org.jlibsedml.SedML;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.trees.GenericStringTree;
 import org.vcell.util.trees.Tree;
 
@@ -74,20 +75,15 @@ public class BiosimulationsHdf5Writer {
 
                         // Process the Dataset
                         for (Hdf5SedmlResults data : hdf5DataWrapper.reportToResultsMap.get(report)){
-                            final Hdf5PreparedData preparedData;
-                            if (data.dataSource instanceof Hdf5SedmlResultsNonspatial)
-                                preparedData = Hdf5DataPreparer.prepareNonspatialData(data, report, hdf5DataWrapper.trackSubSetsInReports);
-                            else if (data.dataSource instanceof Hdf5SedmlResultsSpatial)
-                                preparedData = Hdf5DataPreparer.prepareSpatialData(data, report, hdf5DataWrapper.trackSubSetsInReports);
-                            else continue;
+                            final Hdf5PreparedData preparedData = Hdf5DataPreparer.prepareData(data, report, hdf5DataWrapper.trackSubSetsInReports);
 
                             // multiDimDataArray is a double[], double[][], double[][][], ... depending on the data dimensions
                             final String datasetName = preparedData.sedmlId;
                             final Object multiDimDataArray = JhdfUtils.createMultidimensionalArray(preparedData.dataDimensions, preparedData.flattenedDataBuffer);
                             WritiableDataset dataset = parentGroup.putDataset(datasetName, multiDimDataArray);
 
-                            if (data.dataSource instanceof Hdf5SedmlResultsSpatial){
-                                JhdfUtils.putAttribute(dataset,"times", Hdf5DataPreparer.getSpatialHdf5Attribute_Times(report, data));
+                            if (data.dataSource instanceof Hdf5SedmlResultsSpatial && preparedData.times != null){
+                                JhdfUtils.putAttribute(dataset,"times", preparedData.times);
                             }
                             JhdfUtils.putAttribute(dataset, "_type", data.datasetMetadata._type);
                             JhdfUtils.putAttribute(dataset, "sedmlDataSetDataTypes", data.datasetMetadata.sedmlDataSetDataTypes);
@@ -112,7 +108,7 @@ public class BiosimulationsHdf5Writer {
                         }
                     }
                 }
-            } catch (RuntimeException e) { // Catch runtime exceptions
+            } catch (RuntimeException | DataAccessException e) { // Catch runtime exceptions
                 didFail = true;
                 String message = "Error encountered while writing to BioSim-style HDF5.";
                 logger.error(message, e);

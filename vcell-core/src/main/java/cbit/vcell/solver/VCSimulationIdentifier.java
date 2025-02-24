@@ -15,8 +15,8 @@ package cbit.vcell.solver;
  * @author: Jim Schaff
  */
 public final class VCSimulationIdentifier implements java.io.Serializable {
-	private org.vcell.util.document.KeyValue simulationKey = null;
-	private org.vcell.util.document.User owner = null;
+	private final org.vcell.util.document.KeyValue simulationKey;
+	private final org.vcell.util.document.User owner;
 
 /**
  * VCSimulationIdentifier constructor comment.

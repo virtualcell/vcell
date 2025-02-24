@@ -42,14 +42,11 @@ import org.jlibsedml.modelsupport.SBMLSupport;
 
 import org.jmathml.ASTNode;
 import org.vcell.cli.messaging.CLIRecordable;
+import org.vcell.sbml.vcell.*;
 import org.vcell.sedml.SEDMLImportException;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
-import org.vcell.sbml.vcell.SBMLImportException;
-import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
-import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sedml.SEDMLImporter;
 import org.vcell.util.ISize;
 import org.apache.commons.lang.NotImplementedException;
@@ -59,7 +56,6 @@ import org.apache.logging.log4j.Logger;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SolverHandler {
 
@@ -69,8 +65,8 @@ public class SolverHandler {
 	public int countSuccessfulSimulationRuns = 0;    // number of simulations that we ran successfully for this sedml file
 
 	private SEDMLImporter sedmlImporter;
-	Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResults = new LinkedHashMap<>();
-    Map<TaskJob, File> spatialResults = new LinkedHashMap<TaskJob, File>();
+	Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResults = new LinkedHashMap<>();
+    Map<TaskJob, SpatialSBMLSimResults> spatialResults = new LinkedHashMap<>();
 
     Map<TempSimulation, AbstractTask> tempSimulationToTaskMap = new LinkedHashMap<> ();    // key = vcell simulation, value = sedml topmost task (the imported task id)
 	Map<AbstractTask, TempSimulation> taskToTempSimulationMap = new LinkedHashMap<> ();    // the opposite
@@ -513,26 +509,17 @@ public class SolverHandler {
 						}
 					}
 
-
+					MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
+					SBMLSymbolMapping sbmlMapping = this.sedmlImporter.getSBMLSymbolMapping(bioModel);
+					TaskJob taskJob = new TaskJob(task.getId(), tempSimulationJob.getJobIndex());
 					if (sd.isSpatial()) {
 						logger.info("Processing spatial results of execution...");
-						File hdf5Results = new File(outDir + System.getProperty("file.separator") + task.getId() + "_job_" + tempSimulationJob.getJobIndex() + "_results.h5");
-						try {
-							RunUtils.exportPDE2HDF5(tempSimulationJob, outputDirForSedml, hdf5Results);
-							spatialResults.put(new TaskJob(task.getId(), tempSimulationJob.getJobIndex()), hdf5Results);
-							keepTempFiles = true;
-						} catch (Exception e) {
-							Tracer.failure(e, "Failed to export PDE2HDF5 for " + task.getId() + " " + e.getMessage());
-							logger.error(e.getMessage(), e);
-							spatialResults.put(new TaskJob(task.getId(), tempSimulationJob.getJobIndex()), null);
-						}
+						SpatialSBMLSimResults spatialResults = new SpatialSBMLSimResults(tempSimulationJob, outputDirForSedml, sbmlMapping, mathMapping);
+						this.spatialResults.put(taskJob, spatialResults);
+						keepTempFiles = true;
 					} else {
 						logger.info("Processing non-spatial results of execution...");
-						MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
-						SBMLSymbolMapping sbmlMapping = this.sedmlImporter.getSBMLSymbolMapping(bioModel);
-
-						TaskJob taskJob = new TaskJob(task.getId(), tempSimulationJob.getJobIndex());
-						SBMLNonspatialSimResults nonspatialSimResults = new SBMLNonspatialSimResults(odeSolverResultSet, sbmlMapping, mathMapping);
+						NonSpatialSBMLSimResults nonspatialSimResults = new NonSpatialSBMLSimResults(odeSolverResultSet, sbmlMapping, mathMapping);
 						this.nonSpatialResults.put(taskJob, nonspatialSimResults);
 					}
 

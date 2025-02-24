@@ -32,7 +32,7 @@ public class DataSetControllerImplTest {
 		File primarydir = resourcesDirectory;
 		File secondarydir = resourcesDirectory;
 		KeyValue simKey = new KeyValue("1771409053");
-		VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(new KeyValue("1771409053"), User.tempUser);
+		VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(simKey, User.tempUser);
 		vcDataIdentifier = new VCSimulationDataIdentifier(vcSimId, 0);
 		dsc = new DataSetControllerImpl(cachetable, primarydir, secondarydir);
 	}

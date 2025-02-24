@@ -23,7 +23,7 @@ import org.jlibsedml.DataSet;
 import org.jlibsedml.*;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
-import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
+import org.vcell.sbml.vcell.NonSpatialSBMLSimResults;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.document.User;
@@ -48,7 +48,7 @@ public class RunUtils {
         double outputStart = sedmlSim.getOutputStartTime();
         double outputEnd = sedmlSim.getOutputEndTime();
 
-        int numPoints = sedmlSim.getNumberOfPoints() + 1;
+        int numPoints = sedmlSim.getNumberOfSteps() + 1;
 
 
         ColumnDescription[] columnDescriptions = odeSolverResultSet.getColumnDescriptions();
@@ -186,7 +186,7 @@ public class RunUtils {
 
     public static HashMap<String, File> generateReportsAsCSV(SedML sedml, SolverHandler solverHandler, File outDirForCurrentSedml) {
         // finally, the real work
-        Map<TaskJob, SBMLNonspatialSimResults> resultsHash = solverHandler.nonSpatialResults;
+        Map<TaskJob, NonSpatialSBMLSimResults> resultsHash = solverHandler.nonSpatialResults;
         HashMap<String, File> reportsHash = new HashMap<>();
         List<Output> allSedmlOutputs = sedml.getOutputs();
         for (Output sedmlOutput : allSedmlOutputs) {
@@ -252,7 +252,7 @@ public class RunUtils {
                         }
 
                         IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport(); // must get variable ID from SBML model
-                        String sbmlVarId = "";
+                        String sbmlVarId;
                         if (var.getSymbol() != null) { // it is a predefined symbol
                             // translate SBML official symbols
                             // TODO: check spec for other symbols
@@ -268,9 +268,9 @@ public class RunUtils {
 
                         // Get task job(s)
                         List<TaskJob> taskJobs = new ArrayList<>();
-                        for (Map.Entry<TaskJob, SBMLNonspatialSimResults> entry : resultsHash.entrySet()) {
+                        for (Map.Entry<TaskJob, NonSpatialSBMLSimResults> entry : resultsHash.entrySet()) {
                             TaskJob taskJob = entry.getKey();
-                            SBMLNonspatialSimResults value = entry.getValue();
+                            NonSpatialSBMLSimResults value = entry.getValue();
                             if(value != null && taskJob.getTaskId().equals(task.getId())) {
                                 taskJobs.add(taskJob);
                                 if (!(task instanceof RepeatedTask)) break; // Only have one entry for non-repeated tasks
@@ -280,17 +280,17 @@ public class RunUtils {
                         
                         varIDs.add(var.getId());
                         
-                        // we want to keep the last outputNumberOfPoints only
-                        int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
+                        // we want to keep the last outputNumberOfSteps only
+                        int outputNumberOfSteps = ((UniformTimeCourse) sedmlSim).getNumberOfSteps();
                         double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
                         List<double[]> variablesList = new ArrayList<>();
 
                         for (TaskJob taskJob : taskJobs){
                             // key format in resultsHash is taskId + "_" + simJobId
                             // ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
-                            SBMLNonspatialSimResults results = resultsHash.get(taskJob); // hence the added "_0"
+                            NonSpatialSBMLSimResults results = resultsHash.get(taskJob); // hence the added "_0"
                             if (results==null) continue;
-                            double[] data = results.getDataForSBMLVar(sbmlVarId, outputStartTime, outputNumberOfPoints);
+                            double[] data = results.getSBMLDataAccessor(sbmlVarId, outputStartTime, outputNumberOfSteps + 1).getData().data();
 
                             mxlen = Integer.max(mxlen, data.length);
                             if(!values.containsKey(var)) {		// this is the first double[]
