@@ -14,14 +14,17 @@ public class Triplet<One, Two, Three> implements Serializable {
     }
 
     public String toString() {
-        return "<" + (this.one == null ? "null" : this.one.toString()) + ", " +
-                (this.two == null ? "null" : this.two.toString()) + ">";
+        return "<"
+                + (this.one == null ? "null" : this.one.toString()) + ", "
+                + (this.two == null ? "null" : this.two.toString()) + ", "
+                + (this.three == null ? "null" : this.three.toString()) + ">";
     }
 
     public int hashCode() {
         int h = 13;
         h += h *37 + (this.one == null ? 0 : this.one.hashCode());
         h += h *37 + (this.two == null ? 0 : this.two.hashCode());
+        h += h *37 + (this.three == null ? 0 : this.three.hashCode());
         return h;
     }
 
