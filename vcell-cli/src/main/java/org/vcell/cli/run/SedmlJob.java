@@ -271,7 +271,7 @@ public class SedmlJob {
             boolean hasReports = !this.sedml.getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList().isEmpty();
             boolean has2DPlots = !this.sedml.getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList().isEmpty();
             if (!solverHandler.nonSpatialResults.isEmpty()) {
-                if (hasReports) this.generateCSV(solverHandler);
+                if (hasReports) this.generateCSV(organizedNonSpatialResults);
                 if (has2DPlots) this.generatePlots(organizedNonSpatialResults);
             }
 
@@ -335,21 +335,13 @@ public class SedmlJob {
         return true;
     }
 
-    private void generateCSV(SolverHandler solverHandler) throws DataAccessException, IOException {
-        HashMap<String, File> csvReports;
+    private void generateCSV(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults) {
+        Map<String, File> csvReports;
         this.logDocumentMessage += "Generating CSV file... ";
         logger.info("Generating CSV file... ");
 
         // csvReports is never null (?)
-        csvReports = RunUtils.generateReportsAsCSV(this.sedml, solverHandler, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
-        File[] plotFilesToRename = this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML.listFiles(f -> f.getName().startsWith("__plot__"));
-        plotFilesToRename = plotFilesToRename == null ? new File[0] : plotFilesToRename;
-        for (File plotFileToRename : plotFilesToRename){
-            String newFilename = plotFileToRename.getName().replace("__plot__","");
-            if (!plotFileToRename.renameTo(new File(plotFileToRename.getParent(),newFilename))){
-                logger.warn(String.format("New file name '%s' may not have been applied to '%s'", newFilename, plotFileToRename.getName()));
-            }
-        }
+        csvReports = RunUtils.generateReportsAsCSV(this.sedml, organizedNonSpatialResults, this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
         if (csvReports.isEmpty() || csvReports.containsValue(null)) {
             this.somethingFailed = somethingDidFail();
             Tracer.failure(new Exception("Failed to generate one or more reports"), "Failed to generate one or more reports");
