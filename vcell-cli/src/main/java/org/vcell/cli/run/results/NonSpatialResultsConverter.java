@@ -220,16 +220,15 @@ public class NonSpatialResultsConverter extends ResultsConverter {
 
         String exampleReference = resultsByVariable.keySet().iterator().next().getReference();
         int numJobs = resultsByVariable.values().iterator().next().listOfResultSets.size();
-        ValueHolder<LazySBMLNonSpatialDataAccessor> synthesizedResults = new ValueHolder<LazySBMLNonSpatialDataAccessor>(taskToSimulationMap.get(sedml.getTaskWithId(exampleReference)));
+        ValueHolder<LazySBMLNonSpatialDataAccessor> synthesizedResults = new ValueHolder<>(taskToSimulationMap.get(sedml.getTaskWithId(exampleReference)));
         SimpleDataGenCalculator calc = new SimpleDataGenCalculator(dataGen);
 
         // Perform the math!
         for (int jobNum = 0; jobNum < numJobs; jobNum++){
-            final int finalMaxLengthOfData = maxLengthOfData; // need to finalize to put in lambda.
             final int finalJobNum = jobNum; // need to finalize to put in lambda.
             LazySBMLNonSpatialDataAccessor synthesizedLazyDataset = new LazySBMLNonSpatialDataAccessor(
-                    ()-> NonSpatialResultsConverter.getSynthesizedDataSet(calc, resultsByVariable, synthesizedResults.vcSimulation, finalMaxLengthOfData, finalJobNum),
-                    finalMaxLengthOfData
+                    ()-> NonSpatialResultsConverter.getSynthesizedDataSet(calc, resultsByVariable, synthesizedResults.vcSimulation, padToLength, finalJobNum),
+                    padToLength
             );
             synthesizedResults.listOfResultSets.add(synthesizedLazyDataset);
         }
