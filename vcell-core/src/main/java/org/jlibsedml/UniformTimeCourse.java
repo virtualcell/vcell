@@ -9,7 +9,7 @@ public final class UniformTimeCourse extends Simulation {
 	  @Override
 	public String toString() {
 		return "UniformTimeCourse [initialTime=" + initialTime
-				+ ", numberOfPoints=" + numberOfPoints + ", outputEndTime="
+				+ ", numberOfSteps=" + numberOfSteps + ", outputEndTime="
 				+ outputEndTime + ", outputStartTime=" + outputStartTime
 				+ ", " + getAlgorithm() + ", getId()=" + getId()
 				+ "]";
@@ -44,11 +44,11 @@ public final class UniformTimeCourse extends Simulation {
 
     /**
      * Sets the number of output points for  this simulation.
-     * @param numberOfPoints A <code>double</code>.
+     * @param numberOfSteps A <code>double</code>.
      * @since 1.2.0
      */
-    public void setNumberOfPoints(int numberOfPoints) {
-        this.numberOfPoints = numberOfPoints;
+    public void setNumberOfSteps(int numberOfSteps) {
+        this.numberOfSteps = numberOfSteps;
     }
 
     @Override
@@ -59,7 +59,7 @@ public final class UniformTimeCourse extends Simulation {
 	private double initialTime = 0.0;
 	   private double outputStartTime = 0.0;
 	   private double outputEndTime = 0.0;
-	   private int numberOfPoints = 0;
+	   private int numberOfSteps = 0;
 	   
 	   /**
 	    * This constructor does not perform validation at this stage of the simulation configuration ( for example, 
@@ -72,15 +72,15 @@ public final class UniformTimeCourse extends Simulation {
 	    * @param initialTime 
 	    * @param outputStartTime
 	    * @param outputEndTime
-	    * @param numberOfPoints
+	    * @param numberOfSteps
 	    */
 	   public UniformTimeCourse(String id, String name, 
-			   double initialTime, double outputStartTime, double outputEndTime, int numberOfPoints,Algorithm algorithm) {
+			   double initialTime, double outputStartTime, double outputEndTime, int numberOfSteps, Algorithm algorithm) {
 		   super(id, name,algorithm);
 		   this.initialTime = initialTime;
 		   this.outputStartTime = outputStartTime;
 		   this.outputEndTime = outputEndTime;
-		   this.numberOfPoints = numberOfPoints;
+		   this.numberOfSteps = numberOfSteps;
 	   }
 
 	/**
@@ -111,8 +111,8 @@ public final class UniformTimeCourse extends Simulation {
 	 * Getter for the number of time-points in  the simulation.
 	 * @return a double
 	 */
-	public int getNumberOfPoints() {
-		return numberOfPoints;
+	public int getNumberOfSteps() {
+		return numberOfSteps;
 	}
 	
 	/**

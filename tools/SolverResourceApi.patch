@@ -1,0 +1,33 @@
+diff --git a/vcell-restclient/src/main/java/org/vcell/restclient/api/SolverResourceApi.java b/vcell-restclient/src/main/java/org/vcell/restclient/api/SolverResourceApi.java
+index 41f2bf8e1..39e9cd951 100644
+--- a/vcell-restclient/src/main/java/org/vcell/restclient/api/SolverResourceApi.java
++++ b/vcell-restclient/src/main/java/org/vcell/restclient/api/SolverResourceApi.java
+@@ -12,6 +12,8 @@
+ 
+ package org.vcell.restclient.api;
+ 
++import org.apache.commons.io.FileUtils;
++import org.apache.commons.lang.RandomStringUtils;
+ import org.vcell.restclient.ApiClient;
+ import org.vcell.restclient.ApiException;
+ import org.vcell.restclient.ApiResponse;
+@@ -119,11 +121,14 @@ public class SolverResourceApi {
+         if (localVarResponse.statusCode()/ 100 != 2) {
+           throw getApiException("getFVSolverInput", localVarResponse);
+         }
+-        return new ApiResponse<File>(
+-          localVarResponse.statusCode(),
+-          localVarResponse.headers().map(),
+-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<File>() {}) // closes the InputStream
+-        );
++          InputStream inputStream = localVarResponse.body();
++          File file = File.createTempFile("finite-volume-input-" + RandomStringUtils.randomAlphabetic(10), ".tmp");
++          FileUtils.copyInputStreamToFile(inputStream, file);
++          return new ApiResponse<File>(
++                  localVarResponse.statusCode(),
++                  localVarResponse.headers().map(),
++                  localVarResponse.body() == null ? null : file // closes the InputStream
++          );
+       } finally {
+       }
+     } catch (IOException e) {

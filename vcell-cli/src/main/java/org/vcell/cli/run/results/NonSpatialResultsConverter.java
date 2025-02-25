@@ -3,28 +3,32 @@ package org.vcell.cli.run.results;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TempSimulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
-import org.jlibsedml.execution.IXPathToVariableIDResolver;
-import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.cli.run.hdf5.Hdf5SedmlResults;
-import org.vcell.cli.run.hdf5.Hdf5SedmlResultsNonspatial;
-import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
+import org.vcell.cli.run.hdf5.Hdf5SedmlResultsNonSpatial;
+import org.vcell.sbml.vcell.NonSpatialSBMLSimResults;
+import org.vcell.sbml.vcell.SBMLDataRecord;
+import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
+import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
+import org.vcell.sedml.SEDMLImportException;
 import org.vcell.sedml.log.BiosimulationLog;
 
 import java.nio.file.Paths;
 import java.util.*;
-public class NonSpatialResultsConverter {
+
+public class NonSpatialResultsConverter extends ResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonSpatialResultsConverter.class);
 
-    public static Map<DataGenerator, NonSpatialValueHolder> organizeNonSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException {
-        Map<DataGenerator, NonSpatialValueHolder> nonSpatialOrganizedResultsMap = new HashMap<>();
+    public static Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizeNonSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, SEDMLImportException {
+        Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialOrganizedResultsMap = new HashMap<>();
         if (nonSpatialResultsHash.isEmpty()) return nonSpatialOrganizedResultsMap;
 
-        for (Output output : NonSpatialResultsConverter.getValidOutputs(sedml)){
+        for (Output output : ResultsConverter.getValidOutputs(sedml)){
             Set<DataGenerator> dataGeneratorsToProcess;
             if (output instanceof Report report){
                 dataGeneratorsToProcess = new LinkedHashSet<>();
@@ -45,9 +49,21 @@ public class NonSpatialResultsConverter {
                 if (logger.isDebugEnabled()) logger.warn("Unrecognized output type: `{}` (id={})", output.getClass().getName(), output.getId());
                 continue;
             }
+            // We need to determine the "correct" number of data points to pad correctly.
+            int maxTimeLength = 0;
+            for (DataGenerator dataGenerator : dataGeneratorsToProcess){
+                for (Variable variable : dataGenerator.getListOfVariables()){
+                    AbstractTask task = sedml.getTaskWithId(variable.getReference());
+                    AbstractTask derivedTask = ResultsConverter.getBaseTask(task, sedml);
+                    if (!(derivedTask instanceof Task baseTask)) throw new SEDMLImportException("Unable to find base task referred to by var `" + variable.getId() + "`");
+                    org.jlibsedml.Simulation sim = sedml.getSimulation(baseTask.getSimulationReference());
+                    if (!(sim instanceof UniformTimeCourse utcSim)) throw new SEDMLImportException("Unable to find utc sim referred to by var `" + variable.getId() + "`");
+                    maxTimeLength = Math.max(utcSim.getNumberOfSteps() + 1, maxTimeLength);
+                }
+            }
 
             for (DataGenerator dataGen : dataGeneratorsToProcess) {
-                NonSpatialValueHolder valueHolder = NonSpatialResultsConverter.getNonSpatialValueHolderForDataGenerator(sedml, dataGen, nonSpatialResultsHash, taskToSimulationMap);
+                ValueHolder<LazySBMLNonSpatialDataAccessor> valueHolder = NonSpatialResultsConverter.getNonSpatialValueHolderForDataGenerator(sedml, dataGen, nonSpatialResultsHash, taskToSimulationMap, maxTimeLength);
                 if (valueHolder == null) continue;
                 nonSpatialOrganizedResultsMap.put(dataGen, valueHolder);
             }
@@ -57,19 +73,34 @@ public class NonSpatialResultsConverter {
     }
 
 
-    public static Map<Report, List<Hdf5SedmlResults>> prepareNonSpatialDataForHdf5(SedML sedml, Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults, String sedmlLocation) {
+    public static Map<Report, List<Hdf5SedmlResults>> prepareNonSpatialDataForHdf5(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialResultsMapping,
+                                                                                   Set<DataGenerator> allValidDataGenerators, String sedmlLocation, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
+        if (nonSpatialResultsMapping.isEmpty()){
+            logger.debug("No non-spatial data generated; No need to prepare non-existent data!");
+            return results;
+        }
+        List<Report> modifiedList = new ArrayList<>(sedml.getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList());
 
-        // Just get the Reports from the outputs, and nothing else
-        for (Report report : sedml.getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList()){
-            Map<DataSet, NonSpatialValueHolder> dataSetValues = new LinkedHashMap<>();
+
+        Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> generalizedResultsMapping = new LinkedHashMap<>();
+        for (var set : nonSpatialResultsMapping.entrySet()) generalizedResultsMapping.put(set.getKey(), new ValueHolder<>(set.getValue()));
+        // If we're not doing biosimulators mode, we need to record the plot2D as reports as well.
+        if (isBioSimMode) ResultsConverter.add2DPlotsAsReports(sedml, generalizedResultsMapping, modifiedList);
+
+        for (Report report : modifiedList){
+            Map<DataSet, ValueHolder<LazySBMLDataAccessor>> dataSetValues = new LinkedHashMap<>();
 
             for (DataSet dataset : report.getListOfDataSets()) {
                 // use the data reference to obtain the data generator
                 DataGenerator dataGen = sedml.getDataGeneratorWithId(dataset.getDataReference());
-                if (dataGen == null || !organizedNonSpatialResults.containsKey(dataGen))
+                if (dataGen == null)
                     throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");
-                NonSpatialValueHolder value = organizedNonSpatialResults.get(dataGen);
+                if (!generalizedResultsMapping.containsKey(dataGen)){
+                    if (allValidDataGenerators.contains(dataGen)) continue;
+                    throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");
+                }
+                ValueHolder<LazySBMLDataAccessor> value = generalizedResultsMapping.get(dataGen);
                 dataSetValues.put(dataset, value);
             } // end of current dataset processing
 
@@ -79,18 +110,18 @@ public class NonSpatialResultsConverter {
             }
 
             List<String> shapes = new LinkedList<>();
-            Hdf5SedmlResultsNonspatial dataSourceNonSpatial = new Hdf5SedmlResultsNonspatial();
+            Hdf5SedmlResultsNonSpatial dataSourceNonSpatial = new Hdf5SedmlResultsNonSpatial();
             Hdf5SedmlResults hdf5DatasetWrapper = new Hdf5SedmlResults();
 
             if (dataSetValues.entrySet().iterator().next().getValue().isEmpty()) continue; // Check if we have data to work with.
 
             hdf5DatasetWrapper.datasetMetadata._type = NonSpatialResultsConverter.getKind(report.getId());
-            hdf5DatasetWrapper.datasetMetadata.sedmlId = NonSpatialResultsConverter.removeVCellPrefixes(report.getId(), report.getId());
+            hdf5DatasetWrapper.datasetMetadata.sedmlId = ResultsConverter.removeVCellPrefixes(report.getId(), report.getId());
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
             hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
 
             for (DataSet dataSet : dataSetValues.keySet()){
-                NonSpatialValueHolder dataSetValuesSource = dataSetValues.get(dataSet);
+                ValueHolder<LazySBMLDataAccessor> dataSetValuesSource = dataSetValues.get(dataSet);
 
                 dataSourceNonSpatial.dataItems.put(report, dataSet, new LinkedList<>());
                 dataSourceNonSpatial.scanBounds = dataSetValuesSource.vcSimulation.getMathOverrides().getScanBounds();
@@ -107,15 +138,17 @@ public class NonSpatialResultsConverter {
                 }
                 dataSourceNonSpatial.scanParameterValues = scanValues;
 
-                for (double[] data : dataSetValuesSource.listOfResultSets) {
-                    dataSourceNonSpatial.dataItems.get(report, dataSet).add(data);
-                    shapes.add(Integer.toString(data.length));
+                for (LazySBMLDataAccessor data : dataSetValuesSource.listOfResultSets) {
+                    if (!(data instanceof LazySBMLNonSpatialDataAccessor nonSpatialData))
+                        throw new IllegalArgumentException("Spatial data somehow got into non-spatial data!");
+                    dataSourceNonSpatial.dataItems.get(report, dataSet).add(nonSpatialData);
+                    shapes.add(Integer.toString(data.getFlatSize()));
                 }
                 
                 hdf5DatasetWrapper.dataSource = dataSourceNonSpatial; // Using upcasting
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(
-                    NonSpatialResultsConverter.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
+                    ResultsConverter.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = shapes;
@@ -126,15 +159,17 @@ public class NonSpatialResultsConverter {
         return results;
     }
 
-    private static NonSpatialValueHolder getNonSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen, Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException {
+    private static ValueHolder<LazySBMLNonSpatialDataAccessor> getNonSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
+                                                                                  Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash,
+                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap, int padToLength) throws ExpressionException {
         if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");
-        Map<Variable, NonSpatialValueHolder> resultsByVariable = new HashMap<>();
+        Map<Variable, ValueHolder<LazySBMLNonSpatialDataAccessor>> resultsByVariable = new HashMap<>();
 
         // get the list of variables associated with the data reference
         for (Variable var : dataGen.getListOfVariables()) {
             // for each variable we recover the task
             AbstractTask topLevelTask = sedml.getTaskWithId(var.getReference());
-            AbstractTask baseTask = NonSpatialResultsConverter.getBaseTask(topLevelTask, sedml); // if !RepeatedTask, baseTask == topLevelTask
+            AbstractTask baseTask = ResultsConverter.getBaseTask(topLevelTask, sedml); // if !RepeatedTask, baseTask == topLevelTask
 
             // from the task we get the sbml model
             org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
@@ -145,12 +180,12 @@ public class NonSpatialResultsConverter {
             }
 
             // must get variable ID from SBML model
-            String vcellVarId = convertToVCellSymbol(var);
+            String vcellVarId = ResultsConverter.convertToVCellSymbol(var);
 
             // If the task isn't in our results hash, it's unwanted and skippable.
             boolean bFoundTaskInNonspatial = nonSpatialResultsHash.keySet().stream().anyMatch(taskJob -> taskJob.getTaskId().equals(topLevelTask.getId()));
             if (!bFoundTaskInNonspatial){
-                logger.warn("Was not able to find simulation data for task with ID: {}", topLevelTask.getId());
+                if (logger.isDebugEnabled()) logger.warn("Was not able to find simulation data for task with ID: {}", topLevelTask.getId());
                 break;
             }
 
@@ -160,7 +195,7 @@ public class NonSpatialResultsConverter {
 
             // We can have multiple TaskJobs sharing IDs (in the case of repeated tasks), so we need to get them all
             for (TaskJob taskJob : nonSpatialResultsHash.keySet()) {
-                SBMLNonspatialSimResults simResults = nonSpatialResultsHash.get(taskJob);
+                NonSpatialSBMLSimResults simResults = nonSpatialResultsHash.get(taskJob);
                 if (simResults == null || !taskJob.getTaskId().equals(topLevelTask.getId())) continue;
                 taskJobs.add(taskJob);
                 if (!(topLevelTask instanceof RepeatedTask)) break; // No need to keep looking if it's not a repeated task, one "loop" is good
@@ -169,13 +204,13 @@ public class NonSpatialResultsConverter {
             if (taskJobs.isEmpty()) continue;
 
             boolean resultsAlreadyExist = topLevelTask instanceof RepeatedTask && resultsByVariable.containsKey(var);
-            NonSpatialValueHolder individualVarResultsHolder = resultsAlreadyExist ? resultsByVariable.get(var) :
-                    new NonSpatialValueHolder(taskToSimulationMap.get(topLevelTask));
+            ValueHolder<LazySBMLNonSpatialDataAccessor> individualVarResultsHolder = resultsAlreadyExist ? resultsByVariable.get(var) :
+                    new ValueHolder<>(taskToSimulationMap.get(topLevelTask));
             for (TaskJob taskJob : taskJobs) {
                 // Leaving intermediate variables for debugging access
-                SBMLNonspatialSimResults nonSpatialResults = nonSpatialResultsHash.get(taskJob);
-                double[] data = nonSpatialResults.getDataForSBMLVar(vcellVarId, utcSim.getOutputStartTime(), utcSim.getNumberOfPoints());
-                individualVarResultsHolder.listOfResultSets.add(data);
+                NonSpatialSBMLSimResults nonSpatialResults = nonSpatialResultsHash.get(taskJob);
+                LazySBMLNonSpatialDataAccessor dataAccessor = nonSpatialResults.getSBMLDataAccessor(vcellVarId, utcSim, padToLength);
+                individualVarResultsHolder.listOfResultSets.add(dataAccessor);
             }
             resultsByVariable.put(var, individualVarResultsHolder);
         }
@@ -185,128 +220,38 @@ public class NonSpatialResultsConverter {
 
         String exampleReference = resultsByVariable.keySet().iterator().next().getReference();
         int numJobs = resultsByVariable.values().iterator().next().listOfResultSets.size();
-        NonSpatialValueHolder synthesizedResults = new NonSpatialValueHolder(taskToSimulationMap.get(sedml.getTaskWithId(exampleReference)));
+        ValueHolder<LazySBMLNonSpatialDataAccessor> synthesizedResults = new ValueHolder<>(taskToSimulationMap.get(sedml.getTaskWithId(exampleReference)));
         SimpleDataGenCalculator calc = new SimpleDataGenCalculator(dataGen);
-
-        // Get padding value
-        int maxLengthOfData = 0;
-        for (NonSpatialValueHolder nvh : resultsByVariable.values()){
-            for (double[] dataSet : nvh.listOfResultSets){
-                if (dataSet.length <= maxLengthOfData) continue;
-                maxLengthOfData = dataSet.length;
-            }
-        }
 
         // Perform the math!
         for (int jobNum = 0; jobNum < numJobs; jobNum++){
-            double[] synthesizedDataset = new double[maxLengthOfData];
-            for (int datumIndex = 0; datumIndex < synthesizedDataset.length; datumIndex++){
-
-                for (Variable var : resultsByVariable.keySet()){
-                    //if (processedDataSet == null) processedDataSet = new NonspatialValueHolder(sedml.getTaskWithId(var.getReference()));
-                    if (jobNum >= resultsByVariable.get(var).listOfResultSets.size()) continue;
-                    NonSpatialValueHolder nonspatialValue = resultsByVariable.get(var);
-                    double[] specficJobDataSet = nonspatialValue.listOfResultSets.get(jobNum);
-                    double datum = datumIndex >= specficJobDataSet.length ? Double.NaN : specficJobDataSet[datumIndex];
-                    calc.setArgument(var.getId(), datum);
-                    if (!synthesizedResults.vcSimulation.equals(nonspatialValue.vcSimulation)){
-                        logger.warn("Simulations differ across variables; need to fix data structures to accomodate?");
-                    }
-                }
-                synthesizedDataset[datumIndex] = calc.evaluateWithCurrentArguments(true);
-            }
-            synthesizedResults.listOfResultSets.add(synthesizedDataset);
+            final int finalJobNum = jobNum; // need to finalize to put in lambda.
+            LazySBMLNonSpatialDataAccessor synthesizedLazyDataset = new LazySBMLNonSpatialDataAccessor(
+                    ()-> NonSpatialResultsConverter.getSynthesizedDataSet(calc, resultsByVariable, synthesizedResults.vcSimulation, padToLength, finalJobNum),
+                    padToLength
+            );
+            synthesizedResults.listOfResultSets.add(synthesizedLazyDataset);
         }
         return synthesizedResults;
     }
 
-    private static List<Output> getValidOutputs(SedML sedml){
-        List<Output> nonPlot3DOutputs = new ArrayList<>();
-        List<Plot3D> plot3DOutputs = new ArrayList<>();
-        for (Output output : sedml.getOutputs()){
-            if (output instanceof Plot3D plot3D) plot3DOutputs.add(plot3D);
-            else nonPlot3DOutputs.add(output);
+    private static SBMLDataRecord getSynthesizedDataSet(SimpleDataGenCalculator calc, Map<Variable, ValueHolder<LazySBMLNonSpatialDataAccessor>> resultsByVariable,
+                                                        Simulation vcSimulation, int finalMaxLengthOfData, int jobNum) throws Exception {
+        double[] postProcessedData = new double[finalMaxLengthOfData];
+        for (int datumIndex = 0; datumIndex < finalMaxLengthOfData; datumIndex++){
+            for (Variable var : resultsByVariable.keySet()){
+                if (jobNum >= resultsByVariable.get(var).listOfResultSets.size()) continue;
+                ValueHolder<LazySBMLNonSpatialDataAccessor> nonSpatialValue = resultsByVariable.get(var);
+                LazySBMLNonSpatialDataAccessor specificJobDataSet = nonSpatialValue.listOfResultSets.get(jobNum);
+                double[] lazyData = specificJobDataSet.getData().data();
+                double datum = datumIndex >= lazyData.length ? Double.NaN : lazyData[datumIndex];
+                calc.setArgument(var.getId(), datum);
+                if (!vcSimulation.equals(nonSpatialValue.vcSimulation)){
+                    logger.warn("Simulations differ across variables; need to fix data structures to accommodate?");
+                }
+            }
+            postProcessedData[datumIndex] = calc.evaluateWithCurrentArguments(true);
         }
-
-        if (!plot3DOutputs.isEmpty()) logger.warn("VCell currently does not support creation of 3D plots, {} plot{} will be skipped.",
-                plot3DOutputs.size(), plot3DOutputs.size() == 1 ? "" : "s");
-        return nonPlot3DOutputs;
-
-    }
-
-    private static AbstractTask getBaseTask(AbstractTask task, SedML sedml){
-        if (task == null) throw new IllegalArgumentException("task arguement is `null`!");
-        while (task instanceof RepeatedTask repeatedTask) { // We need to find the original task burried beneath.
-            // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
-            SubTask st = repeatedTask.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
-            task = sedml.getTaskWithId(st.getTaskId());
-            if (task == null) throw new IllegalArgumentException("Bad SedML formatting; task with id " + st.getTaskId() +" not found");
-        }
-        return task;
-    }
-
-    private static String convertToVCellSymbol(Variable var){
-         // must get variable ID from SBML model
-         String sbmlVarId = "";
-         if (var.getSymbol() != null) { // it is a predefined symbol
-             // search the sbml model to find the vcell variable name associated with the run
-             switch(var.getSymbol().name()){
-                 case "TIME": { // TIME is t, etc
-                     sbmlVarId = "t"; // this is VCell reserved symbold for time
-                     break;
-                 }
-                 default:{
-                     sbmlVarId = var.getSymbol().name();
-                 }
-                 // etc, TODO: check spec for other symbols (CSymbols?)
-                 // Delay? Avogadro? rateOf?
-             }
-         } else { // it is an XPATH target in model
-             String target = var.getTarget();
-             IXPathToVariableIDResolver resolver = new SBMLSupport();
-             sbmlVarId = resolver.getIdFromXPathIdentifer(target);
-         }
-         return sbmlVarId;
-    }
-
-
-    private static String getKind(String prefixedSedmlId){
-        String plotPrefix = "__plot__";
-        if (prefixedSedmlId.startsWith(plotPrefix))
-            return "SedPlot2D";
-        return "SedReport";
-    }
-
-    /**
-     * We need the sedmlId to help remove prefixes, but the sedmlId itself may need to be fixed.
-     * 
-     * If a sedmlId is being checked, just provide itself twice
-     * 
-     * The reason for this, is having an overload with just "(String s)" as a requirment is misleading.
-     */
-    private static String removeVCellPrefixes(String s, String sedmlId){
-        String plotPrefix = "__plot__";
-        String reservedPrefix = "__vcell_reserved_data_set_prefix__";
-        
-        String checkedId = sedmlId.startsWith(plotPrefix) ? sedmlId.replace(plotPrefix, "") : sedmlId;
-        if (sedmlId.equals(s)) return checkedId;
-        
-        if (s.startsWith(plotPrefix)){
-            s = s.replace(plotPrefix, "");
-        } 
-        
-        if (s.startsWith(reservedPrefix)){
-            s = s.replace(reservedPrefix, "");
-        }
-
-        if (s.startsWith(checkedId + "_")){
-            s = s.replace(checkedId + "_", "");
-        }
-
-        if (s.startsWith(checkedId)){
-            s = s.replace(checkedId, "");
-        }
-
-        return s;
+        return new SBMLDataRecord(postProcessedData, List.of(postProcessedData.length), null);
     }
 }

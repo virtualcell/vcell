@@ -107,6 +107,7 @@ Class | Method | HTTP request | Description
 *SimulationResourceApi* | [**get_simulation_status**](docs/SimulationResourceApi.md#get_simulation_status) | **GET** /api/v1/Simulation/{simID}/simulationStatus | Get the status of simulation running
 *SimulationResourceApi* | [**start_simulation**](docs/SimulationResourceApi.md#start_simulation) | **POST** /api/v1/Simulation/{simID}/startSimulation | Start a simulation.
 *SimulationResourceApi* | [**stop_simulation**](docs/SimulationResourceApi.md#stop_simulation) | **POST** /api/v1/Simulation/{simID}/stopSimulation | Stop a simulation.
+*SolverResourceApi* | [**get_fv_solver_input**](docs/SolverResourceApi.md#get_fv_solver_input) | **POST** /api/v1/solver/getFVSolverInput | Retrieve finite volume input from SBML spatial model.
 *UsersResourceApi* | [**forgot_legacy_password**](docs/UsersResourceApi.md#forgot_legacy_password) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**get_guest_legacy_api_token**](docs/UsersResourceApi.md#get_guest_legacy_api_token) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users
 *UsersResourceApi* | [**get_legacy_api_token**](docs/UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API

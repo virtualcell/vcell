@@ -1015,7 +1015,7 @@ public class SEDMLImporter {
 		double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
 		double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
 		double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
-		outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfPoints();
+		outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfSteps();
 		outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
 		timeBounds = new TimeBounds(0, outputEndTime - initialTime);
 

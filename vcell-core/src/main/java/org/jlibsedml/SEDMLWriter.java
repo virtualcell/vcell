@@ -270,7 +270,7 @@ class SEDMLWriter {
                             .getOutputEndTime()));
             node.setAttribute(SEDMLTags.UTCA_POINTS_NUM, Integer
                     .toString(((UniformTimeCourse) sedmlSim)
-                            .getNumberOfPoints()));
+                            .getNumberOfSteps()));
         } else if (sedmlSim.getSimulationKind().equals(SEDMLTags.SIMUL_OS_KIND)) {
             node = new Element(SEDMLTags.SIM_OS);
             addNotesAndAnnotation(sedmlSim, node);

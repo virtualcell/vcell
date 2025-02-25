@@ -3455,7 +3455,7 @@ private String importSourceName;
 			for (int c = 0; c < initImageDataSetChannels.length; c++) {
 				UShortImage[] zImageSet = new UShortImage[newISize.getZ()];
 				for (int z = 0; z < zImageSet.length; z++) {
-					zImageSet[z] = new UShortImage(resizeInfo.underlayC[c][z],originalOrigin,resizeExtent,newISize.getX(),newISize.getY(),1);
+					zImageSet[z] = new UShortImage(resizeInfo.underlayC[c][z], originalOrigin, resizeExtent, newISize.getX(), newISize.getY(), 1);
 				}
 				initImageDataSetChannels[c] = new ImageDataset(zImageSet, new double[] { 0.0 },newISize.getZ());
 			}
@@ -4145,13 +4145,13 @@ private String importSourceName;
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				ISize origISize = getImageDataSetChannel().getISize();
-				CoordinateIndex cropLow = new CoordinateIndex(-cropRectangle3D.low.x,-cropRectangle3D.low.y,-cropRectangle3D.low.z);
+				CoordinateIndex cropLow = new CoordinateIndex(-cropRectangle3D.low.x, -cropRectangle3D.low.y, -cropRectangle3D.low.z);
 				CoordinateIndex cropHigh =
-						new CoordinateIndex(cropRectangle3D.low.x+cropRectangle3D.width-origISize.getX(),
-								cropRectangle3D.low.y+cropRectangle3D.height-origISize.getY(),
-								cropRectangle3D.low.z+cropRectangle3D.depth-origISize.getZ());
+						new CoordinateIndex(cropRectangle3D.low.x + cropRectangle3D.width - origISize.getX(),
+								cropRectangle3D.low.y + cropRectangle3D.height - origISize.getY(),
+								cropRectangle3D.low.z + cropRectangle3D.depth - origISize.getZ());
 				resizeImpl(ResizeInfo.createPadCropResizeInfo(origISize, cropLow, cropHigh), getClientTaskStatusSupport());
-				updateAuxiliaryInfo(origISize,getClientTaskStatusSupport());
+				//updateAuxiliaryInfo(origISize,getClientTaskStatusSupport()); removed because we believe this was accidentally called double; resizeImpl calls this!
 			}
 		};
 		final AsynchClientTask updatePanelTask = getUpdateDisplayAfterCropTask();

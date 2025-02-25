@@ -42,14 +42,11 @@ import org.jlibsedml.modelsupport.SBMLSupport;
 
 import org.jmathml.ASTNode;
 import org.vcell.cli.messaging.CLIRecordable;
+import org.vcell.sbml.vcell.*;
 import org.vcell.sedml.SEDMLImportException;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
-import org.vcell.sbml.vcell.SBMLImportException;
-import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
-import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sedml.SEDMLImporter;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ISize;
@@ -69,8 +66,8 @@ public class SolverHandler {
 	public int countSuccessfulSimulationRuns = 0;    // number of simulations that we ran successfully for this sedml file
 
 	private SEDMLImporter sedmlImporter;
-	Map<TaskJob, SBMLNonspatialSimResults> nonSpatialResults = new LinkedHashMap<>();
-    Map<TaskJob, File> spatialResults = new LinkedHashMap<TaskJob, File>();
+	Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResults = new LinkedHashMap<>();
+    Map<TaskJob, SpatialSBMLSimResults> spatialResults = new LinkedHashMap<>();
 
     Map<TempSimulation, AbstractTask> tempSimulationToTaskMap = new LinkedHashMap<> ();    // key = vcell simulation, value = sedml topmost task (the imported task id)
 	Map<AbstractTask, TempSimulation> taskToTempSimulationMap = new LinkedHashMap<> ();    // the opposite
@@ -122,9 +119,8 @@ public class SolverHandler {
     	// we first make a list of all the sub tasks (sub tasks themselves may be instanceof Task or another RepeatedTask)
         Set <AbstractTask> subTasks = new LinkedHashSet<> ();
         for(AbstractTask at : sedml.getTasks()) {
-        	if(!(at instanceof RepeatedTask)) continue;
-			RepeatedTask rt = (RepeatedTask)at;
-			Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
+        	if(!(at instanceof RepeatedTask rt)) continue;
+            Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
 			for (Map.Entry<String, SubTask> entry : subTasksOfRepeatedTask.entrySet()) {
 				String subTaskId = entry.getKey();
 				AbstractTask subTask = sedml.getTaskWithId(subTaskId);
@@ -149,15 +145,13 @@ public class SolverHandler {
 			RepeatedTask rt;
 			Task actualTask;
 			// find the actual Task and extract the simulation
-			if(task instanceof RepeatedTask) {
-				rt = (RepeatedTask)task;
+			if(task instanceof RepeatedTask repeatedTask) {
+				rt = repeatedTask;
 				do {
 					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
 					String taskId = st.getTaskId();
 					referredTask = sedml.getTaskWithId(taskId);
-					if (referredTask instanceof RepeatedTask) {
-						rt = (RepeatedTask)referredTask;
-					}
+					if (referredTask instanceof RepeatedTask repeatedReferredTask) rt = repeatedReferredTask;
 					subTasksList.add(referredTask);                // last entry added will be a instanceof Task
 				} while (referredTask instanceof RepeatedTask);
 				actualTask = (Task)referredTask;
@@ -514,28 +508,17 @@ public class SolverHandler {
 						}
 					}
 
-
+					MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
+					SBMLSymbolMapping sbmlMapping = this.sedmlImporter.getSBMLSymbolMapping(bioModel);
+					TaskJob taskJob = new TaskJob(task.getId(), tempSimulationJob.getJobIndex());
 					if (sd.isSpatial()) {
 						logger.info("Processing spatial results of execution...");
-						File hdf5Results = new File(outDir + System.getProperty("file.separator") + task.getId() + "_job_" + tempSimulationJob.getJobIndex() + "_results.h5");
-						try {
-							RunUtils.exportPDE2HDF5(tempSimulationJob, outputDirForSedml, hdf5Results);
-							spatialResults.put(new TaskJob(task.getId(), tempSimulationJob.getJobIndex()), hdf5Results);
-							keepTempFiles = true;
-						} catch (Exception e) {
-							Tracer.failure(e, "Failed to export PDE2HDF5 for " + task.getId() + " " + e.getMessage());
-							logger.error(e.getMessage(), e);
-							spatialResults.put(new TaskJob(task.getId(), tempSimulationJob.getJobIndex()), null);
-							throw e;
-						}
+						SpatialSBMLSimResults spatialResults = new SpatialSBMLSimResults(tempSimulationJob, outputDirForSedml, sbmlMapping, mathMapping);
+						this.spatialResults.put(taskJob, spatialResults);
+						keepTempFiles = true;
 					} else {
 						logger.info("Processing non-spatial results of execution...");
-						MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
-						SBMLSymbolMapping sbmlMapping = this.sedmlImporter.getSBMLSymbolMapping(bioModel);
-						if (sbmlMapping == null) throw new SEDMLImportException("BioModel `" + bioModel.getName() + "` not found in mapping; mismatch in SedMLImporter!!");
-
-						TaskJob taskJob = new TaskJob(task.getId(), tempSimulationJob.getJobIndex());
-						SBMLNonspatialSimResults nonspatialSimResults = new SBMLNonspatialSimResults(odeSolverResultSet, sbmlMapping, mathMapping);
+						NonSpatialSBMLSimResults nonspatialSimResults = new NonSpatialSBMLSimResults(odeSolverResultSet, sbmlMapping, mathMapping);
 						this.nonSpatialResults.put(taskJob, nonspatialSimResults);
 					}
 

@@ -3,13 +3,8 @@ package org.vcell.cli.run;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.*;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -21,9 +16,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.DataSet;
 import org.jlibsedml.*;
-import org.jlibsedml.execution.IXPathToVariableIDResolver;
-import org.jlibsedml.modelsupport.SBMLSupport;
-import org.vcell.sbml.vcell.SBMLNonspatialSimResults;
+import org.vcell.cli.run.results.ValueHolder;
+import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.document.User;
@@ -48,7 +42,7 @@ public class RunUtils {
         double outputStart = sedmlSim.getOutputStartTime();
         double outputEnd = sedmlSim.getOutputEndTime();
 
-        int numPoints = sedmlSim.getNumberOfPoints() + 1;
+        int numPoints = sedmlSim.getNumberOfSteps() + 1;
 
 
         ColumnDescription[] columnDescriptions = odeSolverResultSet.getColumnDescriptions();
@@ -150,46 +144,10 @@ public class RunUtils {
         return yi;
     }
 
-    /**
-     * Exports the data of a spatial simulation into hdf5 in a VCell-friendly organization.
-     * ...
-     * Note that this function is extremely dense and confusing. It mostly works in side effects and preparations,
-     * but the end result is correct (at least, that's what we believe)
-     * @param vcellSimJob The sim job to get the data from
-     * @param userDir directory to get the user info with
-     * @param outputFilePointer where to put the final hdf5 file.
-     * @throws DataAccessException if the necessary data could not be accessed.
-     * @throws IOException if the system encountered some trouble with file or system IO
-     */
-    public static void exportPDE2HDF5(SimulationJob vcellSimJob, File userDir, File outputFilePointer) throws DataAccessException, IOException {
-        // A ton of initialization
-        int jobIndex = vcellSimJob.getJobIndex();
-        User user = new User(userDir.getName(), null);
-        cbit.vcell.solver.Simulation vcellSim = vcellSimJob.getSimulation();
-        ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
-
-    	SimulationContext simContext = (SimulationContext)vcellSim.getSimulationOwner();
-        VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(vcellSim.getKey(), user);
-        DataSetControllerImpl dsControllerImpl = new DataSetControllerImpl(null, userDir.getParentFile(), null);
-
-        DataServerImpl dataServerImpl = new DataServerImpl(dsControllerImpl, exportServiceImpl);
-        OutputContext outputContext = new OutputContext(simContext.getOutputFunctionContext().getOutputFunctionsList().toArray(new AnnotatedFunction[0]));
-        VCSimulationDataIdentifier vcId = new VCSimulationDataIdentifier(vcSimID, jobIndex);
-
-        // Create the export specifications, and prepare to export to a file
-        ExportSpecs exportSpecs = RunUtils.getExportSpecs(outputContext, user, dataServerImpl, vcId,
-                dsControllerImpl, vcellSim, jobIndex, vcSimID, simContext);
-
-        // Export to a temp file, then copy the file over to the correct location
-        RunUtils.exportDocument(exportServiceImpl, dataServerImpl, outputContext, exportSpecs, vcId, outputFilePointer);
-    }
-
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, SolverHandler solverHandler, File outDirForCurrentSedml) {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, File outDirForCurrentSedml) {
         // finally, the real work
-        Map<TaskJob, SBMLNonspatialSimResults> resultsHash = solverHandler.nonSpatialResults;
         HashMap<String, File> reportsHash = new HashMap<>();
-        List<Output> allSedmlOutputs = sedml.getOutputs();
-        for (Output sedmlOutput : allSedmlOutputs) {
+        for (Output sedmlOutput : sedml.getOutputs()) {
             // We only want Reports
             if (!(sedmlOutput instanceof Report sedmlReport)) {
                 if (logger.isDebugEnabled()) logger.info("Ignoring unsupported output `" + sedmlOutput.getId() + "` while CSV generation.");
@@ -209,179 +167,53 @@ public class RunUtils {
              */
             try {
                 List<DataSet> datasets = sedmlReport.getListOfDataSets();
+                Map<DataSet, DataGenerator> dataGeneratorMapping = new LinkedHashMap<>();
                 for (DataSet dataset : datasets) {
-                    DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference()); assert datagen != null;
-                    List<String> varIDs = new ArrayList<>();     
-                    List<Variable> vars = new ArrayList<>(datagen.getListOfVariables());
-                    Map<Variable, List<double[]> > values = new HashMap<>();
-                    int mxlen = 0;
-//                        boolean supportedDataset = true;
-                    
-                    // get target values
-                    for (Variable var : vars) {
-                        AbstractTask task = sedml.getTaskWithId(var.getReference());
-                        Simulation sedmlSim = null;
-                        Task actualTask = null;
+                    DataGenerator referencedGenerator = sedml.getDataGeneratorWithId(dataset.getDataReference());
+                    if (referencedGenerator == null) throw new NullPointerException("SedML DataGenerator referenced by report is missing!");
+                    if (!organizedNonSpatialResults.containsKey(referencedGenerator)) break;
+                    dataGeneratorMapping.put(dataset, referencedGenerator);
+                }
 
-                        if(task instanceof RepeatedTask) { // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
-                            RepeatedTask rt = (RepeatedTask)task;
-                            
-                            if (!rt.getResetModel() || rt.getSubTasks().size() != 1) {
-                                logger.warn("Sequential RepeatedTask not yet supported, task " + task.getElementName() + " is being skipped");
-                                continue;
-                   			}
-                            
-                            AbstractTask referredTask;
-                            do { // find the actual Task and extract the simulation
-                                SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
-                                String taskId = st.getTaskId();
-                                referredTask = sedml.getTaskWithId(taskId);
-                                if (referredTask instanceof RepeatedTask) rt = (RepeatedTask)referredTask;
-                            } while (referredTask instanceof RepeatedTask);
-                            actualTask = (Task)referredTask;
-                            sedmlSim = sedml.getSimulation(actualTask.getSimulationReference());
-                        } else {
-                            actualTask = (Task)task;
-                            sedmlSim = sedml.getSimulation(task.getSimulationReference());
-                        }
+                if (dataGeneratorMapping.size() != datasets.size()) {
+                    if (logger.isDebugEnabled()) logger.info("Skipping report with unsupported data (needed data not found in non-spatial results");
+                    continue;
+                }
 
-                        // Confirm uniform time
-                        if (!(sedmlSim instanceof UniformTimeCourse)){
-                            logger.error("only uniform time course simulations are supported");
-                            continue;
-                        }
+                for (DataSet validDataSet: dataGeneratorMapping.keySet()) {
+                    DataGenerator referencedGenerator = dataGeneratorMapping.get(validDataSet);
+                    boolean isReservedVCellPrefix = validDataSet.getId().startsWith("__vcell_reserved_data_set_prefix__");
+                    ValueHolder<LazySBMLNonSpatialDataAccessor> dataHolder = organizedNonSpatialResults.get(referencedGenerator);
 
-                        IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport(); // must get variable ID from SBML model
-                        String sbmlVarId = "";
-                        if (var.getSymbol() != null) { // it is a predefined symbol
-                            // translate SBML official symbols
-                            // TODO: check spec for other symbols
 
-                            // Time
-                            sbmlVarId = var.getSymbol().name();      
-                            if ("TIME".equals(sbmlVarId)) 
-                                sbmlVarId = "t";// this is VCell reserved symbold for time
-                        } else {// it is an XPATH target in model
-                            String target = var.getTarget();
-                            sbmlVarId = variable2IDResolver.getIdFromXPathIdentifer(target);
-                        }
+                    boolean timeAlreadyIncluded = false;
+                    int numTrials = dataHolder.listOfResultSets.size();
+                    for(int i = 0; i < numTrials; i++) {
+                        if (timeAlreadyIncluded) break;
+                        if (validDataSet.getId().contains("time_")) timeAlreadyIncluded = true;
+                        LazySBMLNonSpatialDataAccessor data = dataHolder.listOfResultSets.get(i);
 
-                        // Get task job(s)
-                        List<TaskJob> taskJobs = new ArrayList<>();
-                        for (Map.Entry<TaskJob, SBMLNonspatialSimResults> entry : resultsHash.entrySet()) {
-                            TaskJob taskJob = entry.getKey();
-                            SBMLNonspatialSimResults value = entry.getValue();
-                            if(value != null && taskJob.getTaskId().equals(task.getId())) {
-                                taskJobs.add(taskJob);
-                                if (!(task instanceof RepeatedTask)) break; // Only have one entry for non-repeated tasks
-                            }
-                        }
-                        if (taskJobs.isEmpty()) continue; 
-                        
-                        varIDs.add(var.getId());
-                        
-                        // we want to keep the last outputNumberOfPoints only
-                        int outputNumberOfPoints = ((UniformTimeCourse) sedmlSim).getNumberOfPoints();
-                        double outputStartTime = ((UniformTimeCourse) sedmlSim).getOutputStartTime();
-                        List<double[]> variablesList = new ArrayList<>();
-
-                        for (TaskJob taskJob : taskJobs){
-                            // key format in resultsHash is taskId + "_" + simJobId
-                            // ex: task_0_0_0 where the last 0 is the simJobId (always 0 when no parameter scan)
-                            SBMLNonspatialSimResults results = resultsHash.get(taskJob); // hence the added "_0"
-                            if (results==null) continue;
-                            double[] data = results.getDataForSBMLVar(sbmlVarId, outputStartTime, outputNumberOfPoints);
-
-                            mxlen = Integer.max(mxlen, data.length);
-                            if(!values.containsKey(var)) {		// this is the first double[]
-                                variablesList.add(data);
-                                values.put(var, variablesList);
-                            } else {
-                                List<double[]> variablesListTemp = values.get(var);
-                                variablesListTemp.add(data);
-                                values.put(var, variablesListTemp);
-                            }
-                        }
-                    }
-                    if (varIDs.isEmpty()) continue;
-                    
-                    String mathMLStr = datagen.getMathAsString(); //get math
-                    Expression expr = new Expression(mathMLStr);
-                    SymbolTable st = new SimpleSymbolTable(varIDs.toArray(new String[vars.size()]));
-                    expr.bindExpression(st);
-
-                    Variable firstVar = vars.get(0);
-                    List<double[]> v = values.get(firstVar);
-                    int overridesCount = v!=null ? v.size() : 0;
-                    for(int k=0; k < overridesCount; k++) {
-
-                        if(k>0 && dataset.getId().contains("time_")) {
-                            continue;
-                        }
-                        //compute and write result, padding with NaN if unequal length or errors
-                        double[] row = new double[vars.size()];
-
-                        // Handling row labels that contains ","
-                        if (dataset.getId().startsWith("__vcell_reserved_data_set_prefix__")) {		// also used in cli.py
-                            if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
-                            else sb.append(dataset.getLabel()).append(",");
-                        } else {
-                            if (dataset.getId().contains(",")) sb.append("\"" + dataset.getId() + "\"").append(",");
-                            else sb.append(dataset.getId()).append(",");
-                        }
-
-                        if (dataset.getLabel().contains(",")) sb.append("\"" + dataset.getLabel() + "\"").append(",");
-                        else sb.append(dataset.getLabel()).append(",");
-
-                        DataGenerator dg = sedml.getDataGeneratorWithId(dataset.getDataReference());
-                        if(dg != null && dg.getName() != null && !dg.getName().isEmpty()) {
-                            // name may contain spaces or other things
-                            sb.append("\"" + dg.getName() + "\"").append(",");
-                        } else {			// dg may be null, name may be null
-                            sb.append("").append(",");
-                        }
-
-                        // TODO: here was the for(k : overridesCount)
-                        for (int i = 0; i < mxlen; i++) {
-                            for (int j = 0; j < vars.size(); j++) {
-                                //                                double[] varVals = ((double[]) values.get(vars.get(j)));
-                                Variable var = vars.get(j);
-                                List<double[]> variablesList = values.get(var);
-                                double[] varVals = variablesList.get(k);
-
-                                if (i < varVals.length) {
-                                    row[j] = varVals[i];
-                                } else {
-                                    row[j] = Double.NaN;
-                                }
-                            }
-                            double computed = Double.NaN;
-                            try {
-                                computed = expr.evaluateVector(row);
-                            } catch (Exception e) {
-                                // do nothing, we leave NaN and don't warn/log since it could flood
-                            }
-                            sb.append(computed).append(",");
-                        }
-                        //	}	// here would have been the close bracket for the loop over k
-                        sb.deleteCharAt(sb.lastIndexOf(","));
-                        sb.append("\n");
-
-                    }	//end of k loop
-
+                        String formattedId = isReservedVCellPrefix ? "VCell::" + validDataSet.getId().substring(34) : validDataSet.getId();
+                        sb.append(RunUtils.generateCsvItem(formattedId, ',', false, i, numTrials));
+                        sb.append(RunUtils.generateCsvItem(validDataSet.getLabel(), ',', true, i, numTrials));
+                        String referencedGeneratorName = referencedGenerator.getName() == null ? "" : referencedGenerator.getName();
+                        sb.append(RunUtils.generateCsvItem(referencedGeneratorName.isEmpty() ? referencedGenerator.getId() : referencedGenerator.getName(), ',', true, i, numTrials));
+                        String[] dataStrings = Arrays.stream(data.getData().data()).boxed().map(String::valueOf).toArray(String[]::new);
+                        sb.append(String.join(",", dataStrings)).append('\n');
+                    } // end of trials loop
                 } // end of dataset			
 
-                if (!sb.isEmpty()) {
-                    File f = new File(outDirForCurrentSedml, sedmlReport.getId() + ".csv");
-                    PrintWriter out = new PrintWriter(f);
-                    out.print(sb);
-                    out.flush();
-                    out.close();
-                    if (logger.isDebugEnabled()) logger.info("created csv file for report " + sedmlReport.getId() + ": " + f.getAbsolutePath());
-                    reportsHash.put(sedmlReport.getId(), f);
-                } else {
-                    if (logger.isDebugEnabled()) logger.info("no csv file for report " + sedmlReport.getId());
+                if (sb.isEmpty()) {
+                    if (logger.isDebugEnabled()) logger.info("no csv file for report {}", sedmlReport.getId());
+                    return reportsHash;
                 }
+                File f = new File(outDirForCurrentSedml, sedmlReport.getId() + ".csv");
+                PrintWriter out = new PrintWriter(f);
+                out.print(sb);
+                out.flush();
+                out.close();
+                if (logger.isDebugEnabled()) logger.info("created csv file for report {}: {}", sedmlReport.getId(), f.getAbsolutePath());
+                reportsHash.put(sedmlReport.getId(), f);
             } catch (Exception e) {
                 throw new RuntimeException("CSV generation failed: " + e.getMessage(), e);
             }
@@ -389,9 +221,14 @@ public class RunUtils {
         return reportsHash;
     }
 
+    private static String generateCsvItem(String desiredEntry, char endChar, boolean isLabel, int setNum, int maxSets){
+        String safeEntry = desiredEntry.contains(",") ? '"' + desiredEntry  + '"' : desiredEntry; // Handling row labels that contains ","
+        String roundNum = maxSets == 0 ? "" : isLabel ? "(" + setNum + ")" : "_" + setNum + "_";
+        return String.format("%s%s%c", safeEntry, roundNum, endChar);
+    }
+
 
     public static void zipResFiles(File dirFile) throws IOException {
-
         FileInputStream fileInputstream;
         FileOutputStream fileOutputStream;
         ZipOutputStream zipOutputStream;

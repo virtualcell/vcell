@@ -1,24 +1,35 @@
 package org.vcell.cli.run.results;
 
 import cbit.vcell.solver.Simulation;
+import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NonSpatialValueHolder {
-    public final List<double[]> listOfResultSets = new ArrayList<>();
+public class ValueHolder <T extends LazySBMLDataAccessor> {
+    public final List<T> listOfResultSets;
     final Simulation vcSimulation;
 
-    public NonSpatialValueHolder(Simulation simulation) {
+    public ValueHolder(Simulation simulation) {
         this.vcSimulation = simulation;
+        this.listOfResultSets = new ArrayList<>();
+    }
+
+    /**
+     * Shallow Copy constructor
+     * @param other
+     */
+    public ValueHolder(ValueHolder<? extends T> other) {
+        this.vcSimulation = other.vcSimulation;
+        this.listOfResultSets = new ArrayList<>(other.listOfResultSets);
     }
 
     public boolean isEmpty() {
-        return listOfResultSets.isEmpty();
+        return this.listOfResultSets.isEmpty();
     }
 
-    public static NonSpatialValueHolder createEmptySetWithSameVCsim(NonSpatialValueHolder original){
-        return new NonSpatialValueHolder(original.vcSimulation);
+    public ValueHolder<T> createEmptySetWithSameVCsim(){
+        return new ValueHolder<>(this.vcSimulation);
     }
 
     /*public int[] getJobCoordinate(int index){

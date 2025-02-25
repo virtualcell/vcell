@@ -1769,7 +1769,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 			
 			JLabel cropConfirmJlabel =
 				new JLabel("Crop data to new bounds?: ("+cropRect.x+","+cropRect.y+") to ("+
-						(cropRect.x+cropRect.width-1)+","+(cropRect.y+cropRect.height-1)+")");
+						(cropRect.x+cropRect.width)+","+(cropRect.y+cropRect.height)+")");
 			cropConfirmJlabel.setPreferredSize(new Dimension(300,40));
 			cropConfirmJlabel.setMinimumSize(new Dimension(300,40));
 			if(DialogUtils.showComponentOKCancelDialog(
@@ -1891,7 +1891,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 				sb.append("/");
 				sb.append(w);
 				if(calcCoords != null){
-					sb.append(" "+NumberUtils.formatNumber(calcCoords.calcX(inx),6)+"/"+NumberUtils.formatNumber(calcCoords.extentX(),6));
+					sb.append(" ("+NumberUtils.formatNumber(calcCoords.calcX(inx),6)+"/"+NumberUtils.formatNumber(calcCoords.extentX(),6) + ")");
 				}
 
 			}
@@ -1901,7 +1901,7 @@ public class OverlayEditorPanelJAI extends JPanel{
 				sb.append("/");
 				sb.append(h);
 				if(calcCoords != null){
-					sb.append(" "+NumberUtils.formatNumber(calcCoords.calcY(iny),6)+"/"+NumberUtils.formatNumber(calcCoords.extentY(),6));
+					sb.append(" ("+NumberUtils.formatNumber(calcCoords.calcY(iny),6)+"/"+NumberUtils.formatNumber(calcCoords.extentY(),6) + ")");
 				}
 
 			}

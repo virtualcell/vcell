@@ -6,6 +6,8 @@ import org.jlibsedml.DataSet;
 import org.jlibsedml.Report;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.vcell.sbml.vcell.SBMLDataRecord;
+import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.util.VCellUtilityHub;
 
 import java.io.File;
@@ -13,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 @Tag("Fast")
 public class BiosimulationsHdf5WriterTest {
@@ -55,26 +58,36 @@ public class BiosimulationsHdf5WriterTest {
         double[] row_S0_2 = new double[] { 5.2, 4.557601554959449, 4.2130612935114025, 3.944733095329601, 3.7357588758928553, 3.573009574805288, 3.446260315908218, 3.3475478903157536, 3.270670576690077, 3.2107984498648108, 3.1641700002133346, 3.127855727468622, 3.0995741465223223, 3.0775484137891307, 3.0603947604876303, 3.0470354805330198, 3.0366312589052136, 3.0285284455398327, 3.022217968554351, 3.017303364885424, 3.0134758559758974};
         double[] row_S1 = new double[] { 0.0, 0.442398445040551, 0.786938706488598, 1.0552669046703975, 1.2642411241071438, 1.426990425194712, 1.5537396840917823, 1.6524521096842468, 1.7293294233099237, 1.7892015501351888, 1.835829999786665, 1.8721442725313768, 1.900425853477675, 1.922451586210867, 1.9396052395123684, 1.952964519466979, 1.9633687410947849, 1.9714715544601655, 1.9777820314456476, 1.982696635114575, 1.9865241440241013};
         double[] row_t = new double[] { 0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6000000000000001, 0.65, 0.7000000000000001, 0.75, 0.8, 0.8500000000000001, 0.9, 0.95, 1.0 };
+        Callable<SBMLDataRecord> row_S0_0_callable = () -> new SBMLDataRecord(row_S0_0, List.of(row_S0_0.length), null);
+        Callable<SBMLDataRecord> row_S0_1_callable = () -> new SBMLDataRecord(row_S0_1, List.of(row_S0_1.length), null);
+        Callable<SBMLDataRecord> row_S0_2_callable = () -> new SBMLDataRecord(row_S0_2, List.of(row_S0_2.length), null);
+        Callable<SBMLDataRecord> row_S1_callable = () -> new SBMLDataRecord(row_S1, List.of(row_S1.length), null);
+        Callable<SBMLDataRecord> row_t_callable = () -> new SBMLDataRecord(row_t, List.of(row_t.length), null);
+        LazySBMLNonSpatialDataAccessor lazy_S0_0 = new LazySBMLNonSpatialDataAccessor(row_S0_0_callable, row_S0_0.length);
+        LazySBMLNonSpatialDataAccessor lazy_S0_1 = new LazySBMLNonSpatialDataAccessor(row_S0_1_callable, row_S0_1.length);
+        LazySBMLNonSpatialDataAccessor lazy_S0_2 = new LazySBMLNonSpatialDataAccessor(row_S0_2_callable, row_S0_2.length);
+        LazySBMLNonSpatialDataAccessor lazy_S1 = new LazySBMLNonSpatialDataAccessor(row_S1_callable, row_S1.length);
+        LazySBMLNonSpatialDataAccessor lazy_t = new LazySBMLNonSpatialDataAccessor(row_t_callable, row_t.length);
 
         Hdf5SedmlResults plotDatasetWrapper = new Hdf5SedmlResults();
         plotDatasetWrapper.datasetMetadata = plotMetadata;
-        Hdf5SedmlResultsNonspatial plotDataSourceNonspatial = new Hdf5SedmlResultsNonspatial();
-        plotDataSourceNonspatial.scanBounds = new int[0];
-        plotDataSourceNonspatial.scanParameterNames = new String[0];
-        plotDatasetWrapper.dataSource = plotDataSourceNonspatial;
-        plotDataSourceNonspatial.dataItems.put(plotReport, t, Arrays.asList(row_t));
-        plotDataSourceNonspatial.dataItems.put(plotReport, s0, Arrays.asList(row_S0_0));
-        plotDataSourceNonspatial.dataItems.put(plotReport, s1, Arrays.asList(row_S1));
+        Hdf5SedmlResultsNonSpatial plotDataSourceNonSpatial = new Hdf5SedmlResultsNonSpatial();
+        plotDataSourceNonSpatial.scanBounds = new int[0];
+        plotDataSourceNonSpatial.scanParameterNames = new String[0];
+        plotDatasetWrapper.dataSource = plotDataSourceNonSpatial;
+        plotDataSourceNonSpatial.dataItems.put(plotReport, t, List.of(lazy_t));
+        plotDataSourceNonSpatial.dataItems.put(plotReport, s0, List.of(lazy_S0_0));
+        plotDataSourceNonSpatial.dataItems.put(plotReport, s1, List.of(lazy_S1));
 
         Hdf5SedmlResults reportDatasetWrapper = new Hdf5SedmlResults();
         reportDatasetWrapper.datasetMetadata = reportMetadata;
-        Hdf5SedmlResultsNonspatial reportDataSourceNonspatial = new Hdf5SedmlResultsNonspatial();
+        Hdf5SedmlResultsNonSpatial reportDataSourceNonspatial = new Hdf5SedmlResultsNonSpatial();
         reportDataSourceNonspatial.scanBounds = new int[] { 2 }; // zero indexed? 
         reportDataSourceNonspatial.scanParameterNames = new String[] { "k1" };
         reportDatasetWrapper.dataSource = reportDataSourceNonspatial;
-        reportDataSourceNonspatial.dataItems.put(reportReport, t, Arrays.asList(row_t, row_t, row_t));
-        reportDataSourceNonspatial.dataItems.put(reportReport, s0, Arrays.asList(row_S0_0, row_S0_1, row_S0_2));
-        reportDataSourceNonspatial.dataItems.put(reportReport, s1, Arrays.asList(row_S1, row_S1, row_S1));
+        reportDataSourceNonspatial.dataItems.put(reportReport, t, Arrays.asList(lazy_t, lazy_t, lazy_t));
+        reportDataSourceNonspatial.dataItems.put(reportReport, s0, Arrays.asList(lazy_S0_0, lazy_S0_1, lazy_S0_2));
+        reportDataSourceNonspatial.dataItems.put(reportReport, s1, Arrays.asList(lazy_S1, lazy_S1, lazy_S1));
 
         Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer();
         String uri1 = "___0_export_NO_scan_test_1.sedml";
