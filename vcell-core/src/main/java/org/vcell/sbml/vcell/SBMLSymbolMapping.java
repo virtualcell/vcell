@@ -164,9 +164,9 @@ public class SBMLSymbolMapping {
     public SBase getMappedSBase(String sid){
         ArrayList<SBaseWrapper<SBase>> matches = new ArrayList<>();
         for (SBaseWrapper<SBase> sbaseWrapper : getAllSbaseWrappers()){
-            if (sbaseWrapper.internalSBase.getId().equals(sid)){
-                matches.add(sbaseWrapper);
-            }
+            String internalSBaseId = sbaseWrapper.internalSBase.getId();
+            if (!internalSBaseId.equals(sid)) continue;
+            matches.add(sbaseWrapper);
         }
         if (matches.size() == 0){
             return null;

@@ -4,9 +4,11 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
-import org.vcell.cli.run.results.NonSpatialValueHolder;
 import org.vcell.cli.run.results.NonSpatialResultsConverter;
-import org.vcell.cli.run.results.SpatialResultsConverter;
+import org.vcell.cli.run.results.ValueHolder;
+import org.vcell.sbml.vcell.SBMLDataRecord;
+import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
+import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.util.Pair;
 
@@ -33,9 +35,9 @@ public class PlottingDataExtractor {
      * @param organizedNonSpatialResults the non-spatial results set of a sedml execution
      * @return a mapping from Results to plot to a pair of strings: a valid name to apply to an exported plot file, and the sedml id of the plot.
      * @see NonSpatialResultsConverter ::convertNonspatialResultsToSedmlFormat
-     * @see SpatialResultsConverter ::collectSpatialDatasets
+     * @see org.vcell.cli.run.results.SpatialResultsConverter ::collectSpatialDatasets
      */
-    public Map<Results2DLinePlot, Pair<String, String>> extractPlotRelevantData(Map<DataGenerator, NonSpatialValueHolder> organizedNonSpatialResults) {
+    public Map<Results2DLinePlot, Pair<String, String>> extractPlotRelevantData(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults) {
         Map<Results2DLinePlot, Pair<String, String>> plots = new LinkedHashMap<>();
         Set<String> xAxisNames = new LinkedHashSet<>();
         if (organizedNonSpatialResults.isEmpty()) return plots;
@@ -46,7 +48,7 @@ public class PlottingDataExtractor {
             plot.setTitle(requestedPlot.getName());
 
             for (Curve curve : requestedPlot.getListOfCurves()){
-                NonSpatialValueHolder xResults, yResults;
+                ValueHolder<LazySBMLNonSpatialDataAccessor> xResults, yResults;
                 BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, requestedPlot.getId(), curve.getId(), BiosimulationLog.Status.RUNNING);
                 DataGenerator requestedXGenerator = this.sedml.getDataGeneratorWithId(curve.getXDataReference());
                 DataGenerator requestedYGenerator = this.sedml.getDataGeneratorWithId(curve.getYDataReference());
@@ -73,8 +75,17 @@ public class PlottingDataExtractor {
                 xAxisNames.add(xLabel);
 
                 for (int i = 0; i < yResults.listOfResultSets.size(); i++){
-                    double[] xDataArray = xResults.listOfResultSets.get(hasSingleXSeries ? 0 : i);
-                    double[] yDataArray = yResults.listOfResultSets.get(i);
+                    SBMLDataRecord xLazyResults, yLazyResults;
+                    LazySBMLDataAccessor xAccessor = xResults.listOfResultSets.get(hasSingleXSeries ? 0 : i);
+                    LazySBMLDataAccessor yAccessor = yResults.listOfResultSets.get(i);
+                    try {
+                        xLazyResults = xAccessor.getData();
+                        yLazyResults = yAccessor.getData();
+                    } catch (Exception e) {
+                        throw new ChartCouldNotBeProducedException("Fetching lazy curve data failed.", e);
+                    }
+                    double[] xDataArray = xLazyResults.data();
+                    double[] yDataArray = yLazyResults.data();
                     List<Double> xData = Arrays.stream(xDataArray).boxed().toList();
                     List<Double> yData = Arrays.stream(yDataArray).boxed().toList();
 
@@ -110,20 +121,17 @@ public class PlottingDataExtractor {
 
     /**
      * Basically, some people make track a species that remains constant over all iterations. We want to reduce that to 1 entry
-     * @return
+     * @return a ValueHolder with the simplified sets
      */
-    private static NonSpatialValueHolder simplifyRedundantSets(NonSpatialValueHolder startingValues){
+    private static ValueHolder<LazySBMLNonSpatialDataAccessor> simplifyRedundantSets(ValueHolder<LazySBMLNonSpatialDataAccessor> startingValues){
         if (startingValues == null) return null;
-        Map<String, double[]> dataMapping = new LinkedHashMap<>(); // Need to preserve order!
-        for (double[] dataSet : startingValues.listOfResultSets){
-            String stringRep = String.join(",", Arrays.stream(dataSet).mapToObj(Double::toString).toArray(String[]::new));
-            if (dataMapping.containsKey(stringRep)) continue;
-            dataMapping.put(stringRep, dataSet);
+        Set<LazySBMLNonSpatialDataAccessor> setOfData = new LinkedHashSet<>(); // Need to preserve order!
+        for (LazySBMLNonSpatialDataAccessor dataSet : startingValues.listOfResultSets){
+            if (setOfData.contains(dataSet)) continue;
+            setOfData.add(dataSet);
         }
-        NonSpatialValueHolder adjustedSets = NonSpatialValueHolder.createEmptySetWithSameVCsim(startingValues);
-        for (String stringKey : dataMapping.keySet()){
-            adjustedSets.listOfResultSets.add(dataMapping.get(stringKey));
-        }
+        ValueHolder<LazySBMLNonSpatialDataAccessor> adjustedSets = startingValues.createEmptySetWithSameVCsim();
+        adjustedSets.listOfResultSets.addAll(setOfData);
         return adjustedSets;
     }
 }
