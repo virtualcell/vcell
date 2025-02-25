@@ -127,20 +127,23 @@ public class NonSpatialSBMLSimResults {
                 // if the distributed rate is in the result set, then multiply distributed rate by compartment size
                 if (this.resultSet.findColumn(distributedRateMathVar.getName()) >= 0) {
                     double[] data = this.resultSet.extractColumn(this.resultSet.findColumn(distributedRateMathVar.getName()));
-                    System.arraycopy(data, 0, processedData, 0, data.length);
-                    for (int i = 0; i < data.length; i++) {
+                    double[] adjustedData = NonSpatialSBMLSimResults.getRequestedDataVector(data.length - processedData.length, processedData.length, data);
+                    System.arraycopy(adjustedData, 0, processedData, 0, adjustedData.length);
+                    for (int i = 0; i < processedData.length; i++) {
                         processedData[i] *= compartmentSize;
                     }
                 } else if (distributedRateMathVar instanceof Constant constDRMV) {
                     // if the distributed rate is a constant, then multiply constant by compartment size
-                    double[] data = new double[this.resultSet.getRowCount()];
+                    double[] data = new double[processedData.length];
                     Arrays.fill(data, constDRMV.getExpression().evaluateConstant() * compartmentSize);
                     System.arraycopy(data, 0, processedData, 0, data.length);
                 } else {
                     throw new RuntimeException("failed to find VCell reaction rate for sbml reaction: " + sbmlId);
                 }
 
-                double[] vector = NonSpatialSBMLSimResults.getRequestedDataVector(utcSim.getOutputStartTime() - utcSim.getInitialTime(), desiredLength, processedData);
+                double[] vector = new double[desiredLength];
+                Arrays.fill(vector, Double.NaN);
+                System.arraycopy(processedData, 0, vector, 0, processedData.length);
                 return new SBMLDataRecord(vector, List.of(vector.length), null);
             }
 
@@ -160,24 +163,39 @@ public class NonSpatialSBMLSimResults {
             }
 
             if (data == null) throw new RuntimeException("couldn't find var '" + sbmlId + "' in vcell sim results");
-
-            System.arraycopy(data, 0, processedData, 0, data.length);
+            double[] formattedData = NonSpatialSBMLSimResults.getRequestedDataVector(data.length - processedData.length, processedData.length, data);
+            System.arraycopy(formattedData, 0, processedData, 0, formattedData.length);
         } else { // found column
             double[] data = this.resultSet.extractColumn(column);
             if ("t".equals(sbmlId)) for (int i = 0; i < data.length; i++) data[i] += utcSim.getInitialTime();
-            System.arraycopy(data, 0, processedData, 0, data.length);
+            double[] formattedData = NonSpatialSBMLSimResults.getRequestedDataVector(data.length - processedData.length, processedData.length, data);
+            System.arraycopy(formattedData, 0, processedData, 0, formattedData.length);
         }
 
-        double[] vector = NonSpatialSBMLSimResults.getRequestedDataVector(utcSim.getOutputStartTime() - utcSim.getInitialTime(), utcSim.getNumberOfSteps() + 1, processedData);
+        //double[] vector = NonSpatialSBMLSimResults.getRequestedDataVector(utcSim.getOutputStartTime() - utcSim.getInitialTime(), utcSim.getNumberOfSteps() + 1, processedData);
+        double[] vector = new double[desiredLength];
+        Arrays.fill(vector, Double.NaN);
+        System.arraycopy(processedData, 0, vector, 0, processedData.length);
+
         return new SBMLDataRecord(vector, List.of(vector.length), null);
     }
 
+    /**
+     * note that because output start time isn't directly used in math calculations,
+     * we can use the value as a truthy value instead.
+     *
+     * @param outputStartTime used to determine if a non-zero start time is used
+     * @param outputNumberOfPoints size of the output array
+     * @param data the source data
+     * @return an adjusted data array
+     */
     private static double[] getRequestedDataVector(double outputStartTime, int outputNumberOfPoints, double[] data) {
-        if (outputNumberOfPoints > data.length) throw new IllegalArgumentException("outputNumberOfPoints > data.length");
         if (outputStartTime == 0) return data;
 
         double[] adjData = new double[outputNumberOfPoints];
-        System.arraycopy(data, data.length - outputNumberOfPoints - 1, adjData, 0, outputNumberOfPoints);
+        int statingPosition = Math.max(0, data.length - outputNumberOfPoints - 1);
+        if (outputNumberOfPoints > data.length) Arrays.fill(adjData, Double.NaN);
+        System.arraycopy(data, statingPosition, adjData, 0, Math.min(outputNumberOfPoints, data.length));
         return adjData;
     }
 

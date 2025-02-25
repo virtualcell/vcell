@@ -196,7 +196,8 @@ public class RunUtils {
                         String formattedId = isReservedVCellPrefix ? "VCell::" + validDataSet.getId().substring(34) : validDataSet.getId();
                         sb.append(RunUtils.generateCsvItem(formattedId, ',', false, i, numTrials));
                         sb.append(RunUtils.generateCsvItem(validDataSet.getLabel(), ',', true, i, numTrials));
-                        sb.append(RunUtils.generateCsvItem(referencedGenerator.getName().isEmpty() ? referencedGenerator.getId() : referencedGenerator.getName(), ',', true, i, numTrials));
+                        String referencedGeneratorName = referencedGenerator.getName() == null ? "" : referencedGenerator.getName();
+                        sb.append(RunUtils.generateCsvItem(referencedGeneratorName.isEmpty() ? referencedGenerator.getId() : referencedGenerator.getName(), ',', true, i, numTrials));
                         String[] dataStrings = Arrays.stream(data.getData().data()).boxed().map(String::valueOf).toArray(String[]::new);
                         sb.append(String.join(",", dataStrings)).append('\n');
                     } // end of trials loop
