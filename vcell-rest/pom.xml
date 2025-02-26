@@ -221,6 +221,11 @@
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-mailer</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.w3c.jigsaw</groupId>
+      <artifactId>jigsaw</artifactId>
+      <version>2.2.6</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
