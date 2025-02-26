@@ -65,12 +65,14 @@ public class VCellThreadChecker {
 	}
 
 	public static void checkCpuIntensiveInvocation() {
-		if (guiThreadChecker == null){
-			System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
-			Thread.dumpStack();
-		}else if (guiThreadChecker.isEventDispatchThread() && cpuSuppressed.get() == 0) {
-			System.out.println("!!!!!!!!!!!!!! --calling cpu intensive method from swing thread-----");
-			Thread.dumpStack();
+		if (!System.getProperty("headless").equals("true")){
+			if (guiThreadChecker == null){
+				System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
+				Thread.dumpStack();
+			}else if (guiThreadChecker.isEventDispatchThread() && cpuSuppressed.get() == 0) {
+				System.out.println("!!!!!!!!!!!!!! --calling cpu intensive method from swing thread-----");
+				Thread.dumpStack();
+			}
 		}
 	}
 
