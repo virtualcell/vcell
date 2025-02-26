@@ -861,7 +861,9 @@ void updateSampledImage(GeometryThumbnailImageFactory geometryThumbnailImageFact
 	if (getSampledImage().isDirty()){
 		ISize sampleSize = getDefaultSampledImageSize();
 		getSampledImage().setValue(createSampledImage(sampleSize));
-		getThumbnailImage().setValue(createThumbnailImage(geometryThumbnailImageFactory));
+		if (!System.getProperty("headless").equals("true")){
+			getThumbnailImage().setValue(createThumbnailImage(geometryThumbnailImageFactory));
+		}
 	}
 }
 
