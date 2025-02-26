@@ -191,6 +191,7 @@
                         <configuration>
                             <buildArgs>
                                 <arg>-Djava.security.properties=src/main/resources/custom.security</arg>
+                                <arg>-H:ConfigurationFileDirectories=target/recording</arg>
                             </buildArgs>
                         </configuration>
                         <executions>
