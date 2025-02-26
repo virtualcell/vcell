@@ -188,6 +188,11 @@
                         <artifactId>native-maven-plugin</artifactId>
                         <version>${native.maven.plugin.version}</version>
                         <extensions>true</extensions>
+                        <configuration>
+                            <buildArgs>
+                                <arg>-Djava.security.properties=src/main/resources/custom.security</arg>
+                            </buildArgs>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>build-native</id>
