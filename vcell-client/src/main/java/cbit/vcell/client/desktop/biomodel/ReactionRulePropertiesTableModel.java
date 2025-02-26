@@ -241,6 +241,9 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
+	// there is also an "entityChange" propertyChange event generated from ReactionRulePropertiesTreeModel (which is deprecated)
+	// when a rule is selected in the upper panel (BioModelEditorReactionTableModel)
+	// TODO: make sure we ignore it everywhere, should be phased out
 	if (evt.getSource() == this && evt.getPropertyName().equals("reactionRule")) {
 		ReactionRule oldValue = (ReactionRule)evt.getOldValue();
 		if (oldValue != null){
