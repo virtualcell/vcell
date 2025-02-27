@@ -1254,7 +1254,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					return;
 				}
 				if(checkOnRate(sasOne, sasTwo) == false) {	// rate doesn't check as acceptable
-					String msg = "The reaction Kon rate is too large (i.e. exceeds the diffusion limited rate) for this reaction.";
+					String msg = "The forward rate Kf is too large (i.e. exceeds the diffusion limited rate) for this reaction rule.";
 					String tip = "Please consider reducing Kon or increasing the Radius or D of the participating Site Types.";
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 					return;
