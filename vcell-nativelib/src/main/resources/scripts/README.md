@@ -5,7 +5,7 @@
 ```bash
 pushd ../../../..
 mvn clean install
-java -Dheadless=true -agentlib:native-image-agent=config-output-dir=target/recording -jar target/vcell-nativelib-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+java -Dheadless=true -agentlib:native-image-agent=config-output-dir=target/recording -jar target/vcell-nativelib-0.0.1-SNAPSHOT.jar
 mvn package -P native -DskipTests=true
 popd
 ```
