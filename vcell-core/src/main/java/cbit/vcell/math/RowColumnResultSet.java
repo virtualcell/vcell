@@ -34,49 +34,64 @@ import cbit.vcell.util.ColumnDescription;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:02 PM)
+ *
  * @author: John Wagner
  */
 @SuppressWarnings("serial")
 public class RowColumnResultSet implements java.io.Serializable {
-    private Vector<ColumnDescription> fieldDataColumnDescriptions = new Vector<>();
-    private Vector<FunctionColumnDescription> fieldFunctionColumnDescriptions = new Vector<>();
-    private ArrayList<double[]> fieldValues = new ArrayList<>();  // vector of rows (each row is a double[])
-    protected transient java.beans.PropertyChangeSupport propertyChange;
-    private ColumnDescription[] fieldColumnDescriptions = null;
-
-    private transient VariableSymbolTable resultSetSymbolTableWithFunction = null;
-    private transient VariableSymbolTable resultSetSymbolTableWithoutFunction = null;
     private static final Logger lg = LogManager.getLogger(RowColumnResultSet.class);
 
+    private Vector<ColumnDescription> dataColumnDescriptions;
+    private Vector<FunctionColumnDescription> functionColumnDescriptions;
+    private ArrayList<double[]> values;  // vector of rows (each row is a double[])
+    private ColumnDescription[] columnDescriptions;
+
+    protected transient java.beans.PropertyChangeSupport propertyChange;
+    private transient VariableSymbolTable resultSetSymbolTableWithFunction = null;
+    private transient VariableSymbolTable resultSetSymbolTableWithoutFunction = null;
+
+
     /**
-     *  construct empty, add columns via {@link #addDataColumn(ColumnDescription)} et. al. after creation
+     * construct empty, add columns via {@link #addDataColumn(ColumnDescription)} et. al. after creation
      */
-    public RowColumnResultSet(){
+    public RowColumnResultSet() {
+        this(new Vector<>(), new Vector<>(), new ArrayList<>(), null);
     }
 
-    public RowColumnResultSet(RowColumnResultSet copyThisRowColumnResultSet){
-        this.fieldDataColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.fieldDataColumnDescriptions);
-        this.fieldFunctionColumnDescriptions = new Vector<>(copyThisRowColumnResultSet.fieldFunctionColumnDescriptions);
-        this.fieldValues = new ArrayList<>(copyThisRowColumnResultSet.fieldValues);
+    public RowColumnResultSet(RowColumnResultSet copyThisRowColumnResultSet) {
+        this(new Vector<>(copyThisRowColumnResultSet.dataColumnDescriptions),
+                new Vector<>(copyThisRowColumnResultSet.functionColumnDescriptions),
+                new ArrayList<>(copyThisRowColumnResultSet.values),
+                null);
+    }
+
+    private RowColumnResultSet(Vector<ColumnDescription> dataColumnDescriptions,
+                               Vector<FunctionColumnDescription> functionColumnDescriptions,
+                               ArrayList<double[]> values,
+                               ColumnDescription[] columnDescriptions) {
+        this.dataColumnDescriptions = dataColumnDescriptions;
+        this.functionColumnDescriptions = functionColumnDescriptions;
+        this.values = values;
+        this.columnDescriptions = columnDescriptions;
     }
 
     public enum DuplicateMode {
         CopyValues,
         ZeroInitialize
     }
+
     public static RowColumnResultSet deepCopy(RowColumnResultSet original, DuplicateMode mode) {
         RowColumnResultSet copy = new RowColumnResultSet();
-        copy.fieldDataColumnDescriptions = new Vector<>(original.fieldDataColumnDescriptions);
-        copy.fieldFunctionColumnDescriptions = new Vector<>(original.fieldFunctionColumnDescriptions);
-        copy.fieldValues = new ArrayList<>();
-        for (double[] originalRow : original.fieldValues) {
+        copy.dataColumnDescriptions = new Vector<>(original.dataColumnDescriptions);
+        copy.functionColumnDescriptions = new Vector<>(original.functionColumnDescriptions);
+        copy.values = new ArrayList<>();
+        for (double[] originalRow : original.values) {
             double[] copyRow = new double[originalRow.length];
-            if(mode == DuplicateMode.CopyValues) {
+            if (mode == DuplicateMode.CopyValues) {
                 System.arraycopy(originalRow, 0, copyRow, 0, originalRow.length);
             }
-            copy.fieldValues.add(copyRow);
+            copy.values.add(copyRow);
         }
-
 
 
         return copy;
@@ -84,78 +99,79 @@ public class RowColumnResultSet implements java.io.Serializable {
 
     /**
      * SimpleODEData constructor comment.
-     *  JMW : THIS NEEDS TO BE FIXED...THIS CONSTRUCTOR SHOULD NOT
-     *  BE DOING ANY COLUMN CONSTRUCTION AT ALL!
+     * JMW : THIS NEEDS TO BE FIXED...THIS CONSTRUCTOR SHOULD NOT
+     * BE DOING ANY COLUMN CONSTRUCTION AT ALL!
      */
-    public RowColumnResultSet(String[] dataColumnNames){
-        for(int i = 0; i < dataColumnNames.length; i++){
-            addDataColumn(new ODESolverResultSetColumnDescription(dataColumnNames[i]));
+    public RowColumnResultSet(String[] dataColumnNames) {
+        this();
+        for (String dataColumnName : dataColumnNames) {
+            this.addDataColumn(new ODESolverResultSetColumnDescription(dataColumnName));
         }
     }
 
     /**
      * getVariableNames method comment.
-     *  THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
-     *  WILL BE SPECIFIED AT CONSTRUCTION TIME!
+     * THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
+     * WILL BE SPECIFIED AT CONSTRUCTION TIME!
      */
-    public final void addDataColumn(ColumnDescription columnDescription){
+    public final void addDataColumn(ColumnDescription columnDescription) {
         // cbit.util.Assertion.assert(getRowCount() == 0);
-        ColumnDescription[] oldValue = fieldColumnDescriptions;
-        fieldDataColumnDescriptions.addElement(columnDescription);
+        ColumnDescription[] oldValue = this.columnDescriptions;
+        this.dataColumnDescriptions.addElement(columnDescription);
 
-        fieldColumnDescriptions = null;
-        resultSetSymbolTableWithFunction = null;
-        resultSetSymbolTableWithoutFunction = null;
+        this.columnDescriptions = null;
+        this.resultSetSymbolTableWithFunction = null;
+        this.resultSetSymbolTableWithoutFunction = null;
 
-        if(getPropertyChange().getPropertyChangeListeners().length > 0){
-            firePropertyChange("columnDescriptions", oldValue, getColumnDescriptions());
+        if (this.getPropertyChange().getPropertyChangeListeners().length > 0) {
+            this.firePropertyChange("columnDescriptions", oldValue, this.getColumnDescriptions());
         }
     }
 
     /**
      * getVariableNames method comment.
-     *  THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
-     *  WILL BE SPECIFIED AT CONSTRUCTION TIME!
+     * THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
+     * WILL BE SPECIFIED AT CONSTRUCTION TIME!
      */
-    public final void addFunctionColumn(FunctionColumnDescription functionColumnDescription) throws ExpressionException{
-        ColumnDescription[] oldValue = fieldColumnDescriptions;
-        addFunctionColumnInternal(functionColumnDescription);
-        if(getPropertyChange().getPropertyChangeListeners().length > 0){
-            firePropertyChange("columnDescriptions", oldValue, getColumnDescriptions());
+    public final void addFunctionColumn(FunctionColumnDescription functionColumnDescription) throws ExpressionException {
+        ColumnDescription[] oldValue = this.columnDescriptions;
+        this.addFunctionColumnInternal(functionColumnDescription);
+        if (this.getPropertyChange().getPropertyChangeListeners().length > 0) {
+            this.firePropertyChange("columnDescriptions", oldValue, this.getColumnDescriptions());
         }
     }
 
     /**
      * getVariableNames method comment.
-     *  THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
-     *  WILL BE SPECIFIED AT CONSTRUCTION TIME!
+     * THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
+     * WILL BE SPECIFIED AT CONSTRUCTION TIME!
      */
-    private final void addFunctionColumnInternal(FunctionColumnDescription functionColumnDescription) throws ExpressionException{
+    private void addFunctionColumnInternal(FunctionColumnDescription functionColumnDescription) throws ExpressionException {
         //
         // bind and substitute functions (resulting in expressions of only data columns).
         //
-        functionColumnDescription.getExpression().bindExpression(getResultSetSymbolTableWithFunction());
-        Expression exp1 = MathUtilities.substituteFunctions(functionColumnDescription.getExpression(), getResultSetSymbolTableWithFunction());
+        functionColumnDescription.getExpression().bindExpression(this.getResultSetSymbolTableWithFunction());
+        Expression exp1 = MathUtilities.substituteFunctions(functionColumnDescription.getExpression(), this.getResultSetSymbolTableWithFunction());
         functionColumnDescription.setExpression(exp1.flatten());
 
         //
         // didn't throw a binding exception, add to result set.
         //
-        fieldFunctionColumnDescriptions.addElement(functionColumnDescription);
+        this.functionColumnDescriptions.addElement(functionColumnDescription);
 
         Domain domain = null; //TODO domain
         Function func = new Function(functionColumnDescription.getName(), new Expression(functionColumnDescription.getExpression()), domain);
-        getResultSetSymbolTableWithFunction().addVar(func);
-        func.setIndex(getColumnDescriptionsCount() - 1);
+        this.getResultSetSymbolTableWithFunction().addVar(func);
+        func.setIndex(this.getColumnDescriptionsCount() - 1);
 
-        fieldColumnDescriptions = null;
+        this.columnDescriptions = null;
     }
 
     /**
      * The addPropertyChangeListener method was generated to support the propertyChange field.
      */
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener){
-        getPropertyChange().addPropertyChangeListener(listener);
+    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        this.getPropertyChange().addPropertyChangeListener(listener);
     }
 
     /**
@@ -163,62 +179,57 @@ public class RowColumnResultSet implements java.io.Serializable {
      */
     public synchronized void addRow(double[] values) {
         // cbit.util.Assertion.assert(values.length == getDataColumnCount());
-        int dataColumnCount = getDataColumnCount();
+        int dataColumnCount = this.getDataColumnCount();
         double[] v = new double[dataColumnCount];
-        if(values.length != dataColumnCount) {
+        if (values.length != dataColumnCount) {
             throw new RuntimeException("number of values in row is not equal to number of columns");
         }
         System.arraycopy(values, 0, v, 0, dataColumnCount);
-        fieldValues.add(v);
+        this.values.add(v);
     }
 
 
     /**
      * getVariableNames method comment.
      */
-    private double calculateErrorFactor(int t, double a[], double b[], double c[], double scale[]){
+    private double calculateErrorFactor(int t, double[] a, double[] b, double[] c, double[] scale) {
         double errorFactor = 0.0;
         // we need to average coming into the point otherwise funny things happen in systems close to equilibrium situations
         double c_minus_a_t = (c[t] - a[t]) / scale[t];
         double b_minus_a_t = (b[t] - a[t]) / scale[t];
         double c_minus_a_t_2 = c_minus_a_t * c_minus_a_t;
-        if(c[t] == b[t]){
-            return 1.0;
-        }
-        //
-        for(int i = 0; i < getDataColumnCount(); i++){
-            if(i != t){
-                double c_minus_a_y = (c[i] - a[i]) / scale[i];
-                double F = Math.abs((b_minus_a_t) * (c_minus_a_y) - ((b[i] - a[i]) / scale[i]) * (c_minus_a_t)) /
-                        (c_minus_a_t_2 + c_minus_a_y * c_minus_a_y);
-                errorFactor = Math.max(errorFactor, F);
-            }
+        if (c[t] == b[t]) return 1.0;
+
+        // dataColumnDescriptions
+        for (int i = 0; i < this.getDataColumnCount(); i++) {
+            if (i == t) continue;
+            double c_minus_a_y = (c[i] - a[i]) / scale[i];
+            double F = Math.abs((b_minus_a_t) * (c_minus_a_y) - ((b[i] - a[i]) / scale[i]) * (c_minus_a_t)) /
+                    (c_minus_a_t_2 + c_minus_a_y * c_minus_a_y);
+            errorFactor = Math.max(errorFactor, F);
         }
         return errorFactor;
     }
 
 
     /**
-     *  checkFunctionValidity method
-     *  This method is used to check if a user defined function expression is valid.
-     *  Takes a FunctionColumnDescription as argument. It substitutes the functions and binds the expression of the new function
-     *  to check the functions validity. If it is not valid, it throws an ExpressionException, which is caught and handled by
-     *  by the addFunction method in ODESolverPlotSpecificationPanel.
+     * checkFunctionValidity method
+     * This method is used to check if a user defined function expression is valid.
+     * Takes a FunctionColumnDescription as argument. It substitutes the functions and binds the expression of the new function
+     * to check the functions validity. If it is not valid, it throws an ExpressionException, which is caught and handled by
+     * by the addFunction method in ODESolverPlotSpecificationPanel.
      */
-    public void checkFunctionValidity(FunctionColumnDescription fcd) throws ExpressionException{
-        double[] values = null;
-        if(getRowCount() > 0){
-            Expression exp = ((FunctionColumnDescription) fcd).getExpression();
-            //
-            // must rebind expression due to transient nature of expression binding (see ASTIdNode.symbolTableEntry)
-            //
-            exp.bindExpression(getResultSetSymbolTableWithFunction());
-            Expression exp1 = MathUtilities.substituteFunctions(exp, getResultSetSymbolTableWithFunction());
+    public void checkFunctionValidity(FunctionColumnDescription fcd) throws ExpressionException {
 
-            values = new double[getRowCount()];
-            for(int r = 0; r < getRowCount(); r++){
-                values[r] = exp1.evaluateVector(getRow(r));
-            }
+        if (this.getRowCount() <= 0) return;
+        Expression exp = fcd.getExpression();
+        //
+        // must rebind expression due to transient nature of expression binding (see ASTIdNode.symbolTableEntry)
+        //
+        exp.bindExpression(this.getResultSetSymbolTableWithFunction());
+        Expression exp1 = MathUtilities.substituteFunctions(exp, this.getResultSetSymbolTableWithFunction());
+        for (double[] row : this.getRows()) {
+            exp1.evaluateVector(row);
         }
     }
 
@@ -226,27 +237,25 @@ public class RowColumnResultSet implements java.io.Serializable {
     /**
      * Insert the method's description here.
      * Creation date: (2/19/2003 4:32:00 PM)
+     *
      * @return cbit.vcell.parser.SymbolTable
      */
-    private VariableSymbolTable createResultSetSymbolTable(boolean bIncludeFunctions){
+    private VariableSymbolTable createResultSetSymbolTable(boolean bIncludeFunctions) {
         //
         // create symbol table for binding expression against data columns and functions (of data columns)
         //
         VariableSymbolTable resultSetSymbolTable = new VariableSymbolTable();
-        for(int i = 0; i < getColumnDescriptionsCount(); i++){
-            ColumnDescription colDesc = getColumnDescriptions(i);
-            if(colDesc instanceof ODESolverResultSetColumnDescription){
-                Domain domain = null;
-                VolVariable vVar = new VolVariable(colDesc.getName(), domain);
-                vVar.setIndex(i);
-                resultSetSymbolTable.addVar(vVar);
-            } else if(bIncludeFunctions && colDesc instanceof FunctionColumnDescription){
-                FunctionColumnDescription funcColDesc = (FunctionColumnDescription) colDesc;
-                Domain domain = null;
-                Function func = new Function(funcColDesc.getName(), new Expression(funcColDesc.getExpression()), domain);
-                func.setIndex(i);
-                resultSetSymbolTable.addVar(func);
-            }
+        for (int i = 0; i < this.getColumnDescriptionsCount(); i++) {
+            ColumnDescription colDesc = this.getColumnDescriptions(i);
+            boolean isValidColumnDesc = colDesc instanceof ODESolverResultSetColumnDescription
+                    || (colDesc instanceof FunctionColumnDescription && bIncludeFunctions);
+            if (!isValidColumnDesc) continue;
+            Domain domain = null;
+            Variable var = colDesc instanceof FunctionColumnDescription funcColDesc ?
+                    new Function(funcColDesc.getName(), new Expression(funcColDesc.getExpression()), domain):
+                    new VolVariable(colDesc.getName(), domain);
+            var.setIndex(i);
+            resultSetSymbolTable.addVar(var);
         }
         return resultSetSymbolTable;
     }
@@ -254,53 +263,43 @@ public class RowColumnResultSet implements java.io.Serializable {
 
     /**
      * getVariableNames method comment.
-     *  If column is empty, return null or an empty array?
-     *  For now, null...
+     * If column is empty, return null or an empty array?
+     * For now, null...
      */
-    public synchronized double[] extractColumn(int c) throws ExpressionException{
-        double[] values = null;
-        if(getRowCount() > 0){
-            ColumnDescription colDescription = getColumnDescriptions(c);
-            if(colDescription instanceof FunctionColumnDescription){
-                Expression exp = ((FunctionColumnDescription) colDescription).getExpression();
-                //
-                // must rebind expression due to transient nature of expression binding (see ASTIdNode.symbolTableEntry)
-                //
-                exp.bindExpression(getResultSetSymbolTableWithoutFunction());
-
-                values = new double[getRowCount()];
-                for(int r = 0; r < getRowCount(); r++){
-                    try {
-                        values[r] = exp.evaluateVector(getRow(r));
-                    } catch(DivideByZeroException e){
-                        lg.error("divide by zero, setting value to NaN: exp = '" + exp.infix() + "'", e);
-                        values[r] = Double.NaN;
-                    } catch(FunctionDomainException e){
-                        lg.error("function domain exception, setting value to NaN: exp = '" + exp.infix() + "'", e);
-                        values[r] = Double.NaN;
-                    }
-                }
-            } else {
-                values = new double[getRowCount()];
-                for(int r = 0; r < getRowCount(); r++){
-                    values[r] = getRow(r)[c];
-                }
+    public synchronized double[] extractColumn(int c) throws ExpressionException {
+        if (this.getRowCount() <= 0) return null;
+        double[] values = new double[this.getRowCount()];
+        Expression exp;
+        ColumnDescription colDesc = this.getColumnDescriptions(c);
+        if (colDesc instanceof FunctionColumnDescription funcColDesc){
+            exp = funcColDesc.getExpression();
+            exp.bindExpression(this.getResultSetSymbolTableWithoutFunction()); // must rebind expression due to transient nature of expression binding (see ASTIdNode.symbolTableEntry)
+        } else exp = null;
+        for (int r = 0; r < this.getRowCount(); r++) {
+            try {
+                values[r] = !(colDesc instanceof FunctionColumnDescription) ? this.getRow(r)[c] : exp.evaluateVector(this.getRow(r));
+            } catch (ExpressionException e) {
+                String errMsg = String.format("%s encountered; setting value to NaN: exp = `%s`", e.getClass().getSimpleName(), exp.infix());
+                lg.warn(errMsg, e);
+                values[r] = Double.NaN;
             }
         }
-        return (values);
+        return values;
     }
 
 
     /**
-     * getVariableNames method comment.
+     * Attempts to find the index of the column with the provided name
+     *
+     * @param columnName the name to look for
+     * @return the index of the desired column, or -1 if it's not found
      */
-    public int findColumn(String columnName){
-        for(int i = 0; i < getColumnDescriptionsCount(); i++){
-            if(columnName.equals(getColumnDescriptions(i).getName())) return (i);
+    public int findColumn(String columnName) {
+        for (int i = 0; i < this.getColumnDescriptionsCount(); i++) {
+            if (columnName.equals(this.getColumnDescriptions(i).getName())) return (i);
         }
-        if(lg.isDebugEnabled()){
-            lg.debug("ODEIntegratorResultSet.findColumn() COULD NOT FIND : " + columnName);
-        }
+        lg.debug("Could not find `{}` in results set.", columnName);
+
         return -1;
     }
 
@@ -308,57 +307,56 @@ public class RowColumnResultSet implements java.io.Serializable {
     /**
      * The firePropertyChange method was generated to support the propertyChange field.
      */
-    public void firePropertyChange(java.beans.PropertyChangeEvent evt){
-        getPropertyChange().firePropertyChange(evt);
+    public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
+        this.getPropertyChange().firePropertyChange(evt);
     }
 
 
     /**
      * The firePropertyChange method was generated to support the propertyChange field.
      */
-    public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue){
-        getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
+    public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
+        this.getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
     }
 
 
     /**
      * The firePropertyChange method was generated to support the propertyChange field.
      */
-    public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue){
-        getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
+    public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
+        this.getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
     }
 
 
     /**
      * The firePropertyChange method was generated to support the propertyChange field.
      */
-    public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue){
-        getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
+    public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
+        this.getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
     }
 
 
-    public final ColumnDescription[] getColumnDescriptions(){
-        if(fieldColumnDescriptions == null){
-            fieldColumnDescriptions = new ColumnDescription[getDataColumnCount() + getFunctionColumnCount()];
-            int index = 0;
-            for(int i = 0; i < fieldDataColumnDescriptions.size(); i++){
-                fieldColumnDescriptions[index++] = fieldDataColumnDescriptions.elementAt(i);
-            }
-            for(int i = 0; i < fieldFunctionColumnDescriptions.size(); i++){
-                fieldColumnDescriptions[index++] = fieldFunctionColumnDescriptions.elementAt(i);
-            }
+    public final ColumnDescription[] getColumnDescriptions() {
+        if (this.columnDescriptions != null) return this.columnDescriptions;
+        this.columnDescriptions = new ColumnDescription[this.getDataColumnCount() + this.getFunctionColumnCount()];
+        int index = 0;
+        for (int i = 0; i < this.dataColumnDescriptions.size(); i++) {
+            this.columnDescriptions[index++] = this.dataColumnDescriptions.elementAt(i);
         }
-        return fieldColumnDescriptions;
+        for (int i = 0; i < this.functionColumnDescriptions.size(); i++) {
+            this.columnDescriptions[index++] = this.functionColumnDescriptions.elementAt(i);
+        }
+        return this.columnDescriptions;
     }
 
 
-    public ColumnDescription getColumnDescriptions(int index){
-        if(index < fieldDataColumnDescriptions.size()){
-            return fieldDataColumnDescriptions.get(index);
-        } else if(index < getColumnDescriptionsCount()){
-            return fieldFunctionColumnDescriptions.get(index - fieldDataColumnDescriptions.size());
+    public ColumnDescription getColumnDescriptions(int index) {
+        if (index < this.dataColumnDescriptions.size()) {
+            return this.dataColumnDescriptions.get(index);
+        } else if (index < this.getColumnDescriptionsCount()) {
+            return this.functionColumnDescriptions.get(index - this.dataColumnDescriptions.size());
         } else {
-            throw new ArrayIndexOutOfBoundsException("RowColumnResultSet:getColumnDescriptions(int index), index=" + index + " total count=" + getColumnDescriptionsCount());
+            throw new ArrayIndexOutOfBoundsException("RowColumnResultSet:getColumnDescriptions(int index), index=" + index + " total count=" + this.getColumnDescriptionsCount());
         }
     }
 
@@ -366,120 +364,115 @@ public class RowColumnResultSet implements java.io.Serializable {
     /**
      * Insert the method's description here.
      * Creation date: (1/16/2003 11:48:56 AM)
+     *
      * @return int
      */
-    public int getColumnDescriptionsCount(){
-        return fieldDataColumnDescriptions.size() + fieldFunctionColumnDescriptions.size();
+    public int getColumnDescriptionsCount() {
+        return this.dataColumnDescriptions.size() + this.functionColumnDescriptions.size();
     }
 
 
     /**
      * Insert the method's description here.
      * Creation date: (1/9/2003 2:06:44 PM)
+     *
      * @return int
      */
-    public int getDataColumnCount(){
-        return fieldDataColumnDescriptions.size();
+    public int getDataColumnCount() {
+        return this.dataColumnDescriptions.size();
     }
 
 
     /**
      * getVariableNames method comment.
      */
-    public ColumnDescription[] getDataColumnDescriptions(){
-        return this.fieldDataColumnDescriptions.toArray(ColumnDescription[]::new);
+    public ColumnDescription[] getDataColumnDescriptions() {
+        return this.dataColumnDescriptions.toArray(ColumnDescription[]::new);
     }
 
 
     /**
      * Insert the method's description here.
      * Creation date: (1/9/2003 2:06:44 PM)
+     *
      * @return int
      */
-    public int getFunctionColumnCount(){
-        return this.fieldFunctionColumnDescriptions.size();
+    public int getFunctionColumnCount() {
+        return this.functionColumnDescriptions.size();
     }
 
 
     /**
      * getVariableNames method comment.
      */
-    public FunctionColumnDescription[] getFunctionColumnDescriptions(){
-        return this.fieldFunctionColumnDescriptions.toArray(FunctionColumnDescription[]::new);
+    public FunctionColumnDescription[] getFunctionColumnDescriptions() {
+        return this.functionColumnDescriptions.toArray(FunctionColumnDescription[]::new);
     }
 
 
     /**
      * Accessor for the propertyChange field.
      */
-    protected java.beans.PropertyChangeSupport getPropertyChange(){
-        if(propertyChange == null){
-            propertyChange = new java.beans.PropertyChangeSupport(this);
-        }
-        ;
-        return propertyChange;
+    protected java.beans.PropertyChangeSupport getPropertyChange() {
+        if (this.propertyChange == null) this.propertyChange = new java.beans.PropertyChangeSupport(this);
+        return this.propertyChange;
     }
 
 
     /**
      * Insert the method's description here.
      * Creation date: (1/9/2003 3:18:26 PM)
-     * @return double[]
+     *
      * @param row int
+     * @return double[]
      */
-    public double[] getRow(int row){
-        return fieldValues.get(row);
+    public double[] getRow(int row) {
+        return this.values.get(row);
     }
 
-    public List<double[]> getRows(){
-        return Collections.unmodifiableList(this.fieldValues);
+    public List<double[]> getRows() {
+        return Collections.unmodifiableList(this.values);
     }
 
 
     /**
      * getVariableNames method comment.
      */
-    public int getRowCount(){
-        return (fieldValues.size());
+    public int getRowCount() {
+        return (this.values.size());
     }
 
 
     /**
      * The hasListeners method was generated to support the propertyChange field.
      */
-    public synchronized boolean hasListeners(java.lang.String propertyName){
-        return getPropertyChange().hasListeners(propertyName);
+    public synchronized boolean hasListeners(java.lang.String propertyName) {
+        return this.getPropertyChange().hasListeners(propertyName);
     }
 
 
     /**
      * getVariableNames method comment.
      */
-    private boolean isCorner(int t, double a[], double b[], double c[], double scale[], double minSquaredRatio, double maxSquaredRatio){
+    private boolean isCorner(int t, double[] a, double[] b, double[] c, double[] scale, double minSquaredRatio, double maxSquaredRatio) {
         double c_minus_b_t = (c[t] - b[t]) / scale[t];
         double b_minus_a_t = (b[t] - a[t]) / scale[t];
         double c_minus_b_t_2 = c_minus_b_t * c_minus_b_t;
         double b_minus_a_t_2 = b_minus_a_t * b_minus_a_t;
-        if(c[t] == b[t]){
-            return false;
-        }
-        //
-        for(int i = 0; i < getDataColumnCount(); i++){
-            if(i != t){
-                double c_minus_b_y = (c[i] - b[i]) / scale[i];
-                double b_minus_a_y = (b[i] - a[i]) / scale[i];
-                double ratio = (b_minus_a_y * b_minus_a_y + b_minus_a_t_2) /
-                        (c_minus_b_y * c_minus_b_y + c_minus_b_t_2);
-                if(ratio < minSquaredRatio || ratio > maxSquaredRatio){
-                    if(lg.isDebugEnabled()){
-                        lg.debug("corner with ratio = " + ratio + " at b[t]=" + b[t] + ", a[" + i + "]=" + a[i] + ", b[" + i + "]=" + b[i] + ", c[" + i + "]=" + c[i]);
-                    }
-                    return true;
-                }
-                if(lg.isDebugEnabled()){
-                    lg.debug("NOT A CORNER with ratio = " + ratio + " at b[t]=" + b[t] + ", a[" + i + "]=" + a[i] + ", b[" + i + "]=" + b[i] + ", c[" + i + "]=" + c[i]);
-                }
-            }
+        if (c[t] == b[t]) return false;
+
+        // find corner
+        for (int i = 0; i < this.getDataColumnCount(); i++) {
+            if (i == t) continue;
+            double c_minus_b_y = (c[i] - b[i]) / scale[i];
+            double b_minus_a_y = (b[i] - a[i]) / scale[i];
+            double ratio = (b_minus_a_y * b_minus_a_y + b_minus_a_t_2) /
+                    (c_minus_b_y * c_minus_b_y + c_minus_b_t_2);
+            String ratioString = "with ratio = " + ratio + " at b[t]=" + b[t] + ", a[" + i + "]=" + a[i] + ", b[" + i + "]=" + b[i] + ", c[" + i + "]=" + c[i];
+            boolean isCornered = ratio < minSquaredRatio || ratio > maxSquaredRatio;
+            lg.debug("{} {}", isCornered ? "corner" : "NOT A CORNER", ratioString);
+            if (!isCornered) continue;
+            return true;
         }
         return false;
     }
@@ -487,17 +480,17 @@ public class RowColumnResultSet implements java.io.Serializable {
     /**
      * getVariableNames method comment.
      */
-    public void removeAllRows(){
-        fieldValues.clear();
+    public void removeAllRows() {
+        this.values.clear();
     }
 
 
     /**
      * getVariableNames method comment.
-     *  THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
-     *  WILL BE SPECIFIED AT CONSTRUCTION TIME!
+     * THIS WILL LATER BE DELETED PROBABLY...THE COLUMNS
+     * WILL BE SPECIFIED AT CONSTRUCTION TIME!
      */
-    public final void removeFunctionColumn(FunctionColumnDescription functionColumnDescription) throws ExpressionException{
+    public final void removeFunctionColumn(FunctionColumnDescription functionColumnDescription) throws ExpressionException {
 
         //
         // Remove the corresponding FunctionColumnDescription from the fieldFunctionColumnDescriptions vector
@@ -505,15 +498,15 @@ public class RowColumnResultSet implements java.io.Serializable {
         // column descriptions array.
         //
 
-        ColumnDescription[] oldValue = fieldColumnDescriptions;
+        ColumnDescription[] oldValue = this.columnDescriptions;
 
-        fieldFunctionColumnDescriptions.removeElement(functionColumnDescription);
+        this.functionColumnDescriptions.removeElement(functionColumnDescription);
 
-        fieldColumnDescriptions = null;
-        resultSetSymbolTableWithFunction = null;
+        this.columnDescriptions = null;
+        this.resultSetSymbolTableWithFunction = null;
 
-        if(getPropertyChange().getPropertyChangeListeners().length > 0){
-            firePropertyChange("columnDescriptions", oldValue, getColumnDescriptions());
+        if (this.getPropertyChange().getPropertyChangeListeners().length > 0) {
+            this.firePropertyChange("columnDescriptions", oldValue, this.getColumnDescriptions());
         }
     }
 
@@ -521,23 +514,23 @@ public class RowColumnResultSet implements java.io.Serializable {
     /**
      * The removePropertyChangeListener method was generated to support the propertyChange field.
      */
-    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener){
-        getPropertyChange().removePropertyChangeListener(listener);
+    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
+        this.getPropertyChange().removePropertyChangeListener(listener);
     }
 
 
     /**
      * The removePropertyChangeListener method was generated to support the propertyChange field.
      */
-    public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener){
-        getPropertyChange().removePropertyChangeListener(propertyName, listener);
+    public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
+        this.getPropertyChange().removePropertyChangeListener(propertyName, listener);
     }
 
     /**
      * getData method comment.
      */
-    public void setValue(int r, int c, double value){
-        double[] values = fieldValues.get(r);
+    public void setValue(int r, int c, double value) {
+        double[] values = this.values.get(r);
         values[c] = value;
     }
 
@@ -545,115 +538,111 @@ public class RowColumnResultSet implements java.io.Serializable {
     /**
      * getVariableNames method comment.
      */
-    public synchronized void trimRows(int maxRowCount){
-        if(maxRowCount > getRowCount() - 1){
-            return; //nothing to do
-        }
-        if(lg.isDebugEnabled()){
-            lg.info("rowCount=" + getRowCount());
-        }
-        if(maxRowCount <= 0){
-            throw new IllegalArgumentException("must keep at least one row");
-        }
+    public synchronized void trimRows(int maxRowCount) {
+        if (maxRowCount > this.getRowCount() - 1) return; //nothing to do
+
+        if (lg.isDebugEnabled()) lg.info("rowCount={}", this.getRowCount());
+        if (maxRowCount <= 0) throw new IllegalArgumentException("must keep at least one row");
+
         //
         // identify appropriate scaling for time and each variable
         //
-        double min[] = new double[getDataColumnCount()];
-        double max[] = new double[getDataColumnCount()];
-        double scale[] = new double[getDataColumnCount()];
-        for(int i = 0; i < getDataColumnCount(); i++){
+        double[] min = new double[this.getDataColumnCount()];
+        double[] max = new double[this.getDataColumnCount()];
+        double[] scale = new double[this.getDataColumnCount()];
+        for (int i = 0; i < this.getDataColumnCount(); i++) {
             min[i] = Double.MAX_VALUE;
             max[i] = -Double.MAX_VALUE;
         }
-        for(int i = 0; i < getRowCount() - 2; i++){
-            double values[] = fieldValues.get(i);
-            for(int j = 0; j < getDataColumnCount(); j++){
+        for (int i = 0; i < this.getRowCount() - 2; i++) {
+            double[] values = this.values.get(i);
+            for (int j = 0; j < this.getDataColumnCount(); j++) {
                 min[j] = Math.min(min[j], values[j]);
                 max[j] = Math.max(max[j], values[j]);
             }
         }
-        for(int i = 0; i < getDataColumnCount(); i++){
+        for (int i = 0; i < this.getDataColumnCount(); i++) {
             scale[i] = max[i] - min[i];
-            if(scale[i] == 0){
+            if (scale[i] == 0) {
                 scale[i] = 1;
             }
-            if(lg.isDebugEnabled()){
-                lg.info("scale[" + i + "] = " + scale[i]);
+            if (lg.isDebugEnabled()) {
+                lg.info("scale[{}] = {}", i, scale[i]);
             }
         }
         double threshold = 0.01;
         double minSquaredRatio = 0.1 * 0.1;
         double maxSquaredRatio = 10 * 10;
-        int t = findColumn("t");
+        int t = this.findColumn("t");
         final boolean haveT = t >= 0;
         double TOLERANCE = 0.1;
-        LinkedList<double[]> linkedList = new LinkedList<double[]>(fieldValues);
+        LinkedList<double[]> linkedList = new LinkedList<>(this.values);
         while (maxRowCount < linkedList.size() && threshold < TOLERANCE) {
             ListIterator<double[]> iter = linkedList.listIterator(0);
-            double a[] = iter.next();
-            double b[] = iter.next();
-            double c[] = null;
+            double[] a = iter.next();
+            double[] b = iter.next();
+            double[] c;
             while (iter.hasNext()) {
                 c = iter.next();
-                if(haveT && calculateErrorFactor(t, a, b, c, scale) < threshold && !isCorner(t, a, b, c, scale, minSquaredRatio, maxSquaredRatio)){
+                if (haveT && this.calculateErrorFactor(t, a, b, c, scale) < threshold && !this.isCorner(t, a, b, c, scale, minSquaredRatio, maxSquaredRatio)) {
                     iter.previous();
                     iter.previous();
                     iter.remove();
-                    if(iter.hasNext()){
-                        a = (double[]) iter.next();
+                    if (iter.hasNext()) {
+                        a = iter.next();
                     }
-                    if(iter.hasNext()){
-                        b = (double[]) iter.next();
+                    if (iter.hasNext()) {
+                        b = iter.next();
                     }
                 } else {
                     a = b;
                     b = c;
                 }
-                if(c == linkedList.getLast()){
+                if (c == linkedList.getLast()) {
                     break;
                 }
             }
-            if(lg.isDebugEnabled()){
-                lg.info("TOLERANCE=" + TOLERANCE + ", threshold=" + threshold + ", size=" + linkedList.size());
+            if (lg.isDebugEnabled()) {
+                lg.info("TOLERANCE={}, threshold={}, size={}", TOLERANCE, threshold, linkedList.size());
             }
             threshold += TOLERANCE / 10;
-            if(threshold >= TOLERANCE){
+            if (threshold >= TOLERANCE) {
                 TOLERANCE *= 10;
                 threshold = TOLERANCE / 10;
             }
         }
-        lg.trace("final tolerance=" + TOLERANCE + " final threshold=" + threshold + ", " + linkedList.size() + " remaining (keepAtMost=" + maxRowCount + ")");
-        ArrayList<double[]> values = new ArrayList<double[]>();
-        if(linkedList.size() > maxRowCount){//just sample list evenly in this case
-            values.add(fieldValues.get(0));//Add first value
-            if(maxRowCount > 2){//Add values between first and last
-                for(int i = 1; i < (maxRowCount - 1); i++){
-                    values.add(fieldValues.get((int) (i * fieldValues.size() / (maxRowCount - 1))));
+        lg.trace("final tolerance={} final threshold={}, {} remaining (keepAtMost={})", TOLERANCE, threshold, linkedList.size(), maxRowCount);
+        ArrayList<double[]> values = new ArrayList<>();
+        if (linkedList.size() > maxRowCount) {//just sample list evenly in this case
+            values.add(this.values.get(0));//Add first value
+            if (maxRowCount > 2) {//Add values between first and last
+                for (int i = 1; i < (maxRowCount - 1); i++) {
+                    values.add(this.values.get(i * this.values.size() / (maxRowCount - 1)));
                 }
             }
-            if(maxRowCount > 1){//Add last value
-                values.add(fieldValues.get(fieldValues.size() - 1));
+            if (maxRowCount > 1) {//Add last value
+                values.add(this.values.get(this.values.size() - 1));
             }
 //		throw new RuntimeException("sample tolerance "+TOLERANCE+" exceeded while removing time points, "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
         } else {
             values.addAll(linkedList);
         }
-        fieldValues = values;
+        this.values = values;
     }
 
 
-    private VariableSymbolTable getResultSetSymbolTableWithFunction(){
-        if(resultSetSymbolTableWithFunction == null){
-            resultSetSymbolTableWithFunction = createResultSetSymbolTable(true);
+    private VariableSymbolTable getResultSetSymbolTableWithFunction() {
+        if (this.resultSetSymbolTableWithFunction == null) {
+            this.resultSetSymbolTableWithFunction = this.createResultSetSymbolTable(true);
         }
-        return resultSetSymbolTableWithFunction;
+        return this.resultSetSymbolTableWithFunction;
     }
 
 
-    private VariableSymbolTable getResultSetSymbolTableWithoutFunction(){
-        if(resultSetSymbolTableWithoutFunction == null){
-            resultSetSymbolTableWithoutFunction = createResultSetSymbolTable(false);
+    private VariableSymbolTable getResultSetSymbolTableWithoutFunction() {
+        if (this.resultSetSymbolTableWithoutFunction == null) {
+            this.resultSetSymbolTableWithoutFunction = this.createResultSetSymbolTable(false);
         }
-        return resultSetSymbolTableWithoutFunction;
+        return this.resultSetSymbolTableWithoutFunction;
     }
 }
