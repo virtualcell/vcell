@@ -476,12 +476,33 @@ paths:
       x-accepts: application/json
   /api/v1/solver/getFVSolverInput:
     post:
-      operationId: getFVSolverInput
+      operationId: getFVSolverInputFromSBML
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/getFVSolverInput_request'
+              $ref: '#/components/schemas/getFVSolverInputFromSBML_request'
+      responses:
+        "200":
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+          description: OK
+      summary: Retrieve finite volume input from SBML spatial model.
+      tags:
+      - Solver Resource
+      x-content-type: multipart/form-data
+      x-accepts: application/octet-stream
+  /api/v1/solver/getFVSolverInputFromVCML:
+    post:
+      operationId: getFVSolverInputFromVCML
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/getFVSolverInputFromVCML_request'
       responses:
         "200":
           content:
@@ -1726,10 +1747,26 @@ components:
         fileName:
           type: string
       type: object
-    getFVSolverInput_request:
+    getFVSolverInputFromSBML_request:
       properties:
         sbmlFile:
           format: binary
+          type: string
+        duration:
+          default: 5.0
+          format: double
+          type: number
+        output_time_step:
+          default: 0.1
+          format: double
+          type: number
+      type: object
+    getFVSolverInputFromVCML_request:
+      properties:
+        vcmlFile:
+          format: binary
+          type: string
+        simulation_name:
           type: string
       type: object
   securitySchemes:

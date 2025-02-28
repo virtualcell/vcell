@@ -108,13 +108,15 @@ export class SolverResourceService implements SolverResourceServiceInterface {
     /**
      * Retrieve finite volume input from SBML spatial model.
      * @param sbmlFile 
+     * @param duration 
+     * @param outputTimeStep 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getFVSolverInput(sbmlFile?: Blob, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<Blob>;
-    public getFVSolverInput(sbmlFile?: Blob, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<HttpResponse<Blob>>;
-    public getFVSolverInput(sbmlFile?: Blob, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<HttpEvent<Blob>>;
-    public getFVSolverInput(sbmlFile?: Blob, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<any> {
+    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<Blob>;
+    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<HttpResponse<Blob>>;
+    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<HttpEvent<Blob>>;
+    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -157,8 +159,85 @@ export class SolverResourceService implements SolverResourceServiceInterface {
         if (sbmlFile !== undefined) {
             localVarFormParams = localVarFormParams.append('sbmlFile', <any>sbmlFile) as any || localVarFormParams;
         }
+        if (duration !== undefined) {
+            localVarFormParams = localVarFormParams.append('duration', <any>duration) as any || localVarFormParams;
+        }
+        if (outputTimeStep !== undefined) {
+            localVarFormParams = localVarFormParams.append('output_time_step', <any>outputTimeStep) as any || localVarFormParams;
+        }
 
         let localVarPath = `/api/v1/solver/getFVSolverInput`;
+        return this.httpClient.request('post', `${this.configuration.basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
+                responseType: "blob",
+                withCredentials: this.configuration.withCredentials,
+                headers: localVarHeaders,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Retrieve finite volume input from SBML spatial model.
+     * @param vcmlFile 
+     * @param simulationName 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getFVSolverInputFromVCML(vcmlFile?: Blob, simulationName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<Blob>;
+    public getFVSolverInputFromVCML(vcmlFile?: Blob, simulationName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<HttpResponse<Blob>>;
+    public getFVSolverInputFromVCML(vcmlFile?: Blob, simulationName?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<HttpEvent<Blob>>;
+    public getFVSolverInputFromVCML(vcmlFile?: Blob, simulationName?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<any> {
+
+        let localVarHeaders = this.defaultHeaders;
+
+        let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+        if (localVarHttpHeaderAcceptSelected === undefined) {
+            // to determine the Accept header
+            const httpHeaderAccepts: string[] = [
+                'application/octet-stream'
+            ];
+            localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        }
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        let localVarHttpContext: HttpContext | undefined = options && options.context;
+        if (localVarHttpContext === undefined) {
+            localVarHttpContext = new HttpContext();
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'multipart/form-data'
+        ];
+
+        const canConsumeForm = this.canConsumeForm(consumes);
+
+        let localVarFormParams: { append(param: string, value: any): any; };
+        let localVarUseForm = false;
+        let localVarConvertFormParamsToString = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        // see https://stackoverflow.com/questions/4007969/application-x-www-form-urlencoded-or-multipart-form-data
+        localVarUseForm = canConsumeForm;
+        if (localVarUseForm) {
+            localVarFormParams = new FormData();
+        } else {
+            localVarFormParams = new HttpParams({encoder: this.encoder});
+        }
+
+        if (vcmlFile !== undefined) {
+            localVarFormParams = localVarFormParams.append('vcmlFile', <any>vcmlFile) as any || localVarFormParams;
+        }
+        if (simulationName !== undefined) {
+            localVarFormParams = localVarFormParams.append('simulation_name', <any>simulationName) as any || localVarFormParams;
+        }
+
+        let localVarPath = `/api/v1/solver/getFVSolverInputFromVCML`;
         return this.httpClient.request('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

@@ -7,6 +7,7 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solvers.FunctionFileGenerator;
+import cbit.vcell.xml.XmlParseException;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
@@ -90,11 +91,58 @@ public class SolverResourceTest {
         SolverResourceApi spatialResourceApi = new SolverResourceApi(aliceAPIClient);
         File sbmlFile = TestEndpointUtils.getResourceFile("/TinySpacialProject_Application0.xml");
 
-        File zip = spatialResourceApi.getFVSolverInput(sbmlFile);
+        File zip = spatialResourceApi.getFVSolverInputFromSBML(sbmlFile, 5.0, 0.1);
         File unzipDir = Files.createTempDir();
         File outputDir = Files.createTempDir();
 
-        SolverResource.sbmlToFiniteVolumeInput(sbmlFile, outputDir);
+        SolverResource.sbmlToFiniteVolumeInput(sbmlFile, outputDir, 5.0, 0.1);
+
+        ZipFile zipFile = new ZipFile(zip);
+        zipFile.extractAll(unzipDir.getAbsolutePath());
+        zipFile.close();
+
+
+        for (int i = 0; i < outputDir.listFiles().length; i++) {
+            File output = outputDir.listFiles()[i];
+            File unzip = Arrays.stream(unzipDir.listFiles()).filter(
+                    f -> f.getName().split("\\.")[1].equals(output.getName().split("\\.")[1])
+            ).findFirst().orElse(null);
+            if (output.getName().split("\\.")[1].equals("functions")){
+                Vector<AnnotatedFunction> outPutAnnotated = FunctionFileGenerator.readFunctionsFile(output, "0");
+                Vector<AnnotatedFunction> unzipAnnotated = FunctionFileGenerator.readFunctionsFile(unzip, "0");
+                for (int j = 0; j < outPutAnnotated.size(); j++) {
+                    Assertions.assertTrue(outPutAnnotated.get(j).compareEqual(unzipAnnotated.get(j)));
+                }
+            } else if (output.getName().split("\\.")[1].equals("fvinput")) {
+                Scanner outputReader = new Scanner(output);
+                Scanner unzipReader = new Scanner(unzip);
+
+                while (outputReader.hasNextLine()){
+                    String outputLine = outputReader.nextLine();
+                    String unzipLine = unzipReader.nextLine();
+                    // Don't compare the file path
+                    if (!outputLine.contains("FILE")){
+                        Assertions.assertEquals(outputLine, unzipLine);
+                    }
+                }
+            } else{
+                Assertions.assertTrue(FileUtils.contentEquals(output, unzip));
+            }
+        }
+    }
+
+    // Ensure the round trip from request to resulting Zip is equivalent to a local run of input file generation
+    @Test
+    public void testVCMLResults() throws ApiException, IOException, SolverException, ExpressionException, MappingException, XmlParseException {
+        SolverResourceApi spatialResourceApi = new SolverResourceApi(aliceAPIClient);
+        File vcmlFile = TestEndpointUtils.getResourceFile("/TinySpacialProject_Application0.vcml");
+
+        String simulation_name = "Simulation0";
+        File zip = spatialResourceApi.getFVSolverInputFromVCML(vcmlFile, simulation_name);
+        File unzipDir = Files.createTempDir();
+        File outputDir = Files.createTempDir();
+
+        SolverResource.vcmlToFiniteVolumeInput(vcmlFile, simulation_name, outputDir);
 
         ZipFile zipFile = new ZipFile(zip);
         zipFile.extractAll(unzipDir.getAbsolutePath());

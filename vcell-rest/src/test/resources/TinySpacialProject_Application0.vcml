@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This biomodel was generated in VCML Version Alpha_Version_7.7.0_build_15-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Alpha_Version_7.7.0_build_15">
+  <BioModel Name="TinySpacialProject_Application0">
+    <Model Name="unnamed">
+      <ModelParameters>
+        <Parameter Name="Kf_r0" Role="user defined" Unit="s-1">1.0</Parameter>
+        <Parameter Name="Kr_r0" Role="user defined" Unit="s-1">0.5</Parameter>
+      </ModelParameters>
+      <Compound Name="s0">
+        <Annotation>s0</Annotation>
+      </Compound>
+      <Compound Name="s1">
+        <Annotation>s1</Annotation>
+      </Compound>
+      <Feature Name="c0" />
+      <LocalizedCompound Name="s0" SbmlName="s0" CompoundRef="s0" Structure="c0" OverrideName="true" />
+      <LocalizedCompound Name="s1" SbmlName="s1" CompoundRef="s1" Structure="c0" OverrideName="true" />
+      <SimpleReaction Structure="c0" Name="r0" Reversible="true" FluxOption="MolecularOnly" SbmlName="r0">
+        <Reactant LocalizedCompoundRef="s0" Stoichiometry="1" />
+        <Product LocalizedCompoundRef="s1" Stoichiometry="1" />
+        <Kinetics KineticsType="GeneralKinetics">
+          <Parameter Name="J" Role="reaction rate" Unit="umol.l-1.s-1">((Kf_r0 * s0) - (Kr_r0 * s1))</Parameter>
+        </Kinetics>
+      </SimpleReaction>
+      <Diagram Name="c0" Structure="c0">
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s1" LocationX="470" LocationY="220" />
+        <SimpleReactionShape NodeReferenceModeAttrTag="full" SimpleReactionRef="r0" LocationX="244" LocationY="129" />
+        <LocalizedCompoundShape NodeReferenceModeAttrTag="full" LocalizedCompoundRef="s0" LocationX="14" LocationY="34" />
+      </Diagram>
+      <ModelUnitSystem VolumeSubstanceUnit="umol" MembraneSubstanceUnit="umol" LumpedReactionSubstanceUnit="umol" VolumeUnit="l" AreaUnit="dm2" LengthUnit="dm" TimeUnit="s" />
+    </Model>
+    <SimulationSpec Name="unnamed_spatialGeom" Stochastic="false" UseConcentration="true" SpringSaLaD="false" RuleBased="false" MassConservationModelReduction="false" InsufficientIterations="false" InsufficientMaxMolecules="false" CharacteristicSize="0.021090187684898395">
+      <NetworkConstraints RbmMaxIteration="1" RbmMaxMoleculesPerSpecies="10" RbmSpeciesLimit="800" RbmReactionsLimit="2500" />
+      <Annotation />
+      <Geometry Name="spatialGeom" Dimension="1">
+        <Extent X="10.0" Y="1.0" Z="1.0" />
+        <Origin X="0.0" Y="0.0" Z="0.0" />
+        <SubVolume Name="subdomain0" Handle="0" Type="Analytical">
+          <AnalyticExpression>1.0</AnalyticExpression>
+        </SubVolume>
+        <SurfaceDescription NumSamplesX="50" NumSamplesY="1" NumSamplesZ="1" CutoffFrequency="0.3">
+          <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="10.0" Unit="um" />
+        </SurfaceDescription>
+      </Geometry>
+      <GeometryContext>
+        <FeatureMapping Feature="c0" GeometryClass="subdomain0" SubVolume="subdomain0" Size="50000.0" VolumePerUnitVolume="1.0">
+          <BoundariesTypes Xm="Flux" Xp="Flux" Ym="Flux" Yp="Flux" Zm="Flux" Zp="Flux" />
+        </FeatureMapping>
+      </GeometryContext>
+      <ReactionContext>
+        <LocalizedCompoundSpec LocalizedCompoundRef="s0" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(100000.0 * x)</InitialConcentration>
+          <Diffusion>1.0E-9</Diffusion>
+          <Boundaries Xm="0.0" Xp="0.0" />
+        </LocalizedCompoundSpec>
+        <LocalizedCompoundSpec LocalizedCompoundRef="s1" ForceConstant="false" WellMixed="false" ForceContinuous="false">
+          <InitialConcentration>(10.0 - (1.0 * 100000.0 * x))</InitialConcentration>
+          <Diffusion>1.0E-9</Diffusion>
+          <Boundaries Xm="0.0" Xp="0.0" />
+        </LocalizedCompoundSpec>
+        <ReactionSpec ReactionStepRef="r0" ReactionMapping="included" />
+      </ReactionContext>
+      <MathDescription Name="unnamed_spatialGeom_generated">
+        <Constant Name="_F_">96485.3321</Constant>
+        <Constant Name="_F_nmol_">9.64853321E-5</Constant>
+        <Constant Name="_K_GHK_">1.0E-9</Constant>
+        <Constant Name="_N_pmol_">6.02214179E11</Constant>
+        <Constant Name="_PI_">3.141592653589793</Constant>
+        <Constant Name="_R_">8314.46261815</Constant>
+        <Constant Name="_T_">300.0</Constant>
+        <Constant Name="K_millivolts_per_volt">1000.0</Constant>
+        <Constant Name="Kf_r0">1.0</Constant>
+        <Constant Name="KMOLE">0.001660538783162726</Constant>
+        <Constant Name="Kr_r0">0.5</Constant>
+        <Constant Name="s0_boundaryXm">0.0</Constant>
+        <Constant Name="s0_boundaryXp">0.0</Constant>
+        <Constant Name="s0_diffusionRate">1.0E-9</Constant>
+        <Constant Name="s1_boundaryXm">0.0</Constant>
+        <Constant Name="s1_boundaryXp">0.0</Constant>
+        <Constant Name="s1_diffusionRate">1.0E-9</Constant>
+        <Constant Name="VolumePerUnitVolume_c0">1.0</Constant>
+        <VolumeVariable Name="s0" Domain="subdomain0" />
+        <VolumeVariable Name="s1" Domain="subdomain0" />
+        <Function Name="J_r0" Domain="subdomain0">((Kf_r0 * s0) - (Kr_r0 * s1))</Function>
+        <Function Name="s0_init_umol_l_1" Domain="subdomain0">(100000.0 * x)</Function>
+        <Function Name="s1_init_umol_l_1" Domain="subdomain0">(10.0 - (1.0 * 100000.0 * x))</Function>
+        <Function Name="Size_c0" Domain="subdomain0">(VolumePerUnitVolume_c0 * vcRegionVolume('subdomain0'))</Function>
+        <Function Name="vobj_subdomain00_size" Domain="subdomain0">vcRegionVolume('subdomain0')</Function>
+        <CompartmentSubDomain Name="subdomain0">
+          <BoundaryType Boundary="Xm" Type="Flux" />
+          <BoundaryType Boundary="Xp" Type="Flux" />
+          <BoundaryType Boundary="Ym" Type="Value" />
+          <BoundaryType Boundary="Yp" Type="Value" />
+          <BoundaryType Boundary="Zm" Type="Value" />
+          <BoundaryType Boundary="Zp" Type="Value" />
+          <PdeEquation Name="s0" SolutionType="Unknown">
+            <Boundaries Xm="s0_boundaryXm" Xp="s0_boundaryXp" />
+            <Rate>- J_r0</Rate>
+            <Diffusion>s0_diffusionRate</Diffusion>
+            <Initial>s0_init_umol_l_1</Initial>
+          </PdeEquation>
+          <PdeEquation Name="s1" SolutionType="Unknown">
+            <Boundaries Xm="s1_boundaryXm" Xp="s1_boundaryXp" />
+            <Rate>J_r0</Rate>
+            <Diffusion>s1_diffusionRate</Diffusion>
+            <Initial>s1_init_umol_l_1</Initial>
+          </PdeEquation>
+        </CompartmentSubDomain>
+      </MathDescription>
+      <Simulation Name="Simulation0">
+        <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+          <TimeBound StartTime="0.0" EndTime="1.0" />
+          <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+          <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+          <OutputOptions OutputTimeStep="0.05" />
+          <SundialsSolverOptions>
+            <maxOrderAdvection>2</maxOrderAdvection>
+          </SundialsSolverOptions>
+          <NumberProcessors>1</NumberProcessors>
+        </SolverTaskDescription>
+        <MathOverrides />
+        <MeshSpecification>
+          <Size X="200" Y="1" Z="1" />
+        </MeshSpecification>
+      </Simulation>
+      <SpatialObjects>
+        <SpatialObject Name="vobj_subdomain00" Type="Volume" subVolume="subdomain0" regionId="0">
+          <QuantityCategoryList>
+            <QuantityCategory Name="VolumeCentroid" Enabled="false" />
+            <QuantityCategory Name="InteriorVelocity" Enabled="false" />
+            <QuantityCategory Name="VolumeRegionSize" Enabled="true" />
+          </QuantityCategoryList>
+        </SpatialObject>
+      </SpatialObjects>
+      <MicroscopeMeasurement Name="fluor">
+        <ConvolutionKernel Type="ProjectionZKernel" />
+      </MicroscopeMeasurement>
+    </SimulationSpec>
+    <pathwayModel>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level3.owl#" version="3.0" />
+    </pathwayModel>
+    <relationshipModel>
+      <RMNS version="3.0" />
+    </relationshipModel>
+    <vcmetadata>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" />
+      <nonrdfAnnotationList />
+      <uriBindingList />
+    </vcmetadata>
+  </BioModel>
+</vcml>
+
